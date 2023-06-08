@@ -7,7 +7,7 @@ Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
 This package is currently in very active development. An addition ten to fifteen scores are expected to be implemented in the coming weeks. Performance testing and dask compatibility will be reviewed during and afterwards. The first 'release' will be tagged at that point.
 
-The documentation is divided into the [ user guide ](docs/userguide.md), the [ contribution guide](docs/contributing.md)(including developer documentation) and [API documentation](docs/api.md).
+The documentation is divided into the [user guide](docs/userguide.md), the [contribution guide](docs/contributing.md)(including developer documentation) and [API documentation](docs/api.md).
 
 'scores' is a modular scoring package containing mathematical functions that can be used for the verification, evaluation, and optimisation of models, as well as other statistical functions. It is primarily aiming to support the geoscience and earth system community. Scores is focused on supporting xarray datatypes for earth system data. Other data formats such as Pandas and Iris can be easily be converted to xarray objects to utilise `scores`. It has wider potential application in machine learning and domains other than meteorology, geoscience and weather but primarily supports those fields. It aims to be compatible with geopandas, pangeo and work with NetCDF4, Zarr, and hd5 data sources among others.
 
