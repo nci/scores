@@ -1,0 +1,17 @@
+site_name: Scores Verification Package
+
+plugins:
+  - mkdocstrings
+
+
+theme:
+    name: readthedocs
+    highlightjs: true
+
+nav:
+  - Documentation Index: index.md  
+  - API reference: api.md
+  - User Guide: userguide.md
+  - Data Guide: data.md
+  - Contributor Guide: contributing.md
+  

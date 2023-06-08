@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scores"
+dynamic = ["version"]
+authors = [
+  { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
+]
+description = """\
+A modular scoring package containing scoring functions for verification, \
+training models and statistical applications\
+"""
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "xarray",
+    "pandas",
+    "scipy",
+    "bottleneck"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-watch",
+    "pytest-cov",
+    "pre-commit",
+    "black == 23.3.0",
+    "mypy == 1.3.0",
+    "pylint == 2.17.4",
+    "mkdocs",
+    "mkdocstrings[python]",
+]
+tutorial = [
+    "jupyterlab",
+    "matplotlib",
+    "h5netcdf",
+]
+maintainer = ["build"]
+all = ["scores[dev,tutorial]"]
+
+[project.urls]
+"Homepage" = "http://www.bom.gov.au"
+
+# header enables `use_scm_version=True` in deprecated setup.py
+[tool.setuptools_scm]
+
+[tool.setuptools.packages.find]
+where = ["src/"]
+include = ["scores", "scores.probability"]
+
+[tool.setuptools.dynamic]
+version = {attr = "scores.__version__"}
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 120
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true

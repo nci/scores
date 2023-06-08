@@ -1,0 +1,9 @@
+# NOTE: although this file is provided it is recommended to use `pip`
+# as the package manager as `scores is not hosted on any conda repositories.
+name: scores
+channels:
+  - defaults
+dependencies:
+  - pip
+  - pip:
+    - scores[all]
