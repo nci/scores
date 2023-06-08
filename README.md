@@ -3,11 +3,13 @@
 One-line intro: xarray based verification (accuracy) scoring that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
+** Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how). **
+
 This package is currently in very active development. An addition ten to fifteen scores are expected to be implemented in the coming weeks. Performance testing and dask compatibility will be reviewed during and afterwards. The first 'release' will be tagged at that point.
 
 The documentation is divided into the [ user guide ](docs/userguide.md), the [ contribution guide](docs/contributing.md)(including developer documentation) and [API documentation](docs/api.md).
 
-'scores' is a modular scoring package containing scoring functions that can be used for verification and training models, as well as other statistical functions. It is primarily aiming to support the geoscience and earth system community. Scores is focused on supporting xarray datatypes for earth system data. Other data formats such as Pandas and Iris can be easily be converted to xarray objects to utilise `scores`. It has wider potential application in machine learning and domains other than meteorology, geoscience and weather but primarily supports those fields. It aims to be compatible with geopandas, pangeo and work with NetCDF4, Zarr, and hd5 data sources among others.
+'scores' is a modular scoring package containing mathematical functions that can be used for the verification, evaluation, and optimisation of models, as well as other statistical functions. It is primarily aiming to support the geoscience and earth system community. Scores is focused on supporting xarray datatypes for earth system data. Other data formats such as Pandas and Iris can be easily be converted to xarray objects to utilise `scores`. It has wider potential application in machine learning and domains other than meteorology, geoscience and weather but primarily supports those fields. It aims to be compatible with geopandas, pangeo and work with NetCDF4, Zarr, and hd5 data sources among others.
 
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review.
 
