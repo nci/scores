@@ -58,6 +58,61 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
 
     return _mse
 
+def rmse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
+    """
+    Root Mean Squared Error
+
+    Args:
+      - fcst: Forecast or predicted variables in xarray or pandas
+      - obs: Observed variables in xarray or pandas
+      - reduce_dims: Optionally specify which dimensions to reduce when calculating RMSE.
+                     All other dimensions will be preserved.
+      - preserve_dims: Optionally specify which dimensions to preserve when calculating RMSE. All other
+                       dimensions will be reduced. As a special case, 'all' will allow all dimensions to
+                       be preserved. In this case, the result will be in the same shape/dimensionality as
+                       the forecast, and the errors will be the absolute error at each point (i.e. single-value
+                       comparison against observed), and the forecast and observed dimensions must match
+                       precisely.
+      - weights: Not yet implemented. Allow weighted averaging (e.g. by area, by latitude, by population, custom)
+
+    Returns:
+      - Returns an xarray representing the root mean squared error, reduced along
+      the relevant dimensions and weighted appropriately.
+
+    Notes:
+      - Dimensional reduction is not supported for pandas and the user should convert their data to xarray
+        to formulate the call to the metric.
+      - At most one of reduce_dims and preserve_dims may be specified. Specifying both will result in an exception.
+
+    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+
+    """
+
+    error = fcst - obs
+
+    squared = error * error
+
+    if weights is not None:  # pragma: no-cover
+        raise NotImplementedError("Weights handling not implemented, placeholder for API spec")  # pragma: no-cover
+
+    weights_dims = []
+    if preserve_dims == 'all':
+        return abs(error)
+        
+    if preserve_dims or reduce_dims:
+        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, weights_dims, reduce_dims, preserve_dims)
+
+    if reduce_dims:
+        _mse = squared.mean(dim=reduce_dims)
+    else:
+        _mse = squared.mean()
+    
+    _rmse = pow(_mse, (1/2))
+
+    return _rmse
+
+# Add Root Mean Squared Deviation as symbolic link to rmse
+rmsd = rmse
 
 def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     """Calculates the mean absolute error from forecast and observed data.
