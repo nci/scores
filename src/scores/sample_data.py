@@ -19,13 +19,14 @@ def simple_observations() -> xr.DataArray:
 
 
 def continuous_observations(large_size: bool = False) -> xr.DataArray:
-    """
-    Creates a obs array with continuous values.
+    """Creates a obs array with continuous values.
+
     Args:
-        large_size: If True, then returns a large global array with ~0.5 degree
+        large_size (bool): If True, then returns a large global array with ~0.5 degree
             grid spacing, otherwise returns a cut down, lower resolution array.
 
-    Returns an xr.Datarray with synthetic observation data.
+    Returns:
+        xr.Datarray: Containing synthetic observation data.
     """
 
     num_lats = 10
@@ -53,15 +54,15 @@ def continuous_observations(large_size: bool = False) -> xr.DataArray:
 
 
 def continuous_forecast(large_size: bool = False, lead_days: bool = False) -> xr.DataArray:
-    """
-    Creates a forecast array with continuous values.
+    """Creates a forecast array with continuous values.
 
     Args:
-        large_size: If True, then returns a large global array with ~0.5 degree
+        large_size (bool): If True, then returns a large global array with ~0.5 degree
             grid spacing, otherwise returns a cut down, lower resolution array.
-        lead_days: If True, returns an array with a "lead_day" dimension.
+        lead_days (bool): If True, returns an array with a "lead_day" dimension.
 
-    Returns an xr.Datarray with synthetic forecast data.
+    Returns:
+        xr.Datarray: Containing synthetic forecast data.
     """
     obs = continuous_observations(large_size)
     np.random.seed(42)
@@ -78,9 +79,10 @@ def cdf_forecast(lead_days: bool = False) -> xr.DataArray:
     Creates a forecast array with a CDF at each point.
 
     Args:
-        lead_days: If True, returns an array with a "lead_day" dimension.
+        lead_days (bool): If True, returns an array with a "lead_day" dimension.
 
-    Returns an xr.Datarray with synthetic CDF forecast data.
+    Returns:
+        xr.Datarray: Containing synthetic CDF forecast data.
     """
     x = np.arange(0, 10, 0.1)
     cdf_list = []
@@ -120,7 +122,8 @@ def cdf_observations() -> xr.DataArray:
     """
     Creates an obs array to use with `cdf_forecast`.
 
-    Returns an xr.Datarray with synthetic observations betwen 0 and 9.9
+    Returns:
+        xr.Datarray: Containing synthetic observations betwen 0 and 9.9
     """
     np.random.seed(42)
     obs = xr.DataArray(
