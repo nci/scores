@@ -234,7 +234,7 @@ def create_xarray(data : list[list[float]]):
     ids=["perfect", "perfect-neg","single","single_neg", "perfect-nan","single-nan", "perfect-nan-r","single-nan-r"]
 
 )
-def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, request):
+def test_rmse_xarray_2d_defined(forecast, observations, expected, request_kwargs, request):
     """
     Test RMSE Values for defined edge cases
 
