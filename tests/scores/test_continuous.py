@@ -104,19 +104,27 @@ def test_2d_xarray_mse_with_dimensions():
 
 @pytest.fixture
 def rmse_fcst_xarray():
-    return xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    return xr.DataArray([-1, 3, 1, 3, 0, 2, 2, 1, 1, 2, 3])
+
+@pytest.fixture
+def rmse_fcst_nan_xarray():
+    return xr.DataArray([-1, 3, 1, 3, np.nan, 2, 2, 1, 1, 2, 3])
 
 @pytest.fixture
 def rmse_obs_xarray():
-    return xr.DataArray([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    return xr.DataArray([1, 1, 1, 2, 1, 2, 1, -1, 1, 3, 1])
 
 @pytest.fixture
 def rmse_fcst_pandas():
-    return pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    return pd.Series([-1, 3, 1, 3, 0, 2, 2, 1, 1, 2, 3])
+
+@pytest.fixture
+def rmse_fcst_nan_pandas():
+    return pd.Series([-1, 3, 1, 3, np.nan, 2, 2, 1, 1, 2, 3])
 
 @pytest.fixture
 def rmse_obs_pandas():
-    return pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    return pd.Series([1, 1, 1, 2, 1, 2, 1, 1, -1, 3, 1])
 
 def test_rmsd_xarray_1d(rmse_fcst_xarray, rmse_obs_xarray):
     """
@@ -124,18 +132,22 @@ def test_rmsd_xarray_1d(rmse_fcst_xarray, rmse_obs_xarray):
     """
     result = scores.continuous.rmsd(rmse_fcst_xarray, rmse_obs_xarray)
 
-    expected = xr.DataArray(1.0445)
+    expected = xr.DataArray(1.3484)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
 @pytest.mark.parametrize(
     "forecast, observations, expected, request_kwargs", 
     [
-        ('rmse_fcst_xarray', 'rmse_obs_xarray', xr.DataArray(1.0445), {}),
+        ('rmse_fcst_xarray', 'rmse_obs_xarray', xr.DataArray(1.3484), {}),
         ('rmse_fcst_xarray', 'rmse_obs_xarray', xr.DataArray([0, 2, 0, 1, 1, 0, 1, 0, 0, 1, 2]), dict(preserve_dims = 'all')),
-        ('rmse_fcst_xarray', 1, xr.DataArray(1.206), {}),
-        ('rmse_fcst_pandas', 'rmse_obs_pandas', 1.0445, {}),
+        ('rmse_fcst_nan_xarray', 'rmse_obs_xarray', xr.DataArray(1.3784), {}),
+        ('rmse_fcst_xarray', 1, xr.DataArray(1.3484), {}),
+        ('rmse_fcst_nan_xarray', 1, xr.DataArray(1.3784), {}),
+        ('rmse_fcst_pandas', 'rmse_obs_pandas', 1.3484, {}),
+        ('rmse_fcst_pandas', 1, 1.3484, {}),
+        ('rmse_fcst_nan_pandas', 'rmse_obs_pandas', 1.3784, {}),
     ],
-    ids=["simple-1d", "preserve-1d", "to-point","pandas-series-1d"]
+    ids=["simple-1d", "preserve-1d", "simple-1d-w-nan", "to-point","to-point-w-nan", "pandas-series-1d", "pandas-to-point", "pandas-series-nan-1d"]
 )
 def test_rmse_xarray_1d(forecast, observations, expected, request_kwargs, request):
     """
@@ -159,6 +171,7 @@ def rmse_2d_fcst_xarray():
     lats = [50, 51, 52, 53]
     lons = [30, 31, 32, 33]
     fcst_temperatures_2d = 15 + 8 * np.random.randn(1, 4, 4)
+    fcst_temperatures_2d[0,2,1] = np.nan
     return xr.DataArray(fcst_temperatures_2d[0], dims=["latitude", "longitude"], coords=[lats, lons])
 
 @pytest.fixture
@@ -167,18 +180,25 @@ def rmse_2d_obs_xarray():
     lats = [50, 51, 52, 53]
     lons = [30, 31, 32, 33]
     obs_temperatures_2d = 15 + 6 * np.random.randn(1, 4, 4)
+    obs_temperatures_2d[0,1,2] = np.nan
     return xr.DataArray(obs_temperatures_2d[0], dims=["latitude", "longitude"], coords=[lats, lons])
+
+@pytest.fixture
+def rmse_2d_expected_xarray():
+    lons = [30, 31, 32, 33]
+    exp_temperatures_2d = [2.6813, 1.2275, 1.252 , 2.6964]
+    return xr.DataArray(exp_temperatures_2d, dims=["longitude"], coords=[lons])
 
 @pytest.mark.parametrize(
     "forecast, observations, expected, request_kwargs, expected_dimensions", 
     [
-        ('rmse_2d_fcst_xarray', 'rmse_2d_obs_xarray', xr.DataArray(2.1117), {}, ()),
-        ('rmse_2d_fcst_xarray', 'rmse_2d_obs_xarray', [2.6813, 1.1396, 1.4417, 2.6964], dict(reduce_dims="latitude"), ("longitude",)),
-        ('rmse_2d_fcst_xarray', 'rmse_2d_obs_xarray', [2.6813, 1.1396, 1.4417, 2.6964], dict(preserve_dims="longitude"), ("longitude",)),
+        ('rmse_2d_fcst_xarray', 'rmse_2d_obs_xarray', xr.DataArray(2.1887), {}, ()),
+        ('rmse_2d_fcst_xarray', 'rmse_2d_obs_xarray', 'rmse_2d_expected_xarray', dict(reduce_dims="latitude"), ("longitude",)),
+        ('rmse_2d_fcst_xarray', 'rmse_2d_obs_xarray', 'rmse_2d_expected_xarray', dict(preserve_dims="longitude"), ("longitude",)),
     ],
     ids=["simple-2d", "reduce-2d", "preserve-2d"]
 )
-def test_rmse_xarray_2d(forecast, observations, expected, request_kwargs, expected_dimensions, request):
+def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, expected_dimensions, request):
     """
     Test RMSE for the following cases on 2d Data:
        * Calculates the correct value for a simple xarray 2d sequence
@@ -187,14 +207,10 @@ def test_rmse_xarray_2d(forecast, observations, expected, request_kwargs, expect
     """
     if isinstance(forecast, str): forecast = request.getfixturevalue(forecast)
     if isinstance(observations, str): observations = request.getfixturevalue(observations)
+    if isinstance(expected, str): expected = request.getfixturevalue(expected)
 
     result = scores.continuous.rmse(forecast, observations, **request_kwargs)
-
-    if isinstance(expected, list):
-        assert all(result.round(PRECISION) == expected)
-    else:
-        assert result.round(PRECISION) == expected
-    assert result.dims == expected_dimensions
+    xr.testing.assert_allclose(result.round(PRECISION), expected)
 
 
 # Mean Absolute Error

@@ -103,9 +103,6 @@ def rmse(fcst: OBS_TYPE, obs: OBS_TYPE, reduce_dims: Tuple[str] = None, preserve
     """
     _mse = mse(fcst=fcst, obs=obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
 
-    if preserve_dims == "all":
-        return _mse
-
     _rmse = pow(_mse, (1 / 2))
 
     return _rmse
