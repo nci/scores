@@ -211,7 +211,40 @@ def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, e
 
     result = scores.continuous.rmse(forecast, observations, **request_kwargs)
     xr.testing.assert_allclose(result.round(PRECISION), expected)
+    assert result.dims == expected_dimensions
 
+def create_xarray(data : list[list[float]]):
+    data = np.array(data)
+    lats = np.arange(data.shape[0]) + 50
+    lons = np.arange(data.shape[1]) + 30
+    return xr.DataArray(data, dims=["latitude", "longitude"], coords=[lats, lons])
+
+@pytest.mark.parametrize(
+    "forecast, observations, expected, request_kwargs,", 
+    [
+        (create_xarray([[0,0],[1,1]]), create_xarray([[0,0],[1,1]]), xr.DataArray(0), {}),
+        (create_xarray([[-1,0],[1,1]]), create_xarray([[-1,0],[1,1]]), xr.DataArray(0), {}),
+        (create_xarray([[1,0],[1,1]]), create_xarray([[-1,0],[1,1]]), xr.DataArray(1), {}),
+        (create_xarray([[-1,0],[1,1]]), create_xarray([[1,0],[1,1]]), xr.DataArray(1), {}),
+        (create_xarray([[np.nan,0],[1,1]]), create_xarray([[1,0],[1,1]]), xr.DataArray(0), {}),
+        (create_xarray([[np.nan,1],[1,1]]), create_xarray([[1,0],[1,1]]), xr.DataArray(np.sqrt(1/3).round(PRECISION)), {}),
+        (create_xarray([[1,0],[1,1]]), create_xarray([[np.nan,0],[1,1]]), xr.DataArray(0), {}),
+        (create_xarray([[1,0],[1,1]]), create_xarray([[np.nan,1],[1,1]]), xr.DataArray(np.sqrt(1/3).round(PRECISION)), {}),
+    ],
+    ids=["perfect", "perfect-neg","single","single_neg", "perfect-nan","single-nan", "perfect-nan-r","single-nan-r"]
+
+)
+def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, request):
+    """
+    Test RMSE Values for defined edge cases
+
+    """
+    if isinstance(forecast, str): forecast = request.getfixturevalue(forecast)
+    if isinstance(observations, str): observations = request.getfixturevalue(observations)
+    if isinstance(expected, str): expected = request.getfixturevalue(expected)
+
+    result = scores.continuous.rmse(forecast, observations, **request_kwargs)
+    xr.testing.assert_allclose(result.round(PRECISION), expected)
 
 # Mean Absolute Error
 
