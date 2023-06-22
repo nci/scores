@@ -426,5 +426,8 @@ def test_gather_dimensions():
     assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims="lat") == set(["base_time", "lead_time", "lon"])
     assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims=["lat", "lon"]) == set(["base_time", "lead_time"])
 
-    with pytest.raises(NotImplementedError):
-        gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all")
+    preserve_all = gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all")
+    reduce_empty = gd(fcst_dims, obs_dims, weights_dims, reduce_dims=[])
+
+    assert preserve_all == reduce_empty
+    assert preserve_all == []

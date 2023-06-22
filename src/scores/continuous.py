@@ -44,7 +44,7 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     if preserve_dims or reduce_dims:
         reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, weights_dims, reduce_dims, preserve_dims)
 
-    if reduce_dims:
+    if reduce_dims is not None:
         _mse = squared.mean(dim=reduce_dims)
     else:
         _mse = squared.mean()
@@ -94,10 +94,10 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
         raise NotImplementedError("Weights handling not implemented, placeholder for API spec")  # pragma: no-cover
 
     weights_dims = []
-    if preserve_dims or reduce_dims:
+    if preserve_dims is not None or reduce_dims is not None:
         reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, weights_dims, reduce_dims, preserve_dims)
 
-    if reduce_dims:
+    if reduce_dims is not None:
         _ae = ae.mean(dim=reduce_dims)
     else:
         _ae = ae.mean()

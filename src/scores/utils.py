@@ -17,19 +17,20 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
     """
 
     all_dims = set(fcst_dims).union(set(obs_dims))
-    if weights_dims:
+    if weights_dims is not None:
         all_dims = all_dims.union(set(weights_dims))
 
-    if preserve_dims and reduce_dims:
+    if preserve_dims is not None and reduce_dims is not None:
         msg = (
             "This method (gather_dimensions) doesn't know how to understand "
             "both preserve_dims and reduce_dims at the same time"
         )
         raise ValueError(msg)
 
-    if preserve_dims:
+    if preserve_dims is not None:
+
         if preserve_dims == "all":
-            raise NotImplementedError("Handling this special case case not been implemented")
+            return []
 
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
