@@ -5,6 +5,7 @@ Contains unit tests for scores.continuous
 import numpy as np
 import numpy.random
 import pandas as pd
+import pytest
 import xarray as xr
 
 import scores.continuous
@@ -209,3 +210,22 @@ def test_xarray_dimension_handling_with_arrays():
     assert all(preserve_lon.round(4) == expected_values)
     assert reduce_lat.dims == expected_dimensions
     assert preserve_lon.dims == expected_dimensions
+
+
+def test_xarray_dimension_preservations_with_arrays():
+    """
+    Test MAE is calculated correctly along a specified dimension
+    """
+    numpy.random.seed(0)
+    lats = [50, 51, 52, 53]
+    lons = [30, 31, 32, 33]
+    fcst_temperatures_2d = 15 + 8 * np.random.randn(1, 4, 4)
+    obs_temperatures_2d = 15 + 6 * np.random.randn(1, 4, 4)
+    fcst_temperatures_xr_2d = xr.DataArray(fcst_temperatures_2d[0], dims=["latitude", "longitude"], coords=[lats, lons])
+    obs_temperatures_xr_2d = xr.DataArray(obs_temperatures_2d[0], dims=["latitude", "longitude"], coords=[lats, lons])
+
+    reduce_empty = scores.continuous.mae(fcst_temperatures_xr_2d, obs_temperatures_xr_2d, reduce_dims=[])
+    preserve_all = scores.continuous.mae(fcst_temperatures_xr_2d, obs_temperatures_xr_2d, preserve_dims="all")
+
+    assert reduce_empty.dims == fcst_temperatures_xr_2d.dims  # Nothing should be reduced
+    assert (reduce_empty == preserve_all).all()
