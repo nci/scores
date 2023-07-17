@@ -13,8 +13,13 @@ rather than relying on string interpretation. The program will continue to inter
 string as an instruction to reduce or preserve every dimension.
 '''
 
-ERROR_SPECIFIED_NONPRESENT_DIMENSION = '''
-You are requesting to reduce or preserve a dimension which does not appear in your data.
+ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = '''
+You are requesting to preserve a dimension which does not appear in your data (fcst or obs).
+It is ambiguous how to proceed therefore an exception has been raised instead.
+'''
+
+ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = '''
+You are requesting to reduce a dimension which does not appear in your data (fcst or obs).
 It is ambiguous how to proceed therefore an exception has been raised instead.
 '''
 
@@ -51,7 +56,10 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
             specified = [specified]
 
         if not set(specified).issubset(all_dims):
-            raise ValueError(ERROR_SPECIFIED_NONPRESENT_DIMENSION)
+            if preserve_dims is not None:
+                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
+            else:
+                raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
 
     # Handle preserve_dims case
     if preserve_dims is not None:

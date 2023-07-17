@@ -459,6 +459,17 @@ def test_gather_dimensions_string_handling():
     # Preserved "all" as a named dimension explicitly
     assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims=["all"]) ==  set(["base_time", "lead_time", "lat", "lon"])
 
+    # Attempt to reduce a non-existent dimension
+    with pytest.raises(ValueError) as excinfo:
+        # import pudb; pudb.set_trace()
+        assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims="nonexistent") == []
+    assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION
+
+    # Attempt to reduce a non-existent dimension
+    with pytest.raises(ValueError) as excinfo:
+        assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims="nonexistent") == []
+    assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION
+
 
 def test_gather_dimensions_preserve_and_reduce():
     '''
