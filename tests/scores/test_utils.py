@@ -414,7 +414,7 @@ def test_check_dims_raises(xr_data, expected_dims, mode, error_class, error_msg_
     assert error_msg_snippet in str(excinfo.value)
 
 
-def test_gather_dimensions():
+def test_gather_dimensions_reduce():
     """
     Test the logic for dimension handling with some examples
     """
@@ -431,3 +431,43 @@ def test_gather_dimensions():
 
     assert preserve_all == reduce_empty
     assert preserve_all == []
+
+def test_gather_dimensions_string_handling():
+
+    fcst_dims_conflict = set(["base_time", "lead_time", "lat", "lon", "all"])
+    fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
+    obs_dims = []
+    weights_dims = []
+
+    # All will preserve every dimension if "all" is specified
+    assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all") == []
+
+    # All will reduce every dimension if "all" is specified
+    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="all") == fcst_dims
+
+    # Single dimensions specified as a string will be packed into a list
+    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="lead_time") == ["lead_time"]
+
+    # Preserve "all" as a string but named dimension present in data
+    with pytest.warns(UserWarning):
+        assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims="all") == []
+
+    # Preserve "all" as a string but named dimension present in data
+    with pytest.warns(UserWarning):
+        assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims="all") == fcst_dims_conflict
+
+    # Preserved "all" as a named dimension explicitly
+    assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims=["all"]) ==  set(["base_time", "lead_time", "lat", "lon"])
+
+
+def test_gather_dimensions_preserve_and_reduce():
+    '''
+    Confirm an exception is raised when both preserve and reduce arguments are specified
+    '''
+
+    fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
+    obs_dims = []
+    weights_dims = []
+
+    with pytest.raises(ValueError):
+        gd(fcst_dims, obs_dims, weights_dims, preserve_dims=[], reduce_dims=[])
