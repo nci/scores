@@ -1,5 +1,5 @@
 """
-Functions for calculating confidence statistics
+Functions for calculating a modified Deibold-Mariano test statistic
 """
 from typing import Literal
 
@@ -12,7 +12,7 @@ from scipy.optimize import least_squares
 from scores.utils import dims_complement
 
 
-def dm_test_stats(
+def diebold_mariano(
     da_timeseries: xr.DataArray,
     ts_dim: str,
     h_coord: str,

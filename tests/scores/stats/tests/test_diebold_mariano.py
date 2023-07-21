@@ -1,18 +1,18 @@
 """
-This module contains unit tests for scores.stats.confidence_intervals
+This module contains unit tests for scores.stats.tests.diebold_mariano_impl
 """
 import numpy as np
 import pytest
 import xarray as xr
 
-from scores.stats.confidence_intervals_impl import (
+from scores.stats.tests.diebold_mariano_impl import (
     _dm_gamma_hat_k,
     _dm_test_statistic,
     _dm_v_hat,
     _hg_func,
     _hg_method_stat,
     _hln_method_stat,
-    dm_test_stats,
+    diebold_mariano,
 )
 
 
@@ -161,7 +161,7 @@ from scores.stats.confidence_intervals_impl import (
         ),
     ],
 )
-def test_dm_test_stats_raises(
+def test_diebold_mariano_raises(
     da_timeseries,
     ts_dim,
     h_coord,
@@ -170,9 +170,9 @@ def test_dm_test_stats_raises(
     statistic_distribution,
     error_msg,
 ):
-    """Tests that dm_test_stats raises a ValueError as expected."""
+    """Tests that diebold_mariano raises a ValueError as expected."""
     with pytest.raises(ValueError, match=error_msg):
-        dm_test_stats(
+        diebold_mariano(
             da_timeseries,
             ts_dim,
             h_coord,
@@ -345,8 +345,8 @@ DM_TEST_STATS_NORMAL_EXP = xr.Dataset(
         ("normal", DM_TEST_STATS_NORMAL_EXP),
     ],
 )
-def test_dm_test_stats(distribution, expected):
-    """Tests that dm_test_stats gives results as expected."""
+def test_diebold_mariano(distribution, expected):
+    """Tests that diebold_mariano gives results as expected."""
     da_timeseries = xr.DataArray(
         data=[[1, 2, 3.0, 4, np.nan], [2.0, 1, -3, -1, 0], [1.0, 1, 1, 1, 1]],
         dims=["lead_day", "valid_date"],
@@ -356,7 +356,7 @@ def test_dm_test_stats(distribution, expected):
             "h": ("lead_day", [2, 3, 4]),
         },
     )
-    result = dm_test_stats(
+    result = diebold_mariano(
         da_timeseries,
         "lead_day",
         "h",
