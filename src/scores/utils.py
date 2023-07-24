@@ -1,7 +1,32 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
+import warnings
 import xarray as xr
+
+
+WARN_ALL_DATA_CONFLICT_MSG = '''
+You are requesting to reduce or preserve every dimension by specifying the string 'all'.
+In this case, 'all' is also a named dimension in your data, leading to an ambiguity.
+In order to reduce or preserve the named data dimension, specify ['all'] as a list item
+rather than relying on string interpretation. The program will continue to interpret the
+string as an instruction to reduce or preserve every dimension.
+'''
+
+ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = '''
+You are requesting to preserve a dimension which does not appear in your data (fcst or obs).
+It is ambiguous how to proceed therefore an exception has been raised instead.
+'''
+
+ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = '''
+You are requesting to reduce a dimension which does not appear in your data (fcst or obs).
+It is ambiguous how to proceed therefore an exception has been raised instead.
+'''
+
+ERROR_OVERSPECIFIED_PRESERVE_REDUCE = '''
+You have specified both preserve_dims and reduce_dims. This method doesn't know how
+to properly interpret that, therefore an exception has been raised.
+'''
 
 
 class DimensionError(Exception):
@@ -10,32 +35,56 @@ class DimensionError(Exception):
     Dataset objects that do not have compatible dimensions.
     """
 
-
 def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, preserve_dims=None):
     """
-    Establish which dimensions to reduce according to the optional args
+    Establish which dimensions to reduce when calculating errors but before taking means
     """
 
     all_dims = set(fcst_dims).union(set(obs_dims))
-    if weights_dims:
-        all_dims = all_dims.union(set(weights_dims))
 
-    if preserve_dims and reduce_dims:
-        msg = (
-            "This method (gather_dimensions) doesn't know how to understand "
-            "both preserve_dims and reduce_dims at the same time"
-        )
-        raise ValueError(msg)
+    # Handle error conditions related to specified dimensions
+    if preserve_dims is not None and reduce_dims is not None:
+        raise ValueError(ERROR_OVERSPECIFIED_PRESERVE_REDUCE)
 
-    if preserve_dims:
+    # Handle error conditions related to specified dimensions
+    specified = preserve_dims or reduce_dims
+    if specified == "all":
+        if "all" in all_dims:
+            warnings.warn(WARN_ALL_DATA_CONFLICT_MSG)
+    elif specified is not None:
+        if isinstance(specified, str):
+            specified = [specified]
+
+        if not set(specified).issubset(all_dims):
+            if preserve_dims is not None:
+                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
+            else:
+                raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
+
+    # Handle preserve_dims case
+    if preserve_dims is not None:
+
         if preserve_dims == "all":
-            raise NotImplementedError("Handling this special case case not been implemented")
+            return set([])
 
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
 
         reduce_dims = set(all_dims).difference(preserve_dims)
 
+    # Handle reduce all
+    elif reduce_dims == "all":
+        reduce_dims = set(all_dims)
+
+    # Handle reduce by string
+    elif isinstance(reduce_dims, str):
+        reduce_dims = set([reduce_dims])
+
+    # Turn into a set if needed
+    elif reduce_dims is not None:
+        reduce_dims = set(reduce_dims)
+
+    # Reduce by list is the default so no handling needed
     return reduce_dims
 
 
