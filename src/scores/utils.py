@@ -65,7 +65,7 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
     if preserve_dims is not None:
 
         if preserve_dims == "all":
-            return []
+            return set([])
 
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
@@ -78,7 +78,11 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
 
     # Handle reduce by string
     elif isinstance(reduce_dims, str):
-        reduce_dims = [reduce_dims]
+        reduce_dims = set([reduce_dims])
+
+    # Turn into a set if needed
+    elif reduce_dims is not None:
+        reduce_dims = set(reduce_dims)
 
     # Reduce by list is the default so no handling needed
     return reduce_dims
