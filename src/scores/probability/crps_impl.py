@@ -10,9 +10,8 @@ import pandas as pd
 import xarray as xr
 
 import scores.utils
-
-from .checks import coords_increasing
-from .functions import (
+from scores.probability.checks import coords_increasing
+from scores.probability.functions import (
     add_thresholds,
     cdf_envelope,
     decreasing_cdfs,

@@ -9,7 +9,10 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .checks import cdf_values_within_bounds, check_nan_decreasing_inputs
+from scores.probability.checks import (
+    cdf_values_within_bounds,
+    check_nan_decreasing_inputs,
+)
 
 
 def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
