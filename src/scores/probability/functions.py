@@ -13,20 +13,21 @@ from .checks import cdf_values_within_bounds, check_nan_decreasing_inputs
 
 
 def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
-    """
-    Round data array to specified precision.
+    """Round data array to specified precision.
+
     Assumes that rounding_precision >=0, with 0 indicating no rounding to be performed.
     For example, 3.73 rounded to precision 0.2 is 3.8.
     If rounding_precision > 0, a final round to `final_round_decpl` decimal places is performed
     to remove artefacts of python rounding process.
 
     Args:
-        array: array of data to be rounded
-        rounding_precision: rounding precision
-        final_round_decpl: final round to specified number of decimal places when `rounding_precision` > 0.
+        array (xr.DataArray): array of data to be rounded
+        rounding_precision (float): rounding precision
+        final_round_decpl (int): final round to specified number of decimal
+            places when `rounding_precision` > 0.
 
     Returns:
-        An xarray data array with rounded values.
+        xr.DataArray: DataArray with rounded values.
 
     Raises:
         ValueError: If `rounding_precision` < 0.
@@ -42,17 +43,15 @@ def round_values(array: xr.DataArray, rounding_precision: float, final_round_dec
 
 
 def propagate_nan(cdf: xr.DataArray, threshold_dim: str) -> xr.DataArray:
-    """
-    If there is a NaN value in xr.DataArray `cdf`, then `propagate_nan` propagates the NaN value
-    along the `threshold_dim` dimension in both directions.
+    """Propagates the NaN values from a "cdf" variable along the `threshold_dim`.
 
     Args:
-        cdf: DataArray of CDF values, so that P(X <= threshold) = cdf_value for each threshold
-            in the `threshold_dim` dimension.
-        threshold_dim: name of the threshold dimension in `cdf`.
+        cdf (xr.DataArray): CDF values, so that P(X <= threshold) = cdf_value for
+            each threshold in the `threshold_dim` dimension.
+        threshold_dim (str): name of the threshold dimension in `cdf`.
 
     Returns:
-        An xarray DataArray of `cdf` but with NaNs propagated.
+        xr.DataArray: `cdf` variable with NaNs propagated.
 
     Raises:
         ValueError: If `threshold_dim` is not a dimension of `cdf`.
@@ -72,27 +71,27 @@ def observed_cdf(
     include_obs_in_thresholds: bool = True,
     precision: float = 0,
 ) -> xr.DataArray:
-    """
-    Returns a data array of observations converted into CDF format, such that
+    """Returns a data array of observations converted into CDF format.
+
+    Such that:
         returned_value = 0 if threshold < observation
         returned_value = 1 if threshold >= observation
 
     Args:
-        obs: observations
-        threshold_dim: name of dimension in returned array that contains the threshold values.
-        threshold_values: values to include among thresholds.
-        include_obs_in_thresholds: if `True`, include (rounded) observed values among thresholds.
-        precision: precision applied to observed values prior to constructing the CDF and
+        obs (xr.DataArray): observations
+        threshold_dim (str): name of dimension in returned array that contains the threshold values.
+        threshold_values (Optional[Iterable[float]]): values to include among thresholds.
+        include_obs_in_thresholds (bool): if `True`, include (rounded) observed values among thresholds.
+        precision (float): precision applied to observed values prior to constructing the CDF and
             thresholds. Select 0 for highest precision (i.e. no rounding).
 
     Returns:
-        an xarray DataArray with observed CDFs and thresholds in the `threshold_dim` dimension.
+        xr.DataArray: Observed CDFs and thresholds in the `threshold_dim` dimension.
 
     Raises:
         ValueError: if `precision < 0`.
         ValueError: if all observations are NaN and no non-NaN `threshold_values`
             are not supplied.
-
     """
     if precision < 0:
         raise ValueError("`precision` must be nonnegative.")
@@ -132,7 +131,8 @@ def observed_cdf(
 
 
 def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_dim: str) -> xr.DataArray:
-    """
+    """Calculates integral values and collapses `threshold_dim`.
+
     Calculates integral(F(t)^2), where
         - If t in a threshold value in `threshold_dim` then F(t) is in `function_values`,
         - F is piecewise linear between each of the t values in `threshold_dim`.
@@ -144,11 +144,11 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
         - coordinates of `threshold_dim` are increasing.
 
     Args:
-        function_values: array of function values F(t).
-        threshold_dim: dimension along which to integrate.
+        function_values (xr.DataArray): array of function values F(t).
+        threshold_dim (xr.DataArray): dimension along which to integrate.
 
     Returns:
-        An xarray DataArray of integral values and `threshold_dim` collapsed.
+        xr.DataArray: Integral values and `threshold_dim` collapsed.
     """
 
     # notation: Since F is piecewise linear we have
@@ -183,22 +183,21 @@ def add_thresholds(
     fill_method: Literal["linear", "step", "forward", "backward", "none"],
     min_nonnan: int = 2,
 ) -> xr.DataArray:
-    """
-    Takes a CDF data array with dimension `threshold_dim` and adds values from
-    `new_thresholds` to the `threshold_dim` dimension.
+    """Takes a CDF data array with dimension `threshold_dim` and adds values from `new_thresholds`.
+
     The CDF is then filled to replace any NaN values.
     The array `cdf` requires at least 2 non-NaN values along `threshold_dim`.
 
     Args:
-        cdf: array of CDF values.
-        threshold_dim: name of the threshold dimension in `cdf`.
-        new_thresholds: new thresholds to add to `cdf`.
-        fill_method: one of "linear", "step", "forward" or "backward", as described in `fill_cdf`.
-            If no filling, set to "none".
-        min_nonnan: passed onto `fill_cdf` for performing filling.
+        cdf (xr.DataArray): array of CDF values.
+        threshold_dim (str): name of the threshold dimension in `cdf`.
+        new_thresholds (Iterable[float]): new thresholds to add to `cdf`.
+        fill_method (Literal["linear", "step", "forward", "backward", "none"]): one of "linear",
+            "step", "forward" or "backward", as described in `fill_cdf`. If no filling, set to "none".
+        min_nonnan (int): passed onto `fill_cdf` for performing filling.
 
     Returns:
-        an xarray DataArray with additional thresholds, and values at those thresholds
+        xr.DataArray: Additional thresholds, and values at those thresholds
         determined by the specified fill method.
     """
 
@@ -222,31 +221,28 @@ def fill_cdf(
     method: Literal["linear", "step", "forward", "backward"],
     min_nonnan: int,
 ) -> xr.DataArray:
-    """
-    Fills NaNs in a CDF of a real-valued random variable along `threshold_dim`
-    with appropriate values between 0 and 1.
+    """Fills NaNs in a CDF of a real-valued random variable along `threshold_dim` with appropriate values between 0 and 1.
 
     Args:
-        cdf: CDF values, where P(Y <= threshold) = cdf_value for each threshold in `threshold_dim`.
-        threshold_dim: the threshold dimension in the CDF, along which filling is performed.
-        method: one of
+        cdf (xr.DataArray): CDF values, where P(Y <= threshold) = cdf_value for each threshold in `threshold_dim`.
+        threshold_dim (str): the threshold dimension in the CDF, along which filling is performed.
+        method (Literal["linear", "step", "forward", "backward"]): one of
             - "linear": use linear interpolation, and if needed also extrapolate linearly. Clip to 0 and 1.
-                Needs at least two non-NaN values for interpolation, so returns NaNs where this condition fails.
+              Needs at least two non-NaN values for interpolation, so returns NaNs where this condition fails.
             - "step": use forward filling then set remaining leading NaNs to 0.
-                Produces a step function CDF (i.e. piecewise constant).
+              Produces a step function CDF (i.e. piecewise constant).
             - "forward": use forward filling then fill any remaining leading NaNs with backward filling.
             - "backward": use backward filling then fill any remaining trailing NaNs with forward filling.
-        min_nonnan: the minimum number of non-NaN entries required along `threshold_dim` for filling to
+        min_nonnan (int): the minimum number of non-NaN entries required along `threshold_dim` for filling to
             be performed. All CDF values are set to `np.nan` where this condition fails.
             `min_nonnan` must be at least 2 for the "linear" method, and at least 1 for the other methods.
 
     Returns:
-        An xarray DataArray with the same values as `cdf` but with NaNs filled.
+        xr.DataArray: Containing the same values as `cdf` but with NaNs filled.
 
     Raises:
         ValueError: If `threshold_dim` is not a dimension of `cdf`.
-        ValueError: If `min_nonnan` < 1 when `method="step"`
-            or if `min_nonnan` < 2 when `method="linear"`.
+        ValueError: If `min_nonnan` < 1 when `method="step"` or if `min_nonnan` < 2 when `method="linear"`.
         ValueError: If `method` is not "linear", "step", "forward" or "backward".
         ValueError: If any non-NaN value of `cdf` lies outside the unit interval [0,1].
 
@@ -290,8 +286,8 @@ def fill_cdf(
 
 
 def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> xr.DataArray:
-    """
-    A CDF of a real-valued random variable should be nondecreasing along threshold_dim.
+    """A CDF of a real-valued random variable should be nondecreasing along threshold_dim.
+
     This is sometimes violated due to rounding issues or bad forecast process.
     `decreasing_cdfs` checks CDF values decrease beyond specified tolerance; that is,
     whenever the sum of the incremental decreases exceeds tolerarance.
@@ -304,15 +300,14 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     either each CDF is always NaN or always non-NaN.
 
     Args:
-        cdf: data array of CDF values
-        threshold_dim: threshold dimension, such that P(Y < threshold) = cdf_value.
-        tolerance: nonnegative tolerance value.
+        cdf (xr.DataArray): data array of CDF values
+        threshold_dim (str): threshold dimension, such that P(Y < threshold) = cdf_value.
+        tolerance (float): nonnegative tolerance value.
 
     Returns:
-        An xarray DataArray with `threshold_dim` collapsed and values True if and only if
+        xr.DataArray: Containing `threshold_dim` collapsed and values True if and only if
         the CDF is decreasing outside tolerance. If the CDF consists only of NaNs then
         the value is False.
-
 
     Raises:
         ValueError: If `threshold_dim` is not a dimension of `cdf`.
@@ -334,13 +329,12 @@ def cdf_envelope(
     cdf: xr.DataArray,
     threshold_dim: str,
 ) -> xr.DataArray:
-    """
-    Forecast cumulative distribution functions (CDFs) for real-valued random variables
-    that are reconstructed from known points on the
-    distribution should be nondecreasing with respect to the threshold dimension.
-    However, sometimes this may fail due to rounding or poor forecast process.
-    This function returns the "envelope" of the original CDF, which consists of
-    two bounding CDFs, both of which are nondecreasing.
+    """Forecast cumulative distribution functions (CDFs) for real-valued random variables.
+
+    CDFs that are reconstructed from known points on the distribution should be nondecreasing
+    with respect to the threshold dimension. However, sometimes this may fail due to rounding
+    or poor forecast process. This function returns the "envelope" of the original CDF, which
+    consists of two bounding CDFs, both of which are nondecreasing.
 
     The following example shows values from an original CDF that has a decreasing subsequence
     (and so is not a true CDF). The resulting "upper" and "lower" CDFs minimally adjust
@@ -352,17 +346,17 @@ def cdf_envelope(
     This function does not perform checks that `0 <= cdf <= 1`.
 
     Args:
-        cdf: forecast CDF with thresholds in the thresholds_dim.
-        threshold_dim: dimension in fcst_cdf that contains the threshold ordinates.
+        cdf (xr.DataArray): forecast CDF with thresholds in the thresholds_dim.
+        threshold_dim (str): dimension in fcst_cdf that contains the threshold ordinates.
 
     Returns:
         An xarray DataArray consisting of three CDF arrays indexed along the `"cdf_type"` dimension
         with the following indices:
             - "original": same data as `cdf`.
             - "upper": minimally adjusted "original" CDF that is nondecreasing and
-                satisfies "upper" >= "original".
+              satisfies "upper" >= "original".
             - "lower": minimally adjusted "original" CDF that is nondecreasing and
-                satisfies "lower" <= "original".
+              satisfies "lower" <= "original".
         NaN values in `cdf` are maintained in "original", "upper" and "lower".
 
     Raises:

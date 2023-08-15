@@ -157,7 +157,8 @@ def crps_cdf(
     weights=None,
     include_components=False,
 ):
-    """
+    """Calculates CRPS CDF probabilistic metric.
+
     Calculates the continuous ranked probability score (CRPS), or the mean CRPS over
     specified dimensions, given forecasts in the form of predictive cumulative
     distribution functions (CDFs). Can also calculate threshold-weighted versions of the
@@ -174,31 +175,32 @@ def crps_cdf(
         - a predictive CDF `fcst` indexed at thresholds by variable x,
         - an observation in CDF form `obs_cdf` (i.e., obs_cdf(x) = 0 if x < obs and 1 if x >= obs),
         - a `threshold_weight` array indexed by variable x,
-    the threshold-weighted CRPS is given by
-        CRPS = integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2), over all thresholds x.
+
+    The threshold-weighted CRPS is given by:
+        `CRPS = integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x.
     The usual CRPS is the threshold-weighted CRPS with `threshold_weight(x) = 1` for all x.
     This can be decomposed into an over-forecast penalty
-        integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2), over all thresholds x where x >= obs
+        `integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x where x >= obs
     and an under-forecast penalty
-        integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2), over all thresholds x where x <= obs.
+        `integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x where x <= obs.
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
     calculate the CRPS.
 
     To calculate CRPS, integration is applied over the set of thresholds x taken from
-        - `fcst[threshold_dim].values`
-        - `obs.values`
-        - `threshold_weight[threshold_dim].values` if applicable
-        - `additional_thresholds` if applicable
-    with NaN values excluded. There are two methods of integration:
+        - `fcst[threshold_dim].values`,
+        - `obs.values`.
+        - `threshold_weight[threshold_dim].values` if applicable.
+        - `additional_thresholds` if applicable.
+    With NaN values excluded. There are two methods of integration:
         - "exact" gives the exact integral under that assumption that that `fcst` is
-            continuous and piecewise linear between its specified values, and that
-            `threshold_weight` (if supplied) is piecewise constant and right-continuous
-            between its specified values.
+          continuous and piecewise linear between its specified values, and that
+          `threshold_weight` (if supplied) is piecewise constant and right-continuous
+          between its specified values.
         - "trapz" simply uses a trapezoidal rule using the specified values, and so is
-            an approximation of the CRPS. To get an accurate approximation, the density
-            of threshold values can be increased by supplying `additional_thresholds`.
+          an approximation of the CRPS. To get an accurate approximation, the density
+          of threshold values can be increased by supplying `additional_thresholds`.
 
     Both methods of calculating CRPS may require adding additional values to the
     `threshold_dim` dimension in `fcst` and (if supplied) `threshold_weight`.
@@ -229,13 +231,13 @@ def crps_cdf(
             (by including additional thresholds) or are specified to be removed (by
             setting `propagate_nans=False`). Select one of:
                 - "linear": use linear interpolation, then replace any leading or
-                    trailing NaNs using linear extrapolation. Afterwards, all values are
-                    clipped to the closed interval [0, 1].
+                  trailing NaNs using linear extrapolation. Afterwards, all values are
+                  clipped to the closed interval [0, 1].
                 - "step": apply forward filling, then replace any leading NaNs with 0.
                 - "forward": first apply forward filling, then remove any leading NaNs by
-                    back filling.
+                  back filling.
                 - "backward": first apply back filling, then remove any trailing NaNs by
-                    forward filling.
+                  forward filling.
             In most cases, "linear" is likely the appropriate choice.
         threshold_weight_fill_method: how to fill values in `threshold_weight` when NaNs
             have been introduced (by including additional thresholds) or are specified
@@ -243,19 +245,19 @@ def crps_cdf(
             "step", "forward" or "backward". If the weight function is continuous,
             "linear" is probably the best choice. If it is an increasing step function,
             "forward" may be best.
-        integration_method: one of "exact" or "trapz".
-        preserve_dims: dimensions to preserve in the output. All other dimensions are collapsed
+        integration_method (str): one of "exact" or "trapz".
+        preserve_dims (Tuple[str]): dimensions to preserve in the output. All other dimensions are collapsed
             by taking the mean.
-        reduce_dims: dimensions to reduce in the output by taking the mean. All other dimensions are
+        reduce_dims (Tuple[str]): dimensions to reduce in the output by taking the mean. All other dimensions are
             preserved.
-        - weights: Not yet implemented. Allow weighted averaging (e.g. by area, by latitude, by population, custom)
-        include_components: if True, include the under and over forecast components of
+        weights: Not yet implemented. Allow weighted averaging (e.g. by area, by latitude, by population, custom)
+        include_components (bool): if True, include the under and over forecast components of
             the score in the returned dataset.
 
     Returns:
-        an xarray Dataset with
-            - "total": the total CRPS
-            - "underforecast_penalty": the under-forecast penalty contribution of the CRPS
+        xr.Dataset: The following are the produced Dataset varibles:
+            - "total" the total CRPS.
+            - "underforecast_penalty": the under-forecast penalty contribution of the CRPS.
             - "overforecast_penalty": the over-forecast penalty contribution of the CRPS.
 
     Raises:
@@ -279,7 +281,6 @@ def crps_cdf(
 
     See also:
         `scores.probability.crps_cdf_brier_decomposition`
-
 
     References:
         - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions.
@@ -360,10 +361,10 @@ def crps_cdf_exact(
     """
     Calculates exact value of CRPS assuming that:
         - the forecast CDF is continuous piecewise linear, with join points given by
-            values in `cdf_fcst`,
+          values in `cdf_fcst`,
         - the observation CDF is right continuous with values in {0,1} given by `cdf_obs`,
         - the threshold weight function is right continuous with values in {0,1} given
-            by `threshold_weight`.
+          by `threshold_weight`.
 
     If these assumptions do not hold, it might be best to use `crps_approximate`, with a
     sufficiently high resolution along `threshold_dim`.
@@ -371,10 +372,11 @@ def crps_cdf_exact(
     This function assumes that `cdf_fcst`, `cdf_obs`, `threshold_weight` have same shape.
     Also assumes that values along the `threshold_dim` dimension are increasing.
 
-    Returns an xarray Dataset with `threshold_dim` collapsed containing DataArrays with
-    CRPS and its decomposition, labelled "total", "underforecast_penalty" and
-    "overforecast_penalty". NaN is returned if there is a NaN in the corresponding
-    `cdf_fcst`, `cdf_obs` or `threshold_weight`.
+    Returns:
+        (xr.Dataset): Dataset with `threshold_dim` collapsed containing DataArrays with
+        CRPS and its decomposition, labelled "total", "underforecast_penalty" and
+        "overforecast_penalty". NaN is returned if there is a NaN in the corresponding
+        `cdf_fcst`, `cdf_obs` or `threshold_weight`.
     """
 
     # identify where input arrays have no NaN, collapsing `threshold_dim`
@@ -442,22 +444,23 @@ def crps_cdf_brier_decomposition(
     `scores.probability.functions.fill_cdf`.
 
     Args:
-        fcst: DataArray of CDF values with threshold dimension `threshold_dim`.
-        obs: DataArray of observations, not in CDF form.
-        threshold_dim: name of the threshold dimension in `fcst`.
-        additional_thresholds: additional thresholds at which to calculate the mean
-            Brier score.
-        fcst_fill_method: How to fill NaN values in `fcst` that arise from new
-            user-supplied thresholds or thresholds derived from observations.
+        fcst (xr.DataArray): DataArray of CDF values with threshold dimension `threshold_dim`.
+        obs (xr.DataArray): DataArray of observations, not in CDF form.
+        threshold_dim (str): name of the threshold dimension in `fcst`.
+        additional_thresholds (Optional[Iterable[float]]): additional thresholds
+            at which to calculate the mean Brier score.
+        fcst_fill_method (Literal["linear", "step", "forward", "backward"]): How to fill NaN
+            values in `fcst` that arise from new user-supplied thresholds or thresholds derived
+            from observations.
             - "linear": use linear interpolation, and if needed also extrapolate linearly.
-                Clip to 0 and 1. Needs at least two non-NaN values for interpolation,
-                so returns NaNs where this condition fails.
+              Clip to 0 and 1. Needs at least two non-NaN values for interpolation,
+              so returns NaNs where this condition fails.
             - "step": use forward filling then set remaining leading NaNs to 0.
-                Produces a step function CDF (i.e. piecewise constant).
+              Produces a step function CDF (i.e. piecewise constant).
             - "forward": use forward filling then fill any remaining leading NaNs with
-                backward filling.
+              backward filling.
             - "backward": use backward filling then fill any remaining trailing NaNs with
-                forward filling.
+              forward filling.
         dims: dimensions to preserve in the output. The dimension `threshold_dim` is always
             preserved, even if not specified here.
 
@@ -701,27 +704,27 @@ def crps_step_threshold_weight(
     steppoint_precision: float = 0,
     weight_upper: bool = True,
 ) -> xr.DataArray:
-    """
+    """Generates an array of weights based on DataArray step points.
+
     Creates an array of threshold weights, which can be used to calculate
     threshold-weighted CRPS, based on a step function. Applies a weight of 1 when
     step_point >= threshold, and a weight of 0 otherwise. Zeros and ones in the output
     weight function can be reversed by setting `weight_upper=False`.
 
     Args:
-        step_points: points at which the weight function changes value from 0 to 1.
-        threshold_dim: name of the threshold dimension in the returned array weight function.
-        threshold_values: thresholds at which to calculate weights.
+        step_points (xr.DataArray): points at which the weight function changes value from 0 to 1.
+        threshold_dim (str): name of the threshold dimension in the returned array weight function.
+        threshold_values (str): thresholds at which to calculate weights.
         steppoints_in_thresholds (bool): include `step_points` among the `threshold_dim` values.
-        steppoint_precision: precision at which to round step_points prior to calculating the
+        steppoint_precision (float): precision at which to round step_points prior to calculating the
             weight function. Select 0 for no rounding.
-        weight_upper: If true, returns a weight of 1 if step_point >= threshold, and a
+        weight_upper (bool): If true, returns a weight of 1 if step_point >= threshold, and a
             weight of 0 otherwise. If false, returns a weight of 0 if step_point >= threshold,
             and a weight of 1 otherwise.
 
     Returns:
-        an xarray DataArray of zeros and ones with the dimensions in `step_points`
+        (xr.DataArray): Zeros and ones with the dimensions in `step_points`
         and an additional `threshold_dim` dimension.
-
     """
 
     weight = observed_cdf(

@@ -35,9 +35,22 @@ class DimensionError(Exception):
     Dataset objects that do not have compatible dimensions.
     """
 
+
 def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, preserve_dims=None):
     """
     Establish which dimensions to reduce when calculating errors but before taking means
+
+    Args:
+        fcst_dims (Iterable[str]): Forecast dimensions inputs
+        obs_dims (Iterable[str]): Observation dimensions inputs.
+        weights_dims (Iterable[str]): Weight dimension inputs.
+        reduce_dims (Iterable[str]): Dimensions to reduce.
+        preserve_dims (Iterable[str]): Dimensions to preserve.
+
+    Returns:
+        Tuple[str]: Dimensions based on optional args.
+    Raises:
+        ValueError: When `preserve_dims and `reduce_dims` are both specified.
     """
 
     all_dims = set(fcst_dims).union(set(obs_dims))
@@ -89,15 +102,14 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
 
 
 def dims_complement(data, dims=None):
-    """
-    Returns the complement of data.dims and dims
+    """Returns the complement of data.dims and dims
 
     Args:
-        data: an xarray DataArray or Dataset
-        dims: an Iterable of strings corresponding to dimension names
+        data (Union[xr.Dataset, xr.DataArray]): Input xarray object
+        dims (Iterable[str]): an Iterable of strings corresponding to dimension names
 
     Returns:
-        A sorted list of dimension names, the complement of data.dims and dims
+        List[str]: A sorted list of dimension names, the complement of data.dims and dims
     """
     if dims is None:
         dims = []
@@ -114,37 +126,33 @@ def check_dims(xr_data, expected_dims, mode=None):
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
     Args:
-        xr_data (xarray.DataArray or xarray.Dataset): if a Dataset is supplied,
+        xr_data (Union[xarray.DataArray, xr.Dataset]): if a Dataset is supplied,
             all of its data variables (DataArray objects) are checked.
-        expected_dims (Iterable): an Iterable of dimension names.
+        expected_dims (Iterable[str]): an Iterable of dimension names.
         mode (Optional[str]): one of 'equal' (default), 'subset' or 'superset'.
-
-            - If 'equal', checks that the data object has the same dimensions
-              as `expected_dims`.
-            - If 'subset', checks that the dimensions of the data object is a
-              subset of `expected_dims`.
-            - If 'superset', checks that the dimensions of the data object is a
-              superset of `expected_dims`, (i.e. contains `expected_dims`).
-            - If 'proper subset', checks that the dimensions of the data object is a
-              subset of `expected_dims`, (i.e. is a subset, but not equal to
-              `expected_dims`).
-            - If 'proper superset', checks that the dimensions of the data object
-              is a proper superset of `expected_dims`, (i.e. contains but is not
-              equal to `expected_dims`).
-            - If 'disjoint', checks that the dimensions of the data object shares no
-              elements with `expected_dims`.
-
-    Returns:
-        None
+            If 'equal', checks that the data object has the same dimensions
+            as `expected_dims`.
+            If 'subset', checks that the dimensions of the data object is a
+            subset of `expected_dims`.
+            If 'superset', checks that the dimensions of the data object is a
+            superset of `expected_dims`, (i.e. contains `expected_dims`).
+            If 'proper subset', checks that the dimensions of the data object is a
+            subset of `expected_dims`, (i.e. is a subset, but not equal to
+            `expected_dims`).
+            If 'proper superset', checks that the dimensions of the data object
+            is a proper superset of `expected_dims`, (i.e. contains but is not
+            equal to `expected_dims`).
+            If 'disjoint', checks that the dimensions of the data object shares no
+            elements with `expected_dims`.
 
     Raises:
         scores.utils.DimensionError: the dimensions of `xr_data` does
             not pass the check as specified by `mode`.
-        TypeError: `xr_data` is not an xarray data object
-        ValueError: `expected_dims` contains duplicate values
-        ValueError: `expected_dims` cannot be coerced into a set
-        ValueError: `mode` is not one of 'equal', 'subset',
-            'superset', 'proper subset', 'proper superset', or 'disjoint'
+        TypeError: `xr_data` is not an xarray data object.
+        ValueError: `expected_dims` contains duplicate values.
+        ValueError: `expected_dims` cannot be coerced into a set.
+        ValueError: `mode` is not one of 'equal', 'subset', 'superset',
+            'proper subset', 'proper superset', or 'disjoint'
 
     """
 
