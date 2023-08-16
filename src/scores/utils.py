@@ -44,8 +44,8 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
         fcst_dims (Iterable[str]): Forecast dimensions inputs
         obs_dims (Iterable[str]): Observation dimensions inputs.
         weights_dims (Iterable[str]): Weight dimension inputs.
-        reduce_dims (Iterable[str]): Dimensions to reduce.
-        preserve_dims (Iterable[str]): Dimensions to preserve.
+        reduce_dims (Union[str, Iterable[str]]): Dimensions to reduce.
+        preserve_dims (Union[str, Iterable[str]]): Dimensions to preserve.
 
     Returns:
         Tuple[str]: Dimensions based on optional args.

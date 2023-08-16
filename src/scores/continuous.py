@@ -14,14 +14,17 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     Specifying both will result in an exception.
 
     Args:
-        fcst: Forecast or predicted variables in xarray or pandas
-        obs: Observed variables in xarray or pandas
-        reduce_dims: Optionally specify which dimensions to reduce when
-            calculating MSE. All other dimensions will be preserved.
-        preserve_dims: Optionally specify which dimensions to preserve
-            when calculating MSE. All other dimensions will be reduced.
-            As a special case, 'all' will allow all dimensions to be
-            preserved. In this case, the result will be in the same
+        fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]):
+            Forecast or predicted variables in xarray or pandas.
+        obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]):
+            Observed variables in xarray or pandas.
+        reduce_dims (Union[str, Iterable[str]): Optionally specify which
+            dimensions to reduce when calculating MSE. All other dimensions
+            will be preserved.
+        preserve_dims (Union[str, Iterable[str]): Optionally specify which
+            dimensions to preserve when calculating MSE. All other dimensions
+            will be reduced. As a special case, 'all' will allow all dimensions
+            to be preserved. In this case, the result will be in the same
             shape/dimensionality as the forecast, and the errors will be
             the squared error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
@@ -67,16 +70,16 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     Specifying both will result in an exception.
 
     Args:
-        fcst Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: Forecast
+        fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Forecast
             or predicted variables in xarray or pandas.
         obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Observed
             variables in xarray or pandas.
-        reduce_dims (Iterable[str]): Optionally specify which dimensions to reduce when
-            calculating MAE. All other dimensions will be preserved.
-        preserve_dims (Iterable[str]): Optionally specify which dimensions to preserve
-            when calculating MAE. All other dimensions will be reduced.
-            As a special case, 'all' will allow all dimensions to be
-            preserved. In this case, the result will be in the same
+        reduce_dims (Union[str, Iterable[str]]): Optionally specify which dimensions
+            to reduce when calculating MAE. All other dimensions will be preserved.
+        preserve_dims (Union[str, Iterable[str]]): Optionally specify which
+            dimensions to preserve when calculating MAE. All other dimensions
+            will be reduced. As a special case, 'all' will allow all dimensions
+            to be preserved. In this case, the result will be in the same
             shape/dimensionality as the forecast, and the errors will be
             the absolute error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
