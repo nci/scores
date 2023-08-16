@@ -254,7 +254,7 @@ def crps_cdf(
             the score in the returned dataset.
 
     Returns:
-        xr.Dataset: The following are the produced Dataset varibles:
+        xr.Dataset: The following are the produced Dataset variables:
             - "total" the total CRPS.
             - "underforecast_penalty": the under-forecast penalty contribution of the CRPS.
             - "overforecast_penalty": the over-forecast penalty contribution of the CRPS.

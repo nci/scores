@@ -6,7 +6,7 @@ import scores.utils
 
 
 def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
-    """Calculates the mean squared error from xarray objects
+    """Calculates the mean squared error from forecast and observed data.
 
     Dimensional reduction is not supported for pandas and the user should
     convert their data to xarray to formulate the call to the metric. At
@@ -57,7 +57,7 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
 
 
 def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
-    """Calculates the mean absolute error from xarray or pandas objects.
+    """Calculates the mean absolute error from forecast and observed data.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
 
@@ -71,9 +71,9 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
             or predicted variables in xarray or pandas.
         obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Observed
             variables in xarray or pandas.
-        reduce_dims (Tuple[str]): Optionally specify which dimensions to reduce when
+        reduce_dims (Iterable[str]): Optionally specify which dimensions to reduce when
             calculating MAE. All other dimensions will be preserved.
-        preserve_dims (Tuple[str]): Optionally specify which dimensions to preserve
+        preserve_dims (Iterable[str]): Optionally specify which dimensions to preserve
             when calculating MAE. All other dimensions will be reduced.
             As a special case, 'all' will allow all dimensions to be
             preserved. In this case, the result will be in the same
@@ -85,7 +85,7 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
             area, by latitude, by population, custom).
 
     Returns:
-        Union[xr.Dataset, xr.DataArray]: By default an xarray DataArray containing
+        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: By default an xarray DataArray containing
         a single floating point number representing the mean absolute error for the
         supplied data. All dimensions will be reduced.
 
