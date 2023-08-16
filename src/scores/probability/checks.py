@@ -8,13 +8,16 @@ import xarray as xr
 
 
 def coords_increasing(da: xr.DataArray, dim: str):
-    """
+    """Checks if coordinates in a given DataArray are increasing.
+
+    Note: No in-built raise if `dim` is not a dimension of `da`.
+
     Args:
         da (xr.DataArray): Input data
         dim (str): Dimension to check if increasing
     Returns:
-        (bool): True of False based on if the coordinates along the specified
-        dimension are increasing. No in-built raise if `dim` is not a dimension of `da`.
+        (bool):  Returns True if coordinates along `dim` dimension of
+        `da` are increasing, False otherwise.
     """
     result = (da[dim].diff(dim) > 0).all()
     return result
