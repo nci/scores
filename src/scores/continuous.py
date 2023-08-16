@@ -41,11 +41,8 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     """
 
     error = fcst - obs
-
     squared = error * error
-
-    if weights is not None:  # pragma: no-cover
-        raise NotImplementedError("Weights handling not implemented, placeholder for API spec")  # pragma: no-cover
+    squared = scores.functions.apply_weights(squared, weights)
 
     weights_dims = []
     if preserve_dims or reduce_dims:
@@ -142,9 +139,7 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
 
     error = fcst - obs
     ae = abs(error)
-
-    if weights is not None:  # pragma: no-cover
-        raise NotImplementedError("Weights handling not implemented, placeholder for API spec")  # pragma: no-cover
+    ae = scores.functions.apply_weights(ae, weights)
 
     weights_dims = []
     if preserve_dims is not None or reduce_dims is not None:
