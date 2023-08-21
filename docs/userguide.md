@@ -123,6 +123,7 @@ Each score is documented in the API documentation [ api.md ](api.md). A simple l
 
  - Mean Absolute Error
  - Mean Squared Error
+ - Root Mean Squared Error
  - Continuous Ranked Probability Score
 
 The following scores are expected to be added shortly

@@ -124,14 +124,6 @@ def rmse_fcst_nan_pandas():
 def rmse_obs_pandas():
     return pd.Series([1, 1, 1, 2, 1, 2, 1, 1, -1, 3, 1])
 
-def test_rmsd_xarray_1d(rmse_fcst_xarray, rmse_obs_xarray):
-    """
-    Test basic existence of rmsd
-    """
-    result = scores.continuous.rmsd(rmse_fcst_xarray, rmse_obs_xarray)
-
-    expected = xr.DataArray(1.3484)
-    assert result.round(PRECISION) == expected.round(PRECISION)
 
 @pytest.mark.parametrize(
     "forecast, observations, expected, request_kwargs", 

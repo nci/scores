@@ -76,9 +76,9 @@ def rmse(fcst, obs, reduce_dims = None, preserve_dims = None, weights=None):
               or predicted variables in xarray or pandas.
           obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Observed
               variables in xarray or pandas.
-          reduce_dims (Tuple[str]): Optionally specify which dimensions to reduce when
+          reduce_dims (Union[str, Iterable[str]): Optionally specify which dimensions to reduce when
               calculating RMSE. All other dimensions will be preserved.
-          preserve_dims (Tuple[str]): Optionally specify which dimensions to preserve
+          preserve_dims (Union[str, Iterable[str]): Optionally specify which dimensions to preserve
               when calculating RMSE. All other dimensions will be reduced.
               As a special case, 'all' will allow all dimensions to be
               preserved. In this case, the result will be in the same
@@ -102,10 +102,6 @@ def rmse(fcst, obs, reduce_dims = None, preserve_dims = None, weights=None):
     _rmse = pow(_mse, (1 / 2))
 
     return _rmse
-
-
-# Add Root Mean Squared Deviation as symbolic link to rmse
-rmsd = rmse
 
 def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     """Calculates the mean absolute error from forecast and observed data.
