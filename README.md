@@ -28,10 +28,11 @@ Here is an example of the use of scores:
 ```
 > import scores
 > forecast = scores.sample_data.simple_forecast()
-> observed = scores.sample_data.simple_obs()
+> observed = scores.sample_data.simple_observations()
 > mean_absolute_error = scores.continuous.mae(forecast, observed)
 > print(mean_absolute_error)
-> 5.0
+<xarray.DataArray ()>
+array(2.)
 ```
 
 ## Further Information on Scores and Metrics Included in the Package.
