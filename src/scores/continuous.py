@@ -59,6 +59,54 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     return _mse
 
 
+def rmse(fcst, obs, reduce_dims = None, preserve_dims = None, weights=None):    
+    """Calculate the Root Mean Squared Error from xarray or pandas objects.
+
+      A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+
+      
+      Dimensional reduction is not supported for pandas and the user should
+      convert their data to xarray to formulate the call to the metric.
+      At most one of `reduce_dims` and `preserve_dims` may be specified.
+      Specifying both will result in an exception.
+
+
+      Args:
+          fcst Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: Forecast
+              or predicted variables in xarray or pandas.
+          obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Observed
+              variables in xarray or pandas.
+          reduce_dims (Tuple[str]): Optionally specify which dimensions to reduce when
+              calculating RMSE. All other dimensions will be preserved.
+          preserve_dims (Tuple[str]): Optionally specify which dimensions to preserve
+              when calculating RMSE. All other dimensions will be reduced.
+              As a special case, 'all' will allow all dimensions to be
+              preserved. In this case, the result will be in the same
+              shape/dimensionality as the forecast, and the errors will be
+              the absolute error at each point (i.e. single-value comparison
+              against observed), and the forecast and observed dimensions
+              must match precisely.
+        weights: Not yet implemented. Allow weighted averaging (e.g. by
+            area, by latitude, by population, custom)
+            
+      Returns:
+          Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]:  An object containing
+              a single floating point number representing the root mean squared
+              error for the supplied data. All dimensions will be reduced.
+              Otherwise: Returns an object representing the root mean squared error,
+              reduced along the relevant dimensions and weighted appropriately.
+
+    """
+    _mse = mse(fcst=fcst, obs=obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
+
+    _rmse = pow(_mse, (1 / 2))
+
+    return _rmse
+
+
+# Add Root Mean Squared Deviation as symbolic link to rmse
+rmsd = rmse
+
 def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     """Calculates the mean absolute error from forecast and observed data.
 
