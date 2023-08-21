@@ -129,5 +129,4 @@ Each score is documented in the API documentation [ api.md ](api.md). A simple l
 The following scores are expected to be added shortly
  - Flip Flop Index
  - FIRM
- - Root Mean Square Error
 
