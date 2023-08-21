@@ -92,7 +92,9 @@ def rmse(fcst: OBS_TYPE, obs: OBS_TYPE, reduce_dims: Tuple[str] = None, preserve
               the absolute error at each point (i.e. single-value comparison
               against observed), and the forecast and observed dimensions
               must match precisely.
-
+        weights: Not yet implemented. Allow weighted averaging (e.g. by
+            area, by latitude, by population, custom)
+            
       Returns:
           Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]:  An object containing
               a single floating point number representing the root mean squared
