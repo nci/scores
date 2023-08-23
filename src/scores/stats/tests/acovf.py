@@ -8,6 +8,15 @@ Package: https://www.statsmodels.org/devel/
 
 Code reference: https://github.com/statsmodels/statsmodels/blob/main/statsmodels/tsa/stattools.py
 
+Copyright (C) 2006, Jonathan E. Taylor
+All rights reserved.
+
+Copyright (c) 2006-2008 Scipy Developers.
+All rights reserved.
+
+Copyright (c) 2009-2018 statsmodels Developers.
+All rights reserved.
+
 Notes:
     All type checking and other features have been removed, as they aren't needed for the 
     `diebold_mariano` function.
