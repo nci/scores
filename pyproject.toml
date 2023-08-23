@@ -24,7 +24,6 @@ dependencies = [
     "pandas",
     "scipy",
     "bottleneck",
-    "statsmodels"
 ]
 
 [project.optional-dependencies]
