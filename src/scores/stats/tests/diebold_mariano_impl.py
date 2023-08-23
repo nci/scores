@@ -1,5 +1,5 @@
 """
-Functions for calculating a modified Deibold-Mariano test statistic
+Functions for calculating a modified Diebold-Mariano test statistic
 """
 from typing import Literal
 
@@ -22,7 +22,7 @@ def diebold_mariano(
 ) -> xr.Dataset:
     """
     Given an array of (multiple) timeseries, with each timeseries consisting of score
-    differences for h-step ahead forecasts, calculates a modified Deibold-Mariano test
+    differences for h-step ahead forecasts, calculates a modified Diebold-Mariano test
     statistic for each timeseries. Several other statistics are also returned such as
     the confidence that the population mean of score differences is greater than zero
     and confidence intervals for that mean.
@@ -70,7 +70,7 @@ def diebold_mariano(
     Returns:
         Dataset, indexed by `ts_dim`, with six variables:
         - "mean": the mean value for each timeseries, ignoring NaNs
-        - "dm_test_stat": the modified Deibold-Mariano test statistic for each
+        - "dm_test_stat": the modified Diebold-Mariano test statistic for each
           timeseries
         - "timeseries_len": the length of each timeseries, with NaNs removed.
         - "confidence_gt_0": the confidence that the mean value of the population is
@@ -199,7 +199,7 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] =
     Harvey, Leybourne and Newbold (1997), or "HG" method of Hering and Genton (2011).
 
     Both methods use a different technique for estimating the spectral density of
-    `diffs` at frequency 0, compared with Deibold and Mariano (1995). The HLN method
+    `diffs` at frequency 0, compared with Diebold and Mariano (1995). The HLN method
     uses an improved and less biased estimate (see V_hat (see Equation (5) in Harvey)).
     However, this estimate can sometimes be nonpositive, in which case NaN is returned.
 
@@ -222,7 +222,7 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] =
         method: the method for computing the test statistic, either "HG" or "HLN".
 
     Returns:
-        Modified Deibold-Mariano test statistic for sequence of score differences, with
+        Modified Diebold-Mariano test statistic for sequence of score differences, with
         NaNs removed.
 
     Raises:
@@ -291,7 +291,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
             and less than the length of the timeseries with NaNs removed.
 
     Returns:
-        Deibold-Mariano test statistic using the HG method.
+        Diebold-Mariano test statistic using the HG method.
     """
     n = len(diffs)
 
@@ -313,7 +313,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
 def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
     """
     Given a timeseries of score differences for h-step ahead forecasts, as a 1D numpy
-    array without NaNs, returns the modified Deibold-Mariano test statistic of
+    array without NaNs, returns the modified Diebold-Mariano test statistic of
     Harvey et al (1997).
 
     If the value V_hat (see Equation (5) in Harvey) is nonpositive then NaN is returned.
@@ -324,7 +324,7 @@ def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
             and less than the length of the timeseries with NaNs removed.
 
     Returns:
-        Deibold-Mariano test statistic using the HLN method.
+        Diebold-Mariano test statistic using the HLN method.
     """
     n = len(diffs)
     diffs_bar = np.mean(diffs)
