@@ -206,3 +206,14 @@ def check_dims(xr_data, expected_dims, mode=None):
                     f"Dimensions {list(xr_data[data_var].dims)} of data variable "
                     f"'{data_var}' are not {mode} to the dimensions {sorted(dims_set)}"
                 )
+
+
+def create_latitude_weights(latitudes):
+    '''
+    A common way of weighting errors is to make them proportional to the amount of area
+    which is contained in a particular region. This is approximated by the cosine
+    of the latitude on an LLXY grid. Nuances not accounted for include the variation in
+    latitude across the region, or the irregularity of the surface of the earth.
+    '''
+    weights = np.cos(np.deg2rad(latitudes))
+    return weights
