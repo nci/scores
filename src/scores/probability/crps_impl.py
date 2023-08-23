@@ -50,7 +50,7 @@ def check_crps_cdf_inputs(
         raise ValueError("Dimensions of `threshold_weight` must be a subset of dimensions of `fcst`")
 
     if dims is not None and not set(dims).issubset(fcst.dims):
-        raise ValueError("`dims` must be a subset of `fcst` dimensions")
+        raise ValueError("`dims` must be a subset of `fcst` dimensions")  # pragma: no cover
 
     if fcst_fill_method not in ["linear", "step", "forward", "backward"]:
         raise ValueError("`fcst_fill_method` must be 'linear', 'step', 'forward' or 'backward'")
@@ -289,9 +289,6 @@ def crps_cdf(
             Journal of Business & Economic Statistics, 29(3), 411–422. http://www.jstor.org/stable/23243806
     """
 
-    if weights is not None:
-        raise NotImplementedError("Weights handling is coming soon")
-
     dims = scores.utils.gather_dimensions(
         fcst.dims,
         obs.dims,
@@ -344,8 +341,10 @@ def crps_cdf(
             include_components=include_components,
         )
 
+    weighted = scores.functions.apply_weights(result, weights)        
+
     dims_to_collapse = scores.utils.dims_complement(result, dims=dims)
-    result = result.mean(dim=dims_to_collapse)
+    result = weighted.mean(dim=dims_to_collapse)
 
     return result
 
@@ -540,7 +539,7 @@ def check_crps_cdf_brier_inputs(fcst, obs, threshold_dim, fcst_fill_method, dims
         raise ValueError("Dimensions of `obs` must be a subset of dimensions of `fcst`")
 
     if dims is not None and not set(dims).issubset(fcst.dims):
-        raise ValueError("`dims` must be a subset of `fcst` dimensions")
+        raise ValueError("`dims` must be a subset of `fcst` dimensions")  # pragma: no cover
 
     if fcst_fill_method not in ["linear", "step", "forward", "backward"]:
         raise ValueError("`fcst_fill_method` must be 'linear', 'step', 'forward' or 'backward'")

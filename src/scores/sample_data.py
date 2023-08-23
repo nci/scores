@@ -34,9 +34,9 @@ def continuous_observations(large_size: bool = False) -> xr.DataArray:
     periods = 10
 
     if large_size:  # pragma: no cover
-        num_lats = 364  # pragma: no cover
-        num_lons = 720  # pragma: no cover
-        periods = 240  # pragma: no cover
+        num_lats = 364  # pragma: no cover - used in notebooks and tested manually
+        num_lons = 720  # pragma: no cover - used in notebooks and tested manually
+        periods = 240  # pragma: no cover - used in notebooks and tested manually
 
     lat = np.linspace(-90, 90, num_lats)
     lon = np.linspace(0, 360, num_lons)
