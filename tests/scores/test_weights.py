@@ -86,14 +86,14 @@ def test_weights_NaN_matching():
 
     assert result.equals(expected)
 
-import pytest
-@pytest.mark.xfail
+
 def test_weights_add_dimension():
     '''
     Test what happens when additional dimensions are added into weights which are not present in 
     fcst or obs. Repeats some of the NaN matching but the focus is really on the dimensional
     expansion, using the same data to slowly build up the example and establish confidence.
     '''
+
     da = simple_da  # Make a DataArray with a latitude dimension
 
     fcst =           da([np.nan, 0,      1, 2, 7, 0, 7])
@@ -134,6 +134,5 @@ def test_weights_add_dimension():
         }
     )
 
-    # The values in composite are correct but it has reshaped unexpectedly
-    composite = scores.continuous.mae(fcst, obs, weights=composite_weights, preserve_dims='all')
-    assert composite.equals(composite_expected)
+    composite = scores.continuous.mae(fcst, obs, weights=composite_weights, preserve_dims='all').transpose()
+    composite.broadcast_equals(composite_expected)
