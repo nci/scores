@@ -20,12 +20,23 @@ OBS_2D = xr.DataArray(obs_temperatures_2d[0], dims=["latitude", "longitude"], co
 IDENTITY = np.ones((4, 4))
 ZEROS = np.zeros((4, 4))
 
-# fcst_synth_2d = [np.Nan, 0, 1, 2, 3, 4] * 4
-# obs_synth_2d = [np.Nan, np.Nan, 0, 1, 2, 3] * 4
-# popn_density_synth_1980 = [0, 2, 4, 8, 10, 6] * 4
-# popn_density_synth_2022 = [0, 4, 16, 64, 100, 36] * 4
 
-# FCST_SYNTHETIC_2D = xr.DataArray(fcst_synth_2d, dims=["latitude", "longitude"], coords=[lats, lons])
+def simple_da(data):
+    '''
+    Helper function for making a DataArray with a latitude coordinate variable roughly 
+    over the Australian region
+    '''
+    lats = np.arange(-5, -45, (-45 / len(data)))
+    arr = xr.DataArray.from_dict(
+        {
+        'coords': {
+            'lat': {'data':lats, 'dims':'lat'},
+        },
+        'data': data,
+        }
+    )
+    return arr
+
 
 # These scores will be tested for valid processing of weights
 all_scores = [scores.continuous.mse, scores.continuous.mae]
@@ -63,17 +74,66 @@ def test_weights_latitude():
         assert unweighted != weighted
 
 
-# def test_weights_multiple_dimensions():    
+def test_weights_NaN_matching():
+    da = xr.DataArray
 
-#     errors = ['identity', 'zeros']
-#     identity = xr.DataArray(IDENTITY, dims=["latitude", "longitude"], coords=[lats, lons])
-#     zeros = xr.DataArray(ZEROS, dims=["latitude", "longitude"], coords=[lats, lons])
-#     complex_weights = xr.concat([identity, zeros], pd.Index(['identity', 'zeros', 'latitude_weights', 'station_weighted', 'population', 'masked_population'], name='errors'))
+    fcst =     da([np.nan, 0,      1,   2, 7, 0, 7])
+    obs =      da([np.nan, np.nan, 0,   1, 7, 0, 7])
+    weights =  da([1,      1,      1,   1, 1, 1, 0])
+    expected = da([np.nan, np.nan, 1, 1, 0, 0, 0])
 
-#     popn_density_1950_weights = xr.DataArray(IDENTITY, dims=["latitude", "longitude"], coords=[lats, lons])
-#     popn_density_2022_weights = xr.DataArray(IDENTITY, dims=["latitude", "longitude"], coords=[lats, lons])
+    result = scores.continuous.mae(fcst, obs, weights=weights, preserve_dims='all')
 
-#     for score in all_scores:
-#         unweighted = score(FCST_2D, OBS_2D)
-#         weighted = score(FCST_2D, OBS_2D, weights=[popn_density_1950_weights, popn_density_2022_weights])
-#         assert unweighted == weighted
+    assert result.equals(expected)
+
+import pytest
+@pytest.mark.xfail
+def test_weights_add_dimension():
+    '''
+    Test what happens when additional dimensions are added into weights which are not present in 
+    fcst or obs. Repeats some of the NaN matching but the focus is really on the dimensional
+    expansion, using the same data to slowly build up the example and establish confidence.
+    '''
+    da = simple_da  # Make a DataArray with a latitude dimension
+
+    fcst =           da([np.nan, 0,      1, 2, 7, 0, 7])
+    obs =            da([np.nan, np.nan, 0, 1, 7, 0, 7])
+    simple_weights =    [1,      1,      1, 1, 1, 1, 0]
+    double_weights =    [2,      2,      2, 2, 2, 2, 0]
+    simple_expect =     [np.nan, np.nan, 1, 1, 0, 0, 0]
+    double_expect =     [np.nan, np.nan, 2, 2, 0, 0, 0]    
+
+    simple = scores.continuous.mae(fcst, obs, weights=da(simple_weights), preserve_dims='all')
+    doubled = scores.continuous.mae(fcst, obs, weights=da(double_weights), preserve_dims='all')
+
+    assert simple.equals(da(simple_expect))
+    assert doubled.equals(da(double_expect))
+
+    composite_weights_data = [simple_weights, double_weights]
+    composite_expected_data = [simple_expect, double_expect]    
+
+    composite_weights = xr.DataArray.from_dict(
+        {
+        'coords': {
+            'method': {'data': ['simpleweight', 'doubleweight'], 'dims': 'method'},
+            'lat': {'data':list(fcst.lat), 'dims':'lat'},
+
+        },
+        'data': composite_weights_data
+        }
+    )    
+
+    composite_expected = xr.DataArray.from_dict(
+        {
+        'coords': {
+            'method': {'data': ['simpleweight', 'doubleweight'], 'dims': 'method'},
+            'lat': {'data':list(fcst.lat), 'dims':'lat'},
+
+        },
+        'data': composite_expected_data
+        }
+    )
+
+    # The values in composite are correct but it has reshaped unexpectedly
+    composite = scores.continuous.mae(fcst, obs, weights=composite_weights, preserve_dims='all')
+    assert composite.equals(composite_expected)
