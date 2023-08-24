@@ -9,7 +9,8 @@ import xarray as xr
 from scipy.optimize import least_squares
 
 from scores.utils import dims_complement
-from scores.stats.tests import acovf
+
+from scores.stats.tests.acovf import acovf
 
 
 def diebold_mariano(
@@ -297,7 +298,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
 
     # use an exponential model for autocovariances of `diffs`
     max_lag = int(max(np.floor((n - 1) / 2), h))
-    sample_autocvs = acovf.acovf(diffs)[0:max_lag]
+    sample_autocvs = acovf(diffs)[0:max_lag]
     sample_lags = np.arange(max_lag)
     model_params = least_squares(_hg_func, [1, 1], args=(sample_lags, sample_autocvs), bounds=(0, np.inf)).x
 
