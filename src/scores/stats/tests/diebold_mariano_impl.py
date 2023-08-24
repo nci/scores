@@ -10,7 +10,7 @@ from scipy.optimize import least_squares
 
 from scores.utils import dims_complement
 
-from scores.stats.tests.acovf import acovf
+
 
 
 def diebold_mariano(
@@ -294,6 +294,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     Returns:
         Diebold-Mariano test statistic using the HG method.
     """
+    from scores.stats.tests.acovf import acovf
     n = len(diffs)
 
     # use an exponential model for autocovariances of `diffs`
