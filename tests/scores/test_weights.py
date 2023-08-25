@@ -7,7 +7,6 @@ import scores.continuous
 ZERO = np.array([[1 for i in range(10)] for j in range(10)])
 
 
-
 # Standard forecast and observed test data which is static and can be used
 # across tests
 np.random.seed(0)
@@ -22,17 +21,17 @@ ZEROS = np.zeros((4, 4))
 
 
 def simple_da(data):
-    '''
-    Helper function for making a DataArray with a latitude coordinate variable roughly 
+    """
+    Helper function for making a DataArray with a latitude coordinate variable roughly
     over the Australian region
-    '''
+    """
     lats = np.arange(-5, -45, (-45 / len(data)))
     arr = xr.DataArray.from_dict(
         {
-        'coords': {
-            'lat': {'data':lats, 'dims':'lat'},
-        },
-        'data': data,
+            "coords": {
+                "lat": {"data": lats, "dims": "lat"},
+            },
+            "data": data,
         }
     )
     return arr
@@ -41,18 +40,16 @@ def simple_da(data):
 # These scores will be tested for valid processing of weights
 all_scores = [scores.continuous.mse, scores.continuous.mae]
 
-def test_weights_identity():
 
+def test_weights_identity():
     for score in all_scores:
-    
         unweighted = score(FCST_2D, OBS_2D)
         weighted = score(FCST_2D, OBS_2D, weights=IDENTITY)
         assert unweighted == weighted
 
-def test_weights_zeros():
 
+def test_weights_zeros():
     for score in all_scores:
-    
         unweighted = score(FCST_2D, OBS_2D)
         weighted = score(FCST_2D, OBS_2D, weights=ZEROS)
 
@@ -61,9 +58,9 @@ def test_weights_zeros():
 
 
 def test_weights_latitude():
-    '''
+    """
     Tests the use of latitude weightings, not the correctness
-    '''
+    """
     # TODO: Write a correctness test for latitude weighting conversions to be specified by hand
 
     lat_weightings_values = scores.functions.create_latitude_weights(OBS_2D.latitude)
@@ -77,62 +74,60 @@ def test_weights_latitude():
 def test_weights_NaN_matching():
     da = xr.DataArray
 
-    fcst =     da([np.nan, 0,      1,   2, 7, 0, 7])
-    obs =      da([np.nan, np.nan, 0,   1, 7, 0, 7])
-    weights =  da([1,      1,      1,   1, 1, 1, 0])
+    fcst = da([np.nan, 0, 1, 2, 7, 0, 7])
+    obs = da([np.nan, np.nan, 0, 1, 7, 0, 7])
+    weights = da([1, 1, 1, 1, 1, 1, 0])
     expected = da([np.nan, np.nan, 1, 1, 0, 0, 0])
 
-    result = scores.continuous.mae(fcst, obs, weights=weights, preserve_dims='all')
+    result = scores.continuous.mae(fcst, obs, weights=weights, preserve_dims="all")
 
     assert result.equals(expected)
 
 
 def test_weights_add_dimension():
-    '''
-    Test what happens when additional dimensions are added into weights which are not present in 
+    """
+    Test what happens when additional dimensions are added into weights which are not present in
     fcst or obs. Repeats some of the NaN matching but the focus is really on the dimensional
     expansion, using the same data to slowly build up the example and establish confidence.
-    '''
+    """
 
     da = simple_da  # Make a DataArray with a latitude dimension
 
-    fcst =           da([np.nan, 0,      1, 2, 7, 0, 7])
-    obs =            da([np.nan, np.nan, 0, 1, 7, 0, 7])
-    simple_weights =    [1,      1,      1, 1, 1, 1, 0]
-    double_weights =    [2,      2,      2, 2, 2, 2, 0]
-    simple_expect =     [np.nan, np.nan, 1, 1, 0, 0, 0]
-    double_expect =     [np.nan, np.nan, 2, 2, 0, 0, 0]    
+    fcst = da([np.nan, 0, 1, 2, 7, 0, 7])
+    obs = da([np.nan, np.nan, 0, 1, 7, 0, 7])
+    simple_weights = [1, 1, 1, 1, 1, 1, 0]
+    double_weights = [2, 2, 2, 2, 2, 2, 0]
+    simple_expect = [np.nan, np.nan, 1, 1, 0, 0, 0]
+    double_expect = [np.nan, np.nan, 2, 2, 0, 0, 0]
 
-    simple = scores.continuous.mae(fcst, obs, weights=da(simple_weights), preserve_dims='all')
-    doubled = scores.continuous.mae(fcst, obs, weights=da(double_weights), preserve_dims='all')
+    simple = scores.continuous.mae(fcst, obs, weights=da(simple_weights), preserve_dims="all")
+    doubled = scores.continuous.mae(fcst, obs, weights=da(double_weights), preserve_dims="all")
 
     assert simple.equals(da(simple_expect))
     assert doubled.equals(da(double_expect))
 
     composite_weights_data = [simple_weights, double_weights]
-    composite_expected_data = [simple_expect, double_expect]    
+    composite_expected_data = [simple_expect, double_expect]
 
     composite_weights = xr.DataArray.from_dict(
         {
-        'coords': {
-            'method': {'data': ['simpleweight', 'doubleweight'], 'dims': 'method'},
-            'lat': {'data':list(fcst.lat), 'dims':'lat'},
-
-        },
-        'data': composite_weights_data
-        }
-    )    
-
-    composite_expected = xr.DataArray.from_dict(
-        {
-        'coords': {
-            'method': {'data': ['simpleweight', 'doubleweight'], 'dims': 'method'},
-            'lat': {'data':list(fcst.lat), 'dims':'lat'},
-
-        },
-        'data': composite_expected_data
+            "coords": {
+                "method": {"data": ["simpleweight", "doubleweight"], "dims": "method"},
+                "lat": {"data": list(fcst.lat), "dims": "lat"},
+            },
+            "data": composite_weights_data,
         }
     )
 
-    composite = scores.continuous.mae(fcst, obs, weights=composite_weights, preserve_dims='all').transpose()
+    composite_expected = xr.DataArray.from_dict(
+        {
+            "coords": {
+                "method": {"data": ["simpleweight", "doubleweight"], "dims": "method"},
+                "lat": {"data": list(fcst.lat), "dims": "lat"},
+            },
+            "data": composite_expected_data,
+        }
+    )
+
+    composite = scores.continuous.mae(fcst, obs, weights=composite_weights, preserve_dims="all").transpose()
     composite.broadcast_equals(composite_expected)

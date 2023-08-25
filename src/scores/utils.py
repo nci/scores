@@ -5,28 +5,28 @@ import warnings
 import xarray as xr
 
 
-WARN_ALL_DATA_CONFLICT_MSG = '''
+WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
 In this case, 'all' is also a named dimension in your data, leading to an ambiguity.
 In order to reduce or preserve the named data dimension, specify ['all'] as a list item
 rather than relying on string interpretation. The program will continue to interpret the
 string as an instruction to reduce or preserve every dimension.
-'''
+"""
 
-ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = '''
+ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
 You are requesting to preserve a dimension which does not appear in your data (fcst or obs).
 It is ambiguous how to proceed therefore an exception has been raised instead.
-'''
+"""
 
-ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = '''
+ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = """
 You are requesting to reduce a dimension which does not appear in your data (fcst or obs).
 It is ambiguous how to proceed therefore an exception has been raised instead.
-'''
+"""
 
-ERROR_OVERSPECIFIED_PRESERVE_REDUCE = '''
+ERROR_OVERSPECIFIED_PRESERVE_REDUCE = """
 You have specified both preserve_dims and reduce_dims. This method doesn't know how
 to properly interpret that, therefore an exception has been raised.
-'''
+"""
 
 
 class DimensionError(Exception):
@@ -76,7 +76,6 @@ def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, 
 
     # Handle preserve_dims case
     if preserve_dims is not None:
-
         if preserve_dims == "all":
             return set([])
 
@@ -206,5 +205,3 @@ def check_dims(xr_data, expected_dims, mode=None):
                     f"Dimensions {list(xr_data[data_var].dims)} of data variable "
                     f"'{data_var}' are not {mode} to the dimensions {sorted(dims_set)}"
                 )
-
-

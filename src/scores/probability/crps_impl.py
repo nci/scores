@@ -341,7 +341,7 @@ def crps_cdf(
             include_components=include_components,
         )
 
-    weighted = scores.functions.apply_weights(result, weights)        
+    weighted = scores.functions.apply_weights(result, weights)
 
     dims_to_collapse = scores.utils.dims_complement(result, dims=dims)
     result = weighted.mean(dim=dims_to_collapse)
