@@ -7,6 +7,7 @@ import numpy as np
 import xarray as xr
 
 from scores.utils import check_dims, dims_complement, gather_dimensions
+from scores.functions import apply_weights
 
 
 def firm(
@@ -18,7 +19,7 @@ def firm(
     discount_distance: Optional[float] = 0,
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights=None,
+    weights: Optional[xr.DataArray]=None
 ) -> xr.Dataset:
     """
     Calculates the FIxed Risk Multicategorical (FIRM) score including the
@@ -60,7 +61,7 @@ def firm(
             against observed), and the forecast and observed dimensions
             must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
-        weights: Not yet implemented. Allow weighted averaging (e.g. by area, by latitude,
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
 
     Returns:
@@ -113,6 +114,7 @@ def firm(
     reduce_dims = gather_dimensions(
         fcst.dims, obs.dims, weights_dims, reduce_dims, preserve_dims
     )
+    summed_score = apply_weights(summed_score, weights)
     score = summed_score.mean(dim=reduce_dims)
 
     return score
