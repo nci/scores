@@ -59,7 +59,7 @@ def test_weights_zeros():
 
 def test_weights_latitude():
     """
-    Tests the use of latitude weightings, not the correctness
+    Tests the use of latitude weightings
     """
 
     lat_weightings_values = scores.functions.create_latitude_weights(OBS_2D.latitude)
