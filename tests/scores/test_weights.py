@@ -74,10 +74,10 @@ def test_weights_latitude():
 def test_weights_NaN_matching():
     da = xr.DataArray
 
-    fcst = da([np.nan, 0, 1, 2, 7, 0, 7])
-    obs = da([np.nan, np.nan, 0, 1, 7, 0, 7])
-    weights = da([1, 1, 1, 1, 1, 1, 0])
-    expected = da([np.nan, np.nan, 1, 1, 0, 0, 0])
+    fcst = da([np.nan, 0, 1, 2, 7, 0, 7, 1])
+    obs = da([np.nan, np.nan, 0, 1, 7, 0, 7, 0])
+    weights = da([1, 1, 1, 1, 1, 1, 0, np.nan])
+    expected = da([np.nan, np.nan, 1, 1, 0, 0, 0, np.nan])
 
     result = scores.continuous.mae(fcst, obs, weights=weights, preserve_dims="all")
 
@@ -93,12 +93,12 @@ def test_weights_add_dimension():
 
     da = simple_da  # Make a DataArray with a latitude dimension
 
-    fcst = da([np.nan, 0, 1, 2, 7, 0, 7])
-    obs = da([np.nan, np.nan, 0, 1, 7, 0, 7])
-    simple_weights = [1, 1, 1, 1, 1, 1, 0]
-    double_weights = [2, 2, 2, 2, 2, 2, 0]
-    simple_expect = [np.nan, np.nan, 1, 1, 0, 0, 0]
-    double_expect = [np.nan, np.nan, 2, 2, 0, 0, 0]
+    fcst = da([np.nan, 0, 1, 2, 7, 0, 7, 1])
+    obs = da([np.nan, np.nan, 0, 1, 7, 0, 7, 0])
+    simple_weights = [1, 1, 1, 1, 1, 1, 0, np.nan]
+    double_weights = [2, 2, 2, 2, 2, 2, 0, np.nan]
+    simple_expect = [np.nan, np.nan, 1, 1, 0, 0, 0, np.nan]
+    double_expect = [np.nan, np.nan, 2, 2, 0, 0, 0, np.nan]
 
     simple = scores.continuous.mae(fcst, obs, weights=da(simple_weights), preserve_dims="all")
     doubled = scores.continuous.mae(fcst, obs, weights=da(double_weights), preserve_dims="all")
