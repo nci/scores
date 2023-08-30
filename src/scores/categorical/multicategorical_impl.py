@@ -28,7 +28,7 @@ def firm(
 
     Args:
         fcst: An array of real-valued forecasts that we want to treat categorically.
-        obs: An array of real-valued  observations that we want to treat categorically.
+        obs: An array of real-valued observations that we want to treat categorically.
         risk_parameter: Risk parameter (alpha) for the FIRM score. The value must
             satisfy 0 < `risk_parameter` < 1.
         categorical_thresholds: Category thresholds (thetas) to delineate the
