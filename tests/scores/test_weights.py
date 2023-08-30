@@ -61,7 +61,6 @@ def test_weights_latitude():
     """
     Tests the use of latitude weightings, not the correctness
     """
-    # TODO: Write a correctness test for latitude weighting conversions to be specified by hand
 
     lat_weightings_values = scores.functions.create_latitude_weights(OBS_2D.latitude)
 
@@ -69,6 +68,28 @@ def test_weights_latitude():
         unweighted = score(FCST_2D, OBS_2D)
         weighted = score(FCST_2D, OBS_2D, weights=lat_weightings_values)
         assert unweighted != weighted
+
+    # Latitudes in degrees, tested to 8 decimal places
+    latitude_tests = [
+        (90,    0),
+        (89,    0.017452),
+        (45,    0.707107),
+        (22.5,  0.92388),
+        (0,     1),
+        (-22.5, 0.92388),
+        (-45,   0.707107),
+        (-89,   0.017452),
+        (-90,   0)
+    ]
+    latitudes, expected = zip(*latitude_tests)
+    latitudes = xr.DataArray(list(latitudes))  # Will not work from a tuple
+    expected = xr.DataArray(list(expected))  # Will not work from a tuple
+
+    found = scores.functions.create_latitude_weights(latitudes)
+    decimal_places = 6
+    found = found.round(decimal_places)
+    expected = expected.round(decimal_places)
+    assert found.equals(expected)
 
 
 def test_weights_NaN_matching():

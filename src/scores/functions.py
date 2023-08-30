@@ -30,6 +30,14 @@ def create_latitude_weights(latitudes):
     which is contained in a particular region. This is approximated by the cosine
     of the latitude on an LLXY grid. Nuances not accounted for include the variation in
     latitude across the region, or the irregularity of the surface of the earth.
+
+    Returns:
+        An xarray containing the weight values to be used for area approximation
+
+    Args:
+        An xarray (or castable type) containing latitudes between +90 and -90 degrees
+
+    Note - floating point behaviour can vary between systems, precisions and other factors
     """
     weights = np.cos(np.deg2rad(latitudes))
     return weights
