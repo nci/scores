@@ -5,5 +5,6 @@ The philosphy is to import the public API during the init phase rather than leav
 import scores.continuous
 import scores.probability
 import scores.sample_data
+import scores.functions
 
 __version__ = "v0.0.2"

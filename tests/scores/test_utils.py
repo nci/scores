@@ -430,10 +430,10 @@ def test_gather_dimensions_examples():
     assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims=["lat", "lat", "lon"]) == set(["lat", "lon"])
 
     # Reduce every dimension if the string "all" is specified
-    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="all") == fcst_dims    
+    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="all") == fcst_dims
 
     # Reduce "all" as a named dimension explicitly
-    assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims=["all"]) ==  set(["all"])
+    assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims=["all"]) == set(["all"])
 
     # Basic tests on preservation
     assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims="lat") == set(["base_time", "lead_time", "lon"])
@@ -444,7 +444,9 @@ def test_gather_dimensions_examples():
     assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all") == set([])
 
     # Preserve "all" as a named dimension explicitly
-    assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims=["all"]) ==  set(["base_time", "lead_time", "lat", "lon"])
+    assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims=["all"]) == set(
+        ["base_time", "lead_time", "lat", "lon"]
+    )
 
     # Test that preserve is the inverse of reduce
     preserve_all = gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all")
@@ -458,9 +460,9 @@ def test_gather_dimensions_examples():
 
 
 def test_gather_dimensions_exceptions():
-    '''
+    """
     Confirm an exception is raised when both preserve and reduce arguments are specified
-    '''
+    """
 
     fcst_dims_conflict = set(["base_time", "lead_time", "lat", "lon", "all"])
     fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
