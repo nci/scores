@@ -1,9 +1,21 @@
-# Welcome to Scores!
+% scores documentation master file, created by
+% sphinx-quickstart on Sat Sep  9 11:24:53 2023.
+% You can adapt this file completely to your liking, but it should at least
+% contain the root `toctree` directive.
+
+```{include} ../README.md
+```
 
 
-## Documentation Layout
 
-   - [ userguide.md ](userguide.md)  - Guide for users
-   - [ contributing.md ](contributing.md)  - Guide for contributors and developers
-   - [ data.md ](data.md)  - Overview of relevant data sets
-   - [ api.md ](api.md)    - API Reference Docs
+```{toctree}
+:caption: 'Index to Documentation:'
+:maxdepth: 2
+
+quickstart
+installation
+api
+contributing
+data
+maintainer
+```

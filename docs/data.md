@@ -1,4 +1,6 @@
-# Overview of Some Relevant Data Sources
+# Data Sources
+
+Overview of Some Relevant Data Sources
 
 Weather data is often global, big and complex. This extremely brief section serves to point out how to obtain some 'getting started' data for examining the use of the scores and metrics contained in this package. Data referred to here is available under various licenses, and the onus is on the user to understand the conditions of those licenses. The tutorials and walkthroughs in the 'tutorials' directory contain more information and explore the data in more depth.
 

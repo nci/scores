@@ -1,4 +1,4 @@
-# Contributions guides
+# Contributing guide
 
 Thank you for considering contributing to the scores project! Contributions of all kinds are welcome!
 
@@ -11,9 +11,9 @@ These guidelines aim to make it clear how to collaborate effectively.
 1. Further development of examples and demonstrations for new users
 2. Set up of readthedocs and travis-ci
 3. Add further tests for NaNs and missing data
-2. Expansion of metrics to be more comprehensive
-3. Addition of further novel metrics
-4. Performance review and tests for dask
+4. Addition of more standard metrics
+5. Addition of more novel metrics
+6. Performance review and tests for dask
 
 ## Bug Reports and Feature Requests
 
@@ -23,7 +23,7 @@ Please submit bug requests and feature requests through Github as issues. No spe
 
 The scores package is not intended to function as a security boundary, checker or gatekeeper on untrusted or malicious data inputs. It should not be passed user-generated data or be used directly in web applications. Security issues themselves should not be raised as issues on the public tracker. Instead, send an email to jive@bom.gov.au and your concerns will be acted upon.
 
-### Development Process for a New Score or Metrics
+## Development Process for a New Score or Metrics
 
 A new score or metric should be developed on a separate feature branch, rebased against the main branch. Each merge request should include:
 
@@ -39,7 +39,7 @@ All merge requests should comply with the coding standards outlined in this docu
 
 A github ticket should be created explaining the metric which is being implemented and why it is useful.
 
-### Development Process for a Correction or Improvement
+## Development Process for a Correction or Improvement
 
 Merge requests addressing documentation changes, tutorial improvements, corrections to code or improvements (e.g. performance enhancements, improvements to error messages, greater flexibility) require only a github ticket explaining the goals of the merge request. Merge requests will still undergo both a technical code review and a scientific code review to ensure that the merge request maintains or improves the coding and scientific integrity while achieving the goals set out in the ticket. These are outlined further below.
 
