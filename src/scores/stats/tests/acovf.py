@@ -57,6 +57,7 @@ import numpy as np
 
 __all__ = ["acovf"]
 
+
 def _next_regular(target):
     """
     Find the next regular number greater than or equal to target.
@@ -107,18 +108,18 @@ def acovf(x):
     Estimate autocovariances.
 
     Args:
-        x (array_like): 
+        x (array_like):
             Time series data. Must be 1d.
 
     Returns:
-        (np.ndarray): 
+        (np.ndarray):
             The estimated autocovariances.
 
     References:
         [1] Parzen, E., 1963. On spectral analysis with missing observations
             and amplitude modulation. Sankhya: The Indian Journal of
             Statistics, Series A, pp.383-392.
-    """    
+    """
 
     xo = x - x.mean()
 

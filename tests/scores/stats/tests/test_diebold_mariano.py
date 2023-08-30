@@ -1,6 +1,7 @@
 """
 This module contains unit tests for scores.stats.tests.diebold_mariano_impl
 """
+import warnings
 import numpy as np
 import pytest
 import xarray as xr
@@ -270,7 +271,6 @@ def test__hln_method_stat(diffs, h, expected):
     ("diffs", "h", "method", "expected"),
     [
         (DM_DIFFS, 2, "HLN", DM_TEST_STAT_EXP1),
-        (np.array([np.nan, 1, 2, 3, 4.0, np.nan]), 2, "HLN", DM_TEST_STAT_EXP1),
         (np.array([1.0, 1, 1, 1]), 2, "HLN", np.nan),
         (np.array([0, 0, 0, 0]), 2, "HLN", np.nan),
         (DM_DIFFS2, 14, "HG", -0.1691921),
@@ -282,6 +282,15 @@ def test__dm_test_statistic(diffs, h, method, expected):
     np.testing.assert_allclose(result, expected, atol=1e-5)
 
 
+def test__dm_test_statistic_with_nan():
+    """Tests that _dm_test_statistic returns values as expected with a NaN diffs."""
+    diffs = np.array([np.nan, 1, 2, 3, 4.0, np.nan])
+    with pytest.warns(RuntimeWarning):
+        result = _dm_test_statistic(diffs, 2, "HLN")
+    np.testing.assert_allclose(result, DM_TEST_STAT_EXP1, atol=1e-5)
+
+
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(
     ("diff", "h", "method", "error_msg"),
     [
@@ -346,7 +355,10 @@ DM_TEST_STATS_NORMAL_EXP = xr.Dataset(
     ],
 )
 def test_diebold_mariano(distribution, expected):
-    """Tests that diebold_mariano gives results as expected."""
+    """
+    Tests that diebold_mariano gives results as expected and raises a warning
+    due to a NaN in the data.
+    """
     da_timeseries = xr.DataArray(
         data=[[1, 2, 3.0, 4, np.nan], [2.0, 1, -3, -1, 0], [1.0, 1, 1, 1, 1]],
         dims=["lead_day", "valid_date"],
@@ -356,12 +368,13 @@ def test_diebold_mariano(distribution, expected):
             "h": ("lead_day", [2, 3, 4]),
         },
     )
-    result = diebold_mariano(
-        da_timeseries,
-        "lead_day",
-        "h",
-        method="HLN",
-        confidence_level=0.9,
-        statistic_distribution=distribution,
-    )
+    with pytest.warns(RuntimeWarning):
+        result = diebold_mariano(
+            da_timeseries,
+            "lead_day",
+            "h",
+            method="HLN",
+            confidence_level=0.9,
+            statistic_distribution=distribution,
+        )
     xr.testing.assert_allclose(result, expected, atol=7)

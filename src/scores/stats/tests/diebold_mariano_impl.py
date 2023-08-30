@@ -1,6 +1,7 @@
 """
 Functions for calculating a modified Diebold-Mariano test statistic
 """
+import warnings
 from typing import Literal
 
 import numpy as np
@@ -9,8 +10,6 @@ import xarray as xr
 from scipy.optimize import least_squares
 
 from scores.utils import dims_complement
-
-
 
 
 def diebold_mariano(
@@ -34,7 +33,9 @@ def diebold_mariano(
     estimates for the spectral density contribution to the test statistic. For further
     details see `scores.stats.confidence_intervals.impl._dm_test_statistic`.
 
-    Prior to any calculations, NaNs are removed from each timeseries.
+    Prior to any calculations, NaNs are removed from each timeseries. If there are NaNs
+    in `da_timeseries` then a warning will occur. This is because NaNs may impact the
+    autocovariance calculation.
 
     To determine the value of h for each timeseries of score differences of h-step ahead
     forecasts, one may ask 'How many observations of the phenomenon will be made between
@@ -95,6 +96,7 @@ def diebold_mariano(
         ValueError: if `h_coord` values aren't positive integers.
         ValueError: if `h_coord` values aren't less than the lengths of the
             timeseries after NaNs are removed.
+        RuntimeWarnning: if there is a NaN in diffs.
 
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
@@ -229,6 +231,7 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] =
     Raises:
         ValueError: if `method` is not one of "HLN" or "HG".
         ValueError: if `0 < h < len(diffs)` fails after NaNs removed.
+        RuntimeWarnning: if there is a NaN in diffs.
 
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
@@ -240,6 +243,14 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] =
     """
     if method not in ["HLN", "HG"]:
         raise ValueError("`method` must be one of 'HLN' or 'HG'.")
+
+    if np.isnan(np.sum(diffs)):
+        warnings.warn(
+            RuntimeWarning(
+                "A least one NaN value was detected in `da_timeseries`. This may impact the "
+                "calculation of autocovariances."
+            )
+        )
 
     diffs = diffs[~np.isnan(diffs)]
 
@@ -295,6 +306,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
         Diebold-Mariano test statistic using the HG method.
     """
     from scores.stats.tests.acovf import acovf
+
     n = len(diffs)
 
     # use an exponential model for autocovariances of `diffs`

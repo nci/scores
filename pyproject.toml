@@ -23,7 +23,7 @@ dependencies = [
     "xarray",
     "pandas",
     "scipy",
-    "bottleneck",
+    "bottleneck"
 ]
 
 [project.optional-dependencies]
