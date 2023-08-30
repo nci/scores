@@ -42,6 +42,8 @@ tutorial = [
     "jupyterlab",
     "matplotlib",
     "h5netcdf",
+    "rasterio",
+    "rioxarray"
 ]
 maintainer = ["build", "hatch"]
 all = ["scores[dev,tutorial]"]
