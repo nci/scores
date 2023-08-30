@@ -53,9 +53,9 @@ all = ["scores[dev,tutorial]"]
 
 [tool.hatch.build]
 exclude = [
-    "tutorials/",
-    "docs/",
-    "tests/"
+    "/tutorials/",
+    "/docs/",
+    "/tests/"
 ]
 
 [tool.hatch.version]
