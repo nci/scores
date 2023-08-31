@@ -44,9 +44,8 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     squared = error * error
     squared = scores.functions.apply_weights(squared, weights)
 
-    weights_dims = []
     if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, weights_dims, reduce_dims, preserve_dims)
+        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
 
     if reduce_dims is not None:
         _mse = squared.mean(dim=reduce_dims)
@@ -142,9 +141,8 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     ae = abs(error)
     ae = scores.functions.apply_weights(ae, weights)
 
-    weights_dims = []
     if preserve_dims is not None or reduce_dims is not None:
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, weights_dims, reduce_dims, preserve_dims)
+        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
 
     if reduce_dims is not None:
         _ae = ae.mean(dim=reduce_dims)

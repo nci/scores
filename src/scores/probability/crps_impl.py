@@ -292,7 +292,6 @@ def crps_cdf(
     dims = scores.utils.gather_dimensions(
         fcst.dims,
         obs.dims,
-        None,  # weights_dims is not implemented yet
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
@@ -482,7 +481,6 @@ def crps_cdf_brier_decomposition(
     dims = scores.utils.gather_dimensions(
         fcst.dims,
         obs.dims,
-        None,  # weights_dims is not implemented yet
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )

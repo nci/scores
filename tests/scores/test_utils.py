@@ -422,41 +422,38 @@ def test_gather_dimensions_examples():
     fcst_dims_conflict = set(["base_time", "lead_time", "lat", "lon", "all"])
     fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
     obs_dims = []
-    weights_dims = []
 
     # Basic tests on reduction
-    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="lat") == set(["lat"])
-    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims=["lat", "lon"]) == set(["lat", "lon"])
-    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims=["lat", "lat", "lon"]) == set(["lat", "lon"])
+    assert gd(fcst_dims, obs_dims, reduce_dims="lat") == set(["lat"])
+    assert gd(fcst_dims, obs_dims, reduce_dims=["lat", "lon"]) == set(["lat", "lon"])
+    assert gd(fcst_dims, obs_dims, reduce_dims=["lat", "lat", "lon"]) == set(["lat", "lon"])
 
     # Reduce every dimension if the string "all" is specified
-    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="all") == fcst_dims
+    assert gd(fcst_dims, obs_dims, reduce_dims="all") == fcst_dims
 
     # Reduce "all" as a named dimension explicitly
-    assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims=["all"]) == set(["all"])
+    assert gd(fcst_dims_conflict, obs_dims, reduce_dims=["all"]) == set(["all"])
 
     # Basic tests on preservation
-    assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims="lat") == set(["base_time", "lead_time", "lon"])
-    assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims=["lat", "lon"]) == set(["base_time", "lead_time"])
-    assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims=["lat", "lat", "lon"]) == set(["base_time", "lead_time"])
+    assert gd(fcst_dims, obs_dims, preserve_dims="lat") == set(["base_time", "lead_time", "lon"])
+    assert gd(fcst_dims, obs_dims, preserve_dims=["lat", "lon"]) == set(["base_time", "lead_time"])
+    assert gd(fcst_dims, obs_dims, preserve_dims=["lat", "lat", "lon"]) == set(["base_time", "lead_time"])
 
     # Preserve every dimension if the string "all" is specified
-    assert gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all") == set([])
+    assert gd(fcst_dims, obs_dims, preserve_dims="all") == set([])
 
     # Preserve "all" as a named dimension explicitly
-    assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims=["all"]) == set(
-        ["base_time", "lead_time", "lat", "lon"]
-    )
+    assert gd(fcst_dims_conflict, obs_dims, preserve_dims=["all"]) == set(["base_time", "lead_time", "lat", "lon"])
 
     # Test that preserve is the inverse of reduce
-    preserve_all = gd(fcst_dims, obs_dims, weights_dims, preserve_dims="all")
-    reduce_empty = gd(fcst_dims, obs_dims, weights_dims, reduce_dims=[])
+    preserve_all = gd(fcst_dims, obs_dims, preserve_dims="all")
+    reduce_empty = gd(fcst_dims, obs_dims, reduce_dims=[])
 
     assert preserve_all == reduce_empty
     assert preserve_all == set([])
 
     # Single dimensions specified as a string will be packed into a list
-    assert gd(fcst_dims, obs_dims, weights_dims, reduce_dims="lead_time") == set(["lead_time"])
+    assert gd(fcst_dims, obs_dims, reduce_dims="lead_time") == set(["lead_time"])
 
 
 def test_gather_dimensions_exceptions():
@@ -467,26 +464,25 @@ def test_gather_dimensions_exceptions():
     fcst_dims_conflict = set(["base_time", "lead_time", "lat", "lon", "all"])
     fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
     obs_dims = []
-    weights_dims = []
 
     # Confirm an exception if both preserve and reduce are specified
     with pytest.raises(ValueError):
-        gd(fcst_dims, obs_dims, weights_dims, preserve_dims=[], reduce_dims=[])
+        gd(fcst_dims, obs_dims, preserve_dims=[], reduce_dims=[])
 
     # Attempt to reduce a non-existent dimension
     with pytest.raises(ValueError) as excinfo:
-        assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims="nonexistent") == []
+        assert gd(fcst_dims_conflict, obs_dims, reduce_dims="nonexistent") == []
     assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION
 
     # Attempt to preserve a non-existent dimension
     with pytest.raises(ValueError) as excinfo:
-        assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims="nonexistent") == []
+        assert gd(fcst_dims_conflict, obs_dims, preserve_dims="nonexistent") == []
     assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION
 
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
-        assert gd(fcst_dims_conflict, obs_dims, weights_dims, preserve_dims="all") == set([])
+        assert gd(fcst_dims_conflict, obs_dims, preserve_dims="all") == set([])
 
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
-        assert gd(fcst_dims_conflict, obs_dims, weights_dims, reduce_dims="all") == fcst_dims_conflict
+        assert gd(fcst_dims_conflict, obs_dims, reduce_dims="all") == fcst_dims_conflict
