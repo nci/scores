@@ -36,14 +36,13 @@ class DimensionError(Exception):
     """
 
 
-def gather_dimensions(fcst_dims, obs_dims, weights_dims=None, reduce_dims=None, preserve_dims=None):
+def gather_dimensions(fcst_dims, obs_dims, reduce_dims=None, preserve_dims=None):
     """
     Establish which dimensions to reduce when calculating errors but before taking means
 
     Args:
         fcst_dims (Iterable[str]): Forecast dimensions inputs
         obs_dims (Iterable[str]): Observation dimensions inputs.
-        weights_dims (Iterable[str]): Weight dimension inputs.
         reduce_dims (Union[str, Iterable[str]]): Dimensions to reduce.
         preserve_dims (Union[str, Iterable[str]]): Dimensions to preserve.
 
