@@ -1,0 +1,96 @@
+@article{Brady2021, 
+    doi = {10.21105/joss.02781}, 
+    url = {https://doi.org/10.21105/joss.02781}, 
+    year = {2021}, 
+    publisher = {The Open Journal}, 
+    volume = {6}, number = {59}, 
+    pages = {2781}, 
+    author = {Riley X. Brady and Aaron Spring},
+    title = {climpred: Verification of weather and climate forecasts}, 
+    journal = {Journal of Open Source Software} 
+    } 
+
+@article{https://doi.org/10.1002/met.1732,
+author = {Griffiths, Deryn and Foley, Michael and Ioannou, Ioanna and Leeuwenburg, Tennessee},
+title = {Flip-Flop Index: Quantifying revision stability for fixed-event forecasts},
+journal = {Meteorological Applications},
+volume = {26},
+number = {1},
+pages = {30-35},
+keywords = {Flip-Flop Index, forecast convergence, forecast oscillations, forecast stability, forecast volatility},
+doi = {https://doi.org/10.1002/met.1732},
+url = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/met.1732},
+eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/met.1732},
+abstract = {The degree to which a forecast changes from one issue time to the next is an interesting aspect of a forecast system. Weather forecasters report that they are reluctant to change a forecast if they judge there is a risk of it being changed back again. They believe such instability detracts from the message being delivered and are reluctant to use automated guidance which they perceive as having lack of stability. A Flip-Flop Index was developed to quantify this characteristic of revisions of fixed-event forecasts. The index retains physically meaningful units, has a simple definition and does not penalize a sequence of forecasts that show a trend, which is important when assessing forecasts where a trend can be interpreted as a forecast becoming more confident with a shorter lead time. The Flip-Flop Index was used to compare the stability of sequences of automated guidance with the official Australian Bureau of Meteorology forecasts, which are prepared manually. The results show that the forecasts for chance of rain from the automated guidance are often more stable than the official, manual forecasts. However, the official forecasts for maximum temperature are more stable than those based on automated guidance. The Flip-Flop Index is independent of observations and does not measure skill, but it can play a complementary role in characterizing and evaluating a forecasting system.},
+year = {2019}
+}
+
+@misc{xskillscore,
+  author = {Aaron Spring, Andrew Huang, Dougie Squire, mcsitter, Ray Bell, Riley X. Brady and Zachary Blackwood.},
+  title = {xskillscore: Metrics for verifying forecasts},
+  year = {2021},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/xarray-contrib/xskillscore}
+}
+
+
+@article{Ehm2016,
+ ISSN = {13697412, 14679868},
+ URL = {http://www.jstor.org/stable/24775351},
+ abstract = {In the practice of point prediction, it is desirable that forecasters receive a directive in the form of a statistical functional. For example, forecasters might be asked to report the mean or a quantile of their predictive distributions. When evaluating and comparing competing forecasts, it is then critical that the scoring function used for these purposes be consistent for the functional at hand, in the sense that the expected score is minimized when following the directive. We show that any scoring function that is consistent for a quantile or an expectile functional can be represented as a mixture of elementary or extremal scoring functions that form a linearly parameterized family. Scoring functions for the mean value and probability forecasts of binary events constitute important examples. The extremal scoring functions admit appealing economic interpretations of quantiles and expectiles in the context of betting and investment problems. The Choquet-type mixture representations give rise to simple checks of whether a forecast dominates another in the sense that it is preferable under any consistent scoring function. In empirical settings it suffices to compare the average scores for only a finite number of extremal elements. Plots of the average scores with respect to the extremal scoring functions, which we call Murphy diagrams, permit detailed comparisons of the relative merits of competing forecasts.},
+ author = {Werner Ehm and Tilmann Gneiting and Alexander Jordan and Fabian Krüger},
+ journal = {Journal of the Royal Statistical Society. Series B (Statistical Methodology)},
+ number = {3},
+ pages = {505--562},
+ publisher = {[Royal Statistical Society, Wiley]},
+ title = {Of quantiles and expectiles: consistent scoring functions, Choquet representations and forecast rankings},
+ urldate = {2023-09-06},
+ volume = {78},
+ year = {2016}
+}
+
+@article{Taggart2022,
+author = {Taggart, Robert and Loveday, Nicholas and Griffiths, Deryn},
+title = {A scoring framework for tiered warnings and multicategorical forecasts based on fixed risk measures},
+journal = {Quarterly Journal of the Royal Meteorological Society},
+volume = {148},
+number = {744},
+pages = {1389-1406},
+keywords = {categorical forecasts, consistent scoring function, decision theory, forecast ranking, forecast verification, risk, warnings},
+doi = {https://doi.org/10.1002/qj.4266},
+url = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/qj.4266},
+eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/qj.4266},
+abstract = {Abstract The use of tiered warnings and multicategorical forecasts are ubiquitous in meteorological operations. Here, a flexible family of scoring functions is presented for evaluating the performance of ordered multicategorical forecasts. Each score has a risk parameter α\$\$ \alpha \$\$, selected for the specific use case, so that it is consistent with a forecast directive based on the fixed threshold probability 1−α\$\$ 1-\alpha \$\$ (equivalently, a fixed α\$\$ \alpha \$\$-quantile mapping). Each score also has use-case specific weights so that forecasters who accurately discriminate between categorical thresholds are rewarded in proportion to the weight for that threshold. A variation is presented where the penalty assigned to near misses or close false alarms is discounted, which again is consistent with directives based on fixed risk measures. The scores presented provide an alternative to many performance measures currently in use, whose optimal threshold probabilities for forecasting an event typically vary with each forecast case, and in the case of equitable scores are based around sample base rates rather than risk measures suitable for users.},
+year = {2022}
+}
+
+@article{f095b858-f542-354a-bb1c-fab9c0b77166,
+ ISSN = {00401706},
+ URL = {http://www.jstor.org/stable/41714954},
+ abstract = {Under a general loss function, we develop a hypothesis test to determine whether a significant difference in the spatial predictions produced by two competing models exists on average across the entire spatial domain of interest. The null hypothesis is that of no difference, and a spatial loss differential is created based on the observed data, the two sets of predictions, and the loss function chosen by the researcher. The test assumes only isotropy and short-range spatial dependence of the loss differential but does allow it to be non-Gaussian, non-zero-mean, and spatially correlated. Constant and nonconstant spatial trends in the loss differential are treated in two separate cases. Monte Carlo simulations illustrate the size and power properties of this test, and an example based on daily average wind speeds in Oklahoma is used for illustration. Supplemental results are available online.},
+ author = {Amanda S. Hering and Marc G. Genton},
+ journal = {Technometrics},
+ number = {4},
+ pages = {414--425},
+ publisher = {Taylor & Francis, Ltd.},
+ title = {Comparing Spatial Predictions},
+ urldate = {2023-09-06},
+ volume = {53},
+ year = {2011}
+}
+
+@article{HARVEY1997281,
+title = {Testing the equality of prediction mean squared errors},
+journal = {International Journal of Forecasting},
+volume = {13},
+number = {2},
+pages = {281-291},
+year = {1997},
+issn = {0169-2070},
+doi = {https://doi.org/10.1016/S0169-2070(96)00719-4},
+url = {https://www.sciencedirect.com/science/article/pii/S0169207096007194},
+author = {David Harvey and Stephen Leybourne and Paul Newbold},
+keywords = {Comparing forecasts, Correlated forecast errors, Evaluation of forecasts, Non-normality},
+abstract = {Given two sources of forecasts of the same quantity, it is possible to compare prediction records. In particular, it can be useful to test the hypothesis of equal accuracy in forecast performance. We analyse the behaviour of two possible tests, and of modifications of these tests designed to circumvent shortcomings in the original formulations. As a result of this analysis, a recommendation for one particular testing approach is made for practical applications.}
+}
