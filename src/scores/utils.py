@@ -2,8 +2,8 @@
 Contains frequently-used functions of a general nature within scores
 """
 import warnings
-import xarray as xr
 
+import xarray as xr
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -87,6 +87,10 @@ def gather_dimensions(fcst_dims, obs_dims, reduce_dims=None, preserve_dims=None)
     elif reduce_dims == "all":
         reduce_dims = set(all_dims)
 
+    # Handle is reduce_dims and preserve_dims are both None
+    if reduce_dims is None and preserve_dims is None:
+        reduce_dims = set(all_dims)
+
     # Handle reduce by string
     elif isinstance(reduce_dims, str):
         reduce_dims = set([reduce_dims])
@@ -109,6 +113,7 @@ def dims_complement(data, dims=None):
     Returns:
         List[str]: A sorted list of dimension names, the complement of data.dims and dims
     """
+
     if dims is None:
         dims = []
 
