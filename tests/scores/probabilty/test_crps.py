@@ -425,9 +425,10 @@ def test_crps_cdf(
         fcst_fill_method="linear",
         threshold_weight_fill_method="forward",
         integration_method=integration_method,
-        reduce_dims=dims,
+        preserve_dims=dims,
         include_components=True,
     )
+
     assert_dataset_equal(result, expected_and_dec[0], decimals=expected_and_dec[1])
 
 
@@ -574,6 +575,6 @@ def test_crps_cdf_brier_raises(
 def test_crps_cdf_brier_decomposition(dims, expected):
     """Tests `crps_cdf_brier_decomposition` with a variety of inputs."""
     result = crps_cdf_brier_decomposition(
-        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, "x", reduce_dims=dims
+        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, "x", preserve_dims=dims
     )
     assert_dataset_equal(result, expected, decimals=7)

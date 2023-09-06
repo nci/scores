@@ -342,8 +342,9 @@ def crps_cdf(
 
     weighted = scores.functions.apply_weights(result, weights)
 
-    dims_to_collapse = scores.utils.dims_complement(result, dims=dims)
-    result = weighted.mean(dim=dims_to_collapse)
+    dims.remove(threshold_dim)
+
+    result = weighted.mean(dim=dims)
 
     return result
 
@@ -477,13 +478,13 @@ def crps_cdf_brier_decomposition(
         ValueError: if `fcst_fill_method` is not one of 'linear', 'step', 'forward' or 'backward'.
         ValueError: if coordinates in `fcst[threshold_dim]` are not increasing.
     """
-
     dims = scores.utils.gather_dimensions(
         fcst.dims,
         obs.dims,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
+
     check_crps_cdf_brier_inputs(fcst, obs, threshold_dim, fcst_fill_method, dims)
 
     fcst = propagate_nan(fcst, threshold_dim)
@@ -498,9 +499,7 @@ def crps_cdf_brier_decomposition(
         "forward",
     )
 
-    dims_to_collapse = scores.utils.dims_complement(fcst, dims=dims)
-    # never collapse `threshold_dim`
-    dims_to_collapse = [x for x in dims_to_collapse if x != threshold_dim]
+    dims.remove(threshold_dim)
 
     # brier score for each forecast case
     bscore = (fcst - obs) ** 2
@@ -509,8 +508,8 @@ def crps_cdf_brier_decomposition(
     # `obs` here is the empirical CDF of the observation
     # when `obs == 1` the observation was lower than the threshold considered
     # and hence the Brier score at this threshold penalises an over-forecast
-    over = bscore.where(np.isclose(obs, 1), 0).where(not_nan).mean(dims_to_collapse)
-    under = bscore.where(np.isclose(obs, 0), 0).where(not_nan).mean(dims_to_collapse)
+    over = bscore.where(np.isclose(obs, 1), 0).where(not_nan).mean(dims)
+    under = bscore.where(np.isclose(obs, 0), 0).where(not_nan).mean(dims)
     total = over + under
 
     result = xr.merge(
@@ -633,7 +632,7 @@ def adjust_fcst_for_crps(
         additional_thresholds=additional_thresholds,
         fcst_fill_method=fcst_fill_method,
         integration_method=integration_method,
-        reduce_dims=crps_dims,
+        preserve_dims=crps_dims,
     )
 
     fcst_type_to_use = crps_fcst_env["total"].idxmax("cdf_type")
