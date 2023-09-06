@@ -18,6 +18,7 @@ affiliations:
  - name: Bureau of Meteorology, Australia
    index: 1
 date: 6 September 2023
+bibliography: paper.bib 
 
 ---
 
