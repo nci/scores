@@ -1,5 +1,5 @@
 """
-This module contains methods which may be used for continuous scoring
+This module contains standard methods which may be used for continuous scoring
 """
 
 import scores.utils

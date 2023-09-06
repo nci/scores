@@ -1,5 +1,5 @@
 """
-Contains unit tests for scores.continuous
+Contains unit tests for scores.continuous.standard
 """
 
 import dask
