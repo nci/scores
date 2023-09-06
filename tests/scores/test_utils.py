@@ -428,6 +428,9 @@ def test_gather_dimensions_examples():
     assert gd(fcst_dims, obs_dims, reduce_dims=["lat", "lon"]) == set(["lat", "lon"])
     assert gd(fcst_dims, obs_dims, reduce_dims=["lat", "lat", "lon"]) == set(["lat", "lon"])
 
+    # Tests if reduce_dims and preserve_dims are both None
+    assert gd(fcst_dims, obs_dims) == fcst_dims
+
     # Reduce every dimension if the string "all" is specified
     assert gd(fcst_dims, obs_dims, reduce_dims="all") == fcst_dims
 
