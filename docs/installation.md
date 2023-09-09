@@ -6,13 +6,13 @@ The basic installation includes only the most essential requirements, so as to n
 
 There are 5 different types of environments which can be installed in `scores`: 
 
-- core: Only contains mathematical functions
-- tutorial: Includes jupyter lab and ability to run all the notebooks
-- development: Includes pylint, black and other development tools
-- maintainer: Includes tools for building the documentation
-- all: Includes requirements for all of the above
+- core: only contains mathematical functions
+- tutorial: includes jupyter lab and ability to run all the notebooks
+- development: includes pylint, black and other development tools
+- maintainer: includes tools for building the documentation
+- all: includes requirements for all of the above
 
-#### 1. Core environment <a name="base-env"></a>
+#### 1. Core Environment <a name="core-env"></a>
 
 Installs:
 * `scores` package
@@ -32,10 +32,10 @@ pip install scores
 pip install .
 ```
 
-#### 2. Tutorial environment <a name="tutorial"></a>
+#### 2. Tutorial Environment <a name="tutorial"></a>
 
 Installs:
-* [base environment](#base-env)
+* [core environment](#core-env)
 * Dependencies for running the tutorial notebooks with jupyter lab.
 
 ##### PyPI
@@ -50,10 +50,10 @@ pip install scores[tutorial]
 pip install .[tutorial]
 ```
 
-#### 3. Development environment <a name="dev"></a>
+#### 3. Development Environment <a name="dev"></a>
 
 Installs:
-* [base environment](#base-env)
+* [core environment](#core-env)
 * Dependencies for development on the git repository.
   * i.e running tests suite, linters, ect.
 
@@ -69,10 +69,10 @@ pip install scores[dev]
 pip install .[dev]
 ```
 
-#### 4. Maintainter environment <a name="maintainer"></a>
+#### 4. Maintainter Environment <a name="maintainer"></a>
 
 Installs:
-* [base environment](#base-env)
+* [core environment](#core-env)
 * Dependencies for building new versions of the `scores` package,
 
 ##### PyPI
@@ -87,11 +87,11 @@ pip install scores[maintainer]
 pip install .[maintainer]
 ```
 
-#### 5. All dependencies <a name="all"></a>
+#### 5. All Dependencies <a name="all"></a>
 
 Installs:
-* [base dependencies](#base-env)
-* [dev dependencies](#dev)
+* [core dependencies](#core-env)
+* [develeopment dependencies](#dev)
 * [tutorial dependencies](#tutorial)
 
 ##### from PyPI
