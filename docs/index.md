@@ -7,11 +7,11 @@
 ```
 
 
-
 ```{toctree}
 :caption: 'Index to Documentation:'
 :maxdepth: 2
 
+self
 quickstart
 installation
 api
