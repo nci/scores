@@ -5,9 +5,9 @@ Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
 Included Metrics:
 
-| continuous | probability | categorical | statistical tests      |
-| ---------- | ----------- | ----------- |----------- |
-| MAE, MSE, RMSE, FIRM | CRPS, FIRM |  tba | Diebold Mariano (with the Harvey 1997 and Hering 2011 modifications) |
+| continuous | probability | statistical tests      |
+| ---------- | ----------- | ----------- |
+| MAE, MSE, RMSE, FIRM | CRPS, FIRM |  Diebold Mariano (with the Harvey 1997 and Hering 2011 modifications) |
 
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
@@ -22,11 +22,11 @@ All of the scores and metrics in this package have undergone a thorough statisti
 
 All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
-## Quick start for using this package.
+## Using this package.
 
 The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package. 
 
-Installation may be performed with:
+Installation of the core mathematical API may be performed with:
 
 ```py
 > pip install scores

@@ -12,7 +12,7 @@ There are 5 different types of environments which can be installed in `scores`:
 - maintainer: includes tools for building the documentation
 - all: includes requirements for all of the above
 
-#### 1. Core Environment <a name="core-env"></a>
+## 1. Core Environment 
 
 Installs:
 * `scores` package
@@ -20,89 +20,91 @@ Installs:
 
 > **_NOTE:_** Use this environment if you are unsure about what package you require.
 
-##### from PyPI
+### from PyPI
 
 ```Bash
 pip install scores
 ```
 
-##### from local git repository
+### from local git repository
 
 ```
 pip install .
 ```
 
-#### 2. Tutorial Environment <a name="tutorial"></a>
+## 2. Tutorial Environment 
 
 Installs:
-* [core environment](#core-env)
+* core environment
 * Dependencies for running the tutorial notebooks with jupyter lab.
 
-##### PyPI
+### PyPI
 
 ```Bash
 pip install scores[tutorial]
 ```
 
-##### Local git repository
+### Local git repository
 
 ```bash
 pip install .[tutorial]
 ```
 
-#### 3. Development Environment <a name="dev"></a>
+## 3. Development Environment 
 
 Installs:
-* [core environment](#core-env)
+* core environment
 * Dependencies for development on the git repository.
   * i.e running tests suite, linters, ect.
 
-##### PyPI
+### PyPI
 
 ```Bash
 pip install scores[dev]
 ```
 
-##### Local git repository
+### Local git repository
 
 ```bash
 pip install .[dev]
 ```
 
-#### 4. Maintainer Environment <a name="maintainer"></a>
+## 4. All Non-Maintainer Dependencies 
 
 Installs:
-* [core environment](#core-env)
-* Dependencies for building new versions of the `scores` package,
+* core dependencies
+* develeopment dependencies
+* tutorial dependencies
 
-##### PyPI
-
-```Bash
-pip install scores[maintainer]
-```
-
-##### Local git repository
-
-```bash
-pip install .[maintainer]
-```
-
-#### 5. All Dependencies <a name="all"></a>
-
-Installs:
-* [core dependencies](#core-env)
-* [develeopment dependencies](#dev)
-* [tutorial dependencies](#tutorial)
-
-##### from PyPI
+### from PyPI
 
 ```Bash
 pip install scores[all]
 ```
 
-##### Local git repository
+### Local git repository
 
 ```bash
 pip install .[all]
 ```
+
+
+## 5. Maintainer Environment 
+
+Installs:
+* core environment
+* Dependencies for building new versions of the `scores` package,
+
+### PyPI
+
+```Bash
+pip install scores[maintainer]
+```
+
+### Local git repository
+
+```bash
+pip install .[maintainer]
+```
+
 

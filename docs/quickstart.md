@@ -1,4 +1,4 @@
-# Quickstart Guide
+# Quick Start Guide (with Tutorials)
 
 Install and run tutorials, from a local checkout
 
@@ -19,8 +19,7 @@ Each score in the package has its own notebook. For very similar scores, this me
 
 ## Included Metrics and Scores
 
-| continuous | probability | categorical | statistical tests      |
-| ---------- | ----------- | ----------- |----------- |
-| MAE, MSE, RMSE, FIRM | CRPS, FIRM |  tba | Diebold Mariano (with the Harvey 1997 and Hering 2011 modifications) |
+```{include} summary_table_of_scores.md
+```
 
 Each score is fully documented in the API documentation [ api.md ](api.md). 
