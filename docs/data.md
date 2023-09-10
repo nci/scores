@@ -6,12 +6,12 @@ Weather data is often global, big and complex. This extremely brief section serv
 
 This page describes data sets and will be improved to provide more specific instructions on downloading and preparing the data in accordance with the roadmap. For the moment, key data sets which have global coverage and are easily accessible are noted.
 
-## Bureau of Meteorology Gridded model (prediction) data
+## Bureau of Meteorology gridded model (prediction) data
 The APS3 ACCESS Numerical Weather Prediction Models provide global model data. Global models are lower resolution and less accurate than those used for short-term weather forecasting. Global provide the initial conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
 
 See https://geonetwork.nci.org.au/geonetwork/srv/eng/catalog.search#/metadata/f3307_5503_1483_3079 for more information.
 
-## NOAA Gridded model (prediction) data
+## NOAA gridded model (prediction) data
 The NOAA Global Forecast System provides global scale model data. Global models are lower resolution and less accurate than those used for short-term weather forecasting. Global provide the initial conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
 
 See https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast for more information.
@@ -24,7 +24,7 @@ The NOAA Integrated Surface Database provides hourly point-based (aka in-situ) d
 
 See https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database for more information.
 
-### Gridded model raanalysis data
+## Gridded model raanalysis data
 Reanalysis data is useful for provide a very long history of data, estimating the atmospheric conditions over history. The ERA5 dataset is the best known global reanalysis data set.
 
 https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5
@@ -36,4 +36,8 @@ Satellite data varies according to region, type and age of satellite. It is too 
 ## Gridded radar (observation) data
 Radar data also varies according to region and is not a globally standardised data set. Information on Australian based radars can be found at https://www.openradar.io/
 
+## Working with GRIB data
+To use `scores` with GRIB data, install [cfgrib](https://github.com/ecmwf/cfgrib) and use `engine='cfgrib'` when opening a grib file with `xarray`.
 
+## Working with NetCDF data
+To use `scores` with GRIB data, install [h5netcdf]() and use `engine=h5netcdf` when opening a NetCDF or hdf5 file with `xarray`. This is demonstrated in the notebook tutorials and this library is included in the tutorial dependencies.

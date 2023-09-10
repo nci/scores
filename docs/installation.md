@@ -69,7 +69,7 @@ pip install scores[dev]
 pip install .[dev]
 ```
 
-#### 4. Maintainter Environment <a name="maintainer"></a>
+#### 4. Maintainer Environment <a name="maintainer"></a>
 
 Installs:
 * [core environment](#core-env)
