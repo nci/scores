@@ -1,6 +1,6 @@
 # Installation Guide
 
-It is recommended to use a virtualised Python environment in most settings. The package can be easily installed using pip. The base requirements of the package are kept to a minimum to reduce the likelihood of conflicts.
+It is recommended to use a virtualised Python environment in most settings. The package can be easily installed using pip. The base requirements of the package are kept to a minimum to reduce the likelihood of conflicts. This project relies on a relatively recent version of pip, so you might need to upgrade pip within your virtual environment. If this is required, the installation process will automatically prompt you to do so, including the commands required. This is a simple and reliable step which will apply onto to your virtual environment.
 
 The basic installation includes only the most essential requirements, so as to not require users to include many complex dependencies.
 

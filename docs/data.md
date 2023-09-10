@@ -40,4 +40,4 @@ Radar data also varies according to region and is not a globally standardised da
 To use `scores` with GRIB data, install [cfgrib](https://github.com/ecmwf/cfgrib) and use `engine='cfgrib'` when opening a grib file with `xarray`.
 
 ## Working with NetCDF data
-To use `scores` with GRIB data, install [h5netcdf]() and use `engine=h5netcdf` when opening a NetCDF or hdf5 file with `xarray`. This is demonstrated in the notebook tutorials and this library is included in the tutorial dependencies.
+To use `scores` with NetCDF or HDF5 data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). Opening NetCDF data is demonstrated in the notebook tutorials and the `h5netcdf` library is included in the tutorial dependencies.
