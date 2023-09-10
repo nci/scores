@@ -9,8 +9,9 @@ There are 5 different types of environments which can be installed in `scores`:
 - core: only contains mathematical functions
 - tutorial: includes jupyter lab and ability to run all the notebooks
 - development: includes pylint, black and other development tools
-- maintainer: includes tools for building the documentation
-- all: includes requirements for all of the above
+- all: includes requirements for core, tutorial and development, but excludes maintainer requirements
+- maintainer: includes tools for building the documentation and building for PyPI
+
 
 ## 1. Core Environment 
 
@@ -35,7 +36,7 @@ pip install .
 ## 2. Tutorial Environment 
 
 Installs:
-* core environment
+* core dependencies
 * Dependencies for running the tutorial notebooks with jupyter lab.
 
 ### PyPI
@@ -53,7 +54,7 @@ pip install .[tutorial]
 ## 3. Development Environment 
 
 Installs:
-* core environment
+* core dependencies
 * Dependencies for development on the git repository.
   * i.e running tests suite, linters, ect.
 
@@ -73,7 +74,7 @@ pip install .[dev]
 
 Installs:
 * core dependencies
-* develeopment dependencies
+* development dependencies
 * tutorial dependencies
 
 ### from PyPI
@@ -92,7 +93,7 @@ pip install .[all]
 ## 5. Maintainer Environment 
 
 Installs:
-* core environment
+* core dependencies
 * Dependencies for building new versions of the `scores` package,
 
 ### PyPI
