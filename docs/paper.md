@@ -52,7 +52,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain some of the novel functions contained within `scores` and does not contain the Jupyter Notebook tutorials which provide users with clear guidance on the use of the verification metrics. 
 
-`METplus` [Brown:2021] provides related functionality. `METplus` is part of a C++ based verification framework, and scores are implemented in C++ rather than Python. It also has complex dependencies related to the MET ecosystem, including database setup and configuration. `METplus` does not contain some of the novel functions contained within `scores`.
+`METplus` [@Brown:2021] provides related functionality. `METplus` is part of a C++ based verification framework, and scores are implemented in C++ rather than Python. It also has complex dependencies related to the MET ecosystem, including database setup and configuration. `METplus` does not contain some of the novel functions contained within `scores`.
 
 # Acknowledgements
 
