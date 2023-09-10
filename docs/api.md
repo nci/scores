@@ -21,3 +21,9 @@
 .. autofunction:: scores.probability.adjust_fcst_for_crps
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 ```
+
+## scores.stats
+```{eval-rst}
+.. autofunction:: scores.stats.tests.diebold_mariano
+```
+
