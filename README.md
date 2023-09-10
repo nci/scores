@@ -22,7 +22,7 @@ All of the scores and metrics in this package have undergone a thorough statisti
 
 All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
-## Using this package.
+## Using this package
 
 The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package. 
 
