@@ -10,6 +10,7 @@
 
 ## scores.continuous
 ```{eval-rst}
+.. automodule:: scores.continuous
 .. autofunction:: scores.continuous.mae
 .. autofunction:: scores.continuous.mse
 .. autofunction:: scores.continuous.rmse
