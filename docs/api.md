@@ -1,6 +1,13 @@
 
 # API Documentation
 
+```{contents} Table of Contents
+   :depth: 1
+   :local:
+   :backlinks: none
+```
+
+
 ## scores.continuous
 ```{eval-rst}
 .. autofunction:: scores.continuous.mae
