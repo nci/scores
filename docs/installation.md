@@ -56,7 +56,7 @@ pip install .[tutorial]
 Installs:
 * core dependencies
 * Dependencies for development on the git repository.
-  * i.e running tests suite, linters, ect.
+  * i.e running tests suite, linters, etc.
 
 ### PyPI
 
