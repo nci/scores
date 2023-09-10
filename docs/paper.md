@@ -46,7 +46,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 ## Related Works
 
-`scores` has arisen from, and now supports, the JIVE verification system, described by [@Loveday:2023]. `scores` includes the mathematical functions from this package and is intended to modularise these components. The JIVE metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b] and [@Taggart:2022c]
+`scores` has arisen from, and now supports, the JIVE verification system, described by [@Loveday:2023]. `scores` includes the mathematical functions from this package and is intended to modularise these components. The JIVE metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d]
 
 `climpred` [@Brady:2021] provides some related functionality and provides many of the same scores. `climpred` does not contain some of the novel functions contained within `scores`, and at the same time makes some design choices specifically associated with climate modelling which do not generalise as effectively to broader use cases as may be needed in some circumstances. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
