@@ -14,6 +14,8 @@
 .. autofunction:: scores.continuous.mae
 .. autofunction:: scores.continuous.mse
 .. autofunction:: scores.continuous.rmse
+.. autofunction:: scores.continuous.murphy_score
+.. autofunction:: scores.continuous.murphy.thetas
 ```
 
 ## scores.probability
@@ -21,6 +23,8 @@
 .. autofunction:: scores.probability.crps_cdf
 .. autofunction:: scores.probability.adjust_fcst_for_crps
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
+.. autofunction:: scores.probability.murphy
+.. autofunction:: scores.probability.murphy_thetas
 ```
 
 ## scores.categorical

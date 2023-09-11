@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 import xarray as xr
+import dask
 
 from scores.continuous import murphy_score, murphy_thetas
 from scores.continuous.murphy_impl import _expectile_thetas, _huber_thetas, _quantile_thetas
@@ -101,7 +102,7 @@ thetas_list = [0.0, 2.0, 10.0]
 
 
 @pytest.mark.parametrize(
-    ("functional", "score_function", "thetas", "dask"),
+    ("functional", "score_function", "thetas", "daskinput"),
     [
         (murphy.QUANTILE, "_quantile_elementary_score", thetas_list, False),
         (murphy.HUBER, "_huber_elementary_score", thetas_list, False),
@@ -110,11 +111,11 @@ thetas_list = [0.0, 2.0, 10.0]
         (murphy.EXPECTILE, "_expectile_elementary_score", thetas_nc, True),
     ],
 )
-def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, dask):
+def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, daskinput):
     """murphy_score makes the expected operations on the scoring function output."""
     fcst = _test_array([1.0, 2.0, 3.0, 4.0])
     obs = _test_array([0.0, np.nan, 0.6, 137.4])
-    if dask:
+    if daskinput:
         fcst = fcst.chunk()
         obs = obs.chunk()
     mock_rel_fc_func = patch_scoring_func(monkeypatch, score_function, thetas)
@@ -174,10 +175,10 @@ def test_murphy_score_operations(functional, score_function, monkeypatch, thetas
             },
         }
     )
-    if dask:
-        assert len(result.chunks) == 2  # Check that the result is chunked
+    if daskinput:
+        assert isinstance(result.total.data, dask.array.Array)
         result = result.compute()
-    assert len(result.chunks) == 0  # Check that the result isn't chunked
+    assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_identical(result, expected)
     mock_rel_fc_func.assert_called_once()
 
