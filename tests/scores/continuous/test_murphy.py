@@ -11,7 +11,6 @@ from scores.continuous import murphy_score, murphy_thetas
 from scores.continuous.murphy_impl import _expectile_thetas, _huber_thetas, _quantile_thetas
 from scores.continuous import murphy_impl as murphy
 
-
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),
     data=[[[0.0], [5.0]], [[10.0], [15.0]]],
@@ -84,6 +83,8 @@ EXPECTED_EXPECTILE = xr.Dataset(
 
 def patch_scoring_func(monkeypatch, score_function, thetas):
     """Monkeypatch a scoring function, return the mock object."""
+    if isinstance(thetas, xr.DataArray):
+        thetas = thetas.values
     over = _rel_test_array(np.array([[999, 999, np.nan, np.nan]] * len(thetas)).T, theta=thetas)
     under = _rel_test_array(np.array([[np.nan, 888, np.nan, 888]] * len(thetas)).T, theta=thetas)
     mock_rel_fc_func = Mock(return_value=[over, under])
@@ -95,21 +96,28 @@ def patch_scoring_func(monkeypatch, score_function, thetas):
     return mock_rel_fc_func
 
 
+thetas_nc = xr.open_dataarray("tests/scores/continuous/test_data/thetas.nc")
+thetas_list = [0.0, 2.0, 10.0]
+
+
 @pytest.mark.parametrize(
-    ("functional", "score_function"),
+    ("functional", "score_function", "thetas", "dask"),
     [
-        (murphy.QUANTILE, "_quantile_elementary_score"),
-        (murphy.HUBER, "_huber_elementary_score"),
-        (murphy.EXPECTILE, "_expectile_elementary_score"),
+        (murphy.QUANTILE, "_quantile_elementary_score", thetas_list, False),
+        (murphy.HUBER, "_huber_elementary_score", thetas_list, False),
+        (murphy.EXPECTILE, "_expectile_elementary_score", thetas_list, False),
+        (murphy.EXPECTILE, "_expectile_elementary_score", thetas_nc, False),
+        (murphy.EXPECTILE, "_expectile_elementary_score", thetas_nc, True),
     ],
 )
-def test_murphy_score_operations(functional, score_function, monkeypatch):
+def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, dask):
     """murphy_score makes the expected operations on the scoring function output."""
     fcst = _test_array([1.0, 2.0, 3.0, 4.0])
     obs = _test_array([0.0, np.nan, 0.6, 137.4])
-    thetas = [0.0, 2.0, 10.0]
+    if dask:
+        fcst = fcst.chunk()
+        obs = obs.chunk()
     mock_rel_fc_func = patch_scoring_func(monkeypatch, score_function, thetas)
-
     result = murphy.murphy_score(
         fcst=fcst,
         obs=obs,
@@ -120,7 +128,8 @@ def test_murphy_score_operations(functional, score_function, monkeypatch):
         decomposition=True,
         preserve_dims=fcst.dims,
     )
-
+    if isinstance(thetas, xr.DataArray):
+        thetas = thetas.values
     expected = xr.Dataset.from_dict(
         {
             "dims": ("station_number", "theta"),
@@ -165,7 +174,10 @@ def test_murphy_score_operations(functional, score_function, monkeypatch):
             },
         }
     )
-
+    if dask:
+        assert len(result.chunks) == 2  # Check that the result is chunked
+        result = result.compute()
+    assert len(result.chunks) == 0  # Check that the result isn't chunked
     xr.testing.assert_identical(result, expected)
     mock_rel_fc_func.assert_called_once()
 

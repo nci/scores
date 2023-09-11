@@ -1,7 +1,7 @@
 """
 Murphy score
 """
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional, Sequence, Union
 
 import numpy as np
 import xarray as xr
@@ -18,7 +18,7 @@ SCORING_FUNC_DOCSTRING_PARAMS = {fun.upper(): fun for fun in VALID_SCORING_FUNC_
 def murphy_score(
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    thetas: Sequence[float],
+    thetas: Union[Sequence[float], xr.DataArray],
     functional: Literal["quantile", "huber", "expectile"],
     alpha: float,
     huber_a: Optional[float] = None,
@@ -33,12 +33,16 @@ def murphy_score(
     Select `functional="quantile"` and `alpha=0.5` for the median functional.
     Select `functional="expectile"` and `alpha=0.5` for the mean (i.e., expectation) functional.
 
-    Consider using `murphy_thetas` to generate thetas.
+    Consider using `murphy_thetas` to generate thetas. If utilising dask, you may want
+    to store `thetas` as a netCDF on disk and pass it in as an xarray object. Otherwise,
+    very large objects may be created when `fcst`, `obs` and `thetas` are broadcast
+    together.
+
 
     Args:
         fcst: Forecast numerical values.
         obs: Observed numerical values.
-        thetas: List of theta thresholds.
+        thetas: Theta thresholds.
         functional: The type of elementary scoring function, one of {QUANTILE},
             {HUBER}, or {EXPECTILE}.
         alpha: Risk parameter (i.e. quantile or expectile level) for the functional. Must be between 0 and 1.
@@ -88,8 +92,10 @@ def murphy_score(
     """
     functional = functional.lower()
     _check_murphy_inputs(alpha=alpha, functional=functional, huber_a=huber_a)
-
-    theta1 = xr.DataArray(data=thetas, dims=["theta"], coords=dict(theta=thetas))
+    if isinstance(thetas, xr.DataArray):
+        theta1 = thetas
+    else:
+        theta1 = xr.DataArray(data=thetas, dims=["theta"], coords=dict(theta=thetas))
     theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
     over, under = globals()[f"_{functional}_elementary_score"](fcst1, obs1, theta1, alpha, huber_a=huber_a)
