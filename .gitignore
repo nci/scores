@@ -5,3 +5,4 @@ build/
 .coverage
 src/scores.egg-info/
 tutorials/.ipynb_checkpoints/
+.vscode

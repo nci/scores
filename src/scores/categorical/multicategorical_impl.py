@@ -6,8 +6,8 @@ from typing import Optional, Sequence, Union
 import numpy as np
 import xarray as xr
 
-from scores.utils import check_dims, dims_complement, gather_dimensions
 from scores.functions import apply_weights
+from scores.utils import check_dims, dims_complement, gather_dimensions
 
 
 def firm(

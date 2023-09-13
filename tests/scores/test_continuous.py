@@ -2,6 +2,7 @@
 Contains unit tests for scores.continuous
 """
 
+import dask
 import numpy as np
 import numpy.random
 import pandas as pd
@@ -22,7 +23,6 @@ def test_mse_xarray_1d():
     fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
     obs_as_xarray_1d = xr.DataArray([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
     result = scores.continuous.mse(fcst_as_xarray_1d, obs_as_xarray_1d)
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
 
     expected = xr.DataArray(1.0909)
     assert result.round(PRECISION) == expected.round(PRECISION)
@@ -428,3 +428,47 @@ def test_xarray_dimension_preservations_with_arrays():
 
     assert reduce_empty.dims == fcst_temperatures_xr_2d.dims  # Nothing should be reduced
     assert (reduce_empty == preserve_all).all()
+
+
+FCST_CHUNKED = xr.DataArray(
+    data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+).chunk()
+OBS_CHUNKED = xr.DataArray(
+    data=np.array([[0, 0], [0, np.nan]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+).chunk()
+
+
+def test_mse_with_dask():
+    """
+    Test that mse works with dask
+    """
+    result = scores.continuous.mse(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    expected = xr.DataArray(data=[5, 4], dims=["dim2"], coords={"dim2": [1, 2]})
+    xr.testing.assert_equal(result, expected)
+
+
+def test_mae_with_dask():
+    """
+    Test that mae works with dask
+    """
+    result = scores.continuous.mae(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    expected = xr.DataArray(data=[2, 2], dims=["dim2"], coords={"dim2": [1, 2]})
+    xr.testing.assert_equal(result, expected)
+
+
+def test_rmse_with_dask():
+    """
+    Test that rmse works with dask
+    """
+    result = scores.continuous.rmse(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    expected = xr.DataArray(data=[np.sqrt(5), 2], dims=["dim2"], coords={"dim2": [1, 2]})
+    xr.testing.assert_equal(result, expected)

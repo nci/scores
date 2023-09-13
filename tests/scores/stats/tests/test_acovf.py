@@ -42,8 +42,8 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
 """
 
-from numpy.testing import assert_equal
 import pytest
+from numpy.testing import assert_equal
 
 from scores.stats.tests.acovf import _next_regular
 

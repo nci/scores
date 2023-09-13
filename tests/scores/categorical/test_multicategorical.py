@@ -1,7 +1,9 @@
 """
 Contains unit tests for scores.categorical
 """
+import dask
 import multicategorical_test_data as mtd
+import numpy as np
 import pytest
 import xarray as xr
 
@@ -249,6 +251,31 @@ def test_firm(
     xr.testing.assert_allclose(
         calculated,
         expected,
+        atol=0.001,
+    )
+
+
+def test_firm_dask():
+    """Tests firm works with dask"""
+    calculated = firm(
+        mtd.DA_FCST_FIRM.chunk(),
+        mtd.DA_OBS_FIRM.chunk(),
+        0.7,
+        [0, 5],
+        mtd.LIST_WEIGHTS_FIRM2,
+        0,
+        reduce_dims=None,
+        preserve_dims=["i", "j", "k"],
+    )
+
+    calculated = calculated.transpose("i", "j", "k")
+
+    assert isinstance(calculated.firm_score.data, dask.array.Array)
+    calculated = calculated.compute()
+    assert isinstance(calculated.firm_score.data, np.ndarray)
+    xr.testing.assert_allclose(
+        calculated,
+        mtd.EXP_FIRM_CASE6,
         atol=0.001,
     )
 
