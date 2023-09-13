@@ -6,6 +6,8 @@ Contains unit tests for scores.probability.crps
 from typing import Iterable, Optional  # pylint: disable=unused-import
 
 import crps_test_data  # pylint: disable=import-error
+import dask
+import numpy as np
 import pytest
 from assertions import assert_dataarray_equal  # pylint: disable=import-error
 from assertions import assert_dataset_equal  # pylint: disable=import-error
@@ -65,6 +67,33 @@ def test_crps_cdf_exact():
         include_components=False,
     )
 
+    assert list(result2.data_vars) == ["total"]
+
+
+def test_crps_cdf_exact_dask():
+    """Tests `crps_cdf_exact` works with Dask."""
+    result = crps_cdf_exact(
+        crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=True,
+    )
+    assert isinstance(result.total.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.total.data, np.ndarray)
+    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=7)
+
+    result2 = crps_cdf_exact(
+        crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
+        crps_test_data.DA_WT_CRPS_EXACT.chunk(),
+        "x",
+        include_components=False,
+    )
+    assert isinstance(result2.total.data, dask.array.Array)
+    result2 = result2.compute()
+    assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
 
 

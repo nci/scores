@@ -55,6 +55,9 @@ def diebold_mariano(
     Harvey, Leybourne and Newbold (1997) for why the t distribution may be preferred,
     especially for shorter timeseries.
 
+    If `da_timeseries` is a chunked array, data will be brought into memory during
+    this calculation due to the autocovariance implementation.
+
     Args:
         da_timeseries: a 2 dimensional array containing the timeseries.
         ts_dim: name of the dimension which identifies each timeseries in the array.
