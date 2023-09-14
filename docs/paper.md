@@ -1,5 +1,5 @@
 ---
-title: 'scores: A Python package for verifying accuracy using xarray and pandas'
+title: 'scores: A Python package for verifying accuracy using xarray'
 tags:
   - Python
   - geoscience
@@ -24,17 +24,19 @@ bibliography: paper.bib
 
 # Summary
 
-`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. `scores` is focused on supporting xarray datatypes for earth system data. It has wide potential application in machine learning, and domains other than meteorology, geoscience and weather. It also aims to be compatible with xarray, pandas, geopandas and work with NetCDF4, Zarr, hdf5 and GRIB data sources among others. Scores is designed to utilise Dask for scaling and performance.
+`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and domains other than meteorology, geoscience and weather. 
 
-All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook demonstrating its use in practise.
+`scores` is focused on supporting xarray datatypes for earth system data. It also aims to be compatible with pandas and geopandas, and to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. Scores is designed to utilise Dask for scaling and performance.
 
-At the time of writing, the scores contained in this package are: MSE, MAE, RMSE, FIRM [@Taggart:2022a], CRPS (including threshold-weighting, see [@Gneiting:2011], the FlipFlop index [@Griffiths:2019] and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications.
+All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
-# Statement of need
+At the time of writing, the scores contained in this package are: MSE, MAE, RMSE, FIRM [@Taggart:2022a], CRPS (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop index [@Griffiths:2019] and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications.
+
+# Statement of Need
 
 The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics.
 
-`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Scores provides its own implementations where relevant to avoid extensive dependencies, and its roadmap includes a comprehensive implementation of optimised, reviewed and useful set of scoring functions for verification, statistics, optimisation and machine learning.
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Scores provides its own implementations where relevant to avoid extensive dependencies. 
 
 `scores` works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. It has proper treatments for missing data, masking of data and weighting of results.
 
@@ -42,17 +44,19 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 `scores` is highly modular and has a minimal set of requirements. It is intented to be easy to integrate and utilise in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
 
-`scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores.
+The `scores` roadmap includes support for machine learning library integration, further optimisation of existing scores and the addition of more scoring functions for verification purposes.
+
+`scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
 ## Related Works
 
-`scores` has arisen from, and now supports, the JIVE verification system, described by [@Loveday:2023]. `scores` includes the mathematical functions from this package and is intended to modularise these components. The JIVE metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
+`scores` has arisen from, and now supports, the Jive verification system, described by [@Loveday:2023]. `scores` includes the mathematical functions from this package and is intended to modularise these components. The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
 
 `climpred` [@Brady:2021] provides some related functionality and provides many of the same scores. `climpred` does not contain some of the novel functions contained within `scores`, and at the same time makes some design choices specifically associated with climate modelling which do not generalise as effectively to broader use cases as may be needed in some circumstances. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain some of the novel functions contained within `scores` and does not contain the Jupyter Notebook tutorials which provide users with clear guidance on the use of the verification metrics. 
 
-`METplus` [@Brown:2021] provides related functionality. `METplus` is part of a C++ based verification framework, and scores are implemented in C++ rather than Python. It also has complex dependencies related to the MET ecosystem, including database setup and configuration. `METplus` does not contain some of the novel functions contained within `scores`.
+`METplus` [@Brown:2021] provides related functionality. `METplus` includes a database and visualisation system and python wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not contain some of the novel functions contained within `scores`.
 
 # Acknowledgements
 
