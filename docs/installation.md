@@ -17,7 +17,7 @@ There are 5 different types of environments which can be installed in `scores`:
 
 Installs:
 * `scores` package
-* Only the required core dependencies, nothing extra, no tutorials.
+* Only the required core dependencies, nothing extra, no tutorials
 
 > **_NOTE:_** Use this environment if you are unsure about what package you require.
 
@@ -37,7 +37,7 @@ pip install .
 
 Installs:
 * core dependencies
-* Dependencies for running the tutorial notebooks with jupyter lab.
+* Dependencies for running the tutorial notebooks with jupyter lab
 
 ### PyPI
 
@@ -55,8 +55,8 @@ pip install .[tutorial]
 
 Installs:
 * core dependencies
-* Dependencies for development on the git repository.
-  * i.e running tests suite, linters, etc.
+* Dependencies for development on the git repository
+  * i.e running tests suite, linters, etc
 
 ### PyPI
 
@@ -77,7 +77,7 @@ Installs:
 * development dependencies
 * tutorial dependencies
 
-### from PyPI
+### From PyPI
 
 ```Bash
 pip install scores[all]
@@ -94,7 +94,8 @@ pip install .[all]
 
 Installs:
 * core dependencies
-* Dependencies for building new versions of the `scores` package,
+* Dependencies for building new versions of the `scores` package
+* Dependencies for building the documentation as HTML
 
 ### PyPI
 
