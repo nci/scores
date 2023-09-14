@@ -1,3 +1,3 @@
-| continuous | probability | statistical tests      |
-| ---------- | ----------- | ----------- |
-| MAE, MSE, RMSE, FIRM | CRPS, FIRM |  Diebold Mariano (with the Harvey 1997 and Hering 2011 modifications) |
+| continuous     | probability | categorical | statistical tests      |
+| ----------     | ----------- | ----------- | -----------            |
+| MAE, MSE, RMSE | CRPS        | FIRM        | Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |

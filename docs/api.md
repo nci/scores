@@ -23,6 +23,11 @@
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 ```
 
+## scores.categorical
+```{eval-rst}
+.. autofunction:: scores.categorical.firm
+```
+
 ## scores.stats
 ```{eval-rst}
 .. autofunction:: scores.stats.tests.diebold_mariano
