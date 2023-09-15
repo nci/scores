@@ -16,7 +16,7 @@ Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io
 
 `scores` is a modular scoring package containing verification metrics, error functions, training scores and other statistical functions. It primarily supports the geoscience and earth system science communities. `scores` is focused on supporting xarray datatypes for earth system data. It has wide potential application in machine learning, and domains other than meteorology, geoscience and weather. It also aims to be compatible with pandas, geopandas, pangeo and work with NetCDF4, Zarr, hdf5 and GRIB data sources among others.
 
-`scores` includes novel scores not commonly found elsewhere (e.g. FIRM and FlipFlop Index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) as statistical tests (such as the Diebold Mariano test). `scores` provides its own implementations where relevant to avoid extensive dependencies.
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM and FlipFlop Index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practise.
 
@@ -54,4 +54,4 @@ Other than very small files to support automated testing, this repository does n
 
 ## Acknowledging This Work
 
-If you find this work useful, please consider a citation or acknowledgment of it.
+If you find this work useful, please consider a citation or acknowledgment of it. A citable DOI is coming soon. This section will be updated in the coming weeks to include the correct citation.

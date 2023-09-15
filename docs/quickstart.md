@@ -2,7 +2,8 @@
 
 Install and run tutorials, from a local checkout
 
-```git clone git@github.com:nci/scores.git
+```bash
+git clone git@github.com:nci/scores.git
 python3 -m venv <path_to_environment>
 source <path_to_environment>/bin/activate
 # Note - specifying [tutorial] includes dependencies for running the Jupyter Lab server. #

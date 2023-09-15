@@ -23,13 +23,13 @@ Installs:
 
 ### from PyPI
 
-```Bash
+```bash
 pip install scores
 ```
 
 ### from local git repository
 
-```
+```bash
 pip install .
 ```
 
@@ -41,7 +41,7 @@ Installs:
 
 ### PyPI
 
-```Bash
+```bash
 pip install scores[tutorial]
 ```
 
@@ -60,7 +60,7 @@ Installs:
 
 ### PyPI
 
-```Bash
+```bash
 pip install scores[dev]
 ```
 
@@ -79,7 +79,7 @@ Installs:
 
 ### From PyPI
 
-```Bash
+```bash
 pip install scores[all]
 ```
 
@@ -99,7 +99,7 @@ Installs:
 
 ### PyPI
 
-```Bash
+```bash
 pip install scores[maintainer]
 ```
 
