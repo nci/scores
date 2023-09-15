@@ -9,8 +9,8 @@ authors = [
   { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
 ]
 description = """\
-A modular scoring package containing scoring functions for verification, \
-training models and statistical applications\
+Scores is a package containing mathematical functions \
+for the verification, evaluation and optimisation of model outputs and predictions.
 """
 readme = "README.md"
 requires-python = ">=3.7"
@@ -35,8 +35,6 @@ dev = [
     "black == 23.3.0",
     "mypy == 1.3.0",
     "pylint == 2.17.4",
-    "mkdocs",
-    "mkdocstrings[python]",
 ]
 tutorial = [
     "jupyterlab",
@@ -45,7 +43,12 @@ tutorial = [
     "rasterio",
     "rioxarray"
 ]
-maintainer = ["build", "hatch"]
+maintainer = ["build", 
+              "hatch", 
+              "sphinx",
+              "myst-parser",
+              "sphinx-book-theme"
+]
 all = ["scores[dev,tutorial]"]
 
 [project.urls]
