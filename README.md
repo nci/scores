@@ -7,18 +7,20 @@ Currently Included Metrics:
 
 | continuous | probability | categorical | statistical tests      |
 | ---------- | ----------- | ----------- | ----------- |
-| MAE, MSE, RMSE, FIRM | CRPS, FIRM | FIRM |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
+| MAE, MSE, RMSE | CRPS | FIRM |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
 Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io)
 
-`scores` is a modular scoring package containing verification metrics, error functions, training scores and other statistical functions. It primarily supports the geoscience and earth system science communities. `scores` is focused on supporting xarray datatypes for earth system data. It has wide potential application in machine learning, and domains other than meteorology, geoscience and weather. It also aims to be compatible with pandas, geopandas, pangeo and work with NetCDF4, Zarr, hdf5 and GRIB data sources among others.
+`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather. 
 
-`scores` includes novel scores not commonly found elsewhere (e.g. FIRM and FlipFlop Index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). `scores` provides its own implementations where relevant to avoid extensive dependencies.
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop Index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
-All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practise.
+`scores` is focused on supporting xarray datatypes for earth system data. It also aims to be compatible with pandas, geopandas, pangeo and work with NetCDF4, hdf5, Zarr and GRIB data sources among others. `scores` is designed to utilise Dask for scaling and performance.
+
+All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
 All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
