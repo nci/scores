@@ -1,0 +1,8 @@
+sphinx
+myst-parser
+sphinx-book-theme
+scores
+xarray
+pandas
+scipy
+bottleneck

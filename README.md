@@ -3,23 +3,32 @@
 One-line intro: xarray based verification (accuracy) scoring that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
+Currently Included Metrics:
+
+| continuous | probability | categorical | statistical tests      |
+| ---------- | ----------- | ----------- | ----------- |
+| MAE, MSE, RMSE | CRPS | FIRM |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
+
+
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
-This package is currently in very active development. An additional ten to fifteen scores are expected to be implemented in the coming weeks. Performance testing and dask compatibility will be reviewed during and afterwards. The first 'release' will be tagged at that point.
+Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io)
 
-The documentation is divided into the [user guide](docs/userguide.md), the [contribution guide](docs/contributing.md) (including developer documentation) and [API documentation](docs/api.md).
+`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather. 
 
-`scores` is a modular scoring package containing mathematical functions that can be used for the verification, evaluation, and optimisation of model predictions, as well as other statistical functions. It is primarily aiming to support the geoscience and earth system community. `scores` is focused on supporting xarray datatypes for earth system data. Other data formats such as Pandas and Iris can be easily be converted to xarray objects to utilise `scores`. It has wider potential application in machine learning and domains other than meteorology, geoscience and weather but primarily supports those fields. It aims to be compatible with geopandas, pangeo and work with NetCDF4, Zarr, and hd5 data sources among others. To use `scores` with GRIB data, install [cfgrib](https://github.com/ecmwf/cfgrib) into your python environment and use `engine='cfgrib'` when opening a grib file with xarray.
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop Index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
-All of the scores and metrics in this package have undergone a thorough statistical and scientific review.
+`scores` is focused on supporting xarray datatypes for earth system data. It also aims to be compatible with pandas, geopandas, pangeo and work with NetCDF4, hdf5, Zarr and GRIB data sources among others. `scores` is designed to utilise Dask for scaling and performance.
 
-All interactions in forums, wikis, issues, emails and code (i.e. merge requests, code comments) will be managed according to the expectations outlined in the [code of conduct](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40,000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
+All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
-## Getting started using this package
+All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
-The [user guide](docs/userguide.md) contains information on installing, using and working with this package. Developers should follow the install steps from the [contributor's guide](docs/contributing.md)
+## Using This Package
 
-Installation may be performed with:
+The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package. 
+
+Installation of the core mathematical API may be performed with:
 
 ```py
 > pip install scores
@@ -37,15 +46,9 @@ Here is an example of the use of scores:
 array(2.)
 ```
 
-## Further Information on Scores and Metrics Included in the Package
+## Related Packages
 
-'scores' is a modular scoring package containing verification metrics, error functions, training scores and other statistical functions. It is primarily aiming to support the geoscience and earth system community. Scores is focused on supporting xarray and pandas datatypes for earth system data. It has wider potential application in machine learning and domains other than meteorology, geoscience and weather but primarily supports those fields. It aims to be compatible with geopandas, pangeo and work with NetCDF4 and hdf5 data sources among others.
-
-'scores' includes novel scores not commonly found elsewhere (e.g. FIRM and FlipFlip index), complex scores (CRPS), more common scores (MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Scores provides its own implementations where relevant to avoid extensive dependencies, and its roadmap includes a comprehensive implementation of optimised, reviewed and useful set of scoring functions for verification, statistics, optimisation and machine learning.
-
-All of the scores and metrics in this package have undergone a thorough statistical and scientific review.
-
-There are similar packages which should be acknowledged, in particular xskillscore and climpred. These packages both provide overlapping and similar functionality. This package provides an additional option to the community and has additional metrics which are not found in those other packages. The 'scores' package seeks to be self-contained with simple dependencies, and so re-implements various metrics which are found in other libraries, so that it can be a simple one-stop-shop for the metrics of interest to its userbase.
+There are similar packages which should be acknowledged, in particular [xskillscore](https://xskillscore.readthedocs.io/en/stable/) and [climpred](https://github.com/pangeo-data/climpred). These packages both provide overlapping and similar functionality. `scores` provides an additional option to the community and has additional metrics which are not found in those other packages. `scores` seeks to be self-contained with few dependencies, and so re-implements various metrics which are found in other libraries, so that it can be a simple one-stop-shop for the metrics of interest to its userbase.
 
 ## Finding and Downloading Data
 
@@ -53,4 +56,4 @@ Other than very small files to support automated testing, this repository does n
 
 ## Acknowledging This Work
 
-If you find this work useful, please consider a citation or acknowledgment of it.
+If you find this work useful, please consider a citation or acknowledgment of it. A citable DOI is coming soon. This section will be updated in the coming weeks to include the correct citation.
