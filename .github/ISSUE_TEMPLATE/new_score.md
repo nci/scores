@@ -1,3 +1,12 @@
+---
+name: New Score or Metric
+about: Suggest a new score or metric which could be added to the repository
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 A new score or metric should be developed on a separate feature branch, rebased against the main branch. Each merge request should include:
 
     The implementation of the new metric or score in xarray, ideally with support for pandas and dask
