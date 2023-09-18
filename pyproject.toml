@@ -53,7 +53,8 @@ maintainer = ["build",
               "hatch",
               "sphinx",
               "myst-parser",
-              "sphinx-book-theme"
+              "sphinx-book-theme",
+              "twine"
 ]
 all = ["scores[dev,tutorial]"]
 

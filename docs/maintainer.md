@@ -2,6 +2,16 @@
 
 Information relevant for package maintenance
 
+## This section covers the process for making a release from the develop branch
+
+1. Run through the notebooks manually
+2. Run the unit tests
+3. Prepare the merge request in github (do not do a rebase merge to main)
+4. Check readthedocs rebuilds correctly
+5. Prepare the PyPI update (should move to a Github Action)
+6. Perform the PyPI update (should move to a Github Action)
+
+
 ## This section covers how to build the documentation
 
 1. Tech stack for the documentation
