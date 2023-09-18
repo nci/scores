@@ -5,6 +5,7 @@ This module contains standard methods which may be used for continuous scoring
 import scores.functions
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
+import pandas
 
 
 def mse(
@@ -47,10 +48,22 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
+    as_pandas_series = False
+    both_pandas = False
+    if type(fcst) == pandas.Series:
+        fcst = fcst.to_xarray()
+        as_pandas_series = True
+
+    if type(obs) == pandas.Series:
+        obs = obs.to_xarray()
+        as_pandas_series = True
+        if as_pandas_series == True:
+            both_pandas = True
+
 
     error = fcst - obs
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights)
+    squared = scores.functions.apply_weights(squared, weights)    
 
     if preserve_dims or reduce_dims:
         reduce_dims = scores.utils.gather_dimensions(
@@ -61,6 +74,9 @@ def mse(
         _mse = squared.mean(dim=reduce_dims)
     else:
         _mse = squared.mean()
+
+    if both_pandas:
+        _mse = _mse.to_pandas()
 
     return _mse
 
@@ -156,6 +172,18 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
+    # as_pandas_series = False
+    # both_pandas = False
+    # if type(fcst) == pandas.Series:
+    #     fcst = fcst.to_xarray()
+    #     as_pandas_series = True
+
+    # if type(obs) == pandas.Series:
+    #     obs = obs.to_xarray()
+    #     as_pandas_series = True
+    #     if as_pandas_series == True:
+    #         both_pandas = True
+
 
     error = fcst - obs
     ae = abs(error)
@@ -168,5 +196,8 @@ def mae(
         _ae = ae.mean(dim=reduce_dims)
     else:
         _ae = ae.mean()
+        
+    # if both_pandas:
+    #     _ae = _ae.to_pandas()
 
     return _ae

@@ -10,6 +10,7 @@ import pytest
 import xarray as xr
 
 import scores.continuous
+import scores.sample_data
 
 PRECISION = 4
 
@@ -38,6 +39,34 @@ def test_mse_pandas_series():
     expected = 1.0909
     result = scores.continuous.mse(fcst_pd_series, obs_pd_series)
     assert round(result, 4) == expected
+
+def test_pandas_series_preserve():
+    """
+    Test calculation works correctly on pandas series
+    """
+
+    xda_fcst = scores.sample_data.simple_forecast()
+    xda_obs = scores.sample_data.simple_observations()
+    fcst = pd.Series(scores.sample_data.simple_forecast())
+    obs = pd.Series(scores.sample_data.simple_observations())
+
+    # Test MSE
+    xr_preserved =  scores.continuous.mse(xda_fcst, xda_obs, preserve_dims='all')
+    pd_preserved = scores.continuous.mse(fcst, obs, preserve_dims='all')
+    assert (pd_preserved == pd.Series([1, 1, 1, 1, 9, 9, 9, 9])).all()
+    assert (pd_preserved == xr_preserved).all()
+    
+    # Test MAE
+    xr_preserved =  scores.continuous.mae(xda_fcst, xda_obs, preserve_dims='all')
+    pd_preserved = scores.continuous.mae(fcst, obs, preserve_dims='all')
+    assert (pd_preserved == pd.Series([1, 1, 1, 1, 3, 3, 3, 3])).all()
+    assert (pd_preserved == xr_preserved).all()
+
+    # Test RMSE
+    xr_preserved =  scores.continuous.rmse(xda_fcst, xda_obs, preserve_dims='all')
+    pd_preserved = scores.continuous.rmse(fcst, obs, preserve_dims='all')
+    assert (pd_preserved == pd.Series([1, 1, 1, 1, 3, 3, 3, 3])).all()
+    assert (pd_preserved == xr_preserved).all()    
 
 
 def test_mse_dataframe():
