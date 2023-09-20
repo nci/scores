@@ -9,4 +9,4 @@ import scores.probability
 import scores.sample_data
 import scores.stats.tests
 
-__version__ = "v0.4"
+__version__ = "v0.5"
