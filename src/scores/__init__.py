@@ -9,4 +9,4 @@ import scores.functions
 import scores.stats.tests
 import scores.categorical
 
-__version__ = "v0.4"
+__version__ = "v0.5"
