@@ -35,8 +35,6 @@ dev = [
     "black == 23.3.0",
     "mypy == 1.3.0",
     "pylint == 2.17.4",
-    "mkdocs",
-    "mkdocstrings[python]",
     "dask"
 ]
 tutorial = [
