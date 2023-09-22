@@ -90,15 +90,15 @@ def murphy_score(
               DOI: 10.1214/21-EJS1957
 
     """
-    functional = functional.lower()
-    _check_murphy_inputs(alpha=alpha, functional=functional, huber_a=huber_a)
+    functional_lower = functional.lower()
+    _check_murphy_inputs(alpha=alpha, functional=functional_lower, huber_a=huber_a)
     if isinstance(thetas, xr.DataArray):
         theta1 = thetas
     else:
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords=dict(theta=thetas))
     theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
-    over, under = globals()[f"_{functional}_elementary_score"](fcst1, obs1, theta1, alpha, huber_a=huber_a)
+    over, under = globals()[f"_{functional_lower}_elementary_score"](fcst1, obs1, theta1, alpha, huber_a=huber_a)
     # Align dimensions, this is required in cases such as when the station numbers
     # are not in the same order in `obs` and `fcst` to prevent an exception on the next
     # line that combines the scores
