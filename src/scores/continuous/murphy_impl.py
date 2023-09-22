@@ -7,6 +7,7 @@ import numpy as np
 import xarray as xr
 from scores.utils import gather_dimensions
 from scores.processing import broadcast_and_match_nan
+from scores.typing import FlexibleDimensionTypes
 
 QUANTILE = "quantile"
 HUBER = "huber"
@@ -23,8 +24,8 @@ def murphy_score(
     alpha: float,
     huber_a: Optional[float] = None,
     decomposition: bool = False,
-    reduce_dims: Optional[Sequence[str]] = None,
-    preserve_dims: Optional[Sequence[str]] = None,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
 ) -> xr.Dataset:
     """Returns the mean elementary score (Ehm et. al. 2016), also known as Murphy score,
     evaluated at decision thresholds specified by thetas. Optionally returns a decomposition
@@ -116,7 +117,8 @@ def murphy_score(
     for source, name in zip(sources, names):
         source.name = name
     result = xr.merge(sources)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    # Pylance doesn't list fcst.dims being matched to a list of strings, but this is well-tested and is fine
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims) # type: ignore
     result = result.mean(dim=reduce_dims)
     return result
 

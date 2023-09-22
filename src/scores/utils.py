@@ -38,7 +38,7 @@ class DimensionError(Exception):
     """
 
 
-def gather_dimensions(fcst_dims: typing.List[str], obs_dims: typing.List[str], reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None):
+def gather_dimensions(fcst_dims: List[str], obs_dims: List[str], reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None):
     """
     Establish which dimensions to reduce when calculating errors but before taking means
 
@@ -83,23 +83,23 @@ def gather_dimensions(fcst_dims: typing.List[str], obs_dims: typing.List[str], r
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
 
-        reduce_dims = set(all_dims).difference(preserve_dims)   # type: ignore
+        reduce_dims = set(all_dims).difference(preserve_dims) 
 
     # Handle reduce all
     elif reduce_dims == "all":
-        reduce_dims = set(all_dims)  # type: ignore
+        reduce_dims = set(all_dims)
 
     # Handle is reduce_dims and preserve_dims are both None
     if reduce_dims is None and preserve_dims is None:
-        reduce_dims = set(all_dims)  # type: ignore
+        reduce_dims = set(all_dims)
 
     # Handle reduce by string
     elif isinstance(reduce_dims, str):
-        reduce_dims = set([reduce_dims])  # type: ignore
+        reduce_dims = set([reduce_dims])
 
     # Turn into a set if needed
     elif reduce_dims is not None:
-        reduce_dims = set(reduce_dims)  # type: ignore
+        reduce_dims = set(reduce_dims)
 
     # Reduce by list is the default so no handling needed
     return reduce_dims

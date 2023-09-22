@@ -7,11 +7,12 @@ import typing
 import pandas
 import xarray as xr
 
-# These type hint values are used for various standard arguments across the 
-# scores repository to guaranteee consistency. These types *should* be used
-# by developers and *should not* be deviated from in standard arguments
+# Flexible Dimension Types should be used for preserve_dims and reduce_dims in all
+# cases across the repository
+FlexibleDimensionTypes = typing.Optional[typing.Union[str, typing.List[str], typing.Set[str]]]
 
-FlexibleDimensionTypes = typing.Union[str, typing.List[str], None]
+# Xarraylike data types should be used for all forecast, observed and weights
+# However currently some are specified as DataArray only
 XarrayLike = typing.Union[xr.DataArray, xr.Dataset]
 
 # These type hint values *may* be used for various arguments across the
