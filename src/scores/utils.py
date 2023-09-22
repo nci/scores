@@ -1,9 +1,12 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
+import typing
 import warnings
 
 import xarray as xr
+from typing import Iterable, List
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -28,7 +31,6 @@ You have specified both preserve_dims and reduce_dims. This method doesn't know 
 to properly interpret that, therefore an exception has been raised.
 """
 
-
 class DimensionError(Exception):
     """
     Custom exception used when attempting to operate over xarray DataArray or
@@ -36,7 +38,7 @@ class DimensionError(Exception):
     """
 
 
-def gather_dimensions(fcst_dims, obs_dims, reduce_dims=None, preserve_dims=None):
+def gather_dimensions(fcst_dims: typing.List[str], obs_dims: typing.List[str], reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None):
     """
     Establish which dimensions to reduce when calculating errors but before taking means
 
@@ -81,23 +83,23 @@ def gather_dimensions(fcst_dims, obs_dims, reduce_dims=None, preserve_dims=None)
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
 
-        reduce_dims = set(all_dims).difference(preserve_dims)
+        reduce_dims = set(all_dims).difference(preserve_dims)   # type: ignore
 
     # Handle reduce all
     elif reduce_dims == "all":
-        reduce_dims = set(all_dims)
+        reduce_dims = set(all_dims)  # type: ignore
 
     # Handle is reduce_dims and preserve_dims are both None
     if reduce_dims is None and preserve_dims is None:
-        reduce_dims = set(all_dims)
+        reduce_dims = set(all_dims)  # type: ignore
 
     # Handle reduce by string
     elif isinstance(reduce_dims, str):
-        reduce_dims = set([reduce_dims])
+        reduce_dims = set([reduce_dims])  # type: ignore
 
     # Turn into a set if needed
     elif reduce_dims is not None:
-        reduce_dims = set(reduce_dims)
+        reduce_dims = set(reduce_dims)  # type: ignore
 
     # Reduce by list is the default so no handling needed
     return reduce_dims
@@ -124,12 +126,12 @@ def dims_complement(data, dims=None):
     return sorted(list(complement))
 
 
-def check_dims(xr_data, expected_dims, mode=None):
+def check_dims(xr_data: XarrayLike, expected_dims: List[str], mode: typing.Union[str, None]=None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
     Args:
-        xr_data (Union[xarray.DataArray, xr.Dataset]): if a Dataset is supplied,
+        xr_data (XarrayLike): if a Dataset is supplied,
             all of its data variables (DataArray objects) are checked.
         expected_dims (Iterable[str]): an Iterable of dimension names.
         mode (Optional[str]): one of 'equal' (default), 'subset' or 'superset'.
