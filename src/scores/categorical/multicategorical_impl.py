@@ -156,7 +156,7 @@ def _single_category_score(
     obs: xr.DataArray,
     risk_parameter: float,
     categorical_threshold: float,
-    discount_distance: float,
+    discount_distance: Optional[float] = None,
 ) -> xr.Dataset:
     """
     Calculates the score for a single category for the `firm` metric at each
