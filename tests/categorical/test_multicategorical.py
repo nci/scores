@@ -12,10 +12,6 @@ from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
 
 
-def test_dummy_test():
-    assert 1 == 1
-
-
 @pytest.mark.parametrize(
     ("fcst", "obs", "categorical_threshold", "discount_distance", "expected"),
     [
