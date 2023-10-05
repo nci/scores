@@ -25,11 +25,14 @@
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 .. autofunction:: scores.probability.murphy
 .. autofunction:: scores.probability.murphy_thetas
+.. autofunction:: scores.probability.roc_curve_data
 ```
 
 ## scores.categorical
 ```{eval-rst}
 .. autofunction:: scores.categorical.firm
+.. autofunction:: scores.continuous.probability_of_detection
+.. autofunction:: scores.continuous.probability_of_false_detection
 ```
 
 ## scores.stats
