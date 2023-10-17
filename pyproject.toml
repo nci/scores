@@ -46,8 +46,8 @@ tutorial = [
     "rasterio",
     "rioxarray"
 ]
-maintainer = ["build", 
-              "hatch", 
+maintainer = ["build",
+              "hatch",
               "sphinx",
               "myst-parser",
               "sphinx-book-theme"

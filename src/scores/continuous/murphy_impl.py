@@ -5,9 +5,10 @@ from typing import Literal, Optional, Sequence, Union
 
 import numpy as np
 import xarray as xr
-from scores.utils import gather_dimensions
+
 from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
+from scores.utils import gather_dimensions
 
 QUANTILE = "quantile"
 HUBER = "huber"
@@ -103,8 +104,7 @@ def murphy_score(
     # Align dimensions, this is required in cases such as when the station numbers
     # are not in the same order in `obs` and `fcst` to prevent an exception on the next
     # line that combines the scores
-    # pylint: disable=unbalanced-tuple-unpacking
-    over, under, fcst1 = xr.align(over, under, fcst1)
+    over, under, fcst1, *_ = xr.align(over, under, fcst1)
     score = over.combine_first(under).fillna(0).where(~np.isnan(fcst1), np.nan)
 
     sources = [score]
@@ -117,13 +117,12 @@ def murphy_score(
     for source, name in zip(sources, names):
         source.name = name
     result = xr.merge(sources)
-    # Pylance doesn't list fcst.dims being matched to a list of strings, but this is well-tested and is fine
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims) # type: ignore
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
     result = result.mean(dim=reduce_dims)
     return result
 
 
-def _quantile_elementary_score(fcst, obs, theta, alpha, **_):
+def _quantile_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType, theta, alpha, **_):
     """Return over and under forecast vs obs penalties relative to theta for {QUANTILE}."""
     zero_array = fcst * 0.0
     over = (zero_array + 1 - alpha).where((fcst > theta) & (obs <= theta))
@@ -131,7 +130,7 @@ def _quantile_elementary_score(fcst, obs, theta, alpha, **_):
     return over, under
 
 
-def _huber_elementary_score(fcst, obs, theta, alpha, *, huber_a):
+def _huber_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType, theta, alpha, *, huber_a):
     """Return over and under forecast vs obs penalties relative to theta for {HUBER}."""
     zero_array = fcst * 0.0
     over = (1 - alpha) * np.minimum(theta - obs, zero_array + huber_a).where((fcst > theta) & (obs <= theta))
@@ -139,7 +138,7 @@ def _huber_elementary_score(fcst, obs, theta, alpha, *, huber_a):
     return over, under
 
 
-def _expectile_elementary_score(fcst, obs, theta, alpha, **_):
+def _expectile_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType, theta, alpha, **_):
     """Return over and under forecast vs obs penalties relative to theta for {EXPECTILE}."""
     over = (1 - alpha) * np.abs(obs - theta).where((fcst > theta) & (obs <= theta))
     under = alpha * np.abs(obs - theta).where((fcst <= theta) & (obs > theta))
