@@ -4,11 +4,16 @@ This module contains standard methods which may be used for continuous scoring
 
 import scores.functions
 import scores.utils
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
-from scores.typing import FlexibleDimensionTypes
-from scores.typing import FlexibleArrayType
 
-def mse(fcst, obs, reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None, weights=None):
+def mse(
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights=None,
+):
     """Calculates the mean squared error from forecast and observed data.
 
     Dimensional reduction is not supported for pandas and the user should
@@ -48,8 +53,9 @@ def mse(fcst, obs, reduce_dims: FlexibleDimensionTypes=None, preserve_dims: Flex
     squared = scores.functions.apply_weights(squared, weights)
 
     if preserve_dims or reduce_dims:
-        # this is fine in mypy but Pylance reports a false positive
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims) # type: ignore 
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
 
     if reduce_dims is not None:
         _mse = squared.mean(dim=reduce_dims)
@@ -59,7 +65,13 @@ def mse(fcst, obs, reduce_dims: FlexibleDimensionTypes=None, preserve_dims: Flex
     return _mse
 
 
-def rmse(fcst: FlexibleArrayType, obs: FlexibleArrayType, reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None, weights=None):
+def rmse(
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights=None,
+):
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
@@ -104,7 +116,13 @@ def rmse(fcst: FlexibleArrayType, obs: FlexibleArrayType, reduce_dims: FlexibleD
     return _rmse
 
 
-def mae(fcst: FlexibleArrayType, obs: FlexibleArrayType, reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None, weights=None):
+def mae(
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights=None,
+):
     """Calculates the mean absolute error from forecast and observed data.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
@@ -146,8 +164,7 @@ def mae(fcst: FlexibleArrayType, obs: FlexibleArrayType, reduce_dims: FlexibleDi
     ae = scores.functions.apply_weights(ae, weights)
 
     if preserve_dims is not None or reduce_dims is not None:
-        # this is fine in mypy but Pylance reports a false positive
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims) # type: ignore
+        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
 
     if reduce_dims is not None:
         _ae = ae.mean(dim=reduce_dims)

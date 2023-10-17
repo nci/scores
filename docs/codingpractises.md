@@ -12,8 +12,8 @@ The [contributing.md](Contributing Guide) provides (among other things) guidance
 
 # Type Hinting
 
-Our philosophy is 'we hint what we test'. The functions in `scores` may well function with a broader variety of types than what is hinted. The promise of a type hint is that you know it will work, because it's been tested to work.
+Our philosophy is 'we hint what we test'. The functions in `scores` may well function with a broader variety of types than what is hnted. The promise of a type hint is that you know it will work, because it's been tested to work.
 
 # Support for Additional Libraries
 
-This may result in false positives, such as if using a Dask dataframe in place of a Pandas dataframe, or a numpy array in place of a Pandas series. Such things may work, but without being tested and assured by the development team, we don't want to indicate it. 
+This may result in false positives, such as if using a Dask dataframe in place of a Pandas dataframe, or a numpy array in place of a Pandas series. Such things may work, but without being tested and assured by the development team, we don't want to indicate it.

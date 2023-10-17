@@ -1,11 +1,11 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
-import typing
 import warnings
+from typing import Hashable, Iterable, List, Optional
 
 import xarray as xr
-from typing import Iterable, List
+
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 WARN_ALL_DATA_CONFLICT_MSG = """
@@ -31,6 +31,7 @@ You have specified both preserve_dims and reduce_dims. This method doesn't know 
 to properly interpret that, therefore an exception has been raised.
 """
 
+
 class DimensionError(Exception):
     """
     Custom exception used when attempting to operate over xarray DataArray or
@@ -38,7 +39,12 @@ class DimensionError(Exception):
     """
 
 
-def gather_dimensions(fcst_dims: List[str], obs_dims: List[str], reduce_dims: FlexibleDimensionTypes=None, preserve_dims: FlexibleDimensionTypes=None):
+def gather_dimensions(
+    fcst_dims: Iterable[Hashable],
+    obs_dims: Iterable[Hashable],
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+):
     """
     Establish which dimensions to reduce when calculating errors but before taking means
 
@@ -72,8 +78,7 @@ def gather_dimensions(fcst_dims: List[str], obs_dims: List[str], reduce_dims: Fl
         if not set(specified).issubset(all_dims):
             if preserve_dims is not None:
                 raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
-            else:
-                raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
+            raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
 
     # Handle preserve_dims case
     if preserve_dims is not None:
@@ -83,7 +88,7 @@ def gather_dimensions(fcst_dims: List[str], obs_dims: List[str], reduce_dims: Fl
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
 
-        reduce_dims = set(all_dims).difference(preserve_dims) 
+        reduce_dims = set(all_dims).difference(preserve_dims)
 
     # Handle reduce all
     elif reduce_dims == "all":
@@ -126,7 +131,7 @@ def dims_complement(data, dims=None):
     return sorted(list(complement))
 
 
-def check_dims(xr_data: XarrayLike, expected_dims: List[str], mode: typing.Union[str, None]=None):
+def check_dims(xr_data: XarrayLike, expected_dims: List[str], mode: Optional[str] = None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
