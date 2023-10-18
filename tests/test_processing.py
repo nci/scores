@@ -3,13 +3,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from tests import test_processing_data as xtd
 from scores.processing import (
     binary_discretise,
     broadcast_and_match_nan,
     check_binary,
     comparative_discretise,
 )
+from tests import test_processing_data as xtd
+
 
 @pytest.mark.parametrize(
     ("args", "expected"),

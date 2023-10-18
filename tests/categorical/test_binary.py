@@ -48,6 +48,14 @@ expected_pofd_weighted = xr.DataArray(data=1 / 2, name="ctable_probability_of_de
         (fcst_mix, obs1, "a", True, None, expected_poda),  # Fcst mix, obs ones, only reduce one dim
         (fcst_bad, obs0, None, False, None, expected_pod0),  # Don't check for bad data
         (fcst_mix, obs1, None, True, weight_array, expected_pod_weighted),  # Fcst mixed, obs ones, with weights
+        (
+            xr.Dataset({"array1": fcst0, "array2": fcst1}),
+            xr.Dataset({"array1": obs0, "array2": obs1}),
+            None,
+            True,
+            None,
+            xr.Dataset({"array1": expected_pod0, "array2": expected_pod1}),
+        ),  # Test with DataSet for inputs
     ],
 )
 def test_probability_of_detection(fcst, obs, reduce_dims, check_args, weights, expected):
@@ -90,6 +98,14 @@ def test_probability_of_detection_raises(fcst, obs, error_msg):
         (fcst_mix, obs0, "a", True, None, expected_poda),  # Fcst mix, obs ones, only reduce one dim
         (fcst_bad, obs0, None, False, None, expected_pofd0),  # Don't check for bad data
         (fcst_mix, obs0, None, True, weight_array, expected_pofd_weighted),  # Fcst mixed, obs ones, with weights
+        (
+            xr.Dataset({"array1": fcst0, "array2": fcst1}),
+            xr.Dataset({"array1": obs0, "array2": obs1}),
+            None,
+            True,
+            None,
+            xr.Dataset({"array1": expected_pofd0, "array2": expected_pofd1}),
+        ),  # Test with DataSet for inputs
     ],
 )
 def test_probability_of_false_detection(fcst, obs, reduce_dims, check_args, weights, expected):

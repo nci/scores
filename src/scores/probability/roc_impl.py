@@ -1,7 +1,8 @@
 """
 Implementation of Reciever Operating Characteristic (ROC) calculations
 """
-from typing import Iterable, Optional, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Optional
 
 import numpy as np
 import xarray as xr
