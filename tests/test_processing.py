@@ -1,10 +1,10 @@
 """Tests for processing"""
 import numpy as np
 import pytest
-import test_processing_data as xtd
 import xarray as xr
 
 from scores.processing import broadcast_and_match_nan
+from tests import test_processing_data as xtd
 
 
 @pytest.mark.parametrize(

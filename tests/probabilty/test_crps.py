@@ -2,15 +2,9 @@
 """
 Contains unit tests for scores.probability.crps
 """
-
-from typing import Iterable, Optional  # pylint: disable=unused-import
-
-import crps_test_data  # pylint: disable=import-error
 import dask
 import numpy as np
 import pytest
-from assertions import assert_dataarray_equal  # pylint: disable=import-error
-from assertions import assert_dataset_equal  # pylint: disable=import-error
 
 from scores.probability import (
     adjust_fcst_for_crps,
@@ -23,6 +17,8 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
+from tests.assertions import assert_dataarray_equal, assert_dataset_equal
+from tests.probabilty import crps_test_data
 
 
 @pytest.mark.parametrize(

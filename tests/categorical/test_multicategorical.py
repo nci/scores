@@ -2,7 +2,6 @@
 Contains unit tests for scores.categorical
 """
 import dask
-import multicategorical_test_data as mtd
 import numpy as np
 import pytest
 import xarray as xr
@@ -10,6 +9,7 @@ import xarray as xr
 from scores.categorical import firm
 from scores.categorical.multicategorical_impl import _single_category_score
 from scores.utils import DimensionError
+from tests.categorical import multicategorical_test_data as mtd
 
 
 def test_dummy_test():
