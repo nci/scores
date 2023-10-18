@@ -3,11 +3,11 @@ Containts tests for the scores.utils file
 """
 
 import pytest
-import utils_test_data  # pylint: disable=import-error
 
 from scores import utils
 from scores.utils import DimensionError
 from scores.utils import gather_dimensions as gd
+from tests import utils_test_data
 
 
 @pytest.mark.parametrize(
