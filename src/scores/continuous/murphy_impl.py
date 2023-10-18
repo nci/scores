@@ -1,7 +1,8 @@
 """
 Murphy score
 """
-from typing import Literal, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Literal, Optional, Union
 
 import numpy as np
 import xarray as xr

@@ -2,7 +2,8 @@
 Contains frequently-used functions of a general nature within scores
 """
 import warnings
-from typing import Hashable, Iterable, List, Optional
+from collections.abc import Hashable, Iterable
+from typing import Optional
 
 import xarray as xr
 

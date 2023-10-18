@@ -2,8 +2,8 @@
 This module supports the implementation of the CRPS scoring function, drawing from additional functions.
 The primary method, `crps_cdf` is imported into the probability module to be part of the probability API
 """
-
-from typing import Iterable, Literal, Optional
+from collections.abc import Iterable
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd

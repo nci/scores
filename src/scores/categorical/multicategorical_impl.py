@@ -1,13 +1,14 @@
 """
 This module contains methods which may be used for scoring multicategorical forecasts
 """
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
 
 from scores.functions import apply_weights
-from scores.utils import check_dims, dims_complement, gather_dimensions
+from scores.utils import check_dims, gather_dimensions
 
 
 def firm(
@@ -19,7 +20,7 @@ def firm(
     discount_distance: Optional[float] = 0,
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights: Optional[xr.DataArray]=None
+    weights: Optional[xr.DataArray] = None,
 ) -> xr.Dataset:
     """
     Calculates the FIxed Risk Multicategorical (FIRM) score including the
@@ -105,14 +106,10 @@ def firm(
     )
     total_score = []
     for categorical_threshold, weight in zip(categorical_thresholds, threshold_weights):
-        score = weight * _single_category_score(
-            fcst, obs, risk_parameter, categorical_threshold, discount_distance
-        )
+        score = weight * _single_category_score(fcst, obs, risk_parameter, categorical_threshold, discount_distance)
         total_score.append(score)
     summed_score = sum(total_score)
-    reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims, preserve_dims
-    )
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
     summed_score = apply_weights(summed_score, weights)
     score = summed_score.mean(dim=reduce_dims)
 
@@ -133,9 +130,7 @@ def _check_firm_inputs(
         raise ValueError("`categorical_thresholds` must have at least one threshold")
 
     if not len(categorical_thresholds) == len(threshold_weights):
-        raise ValueError(
-            "The length of `categorical_thresholds` and `weights` must be equal"
-        )
+        raise ValueError("The length of `categorical_thresholds` and `weights` must be equal")
     if risk_parameter <= 0 or risk_parameter >= 1:
         raise ValueError("0 < `risk_parameter` < 1 must be satisfied")
 
