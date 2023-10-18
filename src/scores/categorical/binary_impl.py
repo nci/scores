@@ -1,24 +1,25 @@
 """
 This module contains methods for binary categories
 """
-from typing import Optional, Sequence
+from typing import Optional
 
 import numpy as np
 import xarray as xr
 
 from scores.functions import apply_weights
 from scores.processing import check_binary
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
 
 def probability_of_detection(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
-    reduce_dims: Optional[Sequence[str]] = None,
-    preserve_dims: Optional[Sequence[str]] = None,
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
     weights: Optional[xr.DataArray] = None,
     check_args: Optional[bool] = True,
-) -> xr.DataArray:
+) -> XarrayLike:
     """
     Calculates the Probability of Detection (POD), also known as the Hit Rate.
     This is the proportion of observed events (obs = 1) that were correctly
@@ -75,19 +76,17 @@ def probability_of_detection(
     hits = hits.sum(dim=dims_to_sum)
 
     pod = hits / (hits + misses)
-
-    pod.name = "ctable_probability_of_detection"
     return pod
 
 
 def probability_of_false_detection(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
-    reduce_dims: Optional[Sequence[str]] = None,
-    preserve_dims: Optional[Sequence[str]] = None,
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
     weights: Optional[xr.DataArray] = None,
     check_args: Optional[bool] = True,
-) -> xr.DataArray:
+) -> XarrayLike:
     """
     Calculates the Probability of False Detection (POFD), also known as False
     Alarm Rate (not to be confused with the False Alarm Ratio). The POFD is
@@ -144,5 +143,4 @@ def probability_of_false_detection(
     correct_negatives = correct_negatives.sum(dim=dims_to_sum)
 
     pofd = false_alarms / (false_alarms + correct_negatives)
-    pofd.name = "ctable_probability_of_false_detection"
     return pofd

@@ -1,10 +1,12 @@
 """Tools for processing data for verification"""
 import operator
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 INEQUALITY_MODES = {
     ">=": (operator.ge, -1),
@@ -17,7 +19,7 @@ INEQUALITY_MODES = {
 EQUALITY_MODES = {"==": (operator.le), "!=": (operator.gt)}
 
 
-def check_binary(data: Union[xr.DataArray, xr.Dataset], name: str):
+def check_binary(data: XarrayLike, name: str):
     """
     Checks that data does not have any non-NaN values out of the set {0, 1}
 
@@ -27,7 +29,10 @@ def check_binary(data: Union[xr.DataArray, xr.Dataset], name: str):
         ValueError: if there are values in `fcst` and `obs` that are not in the
             set {0, 1, np.nan} and `check_args` is true.
     """
-    unique_values = pd.unique(data.values.flatten())
+    if isinstance(data, xr.DataArray):
+        unique_values = pd.unique(data.values.flatten())
+    else:
+        unique_values = pd.unique(data.to_array().values.flatten())
     unique_values = unique_values[~np.isnan(unique_values)]
     binary_set = {0, 1}
 
@@ -35,17 +40,19 @@ def check_binary(data: Union[xr.DataArray, xr.Dataset], name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
-def comparative_discretise(data, comparison, mode, abs_tolerance=None):
+def comparative_discretise(
+    data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, abs_tolerance: Optional[float] = None
+) -> XarrayLike:
     """
     Converts the values of `data` to 0 or 1 based on how they relate to the specified
     values in `comparison` via the `mode` operator.
 
     Args:
-        data (xarray.DataArray or xarray.Dataset): The data to convert to
+        data: The data to convert to
             discrete values.
-        comparison (xarray.DataArray, float or int): The values to which
+        comparison: The values to which
             to compare `data`.
-        mode (str): Specifies the required relation of `data` to `thresholds`
+        mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:
             - '>=' values in `data` greater than or equal to the
@@ -60,7 +67,7 @@ def comparative_discretise(data, comparison, mode, abs_tolerance=None):
             are assigned as 1
             - '!=' values in `data` not equal to the corresponding threshold
             are assigned as 1.
-        abs_tolerance (Optional[float]): If supplied, values in data that are
+        abs_tolerance: If supplied, values in data that are
             within abs_tolerance of a threshold are considered to be equal to
             that threshold. This is generally used to correct for floating
             point rounding, e.g. we may want to consider 1.0000000000000002 as
@@ -108,17 +115,23 @@ def comparative_discretise(data, comparison, mode, abs_tolerance=None):
     return discrete_data
 
 
-def binary_discretise(data, thresholds, mode, abs_tolerance=None, autosqueeze=False):
+def binary_discretise(
+    data: XarrayLike,
+    thresholds: FlexibleDimensionTypes,
+    mode: str,
+    abs_tolerance: Optional[float] = None,
+    autosqueeze: Optional[bool] = False,
+):
     """
     Converts the values of `data` to 0 or 1 for each threshold in `thresholds`
     according to the operation defined by `mode`.
 
     Args:
-        data (xarray.DataArray or xarray.Dataset): The data to convert to
+        data: The data to convert to
             discrete values.
-        thresholds (float or iterable): Threshold(s) at which to convert the
+        thresholds: Threshold(s) at which to convert the
             values of `data` to 0 or 1.
-        mode (str): Specifies the required relation of `data` to `thresholds`
+        mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:
 
@@ -135,13 +148,13 @@ def binary_discretise(data, thresholds, mode, abs_tolerance=None, autosqueeze=Fa
             - '!=' values in `data` not equal to the corresponding threshold
             are assigned as 1.
 
-        abs_tolerance (Optional[float]): If supplied, values in data that are
+        abs_tolerance: If supplied, values in data that are
             within abs_tolerance of a threshold are considered to be equal to
             that threshold. This is generally used to correct for floating
             point rounding, e.g. we may want to consider 1.0000000000000002 as
             equal to 1
 
-        autosqueeze (Optional[bool]): If True and only one threshold is
+        autosqueeze: If True and only one threshold is
             supplied, then the dimension 'threshold' is squeezed out of the
             output. If `thresholds` is float-like, then this is forced to
             True, otherwise defaults to False.
@@ -184,7 +197,7 @@ def binary_discretise(data, thresholds, mode, abs_tolerance=None, autosqueeze=Fa
     return discrete_data
 
 
-def broadcast_and_match_nan(*args: Union[xr.DataArray, xr.Dataset]):
+def broadcast_and_match_nan(*args: XarrayLike) -> XarrayLike:
     """
     Input xarray data objects are 'matched' - they are broadcast against each
     other (forced to have the same dimensions), and the position of nans are

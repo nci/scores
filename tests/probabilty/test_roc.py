@@ -4,10 +4,10 @@ Contains unit tests for scores.probability.roc_impl
 import dask
 import numpy as np
 import pytest
-import roc_test_data as rtd
 import xarray as xr
 
 from scores.probability import roc_curve_data
+from tests.probabilty import roc_test_data as rtd
 
 
 @pytest.mark.parametrize(
