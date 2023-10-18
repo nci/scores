@@ -44,18 +44,18 @@ def gather_dimensions(
     obs_dims: Iterable[Hashable],
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
-):
+) -> Optional[set[Hashable]]:
     """
     Establish which dimensions to reduce when calculating errors but before taking means
 
     Args:
-        fcst_dims (Iterable[str]): Forecast dimensions inputs
-        obs_dims (Iterable[str]): Observation dimensions inputs.
-        reduce_dims (Union[str, Iterable[str]]): Dimensions to reduce.
-        preserve_dims (Union[str, Iterable[str]]): Dimensions to preserve.
+        fcst_dims: Forecast dimensions inputs
+        obs_dims: Observation dimensions inputs.
+        reduce_dims: Dimensions to reduce.
+        preserve_dims: Dimensions to preserve.
 
     Returns:
-        Tuple[str]: Dimensions based on optional args.
+        Dimensions based on optional args.
     Raises:
         ValueError: When `preserve_dims and `reduce_dims` are both specified.
     """
@@ -110,15 +110,15 @@ def gather_dimensions(
     return reduce_dims
 
 
-def dims_complement(data, dims=None):
+def dims_complement(data, dims=None) -> list[str]:
     """Returns the complement of data.dims and dims
 
     Args:
-        data (Union[xr.Dataset, xr.DataArray]): Input xarray object
-        dims (Iterable[str]): an Iterable of strings corresponding to dimension names
+        data: Input xarray object
+        dims: an Iterable of strings corresponding to dimension names
 
     Returns:
-        List[str]: A sorted list of dimension names, the complement of data.dims and dims
+        A sorted list of dimension names, the complement of data.dims and dims
     """
 
     if dims is None:
@@ -131,15 +131,15 @@ def dims_complement(data, dims=None):
     return sorted(list(complement))
 
 
-def check_dims(xr_data: XarrayLike, expected_dims: List[str], mode: Optional[str] = None):
+def check_dims(xr_data: XarrayLike, expected_dims: list[str], mode: Optional[str] = None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
     Args:
-        xr_data (XarrayLike): if a Dataset is supplied,
+        xr_data: if a Dataset is supplied,
             all of its data variables (DataArray objects) are checked.
-        expected_dims (Iterable[str]): an Iterable of dimension names.
-        mode (Optional[str]): one of 'equal' (default), 'subset' or 'superset'.
+        expected_dims: an Iterable of dimension names.
+        mode: one of 'equal' (default), 'subset' or 'superset'.
             If 'equal', checks that the data object has the same dimensions
             as `expected_dims`.
             If 'subset', checks that the dimensions of the data object is a
@@ -163,7 +163,6 @@ def check_dims(xr_data: XarrayLike, expected_dims: List[str], mode: Optional[str
         ValueError: `expected_dims` cannot be coerced into a set.
         ValueError: `mode` is not one of 'equal', 'subset', 'superset',
             'proper subset', 'proper superset', or 'disjoint'
-
     """
 
     if isinstance(expected_dims, str):
