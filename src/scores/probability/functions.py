@@ -2,8 +2,8 @@
 This module contains a variety of functions which modify data in various ways to process data structures
 to support probablistic verification.
 """
-
-from typing import Iterable, Literal, Optional
+from collections.abc import Iterable
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
