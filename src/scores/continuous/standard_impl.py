@@ -19,7 +19,7 @@ def mse(
 ):
     """Calculates the mean squared error from forecast and observed data.
 
-    Dimensional reduction is not supported for pandas and the user should
+    Dimensional reduction is not supported for pandas dataframes and the user should
     convert their data to xarray to formulate the call to the metric. At
     most one of reduce_dims and preserve_dims may be specified.
     Specifying both will result in an exception.
@@ -77,6 +77,8 @@ def mse(
     else:
         _mse = squared.mean()
 
+    # If two pandas inputs are provided, return as expected from pandas
+    # If at least one xarray is provided, return as expected from xarray
     if both_pandas:
         _mse = _mse.to_pandas()
         if isinstance(_mse, numpy.ndarray):
@@ -147,8 +149,9 @@ def mae(
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
 
-    Dimensional reduction is not supported for pandas and the user should
+    Dimensional reduction is not supported for pandas dataframes and the user should
     convert their data to xarray to formulate the call to the metric.
+
     At most one of reduce_dims and preserve_dims may be specified.
     Specifying both will result in an exception.
 
