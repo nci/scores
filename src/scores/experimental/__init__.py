@@ -18,9 +18,11 @@ from scores.experimental.context import APIChange as source
 # Acts as standard api for scores
 api = APIWrapper()
 
-try:
-    from scores.experimental.pytorch import PyTorch
-    # Pytorch api
-    pytorch = PyTorch()
-except (ImportError, ModuleNotFoundError):
-    pass
+## As PyTorch connects the gradient with the array, issues arise with methods using xarray
+## Not using at the moment
+# try:
+#     from scores.experimental.pytorch import PyTorch
+#     # Pytorch api
+#     pytorch = PyTorch()
+# except (ImportError, ModuleNotFoundError):
+#     pass
