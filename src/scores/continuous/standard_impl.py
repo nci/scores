@@ -2,12 +2,12 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
+import numpy
+import pandas
+
 import scores.functions
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
-import pandas
-import numpy
-import scores.utils
 
 
 def mse(
@@ -52,20 +52,19 @@ def mse(
     """
     as_pandas_series = False
     both_pandas = False
-    if type(fcst) == pandas.Series:
+    if isinstance(fcst, pandas.Series):
         fcst = fcst.to_xarray()
         as_pandas_series = True
 
-    if type(obs) == pandas.Series:
+    if isinstance(obs, pandas.Series):
         obs = obs.to_xarray()
         as_pandas_series = True
-        if as_pandas_series == True:
+        if as_pandas_series is True:
             both_pandas = True
-
 
     error = fcst - obs
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights)    
+    squared = scores.functions.apply_weights(squared, weights)
 
     if preserve_dims or reduce_dims:
         reduce_dims = scores.utils.gather_dimensions(
@@ -82,7 +81,7 @@ def mse(
     if both_pandas:
         _mse = _mse.to_pandas()
         if isinstance(_mse, numpy.ndarray):
-            _mse = numpy.float64(_mse)        
+            _mse = numpy.float64(_mse)
 
     return _mse
 
@@ -181,16 +180,15 @@ def mae(
     """
     as_pandas_series = False
     both_pandas = False
-    if type(fcst) == pandas.Series:
+    if isinstance(fcst, pandas.Series):
         fcst = fcst.to_xarray()
         as_pandas_series = True
 
-    if type(obs) == pandas.Series:
+    if isinstance(obs, pandas.Series):
         obs = obs.to_xarray()
         as_pandas_series = True
-        if as_pandas_series == True:
+        if as_pandas_series is True:
             both_pandas = True
-
 
     error = fcst - obs
     ae = abs(error)
@@ -203,7 +201,7 @@ def mae(
         _ae = ae.mean(dim=reduce_dims)
     else:
         _ae = ae.mean()
-        
+
     # If two pandas inputs are provided, return as expected from pandas
     # If at least one xarray is provided, return as expected from xarray
     if both_pandas:
