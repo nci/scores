@@ -45,7 +45,7 @@ DAMAGE.
 import pytest
 from numpy.testing import assert_equal
 
-from scores.stats.tests.acovf import _next_regular
+from scores.stats.statistical_tests.acovf import _next_regular
 
 
 @pytest.mark.parametrize(

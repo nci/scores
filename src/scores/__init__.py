@@ -7,6 +7,6 @@ import scores.continuous
 import scores.functions
 import scores.probability
 import scores.sample_data
-import scores.stats.tests
+import scores.stats.statistical_tests
 
 __version__ = "v0.5"

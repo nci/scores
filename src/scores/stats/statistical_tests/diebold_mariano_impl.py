@@ -308,7 +308,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     Returns:
         Diebold-Mariano test statistic using the HG method.
     """
-    from scores.stats.tests.acovf import acovf
+    from scores.stats.statistical_tests.acovf import acovf
 
     n = len(diffs)
 
