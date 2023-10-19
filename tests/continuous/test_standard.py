@@ -10,6 +10,7 @@ import pytest
 import xarray as xr
 
 import scores.continuous
+from scores.continuous.standard_impl import PANDAS_NAME_MATCHING_WARNING 
 import scores.sample_data
 
 PRECISION = 4
@@ -72,10 +73,19 @@ def test_mse_pandas_xarray_mixed():
     Test calculation works correctly on pandas series
     """
 
-    fcst_pd_series = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    obs_as_xarray_1d = xr.DataArray([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1], dims=["index"])
+    fcst_pd_series_noname = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    fcst_pd_series_named = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3], name='UseThisDimension')
+    obs_as_xarray_1d = xr.DataArray([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1], dims=['UseThisDimension'])
     expected = 1.0909
-    result = scores.continuous.mse(fcst_pd_series, obs_as_xarray_1d)
+
+    # Check edge case for unnamed series with xarray
+    with pytest.raises(ValueError) as excinfo:
+        result = scores.continuous.mse(fcst_pd_series_noname, obs_as_xarray_1d)
+    
+    assert PANDAS_NAME_MATCHING_WARNING in str(excinfo.value)
+
+    # Check pandas series naming correctly matches against xarray
+    result = scores.continuous.mse(fcst_pd_series_named, obs_as_xarray_1d)
     assert result.round(PRECISION) == expected
 
 
@@ -239,6 +249,8 @@ def test_rmse_xarray_1d(forecast, observations, expected, request_kwargs, reques
         forecast = request.getfixturevalue(forecast)
     if isinstance(observations, str):
         observations = request.getfixturevalue(observations)
+
+    # import pudb; pudb.set_trace()
     result = scores.continuous.rmse(forecast, observations, **request_kwargs)
     assert (result.round(PRECISION) == expected).all()
 

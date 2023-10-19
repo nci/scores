@@ -4,11 +4,19 @@ This module contains standard methods which may be used for continuous scoring
 
 import numpy
 import pandas
+import xarray
 
 import scores.functions
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
+PANDAS_NAME_MATCHING_WARNING = '''\
+When trying to use one pandas Series to score against an xarray object, it is necessary to
+make sure the pandas Series name is set to the name of the dimension in the xarray object
+which should be used in calculations. By default, one-dimensional xarray objects are created
+with a dimension name of 'dim0' while unnamed pandas Series objects will assume the dimension
+name of 'index'.
+'''
 
 def mse(
     fcst: FlexibleArrayType,
@@ -50,17 +58,37 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
-    as_pandas_series = False
-    both_pandas = False
+
+    fcst_is_pandas = isinstance(fcst, pandas.Series)
+    obs_is_pandas = isinstance(obs, pandas.Series)
+    both_pandas = fcst_is_pandas and obs_is_pandas
+    either_pandas = fcst_is_pandas or obs_is_pandas
+    fcst_is_xarray = isinstance(fcst, (xarray.Dataset,xarray.DataArray))
+    obs_is_xarray = isinstance(obs, (xarray.Dataset,xarray.DataArray))
+    either_xarray = fcst_is_xarray or obs_is_xarray
+    mixed_pandas_xarray = either_pandas and either_xarray
+
     if isinstance(fcst, pandas.Series):
-        fcst = fcst.to_xarray()
-        as_pandas_series = True
+
+        fcst = fcst.to_xarray()        
+        if mixed_pandas_xarray:
+            series_name = fcst.name        
+            if series_name is None:
+                raise ValueError(PANDAS_NAME_MATCHING_WARNING)
+            
+            fcst = fcst.rename({'index': series_name})
 
     if isinstance(obs, pandas.Series):
+
         obs = obs.to_xarray()
-        as_pandas_series = True
-        if as_pandas_series is True:
-            both_pandas = True
+
+        if mixed_pandas_xarray:
+            series_name = fcst.name
+            if series_name is None:
+                raise ValueError(PANDAS_NAME_MATCHING_WARNING)
+        
+            obs = obs.rename({'index': series_name})
+
 
     error = fcst - obs
     squared = error * error
@@ -178,17 +206,35 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-    as_pandas_series = False
-    both_pandas = False
+    fcst_is_pandas = isinstance(fcst, pandas.Series)
+    obs_is_pandas = isinstance(obs, pandas.Series)
+    both_pandas = fcst_is_pandas and obs_is_pandas
+    either_pandas = fcst_is_pandas or obs_is_pandas
+    fcst_is_xarray = isinstance(fcst, (xarray.Dataset,xarray.DataArray))
+    obs_is_xarray = isinstance(obs, (xarray.Dataset,xarray.DataArray))
+    either_xarray = fcst_is_xarray or obs_is_xarray
+    mixed_pandas_xarray = either_pandas and either_xarray
+
     if isinstance(fcst, pandas.Series):
-        fcst = fcst.to_xarray()
-        as_pandas_series = True
+
+        fcst = fcst.to_xarray()        
+        if mixed_pandas_xarray:
+            series_name = fcst.name        
+            if series_name is None:
+                raise ValueError(PANDAS_NAME_MATCHING_WARNING)
+            
+            fcst = fcst.rename({'index': series_name})
 
     if isinstance(obs, pandas.Series):
+
         obs = obs.to_xarray()
-        as_pandas_series = True
-        if as_pandas_series is True:
-            both_pandas = True
+
+        if mixed_pandas_xarray:
+            series_name = fcst.name
+            if series_name is None:
+                raise ValueError(PANDAS_NAME_MATCHING_WARNING)
+        
+            obs = obs.rename({'index': series_name})
 
     error = fcst - obs
     ae = abs(error)
