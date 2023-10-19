@@ -38,7 +38,42 @@ def test_mse_pandas_series():
     obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
     expected = 1.0909
     result = scores.continuous.mse(fcst_pd_series, obs_pd_series)
-    assert round(result, 4) == expected
+    assert round(result, PRECISION) == expected
+
+def test_mse_pandas_dataframe():
+    """
+    Test calculation works correctly on pandas series
+    """
+
+    fcst_pd_series = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    df = pd.DataFrame({'fcst': fcst_pd_series, 'obs': obs_pd_series })
+    expected = 1.0909
+    result = scores.continuous.mse(df['fcst'], df['obs'])
+    assert round(result, PRECISION) == expected    
+
+def test_mse_pandas_series_dataframe_mixed():
+    """
+    Test calculation works correctly on pandas series
+    """
+
+    fcst_pd_series = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    df = pd.DataFrame({'fcst': fcst_pd_series, 'obs': obs_pd_series })
+    expected = 1.0909
+    result = scores.continuous.mse(df['fcst'], obs_pd_series)
+    assert round(result, PRECISION) == expected       
+
+def test_mse_pandas_xarray_mixed():
+    """
+    Test calculation works correctly on pandas series
+    """
+
+    fcst_pd_series = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs_as_xarray_1d = xr.DataArray([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1], dims=['index'])
+    expected = 1.0909
+    result = scores.continuous.mse(fcst_pd_series, obs_as_xarray_1d)
+    assert result.round(PRECISION) == expected
 
 def test_pandas_series_preserve():
     """

@@ -201,6 +201,8 @@ def mae(
     else:
         _ae = ae.mean()
         
+    # If two pandas inputs are provided, return as expected from pandas
+    # If at least one xarray is provided, return as expected from xarray
     if both_pandas:
         _ae = _ae.to_pandas()
         if isinstance(_ae, numpy.ndarray):
