@@ -1,5 +1,7 @@
 """
-`scores` Base Wrapper
+API Wrapper around an underlying module, in this case `scores`.
+
+Allows manipulation of data prior to calling base `scores` function.
 """
 
 
@@ -16,7 +18,7 @@ class APIWrapper:
         Args:
             function (Callable, optional): 
                 Function to wrap. Provides access to underlying attributes.
-                Defaults to scores.
+                Defaults to `scores`.
         """        
         if function is None:
             function = scores
