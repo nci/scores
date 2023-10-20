@@ -249,7 +249,8 @@ def crps_cdf(
             by taking the mean.
         reduce_dims (Tuple[str]): dimensions to reduce in the output by taking the mean. All other dimensions are
             preserved.
-        weights: Not yet implemented. Allow weighted averaging (e.g. by area, by latitude, by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
         include_components (bool): if True, include the under and over forecast components of
             the score in the returned dataset.
 
