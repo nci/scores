@@ -71,15 +71,15 @@ def test_weights_latitude():
 
     # Latitudes in degrees, tested to 8 decimal places
     latitude_tests = [
-        (90,    0),
-        (89,    0.017452),
-        (45,    0.707107),
-        (22.5,  0.92388),
-        (0,     1),
+        (90, 0),
+        (89, 0.017452),
+        (45, 0.707107),
+        (22.5, 0.92388),
+        (0, 1),
         (-22.5, 0.92388),
-        (-45,   0.707107),
-        (-89,   0.017452),
-        (-90,   0)
+        (-45, 0.707107),
+        (-89, 0.017452),
+        (-90, 0),
     ]
     latitudes, expected = zip(*latitude_tests)
     latitudes = xr.DataArray(list(latitudes))  # Will not work from a tuple
