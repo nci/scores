@@ -197,7 +197,7 @@ def binary_discretise(
     return discrete_data
 
 
-def broadcast_and_match_nan(*args: XarrayLike) -> XarrayLike:
+def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
     """
     Input xarray data objects are 'matched' - they are broadcast against each
     other (forced to have the same dimensions), and the position of nans are
