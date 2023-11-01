@@ -4,6 +4,7 @@ to support probablistic verification.
 """
 from collections.abc import Iterable
 from typing import Literal, Optional
+from scores.typing import XarrayLike
 
 import numpy as np
 import pandas as pd
@@ -45,7 +46,7 @@ def round_values(array: xr.DataArray, rounding_precision: float, final_round_dec
     return array
 
 
-def propagate_nan(cdf: xr.DataArray, threshold_dim: str) -> xr.DataArray:
+def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
     """Propagates the NaN values from a "cdf" variable along the `threshold_dim`.
 
     Args:
@@ -62,7 +63,7 @@ def propagate_nan(cdf: xr.DataArray, threshold_dim: str) -> xr.DataArray:
     if threshold_dim not in cdf.dims:
         raise ValueError(f"'{threshold_dim}' is not a dimension of `cdf`")
 
-    where_nan = np.isnan(cdf).any(dim=threshold_dim)
+    where_nan = xr.DataArray(np.isnan(cdf)).any(dim=threshold_dim) 
     result = cdf.where(~where_nan, np.nan)
     return result
 
@@ -98,14 +99,16 @@ def observed_cdf(
     """
     if precision < 0:
         raise ValueError("`precision` must be nonnegative.")
+    
+    threshold_values_as_array = np.array(threshold_values)
 
-    if np.isnan(obs).all() and (threshold_values is None or np.isnan(threshold_values).all()):
+    if np.isnan(obs).all() and (threshold_values is None or np.isnan(threshold_values_as_array).all()):
         raise ValueError("must include non-NaN observations in thresholds or supply threshold values")
 
     if precision > 0:
         obs = round_values(obs, precision)
 
-    thresholds = threshold_values if threshold_values is not None else []
+    thresholds = threshold_values_as_array if threshold_values is not None else []
 
     if include_obs_in_thresholds:
         thresholds = np.concatenate((obs.values.flatten(), thresholds))

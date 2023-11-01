@@ -13,7 +13,7 @@ from tests.probabilty import cdf_test_data, crps_test_data
 def test_round_values_exception():
     """Test rounding throws the right exceptions"""
     with pytest.raises(ValueError):
-        scores.probability.functions.round_values("anything", -1, "anything")
+        scores.probability.functions.round_values(xr.DataArray(), -1, 5)
 
 
 def test_propagate_nan_error():
