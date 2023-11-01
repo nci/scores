@@ -25,6 +25,7 @@ def test_mse_xarray_1d():
     result = scores.continuous.mse(fcst_as_xarray_1d, obs_as_xarray_1d)
 
     expected = xr.DataArray(1.0909)
+    assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
 
@@ -37,6 +38,7 @@ def test_mse_pandas_series():
     obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
     expected = 1.0909
     result = scores.continuous.mse(fcst_pd_series, obs_pd_series)
+    assert isinstance(result, float)
     assert round(result, 4) == expected
 
 
@@ -50,16 +52,19 @@ def test_mse_dataframe():
     df = pd.DataFrame({"fcst": fcst_pd_series, "obs": obs_pd_series})
     expected = 1.0909
     result = scores.continuous.mse(df["fcst"], df["obs"])
+    assert isinstance(result, float)
     assert round(result, PRECISION) == expected
 
 
 def test_mse_xarray_to_point():
     """
     Test MSE calculates the correct value for a simple 1d sequence
+    Currently breaks type hinting but here for future pandas support
     """
     fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mse(fcst_as_xarray_1d, 1)
+    result = scores.continuous.mse(fcst_as_xarray_1d, 1)  # type: ignore  
     expected = xr.DataArray(1.45454545)
+    assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
 
@@ -77,6 +82,7 @@ def test_2d_xarray_mse():
 
     result = scores.continuous.mse(fcst_temperatures_xr_2d, obs_temperatures_xr_2d)
     expected = xr.DataArray(142.33162)
+    assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
 
@@ -96,6 +102,7 @@ def test_2d_xarray_mse_with_dimensions():
 
     expected_values = [290.0929, 90.8107, 12.2224, 176.2005]
     expected_dimensions = ("longitude",)
+    assert isinstance(result, xr.DataArray)
     assert all(result.round(4) == expected_values)
     assert result.dims == expected_dimensions
 
@@ -243,10 +250,10 @@ def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, e
 
 
 def create_xarray(data: list[list[float]]):
-    data = np.array(data)
-    lats = np.arange(data.shape[0]) + 50
-    lons = np.arange(data.shape[1]) + 30
-    return xr.DataArray(data, dims=["latitude", "longitude"], coords=[lats, lons])
+    npdata = np.array(data)
+    lats = list(np.arange(npdata.shape[0]) + 50)
+    lons = list(np.arange(npdata.shape[1]) + 30)
+    return xr.DataArray(npdata, dims=["latitude", "longitude"], coords=[lats, lons])
 
 
 @pytest.mark.parametrize(
@@ -323,6 +330,7 @@ def test_mae_pandas_series():
     obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
     expected = 0.7273
     result = scores.continuous.mae(fcst_pd_series, obs_pd_series)
+    assert isinstance(result, float)
     assert round(result, 4) == expected
 
 
@@ -336,15 +344,17 @@ def test_mae_dataframe():
     df = pd.DataFrame({"fcst": fcst_pd_series, "obs": obs_pd_series})
     expected = 0.7273
     result = scores.continuous.mae(df["fcst"], df["obs"])
+    assert isinstance(result, float)
     assert round(result, PRECISION) == expected
 
 
 def test_mae_xarray_to_point():
     """
     Test MAE calculates the correct value for a simple sequence
+    Tests unhinted types but this is useful
     """
     fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mae(fcst_as_xarray_1d, 1)
+    result = scores.continuous.mae(fcst_as_xarray_1d, 1)  # type: ignore
     expected = xr.DataArray(0.9091)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
