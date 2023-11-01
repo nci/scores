@@ -85,6 +85,7 @@ source = ["/src/"]
 
 [tool.pytest.ini_options]
 addopts = [
+    '--cov-fail-under=100',
     '--cov-report=html',
     '--cov-report=term-missing',
     '--junitxml=report.xml'
