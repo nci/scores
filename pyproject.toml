@@ -37,7 +37,8 @@ dev = [
     "pylint == 2.17.4",
     "dask",
     "h5netcdf",
-    "pandas-stubs"
+    "pandas-stubs",
+    "nbmake"
 ]
 tutorial = [
     "jupyterlab",
