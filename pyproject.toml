@@ -86,15 +86,23 @@ source = ["/src/"]
 
 [tool.pytest.ini_options]
 addopts = [
-    '--cov-fail-under=98',
+    '--cov-fail-under=100',
+    '--cov-branch',
     '--cov-report=html',
     '--cov-report=term-missing',
-    '--junitxml=report.xml'
+    '--junitxml=report.xml',
+    # Ignore notebooks which depend on external data for E2E tests
+    '--ignore=tutorials/First_Data_Fetching.ipynb',
+    '--ignore=tutorials/Mean_Squared_Error.ipynb',
+    '--ignore=tutorials/Root_Mean_Squared_Error.ipynb',
+    '--ignore=tutorials/Weighting_Results.ipynb',
+    '--ignore=tutorials/Mean_Absolute_Error.ipynb'
 ]
+
 [tool.pylint.master]
 # https://github.com/PyCQA/pylint/issues/4081#issuecomment-778242554
 init-hook = 'import sys; sys.setrecursionlimit(3 * sys.getrecursionlimit())'
-ignore-paths = [ 
+ignore-paths = [
     'docs/'
 ]
 
