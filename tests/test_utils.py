@@ -10,6 +10,18 @@ from scores.utils import gather_dimensions as gd
 from tests import utils_test_data
 
 
+def test_dims_complement():
+
+    xr_data = utils_test_data.DA_RGB
+    expected_dims = sorted(["red", "green", "blue"])
+    complement = utils.dims_complement(xr_data)
+    assert complement == expected_dims
+
+    expected_dims = sorted(["red", "green"])
+    complement = utils.dims_complement(xr_data, ["blue"])
+    assert complement == expected_dims    
+
+
 @pytest.mark.parametrize(
     ("xr_data", "expected_dims", "mode"),
     [
