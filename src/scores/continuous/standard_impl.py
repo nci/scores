@@ -2,10 +2,18 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
+import scores.functions
 import scores.utils
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
 
-def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
+def mse(
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights=None,
+):
     """Calculates the mean squared error from forecast and observed data.
 
     Dimensional reduction is not supported for pandas and the user should
@@ -29,8 +37,8 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
             the squared error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Not yet implemented. Allow weighted averaging (e.g. by
-            area, by latitude, by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: An object containing
@@ -45,7 +53,9 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     squared = scores.functions.apply_weights(squared, weights)
 
     if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
 
     if reduce_dims is not None:
         _mse = squared.mean(dim=reduce_dims)
@@ -55,7 +65,13 @@ def mse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     return _mse
 
 
-def rmse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
+def rmse(
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights=None,
+) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
@@ -68,13 +84,13 @@ def rmse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
 
 
     Args:
-        fcst Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: Forecast
+        fcst: Forecast
             or predicted variables in xarray or pandas.
-        obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Observed
+        obs: Observed
             variables in xarray or pandas.
-        reduce_dims (Union[str, Iterable[str]): Optionally specify which dimensions to reduce when
+        reduce_dims: Optionally specify which dimensions to reduce when
             calculating RMSE. All other dimensions will be preserved.
-        preserve_dims (Union[str, Iterable[str]): Optionally specify which dimensions to preserve
+        preserve_dims: Optionally specify which dimensions to preserve
             when calculating RMSE. All other dimensions will be reduced.
             As a special case, 'all' will allow all dimensions to be
             preserved. In this case, the result will be in the same
@@ -82,11 +98,11 @@ def rmse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
             the absolute error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-      weights: Not yet implemented. Allow weighted averaging (e.g. by
-          area, by latitude, by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
-        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]:  An object containing
+        An object containing
             a single floating point number representing the root mean squared
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the root mean squared error,
@@ -100,7 +116,13 @@ def rmse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     return _rmse
 
 
-def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
+def mae(
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights=None,
+) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
@@ -111,25 +133,22 @@ def mae(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None):
     Specifying both will result in an exception.
 
     Args:
-        fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Forecast
-            or predicted variables in xarray or pandas.
-        obs (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]): Observed
-            variables in xarray or pandas.
-        reduce_dims (Union[str, Iterable[str]]): Optionally specify which dimensions
-            to reduce when calculating MAE. All other dimensions will be preserved.
-        preserve_dims (Union[str, Iterable[str]]): Optionally specify which
-            dimensions to preserve when calculating MAE. All other dimensions
-            will be reduced. As a special case, 'all' will allow all dimensions
-            to be preserved. In this case, the result will be in the same
-            shape/dimensionality as the forecast, and the errors will be
-            the absolute error at each point (i.e. single-value comparison
-            against observed), and the forecast and observed dimensions
-            must match precisely.
-        weights: Not yet implemented. Allow weighted averaging (e.g. by
-            area, by latitude, by population, custom).
+        fcst: Forecast or predicted variables in xarray or pandas.
+        obs: Observed variables in xarray or pandas.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating MAE. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating MAE. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the absolute error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
-        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: By default an xarray DataArray containing
+        By default an xarray DataArray containing
         a single floating point number representing the mean absolute error for the
         supplied data. All dimensions will be reduced.
 

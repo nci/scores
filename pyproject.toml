@@ -36,6 +36,7 @@ dev = [
     "mypy == 1.3.0",
     "pylint == 2.17.4",
     "dask",
+    "h5netcdf",
     "pandas-stubs"
 ]
 tutorial = [
@@ -45,8 +46,8 @@ tutorial = [
     "rasterio",
     "rioxarray"
 ]
-maintainer = ["build", 
-              "hatch", 
+maintainer = ["build",
+              "hatch",
               "sphinx",
               "myst-parser",
               "sphinx-book-theme"
@@ -78,3 +79,23 @@ warn_unused_configs = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
+
+[tool.coverage.paths]
+source = ["/src/"]
+
+[tool.pytest.ini_options]
+addopts = [
+    '--cov-fail-under=98',
+    '--cov-report=html',
+    '--cov-report=term-missing',
+    '--junitxml=report.xml'
+]
+[tool.pylint.master]
+# https://github.com/PyCQA/pylint/issues/4081#issuecomment-778242554
+init-hook = 'import sys; sys.setrecursionlimit(3 * sys.getrecursionlimit())'
+ignore-paths = [ 
+    'docs/'
+]
+
+[tool.pylint.FORMAT]
+max_line_length=120

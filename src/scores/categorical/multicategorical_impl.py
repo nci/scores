@@ -1,7 +1,8 @@
 """
 This module contains methods which may be used for scoring multicategorical forecasts
 """
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr

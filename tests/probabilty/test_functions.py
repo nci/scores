@@ -1,17 +1,13 @@
 """
 This module contains unit tests for scores.probability.functions
 """
-
-import assertions  # pylint: disable=import-error
-import cdf_test_data  # pylint: disable=import-error
-import crps_test_data  # pylint: disable=import-error
 import numpy as np
 import pytest
 import xarray as xr
 
 import scores.probability.functions
-
-### TESTS ###
+from tests import assertions
+from tests.probabilty import cdf_test_data, crps_test_data
 
 
 def test_round_values_exception():

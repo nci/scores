@@ -1,13 +1,11 @@
 """
 This module contains unit tests for scores.stats.tests.diebold_mariano_impl
 """
-import warnings
-
 import numpy as np
 import pytest
 import xarray as xr
 
-from scores.stats.tests.diebold_mariano_impl import (
+from scores.stats.statistical_tests.diebold_mariano_impl import (
     _dm_gamma_hat_k,
     _dm_test_statistic,
     _dm_v_hat,

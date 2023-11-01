@@ -1,16 +1,21 @@
 """Tests for murphy metrics and thetas generation code."""
+import pathlib
 import re
 from datetime import datetime
 from unittest.mock import Mock, patch
 
+import dask
 import numpy as np
 import pytest
 import xarray as xr
-import dask
 
-from scores.continuous import murphy_score, murphy_thetas
-from scores.continuous.murphy_impl import _expectile_thetas, _huber_thetas, _quantile_thetas
 from scores.continuous import murphy_impl as murphy
+from scores.continuous import murphy_score, murphy_thetas
+from scores.continuous.murphy_impl import (
+    _expectile_thetas,
+    _huber_thetas,
+    _quantile_thetas,
+)
 
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),
@@ -97,7 +102,7 @@ def patch_scoring_func(monkeypatch, score_function, thetas):
     return mock_rel_fc_func
 
 
-thetas_nc = xr.open_dataarray("tests/scores/continuous/test_data/thetas.nc")
+thetas_nc = xr.open_dataarray(pathlib.Path(__file__).parent / "test_data/thetas.nc")
 thetas_list = [0.0, 2.0, 10.0]
 
 

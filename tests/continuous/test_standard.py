@@ -172,7 +172,6 @@ def test_rmse_xarray_1d(forecast, observations, expected, request_kwargs, reques
     if isinstance(observations, str):
         observations = request.getfixturevalue(observations)
     result = scores.continuous.rmse(forecast, observations, **request_kwargs)
-    print(result)
     assert (result.round(PRECISION) == expected).all()
 
 

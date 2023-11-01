@@ -88,7 +88,7 @@ python -m build
 pip install dist/<my_latest_package>.whl
 ```
 
-### Setup `pre-commit` (Optional)
+### Setup `pre-commit` (Optional) <a name="pre-commit"></a>
 
 To automate linter and fixer checks this project uses `pre-commit` which is setup to execute after every local commit. This ensures that code standards are flagged at the development stage rather than in the project CI/CD pipeline. Although it is optional we highly recommended to use the tool before pushing changes to the remote.
 
@@ -96,7 +96,7 @@ To automate linter and fixer checks this project uses `pre-commit` which is setu
 pre-commit install -t pre-commit -t pre-push
 ```
 
-### Coding Practises
+### Coding Practices
 
 Pylint and black should be used at all times to ensure a consistent approach to coding. Isort should be used for the ordering of import statements. All merge requests will be checked prior to acceptance. The project will include configuration files which may be used to capture any overrides to convention that may be adoped.
 
@@ -152,4 +152,3 @@ A science review should answer the following questions:
 3. Does the implementation look correct if read at face value (i.e. detailed knowledge of libraries not required)?
 4. Are any issues of scientific interpretation explained (i.e. if multiple mathematical interpretations of a method are reasonable, is this made clear)?
 5. Are the examples contained in the tutorial well-explained and relevant?
-

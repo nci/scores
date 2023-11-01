@@ -4,7 +4,6 @@ Test data for scores.utils
 import numpy as np
 import xarray as xr
 
-
 """
 Test data for scores.utils.check_dims
 """
