@@ -108,3 +108,6 @@ ignore-paths = [
 
 [tool.pylint.FORMAT]
 max_line_length=120
+
+[tool.pylint.messages_control]
+good_names=['df','da','x','y','z','i','j','k','ae']

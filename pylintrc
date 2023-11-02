@@ -1,5 +1,0 @@
-[FORMAT]
-max-line-length = 120
-
-[BASIC]
-good-names=df,da,x,y,z,i,j,k,ae
