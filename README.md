@@ -5,9 +5,9 @@ Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
 Currently Included Metrics:
 
-| continuous | probability | categorical | statistical tests      |
-| ---------- | ----------- | ----------- | ----------- |
-| MAE, MSE, RMSE | CRPS | FIRM |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
+| continuous     | probability | categorical     | statistical tests |
+| ----------     | ----------- | -----------     | ----------- |
+| MAE, MSE, RMSE | CRPS, ROC   | FIRM, POD, POFD |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**

@@ -4,8 +4,6 @@
 name: Unit Tests
 
 on:
-  push:
-    branches: ["develop", "main", "[0-9]+-*"]
   pull_request:
     branches: ["develop", "main", "[0-9]+-*"]
 
@@ -18,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]    
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v3
@@ -29,12 +27,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest
         pip install .[all]
     - name: Test with pytest
       run: |
-        pip install pytest pytest-cov
-        coverage run -m pytest
-    - name: Report test coverage
+        # editable is necessary as pytest will run against the installed
+        # package rather than the local files creating a coverage report of 0%
+        pip install -e .
+        pytest tests/ --cov=src/
+    - name: Test tutorial notebooks with pytest
       run: |
-        coverage report -m
+        pytest --nbmake tutorials/

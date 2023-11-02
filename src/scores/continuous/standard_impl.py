@@ -37,8 +37,8 @@ def mse(
             the squared error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Not yet implemented. Allow weighted averaging (e.g. by
-            area, by latitude, by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: An object containing
@@ -98,8 +98,8 @@ def rmse(
             the absolute error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-      weights: Not yet implemented. Allow weighted averaging (e.g. by
-          area, by latitude, by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         An object containing
@@ -144,9 +144,8 @@ def mae(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights:
-            Not yet implemented. Allow weighted averaging (e.g. by area, by
-            latitude, by population, custom).
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         By default an xarray DataArray containing
