@@ -4,7 +4,6 @@ to support probablistic verification.
 """
 from collections.abc import Iterable
 from typing import Literal, Optional
-from scores.typing import XarrayLike
 
 import numpy as np
 import pandas as pd
@@ -14,6 +13,7 @@ from scores.probability.checks import (
     cdf_values_within_bounds,
     check_nan_decreasing_inputs,
 )
+from scores.typing import XarrayLike
 
 
 def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
@@ -63,7 +63,7 @@ def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
     if threshold_dim not in cdf.dims:
         raise ValueError(f"'{threshold_dim}' is not a dimension of `cdf`")
 
-    where_nan = xr.DataArray(np.isnan(cdf)).any(dim=threshold_dim) 
+    where_nan = xr.DataArray(np.isnan(cdf)).any(dim=threshold_dim)
     result = cdf.where(~where_nan, np.nan)
     return result
 
@@ -99,7 +99,7 @@ def observed_cdf(
     """
     if precision < 0:
         raise ValueError("`precision` must be nonnegative.")
-    
+
     threshold_values_as_array = np.array(threshold_values)
 
     if np.isnan(obs).all() and (threshold_values is None or np.isnan(threshold_values_as_array).all()):

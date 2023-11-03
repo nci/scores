@@ -5,9 +5,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import scores.probability.functions
 import scores.probability.checks
-
+import scores.probability.functions
 from tests import assertions
 from tests.probabilty import cdf_test_data, crps_test_data
 from tests.probabilty import functions_test_data as ftd

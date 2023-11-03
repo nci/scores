@@ -127,7 +127,7 @@ def test_weights_add_dimension():
     simple = scores.continuous.mae(fcst, obs, weights=da(simple_weights), preserve_dims="all")
     doubled = scores.continuous.mae(fcst, obs, weights=da(double_weights), preserve_dims="all")
 
-    assert simple.equals(da(simple_expect))   # type: ignore  # Static analysis mireports this
+    assert simple.equals(da(simple_expect))  # type: ignore  # Static analysis mireports this
     assert doubled.equals(da(double_expect))  # type: ignore  # Static analysis mireports this
 
     composite_weights_data = [simple_weights, double_weights]

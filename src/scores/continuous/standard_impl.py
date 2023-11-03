@@ -169,4 +169,4 @@ def mae(
         _ae = ae.mean()
 
     # Returns unhinted types if nonstandard types passed in, but this is useful
-    return _ae  # type: ignore  
+    return _ae  # type: ignore

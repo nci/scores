@@ -63,7 +63,7 @@ def test_mse_xarray_to_point():
     Currently breaks type hinting but here for future pandas support
     """
     fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mse(fcst_as_xarray_1d, 1)  # type: ignore  
+    result = scores.continuous.mse(fcst_as_xarray_1d, 1)  # type: ignore
     expected = xr.DataArray(1.45454545)
     assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)

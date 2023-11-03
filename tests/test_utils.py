@@ -11,7 +11,6 @@ from tests import utils_test_data
 
 
 def test_dims_complement():
-
     xr_data = utils_test_data.DA_RGB
     expected_dims = sorted(["red", "green", "blue"])
     complement = utils.dims_complement(xr_data)
@@ -19,7 +18,7 @@ def test_dims_complement():
 
     expected_dims = sorted(["red", "green"])
     complement = utils.dims_complement(xr_data, ["blue"])
-    assert complement == expected_dims    
+    assert complement == expected_dims
 
 
 @pytest.mark.parametrize(

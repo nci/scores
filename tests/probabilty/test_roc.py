@@ -104,9 +104,9 @@ def test_roc_curve_data_dask():
         preserve_dims=["letter", "lead_day"],
         check_args=False,
     )
-    assert isinstance(result.POD.data, dask.array.Array) # type: ignore
-    assert isinstance(result.POFD.data, dask.array.Array) # type: ignore
-    assert isinstance(result.AUC.data, dask.array.Array) # type: ignore
+    assert isinstance(result.POD.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.POFD.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.AUC.data, dask.array.Array)  # type: ignore
 
     result = result.compute()
 
