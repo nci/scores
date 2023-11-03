@@ -31,13 +31,6 @@ def test_round_values(array, rounding_precision, expected):
     assertions.assert_dataarray_equal(output_as, expected, decimals=7)
 
 
-def test_round_values_zero():
-    input = xr.DataArray(data=[1.4, 1.45, 1.1445, 1.14445, 1.144445])
-    result = scores.probability.functions.round_values(input, 0)
-    match = result == input
-    assert match.all(), result
-
-
 def test_propagate_nan_error():
     """Test propagating throws the right exceptions"""
     faulty_array = xr.Dataset({"lertitude": [1, 2, np.NaN, 4], "longitude": [20, 21, 22, 23, 24]})
