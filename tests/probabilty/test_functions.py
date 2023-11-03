@@ -8,12 +8,27 @@ import xarray as xr
 import scores.probability.functions
 from tests import assertions
 from tests.probabilty import cdf_test_data, crps_test_data
+from tests.probabilty import functions_test_data as ftd
 
 
 def test_round_values_exception():
     """Test rounding throws the right exceptions"""
     with pytest.raises(ValueError):
         scores.probability.functions.round_values(xr.DataArray(), -1, 5)
+
+
+@pytest.mark.parametrize(
+    ("array", "rounding_precision", "expected"),
+    [
+        (ftd.DA_ROUND, 0, ftd.EXP_ROUND1),
+        (ftd.DA_ROUND, 0.2, ftd.EXP_ROUND2),
+        (ftd.DA_ROUND, 5, ftd.EXP_ROUND3),
+    ],
+)
+def test_round_values(array, rounding_precision, expected):
+    """Tests `round_values` with a variety of inputs."""
+    output_as = scores.probability.functions.round_values(array, rounding_precision)
+    assertions.assert_dataarray_equal(output_as, expected, decimals=7)
 
 
 def test_propagate_nan_error():
