@@ -146,9 +146,9 @@ def _check_firm_inputs(
                 )
         elif weight <= 0:
             raise ValueError("All values in `weights` must be > 0")
-    if discount_distance is not None:
-        if discount_distance < 0:
-            raise ValueError("`discount_distance` must be >= 0")
+
+    if discount_distance < 0:
+        raise ValueError("`discount_distance` must be >= 0")
 
 
 def _single_category_score(
