@@ -2,6 +2,7 @@
 Contains unit tests for scores.categorical
 """
 import dask
+import dask.array
 import numpy as np
 import pytest
 import xarray as xr

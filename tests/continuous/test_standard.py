@@ -3,6 +3,7 @@ Contains unit tests for scores.continuous.standard
 """
 
 import dask
+import dask.array
 import numpy as np
 import numpy.random
 import pandas as pd
@@ -103,7 +104,7 @@ def test_2d_xarray_mse_with_dimensions():
     expected_values = [290.0929, 90.8107, 12.2224, 176.2005]
     expected_dimensions = ("longitude",)
     assert isinstance(result, xr.DataArray)
-    assert all(result.round(4) == expected_values)
+    assert all(result.round(4) == expected_values)  # type: ignore  # We don't want full xarray comparison, and static analysis is confused about types
     assert result.dims == expected_dimensions
 
 
@@ -392,7 +393,7 @@ def test_2d_xarray_mae_with_dimensions():
 
     expected_values = [13.2397, 9.0065, 2.9662, 9.8629]
     expected_dimensions = ("longitude",)
-    assert all(result.round(4) == expected_values)
+    assert all(result.round(4) == expected_values)  # type: ignore  # We don't want full xarray comparison, and static analysis is confused about types
     assert result.dims == expected_dimensions
 
 
@@ -414,8 +415,7 @@ def test_xarray_dimension_handling_with_arrays():
 
     expected_values = [13.2397, 9.0065, 2.9662, 9.8629]
     expected_dimensions = ("longitude",)
-    assert all(reduce_lat.round(4) == expected_values)
-    assert all(preserve_lon.round(4) == expected_values)
+    assert all(preserve_lon.round(4) == expected_values)  # type: ignore  # We don't want full xarray comparison, and static analysis is confused about types
     assert reduce_lat.dims == expected_dimensions
     assert preserve_lon.dims == expected_dimensions
 
@@ -452,8 +452,8 @@ def test_mse_with_dask():
     Test that mse works with dask
     """
     result = scores.continuous.mse(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)
-    result = result.compute()
+    assert isinstance(result.data, dask.array.Array)  # type: ignore # Static analysis fails to recognise the type of 'result' correctly
+    result = result.compute()  # type: ignore # Static analysis thinks this is a float, but it's a dask array
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[5, 4], dims=["dim2"], coords={"dim2": [1, 2]})
     xr.testing.assert_equal(result, expected)
@@ -464,7 +464,7 @@ def test_mae_with_dask():
     Test that mae works with dask
     """
     result = scores.continuous.mae(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, dask.array.Array)  # type: ignore
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[2, 2], dims=["dim2"], coords={"dim2": [1, 2]})

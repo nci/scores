@@ -3,6 +3,7 @@
 Contains unit tests for scores.probability.crps
 """
 import dask
+import dask.array
 import numpy as np
 import pytest
 

@@ -84,6 +84,9 @@ ignore_missing_imports = true
 [tool.coverage.paths]
 source = ["/src/"]
 
+[tool.pyright]
+reportPrivateImportUsage = false 
+
 [tool.pytest.ini_options]
 addopts = [
     '--cov-fail-under=99',

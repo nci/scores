@@ -3,6 +3,7 @@ import pandas as pd
 import xarray as xr
 
 import scores.continuous
+import scores.functions
 
 ZERO = np.array([[1 for i in range(10)] for j in range(10)])
 
@@ -101,6 +102,8 @@ def test_weights_NaN_matching():
     expected = da([np.nan, np.nan, 1, 1, 0, 0, 0, np.nan])
 
     result = scores.continuous.mae(fcst, obs, weights=weights, preserve_dims="all")
+    assert isinstance(result, xr.DataArray)
+    assert isinstance(expected, xr.DataArray)
 
     assert result.equals(expected)
 
@@ -124,8 +127,8 @@ def test_weights_add_dimension():
     simple = scores.continuous.mae(fcst, obs, weights=da(simple_weights), preserve_dims="all")
     doubled = scores.continuous.mae(fcst, obs, weights=da(double_weights), preserve_dims="all")
 
-    assert simple.equals(da(simple_expect))
-    assert doubled.equals(da(double_expect))
+    assert simple.equals(da(simple_expect))   # type: ignore  # Static analysis mireports this
+    assert doubled.equals(da(double_expect))  # type: ignore  # Static analysis mireports this
 
     composite_weights_data = [simple_weights, double_weights]
     composite_expected_data = [simple_expect, double_expect]
@@ -151,4 +154,4 @@ def test_weights_add_dimension():
     )
 
     composite = scores.continuous.mae(fcst, obs, weights=composite_weights, preserve_dims="all").transpose()
-    composite.broadcast_equals(composite_expected)
+    composite.broadcast_equals(composite_expected)  # type: ignore  # Static analysis mireports this
