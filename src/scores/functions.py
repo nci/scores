@@ -1,5 +1,7 @@
 import numpy as np
 
+from scores.typing import XarrayLike
+
 
 def apply_weights(values, weights=None):
     """
@@ -41,3 +43,20 @@ def create_latitude_weights(latitudes):
     """
     weights = np.cos(np.deg2rad(latitudes))
     return weights
+
+
+def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike:
+    """
+    Determines, in degrees, the smaller of the two explementary angles between
+    two sources of directional data (e.g. wind direction).
+
+    Args:
+        source_a: direction data in degrees, first source
+        source_b: direction data in degrees, second source
+
+    Returns:
+        An array containing angles within the range [0, 180].
+    """
+    difference = np.abs(source_a - source_b) % 360
+    difference = difference.where(difference <= 180, 360 - difference)
+    return difference
