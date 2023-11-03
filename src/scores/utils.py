@@ -45,7 +45,7 @@ def gather_dimensions(
     obs_dims: Iterable[Hashable],
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
-) -> Optional[set[Hashable]]:
+) -> set[Hashable]:
     """
     Establish which dimensions to reduce when calculating errors but before taking means
 
@@ -104,8 +104,8 @@ def gather_dimensions(
         reduce_dims = set([reduce_dims])
 
     # Turn into a set if needed
-    elif reduce_dims is not None:
-        reduce_dims = set(reduce_dims)
+    assert reduce_dims is not None
+    reduce_dims = set(reduce_dims)
 
     # Reduce by list is the default so no handling needed
     return reduce_dims
