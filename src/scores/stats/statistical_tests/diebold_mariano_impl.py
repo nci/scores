@@ -344,7 +344,7 @@ def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
         Diebold-Mariano test statistic using the HLN method.
     """
     n = len(diffs)
-    diffs_bar = np.mean(diffs)
+    diffs_bar = float(np.mean(diffs))
 
     # Harvey (1997) Equation (3)
     test_stat = diffs_bar / _dm_v_hat(diffs, diffs_bar, n, h) ** 0.5
@@ -371,11 +371,12 @@ def _dm_gamma_hat_k(diffs: np.ndarray, diffs_bar: float, n: int, k: int) -> floa
         The quantity (n - k) * gamma_hat_star_k.
     """
     prod = (diffs[k:n] - diffs_bar) * (diffs[0 : n - k] - diffs_bar)
+    result = float(np.sum(prod))
 
-    return np.sum(prod)
+    return result
 
 
-def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
+def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int):
     """
     Computes the the quantity V_hat(d_bar) of Equation (5) in Harvey et al (1997).
 
@@ -392,7 +393,7 @@ def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
     for k in range(h - 1):
         summands[k] = _dm_gamma_hat_k(diffs, diffs_bar, n, k + 1)
 
-    result = (_dm_gamma_hat_k(diffs, diffs_bar, n, 0) + 2 * np.sum(summands)) / n**2
+    result = (_dm_gamma_hat_k(diffs, diffs_bar, n, 0) + 2 * np.sum(summands)) / n**2  # type: ignore
 
     if result <= 0:
         result = np.nan

@@ -54,11 +54,13 @@ DAMAGE.
 """
 
 import numpy as np
+from scores.typing import XarrayLike
+from typing import Union
 
 __all__ = ["acovf"]
 
 
-def _next_regular(target):
+def _next_regular(target: int) -> int: 
     """
     Find the next regular number greater than or equal to target.
     Regular numbers are composites of the prime factors 2, 3, and 5.
@@ -100,10 +102,12 @@ def _next_regular(target):
             return p5
     if p5 < match:
         match = p5
+
+    assert isinstance(match, int)  # I think mypy isn't properly recognising this will be an int
     return match
 
 
-def acovf(x):
+def acovf(x: Union[XarrayLike, np.ndarray]):
     """
     Estimate autocovariances.
 
