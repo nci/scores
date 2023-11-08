@@ -1,6 +1,7 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
+import inspect
 import warnings
 from collections.abc import Hashable, Iterable
 from typing import Optional
@@ -216,3 +217,79 @@ def check_dims(xr_data: XarrayLike, expected_dims: list[str], mode: Optional[str
                     f"Dimensions {list(xr_data[data_var].dims)} of data variable "
                     f"'{data_var}' are not {mode} to the dimensions {sorted(dims_set)}"
                 )
+
+
+def docstring_param(*args, **kwargs):
+    """
+    A function decorator to substitute parameters in the function's docstring.
+
+    Args:
+        ntabs (Optional[int]): optional keyword-only argument, pad all parameters
+            by the number of tabs specified (except for the first lines, which
+            are left-stripped).
+        Other args: all positional args and other keyword args are passed to
+            function.__doc__.format(...)
+
+    Example:
+
+        >>> @docstring_param('foo', 'bar')
+        ... def my_function():
+        ...     '''My Docstring is {} {}.'''
+        ...     # function code
+
+        >>> help(my_function)
+        Help on function my_function:
+        my_function()
+            My Docstring is foo bar.
+
+        >>> foo = '''
+        ... Foo Bar
+        ... Baz
+        ... '''
+        ... @docstring_param(foo=foo, ntabs=3)
+        ... def my_function():
+        ...     '''
+        ...     My Docstring is {foo}
+        ...     '''
+        ...     # function code
+
+        >>> help(my_function)
+        Help on function my_function:
+        my_function()
+            My Docstring is Foo Bar
+                        Baz
+        # note that Baz is shifted 3 tabs to the right of 'My Docstring...'
+    """
+    ntabs = kwargs.get("ntabs", 0)
+    pad = "    " * ntabs
+
+    def trim_and_pad(docstring):
+        """
+        Trim then pad tabs for a docstring.
+        """
+        # clean the docstring by removing common white space on the left,
+        # and any leading/trailing white spaces
+        docstring = inspect.cleandoc(docstring)
+
+        lines = docstring.split("\n")
+        # since we are substituting into an existing docstring, do not pad
+        # the first line (or the first non-whitespace character will be
+        # shifted to the right compared to the position of {..} in the
+        # existing docstring
+        padded = [lines[0]] + [(pad + line) if line else "" for line in lines[1:]]
+
+        return "\n".join(padded)
+
+    def substitute_param(obj):
+        """
+        Substitute parameters in obj.__doc__ using .format(...).
+        """
+        _args = [trim_and_pad(arg) for arg in args]
+        _kwargs = {key: trim_and_pad(value) for key, value in kwargs.items() if key != "ntabs"}
+
+        new_doc = obj.__doc__.format(*_args, **_kwargs)
+
+        obj.__doc__ = new_doc
+        return obj
+
+    return substitute_param
