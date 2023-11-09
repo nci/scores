@@ -34,7 +34,7 @@ dev = [
     "pre-commit",
     "black == 23.3.0",
     "mypy == 1.3.0",
-    "pylint == 2.17.4",
+    "pylint == 3.0.1",
     "dask",
     "h5netcdf",
     "pandas-stubs",
