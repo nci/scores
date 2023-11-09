@@ -10,44 +10,23 @@ import xarray as xr
 
 from scores.functions import angular_difference
 from scores.typing import XarrayLike
-from scores.utils import DimensionError, check_dims, dims_complement, docstring_param
-
-_FLIPFLOP_DATA = """\
-data: Data from which to draw subsets.\
-"""
-_FLIPFLOP_SAMPLING_DIM = """\
-sampling_dim: The name of the dimension along which to calculate
-the flip-flop index.\
-"""
-_FLIPFLOP_SELECTIONS = """\
-**selections: Additional keyword arguments specify
-    subsets to draw from the dimension `sampling_dim` of the supplied `data`
-    before calculation of the flipflop index. e.g. days123=[1, 2, 3]\
-"""
-_IS_ANGULAR = """\
-is_angular: specifies whether `data` is directional data (e.g. wind
-    direction).
-"""
+from scores.utils import DimensionError, check_dims, dims_complement
 
 
-@docstring_param(
-    ntabs=3,
-    data=_FLIPFLOP_DATA,
-    sampling_dim=_FLIPFLOP_SAMPLING_DIM,
-    is_angular=_IS_ANGULAR,
-)
 def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = False) -> xr.DataArray:
     """
     Calculates the flip-flop index by collapsing the dimension specified by
     `sampling_dim`.
 
     Args:
-        {data}
-        {sampling_dim}
-        {is_angular}
+        data: Data from which to draw subsets.
+        sampling_dim: The name of the dimension along which to calculate
+            the flip-flop index.
+        is_angular: specifies whether `data` is directional data (e.g. wind
+            direction).
 
     Returns:
-        An xarray.DataArray of the flip-flop index with the dimensions of
+        A xarray.DataArray of the flip-flop index with the dimensions of
         `data`, except for the `sampling_dim` dimension which is collapsed.
 
     See also:
@@ -91,22 +70,17 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
 @overload
 def flip_flop_index(
     data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Iterable[int]
-) -> xr.DataArray:
+) -> xr.Dataset:
     ...
 
 
 @overload
-def flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: None) -> xr.Dataset:
+def flip_flop_index(
+    data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: None
+) -> xr.DataArray:
     ...
 
 
-@docstring_param(
-    ntabs=3,
-    data=_FLIPFLOP_DATA,
-    sampling_dim=_FLIPFLOP_SAMPLING_DIM,
-    is_angular=_IS_ANGULAR,
-    selections=_FLIPFLOP_SELECTIONS,
-)
 def flip_flop_index(
     data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Optional[Iterable[int]]
 ) -> XarrayLike:
@@ -114,10 +88,14 @@ def flip_flop_index(
     Calculates the Flip-flop Index along the dimensions `sampling_dim`.
 
     Args:
-        {data}
-        {sampling_dim}
-        {is_angular}
-        {selections}
+        data: Data from which to draw subsets.
+        sampling_dim: The name of the dimension along which to calculate
+            the flip-flop index.
+        is_angular: specifies whether `data` is directional data (e.g. wind
+            direction).
+        **selections: Additional keyword arguments specify
+            subsets to draw from the dimension `sampling_dim` of the supplied `data`
+            before calculation of the flipflop index. e.g. days123=[1, 2, 3]
 
     Returns:
         If `selections` are not supplied: An xarray.DataArray, the Flip-flop

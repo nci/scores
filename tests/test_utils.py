@@ -5,7 +5,7 @@ Containts tests for the scores.utils file
 import pytest
 
 from scores import utils
-from scores.utils import DimensionError, docstring_param
+from scores.utils import DimensionError
 from scores.utils import gather_dimensions as gd
 from tests import utils_test_data
 
@@ -501,87 +501,3 @@ def test_gather_dimensions_exceptions():
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
         assert gd(fcst_dims_conflict, obs_dims, reduce_dims="all") == fcst_dims_conflict
-
-
-def test_docstring_param():
-    """
-    Tests the @docstring_param function decorator.
-    """
-
-    @docstring_param("foo", "bar")
-    def my_function():
-        """My Docstring is {} {}."""
-
-    assert my_function.__doc__ == "My Docstring is foo bar."
-
-    @docstring_param(foo="foo", bar="bar")
-    def another_function():
-        """My Docstring is {foo} {bar}."""
-
-    assert another_function.__doc__ == "My Docstring is foo bar."
-
-
-def test_docstring_param_multiline():
-    """
-    Tests the @docstring_param function decorator on multiline docstrings.
-    """
-
-    docstring_elem = """
-    This line has no leading spaces.
-
-    This line is padded.
-        Relative indentation is preserved.
-    The final newline is suppressed.
-    """
-
-    @docstring_param(docstring_elem, ntabs=3)
-    def my_function():
-        """
-        My Docstring is here.
-
-        Heading:
-            Indented text.
-            {}
-
-        End of the Docstring.
-        """
-
-    expected_docstring = """
-        My Docstring is here.
-
-        Heading:
-            Indented text.
-            This line has no leading spaces.
-
-            This line is padded.
-                Relative indentation is preserved.
-            The final newline is suppressed.
-
-        End of the Docstring.
-        """
-
-    assert my_function.__doc__ == expected_docstring
-
-
-def test_docstring_param_class():
-    """
-    Tests the @docstring_param decorator on a class.
-    """
-
-    # pylint: disable=too-few-public-methods
-    @docstring_param("Bar")
-    class Foo:
-        """{}"""
-
-        def __init__(self):
-            self.prop = "okay"
-
-        @classmethod
-        def method(cls):
-            """dummy method to ensure the class still behaves properly."""
-            return "okay"
-
-    assert Foo.__doc__ == "Bar"
-    # smoke test that the class still behaves like a class
-    assert Foo().prop == "okay"
-    assert Foo.method() == "okay"
