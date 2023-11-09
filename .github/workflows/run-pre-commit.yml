@@ -3,6 +3,8 @@
 name: Run pre-commit
 
 on:
+  push:
+    branches: ["develop", "main", "[0-9]+-*"]
   pull_request:
     branches: ["develop", "main", "[0-9]+-*"]
 
