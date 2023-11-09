@@ -105,12 +105,16 @@ addopts = [
 [tool.pylint.master]
 # https://github.com/PyCQA/pylint/issues/4081#issuecomment-778242554
 init-hook = 'import sys; sys.setrecursionlimit(3 * sys.getrecursionlimit())'
+fail-under=9.5
 ignore-paths = [
     'docs/'
 ]
 
+[tool.pylint.DESIGN]
+max-args=10
+
 [tool.pylint.FORMAT]
-max_line_length=120
+max-line-length=120
 
 [tool.pylint.messages_control]
 good_names=['df','da','x','y','z','i','j','k','ae']

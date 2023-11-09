@@ -109,7 +109,7 @@ def firm(
         score = weight * _single_category_score(fcst, obs, risk_parameter, categorical_threshold, discount_distance)
         total_score.append(score)
     summed_score = sum(total_score)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)  # type: ignore[assignment]
     summed_score = apply_weights(summed_score, weights)
     score = summed_score.mean(dim=reduce_dims)
 

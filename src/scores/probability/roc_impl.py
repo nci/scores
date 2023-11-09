@@ -101,7 +101,7 @@ def roc_curve_data(
     final_reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
     final_preserve_dims = all_dims - set(final_reduce_dims)
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
-    final_preserve_dims = auc_dims + ("threshold",)
+    final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
 
     pod = probability_of_detection(
         discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
