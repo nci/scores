@@ -3,7 +3,7 @@ Contains frequently-used functions of a general nature within scores
 """
 import inspect
 import warnings
-from collections.abc import Hashable, Iterable
+from collections.abc import Hashable, Iterable, Sequence
 from typing import Optional
 
 import xarray as xr
@@ -133,7 +133,7 @@ def dims_complement(data, dims=None) -> list[str]:
     return sorted(list(complement))
 
 
-def check_dims(xr_data: XarrayLike, expected_dims: list[str], mode: Optional[str] = None):
+def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional[str] = None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
@@ -168,15 +168,13 @@ def check_dims(xr_data: XarrayLike, expected_dims: list[str], mode: Optional[str
     """
 
     if isinstance(expected_dims, str):
-        raise TypeError(
-            f"Supplied dimensions '{expected_dims}' must be an iterable of strings, " "not a string itself."
-        )
+        raise TypeError(f"Supplied dimensions '{expected_dims}' must be an iterable of strings, not a string itself.")
 
     try:
         dims_set = set(expected_dims)
     except Exception as exc:
         raise ValueError(
-            f"Cannot convert supplied dims {expected_dims} into a set. " "Check debug log for more information."
+            f"Cannot convert supplied dims {expected_dims} into a set. Check debug log for more information."
         ) from exc
 
     if len(dims_set) != len(expected_dims):

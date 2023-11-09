@@ -2,7 +2,8 @@
 This module contains functions for calculating flip flop indices
 """
 
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable, Sequence
+from typing import Optional, Union, overload
 
 import numpy as np
 import xarray as xr
@@ -35,7 +36,7 @@ is_angular: specifies whether `data` is directional data (e.g. wind
     sampling_dim=_FLIPFLOP_SAMPLING_DIM,
     is_angular=_IS_ANGULAR,
 )
-def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = False):
+def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = False) -> xr.DataArray:
     """
     Calculates the flip-flop index by collapsing the dimension specified by
     `sampling_dim`.
@@ -70,13 +71,13 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
         # maximum possible angular difference between two forecasts
         enc_size = encompassing_sector_size(data=data, dims=dims_to_preserve)
         range_val = np.clip(enc_size, a_min=None, a_max=180.0)
-        flipflop = angular_difference(data.shift(**{sampling_dim: 1}), data)
+        flipflop = angular_difference(data.shift({sampling_dim: 1}), data)
     else:
         max_val = data.max(dim=sampling_dim, skipna=False)
         min_val = data.min(dim=sampling_dim, skipna=False)
         range_val = max_val - min_val
         # subtract each consecutive 'row' from eachother
-        flipflop = data.shift(**{sampling_dim: 1}) - data
+        flipflop = data.shift({sampling_dim: 1}) - data
 
     # take the absolute value and sum.
     # I don't do skipna=False here because .shift makes a row of nan
@@ -87,6 +88,18 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
     return flipflop / max_possible_flip_flop_count
 
 
+@overload
+def flip_flop_index(
+    data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Iterable[int]
+) -> xr.DataArray:
+    ...
+
+
+@overload
+def flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: None) -> xr.Dataset:
+    ...
+
+
 @docstring_param(
     ntabs=3,
     data=_FLIPFLOP_DATA,
@@ -94,7 +107,9 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
     is_angular=_IS_ANGULAR,
     selections=_FLIPFLOP_SELECTIONS,
 )
-def flip_flop_index(data: XarrayLike, sampling_dim: str, is_angular: bool = False, **selections: Iterable[str]):
+def flip_flop_index(
+    data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Optional[Iterable[int]]
+) -> XarrayLike:
     """
     Calculates the Flip-flop Index along the dimensions `sampling_dim`.
 
@@ -149,28 +164,43 @@ def flip_flop_index(data: XarrayLike, sampling_dim: str, is_angular: bool = Fals
 
     """
 
-    if not selections:
+    if not selections and isinstance(data, xr.DataArray):
         result = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
     else:
         result = xr.Dataset()
         result.attrs["selections"] = selections
         for key, data_subset in iter_selections(data, sampling_dim, **selections):
             result[key] = _flip_flop_index(data_subset, sampling_dim, is_angular=is_angular)
-
     result.attrs["sampling_dim"] = sampling_dim
 
     return result
 
 
-def iter_selections(data: XarrayLike, sampling_dim: str, **selections: Iterable[str]):
+@overload
+def iter_selections(
+    data: xr.DataArray, sampling_dim: str, **selections: Optional[Iterable[int]]
+) -> Generator[tuple[str, xr.DataArray], None, None]:
+    ...
+
+
+@overload
+def iter_selections(
+    data: xr.Dataset, sampling_dim: str, **selections: Optional[Iterable[int]]
+) -> Generator[tuple[str, xr.Dataset], None, None]:
+    ...
+
+
+def iter_selections(
+    data: XarrayLike, sampling_dim: str, **selections: Optional[Iterable[int]]
+) -> Generator[tuple[str, XarrayLike], None, None]:
     """
     Selects subsets of data along dimension sampling_dim according to
     `selections`.
 
     Args:
-        data (xarray.DataArray or xarray.Dataset): The data to sample from.
-        sampling_dim (str): The dimension from which to sample.
-        selections (iterable): Each supplied keyword corresponds to a
+        data: The data to sample from.
+        sampling_dim: The dimension from which to sample.
+        selections: Each supplied keyword corresponds to a
             selection of `data` from the dimensions `sampling_dim`. The
             key is the first element of the yielded tuple.
 
@@ -207,7 +237,7 @@ def iter_selections(data: XarrayLike, sampling_dim: str, **selections: Iterable[
         try:
             # Need copy so that attributes added in _iter_selections_with_attrs
             # don't affect the whole dataframe but just the subset
-            data_subset = data.sel(**{sampling_dim: values}).copy(deep=False)
+            data_subset = data.sel({sampling_dim: values}).copy(deep=False)
         except KeyError as ex:
             raise KeyError(
                 f"for `selections` item {str({key: values})}, not all values found in " f"dimension '{sampling_dim}'",
@@ -216,7 +246,7 @@ def iter_selections(data: XarrayLike, sampling_dim: str, **selections: Iterable[
         yield key, data_subset
 
 
-def encompassing_sector_size(data: xr.DataArray, dims: Iterable[str], skipna: bool = False):
+def encompassing_sector_size(data: xr.DataArray, dims: Sequence[str], skipna: bool = False) -> xr.DataArray:
     """
     Calculates the minimum angular distance which encompasses all data points
     within an xarray.DataArray along a specified dimension. Assumes data is in
@@ -261,7 +291,9 @@ def encompassing_sector_size(data: xr.DataArray, dims: Iterable[str], skipna: bo
 
 
 @np.errstate(invalid="ignore")
-def _encompassing_sector_size_np(data: np.ndarray, axis_to_collapse: int = 0, skipna: bool = False):
+def _encompassing_sector_size_np(
+    data: np.ndarray, axis_to_collapse: Union[int, tuple[int, ...]] = 0, skipna: bool = False
+) -> np.ndarray:
     """
     Calculates the minimum angular distance which encompasses all data points
     within an xarray.DataArray along a specified dimension. Assumes data is in

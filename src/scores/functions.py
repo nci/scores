@@ -1,4 +1,7 @@
+from typing import overload
+
 import numpy as np
+import xarray as xr
 
 from scores.typing import XarrayLike
 
@@ -43,6 +46,16 @@ def create_latitude_weights(latitudes):
     """
     weights = np.cos(np.deg2rad(latitudes))
     return weights
+
+
+@overload
+def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset:
+    ...
+
+
+@overload
+def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:
+    ...
 
 
 def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike:
