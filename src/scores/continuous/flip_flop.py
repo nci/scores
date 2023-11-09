@@ -1,5 +1,5 @@
 """
-This module contains functions for calculating non-standard metrics
+This module contains functions for calculating flip flop indices
 """
 
 from collections.abc import Iterable
@@ -50,7 +50,7 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
         `data`, except for the `sampling_dim` dimension which is collapsed.
 
     See also:
-        `scores.stats.novel.flip_flop_index`
+        `scores.continuous.flip_flop.flip_flop_index`
     """
     # check that `sampling_dim` is in `data`.
     check_dims(data, [sampling_dim], mode="superset")
@@ -147,8 +147,6 @@ def flip_flop_index(data: XarrayLike, sampling_dim: str, is_angular: bool = Fals
             selections: {{'days123': [1, 2, 3], 'all_days': [1, 2, 3, 4]}}
             sampling_dim: lead_day
 
-    See also:
-        `scores.stats.novel.flip_flop_index_proportion_exceeding`
     """
 
     if not selections:
@@ -247,7 +245,7 @@ def encompassing_sector_size(data: xr.DataArray, dims: Iterable[str], skipna: bo
     """
     check_dims(data, dims, "proper superset")
     dims_to_collapse = dims_complement(data, dims)
-    if not len(dims_to_collapse) == 1:
+    if len(dims_to_collapse) != 1:
         raise DimensionError("can only collapse one dimension")
     dim_to_collapse = dims_to_collapse[0]
     axis_to_collapse = data.get_axis_num(dim_to_collapse)

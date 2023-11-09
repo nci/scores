@@ -1,11 +1,11 @@
 """
-This module contains tests for scores.stats.novel
+This module contains tests for scores.continuous.flip_flop
 """
 import numpy as np
 import pytest
 import xarray as xr
 
-from scores.stats.novel import (
+from scores.continuous.flip_flop import (
     _encompassing_sector_size_np,
     _flip_flop_index,
     encompassing_sector_size,
@@ -13,7 +13,7 @@ from scores.stats.novel import (
 )
 from scores.utils import DimensionError
 from tests.assertions import assert_dataarray_equal, assert_dataset_equal
-from tests.stats import novel_test_data as ntd
+from tests.continuous import flip_flop_test_data as ntd
 
 
 @pytest.mark.parametrize(

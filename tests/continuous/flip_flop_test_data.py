@@ -1,5 +1,5 @@
 """
-Test data for tests.stats.test_novel in scores
+Test data for tests.continuous.flip_flop in scores
 """
 import numpy as np
 import xarray as xr
