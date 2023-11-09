@@ -1,6 +1,8 @@
 """
 Contains unit tests for scores.continuous.standard
 """
+# pylint: disable=missing-function-docstring
+# pylint: disable=line-too-long
 
 import dask
 import dask.array

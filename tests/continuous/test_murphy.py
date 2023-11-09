@@ -11,7 +11,7 @@ import pytest
 import xarray as xr
 
 from scores.continuous import murphy_impl as murphy
-from scores.continuous import murphy_score, murphy_thetas
+from scores.continuous import murphy_thetas
 from scores.continuous.murphy_impl import (
     _expectile_thetas,
     _huber_thetas,

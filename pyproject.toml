@@ -105,7 +105,7 @@ addopts = [
 [tool.pylint.master]
 # https://github.com/PyCQA/pylint/issues/4081#issuecomment-778242554
 init-hook = 'import sys; sys.setrecursionlimit(3 * sys.getrecursionlimit())'
-fail-under=9.5
+fail-under=9.8
 ignore-paths = [
     'docs/'
 ]
