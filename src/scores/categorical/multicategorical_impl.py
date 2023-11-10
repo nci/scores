@@ -11,7 +11,7 @@ from scores.functions import apply_weights
 from scores.utils import check_dims, gather_dimensions
 
 
-def firm(
+def firm(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     risk_parameter: float,
@@ -109,7 +109,7 @@ def firm(
         score = weight * _single_category_score(fcst, obs, risk_parameter, categorical_threshold, discount_distance)
         total_score.append(score)
     summed_score = sum(total_score)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)  # type: ignore
     summed_score = apply_weights(summed_score, weights)
     score = summed_score.mean(dim=reduce_dims)
 
