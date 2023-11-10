@@ -19,8 +19,15 @@ from scores.typing import XarrayLike
 def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
     """Round data array to specified precision.
 
+    Rounding is done differently to `xarray.DataArray.round` or `numpy.round` where
+    the number of decimal places is specified in those cases. Instead, here the rounding
+    precision is specified as a float. The value is rounded to the nearest value that is
+    divisible by `rounding_precision`.
+
+    For example, 3.73 rounded to precision 0.2 is 3.8, and 37.3 rounded to precision 20
+    is 40.
+
     Assumes that rounding_precision >=0, with 0 indicating no rounding to be performed.
-    For example, 3.73 rounded to precision 0.2 is 3.8.
     If rounding_precision > 0, a final round to `final_round_decpl` decimal places is performed
     to remove artefacts of python rounding process.
 
