@@ -447,6 +447,7 @@ OBS_CHUNKED = xr.DataArray(
 ).chunk()
 
 
+# Dask tests
 def test_mse_with_dask():
     """
     Test that mse works with dask
@@ -480,4 +481,54 @@ def test_rmse_with_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[np.sqrt(5), 2], dims=["dim2"], coords={"dim2": [1, 2]})
+    xr.testing.assert_equal(result, expected)
+
+
+# Angular / directional tests
+DA1_ANGULAR = xr.DataArray([[10, 10], [90, 90]], coords=[[0, 1], [0, 1]], dims=["i", "j"])
+DA2_ANGULAR = xr.DataArray([[350, 180], [270, 280]], coords=[[0, 1], [0, 1]], dims=["i", "j"])
+
+
+def test_mse_angular():
+    """Tests that `mse` returns the expected object with `angular` is True"""
+
+    expected = xr.DataArray(
+        [[20**2, 170**2], [180**2, 170**2]],
+        coords=[[0, 1], [0, 1]],
+        dims=["i", "j"],
+        name="mean_squared_error",
+    )
+
+    result = scores.continuous.mse(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i", "j"], angular=True)
+
+    xr.testing.assert_equal(result, expected)
+
+
+def test_mae_angular():
+    """Tests that `mae` returns the expected object with `angular` is True"""
+
+    expected = xr.DataArray(
+        [[20, 170], [180, 170]],
+        coords=[[0, 1], [0, 1]],
+        dims=["i", "j"],
+        name="mean_squared_error",
+    )
+
+    result = scores.continuous.mae(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i", "j"], angular=True)
+
+    xr.testing.assert_equal(result, expected)
+
+
+def test_rmse_angular():
+    """Tests that `rmse` returns the expected object with `angular` is True"""
+
+    expected = xr.DataArray(
+        [((20**2 + 170**2) / 2) ** 0.5, ((180**2 + 170**2) / 2) ** 0.5],
+        coords={"i": [0, 1]},
+        dims=["i"],
+        name="mean_squared_error",
+    )
+
+    result = scores.continuous.rmse(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i"], angular=True)
+
     xr.testing.assert_equal(result, expected)
