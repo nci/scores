@@ -438,7 +438,7 @@ def _contiguous_ir(
     target = np.arange(len_y, dtype=np.intp)
 
     index = 0
-    while index < len_y:
+    while index < len_y:  # pragma: no cover ... breaks are used to exit the loop but this is safer than while True
         # idx_next_block is the index of beginning of the next block
         idx_next_block = target[index] + 1
 
@@ -465,7 +465,7 @@ def _contiguous_ir(
                 else:
                     y_out[index] = solver(y[index:idx_next_block], weight[index:idx_next_block])  # type: ignore
 
-                if index > 0:
+                if index > 0:  # pragma: no branch
                     # Backtrack if we can.  This makes the algorithm
                     # single-pass and ensures O(n) complexity (subject to solver complexity)
                     index = target[index - 1]
