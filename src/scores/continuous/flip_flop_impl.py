@@ -74,12 +74,14 @@ def flip_flop_index(
 ) -> xr.Dataset:
     ...  # pragma: no cover  # bug in coverage evaluation for overloads
 
+
 # If there are no selections, a DataArray is always returned
 @overload
 def flip_flop_index(
     data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: None
 ) -> xr.DataArray:
     ...  # pragma: no cover # bug in coverage evaluation for overloads
+
 
 # Return type is more precise at runtime when it is known if selections are being used
 def flip_flop_index(
@@ -161,6 +163,7 @@ def iter_selections(
     data: xr.DataArray, sampling_dim: str, **selections: Optional[Iterable[int]]
 ) -> Generator[tuple[str, xr.DataArray], None, None]:
     ...  # pragma: no cover  # bug in coverage evaluation of overloads
+
 
 # Dataset input types load to Dataset output types
 @overload
