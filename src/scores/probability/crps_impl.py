@@ -343,7 +343,7 @@ def crps_cdf(
 
     weighted = scores.functions.apply_weights(result, weights)
 
-    dims.remove(threshold_dim)
+    dims.remove(threshold_dim)  # type: ignore
 
     result = weighted.mean(dim=dims)
 
@@ -500,7 +500,7 @@ def crps_cdf_brier_decomposition(
         "forward",
     )
 
-    dims.remove(threshold_dim)
+    dims.remove(threshold_dim)  # type: ignore
 
     # brier score for each forecast case
     bscore = (fcst - obs) ** 2

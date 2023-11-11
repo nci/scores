@@ -11,7 +11,7 @@ from scores.functions import apply_weights
 from scores.utils import check_dims, gather_dimensions
 
 
-def firm(
+def firm(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     risk_parameter: float,

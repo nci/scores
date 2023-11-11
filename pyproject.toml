@@ -23,7 +23,8 @@ dependencies = [
     "xarray",
     "pandas",
     "scipy",
-    "bottleneck"
+    "bottleneck",
+    "scikit-learn",
 ]
 
 [project.optional-dependencies]
@@ -45,7 +46,8 @@ tutorial = [
     "matplotlib",
     "h5netcdf",
     "rasterio",
-    "rioxarray"
+    "rioxarray",
+    "plotly"
 ]
 maintainer = ["build",
               "hatch",

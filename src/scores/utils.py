@@ -40,7 +40,7 @@ class DimensionError(Exception):
     """
 
 
-def gather_dimensions(
+def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
     reduce_dims: FlexibleDimensionTypes = None,

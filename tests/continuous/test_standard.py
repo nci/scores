@@ -113,31 +113,37 @@ def test_2d_xarray_mse_with_dimensions():
 # Root Mean Squared Error
 @pytest.fixture
 def rmse_fcst_xarray():
+    """Creates forecast Xarray for test."""
     return xr.DataArray([-1, 3, 1, 3, 0, 2, 2, 1, 1, 2, 3])
 
 
 @pytest.fixture
 def rmse_fcst_nan_xarray():
+    """Creates forecast Xarray containing NaNs for test."""
     return xr.DataArray([-1, 3, 1, 3, np.nan, 2, 2, 1, 1, 2, 3])
 
 
 @pytest.fixture
 def rmse_obs_xarray():
+    """Creates observation Xarray for test."""
     return xr.DataArray([1, 1, 1, 2, 1, 2, 1, -1, 1, 3, 1])
 
 
 @pytest.fixture
 def rmse_fcst_pandas():
+    """Creates forecast Pandas series for test."""
     return pd.Series([-1, 3, 1, 3, 0, 2, 2, 1, 1, 2, 3])
 
 
 @pytest.fixture
 def rmse_fcst_nan_pandas():
+    """Creates forecast Pandas series containing NaNs for test."""
     return pd.Series([-1, 3, 1, 3, np.nan, 2, 2, 1, 1, 2, 3])
 
 
 @pytest.fixture
 def rmse_obs_pandas():
+    """Creates observation Pandas series for test."""
     return pd.Series([1, 1, 1, 2, 1, 2, 1, 1, -1, 3, 1])
 
 
@@ -149,7 +155,7 @@ def rmse_obs_pandas():
             "rmse_fcst_xarray",
             "rmse_obs_xarray",
             xr.DataArray([2, 2, 0, 1, 1, 0, 1, 2, 0, 1, 2]),
-            dict(preserve_dims="all"),
+            {"preserve_dims": "all"},
         ),
         ("rmse_fcst_nan_xarray", "rmse_obs_xarray", xr.DataArray(1.3784), {}),
         ("rmse_fcst_xarray", 1, xr.DataArray(1.3484), {}),
@@ -182,11 +188,15 @@ def test_rmse_xarray_1d(forecast, observations, expected, request_kwargs, reques
     if isinstance(observations, str):
         observations = request.getfixturevalue(observations)
     result = scores.continuous.rmse(forecast, observations, **request_kwargs)
-    assert (result.round(PRECISION) == expected).all()
+    if not isinstance(result, float):
+        assert (result.round(PRECISION) == expected).all()
+    else:
+        assert np.round(result, PRECISION) == expected
 
 
 @pytest.fixture
 def rmse_2d_fcst_xarray():
+    """Creates 2D forecast Xarray for test."""
     numpy.random.seed(0)
     lats = [50, 51, 52, 53]
     lons = [30, 31, 32, 33]
@@ -197,6 +207,7 @@ def rmse_2d_fcst_xarray():
 
 @pytest.fixture
 def rmse_2d_obs_xarray():
+    """Creates 2D observation Xarray for test."""
     numpy.random.seed(0)
     lats = [50, 51, 52, 53]
     lons = [30, 31, 32, 33]
@@ -207,6 +218,7 @@ def rmse_2d_obs_xarray():
 
 @pytest.fixture
 def rmse_2d_expected_xarray():
+    """Creates 2D forecast Xarray to be used as expected result for test."""
     lons = [30, 31, 32, 33]
     exp_temperatures_2d = [2.6813, 1.2275, 1.252, 2.6964]
     return xr.DataArray(exp_temperatures_2d, dims=["longitude"], coords=[lons])
@@ -220,20 +232,22 @@ def rmse_2d_expected_xarray():
             "rmse_2d_fcst_xarray",
             "rmse_2d_obs_xarray",
             "rmse_2d_expected_xarray",
-            dict(reduce_dims="latitude"),
+            {"reduce_dims": "latitude"},
             ("longitude",),
         ),
         (
             "rmse_2d_fcst_xarray",
             "rmse_2d_obs_xarray",
             "rmse_2d_expected_xarray",
-            dict(preserve_dims="longitude"),
+            {"preserve_dims": "longitude"},
             ("longitude",),
         ),
     ],
     ids=["simple-2d", "reduce-2d", "preserve-2d"],
 )
-def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, expected_dimensions, request):
+def test_rmse_xarray_2d_rand(  # pylint: disable=too-many-arguments
+    forecast, observations, expected, request_kwargs, expected_dimensions, request
+):
     """
     Test RMSE for the following cases on 2d Data:
        * Calculates the correct value for a simple xarray 2d sequence
@@ -253,6 +267,7 @@ def test_rmse_xarray_2d_rand(forecast, observations, expected, request_kwargs, e
 
 
 def create_xarray(data: list[list[float]]):
+    """Creates an Xarray.DataArray to be used in the tests"""
     npdata = np.array(data)
     lats = list(np.arange(npdata.shape[0]) + 50)
     lons = list(np.arange(npdata.shape[1]) + 30)
