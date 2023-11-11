@@ -67,20 +67,21 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
     return flipflop / max_possible_flip_flop_count
 
 
+# If there are selections, a DataSet is always returned
 @overload
 def flip_flop_index(
     data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Iterable[int]
 ) -> xr.Dataset:
     ...
 
-
+# If there are no selections, a DataArray is always returned
 @overload
 def flip_flop_index(
     data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: None
 ) -> xr.DataArray:
     ...
 
-
+# Return type is more precise at runtime when it is known if selections are being used
 def flip_flop_index(
     data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Optional[Iterable[int]]
 ) -> XarrayLike:
