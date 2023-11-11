@@ -6,13 +6,16 @@ import scores.functions
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
+import xarray as xr
+
 
 def mse(
     fcst: FlexibleArrayType,
     obs: FlexibleArrayType,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
-    weights=None,
+    weights: xr.DataArray = None,
+    angular: bool = False,
 ):
     """Calculates the mean squared error from forecast and observed data.
 
@@ -39,6 +42,12 @@ def mse(
             must match precisely.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
+        angular: specifies whether `fcst` and `obs` are angular
+            data (e.g. wind direction). If True, a different function is used
+            to calculate the difference between `fcst` and `obs`, which
+            accounts for circularity. Angular `fcst` and `obs` data should be in
+            degrees rather than radians.
+
 
     Returns:
         Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: An object containing
@@ -47,8 +56,10 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
-
-    error = fcst - obs
+    if angular:
+        error = scores.functions.angular_difference(fcst, obs)
+    else:
+        error = fcst - obs
     squared = error * error
     squared = scores.functions.apply_weights(squared, weights)
 
@@ -70,7 +81,8 @@ def rmse(
     obs: FlexibleArrayType,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
-    weights=None,
+    weights: xr.DataArray = None,
+    angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
@@ -100,6 +112,11 @@ def rmse(
             must match precisely.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
+        angular: specifies whether `fcst` and `obs` are angular
+            data (e.g. wind direction). If True, a different function is used
+            to calculate the difference between `fcst` and `obs`, which
+            accounts for circularity. Angular `fcst` and `obs` data should be in
+            degrees rather than radians.
 
     Returns:
         An object containing
@@ -109,7 +126,9 @@ def rmse(
             reduced along the relevant dimensions and weighted appropriately.
 
     """
-    _mse = mse(fcst=fcst, obs=obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
+    _mse = mse(
+        fcst=fcst, obs=obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, angular=angular
+    )
 
     _rmse = pow(_mse, (1 / 2))
 
@@ -121,7 +140,8 @@ def mae(
     obs: FlexibleArrayType,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
-    weights=None,
+    weights: xr.DataArray = None,
+    angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
 
@@ -146,6 +166,11 @@ def mae(
             forecast and observed dimensions must match precisely.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
+        angular: specifies whether `fcst` and `obs` are angular
+            data (e.g. wind direction). If True, a different function is used
+            to calculate the difference between `fcst` and `obs`, which
+            accounts for circularity. Angular `fcst` and `obs` data should be in
+            degrees rather than radians.
 
     Returns:
         By default an xarray DataArray containing
@@ -155,8 +180,10 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-
-    error = fcst - obs
+    if angular:
+        error = scores.functions.angular_difference(fcst, obs)
+    else:
+        error = fcst - obs
     ae = abs(error)
     ae = scores.functions.apply_weights(ae, weights)
 
