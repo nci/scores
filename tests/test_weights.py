@@ -1,5 +1,5 @@
+# pylint: disable=missing-function-docstring
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 import scores.continuous
@@ -11,12 +11,12 @@ ZERO = np.array([[1 for i in range(10)] for j in range(10)])
 # Standard forecast and observed test data which is static and can be used
 # across tests
 np.random.seed(0)
-lats = [50, 51, 52, 53]
-lons = [30, 31, 32, 33]
+LATS = [50, 51, 52, 53]
+LONS = [30, 31, 32, 33]
 fcst_temperatures_2d = 15 + 8 * np.random.randn(1, 4, 4)
 obs_temperatures_2d = 15 + 6 * np.random.randn(1, 4, 4)
-FCST_2D = xr.DataArray(fcst_temperatures_2d[0], dims=["latitude", "longitude"], coords=[lats, lons])
-OBS_2D = xr.DataArray(obs_temperatures_2d[0], dims=["latitude", "longitude"], coords=[lats, lons])
+FCST_2D = xr.DataArray(fcst_temperatures_2d[0], dims=["latitude", "longitude"], coords=[LATS, LONS])
+OBS_2D = xr.DataArray(obs_temperatures_2d[0], dims=["latitude", "longitude"], coords=[LATS, LONS])
 IDENTITY = np.ones((4, 4))
 ZEROS = np.zeros((4, 4))
 
