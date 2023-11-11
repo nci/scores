@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.continuous.flip_flop import (
+from scores.continuous.flip_flop_impl import (
     _encompassing_sector_size_np,
     _flip_flop_index,
     encompassing_sector_size,
