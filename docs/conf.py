@@ -11,6 +11,9 @@ copyright = "2023, Australian Bureau of Meteorology"
 author = "Australian Bureau of Meteorology"
 release = "0.4"
 
+from scores import __version__
+version = __version__
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
