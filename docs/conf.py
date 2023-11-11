@@ -12,6 +12,7 @@ author = "Australian Bureau of Meteorology"
 release = "0.4"
 
 from scores import __version__
+
 version = __version__
 
 # -- General configuration ---------------------------------------------------
