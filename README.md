@@ -5,16 +5,16 @@ Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
 Currently Included Metrics:
 
-| continuous     | probability | categorical     | statistical tests |
-| ----------     | ----------- | -----------     | ----------- |
-| MAE, MSE, RMSE | CRPS, ROC   | FIRM, POD, POFD |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
+| continuous                      | probability | categorical      | statistical tests |
+| ----------                      | ----------- | -----------      | ----------------- |
+| MAE, MSE, RMSE, Flip Flop Index | CRPS, ROC   | FIRM, POD, POFD  |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
 Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io)
 
-`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather. 
+`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather.
 
 `scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop Index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
@@ -26,7 +26,7 @@ All interactions in discussions, issues, emails and code (e.g. merge requests, c
 
 ## Using This Package
 
-The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package. 
+The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package.
 
 Installation of the core mathematical API may be performed with:
 
