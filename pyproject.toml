@@ -86,8 +86,14 @@ ignore_missing_imports = true
 [tool.coverage.paths]
 source = ["/src/"]
 
+[tool.coverage.report]
+exclude_also = [
+    "@overload",
+    "raise NotImplementedError"
+]
+
 [tool.pyright]
-reportPrivateImportUsage = false 
+reportPrivateImportUsage = false
 
 [tool.pytest.ini_options]
 addopts = [

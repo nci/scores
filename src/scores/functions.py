@@ -51,13 +51,13 @@ def create_latitude_weights(latitudes):
 # Dataset input types lead to a Dataset return type
 @overload
 def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset:
-    ...  # pragma: no cover  # bug in coverage evaluation of overloads
+    ...
 
 
 # DataArray input types lead to a DataArray return type
 @overload
 def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:
-    ...  # pragma: no cover  # bug in coverage evaluation of overloads
+    ...
 
 
 def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike:
