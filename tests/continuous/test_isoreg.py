@@ -1,7 +1,6 @@
 """
 Tests for `scores.isoreg`.
 """
-import isoreg_test_data as itd
 import numpy as np
 import pytest
 import xarray as xr
@@ -18,6 +17,7 @@ from scores.continuous.isoreg import (
     _xr_to_np,
     isotonic_fit,
 )
+from tests.continuous import isoreg_test_data as itd
 
 
 @pytest.mark.parametrize(
