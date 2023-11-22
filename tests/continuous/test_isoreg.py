@@ -300,6 +300,7 @@ def _wmean_solver(y, weight):
         (itd.Y1, np.median, None, itd.EXP_IR_MEDIAN),
         (itd.Y1, np.mean, None, itd.EXP_IR_MEAN),
         (itd.Y1, _wmean_solver, itd.W1, itd.EXP_IR_WMEAN),
+        (np.ndarray(0), np.mean, None, 0),
     ],
 )
 def test__contiguous_ir(y, solver, weight, expected):
