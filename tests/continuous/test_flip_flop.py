@@ -1,6 +1,7 @@
 """
 This module contains tests for scores.continuous.flip_flop
 """
+import dask
 import numpy as np
 import pytest
 import xarray as xr
@@ -10,6 +11,7 @@ from scores.continuous.flip_flop_impl import (
     _flip_flop_index,
     encompassing_sector_size,
     flip_flop_index,
+    flip_flop_index_proportion_exceeding,
 )
 from scores.utils import DimensionError
 from tests.assertions import assert_dataarray_equal, assert_dataset_equal
@@ -286,3 +288,109 @@ def test_encompassing_sector_size_raises(data, dims, skipna):
     """
     with pytest.raises(DimensionError):
         encompassing_sector_size(data, dims, skipna=skipna)
+
+
+@pytest.mark.parametrize(
+    (
+        "data",
+        "sampling_dim",
+        "thresholds",
+        "is_angular",
+        "selections",
+        "dims",
+        "expected",
+    ),
+    [
+        # 0. 3-D, dims=None
+        (
+            ntd.DATA_FFI_2X2X4,
+            "int",
+            [0, 1, 5],
+            False,
+            {"one": [1, 2, 3], "two": [2, 3, 4]},
+            None,
+            ntd.EXP_FFI_PE_NONE,
+        ),
+        # 1. 3-D, dims=[char']
+        # SPOT-CHECKED by DG
+        (
+            ntd.DATA_FFI_2X2X4,
+            "int",
+            [0, 1, 5],
+            False,
+            {"one": [1, 2, 3], "two": [2, 3, 4]},
+            ["char"],
+            ntd.EXP_FFI_PE_CHAR,
+        ),
+        # 2. 3-D, dims=[char', 'bool']
+        (
+            ntd.DATA_FFI_2X2X4,
+            "int",
+            [0, 1, 5],
+            False,
+            {"one": [1, 2, 3], "two": [2, 3, 4]},
+            ["char", "bool"],
+            ntd.EXP_FFI_PE_CHARBOOL,
+        ),
+        # 3. 3-D, dims=['char', 'bool'], angular data
+        (
+            ntd.DATA_FFI_2X2X4_DIR,
+            "int",
+            [0, 50, 100],
+            True,
+            {"one": [1, 2, 3], "two": [2, 3, 4]},
+            ["char", "bool"],
+            ntd.EXP_FFI_PE_CHARBOOL_DIR,
+        ),
+    ],
+)
+def test_flip_flop_index_proportion_exceeding(data, sampling_dim, thresholds, is_angular, selections, dims, expected):
+    """
+    Tests that flip_flop_index_proportion_exceeding returns the correct object
+    """
+    calculated = flip_flop_index_proportion_exceeding(
+        data, sampling_dim, thresholds, is_angular=is_angular, preserve_dims=dims, **selections
+    )
+    assert_dataset_equal(calculated, expected, decimals=8)
+
+
+@pytest.mark.parametrize(
+    "dims_kwargs",
+    [{"preserve_dims": ["letter", "banana"]}, {"reduce_dims": ["letter", "banana"]}],
+    ids=["preserve_dims", "reduce_dims"],
+)
+def test_flip_flop_index_proportion_exceeding_raises(dims_kwargs):
+    """
+    Smoke tests that flip_flop_index_proportion_exceeding raises the correct
+    exception when `sampling_dim` is in `dims`
+    """
+    with pytest.raises(DimensionError) as ex:
+        flip_flop_index_proportion_exceeding(
+            xr.DataArray([[1]], dims=["letter", "banana"]),
+            "letter",
+            [10, 20],
+            **dims_kwargs,
+        )
+    assert "`sampling_dim`: 'letter' must not be in dimensions to " in str(ex.value)
+
+
+def test_flip_flop_index_is_dask_compatible():
+    """
+    Test that flip flop works with dask.
+    """
+    dask_array = ntd.DATA_FFI_1D_6.chunk()
+    result = flip_flop_index(dask_array, "letter")
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    xr.testing.assert_equal(result, ntd.EXP_FFI_SUB_CASE0)
+
+
+def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
+    """
+    Test that flip flop proportion exceeding works with dask.
+    """
+    dask_array = ntd.DATA_FFI_2X2X4.chunk()
+    result = flip_flop_index_proportion_exceeding(dask_array, "int", [0, 1, 5], **{"one": [1, 2, 3], "two": [2, 3, 4]})
+    assert isinstance(result.data_vars["one"].data, dask.array.Array)
+    result = result.compute()
+    xr.testing.assert_equal(result, ntd.EXP_FFI_PE_NONE)

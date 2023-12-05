@@ -2,11 +2,11 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
+import xarray as xr
+
 import scores.functions
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
-
-import xarray as xr
 
 
 def mse(

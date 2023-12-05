@@ -248,3 +248,73 @@ ENC_SIZE_3D_ANSW_AXIS2_NOSKIPNA = np.array(
 ENC_SIZE_3D_TEST_AXIS0 = ENC_SIZE_3D_TEST_AXIS2.swapaxes(0, 2)
 ENC_SIZE_3D_ANSW_AXIS0_SKIPNA = ENC_SIZE_3D_ANSW_AXIS2_SKIPNA.swapaxes(0, 1)
 ENC_SIZE_3D_ANSW_AXIS0_NOSKIPNA = ENC_SIZE_3D_ANSW_AXIS2_NOSKIPNA.swapaxes(0, 1)
+
+
+"""
+Test data for flipflipindex_proportion_exceeding
+"""
+EXP_FFI_PE_NONE = xr.Dataset(
+    {
+        "one": xr.DataArray([1, 2 / 3, 0], coords=[("threshold", [0, 1, 5])]),
+        "two": xr.DataArray([1, 0.5, 0.25], coords=[("threshold", [0, 1, 5])]),
+    },
+    attrs={"sampling_dim": "int", "selections": {"one": [1, 2, 3], "two": [2, 3, 4]}},
+)
+EXP_FFI_PE_CHAR = xr.Dataset(
+    {
+        "one": xr.DataArray(
+            [[1.0, 0.0, 0.0], [1.0, 1.0, 0.0]],
+            coords=[("char", ["a", "b"]), ("threshold", [0, 1, 5])],
+        ),
+        "two": xr.DataArray(
+            [[1, 0.5, 0.5], [1, 0.5, 0]],
+            coords=[("char", ["a", "b"]), ("threshold", [0, 1, 5])],
+        ),
+    },
+    attrs={"sampling_dim": "int", "selections": {"one": [1, 2, 3], "two": [2, 3, 4]}},
+)
+EXP_FFI_PE_CHARBOOL = xr.Dataset(
+    {
+        "one": xr.DataArray(
+            [[[1, 0, 0], [np.nan, np.nan, np.nan]], [[1, 1, 0], [1, 1, 0]]],
+            coords=[
+                ("char", ["a", "b"]),
+                ("bool", [True, False]),
+                ("threshold", [0, 1, 5]),
+            ],
+        ),
+        "two": xr.DataArray(
+            [[[1.0, 0.0, 0.0], [1.0, 1.0, 1.0]], [[1.0, 0.0, 0.0], [1.0, 1.0, 0.0]]],
+            coords=[
+                ("char", ["a", "b"]),
+                ("bool", [True, False]),
+                ("threshold", [0, 1, 5]),
+            ],
+        ),
+    },
+    attrs={"sampling_dim": "int", "selections": {"one": [1, 2, 3], "two": [2, 3, 4]}},
+)
+EXP_FFI_PE_CHARBOOL_DIR = xr.Dataset(
+    {
+        "one": xr.DataArray(
+            [
+                [[1.0, 0.0, 0.0], [np.nan, np.nan, np.nan]],
+                [[1.0, 0.0, 0.0], [1.0, 1.0, 0.0]],
+            ],
+            coords=[
+                ("char", ["a", "b"]),
+                ("bool", [True, False]),
+                ("threshold", [0, 50, 100]),
+            ],
+        ),
+        "two": xr.DataArray(
+            [[[1.0, 0.0, 0.0], [1.0, 1.0, 0.0]], [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]],
+            coords=[
+                ("char", ["a", "b"]),
+                ("bool", [True, False]),
+                ("threshold", [0, 50, 100]),
+            ],
+        ),
+    },
+    attrs={"sampling_dim": "int", "selections": {"one": [1, 2, 3], "two": [2, 3, 4]}},
+)
