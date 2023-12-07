@@ -61,11 +61,10 @@ pytest
 ### `conda`-based virtual environment
 
 ```bash
-# overwrite default name `scores` with `-n <new-name>` if desired
+# overwrite default name `scoresenv` with `-n <new-name>` if desired
 conda env create -f environment.yml
-conda activate scores
-# re-install as editable if desired
-pip install -e .
+conda activate scoresenv
+pip install -e .[all]
 pytest
 ```
 
