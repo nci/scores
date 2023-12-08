@@ -13,6 +13,13 @@ DA_FCST_SC = xr.DataArray(
         "k": [10, 11, 12],
     },
 )
+DA_FCST_SC2 = xr.DataArray(
+    data=[3, 3, 1, 2, 2, 1],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
 
 DA_OBS_SC = xr.DataArray(
     data=[[10, np.nan], [0, 1]],
@@ -20,6 +27,14 @@ DA_OBS_SC = xr.DataArray(
     coords={
         "j": [100001, 10000],  # coords in different order to forecast
         "k": [10, 11],
+    },
+)
+
+DA_OBS_SC2 = xr.DataArray(
+    data=[1, 2, 3, 4, 1, 2],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
     },
 )
 
@@ -146,6 +161,66 @@ EXP_SC_CASE3 = xr.Dataset(
     }
 )
 
+
+EXP_SC_TOTAL_CASE4 = xr.DataArray(
+    data=[0.3, 0.3, 0.7, 0.7, 0, 0],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+EXP_SC_UNDER_CASE4 = xr.DataArray(
+    data=[0, 0, 0.7, 0.7, 0, 0],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+EXP_SC_OVER_CASE4 = xr.DataArray(
+    data=[0.3, 0.3, 0, 0, 0, 0],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+
+EXP_SC_CASE4 = xr.Dataset(
+    {
+        "firm_score": EXP_SC_TOTAL_CASE4,
+        "underforecast_penalty": EXP_SC_UNDER_CASE4,
+        "overforecast_penalty": EXP_SC_OVER_CASE4,
+    }
+)
+
+EXP_SC_TOTAL_CASE5 = xr.DataArray(
+    data=[0.3, 0, 0.7, 0.0, 0.3, 0.7],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+EXP_SC_UNDER_CASE5 = xr.DataArray(
+    data=[0, 0, 0.7, 0, 0, 0.7],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+EXP_SC_OVER_CASE5 = xr.DataArray(
+    data=[0.3, 0.0, 0, 0, 0.3, 0],
+    dims=["i"],
+    coords={
+        "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+
+EXP_SC_CASE5 = xr.Dataset(
+    {
+        "firm_score": EXP_SC_TOTAL_CASE5,
+        "underforecast_penalty": EXP_SC_UNDER_CASE5,
+        "overforecast_penalty": EXP_SC_OVER_CASE5,
+    }
+)
 
 DA_FCST_FIRM = xr.DataArray(
     data=[
