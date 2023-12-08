@@ -1,12 +1,12 @@
 """
-Tests for `scores.isoreg`.
+Tests for `scores.isoreg_impl`.
 """
 import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.continuous.isoreg import (
+from scores.continuous.isoreg_impl import (
     _bootstrap_ir,
     _confidence_band,
     _contiguous_ir,
