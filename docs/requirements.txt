@@ -6,3 +6,9 @@ xarray
 pandas
 scipy
 bottleneck
+netcdf4
+requests
+matplotlib
+scikit-learn
+scipy
+Cython
