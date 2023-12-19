@@ -562,3 +562,33 @@ EXP_TOTAL_CRPS_BD2 = xr.DataArray(  # don't collapse station
 )
 
 EXP_CRPS_BD2 = xr.merge([EXP_TOTAL_CRPS_BD2, EXP_UNDER_CRPS_BD2, EXP_OVER_CRPS_BD2])
+
+# test data for CRPS for ensembles
+
+DA_FCST_CRPSENS = xr.DataArray(
+    data=[[0.0, 4, 3, 7], [1, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [2, np.nan, np.nan, np.nan]],
+    dims=["stn", "ens_member"],
+    coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
+)
+DA_OBS_CRPSENS = xr.DataArray(data=[2.0, 3, 1, np.nan, 4], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_WT_CRPSENS = xr.DataArray(data=[1, 2, 1, 0, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+
+# first and second (spread) terms from crps for ensembles, "ecdf" and "fair" methods
+FIRST_TERM = xr.DataArray(
+    data=[10 / 4, 8 / 4, 4 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+SPREAD_ECDF = xr.DataArray(
+    data=[(14 + 8 + 8 + 14) / 32, (6 + 10 + 6 + 10) / 32, (5 + 4 + 7) / 18, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+SPREAD_FAIR = xr.DataArray(
+    data=[(14 + 8 + 8 + 14) / 24, (6 + 10 + 6 + 10) / 24, (5 + 4 + 7) / 12, np.nan, np.nan],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+
+# expected results
+EXP_CRPSENS_ECDF = FIRST_TERM - SPREAD_ECDF
+EXP_CRPSENS_FAIR = FIRST_TERM - SPREAD_FAIR
+EXP_CRPSENS_WT = (EXP_CRPSENS_ECDF * DA_WT_CRPSENS).mean("stn")
