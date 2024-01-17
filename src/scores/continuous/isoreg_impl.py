@@ -598,8 +598,9 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
     arr = np.copy(arr)
     valid_obs_count = np.sum(np.isfinite(arr), axis=0)
     # Replace NaN with maximum (these values will be ignored)
-    max_val = np.nanmax(arr)
-    arr[np.isnan(arr)] = max_val
+    if not np.isnan(arr).all():
+        max_val = np.nanmax(arr)
+        arr[np.isnan(arr)] = max_val
     # Sort forecast values - former NaNs will move to the end
     arr = np.sort(arr, axis=0)
     result = np.zeros(shape=[arr.shape[1]])
