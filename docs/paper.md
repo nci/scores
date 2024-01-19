@@ -17,7 +17,7 @@ authors:
 affiliations:
  - name: Bureau of Meteorology, Australia
    index: 1
-date: 6 September 2023
+date: 1 December 2023
 bibliography: paper.bib 
 
 ---
@@ -30,13 +30,13 @@ bibliography: paper.bib
 
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
-At the time of writing, the scores contained in this package are: MSE, MAE, RMSE, FIRM [@Taggart:2022a], CRPS (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop index [@Griffiths:2019] and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications.
+At the time of writing, the scores contained in this package are: MSE, MAE, RMSE, FIRM [@Taggart:2022a], CRPS for CDFs (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop index [@Griffiths:2019; @griffiths2021circular], ROC curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable].
 
 # Statement of Need
 
 The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics.
 
-`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop index), complex scores (e.g. CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Scores provides its own implementations where relevant to avoid extensive dependencies. 
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop index), complex scores (e.g. threshold weighted CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Scores provides its own implementations where relevant to avoid extensive dependencies. 
 
 `scores` works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. It has proper treatments for missing data, masking of data and weighting of results.
 
@@ -48,6 +48,8 @@ The `scores` roadmap includes support for machine learning library integration, 
 
 `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
+`scores` has been used in research papers (e.g., [@loveday2023userfocused]).
+
 ## Related Works
 
 `scores` has arisen from, and now supports, the Jive verification system, described by [@Loveday:2023]. `scores` includes the mathematical functions from this package and is intended to modularise these components. The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
@@ -57,6 +59,8 @@ The `scores` roadmap includes support for machine learning library integration, 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain some of the novel functions contained within `scores` and does not contain the Jupyter Notebook tutorials which provide users with clear guidance on the use of the verification metrics. 
 
 `METplus` [@Brown:2021] provides related functionality. `METplus` includes a database and visualisation system with python wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not contain some of the novel functions contained within `scores`.
+
+`Verif` [@nipen2023verif] is an command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
 
 # Acknowledgements
 
