@@ -58,7 +58,7 @@ The `scores` roadmap includes support for machine learning library integration, 
 
 `scores` has been used in research papers (e.g., [@loveday2023userfocused]).
 
-`scores` has arisen from, and now supports, the Jive verification system, described by [@Loveday:2023] and used by the Australian Bureau of Meteorology. `scores` includes the mathematical functions from the Jive verification system and is intended to modularise these functions and make them broadly available as an open source package. The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
+`scores` has arisen from, and now supports, the Jive verification system. The Jive verification system was developed and is used by the Australian Bureau of Meteorology. For a description of the Jive verification system see [@Loveday:2023]. `scores` includes the mathematical functions from the Jive verification system and is intended to modularise these functions and make them broadly available as an open source package. The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
 
 ## Related Works
 
