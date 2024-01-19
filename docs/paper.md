@@ -54,13 +54,17 @@ The `scores` roadmap includes support for machine learning library integration, 
 
 `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
-## Use in Academic Literature
+## Use in Academic Work
 
-`scores` has been used in research papers (e.g., [@loveday2023userfocused]).
+In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@Loveday:2023].
 
-`scores` has arisen from, and now supports, the Jive verification system. The Jive verification system was developed and is used by the Australian Bureau of Meteorology. For a description of the Jive verification system see [@Loveday:2023]. `scores` includes the mathematical functions from the Jive verification system and is intended to modularise these functions and make them broadly available as an open source package. The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
+The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
 
-## Related Works
+`scores` has arisen from, and now supports, the Jive verification system. `scores` includes the mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
+
+`scores` has been used to explore user-focused approaches to evaluating probablistic and categorical forecasts ([@loveday2023userfocused]).
+
+## Related Software Packages
 
 `climpred` [@Brady:2021] provides some related functionality and provides many of the same scores. `climpred` does not contain some of the novel functions contained within `scores`, and at the same time makes some design choices specifically associated with climate modelling which do not generalise as effectively to broader use cases as may be needed in some circumstances. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
