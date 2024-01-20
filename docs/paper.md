@@ -41,6 +41,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 ## Key Benefits
 
 In order to meet the needs of researchers, `scores`:
+
 - is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. It has proper treatments for missing data, masking of data and weighting of results.
 - includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop Index).
 - is designed to work effectively with the libraries, data structures and methods commonly used in the meteorology, weather and climate communities. Scores can effectively handle the dimensionality, data size and data structures commonly utilised for: 
