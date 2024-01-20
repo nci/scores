@@ -24,7 +24,7 @@ bibliography: paper.bib
 
 # Summary
 
-`scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and domains other than meteorology, geoscience and weather. 
+`scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and domains other than meteorology, geoscience and weather. 
 
 `scores` is focused on supporting xarray datatypes for earth system data. It also aims to be compatible with pandas and geopandas, and to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. Scores is designed to utilise Dask for scaling and performance.
 
@@ -42,7 +42,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 `scores` was designed to work effectively with the libraries, data structures and methods commonly in use for scoring, verifying and evaluating earth system models including Numerical Weather Prediction (NWP) models, forecasts for specific sites and weather phenomena such as thunderstorms. It can effectively handle the dimensionality, data size and requirements of the modelling community.
 
-`scores` is highly modular and has a minimal set of requirements. It is intented to be easy to integrate and utilise in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
+`scores` is highly modular and has a minimal set of requirements. It is intended to be easy to integrate and utilise in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
 
 The `scores` roadmap includes support for machine learning library integration, further optimisation of existing scores and the addition of more scoring functions for verification purposes.
 
@@ -60,7 +60,7 @@ The `scores` roadmap includes support for machine learning library integration, 
 
 `METplus` [@Brown:2021] provides related functionality. `METplus` includes a database and visualisation system with python wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not contain some of the novel functions contained within `scores`.
 
-`Verif` [@nipen2023verif] is an command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
+`Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
 
 # Acknowledgements
 
