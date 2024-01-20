@@ -48,16 +48,21 @@ In order to meet the needs of researchers, `scores`:
   - gridded earth system data (e.g. Numerical Weather Prediction models) 
   - tabular, point, lat/lon or site-based data (e.g. forecasts for specific locations)
   - geospatial, object-based data (e.g. forecasts of thunderstorm tracks or storm cells). 
-- includes a companion Jupyter Notebook for each score, metric and test to demonstrate its use in practice
+- includes a companion Jupyter Notebook for each score, metric and statistical test to demonstrate its use in practice
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
 - is intended to be easy to integrate and utilise in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
 - utilises Dask for scaling and performance
 
-At the time of writing, the scores contained in this package are: Mean Squared Error (MSE), Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), the Fixed Risk Multicategorical (FIRM) score [@Taggart:2022a], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop Index [@Griffiths:2019; @griffiths2021circular], Receiver Operating Characteristic (ROC) curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable].
-
 ## Roadmap and Future Development
 
-The `scores` roadmap includes support for machine learning library integration, further optimisation of existing scores and the addition of more scoring functions for verification purposes.
+At the time of writing, the scores contained in this package are: Mean Squared Error (MSE), Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), the Fixed Risk Multicategorical (FIRM) score [@Taggart:2022a], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop Index [@Griffiths:2019; @griffiths2021circular], Receiver Operating Characteristic (ROC) curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable].
+
+The `scores` roadmap includes:
+
+- The addition of more scores, metrics and statistical techniques
+- Further optimisation and performance improvements
+- Increased support for machine learning library integration
+- In-depth notebooks showing the use of `scores` to evaluate complex use cases
 
 `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
@@ -65,11 +70,11 @@ The `scores` roadmap includes support for machine learning library integration, 
 
 In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@Loveday:2023].
 
-The Jive metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
+The Jive verification metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
 
-`scores` has arisen from, and now supports, the Jive verification system. `scores` includes the mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
+`scores` has arisen from, and now supports, the Jive verification system. `scores` includes mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
 
-`scores` has been used to explore user-focused approaches to evaluating probablistic and categorical forecasts ([@loveday2023userfocused]).
+`scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts ([@loveday2023userfocused]).
 
 ## Related Software Packages
 
