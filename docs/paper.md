@@ -32,6 +32,8 @@ All of the scores and metrics in this package have undergone a thorough statisti
 
 At the time of writing, the scores contained in this package are: MSE, MAE, RMSE, FIRM [@Taggart:2022a], CRPS for CDFs (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop index [@Griffiths:2019; @griffiths2021circular], ROC curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable].
 
+The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
+
 # Statement of Need
 
 The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics.
