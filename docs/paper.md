@@ -74,7 +74,7 @@ The Jive verification metrics have been used by [@Griffiths:2017], [@Foley:2020]
 
 `scores` has arisen from, and now supports, the Jive verification system. `scores` includes mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
 
-`scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts ([@loveday2023userfocused]).
+`scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts [@loveday2023userfocused].
 
 ## Related Software Packages
 
