@@ -62,7 +62,7 @@ The `scores` roadmap includes:
 - The addition of more scores, metrics and statistical techniques
 - Further optimisation and performance improvements
 - Increased support for machine learning library integration
-- In-depth notebooks showing the use of `scores` to evaluate complex use cases
+- Additional notebooks exploring complex use cases in depth
 
 `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
