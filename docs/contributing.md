@@ -7,13 +7,10 @@ Types of contributions include bug reports, merge requests, feature requests, an
 These guidelines aim to make it clear how to collaborate effectively.
 
 ## Roadmap
-
-1. Further development of examples and demonstrations for new users
-2. Set up of readthedocs and travis-ci
-3. Add further tests for NaNs and missing data
-4. Addition of more standard metrics
-5. Addition of more novel metrics
-6. Performance review and tests for dask
+1. Addition of more scores, metrics and statistical techniques
+2. Further optimisation and performance improvements
+3. Increased support for machine learning library integration
+4. Additional notebooks exploring complex use cases in depth
 
 ## Bug Reports and Feature Requests
 
