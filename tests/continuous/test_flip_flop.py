@@ -297,11 +297,12 @@ def test_encompassing_sector_size_raises(data, dims, skipna):
         "thresholds",
         "is_angular",
         "selections",
-        "dims",
+        "reduce_dims",
+        "preserve_dims",
         "expected",
     ),
     [
-        # 0. 3-D, dims=None
+        # 0. 3-D, preserve_dims=None, reduce_dims=None
         (
             ntd.DATA_FFI_2X2X4,
             "int",
@@ -309,47 +310,69 @@ def test_encompassing_sector_size_raises(data, dims, skipna):
             False,
             {"one": [1, 2, 3], "two": [2, 3, 4]},
             None,
+            None,
             ntd.EXP_FFI_PE_NONE,
         ),
-        # 1. 3-D, dims=[char']
-        # SPOT-CHECKED by DG
+        # 1. 3-D, preserve_dims=['char']
         (
             ntd.DATA_FFI_2X2X4,
             "int",
             [0, 1, 5],
             False,
             {"one": [1, 2, 3], "two": [2, 3, 4]},
+            None,
             ["char"],
             ntd.EXP_FFI_PE_CHAR,
         ),
-        # 2. 3-D, dims=[char', 'bool']
+        # 2. 3-D, preserve_dims=['char', 'bool']
         (
             ntd.DATA_FFI_2X2X4,
             "int",
             [0, 1, 5],
             False,
             {"one": [1, 2, 3], "two": [2, 3, 4]},
+            None,
             ["char", "bool"],
             ntd.EXP_FFI_PE_CHARBOOL,
         ),
-        # 3. 3-D, dims=['char', 'bool'], angular data
+        # 3. 3-D, preserve_dims=['char', 'bool'], angular data
         (
             ntd.DATA_FFI_2X2X4_DIR,
             "int",
             [0, 50, 100],
             True,
             {"one": [1, 2, 3], "two": [2, 3, 4]},
+            None,
             ["char", "bool"],
             ntd.EXP_FFI_PE_CHARBOOL_DIR,
         ),
+        # 4. 3-D, reduce_dims=['bool']
+        (
+            ntd.DATA_FFI_2X2X4,
+            "int",
+            [0, 1, 5],
+            False,
+            {"one": [1, 2, 3], "two": [2, 3, 4]},
+            ["bool"],
+            None,
+            ntd.EXP_FFI_PE_CHAR,
+        ),
     ],
 )
-def test_flip_flop_index_proportion_exceeding(data, sampling_dim, thresholds, is_angular, selections, dims, expected):
+def test_flip_flop_index_proportion_exceeding(
+    data, sampling_dim, thresholds, is_angular, selections, reduce_dims, preserve_dims, expected
+):
     """
     Tests that flip_flop_index_proportion_exceeding returns the correct object
     """
     calculated = flip_flop_index_proportion_exceeding(
-        data, sampling_dim, thresholds, is_angular=is_angular, preserve_dims=dims, **selections
+        data,
+        sampling_dim,
+        thresholds,
+        is_angular=is_angular,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        **selections,
     )
     assert_dataset_equal(calculated, expected, decimals=8)
 
@@ -383,6 +406,7 @@ def test_flip_flop_index_is_dask_compatible():
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     xr.testing.assert_equal(result, ntd.EXP_FFI_SUB_CASE0)
+    assert isinstance(result.data, np.ndarray)
 
 
 def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
@@ -394,3 +418,4 @@ def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
     assert isinstance(result.data_vars["one"].data, dask.array.Array)
     result = result.compute()
     xr.testing.assert_equal(result, ntd.EXP_FFI_PE_NONE)
+    assert isinstance(result.one.data, np.ndarray)

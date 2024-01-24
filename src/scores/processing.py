@@ -279,9 +279,8 @@ def proportion_exceeding(
         thresholds (iterable): The proportion of Flip-Flop index results
             equal to or exceeding these thresholds will be calculated.
             the flip-flop index.
-        dims (Optional[iterable]): Strings corresponding to the dimensions in the input
-            xarray data objects that we wish to preserve in the output. All other
-            dimensions in the input data objects are collapsed.
+        reduce_dims: Dimensions to reduce.
+        preserve_dims: Dimensions to preserve.
 
     Returns:
         An xarray data object with the type of `data` and dimensions
