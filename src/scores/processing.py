@@ -1,5 +1,6 @@
 """Tools for processing data for verification"""
 import operator
+from collections.abc import Iterable
 from typing import Optional, Union
 
 import numpy as np
@@ -7,6 +8,7 @@ import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import gather_dimensions
 
 INEQUALITY_MODES = {
     ">=": (operator.ge, -1),
@@ -260,3 +262,123 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
 
     # return matched data objects
     return tuple(arg.where(mask) for arg in args)
+
+
+def proportion_exceeding(
+    data: XarrayLike,
+    thresholds: Iterable,
+    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: FlexibleDimensionTypes = None,
+):
+    """
+    Calculates the proportion of `data` equal to or exceeding `thresholds`.
+
+    Args:
+        data (xarray.Dataset or xarray.DataArray): The data from which
+            to calculate the proportion exceeding `thresholds`
+        thresholds (iterable): The proportion of Flip-Flop index results
+            equal to or exceeding these thresholds will be calculated.
+            the flip-flop index.
+        reduce_dims: Dimensions to reduce.
+        preserve_dims: Dimensions to preserve.
+
+    Returns:
+        An xarray data object with the type of `data` and dimensions
+        `dims` + 'threshold'. The values are the proportion of `data`
+        that are greater than or equal to the corresponding threshold.
+
+    """
+    return _binary_discretise_proportion(data, thresholds, ">=", preserve_dims, reduce_dims)
+
+
+def _binary_discretise_proportion(
+    data: XarrayLike,
+    thresholds: Iterable,
+    mode: str,
+    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: FlexibleDimensionTypes = None,
+    abs_tolerance: Optional[bool] = None,
+    autosqueeze: bool = False,
+):
+    """
+    Returns the proportion of `data` in each category. The categories are
+    defined by the relationship of data to threshold as specified by
+    the operation `mode`.
+
+    Args:
+        data: The data to convert
+           into 0 and 1 according the thresholds before calculating the
+           proportion.
+        thresholds: The proportion of Flip-Flop index results
+            equal to or exceeding these thresholds will be calculated.
+            the flip-flop index.
+        mode: Specifies the required relation of `data` to `thresholds`
+            for a value to fall in the 'event' category (i.e. assigned to 1).
+            Allowed modes are:
+
+            - '>=' values in `data` greater than or equal to the
+              corresponding threshold are assigned as 1.
+            - '>' values in `data` greater than the corresponding threshold
+              are assigned as 1.
+            - '<=' values in `data` less than or equal to the corresponding
+              threshold are assigned as 1.
+            - '<' values in `data` less than the corresponding threshold
+              are assigned as 1.
+            - '==' values in `data` equal to the corresponding threshold
+              are assigned as 1
+            - '!=' values in `data` not equal to the corresponding threshold
+              are assigned as 1.
+        reduce_dims: Dimensions to reduce.
+        preserve_dims: Dimensions to preserve.
+        abs_tolerance: If supplied, values in data that are
+            within abs_tolerance of a threshold are considered to be equal to
+            that threshold. This is generally used to correct for floating
+            point rounding, e.g. we may want to consider 1.0000000000000002 as
+            equal to 1.
+        autosqueeze: If True and only one threshold is
+            supplied, then the dimension 'threshold' is squeezed out of the
+            output. If `thresholds` is float-like, then this is forced to
+            True, otherwise defaults to False.
+
+    Returns:
+        An xarray data object with the type of `data`, dimension `dims` +
+        'threshold'. The values of the output are the proportion of `data` that
+        satisfy the relationship to `thresholds` as specified by `mode`.
+
+    Examples:
+
+        >>> data = xr.DataArray([0, 0.5, 0.5, 1])
+
+        >>> _binary_discretise_proportion(data, [0, 0.5, 1], '==')
+        <xarray.DataArray (threshold: 3)>
+        array([ 0.25,  0.5 ,  0.25])
+        Coordinates:
+          * threshold  (threshold) float64 0.0 0.5 1.0
+        Attributes:
+            discretisation_tolerance: 0
+            discretisation_mode: ==
+
+        >>> _binary_discretise_proportion(data, [0, 0.5, 1], '>=')
+        <xarray.DataArray (threshold: 3)>
+        array([ 1.  ,  0.75,  0.25])
+        Coordinates:
+          * threshold  (threshold) float64 0.0 0.5 1.0
+        Attributes:
+            discretisation_tolerance: 0
+            discretisation_mode: >=
+
+    See also:
+        `scores.processing.binary_discretise`
+
+    """
+    # values are 1 when (data {mode} threshold), and 0 when ~(data {mode} threshold).
+    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)
+
+    # The proportion in each category
+    dims = gather_dimensions(data.dims, data.dims, preserve_dims, reduce_dims)
+    proportion = discrete_data.mean(dim=dims)
+
+    # attach attributes
+    proportion.attrs = discrete_data.attrs
+
+    return proportion
