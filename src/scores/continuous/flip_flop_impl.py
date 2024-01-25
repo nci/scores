@@ -9,7 +9,8 @@ import numpy as np
 import xarray as xr
 
 from scores.functions import angular_difference
-from scores.typing import XarrayLike
+from scores.processing import proportion_exceeding
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import DimensionError, check_dims, dims_complement
 
 
@@ -34,8 +35,7 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
     """
     # check that `sampling_dim` is in `data`.
     check_dims(data, [sampling_dim], mode="superset")
-
-    # the maximum possible number of discrete flipflops
+    # the maximum possible number of discrete flip_flops
     sequence_length = len(data[sampling_dim])
     max_possible_flip_flop_count = sequence_length - 2
 
@@ -50,21 +50,21 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
         # maximum possible angular difference between two forecasts
         enc_size = encompassing_sector_size(data=data, dims=dims_to_preserve)
         range_val = np.clip(enc_size, a_min=None, a_max=180.0)
-        flipflop = angular_difference(data.shift({sampling_dim: 1}), data)
+        flip_flop = angular_difference(data.shift({sampling_dim: 1}), data)
     else:
         max_val = data.max(dim=sampling_dim, skipna=False)
         min_val = data.min(dim=sampling_dim, skipna=False)
         range_val = max_val - min_val
         # subtract each consecutive 'row' from eachother
-        flipflop = data.shift({sampling_dim: 1}) - data
+        flip_flop = data.shift({sampling_dim: 1}) - data
 
     # take the absolute value and sum.
     # I don't do skipna=False here because .shift makes a row of nan
-    flipflop = abs(flipflop).sum(dim=sampling_dim)
+    flip_flop = abs(flip_flop).sum(dim=sampling_dim)
     # adjust based on the range. This is where nan will be introduced.
-    flipflop = flipflop - range_val
+    flip_flop = flip_flop - range_val
     # normalise
-    return flipflop / max_possible_flip_flop_count
+    return flip_flop / max_possible_flip_flop_count
 
 
 # If there are selections, a DataSet is always returned
@@ -98,7 +98,7 @@ def flip_flop_index(
             direction).
         **selections: Additional keyword arguments specify
             subsets to draw from the dimension `sampling_dim` of the supplied `data`
-            before calculation of the flipflop index. e.g. days123=[1, 2, 3]
+            before calculation of the flip_flop index. e.g. days123=[1, 2, 3]
 
     Returns:
         If `selections` are not supplied: An xarray.DataArray, the Flip-flop
@@ -348,3 +348,93 @@ def _encompassing_sector_size_np(
     n_unique_angles = (angular_diffs != 0).sum(axis=0)
     result = np.where(n_unique_angles <= 2, np.max(angular_diffs, axis=0), result)
     return result
+
+
+def flip_flop_index_proportion_exceeding(
+    data: xr.DataArray,
+    sampling_dim: str,
+    thresholds: Iterable,
+    is_angular: bool = False,
+    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: FlexibleDimensionTypes = None,
+    **selections: Iterable[int],
+):
+    """
+    Calculates the flip-flop index and returns the proportion exceeding
+    (or equal to) each of the supplied `thresholds`.
+
+    Args:
+        data: Data from which to draw subsets.
+        sampling_dim: The name of the dimension along which to calculate
+        thresholds: The proportion of Flip-Flop index results
+            equal to or exceeding these thresholds will be calculated.
+            the flip-flop index.
+        is_angular: specifies whether `data` is directional data (e.g. wind
+            direction).
+        reduce_dims: Dimensions to reduce.
+        preserve_dims: Dimensions to preserve.
+        **selections: Additional keyword arguments specify
+            subsets to draw from the dimension `sampling_dim` of the supplied `data`
+            before calculation of the flip_flop index. e.g. days123=[1, 2, 3]
+    Returns:
+        If `selections` are not supplied - An xarray.DataArray with dimensions
+        `dims` + 'threshold'. The DataArray is the proportion of the Flip-flop
+        Index calculated by collapsing dimension `sampling_dim` exceeding or
+        equal to `thresholds`.
+
+        If `selections` are supplied - An xarray.Dataset with dimensions `dims`
+        + 'threshold'. There is a data variable for each keyword in
+        `selections`, and corresponds to the Flip-Flop Index proportion
+        exceeding for the subset of data specified by the keyword values.
+
+    Examples:
+        >>> data = xr.DataArray(
+        ...     [[50, 20, 40, 80], [10, 50, 10, 100], [0, 30, 20, 50]],
+        ...     dims=['station_number', 'lead_day'],
+        ...     coords=[[10001, 10002, 10003], [1, 2, 3, 4]]
+        ... )
+
+        >>> flip_flop_index_proportion_exceeding(data, 'lead_day', [20])
+        <xarray.DataArray (threshold: 1)>
+        array([ 0.33333333])
+        Coordinates:
+          * threshold  (threshold) int64 20
+        Attributes:
+            sampling_dim: lead_day
+
+        >>> flip_flop_index_proportion_exceeding(
+        ...     data, 'lead_day', [20], days123=[1, 2, 3], all_days=[1, 2, 3, 4]
+        ... )
+        <xarray.Dataset>
+        Dimensions:    (threshold: 1)
+        Coordinates:
+          * threshold  (threshold) int64 20
+        Data variables:
+            days123    (threshold) float64 0.6667
+            all_days   (threshold) float64 0.3333
+        Attributes:
+            selections: {{'days123': [1, 2, 3], 'all_days': [1, 2, 3, 4]}}
+            sampling_dim: lead_day
+
+    See also:
+        `scores.continuous.flip_flop_index`
+
+    """
+    if preserve_dims is not None and sampling_dim in list(preserve_dims):
+        raise DimensionError(
+            f"`sampling_dim`: '{sampling_dim}' must not be in dimensions to preserve "
+            f"`preserve_dims`: {list(preserve_dims)}"
+        )
+    if reduce_dims is not None and sampling_dim in list(reduce_dims):
+        raise DimensionError(
+            f"`sampling_dim`: '{sampling_dim}' must not be in dimensions to reduce "
+            f"`reduce_dims`: {list(reduce_dims)}"
+        )
+    # calculate the flip-flop index
+    flip_flop_data = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)
+    # calculate the proportion exceeding each threshold
+    flip_flop_exceeding = proportion_exceeding(flip_flop_data, thresholds, reduce_dims, preserve_dims)
+    # overwrite the attributes
+    flip_flop_exceeding.attrs = flip_flop_data.attrs
+
+    return flip_flop_exceeding
