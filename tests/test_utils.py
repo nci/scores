@@ -666,14 +666,12 @@ def test_gather_dimensions2_examples(fcst, obs, weights, reduce_dims, preserve_d
 
 
 def test_tmp_coord_name_namecollision():
-
     names = []
     number_of_names = 3
     data = xr.DataArray(data=[1, 2, 3])
     names = utils.tmp_coord_name(data, count=number_of_names)
     assert len(set(names)) == len(names)
     assert len(names) == number_of_names
-
 
 
 def test_tmp_coord_name():
