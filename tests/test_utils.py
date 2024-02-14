@@ -3,10 +3,12 @@ Containts tests for the scores.utils file
 """
 
 import pytest
+import xarray as xr
 
 from scores import utils
 from scores.utils import DimensionError
 from scores.utils import gather_dimensions as gd
+from scores.utils import gather_dimensions2
 from tests import utils_test_data
 
 
@@ -501,3 +503,188 @@ def test_gather_dimensions_exceptions():
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
         assert gd(fcst_dims_conflict, obs_dims, reduce_dims="all") == fcst_dims_conflict
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "weights", "reduce_dims", "preserve_dims", "special_fcst_dims", "error_msg_snippet"),
+    [
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            None,
+            ["red"],
+            ["blue"],
+            None,
+            utils.ERROR_OVERSPECIFIED_PRESERVE_REDUCE,
+        ),
+        # checks for special_fcst_dims
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            None,
+            None,
+            None,
+            ["black"],
+            "`special_fcst_dims` must be a subset of `fcst` dimensions",
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            None,
+            None,
+            None,
+            ["red"],
+            "`obs.dims` must not contain any `special_fcst_dims`",
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            None,
+            None,
+            None,
+            "red",
+            "`obs.dims` must not contain any `special_fcst_dims`",
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            utils_test_data.DA_G,
+            None,
+            None,
+            "green",
+            "`weights.dims` must not contain any `special_fcst_dims`",
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            utils_test_data.DA_G,
+            "blue",
+            None,
+            "blue",
+            "`reduce_dims` and `preserve_dims` must not contain any `special_fcst_dims`",
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            utils_test_data.DA_G,
+            None,
+            ["blue"],
+            "blue",
+            "`reduce_dims` and `preserve_dims` must not contain any `special_fcst_dims`",
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            utils_test_data.DA_G,
+            None,
+            ["blue", "yellow"],
+            None,
+            utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION2,
+        ),
+        (
+            utils_test_data.DA_RGB,
+            utils_test_data.DA_R,
+            utils_test_data.DA_G,
+            "yellow",
+            None,
+            "blue",
+            utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION2,
+        ),
+    ],
+)
+def test_gather_dimensions2_exceptions(
+    fcst, obs, weights, reduce_dims, preserve_dims, special_fcst_dims, error_msg_snippet
+):
+    """
+    Confirm `gather_dimensions2` raises exceptions as expected.
+    """
+    with pytest.raises(ValueError) as excinfo:
+        gather_dimensions2(
+            fcst,
+            obs,
+            weights=weights,
+            reduce_dims=reduce_dims,
+            preserve_dims=preserve_dims,
+            special_fcst_dims=special_fcst_dims,
+        )
+    assert error_msg_snippet in str(excinfo.value)
+
+
+def test_gather_dimensions2_warnings():
+    """Tests that gather_dimensions2 warns as expected with correct output."""
+    # Preserve "all" as a string but named dimension present in data
+    with pytest.warns(UserWarning):
+        result = gather_dimensions2(
+            utils_test_data.DA_R.rename({"red": "all"}), utils_test_data.DA_R, preserve_dims="all"
+        )
+        assert result == set([])
+
+    with pytest.warns(UserWarning):
+        result = gather_dimensions2(
+            utils_test_data.DA_R.rename({"red": "all"}), utils_test_data.DA_R, reduce_dims="all"
+        )
+        assert result == {"red", "all"}
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "weights", "reduce_dims", "preserve_dims", "special_fcst_dims", "expected"),
+    [
+        # test that fcst and obs dims are returned
+        (utils_test_data.DA_B, utils_test_data.DA_R, None, None, None, None, {"blue", "red"}),
+        # test that fcst, obs and weights dims are returned
+        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, None, None, None, {"blue", "red", "green"}),
+        # two tests that fcst, obs and weights dims are returned, without the special fcst dim
+        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, None, None, "blue", {"red", "green"}),
+        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, None, None, ["blue"], {"red", "green"}),
+        # test that reduce_dims="all" behaves as expected
+        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, "all", None, None, {"blue", "red", "green"}),
+        # three tests for reduce_dims
+        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, "blue", None, None, {"blue"}),
+        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, ["blue"], None, None, {"blue"}),
+        (utils_test_data.DA_RGB, utils_test_data.DA_R, utils_test_data.DA_G, ["green"], None, "blue", {"green"}),
+        # test for preserve_dims="all"
+        (utils_test_data.DA_RGB, utils_test_data.DA_B, None, None, "all", "red", set([])),
+        # three tests for preserve_dims
+        (utils_test_data.DA_RGB, utils_test_data.DA_R, utils_test_data.DA_G, None, "green", None, {"red", "blue"}),
+        (utils_test_data.DA_RGB, utils_test_data.DA_R, None, None, ["green"], None, {"red", "blue"}),
+        (utils_test_data.DA_RGB, utils_test_data.DA_B, None, None, ["green"], "red", {"blue"}),
+    ],
+)
+def test_gather_dimensions2_examples(fcst, obs, weights, reduce_dims, preserve_dims, special_fcst_dims, expected):
+    """
+    Test that `gather_dimensions2` gives outputs as expected.
+    """
+    result = gather_dimensions2(
+        fcst,
+        obs,
+        weights=weights,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        special_fcst_dims=special_fcst_dims,
+    )
+    assert result == expected
+
+
+def test_tmp_coord_name_namecollision():
+
+    names = []
+    number_of_names = 3
+    data = xr.DataArray(data=[1, 2, 3])
+    names = utils.tmp_coord_name(data, count=number_of_names)
+    assert len(set(names)) == len(names)
+    assert len(names) == number_of_names
+
+
+
+def test_tmp_coord_name():
+    """
+    Tests that `tmp_coord_name` returns as expected.
+    """
+    data = xr.DataArray(data=[1, 2, 3])
+    assert utils.tmp_coord_name(data) == "newdim_0"
+
+    data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords=dict(stn=[101, 202, 304]))
+    assert utils.tmp_coord_name(data) == "newstnstn"
+
+    data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords=dict(stn=[101, 202, 304], elevation=("stn", [0, 3, 24])))
+    assert utils.tmp_coord_name(data) == "newstnstnelevation"

@@ -26,6 +26,7 @@
 .. autofunction:: scores.probability.crps_cdf
 .. autofunction:: scores.probability.adjust_fcst_for_crps
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
+.. autofunction:: scores.probability.crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data

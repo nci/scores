@@ -6,11 +6,13 @@ import dask
 import dask.array
 import numpy as np
 import pytest
+import xarray as xr
 
 from scores.probability import (
     adjust_fcst_for_crps,
     crps_cdf,
     crps_cdf_brier_decomposition,
+    crps_for_ensemble,
 )
 from scores.probability.crps_impl import (
     crps_cdf_exact,
@@ -604,3 +606,46 @@ def test_crps_cdf_brier_decomposition(dims, expected):
         crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, "x", preserve_dims=dims
     )
     assert_dataset_equal(result, expected, decimals=7)
+
+
+def test_crps_for_ensemble():
+    """Tests `crps_for_ensemble` returns as expected."""
+    result_ecdf = crps_for_ensemble(
+        crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS, "ens_member", method="ecdf", preserve_dims="all"
+    )
+    result_fair = crps_for_ensemble(
+        crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS, "ens_member", method="fair", preserve_dims="all"
+    )
+    result_weighted_mean = crps_for_ensemble(
+        crps_test_data.DA_FCST_CRPSENS,
+        crps_test_data.DA_OBS_CRPSENS,
+        "ens_member",
+        method="ecdf",
+        weights=crps_test_data.DA_WT_CRPSENS,
+    )
+
+    assert_dataarray_equal(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF, decimals=7)
+    assert_dataarray_equal(result_fair, crps_test_data.EXP_CRPSENS_FAIR, decimals=7)
+    assert_dataarray_equal(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT, decimals=7)
+
+
+def test_crps_for_ensemble_raises():
+    """Tests `crps_for_ensemble` raises exception as expected."""
+    with pytest.raises(ValueError) as excinfo:
+        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", "unfair")
+    assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
+
+
+def test_crps_for_ensemble_dask():
+    """Tests `crps_for_ensemble` works with dask."""
+    result = crps_for_ensemble(
+        fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        method="ecdf",
+        preserve_dims="all",
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    assert_dataarray_equal(result, crps_test_data.EXP_CRPSENS_ECDF, decimals=7)
