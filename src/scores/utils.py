@@ -338,7 +338,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
 
 def tmp_coord_name(xr_data: xr.DataArray, count=1) -> str:
     """
-    Generates a temporary coordinate name that is not among the coordinate or dimension
+    Generates temporary coordinate names that are not among the coordinate or dimension
     names of `xr_data`.
 
     Args:
@@ -346,8 +346,9 @@ def tmp_coord_name(xr_data: xr.DataArray, count=1) -> str:
         count: Number of unique names to generate
 
     Returns:
-        A string which is the concatenation of 'new' with all coordinate and
-        dimension names in the input array.
+        If count = 1, a string which is the concatenation of 'new' with all coordinate and
+        dimension names in the input array. (this is the default)
+        If count > 1, a list of such strings, each unique from one another
     """
     all_names = ["new"] + list(xr_data.dims) + list(xr_data.coords)
     result = "".join(all_names)
