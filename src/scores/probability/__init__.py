@@ -7,5 +7,6 @@ from scores.probability.crps_impl import (
     adjust_fcst_for_crps,
     crps_cdf,
     crps_cdf_brier_decomposition,
+    crps_for_ensemble,
 )
 from scores.probability.roc_impl import roc_curve_data

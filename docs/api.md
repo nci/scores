@@ -18,6 +18,7 @@
 .. autofunction:: scores.continuous.murphy_score
 .. autofunction:: scores.continuous.murphy.thetas
 .. autofunction:: scores.continuous.flip_flop_index
+.. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
 .. autofunction:: scores.continuous.isotonic_fit
 ```
 
@@ -26,6 +27,7 @@
 .. autofunction:: scores.probability.crps_cdf
 .. autofunction:: scores.probability.adjust_fcst_for_crps
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
+.. autofunction:: scores.probability.crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data

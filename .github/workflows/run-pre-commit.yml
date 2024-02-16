@@ -12,7 +12,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ubuntu-latest   
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -26,4 +26,6 @@ jobs:
         pip install .[all]
     - name: pre-commit checks
       run: |
-        pre-commit run --all-files
+        pre-commit run black --all-files
+        pre-commit run isort --all-files
+        pre-commit run pylint --all-files
