@@ -1,7 +1,6 @@
 """
 Import the functions from the implementations into the public API
 """
-from scores.continuous.flip_flop_impl import flip_flop_index
 from scores.continuous.isoreg_impl import isotonic_fit
 from scores.continuous.flip_flop_impl import (
     flip_flop_index,
