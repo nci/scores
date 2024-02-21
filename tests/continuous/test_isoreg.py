@@ -1,12 +1,12 @@
 """
-Tests for `scores.isoreg`.
+Tests for `scores.isoreg_impl`.
 """
 import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.continuous.isoreg import (
+from scores.continuous.isoreg_impl import (
     _bootstrap_ir,
     _confidence_band,
     _contiguous_ir,
@@ -300,6 +300,7 @@ def _wmean_solver(y, weight):
         (itd.Y1, np.median, None, itd.EXP_IR_MEDIAN),
         (itd.Y1, np.mean, None, itd.EXP_IR_MEAN),
         (itd.Y1, _wmean_solver, itd.W1, itd.EXP_IR_WMEAN),
+        (np.ndarray(0), np.mean, None, 0),
     ],
 )
 def test__contiguous_ir(y, solver, weight, expected):
