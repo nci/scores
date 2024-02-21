@@ -21,8 +21,8 @@ def brier_score(
     Calculates the Brier score for forecast and observed data. For an explanation of the
     Brier score, see [Wikipedia](https://en.wikipedia.org/wiki/Brier_score).
 
-    If you want to speed up performance and are confident of your input data, or if you
-    want observations to take values between 0 and 1, set `check_inputs` to `False`.
+    If you want to speed up performance with Dask and are confident of your input data,
+    or if you want observations to take values between 0 and 1, set `check_inputs` to `False`.
 
     Args:
             fcst: Forecast or predicted variables in xarray.

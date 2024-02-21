@@ -83,3 +83,46 @@ def test_brier_score_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, xr.DataArray(0.1))
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "error_msg_snippet"),
+    [
+        # Fcst > 1
+        (FCST1 + 0.0000001, OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
+        # Fcst < 0
+        (FCST1 - 0.0000001, OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
+        # Obs = 1/2
+        (FCST1, OBS1 / 2, "`obs` contains values that are not in the set {0, 1, np.nan}"),
+    ],
+)
+def test_brier_score_raises(fcst, obs, error_msg_snippet):
+    """
+    Tests that the Brier score raises the correct errors.
+    """
+    with pytest.raises(ValueError, match=error_msg_snippet):
+        brier_score(fcst, obs)
+    # Check again but with input data as a DataSet
+    with pytest.raises(ValueError, match=error_msg_snippet):
+        brier_score(xr.Dataset({"x": fcst}), xr.Dataset({"x": obs}))
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        # FCST doubled
+        (FCST1 * 2, OBS1, xr.DataArray(0.2)),
+        # OBS halved
+        (FCST1, OBS1 / 2, xr.DataArray(0.05)),
+    ],
+)
+def test_brier_doesnt_raise(fcst, obs, expected):
+    """
+    Tests that the Brier score doesn't raise an error when check_args=False
+    """
+    result = brier_score(fcst, obs, check_args=False)
+    xr.testing.assert_equal(result, expected)
+
+    # Check again but with input data as a DataSet
+    result = brier_score(xr.Dataset({"x": fcst}), xr.Dataset({"x": obs}), check_args=False)
+    xr.testing.assert_equal(result, xr.Dataset({"x": expected}))
