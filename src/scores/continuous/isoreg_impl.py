@@ -438,7 +438,7 @@ def _contiguous_ir(
     target = np.arange(len_y, dtype=np.intp)
 
     index = 0
-    while index < len_y:  # pragma: no cover ... breaks are used to exit the loop but this is safer than while True
+    while index < len_y:
         # idx_next_block is the index of beginning of the next block
         idx_next_block = target[index] + 1
 
@@ -465,7 +465,7 @@ def _contiguous_ir(
                 else:
                     y_out[index] = solver(y[index:idx_next_block], weight[index:idx_next_block])  # type: ignore
 
-                if index > 0:  # pragma: no branch
+                if index > 0:
                     # Backtrack if we can.  This makes the algorithm
                     # single-pass and ensures O(n) complexity (subject to solver complexity)
                     index = target[index - 1]
@@ -598,8 +598,9 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
     arr = np.copy(arr)
     valid_obs_count = np.sum(np.isfinite(arr), axis=0)
     # Replace NaN with maximum (these values will be ignored)
-    max_val = np.nanmax(arr)
-    arr[np.isnan(arr)] = max_val
+    if not np.isnan(arr).all():
+        max_val = np.nanmax(arr)
+        arr[np.isnan(arr)] = max_val
     # Sort forecast values - former NaNs will move to the end
     arr = np.sort(arr, axis=0)
     result = np.zeros(shape=[arr.shape[1]])
