@@ -20,6 +20,7 @@
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
 .. autofunction:: scores.continuous.isotonic_fit
+.. autofunction:: scores.continuous.correlation
 ```
 
 ## scores.probability
