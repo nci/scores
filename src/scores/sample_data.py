@@ -42,7 +42,7 @@ def continuous_observations(large_size: bool = False) -> xr.DataArray:
     lon = np.linspace(0, 360, num_lons)
     time_series = pd.date_range(
         start="2022-11-20T01:00:00.000000000",
-        freq="1H",
+        freq="h",
         periods=periods,
     )
 
