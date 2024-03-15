@@ -64,9 +64,7 @@ def mse(
     squared = scores.functions.apply_weights(squared, weights)
 
     if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
+        reduce_dims = scores.utils.gather_dimensions(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     if reduce_dims is not None:
         _mse = squared.mean(dim=reduce_dims)
@@ -188,7 +186,7 @@ def mae(
     ae = scores.functions.apply_weights(ae, weights)
 
     if preserve_dims is not None or reduce_dims is not None:
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+        reduce_dims = scores.utils.gather_dimensions(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     if reduce_dims is not None:
         _ae = ae.mean(dim=reduce_dims)
