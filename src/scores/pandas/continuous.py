@@ -2,7 +2,7 @@
 Import the functions from the implementations into the public API
 """
 
-from scores import continuous
+from scores import continuous as __continuous
 from scores.pandas.typing import PandasType
 
 
@@ -34,7 +34,7 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return continuous.mse(fcst, obs, angular=angular)
+    return __continuous.mse(fcst, obs, angular=angular)
 
 
 def rmse(
@@ -64,7 +64,7 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return continuous.rmse(fcst, obs, angular=angular)
+    return __continuous.rmse(fcst, obs, angular=angular)
 
 
 def mae(
@@ -95,4 +95,4 @@ def mae(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return continuous.mae(fcst, obs, angular=angular)
+    return __continuous.mae(fcst, obs, angular=angular)
