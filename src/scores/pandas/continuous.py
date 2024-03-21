@@ -1,6 +1,7 @@
 """
 Import the functions from the implementations into the public API
 """
+# pylint: disable=missing-function-docstring
 
 from functools import wraps
 
