@@ -5,6 +5,7 @@ The philosphy is to import the public API during the init phase rather than leav
 import scores.categorical
 import scores.continuous
 import scores.functions
+import scores.pandas
 import scores.probability
 import scores.sample_data
 import scores.stats.statistical_tests
