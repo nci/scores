@@ -6,12 +6,12 @@ import xarray as xr
 
 from scores.continuous import mse
 from scores.processing import check_binary
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
+from scores.typing import XarrayLike, FlexibleDimensionTypes
 
 
 def brier_score(
-    fcst: FlexibleArrayType,
-    obs: FlexibleArrayType,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     weights: xr.DataArray = None,
