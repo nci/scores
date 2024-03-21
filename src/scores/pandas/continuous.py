@@ -29,9 +29,9 @@ def mse(
             degrees rather than radians.
 
     Returns:
-        By default a pandas series containing
-        a single floating point number representing the mean squared error for the
-        supplied data. All dimensions will be reduced.
+        An object containing
+            a single floating point number representing the mean squared
+            error for the supplied data. All dimensions will be reduced.
 
     """
     return continuous.mse(fcst, obs, angular=angular)
@@ -62,8 +62,6 @@ def rmse(
         An object containing
             a single floating point number representing the root mean squared
             error for the supplied data. All dimensions will be reduced.
-            Otherwise: Returns an object representing the root mean squared error,
-            reduced along the relevant dimensions and weighted appropriately.
 
     """
     return continuous.rmse(fcst, obs, angular=angular)
@@ -92,9 +90,9 @@ def mae(
             degrees rather than radians.
 
     Returns:
-        By default a pandas series containing
-        a single floating point number representing the mean absolute error for the
-        supplied data. All dimensions will be reduced.
+        An object containing
+            a single floating point number representing the mean absolute
+            error for the supplied data. All dimensions will be reduced.
 
     """
     return continuous.mae(fcst, obs, angular=angular)
