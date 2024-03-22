@@ -1,13 +1,16 @@
 """Tests for processing"""
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores.processing import (
+    _binary_discretise_proportion,
     binary_discretise,
     broadcast_and_match_nan,
     check_binary,
     comparative_discretise,
+    proportion_exceeding,
 )
 from tests import test_processing_data as xtd
 
@@ -492,3 +495,126 @@ def test_check_binary_raises(da):
 def test_check_binary_doesnt_raise(da):
     """test check_binary doesn't raise"""
     check_binary(da, "my name")
+
+
+@pytest.mark.parametrize(
+    ("data", "thresholds", "reduce_dims", "preserve_dims", "expected"),
+    [
+        # 0. O-D input
+        (xr.DataArray(0.5), [0.3], None, None, xtd.EXP_PE_0),
+        # 1. 2-D input, preserve all dims
+        (xtd.DATA_4X2_POINT4_POINT5_NAN, [0.4, 0.5], None, ["colour", "day"], xtd.EXP_PE_1),
+        # 2. 2-D input, preserve one dim
+        (xtd.DATA_4X2_POINT4_POINT5_NAN, [0.4, 0.5], None, ["colour"], xtd.EXP_PE_2),
+        # 3. 2-D input, reduce one dim
+        (xtd.DATA_4X2_POINT4_POINT5_NAN, [0.4, 0.5], "day", None, xtd.EXP_PE_2),
+        # 4. 2-D input, keep no dims
+        (xtd.DATA_4X2_POINT4_POINT5_NAN, [0.4, 0.5], None, None, xtd.EXP_PE_3),
+        # 5. Dataset input
+        (
+            xr.Dataset({"zero": xtd.DATA_4X1, "one": xtd.DATA_4X1_NAN}),
+            [0.39, 0.4, 0.5],
+            None,
+            None,
+            xtd.EXP_PE_4,
+        ),
+    ],
+)
+def test_proportion_exceeding(data, thresholds, reduce_dims, preserve_dims, expected):
+    """
+    Tests that processing.proportion_exceeding returns the correct value.
+    """
+    calc = proportion_exceeding(data, thresholds, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    xr.testing.assert_equal(calc, expected)
+
+
+@pytest.mark.parametrize(
+    ("data", "thresholds", "mode", "reduce_dims", "preserve_dims", "abs_tolerance", "autosqueeze", "expected"),
+    [
+        # 0. O-D input
+        (xr.DataArray(0.5), [0.3], ">=", None, None, None, False, xtd.EXP_BDP_0),
+        # 1. 2-D input, preserve all dims
+        (
+            xtd.DATA_4X2_POINT4_POINT5_NAN,
+            [0.4, 0.5],
+            ">=",
+            None,
+            ["colour", "day"],
+            1e-8,
+            True,
+            xtd.EXP_BDP_1,
+        ),
+        # 2. 2-D input, preserve one dim
+        (
+            xtd.DATA_4X2_POINT4_POINT5_NAN,
+            [0.4, 0.5],
+            ">=",
+            None,
+            ["colour"],
+            1e-8,
+            True,
+            xtd.EXP_BDP_2,
+        ),
+        # 3. 2-D input, preserve no dims
+        (
+            xtd.DATA_4X2_POINT4_POINT5_NAN,
+            [0.4, 0.5],
+            ">=",
+            None,
+            None,
+            1e-8,
+            True,
+            xtd.EXP_BDP_3,
+        ),
+        # SMOKE TESTS FOR OTHER INEQUALITIES ['<', '>', '>=']
+        # 4. mode='>', tolerance=1e-8
+        (xtd.DATA_5X1_POINT4, [0.4], ">", None, None, 1e-8, True, xtd.EXP_BDP_4),
+        # 5. mode='<=', tolerance=1e-8
+        (xtd.DATA_5X1_POINT4, [0.4], "<=", None, None, 1e-8, True, xtd.EXP_BDP_5),
+        # 6. mode='<', tolerance=1e-8
+        (xtd.DATA_5X1_POINT4, [0.4], "<", None, None, 1e-8, True, xtd.EXP_BDP_6),
+        # SMOKE TESTS FOR EQUALITY MODES
+        # 7. mode='==', tolerance=1e-8
+        (xtd.DATA_5X1_POINT4, [0.4], "==", None, None, 1e-8, True, xtd.EXP_BDP_7),
+        # 8. mode='!=', tolerance=1e-8
+        (xtd.DATA_5X1_POINT4, [0.4], "!=", None, None, 1e-8, True, xtd.EXP_BDP_8),
+        # 9. Dataset input
+        (
+            xr.Dataset({"zero": xtd.DATA_4X1, "one": xtd.DATA_4X1_NAN}),
+            [0.4, 0.5],
+            ">=",
+            None,
+            None,
+            1e-8,
+            True,
+            xtd.EXP_BDP_9,
+        ),
+        # 10. 2-D input, reduce one dim
+        (
+            xtd.DATA_4X2_POINT4_POINT5_NAN,
+            [0.4, 0.5],
+            ">=",
+            "day",
+            None,
+            1e-8,
+            True,
+            xtd.EXP_BDP_2,
+        ),
+    ],
+)
+def test__binary_discretise_proportion(
+    data, thresholds, mode, reduce_dims, preserve_dims, abs_tolerance, autosqueeze, expected
+):
+    """
+    Tests that processing._binary_discretise_proportion returns the correct value.
+    """
+    calc = _binary_discretise_proportion(
+        data,
+        thresholds,
+        mode,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        abs_tolerance=abs_tolerance,
+        autosqueeze=autosqueeze,
+    )
+    xr.testing.assert_equal(calc, expected)

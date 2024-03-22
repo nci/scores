@@ -1,4 +1,5 @@
 """Test data for test_processing"""
+
 import numpy as np
 import xarray as xr
 
@@ -650,4 +651,34 @@ EXP_BDP_9 = xr.Dataset(
         "one": xr.DataArray([1 / 3, 0], coords=[("threshold", [0.4, 0.5])]),
     },
     attrs={"discretisation_tolerance": 1e-8, "discretisation_mode": ">="},
+)
+
+# Data for testing proportion_exceeding
+EXP_PE_0 = xr.DataArray(
+    [1.0],
+    dims=["threshold"],
+    coords={"threshold": [0.3]},
+    attrs={"discretisation_tolerance": 0, "discretisation_mode": ">="},
+)
+EXP_PE_1 = xr.DataArray(
+    [[[np.nan, np.nan], [0, 0]], [[0, 0], [0, 0]], [[1, 0], [1, 1]]],
+    coords=[("day", [0, 1, 2]), ("colour", [0, 1]), ("threshold", [0.4, 0.5])],
+    attrs={"discretisation_tolerance": 0, "discretisation_mode": ">="},
+)
+EXP_PE_2 = xr.DataArray(
+    [[0.5, 0], [1 / 3, 1 / 3]],
+    coords=[("colour", [0, 1]), ("threshold", [0.4, 0.5])],
+    attrs={"discretisation_tolerance": 0, "discretisation_mode": ">="},
+)
+EXP_PE_3 = xr.DataArray(
+    [0.4, 0.2],
+    coords=[("threshold", [0.4, 0.5])],
+    attrs={"discretisation_tolerance": 0, "discretisation_mode": ">="},
+)
+EXP_PE_4 = xr.Dataset(
+    {
+        "zero": xr.DataArray([0.75, 0.25, 0.25], coords=[("threshold", [0.39, 0.4, 0.5])]),
+        "one": xr.DataArray([2 / 3, 0.0, 0.0], coords=[("threshold", [0.39, 0.4, 0.5])]),
+    },
+    attrs={"discretisation_tolerance": 0, "discretisation_mode": ">="},
 )
