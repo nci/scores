@@ -293,8 +293,8 @@ def crps_cdf(
     """
 
     dims = scores.utils.gather_dimensions(
-        fcst.dims,
-        obs.dims,
+        fcst,
+        obs,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
@@ -482,8 +482,8 @@ def crps_cdf_brier_decomposition(
         ValueError: if coordinates in `fcst[threshold_dim]` are not increasing.
     """
     dims = scores.utils.gather_dimensions(
-        fcst.dims,
-        obs.dims,
+        fcst,
+        obs,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
@@ -803,7 +803,7 @@ def crps_for_ensemble(
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
-    dims_for_mean = scores.utils.gather_dimensions2(fcst, obs, weights, reduce_dims, preserve_dims, ensemble_member_dim)
+    dims_for_mean = scores.utils.gather_dimensions(fcst, obs, weights, reduce_dims, preserve_dims, ensemble_member_dim)
 
     ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
 

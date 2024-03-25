@@ -376,7 +376,7 @@ def _binary_discretise_proportion(
     discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)
 
     # The proportion in each category
-    dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    dims = gather_dimensions(data, data, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     proportion = discrete_data.mean(dim=dims)
 
     # attach attributes

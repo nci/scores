@@ -7,8 +7,7 @@ import xarray as xr
 
 from scores import utils
 from scores.utils import DimensionError
-from scores.utils import gather_dimensions as gd
-from scores.utils import gather_dimensions2
+from scores.utils import gather_dimensions
 from tests import utils_test_data
 
 
@@ -428,83 +427,6 @@ def test_check_dims_raises(xr_data, expected_dims, mode, error_class, error_msg_
     assert error_msg_snippet in str(excinfo.value)
 
 
-def test_gather_dimensions_examples():
-    """
-    Test the logic for dimension handling with some examples
-    """
-
-    fcst_dims_conflict = set(["base_time", "lead_time", "lat", "lon", "all"])
-    fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
-    obs_dims = []
-
-    # Basic tests on reduction
-    assert gd(fcst_dims, obs_dims, reduce_dims="lat") == set(["lat"])
-    assert gd(fcst_dims, obs_dims, reduce_dims=["lat", "lon"]) == set(["lat", "lon"])
-    assert gd(fcst_dims, obs_dims, reduce_dims=["lat", "lat", "lon"]) == set(["lat", "lon"])
-
-    # Tests if reduce_dims and preserve_dims are both None
-    assert gd(fcst_dims, obs_dims) == fcst_dims
-
-    # Reduce every dimension if the string "all" is specified
-    assert gd(fcst_dims, obs_dims, reduce_dims="all") == fcst_dims
-
-    # Reduce "all" as a named dimension explicitly
-    assert gd(fcst_dims_conflict, obs_dims, reduce_dims=["all"]) == set(["all"])
-
-    # Basic tests on preservation
-    assert gd(fcst_dims, obs_dims, preserve_dims="lat") == set(["base_time", "lead_time", "lon"])
-    assert gd(fcst_dims, obs_dims, preserve_dims=["lat", "lon"]) == set(["base_time", "lead_time"])
-    assert gd(fcst_dims, obs_dims, preserve_dims=["lat", "lat", "lon"]) == set(["base_time", "lead_time"])
-
-    # Preserve every dimension if the string "all" is specified
-    assert gd(fcst_dims, obs_dims, preserve_dims="all") == set([])
-
-    # Preserve "all" as a named dimension explicitly
-    assert gd(fcst_dims_conflict, obs_dims, preserve_dims=["all"]) == set(["base_time", "lead_time", "lat", "lon"])
-
-    # Test that preserve is the inverse of reduce
-    preserve_all = gd(fcst_dims, obs_dims, preserve_dims="all")
-    reduce_empty = gd(fcst_dims, obs_dims, reduce_dims=[])
-
-    assert preserve_all == reduce_empty
-    assert preserve_all == set([])
-
-    # Single dimensions specified as a string will be packed into a list
-    assert gd(fcst_dims, obs_dims, reduce_dims="lead_time") == set(["lead_time"])
-
-
-def test_gather_dimensions_exceptions():
-    """
-    Confirm an exception is raised when both preserve and reduce arguments are specified
-    """
-
-    fcst_dims_conflict = set(["base_time", "lead_time", "lat", "lon", "all"])
-    fcst_dims = set(["base_time", "lead_time", "lat", "lon"])
-    obs_dims = []
-
-    # Confirm an exception if both preserve and reduce are specified
-    with pytest.raises(ValueError):
-        gd(fcst_dims, obs_dims, preserve_dims=[], reduce_dims=[])
-
-    # Attempt to reduce a non-existent dimension
-    with pytest.raises(ValueError) as excinfo:
-        assert gd(fcst_dims_conflict, obs_dims, reduce_dims="nonexistent") == []
-    assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION
-
-    # Attempt to preserve a non-existent dimension
-    with pytest.raises(ValueError) as excinfo:
-        assert gd(fcst_dims_conflict, obs_dims, preserve_dims="nonexistent") == []
-    assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION
-
-    # Preserve "all" as a string but named dimension present in data
-    with pytest.warns(UserWarning):
-        assert gd(fcst_dims_conflict, obs_dims, preserve_dims="all") == set([])
-
-    # Preserve "all" as a string but named dimension present in data
-    with pytest.warns(UserWarning):
-        assert gd(fcst_dims_conflict, obs_dims, reduce_dims="all") == fcst_dims_conflict
-
-
 @pytest.mark.parametrize(
     ("fcst", "obs", "weights", "reduce_dims", "preserve_dims", "special_fcst_dims", "error_msg_snippet"),
     [
@@ -599,7 +521,7 @@ def test_gather_dimensions2_exceptions(
     Confirm `gather_dimensions2` raises exceptions as expected.
     """
     with pytest.raises(ValueError) as excinfo:
-        gather_dimensions2(
+        gather_dimensions(
             fcst,
             obs,
             weights=weights,
@@ -614,13 +536,13 @@ def test_gather_dimensions2_warnings():
     """Tests that gather_dimensions2 warns as expected with correct output."""
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
-        result = gather_dimensions2(
+        result = gather_dimensions(
             utils_test_data.DA_R.rename({"red": "all"}), utils_test_data.DA_R, preserve_dims="all"
         )
         assert result == set([])
 
     with pytest.warns(UserWarning):
-        result = gather_dimensions2(
+        result = gather_dimensions(
             utils_test_data.DA_R.rename({"red": "all"}), utils_test_data.DA_R, reduce_dims="all"
         )
         assert result == {"red", "all"}
@@ -654,7 +576,7 @@ def test_gather_dimensions2_examples(fcst, obs, weights, reduce_dims, preserve_d
     """
     Test that `gather_dimensions2` gives outputs as expected.
     """
-    result = gather_dimensions2(
+    result = gather_dimensions(
         fcst,
         obs,
         weights=weights,
