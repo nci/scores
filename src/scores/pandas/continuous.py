@@ -3,12 +3,14 @@ Import the functions from the implementations into the public API
 """
 
 from scores import continuous as __continuous
-from scores.pandas.typing import PandasType
+from scores.pandas.typing import PandasFlexibleSeries, PandasType, PossibleDataFrame
+from scores.pandas.utils import split_dataframe
 
 
 def mse(
-    fcst: PandasType,
-    obs: PandasType,
+    fcst: PandasFlexibleSeries,
+    obs: PandasFlexibleSeries,
+    df: PossibleDataFrame = None,
     angular: bool = False,
 ) -> PandasType:
     """Calculates the mean squared error from forecast and observed data.
@@ -22,6 +24,8 @@ def mse(
     Args:
         fcst: Forecast or predicted variables in pandas.
         obs: Observed variables in pandas.
+        df: DataFrame with both `fcst` and `obs` series included.
+            If given, allows for either `fcst` and `obs` to be str for column names.
         angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -34,12 +38,14 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
 
     """
+    fcst, obs = split_dataframe(df, fcst, obs)
     return __continuous.mse(fcst, obs, angular=angular)
 
 
 def rmse(
-    fcst: PandasType,
-    obs: PandasType,
+    fcst: PandasFlexibleSeries,
+    obs: PandasFlexibleSeries,
+    df: PossibleDataFrame = None,
     angular: bool = False,
 ) -> PandasType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
@@ -52,6 +58,8 @@ def rmse(
     Args:
         fcst: Forecast or predicted variables in pandas.
         obs: Observed variables in pandas.
+        df: DataFrame with both `fcst` and `obs` series included.
+            If given, allows for either `fcst` and `obs` to be str for column names.
         angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -64,12 +72,14 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
 
     """
+    fcst, obs = split_dataframe(df, fcst, obs)
     return __continuous.rmse(fcst, obs, angular=angular)
 
 
 def mae(
-    fcst: PandasType,
-    obs: PandasType,
+    fcst: PandasFlexibleSeries,
+    obs: PandasFlexibleSeries,
+    df: PossibleDataFrame = None,
     angular: bool = False,
 ) -> PandasType:
     """Calculates the mean absolute error from forecast and observed data.
@@ -83,6 +93,8 @@ def mae(
     Args:
         fcst: Forecast or predicted variables in pandas.
         obs: Observed variables in pandas.
+        df: DataFrame with both `fcst` and `obs` series included.
+            If given, allows for either `fcst` and `obs` to be str for column names.
         angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -95,4 +107,5 @@ def mae(
             error for the supplied data. All dimensions will be reduced.
 
     """
+    fcst, obs = split_dataframe(df, fcst, obs)
     return __continuous.mae(fcst, obs, angular=angular)
