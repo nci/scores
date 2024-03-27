@@ -197,3 +197,31 @@ def mae(
 
     # Returns unhinted types if nonstandard types passed in, but this is useful
     return _ae  # type: ignore
+
+
+def correlation(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+) -> FlexibleArrayType:
+    """
+    Calculates the Pearson's correlation coefficient between two xarray DataArrays
+
+    Args:
+        fcst: Forecast or predicted variables
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the Pearson's correlation coefficient.
+            All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the Pearson's correlation coefficient. All other dimensions will
+            be reduced. As a special case, 'all' will allow all dimensions to be
+            preserved. In this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the absolute error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+    """
+    reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+
+    return xr.corr(fcst, obs, reduce_dims)
