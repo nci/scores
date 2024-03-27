@@ -3,14 +3,16 @@ Import the functions from the implementations into the public API
 """
 
 from scores import continuous as __continuous
-from scores.pandas.typing import PandasType
+from scores.pandas.decorators import split_dataframe
+from scores.pandas.typing import PandasReturnType, PandasType
 
 
+@split_dataframe("fcst", "obs")
 def mse(
     fcst: PandasType,
     obs: PandasType,
     angular: bool = False,
-) -> PandasType:
+) -> PandasReturnType:
     """Calculates the mean squared error from forecast and observed data.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_squared_error)
@@ -37,11 +39,12 @@ def mse(
     return __continuous.mse(fcst, obs, angular=angular)
 
 
+@split_dataframe("fcst", "obs")
 def rmse(
     fcst: PandasType,
     obs: PandasType,
     angular: bool = False,
-) -> PandasType:
+) -> PandasReturnType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
@@ -67,11 +70,12 @@ def rmse(
     return __continuous.rmse(fcst, obs, angular=angular)
 
 
+@split_dataframe("fcst", "obs")
 def mae(
     fcst: PandasType,
     obs: PandasType,
     angular: bool = False,
-) -> PandasType:
+) -> PandasReturnType:
     """Calculates the mean absolute error from forecast and observed data.
 
     A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
