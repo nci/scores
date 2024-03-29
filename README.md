@@ -27,7 +27,7 @@ All interactions in discussions, issues, emails and code (e.g. merge requests, c
 
 The [installation guide](docs/installation.md) describes four different use cases for installing, using and working with this package.
 
-Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, tests etc.), the tutorial notebooks and development libraries.
+Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial notebooks and development libraries.
 
 From a Local Checkout of the Git Repository
 
