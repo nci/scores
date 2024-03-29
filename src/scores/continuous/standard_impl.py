@@ -188,7 +188,9 @@ def mae(
     ae = scores.functions.apply_weights(ae, weights)
 
     if preserve_dims is not None or reduce_dims is not None:
-        reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
 
     if reduce_dims is not None:
         _ae = ae.mean(dim=reduce_dims)
@@ -222,6 +224,8 @@ def correlation(
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
     """
-    reduce_dims = scores.utils.gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
 
     return xr.corr(fcst, obs, reduce_dims)

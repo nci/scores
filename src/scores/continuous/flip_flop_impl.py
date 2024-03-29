@@ -15,10 +15,8 @@ from scores.utils import DimensionError, check_dims, dims_complement
 
 
 def _flip_flop_index(
-    data: xr.DataArray, 
-    sampling_dim: str, 
-    *,  # Force keywords arguments to be keyword-only
-    is_angular: bool = False) -> xr.DataArray:
+    data: xr.DataArray, sampling_dim: str, *, is_angular: bool = False  # Force keywords arguments to be keyword-only
+) -> xr.DataArray:
     """
     Calculates the flip-flop index by collapsing the dimension specified by
     `sampling_dim`.
@@ -74,11 +72,11 @@ def _flip_flop_index(
 # If there are selections, a DataSet is always returned
 @overload
 def flip_flop_index(
-    data: xr.DataArray, 
-    sampling_dim: str, 
+    data: xr.DataArray,
+    sampling_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    is_angular: bool = False, 
-    **selections: Iterable[int]
+    is_angular: bool = False,
+    **selections: Iterable[int],
 ) -> xr.Dataset:
     ...
 
@@ -86,22 +84,22 @@ def flip_flop_index(
 # If there are no selections, a DataArray is always returned
 @overload
 def flip_flop_index(
-    data: xr.DataArray, 
-    sampling_dim: str, 
+    data: xr.DataArray,
+    sampling_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    is_angular: bool = False, 
-    **selections: None
+    is_angular: bool = False,
+    **selections: None,
 ) -> xr.DataArray:
     ...
 
 
 # Return type is more precise at runtime when it is known if selections are being used
 def flip_flop_index(
-    data: xr.DataArray, 
-    sampling_dim: str, 
+    data: xr.DataArray,
+    sampling_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    is_angular: bool = False, 
-    **selections: Optional[Iterable[int]]
+    is_angular: bool = False,
+    **selections: Optional[Iterable[int]],
 ) -> XarrayLike:
     """
     Calculates the Flip-flop Index along the dimensions `sampling_dim`.
@@ -176,9 +174,7 @@ def flip_flop_index(
 # DataArray input types lead to DataArray output types
 @overload
 def iter_selections(
-    data: xr.DataArray, 
-    sampling_dim: str, 
-    **selections: Optional[Iterable[int]]
+    data: xr.DataArray, sampling_dim: str, **selections: Optional[Iterable[int]]
 ) -> Generator[tuple[str, xr.DataArray], None, None]:
     ...
 
@@ -186,17 +182,13 @@ def iter_selections(
 # Dataset input types load to Dataset output types
 @overload
 def iter_selections(
-    data: xr.Dataset, 
-    sampling_dim: str, 
-    **selections: Optional[Iterable[int]]
+    data: xr.Dataset, sampling_dim: str, **selections: Optional[Iterable[int]]
 ) -> Generator[tuple[str, xr.Dataset], None, None]:
     ...
 
 
 def iter_selections(
-    data: XarrayLike, 
-    sampling_dim: str, 
-    **selections: Optional[Iterable[int]]
+    data: XarrayLike, sampling_dim: str, **selections: Optional[Iterable[int]]
 ) -> Generator[tuple[str, XarrayLike], None, None]:
     """
     Selects subsets of data along dimension sampling_dim according to
@@ -252,10 +244,8 @@ def iter_selections(
 
 
 def encompassing_sector_size(
-    data: xr.DataArray, 
-    dims: Sequence[str], 
-    *,  # Force keywords arguments to be keyword-only
-    skipna: bool = False) -> xr.DataArray:
+    data: xr.DataArray, dims: Sequence[str], *, skipna: bool = False  # Force keywords arguments to be keyword-only
+) -> xr.DataArray:
     """
     Calculates the minimum angular distance which encompasses all data points
     within an xarray.DataArray along a specified dimension. Assumes data is in
@@ -301,10 +291,10 @@ def encompassing_sector_size(
 
 @np.errstate(invalid="ignore")
 def _encompassing_sector_size_np(
-    data: np.ndarray, 
+    data: np.ndarray,
     *,  # Force keywords arguments to be keyword-only
-    axis_to_collapse: Union[int, tuple[int, ...]] = 0, 
-    skipna: bool = False
+    axis_to_collapse: Union[int, tuple[int, ...]] = 0,
+    skipna: bool = False,
 ) -> np.ndarray:
     """
     Calculates the minimum angular distance which encompasses all data points
