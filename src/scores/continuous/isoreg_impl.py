@@ -213,7 +213,9 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
 
 
 def _xr_to_np(
-    fcst: xr.DataArray, obs: xr.DataArray, weight: Optional[xr.DataArray]
+    fcst: xr.DataArray, 
+    obs: xr.DataArray, 
+    weight: Optional[xr.DataArray]
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Conducts basic dimension checks to `isotonic_fit` inputs if they are xr.DataArray.

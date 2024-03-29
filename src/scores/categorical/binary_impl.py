@@ -15,6 +15,7 @@ from scores.utils import gather_dimensions
 def probability_of_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     weights: Optional[xr.DataArray] = None,
@@ -82,6 +83,7 @@ def probability_of_detection(
 def probability_of_false_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     weights: Optional[xr.DataArray] = None,
