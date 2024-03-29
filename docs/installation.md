@@ -51,7 +51,7 @@ Installs:
 pip install -e .[all]
 ```
 
-### 2. "Minimal" (Mathematical API Functions Only)
+### 2. "Minimal" Dependencies (Mathematical API Functions Only)
 Use this to install the scores code into another package or system.
 
 Installs:
@@ -65,7 +65,7 @@ Installs:
 pip install scores
 ```
 
-### 3. "Tutorial" 
+### 3. "Tutorial" Dependencies
 Use this to run a tutorial or lab session without allowing changes to scores itself
 
 Installs:
@@ -78,7 +78,7 @@ Installs:
 pip install .[tutorial]
 ```
 
-### 4. "Maintainer"
+### 4. "Maintainer" Dependencies
 Use this to build the docs, create packages and prepare new versions for release.
 
 Installs:
