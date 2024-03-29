@@ -54,7 +54,7 @@ Installs:
 pip install scores
 ```
 
-## 2. Tutorial Environment 
+## 3. Tutorial Environment 
 Use this to run a tutorial or lab session without allowing changes to scores itself
 
 Installs:
