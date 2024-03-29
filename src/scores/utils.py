@@ -3,12 +3,11 @@ Contains frequently-used functions of a general nature within scores
 """
 import warnings
 from collections.abc import Hashable, Iterable, Sequence
-from typing import Optional
+from typing import Optional, Union
 
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
-from typing import Union
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
