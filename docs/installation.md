@@ -25,7 +25,7 @@ Most users want the "all" installation. Some people have good reasons to want a 
 - tutorial: includes jupyter lab and ability to run all the notebooks
 - maintainer: includes tools for building the documentation and building for PyPI
 
-1. All Dependencies (excludes some maintainer-only packages)
+## 1. All Dependencies (excludes some maintainer-only packages)
 
 Use this for scores development and general use.
 
