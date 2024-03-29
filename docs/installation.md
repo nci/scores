@@ -37,7 +37,7 @@ The 4 supported installation options are:
 
 ### 1. "All" Dependencies (excludes some maintainer-only packages)
 
-Use this for scores development and general use.
+Use this for `scores` development and general use.
 
 Installs:
 * Mathematical API code and libraries
@@ -52,7 +52,7 @@ pip install -e .[all]
 ```
 
 ### 2. "Minimal" Dependencies (Mathematical API Functions Only)
-Use this to install the scores code into another package or system.
+Use this to install the `scores` code into another package or system.
 
 Installs:
 * Mathematical API functions and libraries
@@ -66,7 +66,7 @@ pip install scores
 ```
 
 ### 3. "Tutorial" Dependencies
-Use this to run a tutorial or lab session without allowing changes to scores itself
+Use this for running tutorials using `scores`, but when you don't need or want developer tools.
 
 Installs:
 * Mathematical API functions and libraries
