@@ -30,12 +30,12 @@ Most users will want the "all" installation option. There are also more speciali
 
 The 4 supported installation options are:
 
-- all: contains mathematical functions, tutorials and development libraries. Exludes maintainer requirements
-- minimal: ONLY contains mathemetical functions (so has limited dependencies)
+- all: contains mathematical functions, tutorials and development libraries. Excludes maintainer requirements
+- minimal: ONLY contains mathematical functions (so has limited dependencies)
 - tutorial: ONLY contains mathematical functions and tutorials.
 - maintainer: ONLY contains tools for building the documentation and building for PyPI.
 
-### 1. All Dependencies (excludes some maintainer-only packages)
+### 1. "All" Dependencies (excludes some maintainer-only packages)
 
 Use this for scores development and general use.
 
@@ -51,7 +51,7 @@ Installs:
 pip install -e .[all]
 ```
 
-### 2. Minimal (Mathematical API Functions Only)
+### 2. "Minimal" (Mathematical API Functions Only)
 Use this to install the scores code into another package or system.
 
 Installs:
@@ -65,7 +65,7 @@ Installs:
 pip install scores
 ```
 
-### 3. Tutorial Environment 
+### 3. "Tutorial" 
 Use this to run a tutorial or lab session without allowing changes to scores itself
 
 Installs:
@@ -78,7 +78,7 @@ Installs:
 pip install .[tutorial]
 ```
 
-### 4. Maintainer Environment 
+### 4. "Maintainer"
 Use this to build the docs, create packages and prepare new versions for release.
 
 Installs:
