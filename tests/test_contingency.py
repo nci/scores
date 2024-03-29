@@ -59,12 +59,12 @@ somewhat_near_matches = xr.DataArray(
 		[
 			[True,  True,  True], 
 			[True,  True,  True],
-			[True,  True,  False],
+			[True,  True,  True],
 		], 
 			[
 			[True, True, True], 
 			[True, True, True],
-			[True, True, False],
+			[True, False, False],
 		], 
 	],
 	coords=[[10, 20], [0, 1, 2], [5, 6, 7]], dims=["height", "lat", "lon"])
@@ -73,7 +73,7 @@ somewhat_near_matches = xr.DataArray(
 def test_simple_binary_table():
 	
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	match = scores.contingency.ExactMatchOperator()
+	match = scores.contingency.BinaryProximityOperator()
 	table = match.make_table(proximity)
 	assert_dataarray_equal(table, exact_matches)
 
@@ -81,19 +81,35 @@ def test_simple_binary_table():
 	with pytest.raises(AssertionError):
 		assert_dataarray_equal(table, somewhat_near_matches)
 
+
+def test_nearby_binary_table():
+
+	# import pudb; pudb.set_trace()
+	
+	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
+	matchpoint2 = scores.contingency.BinaryProximityOperator(tolerance=0.2)	
+	table2 = matchpoint2.make_table(proximity)
+
+	assert_dataarray_equal(table2, somewhat_near_matches)
+
+	# Ideally would check the nature of this failure but for now a non-match will do
+	with pytest.raises(AssertionError):
+		assert_dataarray_equal(table2, exact_matches)
+
 def test_dask_if_available():
 	'''
 	A basic smoke test on a dask object. More rigorous exploration of dask
-	is probably needed beyond this.
+	is probably needed beyond this. Performance is not explored here, just
+	compatibility.
 	'''
 
 	try:
-		import dask
-	except:
+		import dask  # noqa: F401
+	except ImportError:
 		pytest.skip("Dask not available on this system")
 
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	match = scores.contingency.ExactMatchOperator()
+	match = scores.contingency.BinaryProximityOperator()
 	dprox = proximity.chunk()
 	table = match.make_table(dprox)
 	assert_dataarray_equal(table, exact_matches)

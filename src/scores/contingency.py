@@ -74,26 +74,15 @@ class BinaryTable(xarray.DataArray):
 class MatchingOperator:
 	pass
 
-class BinaryMatchOperator(MatchingOperator):
+class BinaryProximityOperator(MatchingOperator):
 
-	def __init__(self, tolerance):
+	def __init__(self, *, precision=8, tolerance=0):
+		self.precision = precision
 		self.tolerance = tolerance
 
 	def make_table(self, proximity):
-		binarycategory = (proximity <= self.tolerance)
-		return binarycategory	
-
-
-class ExactMatchOperator(BinaryMatchOperator):
-	'''
-	Something is either an exact match or it isn't - mostly.
-	Numerical exceptions exist subject to floating point errors, which 
-	varies according to the hardware and operating system configuration.
-	As such, even the exact match operator applies a very fine rounding
-	value which can be overridden.
-	'''
-	
-	def __init__(self, tolerance=None):
-		tolerance = tolerance or 0.00000000000000001
-		BinaryMatchOperator.__init__(self, tolerance)
+		proximity = proximity.round(self.precision)
+		binaryArray = (proximity <= self.tolerance)
+		result = BinaryTable(binaryArray)
+		return result
 

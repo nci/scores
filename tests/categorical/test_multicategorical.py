@@ -1,7 +1,6 @@
 """
 Contains unit tests for scores.categorical
 """
-
 try:
     import dask
     import dask.array
