@@ -2,7 +2,7 @@
 
 This page described common installation patterns. Expert users of pip and conda will note that there are more variations possible, but these are the most common use cases.
 
-It is recommended to use a virtualised Python environment in most settings. `Scores` can be easily installed using pip. The base requirements of the package are kept to a minimum to reduce the likelihood of conflicts. This project relies on a relatively recent version of pip, so you might need to upgrade pip within your virtual environment. If this is required, the installation process will automatically prompt you to do so, including the commands required. This is a simple and reliable step which will apply onto to your virtual environment.
+It is recommended to use a virtualised Python environment in most settings. `scores` can be easily installed using vence/pip or conda/pip. The base requirements of the package are kept to a minimum to reduce the likelihood of conflicts. This project relies on a relatively recent version of pip, so you might need to upgrade pip within your virtual environment. If this is required, the installation process will automatically prompt you to do so, including the commands required. This is a simple and reliable step which will apply onto to your virtual environment.
 
 Here is a command to create and activate a new virtual environment with *virtualenv*:
 
@@ -26,6 +26,7 @@ Most users want the "all" installation. Some people have good reasons to want a 
 - maintainer: includes tools for building the documentation and building for PyPI
 
 1. All Dependencies (excludes some maintainer-only packages)
+
 Use this for scores development and general use.
 
 Installs:
