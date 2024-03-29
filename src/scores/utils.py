@@ -8,6 +8,7 @@ from typing import Optional
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
+from typing import Union
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -335,7 +336,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
                 )
 
 
-def tmp_coord_name(xr_data: xr.DataArray, count=1) -> str | list[str]:
+def tmp_coord_name(xr_data: xr.DataArray, count=1) -> Union[str, list[str]]:
     """
     Generates temporary coordinate names that are not among the coordinate or dimension
     names of `xr_data`.
