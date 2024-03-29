@@ -27,9 +27,15 @@ All interactions in discussions, issues, emails and code (e.g. merge requests, c
 
 The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package.
 
-Installation of the core mathematical API may be performed with:
+The most common use of `scores` currently is from source, into a virtual environment, wanting all functionality including developer features. Installation of scores can be performed as follows from a directory with the repository checked out:
 
-```py
+```bash
+> pip install -e .[all]
+```
+
+It is also supported to install a stable verion of scores from the Python Package Index. In this case, it is most likely that users will want a simplified install, with only the mathematical functions and no complex dependencies. This can be performed as follows:
+
+```bash
 > pip install scores
 ```
 
