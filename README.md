@@ -25,21 +25,17 @@ All interactions in discussions, issues, emails and code (e.g. merge requests, c
 
 ## Using This Package
 
-The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package.
+The [installation guide](docs/installation.md) describes four different use cases for installing, using and working with this package.
 
-The most common use of `scores` currently is from source, into a virtual environment, wanting all functionality including developer features. Installation of scores can be performed as follows from a directory with the repository checked out:
+Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, tests etc.), the tutorial notebooks and development libraries.
+
+From a Local Checkout of the Git Repository
 
 ```bash
 > pip install -e .[all]
 ```
 
-It is also supported to install a stable verion of scores from the Python Package Index. In this case, it is most likely that users will want a simplified install, with only the mathematical functions and no complex dependencies. This can be performed as follows:
-
-```bash
-> pip install scores
-```
-
-Here is an example of the use of scores:
+Here is a short example of the use of scores:
 
 ```py
 > import scores
@@ -49,6 +45,12 @@ Here is an example of the use of scores:
 > print(mean_absolute_error)
 <xarray.DataArray ()>
 array(2.)
+```
+
+To install the mathematical functions ONLY (no tutorial notebooks, no developer libraries), use the *minimal* installation option. *minimal* is a stable version with limited dependencies and can be installed from the Python Package Index.
+
+```bash
+> pip install scores
 ```
 
 ## Related Packages
