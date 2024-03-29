@@ -30,8 +30,8 @@ Most users will want the "all" installation option. There are also more speciali
 
 The 4 supported installation options are:
 
-- all: contains mathematical functions, tutorials and development libraries. Excludes maintainer requirements
-- minimal: ONLY contains mathematical functions (so has limited dependencies)
+- all: contains mathematical functions, tutorials and development libraries. Excludes maintainer requirements.
+- minimal: ONLY contains mathematical functions (so has limited dependencies).
 - tutorial: ONLY contains mathematical functions and tutorials.
 - maintainer: ONLY contains tools for building the documentation and building for PyPI.
 
