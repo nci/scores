@@ -5,6 +5,7 @@ The philosphy is to import the public API during the init phase rather than leav
 # pylint: disable=E0603
 
 import scores.categorical
+import scores.contingency
 import scores.continuous
 import scores.functions
 import scores.pandas
@@ -17,6 +18,7 @@ __version__ = "v0.7"
 
 __all__ = [
     "scores.categorical",
+    "scores.contingency",
     "scores.continuous",
     "scores.functions",
     "scores.pandas",
