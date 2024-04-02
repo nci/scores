@@ -51,4 +51,5 @@ Information relevant for package maintenance
 | ------------             | -----------              | ------------ | 
 |  README                  |  a new is score added    | README does not read from summary_table_of_scores.md
 |  summary_table_of_scores |  a new is score added    | The rest of the docs includes this in various spots
-|  api.md                  |  a new function is added | Each function must be added individually
+|  api.md                  |  a new function is added | Each function must be added individually 
+|  Explanation.ipynb       |  a new tutorial is added | Navigation throughout the docs
