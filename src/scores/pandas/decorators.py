@@ -9,7 +9,10 @@ import pandas as pd
 
 DATAFRAME_DOCS = """
     Supports:
-        df: pd.DataFrame with columns specified in other keywords.
+        df: pd.DataFrame with column names specified in other keywords.
+            Set `{keywords}` to column names.
+            E.g.
+            >>> scores.pandas.METRIC_NAME(df, fcst = 'ForecastColumn', obs = 'ObsColumn')
 """
 
 
@@ -37,7 +40,7 @@ def split_dataframe(*series_keywords: str):
     """
 
     def internal_function(func):
-        func.__doc__ = str(getattr(func, "__doc__", "")) + DATAFRAME_DOCS
+        func.__doc__ = str(getattr(func, "__doc__", "")) + DATAFRAME_DOCS.format(keywords="`, `".join(series_keywords))
 
         @functools.wraps(func)
         def decorated_function(*args, df: Union[pd.DataFrame, None] = None, **kwargs):

@@ -36,7 +36,7 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.mse(fcst, obs, angular=angular) # type: ignore
+    return __continuous.mse(fcst, obs, angular=angular)  # type: ignore
 
 
 @split_dataframe("fcst", "obs")
@@ -67,7 +67,7 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.rmse(fcst, obs, angular=angular) # type: ignore
+    return __continuous.rmse(fcst, obs, angular=angular)  # type: ignore
 
 
 @split_dataframe("fcst", "obs")
@@ -99,4 +99,4 @@ def mae(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.mae(fcst, obs, angular=angular) # type: ignore
+    return __continuous.mae(fcst, obs, angular=angular)  # type: ignore
