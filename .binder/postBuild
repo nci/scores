@@ -1,3 +1,3 @@
 #!/bin/bash
 set -e  # don't allow errors to fail silently
-pip install -e src/  # install the custom library
+pip install -e ./  # install scores
