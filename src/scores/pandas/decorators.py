@@ -46,6 +46,11 @@ def split_dataframe(*series_keywords: str):
                 # Allow for only arg to be the DataFrame
                 if len(args) == 1 and isinstance(args[0], pd.DataFrame):
                     df = args[0]
+                elif len(args) > 0 and isinstance(args[0], pd.DataFrame):
+                    raise KeyError(
+                        f"A `pd.DataFrame` was supplied first, but a following arg was also given, provide {series_keywords} as keyword arguments."
+                    )
+
                 else:
                     return func(*args, **kwargs)
 
