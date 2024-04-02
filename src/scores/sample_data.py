@@ -18,6 +18,16 @@ def simple_observations() -> xr.DataArray:
     return xr.DataArray(data=[11, 11, 12, 14, 11, 14, 12, 11])
 
 
+def simple_forecast_pandas() -> pd.Series:
+    """Generate a simple series of prediction values"""
+    return pd.Series([10, 10, 11, 13, 14, 17, 15, 14])
+
+
+def simple_observations_pandas() -> pd.Series:
+    """Generate a simple series of observation values"""
+    return pd.Series([11, 11, 12, 14, 11, 14, 12, 11])
+
+
 def continuous_observations(large_size: bool = False) -> xr.DataArray:
     """Creates a obs array with continuous values.
 
