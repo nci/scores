@@ -8,4 +8,4 @@ scipy
 bottleneck
 nbsphinx
 sphinx_gallery
-nbsphinx_link
+

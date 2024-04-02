@@ -18,7 +18,7 @@ version = __version__
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser", "sphinx.ext.autodoc", "sphinx.ext.autosummary", "sphinx.ext.napoleon","nbsphinx", "sphinx_gallery.load_style", "nbsphinx_link"]
+extensions = ["myst_parser", "sphinx.ext.autodoc", "sphinx.ext.autosummary", "sphinx.ext.napoleon","nbsphinx", "sphinx_gallery.load_style"]
 source_suffix = [".rst", ".md"]
 
 templates_path = ["_templates"]
