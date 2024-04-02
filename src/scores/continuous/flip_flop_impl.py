@@ -433,7 +433,9 @@ def flip_flop_index_proportion_exceeding(
     # calculate the flip-flop index
     flip_flop_data = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)
     # calculate the proportion exceeding each threshold
-    flip_flop_exceeding = proportion_exceeding(flip_flop_data, thresholds, reduce_dims, preserve_dims)
+    flip_flop_exceeding = proportion_exceeding(
+        flip_flop_data, thresholds, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
     # overwrite the attributes
     flip_flop_exceeding.attrs = flip_flop_data.attrs
 

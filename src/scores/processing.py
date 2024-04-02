@@ -1,4 +1,5 @@
 """Tools for processing data for verification"""
+
 import operator
 from collections.abc import Iterable
 from typing import Optional, Union
@@ -267,8 +268,8 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
 def proportion_exceeding(
     data: XarrayLike,
     thresholds: Iterable,
-    preserve_dims: FlexibleDimensionTypes = None,
     reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
 ):
     """
     Calculates the proportion of `data` equal to or exceeding `thresholds`.
@@ -288,15 +289,15 @@ def proportion_exceeding(
         that are greater than or equal to the corresponding threshold.
 
     """
-    return _binary_discretise_proportion(data, thresholds, ">=", preserve_dims, reduce_dims)
+    return _binary_discretise_proportion(data, thresholds, ">=", reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
 
 def _binary_discretise_proportion(
     data: XarrayLike,
     thresholds: Iterable,
     mode: str,
-    preserve_dims: FlexibleDimensionTypes = None,
     reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
     abs_tolerance: Optional[bool] = None,
     autosqueeze: bool = False,
 ):
@@ -375,7 +376,7 @@ def _binary_discretise_proportion(
     discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)
 
     # The proportion in each category
-    dims = gather_dimensions(data.dims, data.dims, preserve_dims, reduce_dims)
+    dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     proportion = discrete_data.mean(dim=dims)
 
     # attach attributes
