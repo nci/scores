@@ -1,7 +1,6 @@
 # About the Scores Project
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/HEAD?labpath=tutorials)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/137-plotly-charts?labpath=tutorials%2FREADME.ipynb)
 
 One-line intro: xarray based verification (accuracy) scoring that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
