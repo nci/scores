@@ -5,10 +5,13 @@ contingency tables of various kinds, also known as a confusion matrix.
 It allows the careful setting out of when and where forecasts closely match
 observations.
 
-The simplest kind of table is a binary contingency table, which is based on when the 
-forecast and the obs match exactly. As real-world data is real-varying, this will
+The simplest kind of table is an accuracy table, which is based on when the 
+forecast and the obs match exactly or not. As real-world data is real-varying, this will
 typically have been calculated as a binary flag which indicates when the forecast
-and observed values are *sufficiently close* based on some tolerance. 
+and observed values are *sufficiently close* based on some tolerance.
+
+The second-simplest kind of table is a binary contingency table which captures true
+positives, true negatives, false positives and false negatives. 
 
 A somewhat more complex type of table is a categorical contingency table, which includes
 multiple categories of match. An example set of categoried might be "exact match",
@@ -54,6 +57,8 @@ CategoryTable.
 '''
 import xarray
 
+DEFAULT_PRECISION = 8
+
 def make_binary_table(proximity, match_operator):
 	table = match_operator.make_table(proximity)
 	return table
@@ -68,15 +73,69 @@ class ContingencyTable(xarray.DataArray):
 class CategoryTable(xarray.DataArray):
 	pass
 
-class BinaryTable(xarray.DataArray):
-	pass
+class BinaryContingencyTable(xarray.DataArray):
+	'''
+	At each location, the value will either be:
+	 - A true positive    (0)
+	 - A false positive   (1)
+	 - A true negative    (2)
+	 - A false negative   (3)
+
+	It will be common to want to operate on masks of these values,
+	such as:
+	 - Plotting these attributes on a map
+	 - Calculating the total number of these attributes
+	 - Calculating various ratios of these attributes, potentially
+	   masked by geographical area (e.g. accuracy in a region)
+
+	As such, the per-pixel information is useful as well as the overall
+	ratios involved.
+	'''
+
+@xarray.register_dataset_accessor("BinaryTable")
+class BinaryTable:	
+	'''
+	At each location, the value will either be:
+	 - True (Accurate)
+	 - False (Not Accurate)
+
+	It will be common to want to operate on masks of these values,
+	such as:
+	 - Plotting these attributes on a map
+	 - Calculating the total number of these attributes
+	 - Calculating various ratios of these attributes, potentially
+	   masked by geographical area (e.g. accuracy in a region)
+
+	As such, the per-pixel information is useful as well as the overall
+	ratios involved.	
+	'''
+
+	def __init__(self, data_array):
+
+		bool_array = data_array.astype(bool)
+		self._obj = bool_array
+	
+	def hits(self):
+		total = self.sum().values.item()
+		return total
+	
 
 class MatchingOperator:
 	pass
 
 class BinaryProximityOperator(MatchingOperator):
+	'''
+	Produced a simple binary contingency table where the score has value 
+	which is less than or equal to the specified tolerance, based on values
+	rounded to a specific numerical precision. Due to floating-point
+	errors, it is important to specify an appropriate precision.
 
-	def __init__(self, *, precision=8, tolerance=0):
+	If your data is likely to have significance at extremely high precision, 
+	floating point values are not appropriate to use, and something like the
+	python decimal.Decimal should be utilized. 
+	'''
+
+	def __init__(self, *, precision=DEFAULT_PRECISION, tolerance=0):
 		self.precision = precision
 		self.tolerance = tolerance
 
@@ -86,3 +145,6 @@ class BinaryProximityOperator(MatchingOperator):
 		result = BinaryTable(binaryArray)
 		return result
 
+class SimpleBucketOperator(MatchingOperator):
+	def __init__(self, *, precision=DEFAULT_PRECISION, tolerance=0):
+		pass

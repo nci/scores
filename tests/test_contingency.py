@@ -71,11 +71,14 @@ somewhat_near_matches = xr.DataArray(
 
 
 def test_simple_binary_table():
-	
+
+	# import pudb; pudb.set_trace()
+
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
 	match = scores.contingency.BinaryProximityOperator()
 	table = match.make_table(proximity)
 	assert_dataarray_equal(table, exact_matches)
+	assert table.hits() == 5
 
 	# Ideally would check the nature of this failure but for now a non-match will do
 	with pytest.raises(AssertionError):
@@ -84,8 +87,6 @@ def test_simple_binary_table():
 
 def test_nearby_binary_table():
 
-	# import pudb; pudb.set_trace()
-	
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
 	matchpoint2 = scores.contingency.BinaryProximityOperator(tolerance=0.2)	
 	table2 = matchpoint2.make_table(proximity)
@@ -95,6 +96,20 @@ def test_nearby_binary_table():
 	# Ideally would check the nature of this failure but for now a non-match will do
 	with pytest.raises(AssertionError):
 		assert_dataarray_equal(table2, exact_matches)
+
+
+# def test_categorical_table():
+
+# 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
+# 	buckets = [(0, 1), (1,2), (2,3),(4,1000)]
+# 	match = scores.contingency.BucketOperator(buckets)	
+# 	table = matchpoint2.make_table(proximity)
+
+# 	assert_dataarray_equal(table2, somewhat_near_matches)
+
+# 	# Ideally would check the nature of this failure but for now a non-match will do
+# 	with pytest.raises(AssertionError):
+# 		assert_dataarray_equal(table2, exact_matches)		
 
 def test_dask_if_available():
 	'''
@@ -111,5 +126,5 @@ def test_dask_if_available():
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
 	match = scores.contingency.BinaryProximityOperator()
 	dprox = proximity.chunk()
-	table = match.make_table(dprox)
+	table = match.make_table(dprox).table
 	assert_dataarray_equal(table, exact_matches)
