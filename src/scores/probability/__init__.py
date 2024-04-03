@@ -10,6 +10,7 @@ from scores.probability.crps_impl import (
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
 )
+from scores.probability.pit import pit
 from scores.probability.roc_impl import roc_curve_data
 from scores.processing.isoreg_impl import isotonic_fit
 

@@ -13,6 +13,7 @@ import xarray as xr
 from scores.probability.checks import (
     cdf_values_within_bounds,
     check_nan_decreasing_inputs,
+    coords_increasing,
 )
 from scores.typing import XarrayLike
 
@@ -403,3 +404,218 @@ def cdf_envelope(
     result.loc["lower"] = np.where(~np.isnan(cdf), cdf_lower, np.nan)
 
     return result
+
+
+def check_cdf(
+    cdf: xr.DataArray,
+    threshold_dim: str,
+    dims: Optional[Iterable[str]],
+    varname_cdf: str = "cdf",
+    varname_threshold_dim: str = "threshold_dim",
+    varname_dims: str = "dims",
+):
+    """
+    Performs various checks on a CDF values of a real-valued random variable
+    in an array `cdf` and its dimensions. Does not check that `cdf` is nondecreasing
+    along the `threshold_dim` dimension;
+    use the function `nan_decreasing_cdfs` instead.
+
+    Args:
+        cdf: array of CDF values to check.
+        threshold_dim: name of the threshold dimension in `cdf`.
+        dims: if not `None`, a subset of dimensions of `cdf`, not including
+            `threshold_dim`.
+        varname_cdf: the variable name for `cdf` used in the error message.
+        varname_threshold_dim: the variable name for `threshold_dim` used in the error message.
+        varname_dims: the variable name for `dims` used in the error message.
+
+    Raises:
+        ValueError: if `threshold_dim` is not a dimension of `cdf`.
+        ValueError: if `threshold_dim` is in `dims`.
+        ValueError: if `dims` is not a subset of `cdf.dims`.
+        ValueError: if `cdf` has non-NaN values outside the closed interval [0,1].
+        ValueError: if `cdf[threshold_dim]` coordinates are not increasing.
+    """
+    if threshold_dim not in cdf.dims:
+        raise ValueError(f"`{varname_threshold_dim}` is not a dimension of `{varname_cdf}`")
+
+    if dims is not None:
+        if threshold_dim in dims:
+            raise ValueError(f"`{varname_threshold_dim}` is in `{varname_dims}`")
+        if not set(dims).issubset(cdf.dims):
+            raise ValueError(f"`{varname_dims}` is not a subset of dimensions of `{varname_cdf}`")
+
+    if not cdf_values_within_bounds(cdf):
+        raise ValueError(f"values of `{varname_cdf}` must be in the closed interval [0,1]")
+
+    if not coords_increasing(cdf, threshold_dim):
+        raise ValueError(f"coordinates along `{varname_threshold_dim}` of `{varname_cdf}` must be increasing")
+
+
+def check_cdf_support(
+    cdf: xr.DataArray,
+    threshold_dim: str = "threshold",
+    lower_supp: float = 0,
+    upper_supp: float = np.inf,
+    varname_cdf: str = "cdf",
+    varname_threshold_dim: str = "threshold_dim",
+):
+    """
+    Checks that the CDF of a real-valued random variable is supported on
+    the closed interval [lower_supp, upper_supp], i.e., that
+
+        - cdf(x) = 0 when x < `lower_support`
+        - cdf(x) = 1 when x > `upper_support`
+
+    for x in `cdf[threshold_dim].values`.
+
+    NaNs are ignored. Tests for "equality" uses `np.allclose`.
+
+    Args:
+        cdf: array of CDF values, with threshold dimension `threshold_dim`.
+        threshold_dim: name of the threshold dimension in `cdf`.
+        lower_supp: left endpoint of the interval of support. Can be `-np.inf`.
+        upper_supp: right endpoint of the interval of support. Can be `np.inf`.
+        varname_cdf: the variable name for `cdf` used in the error message.
+        varname_threshold_dim: the variable name for `cdf` used in the error message.
+
+    Returns:
+        True if all checks pass.
+
+    Raises:
+        ValueError: if `lower_support` > `upper_support`.
+        ValueError: if cdf(x) != 0 when x < `lower_support`.
+        ValueError: if cdf(x) != 1 when x > `upper_support`.
+    """
+    if upper_supp < lower_supp:
+        raise ValueError("`upper_supp < lower_supp`")
+
+    upper = cdf.where(cdf[threshold_dim] > upper_supp).values
+    lower = cdf.where(cdf[threshold_dim] < lower_supp).values
+
+    if not np.allclose(upper[~np.isnan(upper)], 1):
+        raise ValueError(f"`{varname_cdf}` is not 1 when `{varname_cdf}[{varname_threshold_dim}] > {upper_supp}`")
+
+    if not np.allclose(lower[~np.isnan(lower)], 0):
+        raise ValueError(f"`{varname_cdf}` is not 0 when `{varname_cdf}[{varname_threshold_dim}] < {lower_supp}`")
+
+
+def expectedvalue_from_cdf(
+    cdf: xr.DataArray,
+    threshold_dim: str = "threshold",
+    nonnegative_support: bool = True,
+) -> xr.DataArray:
+    """
+    Returns the expected value E(Y) of a real-valued random variable Y with
+    distribution given by `cdf`.
+
+    The current implementation assumes that Y >= 0, i.e., the CDF has nonnnegative support.
+    This assumption may be relaxed in a future implementation.
+
+    The calculation is based on the formula
+
+        E(Y) = integral(1 - cdf(x), x >=0),
+
+    where it is assumed that the CDF is  piecewise linear between CDF values given by the
+    array `cdf` when x >= 0.
+
+    Args:
+        cdf: array of CDF values, with threshold dimension `threshold_dim`.
+        threshold_dim: name of the threshold dimension in `cdf`.
+        nonnegative_support: `True` if the support of the probability measure
+            described by `cdf` is contained in the half line [0, inf).
+
+    Returns:
+        xr.DataArray containing the expected value of each CDF in `cdf`, with
+        `threshold_dim` collapsed.
+
+    Raises:
+        ValueError: if `nonnegative_support = False`.
+        ValueError: if `threshold_dim` is not a dimension of `cdf`.
+        ValueError: if `cdf` has non-NaN values outside the closed interval [0,1].
+        ValueError: if `cdf[threshold_dim]` coordinates are not increasing.
+        ValueError: if `cdf` is not 0 when `cdf[threshold_dim] < 0` and
+            `nonnegative_support = True`.
+    """
+    if nonnegative_support:
+        check_cdf_support(cdf, threshold_dim, 0, np.inf)
+    else:
+        raise ValueError("This function currently only handles the case when the cdf has nonnegative support")
+
+    check_cdf(cdf, threshold_dim, None, "cdf", "threshold_dim", "dims")
+
+    # only select CDF values where 0 <= threshold_dim.
+    integrand = 1 - cdf.sel({threshold_dim: slice(0, np.inf)})
+
+    return integrand.integrate(threshold_dim)
+
+
+def variance_from_cdf(cdf: xr.DataArray, threshold_dim: str = "threshold") -> xr.DataArray:
+    """
+    Returns the variance Var(Y) of a random variable Y with distribution given by `cdf`,
+    under the assumption that Y >= 0. The calculation is based on the formula
+
+        Var(Y) = 2 * integral(x * (1 - cdf(x)), x >= 0) + E(Y)^2,
+
+    where it is assumed that the CDF is  piecewise linear between CDF values given by the
+    array `cdf` when x >= 0.
+
+    Args:
+        cdf: array of CDF values, with threshold dimension `threshold_dim`.
+        threshold_dim: name of the threshold dimension in `cdf`.
+
+    Returns:
+        xr.DataArray containing the variance Var(Y) associated with each CDF in `cdf`,
+        with `threshold_dim` collapsed.
+
+    Raises:
+        ValueError: if `threshold_dim` is not a dimension of `cdf`.
+        ValueError: if `cdf` has non-NaN values outside the closed interval [0,1].
+        ValueError: if `cdf[threshold_dim]` coordinates are not increasing.
+        ValueError: if `cdf` is not 0 when `cdf[threshold_dim] < 0`.
+    """
+    check_cdf(cdf, threshold_dim, None, "cdf", "threshold_dim", "dims")
+    check_cdf_support(cdf, threshold_dim, 0, np.inf)
+
+    expected_value = expectedvalue_from_cdf(cdf, threshold_dim)
+
+    # only use values of CDF where threshold >= 0.
+    cdf = cdf.sel({threshold_dim: slice(0, np.inf)})
+    integral = _var_from_cdf(cdf, threshold_dim)
+    result = 2 * integral - expected_value**2
+
+    return result
+
+
+def _var_from_cdf(function_values, threshold_dim):
+    """
+    Calculates the integral
+
+        integral(t * (1 - F(t)))
+
+    where it is assumed that the function F is piecewise linear between values in
+    given by the array `function_values`.
+
+    If there is a NaN along `threshold_dim`, then NaN is returned.
+    """
+    # notation: F_i(t) = m_i * t + b_i whenever x[i-1] <= t <= x[i]
+    # and x[i] is a value in `function_values[threshold_dim]`.
+
+    x_values = function_values[threshold_dim]
+    x_shifted = function_values[threshold_dim].shift(**{threshold_dim: 1})
+    # difference in x values
+    diff_xs = x_values - x_shifted
+    # difference in function values y_i = F(x[i])
+    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})
+    # gradients m
+    m_values = diff_ys / diff_xs
+    # intercepts b_i
+    b_values = function_values - m_values * x_values
+    # integral(t * (1 - F(t))) on the interval (x[i-1], x[i]), for each i, using calculus:
+    integral_i = (1 - b_values) * (x_values**2 - x_shifted**2) / 2 - m_values * (x_values**3 - x_shifted**3) / 3
+
+    integral = integral_i.sum(threshold_dim)
+    # return NaN if NaN in function_values
+    integral = integral.where(~np.isnan(function_values).any(threshold_dim))
+
+    return integral
