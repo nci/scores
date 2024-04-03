@@ -181,7 +181,7 @@ def iter_selections(
 
 # Dataset input types load to Dataset output types
 @overload
-def iter_selections(
+def iter_selections(  # type: ignore
     data: xr.Dataset, sampling_dim: str, **selections: Optional[Iterable[int]]
 ) -> Generator[tuple[str, xr.Dataset], None, None]:
     ...

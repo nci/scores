@@ -310,38 +310,38 @@ DM_TEST_STAT_EXP2 = ((6 / 25) ** 0.5) * (-0.2) * (0.0864 ** (-0.5))
 
 # expected outputs for dm_test_stats
 DM_TEST_STATS_T_EXP = xr.Dataset(
-    data_vars=dict(
-        mean=(["lead_day"], [2.5, -0.2, 1.0]),
-        dm_test_stat=(["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
-        timeseries_len=(["lead_day"], [4, 5, 5]),
-        confidence_gt_0=(
+    data_vars={
+        "mean": (["lead_day"], [2.5, -0.2, 1.0]),
+        "dm_test_stat": (["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
+        "timeseries_len": (["lead_day"], [4, 5, 5]),
+        "confidence_gt_0": (
             ["lead_day"],
             [0.9443164226429581, 0.3778115634892615, np.nan],
         ),
-        ci_upper=(["lead_day"], [5.131140307989639, 1.079108068801774, np.nan]),
-        ci_lower=(
+        "ci_upper": (["lead_day"], [5.131140307989639, 1.079108068801774, np.nan]),
+        "ci_lower": (
             ["lead_day"],
             [-0.13114030798963894, -1.4791080688017741, np.nan],
         ),
-    ),
+    },
     coords={"lead_day": [1, 2, 3]},
 )
 
 DM_TEST_STATS_NORMAL_EXP = xr.Dataset(
-    data_vars=dict(
-        mean=(["lead_day"], [2.5, -0.2, 1.0]),
-        dm_test_stat=(["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
-        timeseries_len=(["lead_day"], [4, 5, 5]),
-        confidence_gt_0=(
+    data_vars={
+        "mean": (["lead_day"], [2.5, -0.2, 1.0]),
+        "dm_test_stat": (["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
+        "timeseries_len": (["lead_day"], [4, 5, 5]),
+        "confidence_gt_0": (
             ["lead_day"],
             [0.9873263406612659, 0.36944134018176367, np.nan],
         ),
-        ci_upper=(["lead_day"], [4.339002261450286, 0.7869121761708835, np.nan]),
-        ci_lower=(
+        "ci_upper": (["lead_day"], [4.339002261450286, 0.7869121761708835, np.nan]),
+        "ci_lower": (
             ["lead_day"],
             [0.6609977385497137, -1.1869121761708834, np.nan],
         ),
-    ),
+    },
     coords={"lead_day": [1, 2, 3]},
 )
 

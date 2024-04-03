@@ -123,4 +123,7 @@ from scores.stats.statistical_tests.acovf import _next_regular
     ],
 )
 def test_next_regular(x, y):
+    """
+    Check the next_regular function.
+    """
     assert_equal(_next_regular(x), y)

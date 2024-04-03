@@ -1,10 +1,9 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
-import inspect
 import warnings
 from collections.abc import Hashable, Iterable, Sequence
-from typing import Optional
+from typing import Optional, Union
 
 import xarray as xr
 
@@ -338,7 +337,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
                 )
 
 
-def tmp_coord_name(xr_data: xr.DataArray, count=1) -> str:
+def tmp_coord_name(xr_data: xr.DataArray, count=1) -> Union[str, list[str]]:
     """
     Generates temporary coordinate names that are not among the coordinate or dimension
     names of `xr_data`.

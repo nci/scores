@@ -33,7 +33,8 @@ def cdf_values_within_bounds(cdf: xr.DataArray) -> bool:
         (bool): `True` if `cdf` values are all between 0 and 1 whenever values are not NaN,
             or if all values are NaN; and `False` otherwise.
     """
-    return cdf.count() == 0 or ((cdf.min() >= 0) & (cdf.max() <= 1))
+    flag = cdf.count() == 0 or ((cdf.min() >= 0) & (cdf.max() <= 1))
+    return flag  # type: ignore  # mypy thinks flag could be a DataArray
 
 
 def check_nan_decreasing_inputs(cdf, threshold_dim, tolerance):

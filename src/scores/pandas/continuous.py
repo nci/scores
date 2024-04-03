@@ -35,7 +35,7 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.mse(fcst, obs, angular=angular)
+    return __continuous.mse(fcst, obs, angular=angular)  # type: ignore  # mypy is wrong, I think
 
 
 def rmse(
@@ -66,7 +66,7 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.rmse(fcst, obs, angular=angular)
+    return __continuous.rmse(fcst, obs, angular=angular)  # type: ignore  # mypy is wrong, I think
 
 
 def mae(
@@ -98,4 +98,4 @@ def mae(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.mae(fcst, obs, angular=angular)
+    return __continuous.mae(fcst, obs, angular=angular)  # type: ignore  # mypy is wrong, I think

@@ -243,7 +243,7 @@ def test_firm(
         reduce_dims,
         preserve_dims,
     )
-    if preserve_dims != None:
+    if preserve_dims is not None:
         calculated = calculated.transpose(*preserve_dims)
     xr.testing.assert_allclose(
         calculated,
