@@ -81,8 +81,7 @@ line-length = 120
 warn_return_any = true
 warn_unused_configs = true
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
+#ignore_missing_imports = true
 
 [tool.coverage.paths]
 source = ["/src/"]
@@ -126,4 +125,4 @@ max-args=10
 max-line-length=120
 
 [tool.pylint.messages_control]
-good_names=['df','da','x','y','z','i','j','k','ae']
+good-names=['df','da','x','y','z','i','j','k','ae']  # pylint: disable=E0015

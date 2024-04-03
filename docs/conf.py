@@ -5,13 +5,12 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+from scores import __version__
 
 project = "scores"
 copyright = "2023, Australian Bureau of Meteorology"
 author = "Australian Bureau of Meteorology"
 release = "0.4"
-
-from scores import __version__
 
 version = __version__
 

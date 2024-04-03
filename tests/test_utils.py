@@ -488,12 +488,12 @@ def test_gather_dimensions_exceptions():
 
     # Attempt to reduce a non-existent dimension
     with pytest.raises(ValueError) as excinfo:
-        assert gd(fcst_dims_conflict, obs_dims, reduce_dims="nonexistent") == []
+        assert not gd(fcst_dims_conflict, obs_dims, reduce_dims="nonexistent")
     assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION
 
     # Attempt to preserve a non-existent dimension
     with pytest.raises(ValueError) as excinfo:
-        assert gd(fcst_dims_conflict, obs_dims, preserve_dims="nonexistent") == []
+        assert not gd(fcst_dims_conflict, obs_dims, preserve_dims="nonexistent")
     assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION
 
     # Preserve "all" as a string but named dimension present in data
@@ -666,6 +666,9 @@ def test_gather_dimensions2_examples(fcst, obs, weights, reduce_dims, preserve_d
 
 
 def test_tmp_coord_name_namecollision():
+    """
+    Confirm that asking for multiple names will result in unique names
+    """
     names = []
     number_of_names = 3
     data = xr.DataArray(data=[1, 2, 3])
@@ -681,8 +684,8 @@ def test_tmp_coord_name():
     data = xr.DataArray(data=[1, 2, 3])
     assert utils.tmp_coord_name(data) == "newdim_0"
 
-    data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords=dict(stn=[101, 202, 304]))
+    data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords={"stn": [101, 202, 304]})
     assert utils.tmp_coord_name(data) == "newstnstn"
 
-    data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords=dict(stn=[101, 202, 304], elevation=("stn", [0, 3, 24])))
+    data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords={"stn": [101, 202, 304], "elevation": ("stn", [0, 3, 24])})
     assert utils.tmp_coord_name(data) == "newstnstnelevation"

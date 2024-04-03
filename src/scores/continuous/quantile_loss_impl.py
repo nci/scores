@@ -92,7 +92,7 @@ def quantile_score(
 
     result = xr.where(diff > 0, score_fcst_ge_obs, score_fcst_lte_obs)
 
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)  # type: ignore[assignment]
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
     results = apply_weights(result, weights)
     score = results.mean(dim=reduce_dims)
 

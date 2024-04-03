@@ -52,7 +52,7 @@ def assert_dataarray_equal(
 
     # if decimals are supplied, do a rounding, otherwise rounding is just a dummy 'identity' func
     # pylint: disable=unnecessary-lambda-assignment
-    rounding = lambda x: x if decimals is None else np.round(x, decimals=decimals)
+    rounding = lambda x: x if decimals is None else np.round(x, decimals=decimals)  # noqa: E731
 
     decimal_str = "" if decimals is None else f" to {decimals} decimal places"
 
@@ -178,7 +178,7 @@ def _assert_xarray_equal(left, right, check_attrs_values=True, check_attrs_order
     prefix = type(left).__name__
 
     # if decimals are supplied, do a rounding, otherwise rounding is just a dummy 'identity' func
-    rounding = lambda x: x if decimals is None else np.round(x, decimals=decimals)
+    rounding = lambda x: x if decimals is None else np.round(x, decimals=decimals)  # noqa: E731
 
     decimal_str = "" if decimals is None else f" to {decimals} decimal places"
 

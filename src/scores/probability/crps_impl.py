@@ -803,7 +803,14 @@ def crps_for_ensemble(
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
-    dims_for_mean = scores.utils.gather_dimensions2(fcst, obs, weights, reduce_dims, preserve_dims, ensemble_member_dim)
+    dims_for_mean = scores.utils.gather_dimensions2(
+        fcst,
+        obs,
+        weights=weights,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        special_fcst_dims=ensemble_member_dim,
+    )
 
     ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
 
