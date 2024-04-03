@@ -63,37 +63,37 @@ def make_binary_table(proximity, match_operator):
 	table = match_operator.make_table(proximity)
 	return table
 
-def make_category_table(proximity, category_operator):
-	table = category_operator.make_table(proximity)
-	return table
+# def make_category_table(proximity, category_operator):
+# 	table = category_operator.make_table(proximity)
+# 	return table
 
-class ContingencyTable(xarray.DataArray):
-	pass
+# class ContingencyTable(xarray.DataArray):
+# 	pass
 
-class CategoryTable(xarray.DataArray):
-	pass
+# class CategoryTable(xarray.DataArray):
+# 	pass
 
-class BinaryContingencyTable(xarray.DataArray):
-	'''
-	At each location, the value will either be:
-	 - A true positive    (0)
-	 - A false positive   (1)
-	 - A true negative    (2)
-	 - A false negative   (3)
+# class BinaryContingencyTable(xarray.DataArray):
+# 	'''
+# 	At each location, the value will either be:
+# 	 - A true positive    (0)
+# 	 - A false positive   (1)
+# 	 - A true negative    (2)
+# 	 - A false negative   (3)
 
-	It will be common to want to operate on masks of these values,
-	such as:
-	 - Plotting these attributes on a map
-	 - Calculating the total number of these attributes
-	 - Calculating various ratios of these attributes, potentially
-	   masked by geographical area (e.g. accuracy in a region)
+# 	It will be common to want to operate on masks of these values,
+# 	such as:
+# 	 - Plotting these attributes on a map
+# 	 - Calculating the total number of these attributes
+# 	 - Calculating various ratios of these attributes, potentially
+# 	   masked by geographical area (e.g. accuracy in a region)
 
-	As such, the per-pixel information is useful as well as the overall
-	ratios involved.
-	'''
+# 	As such, the per-pixel information is useful as well as the overall
+# 	ratios involved.
+# 	'''
 
-@xarray.register_dataset_accessor("BinaryTable")
-class BinaryTable:	
+
+class BinaryTable():	
 	'''
 	At each location, the value will either be:
 	 - True (Accurate)
@@ -110,13 +110,13 @@ class BinaryTable:
 	ratios involved.	
 	'''
 
-	def __init__(self, data_array):
+	def __init__(self, data):
 
-		bool_array = data_array.astype(bool)
-		self._obj = bool_array
-	
+		bool_array = data.astype(bool)
+		self.table = xarray.DataArray(data)
+			
 	def hits(self):
-		total = self.sum().values.item()
+		total = self.table.sum().values.item()
 		return total
 	
 
@@ -141,8 +141,9 @@ class BinaryProximityOperator(MatchingOperator):
 
 	def make_table(self, proximity):
 		proximity = proximity.round(self.precision)
-		binaryArray = (proximity <= self.tolerance)
-		result = BinaryTable(binaryArray)
+		binary_array = (proximity <= self.tolerance)
+		
+		result = BinaryTable(binary_array)
 		return result
 
 class SimpleBucketOperator(MatchingOperator):
