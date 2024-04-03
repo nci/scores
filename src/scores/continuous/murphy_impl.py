@@ -2,7 +2,7 @@
 Murphy score
 """
 from collections.abc import Sequence
-from typing import Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -101,7 +101,9 @@ def murphy_score(
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords=dict(theta=thetas))
     theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
-    over, under = globals()[f"_{functional_lower}_elementary_score"](fcst1, obs1, theta1, alpha, huber_a=huber_a)
+    over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
+        fcst1, obs1, theta1, alpha, huber_a=huber_a
+    )
     # Align dimensions, this is required in cases such as when the station numbers
     # are not in the same order in `obs` and `fcst` to prevent an exception on the next
     # line that combines the scores
@@ -215,7 +217,7 @@ def murphy_thetas(
     if (left_limit_delta is None) and (functional in ["huber", "expectile"]):
         left_limit_delta = 0
 
-    func = globals()[f"_{functional}_thetas"]
+    func = exposed_functions()[f"_{functional}_thetas"]
     result = func(
         forecasts=forecasts,
         obs=obs,
@@ -251,3 +253,15 @@ def _expectile_thetas(forecasts, obs, *, left_limit_delta, **_):
     ufcasts_and_uobs = np.unique(np.concatenate([ufcasts, left_limit_points, obs.values.flatten()]))
     result = ufcasts_and_uobs[~np.isnan(ufcasts_and_uobs)]
     return list(result)
+
+
+def exposed_functions() -> dict[str, Callable[..., Any]]:
+    """Expose functions used in calculation for easy usage upon user arguments."""
+    return {
+        "_quantile_elementary_score": _quantile_elementary_score,
+        "_huber_elementary_score": _huber_elementary_score,
+        "_expectile_elementary_score": _expectile_elementary_score,
+        "_quantile_thetas": _quantile_thetas,
+        "_huber_thetas": _huber_thetas,
+        "_expectile_thetas": _expectile_thetas,
+    }
