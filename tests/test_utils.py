@@ -488,7 +488,7 @@ def test_gather_dimensions_exceptions():
 
     # Attempt to reduce a non-existent dimension
     with pytest.raises(ValueError) as excinfo:
-        assert not gd(fcst_dims_conflict, obs_dims, reduce_dims="nonexistent") 
+        assert not gd(fcst_dims_conflict, obs_dims, reduce_dims="nonexistent")
     assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION
 
     # Attempt to preserve a non-existent dimension
