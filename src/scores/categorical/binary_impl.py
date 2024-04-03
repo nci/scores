@@ -15,6 +15,7 @@ from scores.utils import gather_dimensions
 def probability_of_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     weights: Optional[xr.DataArray] = None,
@@ -60,7 +61,7 @@ def probability_of_detection(
     if check_args:
         check_binary(fcst, "fcst")
         check_binary(obs, "obs")
-    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     misses = (obs == 1) & (fcst == 0)
     hits = (obs == 1) & (fcst == 1)
@@ -82,6 +83,7 @@ def probability_of_detection(
 def probability_of_false_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     weights: Optional[xr.DataArray] = None,
@@ -127,7 +129,7 @@ def probability_of_false_detection(
     if check_args:
         check_binary(fcst, "fcst")
         check_binary(obs, "obs")
-    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     false_alarms = (obs == 0) & (fcst == 1)
     correct_negatives = (obs == 0) & (fcst == 0)

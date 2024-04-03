@@ -14,7 +14,9 @@ from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import DimensionError, check_dims, dims_complement
 
 
-def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = False) -> xr.DataArray:
+def _flip_flop_index(
+    data: xr.DataArray, sampling_dim: str, *, is_angular: bool = False  # Force keywords arguments to be keyword-only
+) -> xr.DataArray:
     """
     Calculates the flip-flop index by collapsing the dimension specified by
     `sampling_dim`.
@@ -70,7 +72,11 @@ def _flip_flop_index(data: xr.DataArray, sampling_dim: str, is_angular: bool = F
 # If there are selections, a DataSet is always returned
 @overload
 def flip_flop_index(
-    data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Iterable[int]
+    data: xr.DataArray,
+    sampling_dim: str,
+    *,  # Force keywords arguments to be keyword-only
+    is_angular: bool = False,
+    **selections: Iterable[int],
 ) -> xr.Dataset:
     ...
 
@@ -78,14 +84,22 @@ def flip_flop_index(
 # If there are no selections, a DataArray is always returned
 @overload
 def flip_flop_index(
-    data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: None
+    data: xr.DataArray,
+    sampling_dim: str,
+    *,  # Force keywords arguments to be keyword-only
+    is_angular: bool = False,
+    **selections: None,
 ) -> xr.DataArray:
     ...
 
 
 # Return type is more precise at runtime when it is known if selections are being used
 def flip_flop_index(
-    data: xr.DataArray, sampling_dim: str, is_angular: bool = False, **selections: Optional[Iterable[int]]
+    data: xr.DataArray,
+    sampling_dim: str,
+    *,  # Force keywords arguments to be keyword-only
+    is_angular: bool = False,
+    **selections: Optional[Iterable[int]],
 ) -> XarrayLike:
     """
     Calculates the Flip-flop Index along the dimensions `sampling_dim`.
@@ -229,7 +243,9 @@ def iter_selections(
         yield key, data_subset
 
 
-def encompassing_sector_size(data: xr.DataArray, dims: Sequence[str], skipna: bool = False) -> xr.DataArray:
+def encompassing_sector_size(
+    data: xr.DataArray, dims: Sequence[str], *, skipna: bool = False  # Force keywords arguments to be keyword-only
+) -> xr.DataArray:
     """
     Calculates the minimum angular distance which encompasses all data points
     within an xarray.DataArray along a specified dimension. Assumes data is in
@@ -275,7 +291,10 @@ def encompassing_sector_size(data: xr.DataArray, dims: Sequence[str], skipna: bo
 
 @np.errstate(invalid="ignore")
 def _encompassing_sector_size_np(
-    data: np.ndarray, axis_to_collapse: Union[int, tuple[int, ...]] = 0, skipna: bool = False
+    data: np.ndarray,
+    *,  # Force keywords arguments to be keyword-only
+    axis_to_collapse: Union[int, tuple[int, ...]] = 0,
+    skipna: bool = False,
 ) -> np.ndarray:
     """
     Calculates the minimum angular distance which encompasses all data points
@@ -354,6 +373,7 @@ def flip_flop_index_proportion_exceeding(
     data: xr.DataArray,
     sampling_dim: str,
     thresholds: Iterable,
+    *,  # Force keywords arguments to be keyword-only
     is_angular: bool = False,
     preserve_dims: FlexibleDimensionTypes = None,
     reduce_dims: FlexibleDimensionTypes = None,

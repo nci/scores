@@ -118,7 +118,7 @@ def murphy_score(
     for source, name in zip(sources, names):
         source.name = name
     result = xr.merge(sources)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     result = result.mean(dim=reduce_dims)
     return result
 

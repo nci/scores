@@ -98,7 +98,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
     discrete_fcst = binary_discretise(fcst, thresholds, ">=")
 
     all_dims = set(fcst.dims).union(set(obs.dims))
-    final_reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    final_reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     final_preserve_dims = all_dims - set(final_reduce_dims)  # type: ignore
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
     final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]

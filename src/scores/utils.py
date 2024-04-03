@@ -56,6 +56,7 @@ class DimensionError(Exception):
 def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
 ) -> set[Hashable]:
@@ -136,6 +137,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
 def gather_dimensions2(
     fcst: xr.DataArray,
     obs: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
     weights: xr.DataArray = None,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
