@@ -96,12 +96,18 @@ def test_nearby_binary_table():
 		assert_dataarray_equal(found.table, exact_matches)
 
 
-# def test_categorical_table():
+def test_categorical_table():
 
-# 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-# 	buckets = [(0, 1), (1,2), (2,3),(4,1000)]
-# 	match = scores.contingency.BucketOperator(buckets)	
-# 	table = matchpoint2.make_table(proximity)
+	match = scores.contingency.EventThresholdOperator()
+	table = match.make_table(simple_forecast, simple_obs, 1.3)
+
+	hits =  table.hits()
+	assert hits == 16
+
+	misses = table.misses()
+	assert misses == 2
+
+
 
 # 	assert_dataarray_equal(table2, somewhat_near_matches)
 
@@ -109,20 +115,20 @@ def test_nearby_binary_table():
 # 	with pytest.raises(AssertionError):
 # 		assert_dataarray_equal(table2, exact_matches)		
 
-# def test_dask_if_available():
-# 	'''
-# 	A basic smoke test on a dask object. More rigorous exploration of dask
-# 	is probably needed beyond this. Performance is not explored here, just
-# 	compatibility.
-# 	'''
+def test_dask_if_available():
+	'''
+	A basic smoke test on a dask object. More rigorous exploration of dask
+	is probably needed beyond this. Performance is not explored here, just
+	compatibility.
+	'''
 
-# 	try:
-# 		import dask  # noqa: F401
-# 	except ImportError:
-# 		pytest.skip("Dask not available on this system")
+	try:
+		import dask  # noqa: F401
+	except ImportError:
+		pytest.skip("Dask not available on this system")
 
-# 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-# 	match = scores.contingency.BinaryProximityOperator()
-# 	dprox = proximity.chunk()
-# 	table = match.make_table(dprox).table
-# 	assert_dataarray_equal(table, exact_matches)
+	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
+	match = scores.contingency.BinaryProximityOperator()
+	dprox = proximity.chunk()
+	table = match.make_table(dprox).table
+	assert_dataarray_equal(table, exact_matches)

@@ -55,6 +55,8 @@ Users can supply their own matching operators to the top-level module functions 
 they can translate from a score (or proximity function) to either a BinaryTable or a 
 CategoryTable.
 '''
+
+import operator
 import xarray
 
 DEFAULT_PRECISION = 8
@@ -63,9 +65,9 @@ def make_binary_table(proximity, match_operator):
 	table = match_operator.make_table(proximity)
 	return table
 
-# def make_category_table(proximity, category_operator):
-# 	table = category_operator.make_table(proximity)
-# 	return table
+def make_category_table(proximity, category_operator):
+	table = category_operator.make_table(proximity)
+	return table
 
 # class ContingencyTable(xarray.DataArray):
 # 	pass
@@ -73,24 +75,57 @@ def make_binary_table(proximity, match_operator):
 # class CategoryTable(xarray.DataArray):
 # 	pass
 
-# class BinaryContingencyTable(xarray.DataArray):
-# 	'''
-# 	At each location, the value will either be:
-# 	 - A true positive    (0)
-# 	 - A false positive   (1)
-# 	 - A true negative    (2)
-# 	 - A false negative   (3)
+class BinaryContingencyTable():
+	'''
+	At each location, the value will either be:
+	 - A true positive    (0)
+	 - A false positive   (1)
+	 - A true negative    (2)
+	 - A false negative   (3)
 
-# 	It will be common to want to operate on masks of these values,
-# 	such as:
-# 	 - Plotting these attributes on a map
-# 	 - Calculating the total number of these attributes
-# 	 - Calculating various ratios of these attributes, potentially
-# 	   masked by geographical area (e.g. accuracy in a region)
+	It will be common to want to operate on masks of these values,
+	such as:
+	 - Plotting these attributes on a map
+	 - Calculating the total number of these attributes
+	 - Calculating various ratios of these attributes, potentially
+	   masked by geographical area (e.g. accuracy in a region)
 
-# 	As such, the per-pixel information is useful as well as the overall
-# 	ratios involved.
-# 	'''
+	As such, the per-pixel information is useful as well as the overall
+	ratios involved.
+	'''
+
+	def __init__(self, forecast_events, observed_events):
+
+		# type checking goes here
+		self.forecast_events = forecast_events
+		self.observed_events = observed_events
+
+		self.tp = (self.forecast_events == 1) & (self.observed_events == 1)
+		self.tn = (self.forecast_events == 0) & (self.observed_events == 0)
+		self.fp = (self.forecast_events == 1) & (self.observed_events == 0)
+		self.fn = (self.forecast_events == 0) & (self.observed_events == 1)
+
+	def hits(self):
+		'''
+		Sum of the true positives and the true negatives
+		'''
+		result = self.tp.sum() + self.tn.sum()
+		return result.values.item()
+
+	def misses(self):
+		'''
+		Sum of the false positives and the false negatives
+		'''
+		result = self.fp.sum() + self.fn.sum()
+		return result
+
+	def accuracy(self):
+		'''
+		The proportion of results which are correct
+		'''
+		hits = self.hits()
+		misses = self.misses()
+		return self.hits / (self.hits + self.misses)
 
 
 class BinaryTable():	
@@ -116,12 +151,44 @@ class BinaryTable():
 		self.table = xarray.DataArray(data)
 			
 	def hits(self):
+		'''
+		The 'hits' on a binary table is simply the sum of the table
+		'''
 		total = self.table.sum().values.item()
 		return total
 	
 
 class MatchingOperator:
 	pass
+
+class EventThresholdOperator(MatchingOperator):
+	'''
+	Given a forecast and and an observation, consider an event defined by
+	particular variables meeting a threshold condition (e.g. rainfall above 1mm).
+
+	This class abstracts that concept for any event definition.
+	'''
+
+	def __init__(self, *, precision=DEFAULT_PRECISION, tolerance=0):
+		self.precision = precision
+		self.tolerance = tolerance
+
+	def make_table(self, forecast, observed, threshold, op_fn=operator.gt):
+		'''
+		Using this function requires a careful understanding of the structure of the data
+		and the use of the operator function. The default operator is a simple greater-than
+		operator, so this will work on a simple DataArray. To work on a DataSet, a richer
+		understanding is required. It is recommended to work through the Contingency Table
+		tutorial to review more complex use cases, including on multivariate gridded model
+		data, and on station data structures.
+		'''
+		forecast_events = op_fn(forecast, threshold)
+		observed_events = op_fn(observed, threshold)
+
+		table = BinaryContingencyTable(forecast_events, observed_events)
+		return table
+
+
 
 class BinaryProximityOperator(MatchingOperator):
 	'''
