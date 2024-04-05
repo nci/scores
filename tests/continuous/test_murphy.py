@@ -7,8 +7,8 @@ from unittest.mock import Mock, patch
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here
-    dask = "Unavailable"
+except:  # noqa: E722 allow bare except here # pylint: disable-bare-except
+    dask = "Unavailable"  # pylint: disable-invalid-name
 
 import numpy as np
 import pytest

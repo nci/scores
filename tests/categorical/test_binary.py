@@ -5,7 +5,7 @@ Tests scores.categorical.binary
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here
+except:  # noqa: E722 allow bare except here # pylint: disable-bare-except
     dask = "Unavailable"
 
 import numpy as np
