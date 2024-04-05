@@ -1,8 +1,13 @@
 """
 Contains unit tests for scores.categorical
 """
-import dask
-import dask.array
+
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
+    dask = "Unavailable"  # pylint: disable=invalid-name
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -254,6 +259,10 @@ def test_firm(
 
 def test_firm_dask():
     """Tests firm works with dask"""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run dask tests")
+
     calculated = firm(
         mtd.DA_FCST_FIRM.chunk(),
         mtd.DA_OBS_FIRM.chunk(),

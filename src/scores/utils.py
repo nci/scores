@@ -133,7 +133,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     return reduce_dims
 
 
-def gather_dimensions2(
+def gather_dimensions2(  # pylint: disable=too-many-branches
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only

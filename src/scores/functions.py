@@ -1,3 +1,6 @@
+"""
+Contains functions which transform data or perform calculations
+"""
 from typing import overload
 
 import numpy as np

@@ -1,12 +1,10 @@
 """
 Test data for tests.continuous.flip_flop in scores
+Test data for flip_flop_index and related functions
 """
 import numpy as np
 import xarray as xr
 
-"""
-Test data for flip_flop_index and related functions
-"""
 DATA_FFI_1D_6 = xr.DataArray([20, 50, 60, 30, 10, 20], coords=[("letter", ["a", "b", "c", "d", "e", "f"])])
 DATA_FFI_1D_6_WITH_NAN = xr.DataArray([20, 50, 60, 30, np.nan, 20], coords=[("letter", ["a", "b", "c", "d", "e", "f"])])
 DATA_FFI_2D_6 = xr.DataArray(

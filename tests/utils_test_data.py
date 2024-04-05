@@ -4,9 +4,9 @@ Test data for scores.utils
 import numpy as np
 import xarray as xr
 
-"""
-Test data for scores.utils.check_dims
-"""
+#####
+# Test data for scores.utils.check_dims
+
 DA_R = xr.DataArray(np.array(1).reshape((1,)), dims=["red"])
 DA_G = xr.DataArray(np.array(1).reshape((1,)), dims=["green"])
 DA_B = xr.DataArray(np.array(1).reshape((1,)), dims=["blue"])
