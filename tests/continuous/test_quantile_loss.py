@@ -4,7 +4,7 @@ Contains unit tests for scores.probability.continuous
 try:
     import dask
     import dask.array
-except:
+except:  # noqa: E722 allow bare except here
     dask = "Unavailable"
 
 import numpy as np

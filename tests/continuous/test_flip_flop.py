@@ -4,7 +4,7 @@ This module contains tests for scores.continuous.flip_flop
 
 try:
     import dask
-except:
+except:  # noqa: E722 allow bare except here
     dask = "Unavailable"
 
 import numpy as np

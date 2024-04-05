@@ -8,7 +8,7 @@ Contains unit tests for scores.continuous.standard
 try:
     import dask
     import dask.array
-except:
+except: # noqa: E722 allow bare except here
     dask = "Unavailable"
 import numpy as np
 import numpy.random

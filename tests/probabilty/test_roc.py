@@ -4,8 +4,9 @@ Contains unit tests for scores.probability.roc_impl
 
 try:
     import dask
-except:
+except: # noqa: E722 allow bare except here
     dask = "Unavailable"
+
 import numpy as np
 import pytest
 import xarray as xr
