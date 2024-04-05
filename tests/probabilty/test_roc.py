@@ -4,7 +4,7 @@ Contains unit tests for scores.probability.roc_impl
 
 try:
     import dask
-except: # noqa: E722 allow bare except here
+except:  # noqa: E722 allow bare except here
     dask = "Unavailable"
 
 import numpy as np
