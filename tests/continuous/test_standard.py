@@ -660,6 +660,10 @@ def test_correlation_dask():
     """
     Tests continuous.correlation works with Dask
     """
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = scores.continuous.correlation(DA3_CORR.chunk(), DA2_CORR.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
