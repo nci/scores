@@ -4,8 +4,8 @@ Contains unit tests for scores.probability.roc_impl
 
 try:
     import dask
-except:  # noqa: E722 allow bare except here # pylint: disable-bare-except
-    dask = "Unavailable"  # pylint: disable-invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
+    dask = "Unavailable"  # pylint: disable=invalid-name
 
 import numpy as np
 import pytest
