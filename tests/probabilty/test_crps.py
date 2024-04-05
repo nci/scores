@@ -2,8 +2,13 @@
 """
 Contains unit tests for scores.probability.crps
 """
-import dask
-import dask.array
+
+try:
+    import dask
+    import dask.array
+except:
+    dask = "Unavailable"
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -71,6 +76,10 @@ def test_crps_cdf_exact():
 
 def test_crps_cdf_exact_dask():
     """Tests `crps_cdf_exact` works with Dask."""
+    
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
         crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
@@ -638,6 +647,10 @@ def test_crps_for_ensemble_raises():
 
 def test_crps_for_ensemble_dask():
     """Tests `crps_for_ensemble` works with dask."""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = crps_for_ensemble(
         fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DA_OBS_CRPSENS.chunk(),

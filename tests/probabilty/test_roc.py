@@ -1,7 +1,11 @@
 """
 Contains unit tests for scores.probability.roc_impl
 """
-import dask
+
+try:
+    import dask
+except:
+    dask = "Unavailable"
 import numpy as np
 import pytest
 import xarray as xr
@@ -97,6 +101,10 @@ def test_roc_curve_data(fcst, obs, thresholds, preserve_dims, reduce_dims, weigh
 
 def test_roc_curve_data_dask():
     """tests that roc_curve_data works with dask"""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = roc_curve_data(
         rtd.FCST_2X3X2_WITH_NAN.chunk(),
         rtd.OBS_3X3_WITH_NAN.chunk(),

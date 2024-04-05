@@ -1,8 +1,13 @@
 """
 Tests scores.categorical.binary
 """
-import dask
-import dask.array
+
+try:
+    import dask
+    import dask.array
+except:
+    dask = "Unavailable"
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -66,6 +71,10 @@ def test_probability_of_detection(fcst, obs, reduce_dims, check_args, weights, e
 
 
 def test_pod_dask():
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable - could not run test")
+
     "Tests that probability_of_detection works with dask"
     result = probability_of_detection(fcst_mix.chunk(), obs1.chunk())
     assert isinstance(result.data, dask.array.Array)
@@ -117,6 +126,10 @@ def test_probability_of_false_detection(fcst, obs, reduce_dims, check_args, weig
 
 def test_pofd_dask():
     "Tests that probability_of_false_detection works with dask"
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = probability_of_false_detection(fcst_mix.chunk(), obs0.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()

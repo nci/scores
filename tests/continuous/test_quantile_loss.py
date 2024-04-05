@@ -1,8 +1,12 @@
 """
 Contains unit tests for scores.probability.continuous
 """
-import dask
-import dask.array
+try:
+    import dask
+    import dask.array
+except:
+    dask = "Unavailable"
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -129,6 +133,10 @@ def test_qsf_calculations(fcst, obs, alpha, preserve_dims, reduce_dims, weights,
 
 def test_quantile_score_dask():
     """Tests quantile_score works with dask"""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = quantile_score(
         fcst=qltd.FCST1.chunk(),
         obs=qltd.OBS1.chunk(),

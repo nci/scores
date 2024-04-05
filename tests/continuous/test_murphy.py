@@ -4,8 +4,12 @@ import re
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-import dask
-import dask.array
+try:
+    import dask 
+    import dask.array 
+except:
+    dask = "Unavailable"
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -119,6 +123,10 @@ thetas_list = [0.0, 2.0, 10.0]
 )
 def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, daskinput):
     """murphy_score makes the expected operations on the scoring function output."""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable - could not run test")
+
     fcst = _test_array([1.0, 2.0, 3.0, 4.0])
     obs = _test_array([0.0, np.nan, 0.6, 137.4])
     if daskinput:
