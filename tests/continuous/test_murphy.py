@@ -5,8 +5,8 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 try:
-    import dask 
-    import dask.array 
+    import dask
+    import dask.array
 except:
     dask = "Unavailable"
 

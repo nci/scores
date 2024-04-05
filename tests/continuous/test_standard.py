@@ -459,6 +459,7 @@ def test_xarray_dimension_preservations_with_arrays():
     assert reduce_empty.dims == fcst_temperatures_xr_2d.dims  # Nothing should be reduced
     assert (reduce_empty == preserve_all).all()
 
+
 # Dask tests
 def test_mse_with_dask():
     """
@@ -519,7 +520,7 @@ def test_rmse_with_dask():
     ).chunk()
     OBS_CHUNKED = xr.DataArray(
         data=np.array([[0, 0], [0, np.nan]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
-    ).chunk()        
+    ).chunk()
 
     result = scores.continuous.rmse(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
     assert isinstance(result.data, dask.array.Array)

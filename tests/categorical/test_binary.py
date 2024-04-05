@@ -71,7 +71,6 @@ def test_probability_of_detection(fcst, obs, reduce_dims, check_args, weights, e
 
 
 def test_pod_dask():
-
     if dask == "Unavailable":
         pytest.skip("Dask unavailable - could not run test")
 

@@ -76,7 +76,7 @@ def test_crps_cdf_exact():
 
 def test_crps_cdf_exact_dask():
     """Tests `crps_cdf_exact` works with Dask."""
-    
+
     if dask == "Unavailable":
         pytest.skip("Dask unavailable, could not run test")
 

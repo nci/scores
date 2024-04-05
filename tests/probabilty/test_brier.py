@@ -85,7 +85,7 @@ def test_brier_score_dask():
 
     if dask == "Unavailable":
         pytest.skip("Dask unavailable, could not run test")
-            
+
     result = brier_score(FCST1.chunk(), OBS1.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
