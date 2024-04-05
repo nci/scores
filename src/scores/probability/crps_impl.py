@@ -1,9 +1,10 @@
 """
 This module supports the implementation of the CRPS scoring function, drawing from additional functions.
-The primary method, `crps_cdf` is imported into the probability module to be part of the probability API
+The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into 
+the probability module to be part of the probability API.
 """
-
-from typing import Iterable, Literal, Optional
+from collections.abc import Iterable
+from typing import Literal, Optional, Sequence
 
 import numpy as np
 import pandas as pd
@@ -156,7 +157,7 @@ def crps_cdf(
     weights=None,
     include_components=False,
 ):
-    """Calculates CRPS CDF probabilistic metric.
+    """Calculates the CRPS probabilistic metric given CDF input.
 
     Calculates the continuous ranked probability score (CRPS), or the mean CRPS over
     specified dimensions, given forecasts in the form of predictive cumulative
@@ -249,7 +250,8 @@ def crps_cdf(
             by taking the mean.
         reduce_dims (Tuple[str]): dimensions to reduce in the output by taking the mean. All other dimensions are
             preserved.
-        weights: Not yet implemented. Allow weighted averaging (e.g. by area, by latitude, by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
         include_components (bool): if True, include the under and over forecast components of
             the score in the returned dataset.
 
@@ -279,7 +281,8 @@ def crps_cdf(
         ValueError: if `threshold_weight` has negative values.
 
     See also:
-        `scores.probability.crps_cdf_brier_decomposition`
+        - `scores.probability.crps_cdf_brier_decomposition`
+        - `scores.probability.crps_for_ensemble`
 
     References:
         - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions.
@@ -342,7 +345,7 @@ def crps_cdf(
 
     weighted = scores.functions.apply_weights(result, weights)
 
-    dims.remove(threshold_dim)
+    dims.remove(threshold_dim)  # type: ignore
 
     result = weighted.mean(dim=dims)
 
@@ -499,7 +502,7 @@ def crps_cdf_brier_decomposition(
         "forward",
     )
 
-    dims.remove(threshold_dim)
+    dims.remove(threshold_dim)  # type: ignore
 
     # brier score for each forecast case
     bscore = (fcst - obs) ** 2
@@ -734,3 +737,98 @@ def crps_step_threshold_weight(
         weight = 1 - weight
 
     return weight
+
+
+def crps_for_ensemble(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    ensemble_member_dim: str,
+    method: Literal["ecdf", "fair"] = "ecdf",
+    reduce_dims: Optional[Sequence[str]] = None,
+    preserve_dims: Optional[Sequence[str]] = None,
+    weights: xr.DataArray = None,
+) -> xr.DataArray:
+    """Calculates the CRPS probabilistic metric given ensemble input.
+
+    Calculates the continuous ranked probability score (CRPS) given an ensemble of forecasts.
+    An ensemble of forecasts can also be thought of as a random sample from the predictive
+    distribution.
+
+    Given an observation y, and ensemble member values {x_i} (for 1 <= i <= M), the CRPS is
+    calculated by the formula
+        CRPS({x_i}, y) = (1 / M) * sum(|x_i - y|) - (1 / 2 * K) * sum(|x_i - x_j|),
+    where the first sum is iterated over 1 <= i <= M and the second sum is iterated over
+    1 <= i <= M and 1 <= j <= M.
+
+    The value of the constant K in this formula depends on the method.
+        - If `method="ecdf"` then K = M ** 2. In this case the CRPS value returned is
+            the exact CRPS value for the emprical cumulation distribution function
+            constructed using the ensemble values.
+        - If `method="fair"` then K = M * (M - 1). In this case the CRPS value returned
+            is the approximated CRPS where the ensemble values can be interpreted as a
+            random sample from the underlying predictive distribution. This interpretation
+            stems from the formula CRPS(F, Y) = E|X - Y| - E|X - X'|/2, where X and X'
+            are independent samples of the predictive distribution F, Y is the observation
+            (possibly unknown) and E denotes the expectation. This choice of K gives an
+            unbiased estimate for the second expectation.
+
+    Args:
+        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        obs: Observation data.
+        ensemble_member_dim: the dimension that specifies the ensemble member or the sample
+            from the predictive distribution.
+        method: Either "ecdf" or "fair".
+        reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+        preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+        weights: Weights for calculating a weighted mean of individual scores.
+
+    Returns:
+        xarray object of (weighted mean) CRPS values.
+
+    Raises:
+        ValueError: when method is not one of "ecdf" or "fair".
+
+    See also:
+        `scores.probability.crps_cdf`
+
+    References:
+        - C. Ferro (2014), "Fair scores for ensemble forecasts", Q J R Meteorol Soc
+            140(683):1917-1923.
+        - T. Gneiting T and A. Raftery (2007), "Strictly proper scoring rules, prediction,
+            and estimation", J Am Stat Assoc, 102(477):359-37.
+        - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability
+            Score with Limited Information and Applications to Ensemble Weather Forecasts",
+            Math Geosci 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
+    """
+    if method not in ["ecdf", "fair"]:
+        raise ValueError("`method` must be one of 'ecdf' or 'fair'")
+
+    dims_for_mean = scores.utils.gather_dimensions2(
+        fcst,
+        obs,
+        weights=weights,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        special_fcst_dims=ensemble_member_dim,
+    )
+
+    ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
+
+    # calculate forecast spread contribution
+    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})
+
+    fcst_spread_term = np.abs(fcst - fcst_copy).sum([ensemble_member_dim, ensemble_member_dim1])
+    ens_count = fcst.count(ensemble_member_dim)
+    if method == "ecdf":
+        fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
+    if method == "fair":
+        fcst_spread_term = fcst_spread_term / (2 * ens_count * (ens_count - 1))
+
+    # calculate final CRPS for each forecast case
+    fcst_obs_term = np.abs(fcst - obs).mean(ensemble_member_dim)
+    result = fcst_obs_term - fcst_spread_term
+
+    # apply weights and take means across specified dims
+    result = scores.functions.apply_weights(result, weights).mean(dim=dims_for_mean)
+
+    return result

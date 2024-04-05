@@ -7,13 +7,10 @@ Types of contributions include bug reports, merge requests, feature requests, an
 These guidelines aim to make it clear how to collaborate effectively.
 
 ## Roadmap
-
-1. Further development of examples and demonstrations for new users
-2. Set up of readthedocs and travis-ci
-3. Add further tests for NaNs and missing data
-4. Addition of more standard metrics
-5. Addition of more novel metrics
-6. Performance review and tests for dask
+1. Addition of more scores, metrics and statistical techniques
+2. Further optimisation and performance improvements
+3. Increased support for machine learning library integration
+4. Additional notebooks exploring complex use cases in depth
 
 ## Bug Reports and Feature Requests
 
@@ -61,11 +58,10 @@ pytest
 ### `conda`-based virtual environment
 
 ```bash
-# overwrite default name `scores` with `-n <new-name>` if desired
+# overwrite default name `scoresenv` with `-n <new-name>` if desired
 conda env create -f environment.yml
-conda activate scores
-# re-install as editable if desired
-pip install -e .
+conda activate scoresenv
+pip install -e .[all]
 pytest
 ```
 
@@ -88,7 +84,7 @@ python -m build
 pip install dist/<my_latest_package>.whl
 ```
 
-### Setup `pre-commit` (Optional)
+### Setup `pre-commit` (Optional) <a name="pre-commit"></a>
 
 To automate linter and fixer checks this project uses `pre-commit` which is setup to execute after every local commit. This ensures that code standards are flagged at the development stage rather than in the project CI/CD pipeline. Although it is optional we highly recommended to use the tool before pushing changes to the remote.
 
@@ -96,7 +92,7 @@ To automate linter and fixer checks this project uses `pre-commit` which is setu
 pre-commit install -t pre-commit -t pre-push
 ```
 
-### Coding Practises
+### Coding Practices
 
 Pylint and black should be used at all times to ensure a consistent approach to coding. Isort should be used for the ordering of import statements. All merge requests will be checked prior to acceptance. The project will include configuration files which may be used to capture any overrides to convention that may be adoped.
 
@@ -152,4 +148,3 @@ A science review should answer the following questions:
 3. Does the implementation look correct if read at face value (i.e. detailed knowledge of libraries not required)?
 4. Are any issues of scientific interpretation explained (i.e. if multiple mathematical interpretations of a method are reasonable, is this made clear)?
 5. Are the examples contained in the tutorial well-explained and relevant?
-

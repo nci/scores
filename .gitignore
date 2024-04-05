@@ -5,3 +5,11 @@ build/
 .coverage
 src/scores.egg-info/
 tutorials/.ipynb_checkpoints/
+.vscode
+htmldocs/
+maintainernotes.md
+tutorials/auspopn.zip
+tutorials/analysis_grid.nc
+tutorials/forecast_grid.nc
+report.xml
+*.swp

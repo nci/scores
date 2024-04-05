@@ -4,6 +4,8 @@ repos:
   rev: 23.3.0
   hooks:
     - id: black
+      name: black
+      entry: black --check
 # use local version of package with core deps to avoid import-errors from virtual env
 - repo: local
   hooks:

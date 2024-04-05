@@ -2,8 +2,8 @@
 This module contains a variety of functions which modify data in various ways to process data structures
 to support probablistic verification.
 """
-
-from typing import Iterable, Literal, Optional
+from collections.abc import Iterable
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -13,13 +13,21 @@ from scores.probability.checks import (
     cdf_values_within_bounds,
     check_nan_decreasing_inputs,
 )
+from scores.typing import XarrayLike
 
 
 def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
     """Round data array to specified precision.
 
+    Rounding is done differently to `xarray.DataArray.round` or `numpy.round` where
+    the number of decimal places is specified in those cases. Instead, here the rounding
+    precision is specified as a float. The value is rounded to the nearest value that is
+    divisible by `rounding_precision`.
+
+    For example, 3.73 rounded to precision 0.2 is 3.8, and 37.3 rounded to precision 20
+    is 40.
+
     Assumes that rounding_precision >=0, with 0 indicating no rounding to be performed.
-    For example, 3.73 rounded to precision 0.2 is 3.8.
     If rounding_precision > 0, a final round to `final_round_decpl` decimal places is performed
     to remove artefacts of python rounding process.
 
@@ -45,7 +53,7 @@ def round_values(array: xr.DataArray, rounding_precision: float, final_round_dec
     return array
 
 
-def propagate_nan(cdf: xr.DataArray, threshold_dim: str) -> xr.DataArray:
+def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
     """Propagates the NaN values from a "cdf" variable along the `threshold_dim`.
 
     Args:
@@ -62,7 +70,7 @@ def propagate_nan(cdf: xr.DataArray, threshold_dim: str) -> xr.DataArray:
     if threshold_dim not in cdf.dims:
         raise ValueError(f"'{threshold_dim}' is not a dimension of `cdf`")
 
-    where_nan = np.isnan(cdf).any(dim=threshold_dim)
+    where_nan = xr.DataArray(np.isnan(cdf)).any(dim=threshold_dim)
     result = cdf.where(~where_nan, np.nan)
     return result
 
@@ -99,13 +107,15 @@ def observed_cdf(
     if precision < 0:
         raise ValueError("`precision` must be nonnegative.")
 
-    if np.isnan(obs).all() and (threshold_values is None or np.isnan(threshold_values).all()):
+    threshold_values_as_array = np.array(threshold_values)
+
+    if np.isnan(obs).all() and (threshold_values is None or np.isnan(threshold_values_as_array).all()):
         raise ValueError("must include non-NaN observations in thresholds or supply threshold values")
 
     if precision > 0:
         obs = round_values(obs, precision)
 
-    thresholds = threshold_values if threshold_values is not None else []
+    thresholds = threshold_values_as_array if threshold_values is not None else []
 
     if include_obs_in_thresholds:
         thresholds = np.concatenate((obs.values.flatten(), thresholds))

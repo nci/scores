@@ -4,4 +4,4 @@ The scores package is not intended to function as a security boundary, checker o
 
 Security issues themselves should not be raised as issues on the public tracker. 
 
-Instead, send an email to jive@bom.gov.au and your concerns will be acted upon.
+Instead, send an email to scores@bom.gov.au and your concerns will be acted upon.

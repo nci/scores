@@ -1,25 +1,28 @@
 """
 This module contains methods which may be used for scoring multicategorical forecasts
 """
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
 
-from scores.utils import check_dims, dims_complement, gather_dimensions
 from scores.functions import apply_weights
+from scores.typing import FlexibleDimensionTypes
+from scores.utils import check_dims, gather_dimensions
 
 
-def firm(
+def firm(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     risk_parameter: float,
     categorical_thresholds: Sequence[float],
     threshold_weights: Sequence[Union[float, xr.DataArray]],
     discount_distance: Optional[float] = 0,
-    reduce_dims: Optional[Sequence[str]] = None,
-    preserve_dims: Optional[Sequence[str]] = None,
-    weights: Optional[xr.DataArray]=None
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights: Optional[xr.DataArray] = None,
+    threshold_assignment: Optional[str] = "lower",
 ) -> xr.Dataset:
     """
     Calculates the FIxed Risk Multicategorical (FIRM) score including the
@@ -63,6 +66,9 @@ def firm(
             supplied. The default behaviour if neither are supplied is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
+        threshold_assignment: Specifies whether the intervals defining the categories are
+            left or right closed. That is whether the decision threshold is included in
+            the upper (left closed) or lower (right closed) category. Defaults to "lower".
 
     Returns:
         An xarray Dataset with data vars:
@@ -97,22 +103,18 @@ def firm(
         Journal of the Royal Meteorological Society, 148(744), pp.1389-1406.
     """
     _check_firm_inputs(
-        obs,
-        risk_parameter,
-        categorical_thresholds,
-        threshold_weights,
-        discount_distance,
+        obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
     )
     total_score = []
     for categorical_threshold, weight in zip(categorical_thresholds, threshold_weights):
         score = weight * _single_category_score(
-            fcst, obs, risk_parameter, categorical_threshold, discount_distance
+            fcst, obs, risk_parameter, categorical_threshold, discount_distance, threshold_assignment
         )
         total_score.append(score)
     summed_score = sum(total_score)
     reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims, preserve_dims
-    )
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )  # type: ignore[assignment]
     summed_score = apply_weights(summed_score, weights)
     score = summed_score.mean(dim=reduce_dims)
 
@@ -120,11 +122,7 @@ def firm(
 
 
 def _check_firm_inputs(
-    obs,
-    risk_parameter,
-    categorical_thresholds,
-    threshold_weights,
-    discount_distance,
+    obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
 ):
     """
     Checks that the FIRM inputs are suitable
@@ -133,9 +131,7 @@ def _check_firm_inputs(
         raise ValueError("`categorical_thresholds` must have at least one threshold")
 
     if not len(categorical_thresholds) == len(threshold_weights):
-        raise ValueError(
-            "The length of `categorical_thresholds` and `weights` must be equal"
-        )
+        raise ValueError("The length of `categorical_thresholds` and `weights` must be equal")
     if risk_parameter <= 0 or risk_parameter >= 1:
         raise ValueError("0 < `risk_parameter` < 1 must be satisfied")
 
@@ -151,9 +147,12 @@ def _check_firm_inputs(
                 )
         elif weight <= 0:
             raise ValueError("All values in `weights` must be > 0")
-    if discount_distance is not None:
-        if discount_distance < 0:
-            raise ValueError("`discount_distance` must be >= 0")
+
+    if discount_distance < 0:
+        raise ValueError("`discount_distance` must be >= 0")
+
+    if threshold_assignment not in ["upper", "lower"]:
+        raise ValueError(""" `threshold_assignment` must be either \"upper\" or \"lower\" """)
 
 
 def _single_category_score(
@@ -161,7 +160,8 @@ def _single_category_score(
     obs: xr.DataArray,
     risk_parameter: float,
     categorical_threshold: float,
-    discount_distance: float,
+    discount_distance: Optional[float] = None,
+    threshold_assignment: Optional[str] = "lower",
 ) -> xr.Dataset:
     """
     Calculates the score for a single category for the `firm` metric at each
@@ -180,6 +180,9 @@ def _single_category_score(
             discounted whenever the observation is within distance
             `discount_distance` of the forecast category. A value of 0
             will not a apply any discounting.
+        threshold_assignment: Specifies whether the intervals defining the categories are
+            left or right closed. That is whether the decision threshold is included in
+            the upper (left closed) or lower (right closed) category. Defaults to "lower".
 
     Returns:
         An xarray Dataset with data vars:
@@ -192,10 +195,16 @@ def _single_category_score(
     # pylint: disable=unbalanced-tuple-unpacking
     fcst, obs = xr.align(fcst, obs)
 
-    # False Alarms
-    condition1 = (obs <= categorical_threshold) & (categorical_threshold < fcst)
-    # Misses
-    condition2 = (fcst <= categorical_threshold) & (categorical_threshold < obs)
+    if threshold_assignment == "lower":
+        # False Alarms
+        condition1 = (obs <= categorical_threshold) & (categorical_threshold < fcst)
+        # Misses
+        condition2 = (fcst <= categorical_threshold) & (categorical_threshold < obs)
+    else:
+        # False Alarms
+        condition1 = (obs < categorical_threshold) & (categorical_threshold <= fcst)
+        # Misses
+        condition2 = (fcst < categorical_threshold) & (categorical_threshold <= obs)
 
     # Bring back NaNs
     condition1 = condition1.where(~np.isnan(fcst))
