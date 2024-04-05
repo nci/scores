@@ -336,7 +336,7 @@ def test__quantile_elementary_score():
     theta = _rel_test_array(data=[[0, 2]] * 3, theta=[0, 2])
     alpha = 0.1
 
-    result = murphy._quantile_elementary_score(fcst, obs, theta, alpha)
+    result = murphy._quantile_elementary_score(fcst, obs, theta, alpha)  # pylint: disable=protected-access
 
     assert len(result) == 2
     np.testing.assert_equal(result[0], np.array([[np.nan, np.nan], [np.nan, np.nan], [np.nan, 0.9]]))
@@ -350,7 +350,7 @@ def test__huber_elementary_score():
     theta = _rel_test_array(data=[[0, 2]] * 3, theta=[0, 2])
     alpha = 0.1
 
-    result = murphy._huber_elementary_score(fcst, obs, theta, alpha, huber_a=0.5)
+    result = murphy._huber_elementary_score(fcst, obs, theta, alpha, huber_a=0.5)  # pylint: disable=protected-access
 
     assert len(result) == 2
     np.testing.assert_equal(result[0], np.array([[np.nan, np.nan], [np.nan, np.nan], [np.nan, 0.45]]))
@@ -364,7 +364,7 @@ def test__expectile_elementary_score():
     theta = _rel_test_array(data=[[0, 2]] * 3, theta=[0, 2])
     alpha = 0.1
 
-    result = murphy._expectile_elementary_score(fcst, obs, theta, alpha)
+    result = murphy._expectile_elementary_score(fcst, obs, theta, alpha)  # pylint: disable=protected-access
 
     assert len(result) == 2
     np.testing.assert_equal(result[0], np.array([[np.nan, np.nan], [np.nan, np.nan], [np.nan, 0.9]]))
@@ -376,11 +376,11 @@ def test__expectile_elementary_score():
     (
         [
             {"alpha": 0},
-            "alpha (=0) argument for Murphy scoring function should be strictly " "between 0 and 1.",
+            "alpha (=0) argument for Murphy scoring function should be strictly between 0 and 1.",
         ],
         [
             {"alpha": 1},
-            "alpha (=1) argument for Murphy scoring function should be strictly " "between 0 and 1.",
+            "alpha (=1) argument for Murphy scoring function should be strictly between 0 and 1.",
         ],
         [
             {"functional": "?"},

@@ -263,7 +263,7 @@ def test_crps_cdf_reformat_inputs(
             None,
             "Dimensions of `threshold_weight` must be a subset of dimensions of `fcst`",
         ),
-        # TODO: Revisit if still needed after more handling in gather_dimensions
+        # FIXLATER: Revisit if still needed after more handling in gather_dimensions
         # (
         #     crps_test_data.DA_FCST_REFORMAT1,
         #     crps_test_data.DA_OBS_REFORMAT1,

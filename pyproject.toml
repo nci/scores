@@ -122,7 +122,7 @@ ignore-paths = [
 max-args=10
 
 [tool.pylint.FORMAT]
-max-line-length=130  # Deliberately "too long" to avoid disagreements with black formatter
+max-line-length=150  # Deliberately "too long" to avoid disagreements with black formatter
 
 [tool.pylint.messages_control]
 good-names=['df','da','x','y','z','i','j','k','ae']  # pylint: disable=E0015
