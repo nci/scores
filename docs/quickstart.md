@@ -1,13 +1,13 @@
-# Quick Start Guide (with Tutorials)
+# Quick Start Guide 
 
-Install and run tutorials, from a local checkout
+A quick way to get access to the metrics and the tutorials is to do the following:
 
 ```bash
 git clone git@github.com:nci/scores.git
 python3 -m venv <path_to_environment>
 source <path_to_environment>/bin/activate
-# Note - specifying [tutorial] includes dependencies for running the Jupyter Lab server. #
-pip install -e .[tutorial]   
+# Note - specifying [all] includes dependencies for running the Jupyter Lab server. #
+pip install -e .[all]   
 cd tutorials
 jupyter lab
 ```

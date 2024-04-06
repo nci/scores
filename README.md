@@ -11,7 +11,7 @@ Currently Included Metrics and Tools:
 | ----------                      | ----------- | -----------      | ----------------- |
 | MAE, MSE, RMSE, Flip Flop Index, Quantile Score, Isotonic Regression, Pearsons correlation coefficient  | CRPS for CDF, CRPS for ensemble, ROC, Brier score   | FIRM, POD, POFD  |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
-**Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
+**Notice -- This repository is currently undergoing initial construction and maintenance. It is getting much closer to our goals for version one, but there are a few more things to add. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
 Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io).  
 Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).  
@@ -29,7 +29,7 @@ All interactions in discussions, issues, emails and code (e.g. merge requests, c
 
 ## Using This Package
 
-The [installation guide](docs/installation.md) describes four different use cases for installing, using and working with this package.
+The [installation guide](https://scores.readthedocs.io/en/latest/installation.html) describes four different use cases for installing, using and working with this package.
 
 Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial notebooks and development libraries.
 
