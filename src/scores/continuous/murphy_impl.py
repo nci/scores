@@ -2,7 +2,7 @@
 Murphy score
 """
 from collections.abc import Sequence
-from typing import Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -18,7 +18,7 @@ VALID_SCORING_FUNC_NAMES = [QUANTILE, HUBER, EXPECTILE]
 SCORING_FUNC_DOCSTRING_PARAMS = {fun.upper(): fun for fun in VALID_SCORING_FUNC_NAMES}
 
 
-def murphy_score(
+def murphy_score(  # pylint: disable=R0914
     fcst: xr.DataArray,
     obs: xr.DataArray,
     thetas: Union[Sequence[float], xr.DataArray],
@@ -98,10 +98,12 @@ def murphy_score(
     if isinstance(thetas, xr.DataArray):
         theta1 = thetas
     else:
-        theta1 = xr.DataArray(data=thetas, dims=["theta"], coords=dict(theta=thetas))
+        theta1 = xr.DataArray(data=thetas, dims=["theta"], coords={"theta": thetas})
     theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
-    over, under = globals()[f"_{functional_lower}_elementary_score"](fcst1, obs1, theta1, alpha, huber_a=huber_a)
+    over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
+        fcst1, obs1, theta1, alpha, huber_a=huber_a
+    )
     # Align dimensions, this is required in cases such as when the station numbers
     # are not in the same order in `obs` and `fcst` to prevent an exception on the next
     # line that combines the scores
@@ -118,7 +120,7 @@ def murphy_score(
     for source, name in zip(sources, names):
         source.name = name
     result = xr.merge(sources)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     result = result.mean(dim=reduce_dims)
     return result
 
@@ -148,7 +150,7 @@ def _expectile_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType,
 
 def _check_murphy_inputs(alpha=None, functional=None, huber_a=None, left_limit_delta=None):
     """Raise ValueError if the arguments have unexpected values."""
-    if (alpha is not None) and not (0 < alpha < 1):
+    if (alpha is not None) and not (0 < alpha < 1):  # pylint: disable=C0325
         err = f"alpha (={alpha}) argument for Murphy scoring function should be strictly " "between 0 and 1."
         raise ValueError(err)
     if (functional is not None) and (functional not in VALID_SCORING_FUNC_NAMES):
@@ -215,14 +217,14 @@ def murphy_thetas(
     if (left_limit_delta is None) and (functional in ["huber", "expectile"]):
         left_limit_delta = 0
 
-    func = globals()[f"_{functional}_thetas"]
+    func = exposed_functions()[f"_{functional}_thetas"]
     result = func(
         forecasts=forecasts,
         obs=obs,
         huber_a=huber_a,
         left_limit_delta=left_limit_delta,
     )
-    return result
+    return result  # type: ignore
 
 
 def _quantile_thetas(forecasts, obs, **_):
@@ -251,3 +253,15 @@ def _expectile_thetas(forecasts, obs, *, left_limit_delta, **_):
     ufcasts_and_uobs = np.unique(np.concatenate([ufcasts, left_limit_points, obs.values.flatten()]))
     result = ufcasts_and_uobs[~np.isnan(ufcasts_and_uobs)]
     return list(result)
+
+
+def exposed_functions() -> dict[str, Callable[..., Any]]:
+    """Expose functions used in calculation for easy usage upon user arguments."""
+    return {
+        "_quantile_elementary_score": _quantile_elementary_score,
+        "_huber_elementary_score": _huber_elementary_score,
+        "_expectile_elementary_score": _expectile_elementary_score,
+        "_quantile_thetas": _quantile_thetas,
+        "_huber_thetas": _huber_thetas,
+        "_expectile_thetas": _expectile_thetas,
+    }

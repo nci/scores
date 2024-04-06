@@ -27,15 +27,17 @@ All interactions in discussions, issues, emails and code (e.g. merge requests, c
 
 ## Using This Package
 
-The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package.
+The [installation guide](docs/installation.md) describes four different use cases for installing, using and working with this package.
 
-Installation of the core mathematical API may be performed with:
+Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial notebooks and development libraries.
 
-```py
-> pip install scores
+From a Local Checkout of the Git Repository
+
+```bash
+> pip install -e .[all]
 ```
 
-Here is an example of the use of scores:
+Here is a short example of the use of scores:
 
 ```py
 > import scores
@@ -45,6 +47,12 @@ Here is an example of the use of scores:
 > print(mean_absolute_error)
 <xarray.DataArray ()>
 array(2.)
+```
+
+To install the mathematical functions ONLY (no tutorial notebooks, no developer libraries), use the *minimal* installation option. *minimal* is a stable version with limited dependencies and can be installed from the Python Package Index.
+
+```bash
+> pip install scores
 ```
 
 ## Related Packages

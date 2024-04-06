@@ -5,8 +5,11 @@ Contains unit tests for scores.continuous.standard
 # pylint: disable=missing-function-docstring
 # pylint: disable=line-too-long
 
-import dask
-import dask.array
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
+    dask = "Unavailable"  # pylint: disable=invalid-name
 import numpy as np
 import numpy.random
 import pandas as pd
@@ -457,20 +460,23 @@ def test_xarray_dimension_preservations_with_arrays():
     assert (reduce_empty == preserve_all).all()
 
 
-FCST_CHUNKED = xr.DataArray(
-    data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
-).chunk()
-OBS_CHUNKED = xr.DataArray(
-    data=np.array([[0, 0], [0, np.nan]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
-).chunk()
-
-
 # Dask tests
 def test_mse_with_dask():
     """
     Test that mse works with dask
     """
-    result = scores.continuous.mse(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    fcst_chunked = xr.DataArray(
+        data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+    ).chunk()
+    obs_chunked = xr.DataArray(
+        data=np.array([[0, 0], [0, np.nan]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+    ).chunk()
+
+    result = scores.continuous.mse(fcst_chunked, obs_chunked, reduce_dims="dim1")
     assert isinstance(result.data, dask.array.Array)  # type: ignore # Static analysis fails to recognise the type of 'result' correctly
     result = result.compute()  # type: ignore # Static analysis thinks this is a float, but it's a dask array
     assert isinstance(result.data, np.ndarray)
@@ -482,7 +488,18 @@ def test_mae_with_dask():
     """
     Test that mae works with dask
     """
-    result = scores.continuous.mae(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    fcst_chunked = xr.DataArray(
+        data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+    ).chunk()
+    obs_chunked = xr.DataArray(
+        data=np.array([[0, 0], [0, np.nan]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+    ).chunk()
+
+    result = scores.continuous.mae(fcst_chunked, obs_chunked, reduce_dims="dim1")
     assert isinstance(result.data, dask.array.Array)  # type: ignore
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
@@ -494,7 +511,18 @@ def test_rmse_with_dask():
     """
     Test that rmse works with dask
     """
-    result = scores.continuous.rmse(FCST_CHUNKED, OBS_CHUNKED, reduce_dims="dim1")
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    fcst_chunked = xr.DataArray(
+        data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+    ).chunk()
+    obs_chunked = xr.DataArray(
+        data=np.array([[0, 0], [0, np.nan]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
+    ).chunk()
+
+    result = scores.continuous.rmse(fcst_chunked, obs_chunked, reduce_dims="dim1")
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
@@ -632,6 +660,10 @@ def test_correlation_dask():
     """
     Tests continuous.correlation works with Dask
     """
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = scores.continuous.correlation(DA3_CORR.chunk(), DA2_CORR.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()

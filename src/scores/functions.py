@@ -1,3 +1,6 @@
+"""
+Contains functions which transform data or perform calculations
+"""
 from typing import overload
 
 import numpy as np
@@ -56,7 +59,7 @@ def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset
 
 # DataArray input types lead to a DataArray return type
 @overload
-def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:
+def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:  # type: ignore
     ...
 
 

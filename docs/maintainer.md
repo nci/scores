@@ -6,13 +6,34 @@ Information relevant for package maintenance
 
 1. Run through the notebooks manually
 2. Run the unit tests
-3. Prepare the merge request in github (do not do a rebase merge to main)
-4. Check readthedocs rebuilds correctly
+3. Prepare the merge request in github (do not do a rebase merge to main -- do a regular merge commit)
+4. Check readthedocs rebuilds correctly, including manually checking the version number looks right
 5. Prepare the PyPI update (should move to a Github Action)
 6. Perform the PyPI update (should move to a Github Action)
 
+### Creating the Package Files Locally
 
-## This section covers how to build the documentation
+1. Create a new virtual environment
+2. Make sure you check out the 'main' branch'
+3. Install scores[all] and scores[maintainer]
+4. Run the tests again, just for surety
+5. Run 'hatch build'. This will make the release files (sdist and wheel).
+
+### Updating PyPI Manually
+6. Run python3 -m keyring --disable 
+7. Run hatch publish -r test
+8. Create a new virtual env, and install the test scores with `python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple scores`
+9. Do a little manual testing
+10. Run hatch publish
+11. Uninstall the test scores, re-install the now-updated package, do a little testing
+
+### Updating GitHub with a tagged release
+12. Go click on the "releases" area of the front page
+13. Follow the 'create release' workflow, and create a tag at the same time
+
+
+## This section covers how to build the documentation locally. 
+(Readthedocs should update automatically from a GitHub Action)
 
 1. Tech stack for the documentation
 2. Information resources
