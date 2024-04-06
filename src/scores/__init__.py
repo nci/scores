@@ -11,7 +11,7 @@ import scores.probability
 import scores.sample_data
 import scores.stats.statistical_tests  # noqa: F401
 
-__version__ = "v0.6"
+__version__ = "v0.7"
 
 __all__ = [
     "scores.categorical",
