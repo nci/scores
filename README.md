@@ -13,7 +13,8 @@ Currently Included Metrics and Tools:
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
-Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io)
+Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io). 
+Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather.
 
