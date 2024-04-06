@@ -17,12 +17,19 @@ version = __version__
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser", "sphinx.ext.autodoc", "sphinx.ext.autosummary", "sphinx.ext.napoleon","nbsphinx", "sphinx_gallery.load_style"]
+extensions = [
+    "myst_parser",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+    "nbsphinx",
+    "sphinx_gallery.load_style",
+]
 source_suffix = [".rst", ".md"]
 
 templates_path = ["_templates"]
 exclude_patterns = [
-    '**/.ipynb_checkpoints',
+    "**/.ipynb_checkpoints",
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -30,7 +37,6 @@ exclude_patterns = [
 
 html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
-
 
 
 # -- nbsphinx ---------------------------------------------------------------
