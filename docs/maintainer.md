@@ -7,7 +7,7 @@ Information relevant for package maintenance
 1. Run through the notebooks manually
 2. Run the unit tests
 3. Prepare the merge request in github (do not do a rebase merge to main -- do a regular merge commit)
-4. Check readthedocs rebuilds correctly
+4. Check readthedocs rebuilds correctly, including manually checking the version number looks right
 5. Prepare the PyPI update (should move to a Github Action)
 6. Perform the PyPI update (should move to a Github Action)
 
