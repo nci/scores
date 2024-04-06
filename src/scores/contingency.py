@@ -69,12 +69,6 @@ def make_category_table(proximity, category_operator):
 	table = category_operator.make_table(proximity)
 	return table
 
-# class ContingencyTable(xarray.DataArray):
-# 	pass
-
-# class CategoryTable(xarray.DataArray):
-# 	pass
-
 class BinaryContingencyTable():
 	'''
 	At each location, the value will either be:

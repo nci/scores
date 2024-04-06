@@ -93,7 +93,7 @@ def test_nearby_binary_table():
 
 	# Ideally would check the nature of this failure but for now a non-match will do
 	with pytest.raises(AssertionError):
-		assert_dataarray_equal(found.table, exact_matches)
+		assert_dataarray_equal(found.table, exact_matches)		
 
 
 def test_categorical_table():
@@ -107,13 +107,6 @@ def test_categorical_table():
 	misses = table.misses()
 	assert misses == 2
 
-
-
-# 	assert_dataarray_equal(table2, somewhat_near_matches)
-
-# 	# Ideally would check the nature of this failure but for now a non-match will do
-# 	with pytest.raises(AssertionError):
-# 		assert_dataarray_equal(table2, exact_matches)		
 
 def test_dask_if_available():
 	'''
