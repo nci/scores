@@ -1,112 +1,95 @@
-# Installation Guide
+# Detailed Installation Guide
 
-It is recommended to use a virtualised Python environment in most settings. The package can be easily installed using pip. The base requirements of the package are kept to a minimum to reduce the likelihood of conflicts. This project relies on a relatively recent version of pip, so you might need to upgrade pip within your virtual environment. If this is required, the installation process will automatically prompt you to do so, including the commands required. This is a simple and reliable step which will apply onto to your virtual environment.
+This page describes the most common installation options for `scores`. Expert users of pip and conda will note that there are more variations possible.
 
-The basic installation includes only the most essential requirements, so as to not require users to include many complex dependencies.
+## Setting up a Virtual Environment
 
-There are 5 different types of environments which can be installed in `scores`: 
+In almost all cases, it is recommended to use a virtualised Python environment. 
 
-- core: only contains mathematical functions
-- tutorial: includes jupyter lab and ability to run all the notebooks
-- development: includes pylint, black and other development tools
-- all: includes requirements for core, tutorial and development, but excludes maintainer requirements
-- maintainer: includes tools for building the documentation and building for PyPI
+`scores` can be easily installed using either venv/pip or conda/pip. The requirements of `scores` are kept to a minimum to reduce the likelihood of conflicts. 
 
+`scores` relies on a relatively recent version of pip, so you might need to upgrade pip within your virtual environment. If this is required, the `scores` installation process will automatically prompt you to do so, including the commands required. Upgrading pip within a virtual environment is straightforward, reliable and the pip upgrade will only apply within the virtual environment.
 
-## 1. Core Environment 
+Here is a command to create and activate a new virtual environment with *virtualenv*:
+
+```py
+python -m venv <path_to_environment>
+source <path_to_environment>/bin/activate
+```
+
+Here is a command to create and activate a new virtual environment with *conda*
+```py
+conda create -p <path_to_enviroment> python=3
+conda activate <path_to_environment>
+
+```
+
+## Installation Options
+
+Most users will want the "all" installation option. There are also more specialised options for those who need them.  
+
+The 4 supported installation options are:
+
+- all: contains mathematical functions, tutorials and development libraries. Excludes maintainer requirements.
+- minimal: ONLY contains mathematical functions (so has limited dependencies).
+- tutorial: ONLY contains mathematical functions and tutorials.
+- maintainer: ONLY contains tools for building the documentation and building for PyPI.
+
+### 1. "All" Dependencies (excludes some maintainer-only packages)
+
+Use this for `scores` development and general use.
 
 Installs:
-* `scores` package
-* Only the required core dependencies, nothing extra, no tutorials
+* Mathematical API code and libraries
+* Everything needed to run the tutorial notebooks
+* Testing, static analysis and other developer libraries
+* Does **not** install tools for making packages and releasing new versions
 
-> **_NOTE:_** Use this environment if you are unsure about what package you require.
+#### From a Local Checkout of the Git Repository
 
-### from PyPI
+```bash
+pip install -e .[all]
+```
+
+### 2. "Minimal" Dependencies (Mathematical API Functions Only)
+Use this to install the `scores` code into another package or system.
+
+Installs:
+* Mathematical API functions and libraries
+* Only the required core dependencies. Nothing extra - no tutorials, no developer requirements.
+* (Note for high-performance users - dask is not included by default in the minimal install, but will be used if installed into the environment)
+
+#### From PyPI
 
 ```bash
 pip install scores
 ```
 
-### from local git repository
-
-```bash
-pip install .
-```
-
-## 2. Tutorial Environment 
+### 3. "Tutorial" Dependencies
+Use this for running tutorials using `scores`, but when you don't need or want developer tools.
 
 Installs:
-* core dependencies
-* Dependencies for running the tutorial notebooks with jupyter lab
+* Mathematical API functions and libraries
+* Jupyter Lab, Plotly, and libraries for reading data, so that the tutorial notebooks can be run
 
-### PyPI
-
-```bash
-pip install scores[tutorial]
-```
-
-### Local git repository
+#### From a Local Git Repository
 
 ```bash
 pip install .[tutorial]
 ```
 
-## 3. Development Environment 
+### 4. "Maintainer" Dependencies
+Use this to build the docs, create packages and prepare new versions for release.
 
 Installs:
-* core dependencies
-* Dependencies for development on the git repository
-  * i.e running tests suite, linters, etc
-
-### PyPI
-
-```bash
-pip install scores[dev]
-```
-
-### Local git repository
-
-```bash
-pip install .[dev]
-```
-
-## 4. All Non-Maintainer Dependencies 
-
-Installs:
-* core dependencies
-* development dependencies
-* tutorial dependencies
-
-### From PyPI
-
-```bash
-pip install scores[all]
-```
-
-### Local git repository
-
-```bash
-pip install .[all]
-```
-
-
-## 5. Maintainer Environment 
-
-Installs:
-* core dependencies
+* Mathematical API functions and libraries
 * Dependencies for building new versions of the `scores` package
 * Dependencies for building the documentation as HTML
 
-### PyPI
+#### From a Local Git Repository
 
 ```bash
-pip install scores[maintainer]
-```
-
-### Local git repository
-
-```bash
-pip install .[maintainer]
+pip install -e .[maintainer]
 ```
 
 
