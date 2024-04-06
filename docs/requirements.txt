@@ -6,3 +6,6 @@ xarray
 pandas
 scipy
 bottleneck
+nbsphinx
+sphinx_gallery
+
