@@ -13,8 +13,9 @@ Currently Included Metrics and Tools:
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
-Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io). 
-Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).
+Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io).  
+Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).  
+The tutorial gallery is hosted at [as part of the documentation, here](https://scores.readthedocs.io/en/develop/tutorials/Explanation.html).
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather.
 
@@ -24,7 +25,7 @@ Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).
 
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
-All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
+All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
 ## Using This Package
 
