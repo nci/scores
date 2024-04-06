@@ -54,7 +54,8 @@ maintainer = ["build",
               "sphinx",
               "myst-parser",
               "sphinx-book-theme",
-              "twine"
+              "twine",
+              "pip-tools",
 ]
 all = ["scores[dev,tutorial]"]
 

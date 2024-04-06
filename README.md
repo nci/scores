@@ -1,5 +1,7 @@
 # About the Scores Project
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/HEAD?labpath=tutorials%2FExplanation.ipynb)
+
 One-line intro: xarray based verification (accuracy) scoring that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
@@ -9,9 +11,11 @@ Currently Included Metrics and Tools:
 | ----------                      | ----------- | -----------      | ----------------- |
 | MAE, MSE, RMSE, Flip Flop Index, Quantile Score, Isotonic Regression, Pearsons correlation coefficient  | CRPS for CDF, CRPS for ensemble, ROC, Brier score   | FIRM, POD, POFD  |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
-**Notice -- This repository is currently undergoing initial construction and maintenance. It is not yet recommended for use. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
+**Notice -- This repository is currently undergoing initial construction and maintenance. It is getting much closer to our goals for version one, but there are a few more things to add. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
-Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io)
+Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io).  
+Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).  
+The tutorial gallery is hosted at [as part of the documentation, here](https://scores.readthedocs.io/en/latest/tutorials/Explanation.html).
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of model outputs and predictions. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather.
 
@@ -21,19 +25,21 @@ Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io
 
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
-All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
+All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
 ## Using This Package
 
-The [installation guide](docs/installation.md) contains information on the various ways of installing, using and working with this package.
+The [installation guide](https://scores.readthedocs.io/en/latest/installation.html) describes four different use cases for installing, using and working with this package.
 
-Installation of the core mathematical API may be performed with:
+Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial notebooks and development libraries.
 
-```py
-> pip install scores
+From a Local Checkout of the Git Repository
+
+```bash
+> pip install -e .[all]
 ```
 
-Here is an example of the use of scores:
+Here is a short example of the use of scores:
 
 ```py
 > import scores
@@ -43,6 +49,12 @@ Here is an example of the use of scores:
 > print(mean_absolute_error)
 <xarray.DataArray ()>
 array(2.)
+```
+
+To install the mathematical functions ONLY (no tutorial notebooks, no developer libraries), use the *minimal* installation option. *minimal* is a stable version with limited dependencies and can be installed from the Python Package Index.
+
+```bash
+> pip install scores
 ```
 
 ## Related Packages
