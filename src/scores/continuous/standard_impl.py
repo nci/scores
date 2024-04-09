@@ -6,7 +6,8 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
+from scores.processing import broadcast_and_match_nan
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 
 def mse(
@@ -206,7 +207,7 @@ def correlation(
     obs: xr.DataArray,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
-) -> FlexibleArrayType:
+) -> xr.DataArray:
     """
     Calculates the Pearson's correlation coefficient between two xarray DataArrays
 
@@ -223,9 +224,98 @@ def correlation(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
+    Retruns:
+        An xarray object with Pearson's correlation coefficient values
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
 
     return xr.corr(fcst, obs, reduce_dims)
+
+
+def additive_bias(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: XarrayLike = None,
+    preserve_dims: XarrayLike = None,
+    weights: XarrayLike = None,
+):
+    """
+    Calculates the additive bias which is also sometimes called the mean error.
+
+    See "Mean error" section at https://www.cawcr.gov.au/projects/verification/ for more information
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the additive bias. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the additive bias. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        An xarray object with the additive bias of a forecast.
+
+    """
+    error = fcst - obs
+    score = scores.functions.apply_weights(error, weights)
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+    score = score.mean(dim=reduce_dims)
+    return score
+
+
+def multiplicative_bias(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: XarrayLike = None,
+    preserve_dims: XarrayLike = None,
+    weights: XarrayLike = None,
+):
+    """
+    Calculates the multiplicative bias which is also sometimes called the mean error.
+
+    Most suited for forecasts that have a lower bound at 0 such as wind speed. Will return
+    a np.inf where the mean of `obs` across the dims to be reduced is 0.
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the multiplicative bias. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the multiplicative bias. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        An xarray object with the multiplicative bias of a forecast.
+
+    """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+    fcst = scores.functions.apply_weights(fcst, weights)
+    obs = scores.functions.apply_weights(obs, weights)
+
+    # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
+    # same points
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
+    multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    return multi_bias
