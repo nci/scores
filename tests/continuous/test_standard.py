@@ -745,6 +745,11 @@ EXP_BIAS6 = xr.DataArray(
 )
 EXP_BIAS7 = xr.DataArray(np.array((2.5 / 8) / (15.5 / 8)))
 
+DS_BIAS1 = xr.Dataset({"a": DA1_BIAS, "b": DA2_BIAS})
+DS_BIAS2 = xr.Dataset({"a": DA2_BIAS, "b": DA1_BIAS})
+EXP_DS_BIAS1 = xr.Dataset({"a": EXP_BIAS1, "b": -EXP_BIAS1})
+EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
+
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
@@ -757,6 +762,8 @@ EXP_BIAS7 = xr.DataArray(np.array((2.5 / 8) / (15.5 / 8)))
         (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_BIAS1),
         # Reduce all
         (DA1_BIAS, DA2_BIAS, None, None, None, EXP_BIAS3),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_BIAS1),
     ],
 )
 def test_additive_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
@@ -796,6 +803,8 @@ def test_additive_bias_dask():
         (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_BIAS4),
         # Reduce all
         (DA1_BIAS, DA2_BIAS, None, None, None, EXP_BIAS7),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_BIAS2),
     ],
 )
 def test_multiplicative_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
