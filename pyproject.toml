@@ -108,7 +108,8 @@ addopts = [
     '--ignore=tutorials/Mean_Squared_Error.ipynb',
     '--ignore=tutorials/Root_Mean_Squared_Error.ipynb',
     '--ignore=tutorials/Weighting_Results.ipynb',
-    '--ignore=tutorials/Mean_Absolute_Error.ipynb'
+    '--ignore=tutorials/Mean_Absolute_Error.ipynb',
+    '--ignore=tutorials/Bias.ipynb'
 ]
 
 [tool.pylint.master]
