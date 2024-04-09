@@ -94,32 +94,78 @@ class BinaryContingencyTable():
 		self.forecast_events = forecast_events
 		self.observed_events = observed_events
 
-		self.tp = (self.forecast_events == 1) & (self.observed_events == 1)
-		self.tn = (self.forecast_events == 0) & (self.observed_events == 0)
-		self.fp = (self.forecast_events == 1) & (self.observed_events == 0)
-		self.fn = (self.forecast_events == 0) & (self.observed_events == 1)
+		self.tp = (self.forecast_events == 1) & (self.observed_events == 1)  # true positives
+		self.tn = (self.forecast_events == 0) & (self.observed_events == 0)  # true negatives
+		self.fp = (self.forecast_events == 1) & (self.observed_events == 0)  # false positives
+		self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
 
-	def hits(self):
-		'''
-		Sum of the true positives and the true negatives
-		'''
-		result = self.tp.sum() + self.tn.sum()
-		return result.values.item()
+		# Variables for count-based metrics, calculated on first access
+		self.tp_count = self.tp.sum().values.item()     # Count of true positives
+		self.tn_count = self.tn.sum().values.item()     # Count of true negatives
+		self.fp_count = self.fp.sum().values.item()     # Count of false positives
+		self.fn_count = self.fn.sum().values.item()     # Count of true negatives
+		self.total_count = self.tp_count + self.tn_count + self.fp_count + self.fn_count
 
-	def misses(self):
+	def accuracy(self) -> float:
 		'''
-		Sum of the false positives and the false negatives
+		The proportion of forecasts which are true
 		'''
-		result = self.fp.sum() + self.fn.sum()
-		return result
 
-	def accuracy(self):
+		correct_count = self.tp_count + self.tn_count
+		ratio = correct_count / self.total_count
+		return ratio
+
+	def frequency_bias(self) -> float:
 		'''
-		The proportion of results which are correct
 		'''
-		hits = self.hits()
-		misses = self.misses()
-		return self.hits / (self.hits + self.misses)
+		freq_bias = (self.tp_count + self.fp_count) / (self.tp_count + self.fn_count)
+		return freq_bias
+
+	def probability_of_detection(self) -> float:
+		'''
+		What proportion of the observed events where correctly forecast?
+		Range: 0 to 1.  Perfect score: 1.
+		'''
+
+		pod = self.tp_count / (self.tp_count + self.fn_count)
+		return pod
+
+	def false_alarm_rate(self) -> float:
+		'''
+		What fraction of the non-events were incorrectly predicted?
+		Range: 0 to 1.  Perfect score: 0.
+		'''
+
+		far = self.fp_count / (self.tn_count + self.fp_count)
+		return far
+
+	def success_ratio(self) -> float:
+		'''
+		What proportion of the forecast events actually eventuated?
+		Range: 0 to 1.  Perfect score: 1.
+		'''
+
+		sr = self.tp_count / (self.tp_count + self.fp_count)
+		return sr
+
+	def threat_score(self) -> float:
+		'''
+		How well did the forecast "yes" events correspond to the observed "yes" events?
+		Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+		'''
+		ts = self.tp_count / (self.tp_count + self.fp_count + self.tn_count)
+		return ts
+
+	def sensitivity(self) -> float:
+		'''
+		What proportion of non-events were correctly predicted?
+		'''
+
+		s = self.tn_count / (self.tn_count + self.fp_count)
+		return s
+
+
+
 
 
 class BinaryTable():	
@@ -142,7 +188,7 @@ class BinaryTable():
 	def __init__(self, data):
 
 		bool_array = data.astype(bool)
-		self.table = xarray.DataArray(data)
+		self.table = xarray.DataArray(bool_array)
 			
 	def hits(self):
 		'''

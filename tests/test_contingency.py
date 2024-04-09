@@ -14,7 +14,7 @@ simple_forecast = xr.DataArray(
 		], 
 			[
 			[1.9, 1.0,  1.5], 
-			[1.7, 2.4,  3.8],
+			[1.7, 2.4,  1.1],
 			[1.4,  1.5, 3.3],
 		], 
 	],
@@ -63,7 +63,7 @@ somewhat_near_matches = xr.DataArray(
 		], 
 			[
 			[True, True, True], 
-			[True, True, True],
+			[True, True, False],
 			[True, False, False],
 		], 
 	],
@@ -101,11 +101,15 @@ def test_categorical_table():
 	match = scores.contingency.EventThresholdOperator()
 	table = match.make_table(simple_forecast, simple_obs, 1.3)
 
-	hits =  table.hits()
-	assert hits == 16
+	assert table.tp_count == 9
+	assert table.tn_count == 6
+	assert table.fp_count == 2	
+	assert table.fn_count == 1
+	assert table.total_count == 18
 
-	misses = table.misses()
-	assert misses == 2
+	assert table.accuracy() == (9 + 6) / 18
+	assert table.probability_of_detection() == 9 / (9+1)
+	assert table.false_alarm_rate() == 2 / (2 + 6)
 
 
 def test_dask_if_available():
