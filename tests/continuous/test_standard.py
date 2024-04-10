@@ -669,3 +669,163 @@ def test_correlation_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
+
+
+DA1_BIAS = xr.DataArray(
+    np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+DA2_BIAS = xr.DataArray(
+    np.array([[2, 2, 6], [2, 10, 0], [-0.5, 0.5, -0.5]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+DA3_BIAS = xr.DataArray(
+    np.array([[2, 2, 6], [2, 10, 0], [2, 0.5, -0.5]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+BIAS_WEIGHTS = xr.DataArray(
+    np.array([[1, 1, 1], [3, 0, 0], [3, 0, 0]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+EXP_BIAS1 = xr.DataArray(
+    np.array([-1, -4, 1 / 3]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_BIAS2 = xr.DataArray(
+    np.array([-1, -2, 1]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_BIAS3 = xr.DataArray(np.array(-1.625))
+
+EXP_BIAS4 = xr.DataArray(
+    np.array([1 / 2, 0, -1]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_BIAS5 = xr.DataArray(
+    np.array([2, np.inf, -1]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_BIAS6 = xr.DataArray(
+    np.array([1 / 2, 0, 1 / 4]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_BIAS7 = xr.DataArray(np.array((2.5 / 8) / (15.5 / 8)))
+
+DS_BIAS1 = xr.Dataset({"a": DA1_BIAS, "b": DA2_BIAS})
+DS_BIAS2 = xr.Dataset({"a": DA2_BIAS, "b": DA1_BIAS})
+EXP_DS_BIAS1 = xr.Dataset({"a": EXP_BIAS1, "b": -EXP_BIAS1})
+EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", None, EXP_BIAS1),
+        # Check weighting works
+        (DA1_BIAS, DA2_BIAS, None, "space", BIAS_WEIGHTS, EXP_BIAS2),
+        # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_BIAS1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, None, EXP_BIAS3),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_BIAS1),
+    ],
+)
+def test_additive_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
+    """
+    Tests continuous.additive_bias
+    """
+    result = scores.continuous.additive_bias(
+        fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
+    )
+    xr.testing.assert_equal(result, expected)
+
+
+def test_additive_bias_dask():
+    """
+    Tests that continuous.additive_bias works with Dask
+    """
+    fcst = DA1_BIAS.chunk()
+    obs = DA2_BIAS.chunk()
+    weights = BIAS_WEIGHTS.chunk()
+    result = scores.continuous.additive_bias(fcst, obs, preserve_dims="space", weights=weights)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_BIAS2)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", None, EXP_BIAS4),
+        # Check divide by zero returns a np.inf
+        (DA2_BIAS, DA1_BIAS, None, "space", None, EXP_BIAS5),
+        # Check weighting works
+        (DA1_BIAS, DA3_BIAS, None, "space", BIAS_WEIGHTS, EXP_BIAS6),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_BIAS4),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, None, EXP_BIAS7),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_BIAS2),
+    ],
+)
+def test_multiplicative_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
+    """
+    Tests continuous.multiplicative_bias
+    """
+    result = scores.continuous.multiplicative_bias(
+        fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
+    )
+    xr.testing.assert_equal(result, expected)
+
+
+def test_multiplicative_bias_dask():
+    """
+    Tests that continuous.multiplicative_bias works with Dask
+    """
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    weights = BIAS_WEIGHTS.chunk()
+    result = scores.continuous.multiplicative_bias(fcst, obs, preserve_dims="space", weights=weights)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_BIAS6)

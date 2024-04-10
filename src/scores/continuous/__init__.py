@@ -9,7 +9,14 @@ from scores.continuous.flip_flop_impl import (
 from scores.continuous.isoreg_impl import isotonic_fit
 from scores.continuous.murphy_impl import murphy_score, murphy_thetas
 from scores.continuous.quantile_loss_impl import quantile_score
-from scores.continuous.standard_impl import correlation, mae, mse, rmse
+from scores.continuous.standard_impl import (
+    additive_bias,
+    correlation,
+    mae,
+    mse,
+    multiplicative_bias,
+    rmse,
+)
 
 __all__ = [
     "flip_flop_index",
@@ -22,4 +29,6 @@ __all__ = [
     "mae",
     "mse",
     "rmse",
+    "additive_bias",
+    "multiplicative_bias",
 ]
