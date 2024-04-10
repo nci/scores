@@ -224,7 +224,7 @@ def correlation(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-    Retruns:
+    Returns:
         An xarray object with Pearson's correlation coefficient values
     """
     reduce_dims = scores.utils.gather_dimensions(
@@ -241,9 +241,15 @@ def additive_bias(
     reduce_dims: XarrayLike = None,
     preserve_dims: XarrayLike = None,
     weights: XarrayLike = None,
-):
+) -> XarrayLike:
     """
     Calculates the additive bias which is also sometimes called the mean error.
+
+    It is defined as
+    .. math::
+        \\text{Additive bias} =\\frac{1}{N}\sum_{i=1}^{N}(x_i - y_i)
+        \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
+
 
     See "Mean error" section at https://www.cawcr.gov.au/projects/verification/ for more information
 
@@ -282,13 +288,18 @@ def multiplicative_bias(
     reduce_dims: XarrayLike = None,
     preserve_dims: XarrayLike = None,
     weights: XarrayLike = None,
-):
+) -> XarrayLike:
     """
-    Calculates the multiplicative bias which is also sometimes called the mean error.
+    Calculates the multiplicative bias.
 
     Most suited for forecasts that have a lower bound at 0 such as wind speed. Will return
     a np.inf where the mean of `obs` across the dims to be reduced is 0.
+    It is defined as
+    .. math::
+        \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
+        \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
+    See "(Multiplicative) bias" section at https://www.cawcr.gov.au/projects/verification/ for more information
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.

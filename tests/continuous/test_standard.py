@@ -817,7 +817,7 @@ def test_multiplicative_bias(fcst, obs, reduce_dims, preserve_dims, weights, exp
     xr.testing.assert_equal(result, expected)
 
 
-def test_additive_bias_dask():
+def test_multiplicative_bias_dask():
     """
     Tests that continuous.multiplicative_bias works with Dask
     """
