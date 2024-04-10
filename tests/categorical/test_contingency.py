@@ -112,6 +112,25 @@ def test_categorical_table():
 	assert table.probability_of_detection() == 9 / (9+1)
 	assert table.false_alarm_rate() == 2 / (2 + 6)
 
+def test_categorical_table_dims_handling():	
+
+	match = scores.categorical.EventThresholdOperator()
+	table = match.make_table(simple_forecast, simple_obs, 1.3)
+
+	counts = table.generate_counts(preserve_dims=['height'])
+
+	acc_withheight =  table.accuracy(preserve_dims=['height']) 
+	assert acc_withheight.sel(height=10).sum().values.item() == 8 / 9
+	assert acc_withheight.sel(height=20).sum().values.item() == 7 / 9
+
+	# pod_withheight = table.probability_of_detection(preserve_dims=['height'])
+	# assert pod_withheight.sel(height=10).sum().values.item() == 9 / (9+1)
+	# assert pod_withheight.sel(height=20).sum().values.item() == 9 / (9+1)
+
+	# far_withheight = table.false_alarm_rate(preserve_dims=['height'])
+	# assert far_withheight is not None  # TODO: Add a value-asserting test
+
+
 
 def test_dask_if_available():
 	'''

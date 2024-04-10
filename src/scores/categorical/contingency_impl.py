@@ -59,6 +59,8 @@ CategoryTable.
 import operator
 import xarray
 
+import scores.utils
+
 DEFAULT_PRECISION = 8
 
 def make_binary_table(proximity, match_operator):
@@ -100,28 +102,46 @@ class BinaryContingencyTable():
 		self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
 
 		# Variables for count-based metrics, calculated on first access
-		self.tp_count = self.tp.sum().values.item()     # Count of true positives
-		self.tn_count = self.tn.sum().values.item()     # Count of true negatives
-		self.fp_count = self.fp.sum().values.item()     # Count of false positives
-		self.fn_count = self.fn.sum().values.item()     # Count of true negatives
+		self.tp_count = self.tp.sum()     # Count of true positives
+		self.tn_count = self.tn.sum()     # Count of true negatives
+		self.fp_count = self.fp.sum()     # Count of false positives
+		self.fn_count = self.fn.sum()     # Count of true negatives
 		self.total_count = self.tp_count + self.tn_count + self.fp_count + self.fn_count
 
-	def accuracy(self) -> float:
+	def generate_counts(self, *, reduce_dims=None, preserve_dims=None):
+
+		to_reduce = scores.utils.gather_dimensions(self.forecast_events.dims, self.observed_events.dims, 
+			reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+
+		cd = {
+			'tp_count': self.tp.sum(to_reduce),
+			'tn_count': self.tn.sum(to_reduce),
+			'fp_count': self.fp.sum(to_reduce),
+			'fn_count': self.fn.sum(to_reduce),
+		}
+		total = cd['tp_count'] + cd['tn_count'] + cd['fp_count'] + cd['fn_count']
+		cd['total_count'] = total
+
+		return cd
+
+
+	def accuracy(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		The proportion of forecasts which are true
 		'''
-
-		correct_count = self.tp_count + self.tn_count
-		ratio = correct_count / self.total_count
+		count_dictionary = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		correct_count = count_dictionary['tp_count'] + count_dictionary['tn_count']
+		ratio = correct_count / count_dictionary['total_count']
 		return ratio
 
-	def frequency_bias(self) -> float:
+
+	def frequency_bias(self):
 		'''
 		'''
 		freq_bias = (self.tp_count + self.fp_count) / (self.tp_count + self.fn_count)
 		return freq_bias
 
-	def probability_of_detection(self) -> float:
+	def probability_of_detection(self):
 		'''
 		What proportion of the observed events where correctly forecast?
 		Range: 0 to 1.  Perfect score: 1.
@@ -130,7 +150,7 @@ class BinaryContingencyTable():
 		pod = self.tp_count / (self.tp_count + self.fn_count)
 		return pod
 
-	def false_alarm_rate(self) -> float:
+	def false_alarm_rate(self):
 		'''
 		What fraction of the non-events were incorrectly predicted?
 		Range: 0 to 1.  Perfect score: 0.
@@ -139,7 +159,7 @@ class BinaryContingencyTable():
 		far = self.fp_count / (self.tn_count + self.fp_count)
 		return far
 
-	def success_ratio(self) -> float:
+	def success_ratio(self):
 		'''
 		What proportion of the forecast events actually eventuated?
 		Range: 0 to 1.  Perfect score: 1.
@@ -148,7 +168,7 @@ class BinaryContingencyTable():
 		sr = self.tp_count / (self.tp_count + self.fp_count)
 		return sr
 
-	def threat_score(self) -> float:
+	def threat_score(self):
 		'''
 		How well did the forecast "yes" events correspond to the observed "yes" events?
 		Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -156,7 +176,7 @@ class BinaryContingencyTable():
 		ts = self.tp_count / (self.tp_count + self.fp_count + self.tn_count)
 		return ts
 
-	def sensitivity(self) -> float:
+	def sensitivity(self):
 		'''
 		What proportion of non-events were correctly predicted?
 		'''
@@ -213,7 +233,7 @@ class EventThresholdOperator(MatchingOperator):
 		self.precision = precision
 		self.tolerance = tolerance
 
-	def make_table(self, forecast, observed, threshold, op_fn=operator.gt):
+	def make_table(self, forecast, observed, threshold, *, op_fn=operator.gt):
 		'''
 		Using this function requires a careful understanding of the structure of the data
 		and the use of the operator function. The default operator is a simple greater-than
