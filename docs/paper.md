@@ -26,7 +26,7 @@ bibliography: paper.bib
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It primarily supports the geoscience and earth system science communities. It also has wide potential application in machine learning, and in domains other than meteorology, geoscience and weather. 
 
-`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop Index), complex scores (e.g. threshold weighted CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). 
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, Flip-Flop Index), complex scores (e.g. threshold weighted CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). 
 
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
@@ -43,11 +43,10 @@ The research purpose of this software is (a) to mathematically verify and valida
 In order to meet the needs of researchers, `scores`:
 
 - is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. It has proper treatments for missing data, masking of data and weighting of results.
-- includes novel scores not commonly found elsewhere (e.g. FIRM, FlipFlop Index).
+- includes novel scores not commonly found elsewhere (e.g. FIRM, Flip-Flop Index).
 - is designed to work effectively with the libraries, data structures and methods commonly used in the meteorology, weather and climate communities. Scores can effectively handle the dimensionality, data size and data structures commonly utilised for: 
   - gridded earth system data (e.g. Numerical Weather Prediction models) 
   - tabular, point, lat/lon or site-based data (e.g. forecasts for specific locations)
-  - geospatial, object-based data (e.g. forecasts of thunderstorm tracks or storm cells). 
 - includes a companion Jupyter Notebook for each score, metric and statistical test to demonstrate its use in practice
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
 - is intended to be easy to integrate and utilise in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
@@ -55,7 +54,7 @@ In order to meet the needs of researchers, `scores`:
 
 ## Roadmap and Future Development
 
-At the time of writing, the scores contained in this package are: Mean Squared Error (MSE), Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), the Fixed Risk Multicategorical (FIRM) score [@Taggart:2022a], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), the FlipFlop Index [@Griffiths:2019; @griffiths2021circular], Receiver Operating Characteristic (ROC) curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable]. We anticipate more scores, metrics and statistical techniques will be added over time.
+At the time of writing, the scores contained in this package are: Mean Squared Error (MSE), Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), the Fixed Risk Multicategorical (FIRM) score [@Taggart:2022a], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), the Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Receiver Operating Characteristic (ROC) curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable]. We anticipate more scores, metrics and statistical techniques will be added over time.
 
 The `scores` roadmap includes:
 
@@ -72,7 +71,7 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 The Jive verification metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
 
-`scores` has arisen from, and now supports, the Jive verification system. `scores` includes mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
+`scores` has arisen from the Jive verification system. `scores` includes mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
 
 `scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts [@loveday2023userfocused].
 
