@@ -1,6 +1,7 @@
 """
 Contains unit tests for scores.probability.continuous
 """
+
 try:
     import dask
     import dask.array
@@ -13,7 +14,6 @@ import xarray as xr
 
 from scores.continuous import quantile_score
 from scores.utils import DimensionError
-from tests.assertions import assert_dataarray_equal, assert_dataset_equal
 from tests.continuous import quantile_loss_test_data as qltd
 
 
@@ -125,10 +125,7 @@ def test_qsf_exceptions(obs, reduce_dims, preserve_dims):
 def test_qsf_calculations(fcst, obs, alpha, preserve_dims, reduce_dims, weights, expected):
     """quantile_score returns the expected object."""
     result = quantile_score(fcst, obs, alpha, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
-    if isinstance(fcst, xr.DataArray):
-        assert_dataarray_equal(result, expected, decimals=7)
-    else:
-        assert_dataset_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_quantile_score_dask():
@@ -146,4 +143,4 @@ def test_quantile_score_dask():
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
-    assert_dataarray_equal(result, qltd.EXPECTED2, decimals=7)
+    xr.testing.assert_allclose(result, qltd.EXPECTED2)

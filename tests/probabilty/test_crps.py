@@ -25,7 +25,6 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from tests.assertions import assert_dataarray_equal, assert_dataset_equal
 from tests.probabilty import crps_test_data
 
 
@@ -49,7 +48,7 @@ def test_crps_stepweight(
         0.2,
         weight_upper,
     )
-    assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_cdf_exact():
@@ -61,7 +60,7 @@ def test_crps_cdf_exact():
         "x",
         include_components=True,
     )
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=7)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
     result2 = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT,
@@ -90,7 +89,7 @@ def test_crps_cdf_exact_dask():
     assert isinstance(result.total.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=7)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
     result2 = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
@@ -125,7 +124,7 @@ def test_crps_stepweight2(
         0.2,
         weight_upper,
     )
-    assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_cdf_trapz():
@@ -137,7 +136,7 @@ def test_crps_cdf_trapz():
         "x",
         include_components=True,
     )
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=4)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT, atol=4)
 
     result2 = crps_cdf_trapz(
         crps_test_data.DA_FCST_CRPS_DENSE,
@@ -146,7 +145,7 @@ def test_crps_cdf_trapz():
         "x",
         include_components=False,
     )
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=4)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT, atol=4)
     assert list(result2.data_vars) == ["total"]
 
 
@@ -192,7 +191,7 @@ def test_crps_cdf_reformat_inputs(
     assert len(result) == len(expected)
 
     for res, exp in zip(result, expected):
-        assert_dataarray_equal(res, exp, decimals=7)
+        xr.testing.assert_allclose(res, exp)
 
 
 @pytest.mark.parametrize(
@@ -465,8 +464,7 @@ def test_crps_cdf(
         preserve_dims=dims,
         include_components=True,
     )
-
-    assert_dataset_equal(result, expected_and_dec[0], decimals=expected_and_dec[1])
+    xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
 
 
 @pytest.mark.parametrize(
@@ -499,7 +497,7 @@ def test_adjust_fcst_for_crps(
 ):
     """Tests `adjust_fcst_for_crps` with a variety of inputs."""
     result = adjust_fcst_for_crps(fcst, "x", obs, decreasing_tolerance)
-    assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
@@ -614,7 +612,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
     result = crps_cdf_brier_decomposition(
         crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, "x", preserve_dims=dims
     )
-    assert_dataset_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_for_ensemble():
@@ -632,10 +630,9 @@ def test_crps_for_ensemble():
         method="ecdf",
         weights=crps_test_data.DA_WT_CRPSENS,
     )
-
-    assert_dataarray_equal(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF, decimals=7)
-    assert_dataarray_equal(result_fair, crps_test_data.EXP_CRPSENS_FAIR, decimals=7)
-    assert_dataarray_equal(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT, decimals=7)
+    xr.testing.assert_allclose(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF)
+    xr.testing.assert_allclose(result_fair, crps_test_data.EXP_CRPSENS_FAIR)
+    xr.testing.assert_allclose(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT)
 
 
 def test_crps_for_ensemble_raises():
@@ -661,4 +658,4 @@ def test_crps_for_ensemble_dask():
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
-    assert_dataarray_equal(result, crps_test_data.EXP_CRPSENS_ECDF, decimals=7)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)

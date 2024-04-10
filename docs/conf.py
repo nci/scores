@@ -47,8 +47,6 @@ nbsphinx_prolog = r"""
 .. raw:: html
 
     <div class="admonition note">
-      This page was generated from
-      <a class="reference external" href="https://github.com/nci/scores/blob/{{ env.config.release|e }}/{{ docname|e }}">{{ docname|e }}</a>.
       Interactive online version:
       <span style="white-space: nowrap;"><a href="https://mybinder.org/v2/gh/nci/scores/{{ env.config.release|e }}?filepath={{ docname|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>.</span>
       <a href="{{ env.docname.split('/')|last|e + '.ipynb' }}" class="reference download internal" download>Download notebook</a>.
