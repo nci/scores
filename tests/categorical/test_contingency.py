@@ -92,9 +92,14 @@ def test_categorical_table():
 
     # Smoke tests only
     assert table.frequency_bias() is not None
+    assert table.hit_rate() is not None
+    assert table.probability_of_detection() is not None
     assert table.success_ratio() is not None
     assert table.threat_score() is not None
+    assert table.critical_success_index() is not None
+    assert table.pierce_skill_score() is not None
     assert table.sensitivity() is not None
+    assert table.specificity() is not None
 
 
 def test_functional_interface_accuracy():

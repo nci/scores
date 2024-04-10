@@ -124,9 +124,21 @@ class BinaryContingencyTable:
 
         return freq_bias
 
+    def hit_rate(self, *, preserve_dims=None, reduce_dims=None):
+        """
+        What proportion of the observed events where correctly forecast?
+        Identical to probability_of_detection
+        Range: 0 to 1.  Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
+
+        return pod
+
     def probability_of_detection(self, *, preserve_dims=None, reduce_dims=None):
         """
         What proportion of the observed events where correctly forecast?
+        Identical to hit_rate
         Range: 0 to 1.  Perfect score: 1.
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
@@ -137,6 +149,18 @@ class BinaryContingencyTable:
     def false_alarm_rate(self, *, preserve_dims=None, reduce_dims=None):
         """
         What fraction of the non-events were incorrectly predicted?
+        Identical to probability_of_false_detection
+        Range: 0 to 1.  Perfect score: 0.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
+
+        return far
+
+    def probability_of_false_detection(self, *, preserve_dims=None, reduce_dims=None):
+        """
+        What fraction of the non-events were incorrectly predicted?
+        Identical to false_alarm_rate
         Range: 0 to 1.  Perfect score: 0.
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
@@ -157,19 +181,50 @@ class BinaryContingencyTable:
     def threat_score(self, *, preserve_dims=None, reduce_dims=None):
         """
         How well did the forecast "yes" events correspond to the observed "yes" events?
+        Identical to critical_success_index
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
         return ts
 
-    def sensitivity(self, *, preserve_dims=None, reduce_dims=None):
+    def critical_success_index(self, *, preserve_dims=None, reduce_dims=None):
         """
-        What proportion of non-events were correctly predicted?
+        How well did the forecast "yes" events correspond to the observed "yes" events?
+        Identical to threat_score
+        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
+        return ts        
+
+    def pierce_skill_score(self, *, preserve_dims=preserve_dims, reduce_dims=reduce_dims):
+        """
+        Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
+        How well did the forecast separate the "yes" events from the "no" events?
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.        
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        componentA = cd['tp_count'] / (cd['tp_count'] + cd['fn_count'])
+        componentB = cd['fn_count'] / (cd['fn_count'] + cd['tn_count'])
+        skill_score = componentA - componentB
+        return skill_score
+
+    def sensitivity(self, *, preserve_dims=None, reduce_dims=None):
+        """        
+        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        s = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
+        return s
+
+    def specificity(self, *, preserve_dims=None, reduce_dims=None):
+        """        
+        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s
+        return s        
 
 
 class MatchingOperator:
