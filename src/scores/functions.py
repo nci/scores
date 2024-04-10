@@ -9,7 +9,7 @@ import xarray as xr
 from scores.typing import XarrayLike
 
 
-def apply_weights(values, weights=None):
+def apply_weights(values, *, weights=None):
     """
     Returns:
         A new array with the elements of values multiplied by the specified weights.

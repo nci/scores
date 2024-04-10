@@ -23,6 +23,7 @@ from sklearn.isotonic import IsotonicRegression
 def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     fcst: Union[np.ndarray, xr.DataArray],
     obs: Union[np.ndarray, xr.DataArray],
+    *,  # Force keywords arguments to be keyword-only
     weight: Optional[Union[np.ndarray, xr.DataArray]] = None,
     functional: Optional[Literal["mean", "quantile"]] = "mean",
     bootstraps: Optional[int] = None,
@@ -152,14 +153,21 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         fcst,
         obs,
         weight,
-        functional,
-        quantile_level,
-        solver,
-        bootstraps,
-        confidence_level,
+        functional=functional,
+        quantile_level=quantile_level,
+        solver=solver,
+        bootstraps=bootstraps,
+        confidence_level=confidence_level,
     )
-    fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight)
-    y_out = _do_ir(fcst_tidied, obs_tidied, weight_tidied, functional, quantile_level, solver)
+    fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)
+    y_out = _do_ir(
+       fcst_tidied,
+       obs_tidied,
+       weight=weight_tidied,
+       functional=functional,
+       quantile_level=quantile_level,
+       solver=solver
+    )
 
     # calculate the fitting function
     ir_func = interpolate.interp1d(fcst_tidied, y_out, bounds_error=False)
@@ -255,6 +263,7 @@ def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
     fcst: np.ndarray,
     obs: np.ndarray,
     weight: np.ndarray,
+    *,  # Force keywords arguments to be keyword-only
     functional: Optional[str] = None,
     quantile_level: Optional[float] = None,
     solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
@@ -309,6 +318,7 @@ def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
 def _tidy_ir_inputs(
     fcst: np.ndarray,
     obs: np.ndarray,
+    *,  # Force keywords arguments to be keyword-only
     weight: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -365,10 +375,11 @@ def _tidy_ir_inputs(
 def _do_ir(  # pylint: disable=too-many-arguments
     fcst: np.ndarray,
     obs: np.ndarray,
-    weight: Optional[np.ndarray],
-    functional: Optional[Literal["mean", "quantile"]],
-    quantile_level: Optional[float],
-    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]],
+    *,  # Force keywords arguments to be keyword-only
+    weight: Optional[np.ndarray] = None,
+    functional: Optional[Literal["mean", "quantile"]] = None,
+    quantile_level: Optional[float] = None,
+    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
 ) -> np.ndarray:
     """
     Returns the isotonic regression (IR) fit for specified functional or solver,
@@ -391,11 +402,11 @@ def _do_ir(  # pylint: disable=too-many-arguments
         1D numpy array of values fitted using isotonic regression.
     """
     if functional == "mean":
-        y_out = _contiguous_mean_ir(fcst, obs, weight)
+        y_out = _contiguous_mean_ir(fcst, obs, weight=weight)
     elif functional == "quantile":
         y_out = _contiguous_quantile_ir(obs, quantile_level)  # type: ignore
     else:
-        y_out = _contiguous_ir(obs, solver, weight)  # type: ignore
+        y_out = _contiguous_ir(obs, solver, weight=weight)  # type: ignore
 
     return y_out
 
@@ -403,6 +414,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
 def _contiguous_ir(
     y: np.ndarray,
     solver: Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]],
+    *,  # Force keywords arguments to be keyword-only
     weight: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
@@ -486,7 +498,12 @@ def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
     return _contiguous_ir(y, partial(np.quantile, q=alpha))
 
 
-def _contiguous_mean_ir(x: np.ndarray, y: np.ndarray, weight: Optional[np.ndarray]) -> np.ndarray:
+def _contiguous_mean_ir(
+    x: np.ndarray,
+    y: np.ndarray,
+    *,  # Force keywords arguments to be keyword-only
+    weight: Optional[np.ndarray] = None
+) -> np.ndarray:
     """
     Performs classical (i.e. for mean functional) contiguous quantile IR on tidied data x, y.
     Uses sklearn implementation rather than supplying the mean solver function to `_contiguous_ir`,
@@ -499,10 +516,11 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
     fcst: np.ndarray,
     obs: np.ndarray,
     bootstraps: int,
-    weight: Optional[np.ndarray],
-    functional: Optional[Literal["mean", "quantile"]],
-    quantile_level: Optional[float],
-    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]],
+    *,  # Force keywords arguments to be keyword-only
+    weight: Optional[np.ndarray] = None,
+    functional: Optional[Literal["mean", "quantile"]] = None,
+    quantile_level: Optional[float] = None,
+    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
 ):
     """
     Gives the isotonic fits of bootstrapped samples.
@@ -535,8 +553,16 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
         else:
             weight_sample = weight[selection]
 
-        fcst_sample, obs_sample, weight_sample = _tidy_ir_inputs(fcst_sample, obs_sample, weight_sample)
-        ir_results = _do_ir(fcst_sample, obs_sample, weight_sample, functional, quantile_level, solver)
+        fcst_sample, obs_sample, weight_sample = _tidy_ir_inputs(fcst_sample, obs_sample, weight=weight_sample)
+
+        ir_results = _do_ir(
+            fcst_sample,
+            obs_sample,
+            weight=weight_sample, 
+            functional=functional,
+            quantile_level=quantile_level,
+            solver=solver
+        )
 
         approximation_func = interpolate.interp1d(fcst_sample, ir_results, bounds_error=False)
 

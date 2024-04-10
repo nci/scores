@@ -16,6 +16,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     thresholds: Iterable[float],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[xr.DataArray] = None,

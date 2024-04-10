@@ -260,7 +260,7 @@ def test__iso_arg_checks(  # pylint: disable=too-many-locals, too-many-arguments
 )
 def test__tidy_ir_inputs(fcst, obs, weights, expected):
     """Tests that `_tidy_ir_inputs` gives results as expected."""
-    result = _tidy_ir_inputs(fcst, obs, weights)
+    result = _tidy_ir_inputs(fcst, obs, weight=weights)
     for i in range(3):
         np.testing.assert_array_equal(result[i], expected[i])
 
@@ -285,7 +285,14 @@ def test__do_ir(functional, solver, expected):
     Simultaneously supplies simple confirmation tests for `_contiguous_mean_ir`,
     `_contiguous_quantile_ir` and `_contiguous_ir`.
     """
-    result = _do_ir(np.array([1, 2, 3]), np.array([5.0, 1, 0]), None, functional, 0.5, solver)
+    result = _do_ir(
+        np.array([1, 2, 3]),
+        np.array([5.0, 1, 0]),
+        weight=None,
+        functional=functional,
+        quantile_level=0.5,
+        solver=solver
+    )
     np.testing.assert_array_equal(result, expected)
 
 
@@ -305,7 +312,7 @@ def _wmean_solver(y, weight):
 )
 def test__contiguous_ir(y, solver, weight, expected):
     """Tests that `_contiguous_ir` gives results as expected."""
-    result = _contiguous_ir(y, solver, weight)
+    result = _contiguous_ir(y, solver, weight=weight)
     np.testing.assert_array_equal(result, expected)
 
 

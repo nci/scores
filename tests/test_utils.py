@@ -20,7 +20,7 @@ def test_dims_complement():
     assert complement == expected_dims
 
     expected_dims = sorted(["red", "green"])
-    complement = utils.dims_complement(xr_data, ["blue"])
+    complement = utils.dims_complement(xr_data, dims=["blue"])
     assert complement == expected_dims
 
 

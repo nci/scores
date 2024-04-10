@@ -44,7 +44,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
     risk_parameter = 0.7
 
     calculated = _single_category_score(
-        fcst, obs, risk_parameter, categorical_threshold, discount_distance, threshold_assignment
+        fcst, obs, risk_parameter, categorical_threshold, discount_distance=discount_distance, threshold_assignment=threshold_assignment
     )
     xr.testing.assert_allclose(calculated, expected)
 
@@ -244,9 +244,9 @@ def test_firm(
         risk_parameters,
         categorical_thresholds,
         weights,
-        discount_distance,
-        reduce_dims,
-        preserve_dims,
+        discount_distance=discount_distance,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
     )
     if preserve_dims is not None:
         calculated = calculated.transpose(*preserve_dims)
@@ -269,7 +269,7 @@ def test_firm_dask():
         0.7,
         [0, 5],
         mtd.LIST_WEIGHTS_FIRM2,
-        0,
+        discount_distance=0,
         reduce_dims=None,
         preserve_dims=["i", "j", "k"],
     )
@@ -467,8 +467,8 @@ def test_firm_raises(
             risk_parameters,
             categorical_thresholds,
             weights,
-            discount_distance,
-            None,
-            preserve_dims,
+            discount_distance=discount_distance,
+            reduce_dims=None,
+            preserve_dims=preserve_dims,
             threshold_assignment=threshold_assignment,
         )

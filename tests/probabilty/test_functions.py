@@ -15,7 +15,7 @@ from tests.probabilty import functions_test_data as ftd
 def test_round_values_exception():
     """Test rounding throws the right exceptions"""
     with pytest.raises(ValueError):
-        scores.probability.functions.round_values(xr.DataArray(), -1, 5)
+        scores.probability.functions.round_values(xr.DataArray(), -1, final_round_decpl=5)
 
 
 @pytest.mark.parametrize(
@@ -61,11 +61,11 @@ def test_observed_cdf_errors():
 
     # Bad precision raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values, precision=badprecision)
+        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values=threshold_values, precision=badprecision)
 
     # Null obs and a null threshold value raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values)
+        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values=threshold_values)
 
 
 @pytest.mark.parametrize(

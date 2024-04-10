@@ -18,6 +18,7 @@ def firm(  # pylint: disable=too-many-arguments
     risk_parameter: float,
     categorical_thresholds: Sequence[float],
     threshold_weights: Sequence[Union[float, xr.DataArray]],
+    *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = 0,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
@@ -108,14 +109,14 @@ def firm(  # pylint: disable=too-many-arguments
     total_score = []
     for categorical_threshold, weight in zip(categorical_thresholds, threshold_weights):
         score = weight * _single_category_score(
-            fcst, obs, risk_parameter, categorical_threshold, discount_distance, threshold_assignment
+            fcst, obs, risk_parameter, categorical_threshold, discount_distance=discount_distance, threshold_assignment=threshold_assignment
         )
         total_score.append(score)
     summed_score = sum(total_score)
     reduce_dims = gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )  # type: ignore[assignment]
-    summed_score = apply_weights(summed_score, weights)
+    summed_score = apply_weights(summed_score, weights=weights)
     score = summed_score.mean(dim=reduce_dims)
 
     return score
@@ -137,7 +138,7 @@ def _check_firm_inputs(
 
     for count, weight in enumerate(threshold_weights):
         if isinstance(weight, xr.DataArray):
-            check_dims(weight, obs.dims, "subset")
+            check_dims(weight, obs.dims, mode="subset")
             if np.any(weight <= 0):
                 raise ValueError(
                     f"""
@@ -160,6 +161,7 @@ def _single_category_score(
     obs: xr.DataArray,
     risk_parameter: float,
     categorical_threshold: float,
+    *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = None,
     threshold_assignment: Optional[str] = "lower",
 ) -> xr.Dataset:

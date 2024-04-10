@@ -12,6 +12,7 @@ from scores.typing import FlexibleDimensionTypes, XarrayLike
 def brier_score(
     fcst: XarrayLike,
     obs: XarrayLike,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     weights: xr.DataArray = None,
@@ -53,4 +54,4 @@ def brier_score(
                 raise error_msg
         check_binary(obs, "obs")
 
-    return mse(fcst, obs, reduce_dims, preserve_dims, weights)
+    return mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
