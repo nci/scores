@@ -300,6 +300,7 @@ def multiplicative_bias(
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
     See "(Multiplicative) bias" section at https://www.cawcr.gov.au/projects/verification/ for more information
+    
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
