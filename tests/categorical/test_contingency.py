@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 import pytest
 import scores
 
@@ -129,3 +130,9 @@ def test_dask_if_available():
 	dprox = proximity.chunk()
 	table = match.make_table(dprox).table
 	assert_dataarray_equal(table, exact_matches)
+
+	assert isinstance(table.data, dask.array.Array)
+	computed = table.compute()
+
+	assert isinstance(computed.data, np.ndarray)
+	assert_dataarray_equal(computed, exact_matches)
