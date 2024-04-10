@@ -100,7 +100,7 @@ def test_nearby_binary_table():
 def test_categorical_table():
 
 	match = scores.categorical.EventThresholdOperator()
-	table = match.make_table(simple_forecast, simple_obs, 1.3)
+	table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
 
 	assert table.tp_count == 9
 	assert table.tn_count == 6
@@ -112,10 +112,17 @@ def test_categorical_table():
 	assert table.probability_of_detection() == 9 / (9+1)
 	assert table.false_alarm_rate() == 2 / (2 + 6)
 
+def test_functional_interface_accuracy():
+
+	event_operator = scores.categorical.EventThresholdOperator(default_event_threshold=1.3)
+	accuracy = scores.categorical.accuracy(simple_forecast, simple_obs, event_operator=event_operator)
+	assert accuracy == (9+6) / 18
+
+
 def test_categorical_table_dims_handling():	
 
 	match = scores.categorical.EventThresholdOperator()
-	table = match.make_table(simple_forecast, simple_obs, 1.3)
+	table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
 
 	counts = table.generate_counts(preserve_dims=['height'])
 
@@ -131,8 +138,33 @@ def test_categorical_table_dims_handling():
 	# assert far_withheight is not None  # TODO: Add a value-asserting test
 
 
+# def test_dask_if_available_categorical():
+# 	'''
+# 	A basic smoke test on a dask object. More rigorous exploration of dask
+# 	is probably needed beyond this. Performance is not explored here, just
+# 	compatibility.
+# 	'''
 
-def test_dask_if_available():
+# 	try:
+# 		import dask  # noqa: F401
+# 	except ImportError:
+# 		pytest.skip("Dask not available on this system")
+
+# 	fcst = simple_forecast.chunk()
+# 	obs = simple_obs.chunk()
+
+# 	match = scores.categorical.EventThresholdOperator()
+# 	table = match.make_table(fcst, obs, event_threshold=1.3)		
+
+# 	assert isinstance(table.forecast_events, dask.array.Array)
+# 	assert isinstance(table.tp, dask.array.Array)
+	
+# 	computed = table.forecast_events.compute()
+
+# 	assert isinstance(computed.data, np.ndarray)
+
+
+def test_dask_if_available_basic():
 	'''
 	A basic smoke test on a dask object. More rigorous exploration of dask
 	is probably needed beyond this. Performance is not explored here, just

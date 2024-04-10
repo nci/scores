@@ -57,11 +57,43 @@ CategoryTable.
 '''
 
 import operator
-import xarray
+import xarray as xr
 
 import scores.utils
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
 DEFAULT_PRECISION = 8
+
+def accuracy(
+	fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
+    *,
+    event_operator: None,    
+    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: FlexibleDimensionTypes = None,
+    weights: xr.DataArray = None,
+    ):
+	'''
+	Functional API example for contingency scores
+
+	If the event operator is None, then fcst and obs are held to contain
+	binary information about whether an event is predicted or occurred.
+	If the event operator is provided, it will be utilised to produce the
+	event tables for the forecast and observed conditions prior to generating
+	the contingency table.
+	'''
+
+	if event_operator is not None:
+		table = event_operator.make_table(fcst, obs)
+	else:
+		table = BinaryContingencyTable(fcst, obs)
+
+
+	acc = table.accuracy(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+	return acc
+
+
+
 
 def make_binary_table(proximity, match_operator):
 	table = match_operator.make_table(proximity)
@@ -208,7 +240,7 @@ class BinaryTable():
 	def __init__(self, data):
 
 		bool_array = data.astype(bool)
-		self.table = xarray.DataArray(bool_array)
+		self.table = xr.DataArray(bool_array)
 			
 	def hits(self):
 		'''
@@ -229,11 +261,11 @@ class EventThresholdOperator(MatchingOperator):
 	This class abstracts that concept for any event definition.
 	'''
 
-	def __init__(self, *, precision=DEFAULT_PRECISION, tolerance=0):
+	def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001):
 		self.precision = precision
-		self.tolerance = tolerance
+		self.default_event_threshold = default_event_threshold
 
-	def make_table(self, forecast, observed, threshold, *, op_fn=operator.gt):
+	def make_table(self, forecast, observed, *, event_threshold=None, op_fn=operator.gt):
 		'''
 		Using this function requires a careful understanding of the structure of the data
 		and the use of the operator function. The default operator is a simple greater-than
@@ -242,8 +274,12 @@ class EventThresholdOperator(MatchingOperator):
 		tutorial to review more complex use cases, including on multivariate gridded model
 		data, and on station data structures.
 		'''
-		forecast_events = op_fn(forecast, threshold)
-		observed_events = op_fn(observed, threshold)
+
+		if not event_threshold:
+			event_threshold = self.default_event_threshold
+
+		forecast_events = op_fn(forecast, event_threshold)
+		observed_events = op_fn(observed, event_threshold)
 
 		table = BinaryContingencyTable(forecast_events, observed_events)
 		return table
