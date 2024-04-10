@@ -90,6 +90,12 @@ def test_categorical_table():
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
 
+    # Smoke tests only
+    assert table.frequency_bias() is not None
+    assert table.success_ratio() is not None
+    assert table.threat_score() is not None
+    assert table.sensitivity() is not None
+
 
 def test_functional_interface_accuracy():
     event_operator = scores.categorical.EventThresholdOperator(default_event_threshold=1.3)

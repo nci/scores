@@ -94,16 +94,6 @@ def accuracy(
     return acc
 
 
-def make_binary_table(proximity, match_operator):
-    table = match_operator.make_table(proximity)
-    return table
-
-
-def make_category_table(proximity, category_operator):
-    table = category_operator.make_table(proximity)
-    return table
-
-
 class BinaryContingencyTable:
     """
     At each location, the value will either be:
