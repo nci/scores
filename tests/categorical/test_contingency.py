@@ -71,32 +71,6 @@ somewhat_near_matches = xr.DataArray(
 	coords=[[10, 20], [0, 1, 2], [5, 6, 7]], dims=["height", "lat", "lon"])
 
 
-def test_simple_binary_table():
-
-	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	match = scores.categorical.BinaryProximityOperator()
-	found = match.make_table(proximity)
-	assert found.table.equals(exact_matches)
-	assert found.hits() == 5
-
-	# Ideally would check the nature of this failure but for now a non-match will do
-	with pytest.raises(AssertionError):
-		assert_dataarray_equal(found.table, somewhat_near_matches)
-
-
-def test_nearby_binary_table():
-
-	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	matchpoint2 = scores.categorical.BinaryProximityOperator(tolerance=0.2)	
-	found = matchpoint2.make_table(proximity)
-
-	assert_dataarray_equal(found.table, somewhat_near_matches)
-
-	# Ideally would check the nature of this failure but for now a non-match will do
-	with pytest.raises(AssertionError):
-		assert_dataarray_equal(found.table, exact_matches)		
-
-
 def test_categorical_table():
 
 	match = scores.categorical.EventThresholdOperator()
@@ -158,32 +132,7 @@ def test_categorical_table_dims_handling():
 
 # 	assert isinstance(table.forecast_events, dask.array.Array)
 # 	assert isinstance(table.tp, dask.array.Array)
-	
+
 # 	computed = table.forecast_events.compute()
 
 # 	assert isinstance(computed.data, np.ndarray)
-
-
-def test_dask_if_available_basic():
-	'''
-	A basic smoke test on a dask object. More rigorous exploration of dask
-	is probably needed beyond this. Performance is not explored here, just
-	compatibility.
-	'''
-
-	try:
-		import dask  # noqa: F401
-	except ImportError:
-		pytest.skip("Dask not available on this system")
-
-	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	match = scores.categorical.BinaryProximityOperator()
-	dprox = proximity.chunk()
-	table = match.make_table(dprox).table
-	assert_dataarray_equal(table, exact_matches)
-
-	assert isinstance(table.data, dask.array.Array)
-	computed = table.compute()
-
-	assert isinstance(computed.data, np.ndarray)
-	assert_dataarray_equal(computed, exact_matches)

@@ -167,88 +167,60 @@ class BinaryContingencyTable():
 		return ratio
 
 
-	def frequency_bias(self):
+	def frequency_bias(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		'''
-		freq_bias = (self.tp_count + self.fp_count) / (self.tp_count + self.fn_count)
+		cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		freq_bias = (cd['tp_count'] + cd['fp_count']) / (cd['tp_count'] + cd['fn_count'])
+
 		return freq_bias
 
-	def probability_of_detection(self):
+	def probability_of_detection(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		What proportion of the observed events where correctly forecast?
 		Range: 0 to 1.  Perfect score: 1.
 		'''
+		cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		pod = cd['tp_count'] / (cd['tp_count'] + cd['fn_count'])
 
-		pod = self.tp_count / (self.tp_count + self.fn_count)
 		return pod
 
-	def false_alarm_rate(self):
+	def false_alarm_rate(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		What fraction of the non-events were incorrectly predicted?
 		Range: 0 to 1.  Perfect score: 0.
 		'''
+		cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		far = cd['fp_count'] / (cd['tn_count'] + cd['fp_count'])
 
-		far = self.fp_count / (self.tn_count + self.fp_count)
 		return far
 
-	def success_ratio(self):
+	def success_ratio(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		What proportion of the forecast events actually eventuated?
 		Range: 0 to 1.  Perfect score: 1.
 		'''
+		cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		sr = cd['tp_count'] / (cd['tp_count'] + cd['fp_count'])
 
-		sr = self.tp_count / (self.tp_count + self.fp_count)
 		return sr
 
-	def threat_score(self):
+	def threat_score(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		How well did the forecast "yes" events correspond to the observed "yes" events?
 		Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
 		'''
-		ts = self.tp_count / (self.tp_count + self.fp_count + self.tn_count)
+		cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		ts = cd['tp_count'] / (cd['tp_count'] + cd['fp_count'] + cd['tn_count'])
 		return ts
 
-	def sensitivity(self):
+	def sensitivity(self, *, preserve_dims = None, reduce_dims=None):
 		'''
 		What proportion of non-events were correctly predicted?
 		'''
-
-		s = self.tn_count / (self.tn_count + self.fp_count)
+		cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+		s = cd['tn_count'] / (cd['tn_count'] + cd['fp_count'])
 		return s
-
-
-
-
-
-class BinaryTable():	
-	'''
-	At each location, the value will either be:
-	 - True (Accurate)
-	 - False (Not Accurate)
-
-	It will be common to want to operate on masks of these values,
-	such as:
-	 - Plotting these attributes on a map
-	 - Calculating the total number of these attributes
-	 - Calculating various ratios of these attributes, potentially
-	   masked by geographical area (e.g. accuracy in a region)
-
-	As such, the per-pixel information is useful as well as the overall
-	ratios involved.	
-	'''
-
-	def __init__(self, data):
-
-		bool_array = data.astype(bool)
-		self.table = xr.DataArray(bool_array)
-			
-	def hits(self):
-		'''
-		The 'hits' on a binary table is simply the sum of the table
-		'''
-		total = self.table.sum().values.item()
-		return total
-	
 
 class MatchingOperator:
 	pass
@@ -284,31 +256,3 @@ class EventThresholdOperator(MatchingOperator):
 		table = BinaryContingencyTable(forecast_events, observed_events)
 		return table
 
-
-
-class BinaryProximityOperator(MatchingOperator):
-	'''
-	Produced a simple binary contingency table where the score has value 
-	which is less than or equal to the specified tolerance, based on values
-	rounded to a specific numerical precision. Due to floating-point
-	errors, it is important to specify an appropriate precision.
-
-	If your data is likely to have significance at extremely high precision, 
-	floating point values are not appropriate to use, and something like the
-	python decimal.Decimal should be utilized. 
-	'''
-
-	def __init__(self, *, precision=DEFAULT_PRECISION, tolerance=0):
-		self.precision = precision
-		self.tolerance = tolerance
-
-	def make_table(self, proximity):
-		proximity = proximity.round(self.precision)
-		binary_array = (proximity <= self.tolerance)
-		
-		result = BinaryTable(binary_array)
-		return result
-
-class SimpleBucketOperator(MatchingOperator):
-	def __init__(self, *, precision=DEFAULT_PRECISION, tolerance=0):
-		pass
