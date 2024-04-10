@@ -1,9 +1,6 @@
 import xarray as xr
-import numpy as np
-import pytest
-import scores
 
-from tests.assertions import assert_dataarray_equal
+import scores
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(
@@ -103,8 +100,6 @@ def test_functional_interface_accuracy():
 def test_categorical_table_dims_handling():
     match = scores.categorical.EventThresholdOperator()
     table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
-
-    counts = table.generate_counts(preserve_dims=["height"])
 
     acc_withheight = table.accuracy(preserve_dims=["height"])
     assert acc_withheight.sel(height=10).sum().values.item() == 8 / 9

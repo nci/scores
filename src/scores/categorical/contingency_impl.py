@@ -57,6 +57,7 @@ CategoryTable.
 """
 
 import operator
+
 import xarray as xr
 
 import scores.utils
