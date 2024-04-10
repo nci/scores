@@ -8,16 +8,16 @@ from scores.categorical.binary_impl import (
 from scores.categorical.multicategorical_impl import firm
 
 from scores.categorical.contingency_impl import (
-    BinaryContingencyTable, 
+    BinaryContingencyTable,
     EventThresholdOperator,
     accuracy,
-    )
+)
 
-__all__ = ["probability_of_detection", 
-           "probability_of_false_detection", 
-           "firm", 
-           "BinaryContingencyTable",
-           "EventThresholdOperator",
-           "accuracy",]
-
-
+__all__ = [
+    "probability_of_detection",
+    "probability_of_false_detection",
+    "firm",
+    "BinaryContingencyTable",
+    "EventThresholdOperator",
+    "accuracy",
+]
