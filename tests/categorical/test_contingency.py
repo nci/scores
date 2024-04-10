@@ -73,7 +73,7 @@ somewhat_near_matches = xr.DataArray(
 def test_simple_binary_table():
 
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	match = scores.contingency.BinaryProximityOperator()
+	match = scores.categorical.BinaryProximityOperator()
 	found = match.make_table(proximity)
 	assert found.table.equals(exact_matches)
 	assert found.hits() == 5
@@ -86,7 +86,7 @@ def test_simple_binary_table():
 def test_nearby_binary_table():
 
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	matchpoint2 = scores.contingency.BinaryProximityOperator(tolerance=0.2)	
+	matchpoint2 = scores.categorical.BinaryProximityOperator(tolerance=0.2)	
 	found = matchpoint2.make_table(proximity)
 
 	assert_dataarray_equal(found.table, somewhat_near_matches)
@@ -98,7 +98,7 @@ def test_nearby_binary_table():
 
 def test_categorical_table():
 
-	match = scores.contingency.EventThresholdOperator()
+	match = scores.categorical.EventThresholdOperator()
 	table = match.make_table(simple_forecast, simple_obs, 1.3)
 
 	assert table.tp_count == 9
@@ -125,7 +125,7 @@ def test_dask_if_available():
 		pytest.skip("Dask not available on this system")
 
 	proximity = scores.continuous.mae(simple_forecast, simple_obs, preserve_dims="all")
-	match = scores.contingency.BinaryProximityOperator()
+	match = scores.categorical.BinaryProximityOperator()
 	dprox = proximity.chunk()
 	table = match.make_table(dprox).table
 	assert_dataarray_equal(table, exact_matches)
