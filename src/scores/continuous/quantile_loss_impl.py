@@ -14,6 +14,7 @@ def quantile_score(
     fcst: XarrayLike,
     obs: XarrayLike,
     alpha: float,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: XarrayLike = None,
@@ -93,7 +94,7 @@ def quantile_score(
     result = xr.where(diff > 0, score_fcst_ge_obs, score_fcst_lte_obs)
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
-    results = apply_weights(result, weights)
+    results = apply_weights(result, weights=weights)
     score = results.mean(dim=reduce_dims)
 
     return score

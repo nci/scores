@@ -44,7 +44,7 @@ def check_binary(data: XarrayLike, name: str):
 
 
 def comparative_discretise(
-    data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, abs_tolerance: Optional[float] = None
+    data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, *, abs_tolerance: Optional[float] = None
 ) -> XarrayLike:
     """
     Converts the values of `data` to 0 or 1 based on how they relate to the specified
@@ -122,6 +122,7 @@ def binary_discretise(
     data: XarrayLike,
     thresholds: FlexibleDimensionTypes,
     mode: str,
+    *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,
     autosqueeze: Optional[bool] = False,
 ):
@@ -268,6 +269,7 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
 def proportion_exceeding(
     data: XarrayLike,
     thresholds: Iterable,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
 ):
@@ -296,6 +298,7 @@ def _binary_discretise_proportion(
     data: XarrayLike,
     thresholds: Iterable,
     mode: str,
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
     abs_tolerance: Optional[bool] = None,

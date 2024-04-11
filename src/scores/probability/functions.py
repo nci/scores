@@ -16,7 +16,7 @@ from scores.probability.checks import (
 from scores.typing import XarrayLike
 
 
-def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
+def round_values(array: xr.DataArray, rounding_precision: float, *, final_round_decpl: int = 7) -> xr.DataArray:
     """Round data array to specified precision.
 
     Rounding is done differently to `xarray.DataArray.round` or `numpy.round` where
@@ -78,6 +78,7 @@ def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
 def observed_cdf(
     obs: xr.DataArray,
     threshold_dim: str,
+    *,  # Force keywords arguments to be keyword-only
     threshold_values: Optional[Iterable[float]] = None,
     include_obs_in_thresholds: bool = True,
     precision: float = 0,
@@ -194,6 +195,7 @@ def add_thresholds(
     threshold_dim: str,
     new_thresholds: Iterable[float],
     fill_method: Literal["linear", "step", "forward", "backward", "none"],
+    *,  # Force keywords arguments to be keyword-only
     min_nonnan: int = 2,
 ) -> xr.DataArray:
     """Takes a CDF data array with dimension `threshold_dim` and adds values from `new_thresholds`.

@@ -43,10 +43,10 @@ def test_crps_stepweight(
     result = crps_step_threshold_weight(
         crps_test_data.DA_STEP_WEIGHT,
         "x",
-        [1, 2, 3, 4, 5, 6],
-        True,
-        0.2,
-        weight_upper,
+        threshold_values=[1, 2, 3, 4, 5, 6],
+        steppoints_in_thresholds=True,
+        steppoint_precision=0.2,
+        weight_upper=weight_upper,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -116,13 +116,14 @@ def test_crps_stepweight2(
     expected,
 ):
     """Tests `crps_step_threshold_weight` with a variety of inputs."""
+
     result = crps_step_threshold_weight(
         crps_test_data.DA_STEP_WEIGHT,
         "x",
-        [1, 2, 3, 4, 5, 6],
-        True,
-        0.2,
-        weight_upper,
+        threshold_values=[1, 2, 3, 4, 5, 6],
+        steppoints_in_thresholds=True,
+        steppoint_precision=0.2,
+        weight_upper=weight_upper,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -183,10 +184,10 @@ def test_crps_cdf_reformat_inputs(
         crps_test_data.DA_FCST_REFORMAT1,
         crps_test_data.DA_OBS_REFORMAT1,
         "x",
-        threshold_weight,
-        additional_thresholds,
-        "linear",
-        "forward",
+        threshold_weight=threshold_weight,
+        additional_thresholds=additional_thresholds,
+        fcst_fill_method="linear",
+        threshold_weight_fill_method="forward",
     )
     assert len(result) == len(expected)
 
@@ -370,14 +371,14 @@ def test_crps_cdf_raises(
         crps_cdf(
             fcst,
             obs,
-            threshold_dim,
-            threshold_weight,
-            [],
-            True,
-            fcst_fill_method,
-            threshold_weight_fill_method,
-            integration_method,
-            dims,
+            threshold_dim=threshold_dim,
+            threshold_weight=threshold_weight,
+            additional_thresholds=[],
+            propagate_nans=True,
+            fcst_fill_method=fcst_fill_method,
+            threshold_weight_fill_method=threshold_weight_fill_method,
+            integration_method=integration_method,
+            preserve_dims=dims,
         )
 
 
@@ -454,7 +455,7 @@ def test_crps_cdf(
     result = crps_cdf(
         fcst,
         crps_test_data.DA_OBS_CRPS,
-        "x",
+        threshold_dim="x",
         threshold_weight=threshold_weight,
         additional_thresholds=None,
         propagate_nans=propagate_nan,
@@ -496,7 +497,7 @@ def test_adjust_fcst_for_crps(
     expected,
 ):
     """Tests `adjust_fcst_for_crps` with a variety of inputs."""
-    result = adjust_fcst_for_crps(fcst, "x", obs, decreasing_tolerance)
+    result = adjust_fcst_for_crps(fcst, "x", obs, decreasing_tolerance=decreasing_tolerance)
     xr.testing.assert_allclose(result, expected)
 
 
@@ -530,7 +531,7 @@ def test_adjust_fcst_raises(
             crps_test_data.DA_FCST_ADJUST1,
             threshold_dim,
             crps_test_data.DA_OBS_ADJUST1,
-            decreasing_tolerance,
+            decreasing_tolerance=decreasing_tolerance,
         )
 
 
@@ -597,7 +598,9 @@ def test_crps_cdf_brier_raises(
 ):
     """Check that `crps_cdf_brier_decomposition` raises exceptions as expected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
-        crps_cdf_brier_decomposition(fcst, obs, threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims)
+        crps_cdf_brier_decomposition(
+            fcst, obs, threshold_dim=threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims
+        )
 
 
 @pytest.mark.parametrize(
@@ -610,7 +613,7 @@ def test_crps_cdf_brier_raises(
 def test_crps_cdf_brier_decomposition(dims, expected):
     """Tests `crps_cdf_brier_decomposition` with a variety of inputs."""
     result = crps_cdf_brier_decomposition(
-        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, "x", preserve_dims=dims
+        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, threshold_dim="x", preserve_dims=dims
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -638,7 +641,7 @@ def test_crps_for_ensemble():
 def test_crps_for_ensemble_raises():
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
-        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", "unfair")
+        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", method="unfair")
     assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
 
 

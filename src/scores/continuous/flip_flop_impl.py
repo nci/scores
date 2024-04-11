@@ -47,7 +47,7 @@ def _flip_flop_index(
     if is_angular:
         # get complementary dimensions as `encompassing_sector_size` takes
         # dimensions to be preserved, not collapsed
-        dims_to_preserve = dims_complement(data, [sampling_dim])
+        dims_to_preserve = dims_complement(data, dims=[sampling_dim])
         # get maximum forecast range, if > 180 then clip to 180 as this is the
         # maximum possible angular difference between two forecasts
         enc_size = encompassing_sector_size(data=data, dims=dims_to_preserve)
@@ -228,7 +228,7 @@ def iter_selections(
           * lead_day  (lead_day) int64 1 2 3
 
     """
-    check_dims(data, [sampling_dim], "superset")
+    check_dims(data, [sampling_dim], mode="superset")
 
     for key, values in selections.items():
         try:
@@ -272,8 +272,8 @@ def encompassing_sector_size(
             - the set of data dimensions is not a proper superset of `dims`
             - dimension to be collapsed isn't 1
     """
-    check_dims(data, dims, "proper superset")
-    dims_to_collapse = dims_complement(data, dims)
+    check_dims(data, dims, mode="proper superset")
+    dims_to_collapse = dims_complement(data, dims=dims)
     if len(dims_to_collapse) != 1:
         raise DimensionError("can only collapse one dimension")
     dim_to_collapse = dims_to_collapse[0]

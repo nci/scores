@@ -86,10 +86,11 @@ def crps_cdf_reformat_inputs(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold_dim: str,
-    threshold_weight: Optional[xr.DataArray],
-    additional_thresholds: Optional[Iterable[float]],
-    fcst_fill_method: Literal["linear", "step", "forward", "backward"],
-    threshold_weight_fill_method: Literal["linear", "step", "forward", "backward"],
+    *,  # Force keywords arguments to be keyword-only
+    threshold_weight: Optional[xr.DataArray] = None,
+    additional_thresholds: Optional[Iterable[float]] = None,
+    fcst_fill_method: Literal["linear", "step", "forward", "backward"] = "linear",
+    threshold_weight_fill_method: Literal["linear", "step", "forward", "backward"] = "forward",
 ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     """
     Takes `fcst`, `obs` and `threshold_weight` inputs from `crps_cdf` and reformats them
@@ -145,6 +146,7 @@ def crps_cdf_reformat_inputs(
 def crps_cdf(
     fcst: xr.DataArray,
     obs: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
     threshold_dim: str = "threshold",
     threshold_weight: Optional[xr.DataArray] = None,
     additional_thresholds: Optional[Iterable[float]] = None,
@@ -319,10 +321,10 @@ def crps_cdf(
         fcst,
         obs,
         threshold_dim,
-        threshold_weight,
-        additional_thresholds,
-        fcst_fill_method,
-        threshold_weight_fill_method,
+        threshold_weight=threshold_weight,
+        additional_thresholds=additional_thresholds,
+        fcst_fill_method=fcst_fill_method,
+        threshold_weight_fill_method=threshold_weight_fill_method,
     )
 
     if integration_method == "exact":
@@ -343,7 +345,7 @@ def crps_cdf(
             include_components=include_components,
         )
 
-    weighted = scores.functions.apply_weights(result, weights)
+    weighted = scores.functions.apply_weights(result, weights=weights)
 
     dims.remove(threshold_dim)  # type: ignore
 
@@ -357,6 +359,7 @@ def crps_cdf_exact(
     cdf_obs: xr.DataArray,
     threshold_weight: xr.DataArray,
     threshold_dim: str,
+    *,  # Force keywords arguments to be keyword-only
     include_components=False,
 ) -> xr.Dataset:
     """
@@ -427,6 +430,7 @@ def crps_cdf_exact(
 def crps_cdf_brier_decomposition(
     fcst: xr.DataArray,
     obs: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
     threshold_dim: str = "threshold",
     additional_thresholds: Optional[Iterable[float]] = None,
     fcst_fill_method: Literal["linear", "step", "forward", "backward"] = "linear",
@@ -496,10 +500,10 @@ def crps_cdf_brier_decomposition(
         fcst,
         obs,
         threshold_dim,
-        None,
-        additional_thresholds,
-        fcst_fill_method,
-        "forward",
+        threshold_weight=None,
+        additional_thresholds=additional_thresholds,
+        fcst_fill_method=fcst_fill_method,
+        threshold_weight_fill_method="forward",
     )
 
     dims.remove(threshold_dim)  # type: ignore
@@ -552,6 +556,7 @@ def adjust_fcst_for_crps(
     fcst: xr.DataArray,
     threshold_dim: str,
     obs: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
     decreasing_tolerance: float = 0,
     additional_thresholds: Optional[Iterable[float]] = None,
     fcst_fill_method: Literal["linear", "step", "forward", "backward"] = "linear",
@@ -631,7 +636,7 @@ def adjust_fcst_for_crps(
     crps_fcst_env = crps_cdf(
         fcst_env,
         obs,
-        threshold_dim,
+        threshold_dim=threshold_dim,
         additional_thresholds=additional_thresholds,
         fcst_fill_method=fcst_fill_method,
         integration_method=integration_method,
@@ -652,6 +657,7 @@ def crps_cdf_trapz(
     cdf_obs: xr.DataArray,
     threshold_weight: xr.DataArray,
     threshold_dim: str,
+    *,  # Force keywords arguments to be keyword-only
     include_components=False,
 ) -> xr.Dataset:
     """
@@ -697,6 +703,7 @@ def crps_cdf_trapz(
 def crps_step_threshold_weight(
     step_points: xr.DataArray,
     threshold_dim: str,
+    *,  # Force keywords arguments to be keyword-only
     threshold_values: Optional[Iterable[float]] = None,
     steppoints_in_thresholds: bool = True,
     steppoint_precision: float = 0,
@@ -743,6 +750,7 @@ def crps_for_ensemble(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     ensemble_member_dim: str,
+    *,  # Force keywords arguments to be keyword-only
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
@@ -829,6 +837,6 @@ def crps_for_ensemble(
     result = fcst_obs_term - fcst_spread_term
 
     # apply weights and take means across specified dims
-    result = scores.functions.apply_weights(result, weights).mean(dim=dims_for_mean)
+    result = scores.functions.apply_weights(result, weights=weights).mean(dim=dims_for_mean)
 
     return result

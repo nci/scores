@@ -17,6 +17,7 @@ def diebold_mariano(  # pylint: disable=R0914
     da_timeseries: xr.DataArray,
     ts_dim: str,
     h_coord: str,
+    *,  # Force keywords arguments to be keyword-only
     method: Literal["HG", "HLN"] = "HG",
     confidence_level: float = 0.95,
     statistic_distribution: Literal["normal", "t"] = "normal",
@@ -158,7 +159,7 @@ def diebold_mariano(  # pylint: disable=R0914
     if (da_timeseries[h_coord] <= 0).any():
         raise ValueError("Every value in `da_timeseries[h_coord]` must be positive.")
 
-    other_dim = dims_complement(da_timeseries, [ts_dim])[0]
+    other_dim = dims_complement(da_timeseries, dims=[ts_dim])[0]
     da_timeseries_len = da_timeseries.count(other_dim)
 
     if (da_timeseries_len <= da_timeseries[h_coord]).any():
@@ -172,7 +173,7 @@ def diebold_mariano(  # pylint: disable=R0914
     for i in range(ts_dim_len):
         timeseries = da_timeseries.isel({ts_dim: i})
         h = int(timeseries[h_coord])
-        test_stats[i] = _dm_test_statistic(timeseries.values, h, method)
+        test_stats[i] = _dm_test_statistic(timeseries.values, h, method=method)
 
     if statistic_distribution == "normal":
         pvals = sp.stats.norm.cdf(test_stats)
@@ -196,7 +197,7 @@ def diebold_mariano(  # pylint: disable=R0914
     return result
 
 
-def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] = "HG") -> float:
+def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG") -> float:
     """
     Given a timeseries of score differences for h-step ahead forecasts, as a 1D numpy
     array, returns a modified Diebold-Mariano test statistic. NaNs are removed prior

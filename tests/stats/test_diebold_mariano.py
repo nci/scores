@@ -176,9 +176,9 @@ def test_diebold_mariano_raises(
             da_timeseries,
             ts_dim,
             h_coord,
-            method,
-            confidence_level,
-            statistic_distribution,
+            method=method,
+            confidence_level=confidence_level,
+            statistic_distribution=statistic_distribution,
         )
 
 
@@ -277,7 +277,7 @@ def test__hln_method_stat(diffs, h, expected):
 )
 def test__dm_test_statistic(diffs, h, method, expected):
     """Tests that _dm_test_statistic returns values as expected."""
-    result = _dm_test_statistic(diffs, h, method)
+    result = _dm_test_statistic(diffs, h, method=method)
     np.testing.assert_allclose(result, expected, atol=1e-5)
 
 
@@ -285,7 +285,7 @@ def test__dm_test_statistic_with_nan():
     """Tests that _dm_test_statistic returns values as expected with a NaN diffs."""
     diffs = np.array([np.nan, 1, 2, 3, 4.0, np.nan])
     with pytest.warns(RuntimeWarning):
-        result = _dm_test_statistic(diffs, 2, "HLN")
+        result = _dm_test_statistic(diffs, 2, method="HLN")
     np.testing.assert_allclose(result, DM_TEST_STAT_EXP1, atol=1e-5)
 
 
@@ -302,7 +302,7 @@ def test__dm_test_statistic_with_nan():
 def test__dm_test_statistic_raises(diff, h, method, error_msg):
     """Tests that _dm_test_statistic raises a ValueError as expected."""
     with pytest.raises(ValueError, match=error_msg):
-        _dm_test_statistic(diff, h, method)
+        _dm_test_statistic(diff, h, method=method)
 
 
 # DM test stat when timeseries is [2.0, 1, -3, -1, 0] and h = 3
