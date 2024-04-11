@@ -126,7 +126,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
         reduce_dims = set([reduce_dims])
 
     # Turn into a set if needed
-    assert reduce_dims is not None
+    assert reduce_dims is not None  # nosec - this is just to modify type hinting
     reduce_dims = set(reduce_dims)
 
     # Reduce by list is the default so no handling needed
