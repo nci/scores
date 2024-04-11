@@ -161,12 +161,12 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     )
     fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)
     y_out = _do_ir(
-       fcst_tidied,
-       obs_tidied,
-       weight=weight_tidied,
-       functional=functional,
-       quantile_level=quantile_level,
-       solver=solver
+        fcst_tidied,
+        obs_tidied,
+        weight=weight_tidied,
+        functional=functional,
+        quantile_level=quantile_level,
+        solver=solver,
     )
 
     # calculate the fitting function
@@ -499,10 +499,7 @@ def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
 
 
 def _contiguous_mean_ir(
-    x: np.ndarray,
-    y: np.ndarray,
-    *,  # Force keywords arguments to be keyword-only
-    weight: Optional[np.ndarray] = None
+    x: np.ndarray, y: np.ndarray, *, weight: Optional[np.ndarray] = None  # Force keywords arguments to be keyword-only
 ) -> np.ndarray:
     """
     Performs classical (i.e. for mean functional) contiguous quantile IR on tidied data x, y.
@@ -558,10 +555,10 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
         ir_results = _do_ir(
             fcst_sample,
             obs_sample,
-            weight=weight_sample, 
+            weight=weight_sample,
             functional=functional,
             quantile_level=quantile_level,
-            solver=solver
+            solver=solver,
         )
 
         approximation_func = interpolate.interp1d(fcst_sample, ir_results, bounds_error=False)

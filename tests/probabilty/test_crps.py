@@ -598,7 +598,9 @@ def test_crps_cdf_brier_raises(
 ):
     """Check that `crps_cdf_brier_decomposition` raises exceptions as expected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
-        crps_cdf_brier_decomposition(fcst, obs, threshold_dim=threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims)
+        crps_cdf_brier_decomposition(
+            fcst, obs, threshold_dim=threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims
+        )
 
 
 @pytest.mark.parametrize(

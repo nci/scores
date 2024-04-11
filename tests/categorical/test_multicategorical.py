@@ -44,7 +44,12 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
     risk_parameter = 0.7
 
     calculated = _single_category_score(
-        fcst, obs, risk_parameter, categorical_threshold, discount_distance=discount_distance, threshold_assignment=threshold_assignment
+        fcst,
+        obs,
+        risk_parameter,
+        categorical_threshold,
+        discount_distance=discount_distance,
+        threshold_assignment=threshold_assignment,
     )
     xr.testing.assert_allclose(calculated, expected)
 

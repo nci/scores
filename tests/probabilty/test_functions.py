@@ -61,7 +61,9 @@ def test_observed_cdf_errors():
 
     # Bad precision raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values=threshold_values, precision=badprecision)
+        scores.probability.functions.observed_cdf(
+            obs, threshold_dim, threshold_values=threshold_values, precision=badprecision
+        )
 
     # Null obs and a null threshold value raises a value error
     with pytest.raises(ValueError):

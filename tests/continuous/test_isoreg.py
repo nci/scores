@@ -291,7 +291,7 @@ def test__do_ir(functional, solver, expected):
         weight=None,
         functional=functional,
         quantile_level=0.5,
-        solver=solver
+        solver=solver,
     )
     np.testing.assert_array_equal(result, expected)
 

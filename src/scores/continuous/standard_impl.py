@@ -129,9 +129,7 @@ def rmse(
             reduced along the relevant dimensions and weighted appropriately.
 
     """
-    _mse = mse(
-        fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, angular=angular
-    )
+    _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, angular=angular)
 
     _rmse = pow(_mse, (1 / 2))
 

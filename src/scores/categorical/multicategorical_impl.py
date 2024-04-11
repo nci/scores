@@ -109,7 +109,12 @@ def firm(  # pylint: disable=too-many-arguments
     total_score = []
     for categorical_threshold, weight in zip(categorical_thresholds, threshold_weights):
         score = weight * _single_category_score(
-            fcst, obs, risk_parameter, categorical_threshold, discount_distance=discount_distance, threshold_assignment=threshold_assignment
+            fcst,
+            obs,
+            risk_parameter,
+            categorical_threshold,
+            discount_distance=discount_distance,
+            threshold_assignment=threshold_assignment,
         )
         total_score.append(score)
     summed_score = sum(total_score)
