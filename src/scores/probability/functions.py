@@ -124,6 +124,9 @@ def observed_cdf(
     # remove any NaN
     thresholds = [x for x in thresholds if not np.isnan(x)]
 
+    # pandas.unique retains the original ordering whereas set() may not
+    # pandas.unique no longer accepts a simple array as input
+    thresholds = pd.Series(thresholds)
     thresholds = np.sort(pd.unique(thresholds))
 
     da_thresholds = xr.DataArray(
