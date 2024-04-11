@@ -198,7 +198,7 @@ class BinaryContingencyTable:
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
         return ts        
 
-    def pierce_skill_score(self, *, preserve_dims=preserve_dims, reduce_dims=reduce_dims):
+    def pierce_skill_score(self, *, preserve_dims=None, reduce_dims=None):
         """
         Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
         How well did the forecast separate the "yes" events from the "no" events?
