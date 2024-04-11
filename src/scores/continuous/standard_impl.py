@@ -247,7 +247,7 @@ def additive_bias(
 
     It is defined as
     .. math::
-        \\text{Additive bias} =\\frac{1}{N}\sum_{i=1}^{N}(x_i - y_i)
+        \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
 
