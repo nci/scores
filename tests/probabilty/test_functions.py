@@ -1,13 +1,13 @@
 """
 This module contains unit tests for scores.probability.functions
 """
+
 import numpy as np
 import pytest
 import xarray as xr
 
 import scores.probability.checks
 import scores.probability.functions
-from tests import assertions
 from tests.probabilty import cdf_test_data, crps_test_data
 from tests.probabilty import functions_test_data as ftd
 
@@ -15,7 +15,7 @@ from tests.probabilty import functions_test_data as ftd
 def test_round_values_exception():
     """Test rounding throws the right exceptions"""
     with pytest.raises(ValueError):
-        scores.probability.functions.round_values(xr.DataArray(), -1, 5)
+        scores.probability.functions.round_values(xr.DataArray(), -1, final_round_decpl=5)
 
 
 @pytest.mark.parametrize(
@@ -29,7 +29,7 @@ def test_round_values_exception():
 def test_round_values(array, rounding_precision, expected):
     """Tests `round_values` with a variety of inputs."""
     output_as = scores.probability.functions.round_values(array, rounding_precision)
-    assertions.assert_dataarray_equal(output_as, expected, decimals=7)
+    xr.testing.assert_allclose(output_as, expected)
 
 
 def test_propagate_nan_error():
@@ -49,7 +49,7 @@ def test_propagate_nan_error():
 def test_propagate_nan(dim, expected):
     """Tests `propagate_nan` with a variety of inputs."""
     result = scores.probability.functions.propagate_nan(cdf_test_data.DA_PROPNAN, dim)
-    assertions.assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_observed_cdf_errors():
@@ -61,11 +61,13 @@ def test_observed_cdf_errors():
 
     # Bad precision raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values, precision=badprecision)
+        scores.probability.functions.observed_cdf(
+            obs, threshold_dim, threshold_values=threshold_values, precision=badprecision
+        )
 
     # Null obs and a null threshold value raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values)
+        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values=threshold_values)
 
 
 @pytest.mark.parametrize(
@@ -79,7 +81,7 @@ def test_observed_cdf_errors():
 def test_integrate_square_piecewise_linear(function_values, expected):
     """Tests `integrate_square_piecewise_linear` with a variety of inputs."""
     result = scores.probability.functions.integrate_square_piecewise_linear(function_values, "x")
-    assertions.assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
@@ -95,7 +97,7 @@ def test_integrate_square_piecewise_linear(function_values, expected):
 def test_fill_cdf(method, min_nonnan, expected):
     """Tests `fill_cdf` with a variety of inputs."""
     output = scores.probability.functions.fill_cdf(cdf_test_data.DA_FILL_CDF1, "x", method, min_nonnan)
-    assertions.assert_dataarray_equal(output, expected, decimals=7)
+    xr.testing.assert_allclose(output, expected)
 
 
 @pytest.mark.parametrize(
@@ -218,7 +220,7 @@ def test_check_nan_decreasing_inputs(cdf, threshold_dim, tolerance, error_msg_sn
 def test_cdf_envelope(cdf):
     """Tests `cdf_envelope` with a variety of inputs."""
     result = scores.probability.functions.cdf_envelope(cdf, "x")
-    assertions.assert_dataarray_equal(result, cdf_test_data.EXP_CDF_ENVELOPE1, decimals=7)
+    xr.testing.assert_allclose(result, cdf_test_data.EXP_CDF_ENVELOPE1)
 
 
 def test_cdf_envelope_raises():

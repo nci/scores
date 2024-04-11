@@ -1,10 +1,9 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
-import inspect
 import warnings
 from collections.abc import Hashable, Iterable, Sequence
-from typing import Optional
+from typing import Optional, Union
 
 import xarray as xr
 
@@ -56,6 +55,7 @@ class DimensionError(Exception):
 def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
 ) -> set[Hashable]:
@@ -133,9 +133,10 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     return reduce_dims
 
 
-def gather_dimensions2(
+def gather_dimensions2(  # pylint: disable=too-many-branches
     fcst: xr.DataArray,
     obs: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
     weights: xr.DataArray = None,
     reduce_dims: FlexibleDimensionTypes = None,
     preserve_dims: FlexibleDimensionTypes = None,
@@ -231,7 +232,7 @@ def gather_dimensions2(
     return all_scoring_dims.difference(set(specified_dims))
 
 
-def dims_complement(data, dims=None) -> list[str]:
+def dims_complement(data, *, dims=None) -> list[str]:
     """Returns the complement of data.dims and dims
 
     Args:
@@ -252,7 +253,7 @@ def dims_complement(data, dims=None) -> list[str]:
     return sorted(list(complement))
 
 
-def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional[str] = None):
+def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], *, mode: Optional[str] = None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
@@ -336,7 +337,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
                 )
 
 
-def tmp_coord_name(xr_data: xr.DataArray, count=1) -> str:
+def tmp_coord_name(xr_data: xr.DataArray, *, count=1) -> Union[str, list[str]]:
     """
     Generates temporary coordinate names that are not among the coordinate or dimension
     names of `xr_data`.

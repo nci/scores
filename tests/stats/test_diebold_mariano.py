@@ -176,9 +176,9 @@ def test_diebold_mariano_raises(
             da_timeseries,
             ts_dim,
             h_coord,
-            method,
-            confidence_level,
-            statistic_distribution,
+            method=method,
+            confidence_level=confidence_level,
+            statistic_distribution=statistic_distribution,
         )
 
 
@@ -277,7 +277,7 @@ def test__hln_method_stat(diffs, h, expected):
 )
 def test__dm_test_statistic(diffs, h, method, expected):
     """Tests that _dm_test_statistic returns values as expected."""
-    result = _dm_test_statistic(diffs, h, method)
+    result = _dm_test_statistic(diffs, h, method=method)
     np.testing.assert_allclose(result, expected, atol=1e-5)
 
 
@@ -285,7 +285,7 @@ def test__dm_test_statistic_with_nan():
     """Tests that _dm_test_statistic returns values as expected with a NaN diffs."""
     diffs = np.array([np.nan, 1, 2, 3, 4.0, np.nan])
     with pytest.warns(RuntimeWarning):
-        result = _dm_test_statistic(diffs, 2, "HLN")
+        result = _dm_test_statistic(diffs, 2, method="HLN")
     np.testing.assert_allclose(result, DM_TEST_STAT_EXP1, atol=1e-5)
 
 
@@ -302,7 +302,7 @@ def test__dm_test_statistic_with_nan():
 def test__dm_test_statistic_raises(diff, h, method, error_msg):
     """Tests that _dm_test_statistic raises a ValueError as expected."""
     with pytest.raises(ValueError, match=error_msg):
-        _dm_test_statistic(diff, h, method)
+        _dm_test_statistic(diff, h, method=method)
 
 
 # DM test stat when timeseries is [2.0, 1, -3, -1, 0] and h = 3
@@ -310,38 +310,38 @@ DM_TEST_STAT_EXP2 = ((6 / 25) ** 0.5) * (-0.2) * (0.0864 ** (-0.5))
 
 # expected outputs for dm_test_stats
 DM_TEST_STATS_T_EXP = xr.Dataset(
-    data_vars=dict(
-        mean=(["lead_day"], [2.5, -0.2, 1.0]),
-        dm_test_stat=(["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
-        timeseries_len=(["lead_day"], [4, 5, 5]),
-        confidence_gt_0=(
+    data_vars={
+        "mean": (["lead_day"], [2.5, -0.2, 1.0]),
+        "dm_test_stat": (["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
+        "timeseries_len": (["lead_day"], [4, 5, 5]),
+        "confidence_gt_0": (
             ["lead_day"],
             [0.9443164226429581, 0.3778115634892615, np.nan],
         ),
-        ci_upper=(["lead_day"], [5.131140307989639, 1.079108068801774, np.nan]),
-        ci_lower=(
+        "ci_upper": (["lead_day"], [5.131140307989639, 1.079108068801774, np.nan]),
+        "ci_lower": (
             ["lead_day"],
             [-0.13114030798963894, -1.4791080688017741, np.nan],
         ),
-    ),
+    },
     coords={"lead_day": [1, 2, 3]},
 )
 
 DM_TEST_STATS_NORMAL_EXP = xr.Dataset(
-    data_vars=dict(
-        mean=(["lead_day"], [2.5, -0.2, 1.0]),
-        dm_test_stat=(["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
-        timeseries_len=(["lead_day"], [4, 5, 5]),
-        confidence_gt_0=(
+    data_vars={
+        "mean": (["lead_day"], [2.5, -0.2, 1.0]),
+        "dm_test_stat": (["lead_day"], [DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2, np.nan]),
+        "timeseries_len": (["lead_day"], [4, 5, 5]),
+        "confidence_gt_0": (
             ["lead_day"],
             [0.9873263406612659, 0.36944134018176367, np.nan],
         ),
-        ci_upper=(["lead_day"], [4.339002261450286, 0.7869121761708835, np.nan]),
-        ci_lower=(
+        "ci_upper": (["lead_day"], [4.339002261450286, 0.7869121761708835, np.nan]),
+        "ci_lower": (
             ["lead_day"],
             [0.6609977385497137, -1.1869121761708834, np.nan],
         ),
-    ),
+    },
     coords={"lead_day": [1, 2, 3]},
 )
 

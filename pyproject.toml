@@ -54,7 +54,8 @@ maintainer = ["build",
               "sphinx",
               "myst-parser",
               "sphinx-book-theme",
-              "twine"
+              "twine",
+              "pip-tools",
 ]
 all = ["scores[dev,tutorial]"]
 
@@ -81,8 +82,7 @@ line-length = 120
 warn_return_any = true
 warn_unused_configs = true
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
+#ignore_missing_imports = true
 
 [tool.coverage.paths]
 source = ["/src/"]
@@ -108,7 +108,8 @@ addopts = [
     '--ignore=tutorials/Mean_Squared_Error.ipynb',
     '--ignore=tutorials/Root_Mean_Squared_Error.ipynb',
     '--ignore=tutorials/Weighting_Results.ipynb',
-    '--ignore=tutorials/Mean_Absolute_Error.ipynb'
+    '--ignore=tutorials/Mean_Absolute_Error.ipynb',
+    '--ignore=tutorials/Additive_and_multiplicative_bias.ipynb'
 ]
 
 [tool.pylint.master]
@@ -123,7 +124,7 @@ ignore-paths = [
 max-args=10
 
 [tool.pylint.FORMAT]
-max-line-length=120
+max-line-length=150  # Deliberately "too long" to avoid disagreements with black formatter
 
 [tool.pylint.messages_control]
-good_names=['df','da','x','y','z','i','j','k','ae']
+good-names=['df','da','x','y','z','i','j','k','ae']  # pylint: disable=E0015

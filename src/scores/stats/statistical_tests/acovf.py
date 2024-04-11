@@ -55,6 +55,8 @@ DAMAGE.
 
 import numpy as np
 
+# pylint: skip-file
+
 __all__ = ["acovf"]
 
 
