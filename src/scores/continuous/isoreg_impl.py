@@ -16,8 +16,8 @@ from typing import Callable, Literal, Optional, Tuple, Union
 
 import numpy as np
 import xarray as xr
-from scipy import interpolate  
-from sklearn.isotonic import IsotonicRegression  
+from scipy import interpolate
+from sklearn.isotonic import IsotonicRegression
 
 
 def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments

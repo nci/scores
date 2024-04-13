@@ -122,7 +122,7 @@ def firm(  # pylint: disable=too-many-arguments
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )  # type: ignore[assignment]
     summed_score = apply_weights(summed_score, weights=weights)  # type: ignore
-    score = summed_score.mean(dim=reduce_dims)
+    score = summed_score.mean(dim=reduce_dims)  # type: ignore
 
     return score  # type: ignore
 

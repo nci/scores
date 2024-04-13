@@ -282,7 +282,7 @@ def additive_bias(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     score = score.mean(dim=reduce_dims)
-    return score
+    return score  # type: ignore
 
 
 def multiplicative_bias(

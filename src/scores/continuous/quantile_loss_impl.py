@@ -97,4 +97,4 @@ def quantile_score(
     results = apply_weights(result, weights=weights)
     score = results.mean(dim=reduce_dims)
 
-    return score
+    return score  # type: ignore
