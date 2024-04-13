@@ -5,7 +5,7 @@ Module to generate simple sample data for users (not tests). Supports tutorials 
 import numpy as np
 import pandas as pd
 import xarray as xr
-from scipy.stats import skewnorm
+from scipy.stats import skewnorm  # type: ignore
 
 
 def simple_forecast() -> xr.DataArray:

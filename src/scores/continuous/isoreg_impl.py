@@ -16,8 +16,8 @@ from typing import Callable, Literal, Optional, Tuple, Union
 
 import numpy as np
 import xarray as xr
-from scipy import interpolate
-from sklearn.isotonic import IsotonicRegression
+from scipy import interpolate  
+from sklearn.isotonic import IsotonicRegression  
 
 
 def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
@@ -262,8 +262,8 @@ def _xr_to_np(
 def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
     fcst: np.ndarray,
     obs: np.ndarray,
-    weight: np.ndarray,
     *,  # Force keywords arguments to be keyword-only
+    weight: Optional[Union[np.ndarray, xr.DataArray]] = None,
     functional: Optional[str] = None,
     quantile_level: Optional[float] = None,
     solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
