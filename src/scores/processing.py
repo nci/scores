@@ -115,7 +115,7 @@ def comparative_discretise(
     discrete_data.attrs["discretisation_tolerance"] = abs_tolerance
     discrete_data.attrs["discretisation_mode"] = mode
 
-    return discrete_data
+    return discrete_data  # type: ignore
 
 
 def binary_discretise(

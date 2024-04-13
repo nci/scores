@@ -146,20 +146,20 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     """
 
     if isinstance(fcst, xr.DataArray):
-        fcst, obs, weight = _xr_to_np(fcst, obs, weight)
+        fcst, obs, weight = _xr_to_np(fcst, obs, weight)  # type: ignore
     # now fcst, obs and weight (unless None) are np.arrays
 
     _iso_arg_checks(
-        fcst,
-        obs,
-        weight,
+        fcst,  # type: ignore
+        obs,  # type: ignore
+        weight=weight,  # type: ignore
         functional=functional,
         quantile_level=quantile_level,
         solver=solver,
         bootstraps=bootstraps,
         confidence_level=confidence_level,
     )
-    fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)
+    fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)  # type: ignore
     y_out = _do_ir(
         fcst_tidied,
         obs_tidied,
@@ -191,7 +191,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         confband_levels = ((1 - confidence_level) / 2, 1 - (1 - confidence_level) / 2)  # type: ignore
 
     else:
-        boot_results = lower_pts = upper_pts = None
+        boot_results = lower_pts = upper_pts = None  # type: ignore
         lower_func = upper_func = partial(np.full_like, fill_value=np.nan)
         confband_levels = (None, None)  # type: ignore
     # To reduce the size of output dictionary, we only keep the unique values of
@@ -249,14 +249,14 @@ def _xr_to_np(
         if set(fcst_dims) != set(weight.dims):
             raise ValueError("`fcst` and `weight` must have same dimensions.")
         merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs"), weight.rename("weight")])
-        weight = merged_ds["weight"].transpose(*fcst_dims).values
+        weight = merged_ds["weight"].transpose(*fcst_dims).values  # type: ignore
     else:
         merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs")])
 
-    fcst = merged_ds["fcst"].transpose(*fcst_dims).values
-    obs = merged_ds["obs"].transpose(*fcst_dims).values
+    fcst = merged_ds["fcst"].transpose(*fcst_dims).values  # type: ignore
+    obs = merged_ds["obs"].transpose(*fcst_dims).values  # type: ignore
 
-    return fcst, obs, weight
+    return fcst, obs, weight  # type: ignore
 
 
 def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
@@ -369,7 +369,7 @@ def _tidy_ir_inputs(
         new_weight = weight[~nan_locs]
         new_weight = new_weight[sorter]
 
-    return new_fcst, new_obs, new_weight
+    return new_fcst, new_obs, new_weight  # type: ignore
 
 
 def _do_ir(  # pylint: disable=too-many-arguments
@@ -495,7 +495,7 @@ def _contiguous_ir(
 
 def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
     """Performs contiguous quantile IR on tidied data y, for quantile-level alpha, with no weights."""
-    return _contiguous_ir(y, partial(np.quantile, q=alpha))
+    return _contiguous_ir(y, partial(np.quantile, q=alpha))  # type: ignore
 
 
 def _contiguous_mean_ir(
@@ -506,7 +506,7 @@ def _contiguous_mean_ir(
     Uses sklearn implementation rather than supplying the mean solver function to `_contiguous_ir`,
     as it is about 4 times faster (since it is optimised for mean).
     """
-    return IsotonicRegression().fit_transform(x, y, sample_weight=weight)
+    return IsotonicRegression().fit_transform(x, y, sample_weight=weight)  # type: ignore
 
 
 def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals

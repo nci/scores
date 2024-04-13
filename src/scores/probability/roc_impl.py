@@ -120,7 +120,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         np.trapz,
         pod,
         pofd,
-        input_core_dims=[pod.dims, pofd.dims],
+        input_core_dims=[pod.dims, pofd.dims],  # type: ignore
         output_core_dims=[auc_dims],
         dask="parallelized",
     )

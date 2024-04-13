@@ -294,7 +294,7 @@ def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
         Hering and Genton, 'Comparing spatial predictions',
         Technometrics 53 no. 4 (2011), 414-425.
     """
-    return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv  # ignore: type
+    return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv  # type: ignore
 
 
 def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
@@ -396,6 +396,6 @@ def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
     result = (_dm_gamma_hat_k(diffs, diffs_bar, n, 0) + 2 * np.sum(summands)) / n**2
 
     if result <= 0:
-        result = np.nan
+        result = np.nan  # type: ignore
 
     return result  # type: ignore

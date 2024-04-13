@@ -121,10 +121,10 @@ def firm(  # pylint: disable=too-many-arguments
     reduce_dims = gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )  # type: ignore[assignment]
-    summed_score = apply_weights(summed_score, weights=weights)
+    summed_score = apply_weights(summed_score, weights=weights)  # type: ignore
     score = summed_score.mean(dim=reduce_dims)
 
-    return score
+    return score  # type: ignore
 
 
 def _check_firm_inputs(
@@ -223,8 +223,8 @@ def _single_category_score(
         scale_1 = np.minimum(categorical_threshold - obs, discount_distance)
         scale_2 = np.minimum(obs - categorical_threshold, discount_distance)
     else:
-        scale_1 = 1
-        scale_2 = 1
+        scale_1 = 1  # type: ignore
+        scale_2 = 1  # type: ignore
 
     overforecast_penalty = (1 - risk_parameter) * scale_1 * condition1
     underforecast_penalty = risk_parameter * scale_2 * condition2

@@ -59,11 +59,11 @@ def mse(
             reduced along the relevant dimensions and weighted appropriately.
     """
     if angular:
-        error = scores.functions.angular_difference(fcst, obs)
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        error = fcst - obs
+        error = fcst - obs  # type: ignore
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights=weights)
+    squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
 
     if preserve_dims or reduce_dims:
         reduce_dims = scores.utils.gather_dimensions(
@@ -71,7 +71,7 @@ def mse(
         )
 
     if reduce_dims is not None:
-        _mse = squared.mean(dim=reduce_dims)
+        _mse = squared.mean(dim=reduce_dims)  # type: ignore
     else:
         _mse = squared.mean()
 
@@ -133,7 +133,7 @@ def rmse(
 
     _rmse = pow(_mse, (1 / 2))
 
-    return _rmse
+    return _rmse  # type: ignore
 
 
 def mae(
@@ -183,11 +183,11 @@ def mae(
         containing the score along reduced dimensions
     """
     if angular:
-        error = scores.functions.angular_difference(fcst, obs)
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        error = fcst - obs
+        error = fcst - obs  # type: ignore
     ae = abs(error)
-    ae = scores.functions.apply_weights(ae, weights=weights)
+    ae = scores.functions.apply_weights(ae, weights=weights)  # type: ignore
 
     if preserve_dims is not None or reduce_dims is not None:
         reduce_dims = scores.utils.gather_dimensions(
@@ -276,7 +276,7 @@ def additive_bias(
     """
     error = fcst - obs
     score = scores.functions.apply_weights(error, weights=weights)
-    reduce_dims = scores.utils.gather_dimensions(
+    reduce_dims = scores.utils.gather_dimensions(  # type: ignore
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     score = score.mean(dim=reduce_dims)
@@ -322,7 +322,7 @@ def multiplicative_bias(
         An xarray object with the multiplicative bias of a forecast.
 
     """
-    reduce_dims = scores.utils.gather_dimensions(
+    reduce_dims = scores.utils.gather_dimensions(  # type: ignore
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     fcst = scores.functions.apply_weights(fcst, weights=weights)
