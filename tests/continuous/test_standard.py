@@ -9,7 +9,8 @@ try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # pylint: disable=invalid-name
+    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name
+
 import numpy as np
 import numpy.random
 import pandas as pd

@@ -17,7 +17,7 @@ def quantile_score(
     *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights: XarrayLike = None,
+    weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
     Calculates a score that targets alpha-quantiles.

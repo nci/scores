@@ -1,7 +1,7 @@
 """
 Contains functions which transform data or perform calculations
 """
-from typing import overload
+from typing import Optional, overload
 
 import numpy as np
 import xarray as xr
@@ -9,7 +9,7 @@ import xarray as xr
 from scores.typing import XarrayLike
 
 
-def apply_weights(values, *, weights=None):
+def apply_weights(values, *, weights: Optional[XarrayLike] = None):
     """
     Returns:
         A new array with the elements of values multiplied by the specified weights.

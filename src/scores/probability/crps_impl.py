@@ -754,7 +754,7 @@ def crps_for_ensemble(
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights: xr.DataArray = None,
+    weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """Calculates the CRPS probabilistic metric given ensemble input.
 

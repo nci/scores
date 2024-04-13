@@ -2,6 +2,8 @@
 This module contains methods related to the Brier score
 """
 
+from typing import Optional
+
 import xarray as xr
 
 from scores.continuous import mse
@@ -13,9 +15,9 @@ def brier_score(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
-    weights: xr.DataArray = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
     check_args: bool = True,
 ):
     """
