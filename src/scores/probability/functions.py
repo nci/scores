@@ -122,7 +122,7 @@ def observed_cdf(
         thresholds = np.concatenate((obs.values.flatten(), thresholds))
 
     # remove any NaN
-    thresholds = [x for x in thresholds if not np.isnan(x)]
+    thresholds = [x for x in thresholds if not np.isnan(x)]  # type: ignore
 
     thresholds = np.sort(pd.unique(thresholds))
 

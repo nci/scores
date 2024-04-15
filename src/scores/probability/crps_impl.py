@@ -107,14 +107,14 @@ def crps_cdf_reformat_inputs(
     fcst_thresholds = fcst[threshold_dim].values
     obs_thresholds = pd.unique(obs.values.flatten())
 
-    weight_thresholds = []
+    weight_thresholds = []  # type: ignore
     if threshold_weight is not None:
-        weight_thresholds = threshold_weight[threshold_dim].values
+        weight_thresholds = threshold_weight[threshold_dim].values  # type: ignore
 
     if additional_thresholds is None:
         additional_thresholds = []
 
-    thresholds = np.concatenate((weight_thresholds, fcst_thresholds, obs_thresholds, additional_thresholds))
+    thresholds = np.concatenate((weight_thresholds, fcst_thresholds, obs_thresholds, additional_thresholds))  # type: ignore
     thresholds = np.sort(pd.unique(thresholds))
     thresholds = thresholds[~np.isnan(thresholds)]
 
@@ -313,9 +313,9 @@ def crps_cdf(
     )
 
     if propagate_nans:
-        fcst = propagate_nan(fcst, threshold_dim)
+        fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
         if threshold_weight is not None:
-            threshold_weight = propagate_nan(threshold_weight, threshold_dim)
+            threshold_weight = propagate_nan(threshold_weight, threshold_dim)  # type: ignore
 
     fcst, obs, threshold_weight = crps_cdf_reformat_inputs(
         fcst,
@@ -349,7 +349,7 @@ def crps_cdf(
 
     dims.remove(threshold_dim)  # type: ignore
 
-    result = weighted.mean(dim=dims)
+    result = weighted.mean(dim=dims)  # type: ignore
 
     return result
 
@@ -384,21 +384,22 @@ def crps_cdf_exact(
     """
 
     # identify where input arrays have no NaN, collapsing `threshold_dim`
+    # Mypy doesn't realise the isnan and any come from xarray not numpy
     inputs_without_nan = (
-        ~np.isnan(cdf_fcst).any(threshold_dim)
-        & ~np.isnan(cdf_obs).any(threshold_dim)
-        & ~np.isnan(threshold_weight).any(threshold_dim)
+        ~np.isnan(cdf_fcst).any(threshold_dim)  # type: ignore
+        & ~np.isnan(cdf_obs).any(threshold_dim)  # type: ignore
+        & ~np.isnan(threshold_weight).any(threshold_dim)  # type: ignore
     )
 
     # thresholds in the closure of the interval (i.e. including endpoints) where
     # weight is 1
-    interval_where_weight_one = (threshold_weight == 1) | ((threshold_weight.shift(**{threshold_dim: 1})) == 1)
+    interval_where_weight_one = (threshold_weight == 1) | ((threshold_weight.shift(**{threshold_dim: 1})) == 1)  # type: ignore
 
     # thresholds in the closure of the interval where cdf_obs is 1
     interval_where_obs_one = cdf_obs == 1
 
     # thresholds in the closure of the interval where obs cdf is 0
-    interval_where_obs_zero = (cdf_obs == 0) | ((cdf_obs.shift(**{threshold_dim: 1})) == 0)
+    interval_where_obs_zero = (cdf_obs == 0) | ((cdf_obs.shift(**{threshold_dim: 1})) == 0)  # type: ignore
 
     # over-forecast penalty contribution to CRPS: integral(w(x) * (F(x) - 1)^2) where x >= obs
     over = (cdf_fcst - 1).where(interval_where_obs_one).where(interval_where_weight_one)
@@ -494,7 +495,7 @@ def crps_cdf_brier_decomposition(
 
     check_crps_cdf_brier_inputs(fcst, obs, threshold_dim, fcst_fill_method, dims)
 
-    fcst = propagate_nan(fcst, threshold_dim)
+    fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
 
     fcst, obs, _ = crps_cdf_reformat_inputs(
         fcst,
@@ -621,7 +622,7 @@ def adjust_fcst_for_crps(
     if decreasing_tolerance < 0:
         raise ValueError("`decreasing_tolerance` must be nonnegative")
 
-    fcst = propagate_nan(fcst, threshold_dim)
+    fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
 
     is_decreasing = decreasing_cdfs(fcst, threshold_dim, decreasing_tolerance)
 
@@ -640,7 +641,7 @@ def adjust_fcst_for_crps(
         additional_thresholds=additional_thresholds,
         fcst_fill_method=fcst_fill_method,
         integration_method=integration_method,
-        preserve_dims=crps_dims,
+        preserve_dims=crps_dims,  # type: ignore
     )
 
     fcst_type_to_use = crps_fcst_env["total"].idxmax("cdf_type")
@@ -673,10 +674,11 @@ def crps_cdf_trapz(
     """
 
     # identify where input arrays have no NaN, collapsing `threshold_dim`
+    # mypy doesn't realise the isnan and any come from xarray not numpy
     inputs_without_nan = (
-        ~np.isnan(cdf_fcst).any(threshold_dim)
-        & ~np.isnan(cdf_obs).any(threshold_dim)
-        & ~np.isnan(threshold_weight).any(threshold_dim)
+        ~np.isnan(cdf_fcst).any(dim=threshold_dim)  # type: ignore
+        & ~np.isnan(cdf_obs).any(dim=threshold_dim)  # type: ignore
+        & ~np.isnan(threshold_weight).any(dim=threshold_dim)  # type: ignore
     )
 
     # total error measured by CRPS
@@ -823,9 +825,9 @@ def crps_for_ensemble(
     ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
 
     # calculate forecast spread contribution
-    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})
+    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
 
-    fcst_spread_term = np.abs(fcst - fcst_copy).sum([ensemble_member_dim, ensemble_member_dim1])
+    fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
@@ -837,6 +839,6 @@ def crps_for_ensemble(
     result = fcst_obs_term - fcst_spread_term
 
     # apply weights and take means across specified dims
-    result = scores.functions.apply_weights(result, weights=weights).mean(dim=dims_for_mean)
+    result = scores.functions.apply_weights(result, weights=weights).mean(dim=dims_for_mean)  # type: ignore
 
-    return result
+    return result  # type: ignore

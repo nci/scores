@@ -352,7 +352,7 @@ def tmp_coord_name(xr_data: xr.DataArray, *, count=1) -> Union[str, list[str]]:
         If count > 1, a list of such strings, each unique from one another
     """
     all_names = ["new"] + list(xr_data.dims) + list(xr_data.coords)
-    result = "".join(all_names)
+    result = "".join(all_names)  # type: ignore
 
     if count == 1:
         return result

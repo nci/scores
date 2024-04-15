@@ -191,7 +191,7 @@ ENC_SIZE_NP_TESTS_SKIPNA = [
 ]
 ENC_SIZE_NP_TESTS_NOSKIPNA = []
 for test, ans in ENC_SIZE_NP_TESTS_SKIPNA:
-    if np.nan in test:
+    if np.nan in test:  # type: ignore
         ENC_SIZE_NP_TESTS_NOSKIPNA.append(
             (
                 test,
