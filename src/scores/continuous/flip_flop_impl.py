@@ -56,7 +56,7 @@ def _flip_flop_index(
     else:
         max_val = data.max(dim=sampling_dim, skipna=False)
         min_val = data.min(dim=sampling_dim, skipna=False)
-        range_val = max_val - min_val
+        range_val = max_val - min_val  # type: ignore
         # subtract each consecutive 'row' from eachother
         flip_flop = data.shift({sampling_dim: 1}) - data
 
@@ -162,7 +162,7 @@ def flip_flop_index(
     if not selections and isinstance(data, xr.DataArray):
         result = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
     else:
-        result = xr.Dataset()
+        result = xr.Dataset()  # type: ignore
         result.attrs["selections"] = selections
         for key, data_subset in iter_selections(data, sampling_dim, **selections):
             result[key] = _flip_flop_index(data_subset, sampling_dim, is_angular=is_angular)

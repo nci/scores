@@ -82,7 +82,9 @@ line-length = 120
 warn_return_any = true
 warn_unused_configs = true
 
-#ignore_missing_imports = true
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true
 
 [tool.coverage.paths]
 source = ["/src/"]

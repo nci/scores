@@ -100,7 +100,7 @@ def murphy_score(  # pylint: disable=R0914
         theta1 = thetas
     else:
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords={"theta": thetas})
-    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
+    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)  # type: ignore
 
     over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
         fcst1, obs1, theta1, alpha, huber_a=huber_a
