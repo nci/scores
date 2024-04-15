@@ -119,7 +119,7 @@ def observed_cdf(
     thresholds = threshold_values_as_array if threshold_values is not None else []
 
     if include_obs_in_thresholds:
-        thresholds = np.concatenate((obs.values.flatten(), thresholds))
+        thresholds = np.concatenate((obs.values.flatten(), thresholds))  # type: ignore
 
     # remove any NaN
     thresholds = [x for x in thresholds if not np.isnan(x)]  # type: ignore
@@ -216,7 +216,7 @@ def add_thresholds(
         determined by the specified fill method.
     """
 
-    thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))
+    thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))  # type: ignore
     thresholds = np.sort(pd.unique(thresholds))
     thresholds = thresholds[~np.isnan(thresholds)]
 

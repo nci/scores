@@ -278,7 +278,7 @@ def additive_bias(
     """
     error = fcst - obs
     score = scores.functions.apply_weights(error, weights=weights)
-    reduce_dims = scores.utils.gather_dimensions(  # type: ignore
+    reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     score = score.mean(dim=reduce_dims)
@@ -289,8 +289,8 @@ def multiplicative_bias(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
-    reduce_dims: Optional[XarrayLike] = None,
-    preserve_dims: Optional[XarrayLike] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
@@ -324,7 +324,7 @@ def multiplicative_bias(
         An xarray object with the multiplicative bias of a forecast.
 
     """
-    reduce_dims = scores.utils.gather_dimensions(  # type: ignore
+    reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     fcst = scores.functions.apply_weights(fcst, weights=weights)
