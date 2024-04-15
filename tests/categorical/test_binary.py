@@ -8,6 +8,7 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name
 
+
 import numpy as np
 import pytest
 import xarray as xr

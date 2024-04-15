@@ -169,16 +169,16 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
     # F(t) = mt + b, whenever x[i-1] <= t <= x[i].
 
     # difference in x
-    diff_xs = function_values[threshold_dim] - function_values[threshold_dim].shift(**{threshold_dim: 1})
+    diff_xs = function_values[threshold_dim] - function_values[threshold_dim].shift(**{threshold_dim: 1})  # type: ignore
 
     # difference in function values
-    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})
+    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})  # type: ignore
 
     # gradients m
     m_values = diff_ys / diff_xs
 
     # y intercepts b
-    b_values = function_values.shift(**{threshold_dim: 1})
+    b_values = function_values.shift(**{threshold_dim: 1})  # type: ignore
 
     # integral for x[i-1] <= t <= x[i]
     piece_integral = (
@@ -333,7 +333,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)
 
     # difference between consecutive terms along threshold_dim
-    diff = cdf - cdf.shift(**{threshold_dim: 1})
+    diff = cdf - cdf.shift(**{threshold_dim: 1})  # type: ignore
 
     result = diff.clip(max=0).sum(dim=threshold_dim) < -tolerance
 

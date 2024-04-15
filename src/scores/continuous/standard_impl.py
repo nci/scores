@@ -2,6 +2,8 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
+from typing import Optional
+
 import xarray as xr
 
 import scores.functions
@@ -14,11 +16,11 @@ def mse(
     fcst: FlexibleArrayType,
     obs: FlexibleArrayType,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
-    weights: xr.DataArray = None,
-    angular: bool = False,
-):
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
+    angular: Optional[bool] = False,
+) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
     Dimensional reduction is not supported for pandas and the user should
@@ -82,9 +84,9 @@ def rmse(
     fcst: FlexibleArrayType,
     obs: FlexibleArrayType,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
-    weights: xr.DataArray = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
     angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
@@ -140,9 +142,9 @@ def mae(
     fcst: FlexibleArrayType,
     obs: FlexibleArrayType,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
-    weights: xr.DataArray = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
     angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
@@ -207,8 +209,8 @@ def correlation(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> xr.DataArray:
     """
     Calculates the Pearson's correlation coefficient between two xarray DataArrays
@@ -240,9 +242,9 @@ def additive_bias(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
-    reduce_dims: XarrayLike = None,
-    preserve_dims: XarrayLike = None,
-    weights: XarrayLike = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
     Calculates the additive bias which is also sometimes called the mean error.
@@ -287,9 +289,9 @@ def multiplicative_bias(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
-    reduce_dims: XarrayLike = None,
-    preserve_dims: XarrayLike = None,
-    weights: XarrayLike = None,
+    reduce_dims: Optional[XarrayLike] = None,
+    preserve_dims: Optional[XarrayLike] = None,
+    weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
     Calculates the multiplicative bias.
