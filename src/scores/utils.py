@@ -253,7 +253,7 @@ def dims_complement(data, *, dims=None) -> list[str]:
     return sorted(list(complement))
 
 
-def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], *, mode: Optional[str] = None):
+def check_dims(xr_data: XarrayLike, expected_dims: Iterable[Hashable], *, mode: Optional[str] = None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
@@ -297,7 +297,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], *, mode: Optio
             f"Cannot convert supplied dims {expected_dims} into a set. Check debug log for more information."
         ) from exc
 
-    if len(dims_set) != len(expected_dims):
+    if len(list(dims_set)) != len(list(expected_dims)):
         raise ValueError(f"Supplied dimensions {expected_dims} contains duplicate values.")
 
     if not hasattr(xr_data, "dims"):
@@ -324,7 +324,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], *, mode: Optio
     if not check_fn(xr_data, dims_set):
         raise DimensionError(
             f"Dimensions {list(xr_data.dims)} of data object are not {mode} to the "
-            f"dimensions {sorted(list(dims_set))}."
+            f"dimensions {sorted([str(d) for d in dims_set])}."
         )
 
     if isinstance(xr_data, xr.Dataset):
@@ -333,7 +333,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], *, mode: Optio
             if not check_fn(xr_data[data_var], dims_set):
                 raise DimensionError(
                     f"Dimensions {list(xr_data[data_var].dims)} of data variable "
-                    f"'{data_var}' are not {mode} to the dimensions {sorted(dims_set)}"
+                    f"'{data_var}' are not {mode} to the dimensions {sorted([str(d) for d in dims_set])}"
                 )
 
 

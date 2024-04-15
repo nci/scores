@@ -6,7 +6,7 @@ from typing import Optional, Sequence
 import xarray as xr
 
 from scores.functions import apply_weights
-from scores.typing import XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, gather_dimensions
 
 
@@ -15,8 +15,8 @@ def quantile_score(
     obs: XarrayLike,
     alpha: float,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: Optional[Sequence[str]] = None,
-    preserve_dims: Optional[Sequence[str]] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
