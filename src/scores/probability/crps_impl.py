@@ -835,7 +835,7 @@ def crps_for_ensemble(
         fcst_spread_term = fcst_spread_term / (2 * ens_count * (ens_count - 1))
 
     # calculate final CRPS for each forecast case
-    fcst_obs_term = np.abs(fcst - obs).mean(ensemble_member_dim)
+    fcst_obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)
     result = fcst_obs_term - fcst_spread_term
 
     # apply weights and take means across specified dims
