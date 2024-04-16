@@ -19,6 +19,7 @@ Users can supply their own event operators to the top-level module functions.
 """
 
 import operator
+
 import xarray as xr
 
 import scores.utils
@@ -56,24 +57,23 @@ def accuracy(
 
 
 class BasicContingencyTable:
-    '''
+    """
     A BasicContingencyTable is produced when a BinaryContingencyTable is transformed.
-    
+
     A basic contingency table is built only from the event counts, losing the connection
     to the actual event tables in their full dimensionality.
 
     The event count data is much smaller than the full event tables, particularly when
     considering very large data sets like NWP data, which could be terabytes to petabytes
     in size.
-    '''
+    """
 
     def __init__(self, counts):
         self.counts = counts
 
     def __repr__(self):
-
         table = self.generate_counts()
-        return str(table)        
+        return str(table)
 
     def generate_counts(self):
         return self.counts
@@ -166,22 +166,22 @@ class BasicContingencyTable:
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
-        return ts        
+        return ts
 
     def pierce_skill_score(self):
         """
         Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
         How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.        
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        componentA = cd['tp_count'] / (cd['tp_count'] + cd['fn_count'])
-        componentB = cd['fn_count'] / (cd['fn_count'] + cd['tn_count'])
+        componentA = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
+        componentB = cd["fn_count"] / (cd["fn_count"] + cd["tn_count"])
         skill_score = componentA - componentB
         return skill_score
 
     def sensitivity(self):
-        """        
+        """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
@@ -189,14 +189,12 @@ class BasicContingencyTable:
         return s
 
     def specificity(self):
-        """        
+        """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
         cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s                
-
-
+        return s
 
 
 class BinaryContingencyTable(BasicContingencyTable):
@@ -204,7 +202,7 @@ class BinaryContingencyTable(BasicContingencyTable):
     At each location, the value will either be:
      - A true positive
      - A false positive
-     - A true negative   
+     - A true negative
      - A false negative
 
     It will be common to want to operate on masks of these values,
@@ -215,7 +213,7 @@ class BinaryContingencyTable(BasicContingencyTable):
        masked by geographical area (e.g. accuracy in a region)
 
     As such, the per-pixel information is useful as well as the overall
-    ratios involved. 
+    ratios involved.
     """
 
     def __init__(self, forecast_events, observed_events):
@@ -236,13 +234,11 @@ class BinaryContingencyTable(BasicContingencyTable):
         self.total_count = self.tp_count + self.tn_count + self.fp_count + self.fn_count
 
     def transform(self, *, reduce_dims=None, preserve_dims=None):
-        '''
-        '''
+        """ """
         cd = self.generate_counts(reduce_dims, preserve_dims)
         return BasicContingencyTable(cd)
 
     def generate_counts(self, *, reduce_dims=None, preserve_dims=None):
-
         cd = {
             "tp_count": self.tp.sum(to_reduce),
             "tn_count": self.tn.sum(to_reduce),
@@ -253,8 +249,6 @@ class BinaryContingencyTable(BasicContingencyTable):
         cd["total_count"] = total
 
         return cd
-
-
 
 
 class EventOperator:
@@ -289,7 +283,7 @@ class ThresholdEventOperator(EventOperator):
         forecast_events = op_fn(forecast, event_threshold)
         observed_events = op_fn(observed, event_threshold)
 
-        return (forecast_events, observed_events)        
+        return (forecast_events, observed_events)
 
     def make_table(self, forecast, observed, *, event_threshold=None, op_fn=operator.gt):
         """
