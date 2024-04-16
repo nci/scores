@@ -46,3 +46,10 @@
 ```{eval-rst}
 .. autofunction:: scores.stats.statistical_tests.diebold_mariano
 ```
+
+## scores.pandas
+```{eval-rst}
+.. autofunction:: scores.pandas.continuous.mse
+.. autofunction:: scores.pandas.continuous.rmse
+.. autofunction:: scores.pandas.continuous.mae
+```

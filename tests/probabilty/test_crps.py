@@ -2,8 +2,13 @@
 """
 Contains unit tests for scores.probability.crps
 """
-import dask
-import dask.array
+
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -20,7 +25,6 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from tests.assertions import assert_dataarray_equal, assert_dataset_equal
 from tests.probabilty import crps_test_data
 
 
@@ -39,12 +43,12 @@ def test_crps_stepweight(
     result = crps_step_threshold_weight(
         crps_test_data.DA_STEP_WEIGHT,
         "x",
-        [1, 2, 3, 4, 5, 6],
-        True,
-        0.2,
-        weight_upper,
+        threshold_values=[1, 2, 3, 4, 5, 6],
+        steppoints_in_thresholds=True,
+        steppoint_precision=0.2,
+        weight_upper=weight_upper,
     )
-    assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_cdf_exact():
@@ -56,7 +60,7 @@ def test_crps_cdf_exact():
         "x",
         include_components=True,
     )
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=7)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
     result2 = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT,
@@ -71,6 +75,10 @@ def test_crps_cdf_exact():
 
 def test_crps_cdf_exact_dask():
     """Tests `crps_cdf_exact` works with Dask."""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
         crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
@@ -81,7 +89,7 @@ def test_crps_cdf_exact_dask():
     assert isinstance(result.total.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=7)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
     result2 = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
@@ -108,15 +116,16 @@ def test_crps_stepweight2(
     expected,
 ):
     """Tests `crps_step_threshold_weight` with a variety of inputs."""
+
     result = crps_step_threshold_weight(
         crps_test_data.DA_STEP_WEIGHT,
         "x",
-        [1, 2, 3, 4, 5, 6],
-        True,
-        0.2,
-        weight_upper,
+        threshold_values=[1, 2, 3, 4, 5, 6],
+        steppoints_in_thresholds=True,
+        steppoint_precision=0.2,
+        weight_upper=weight_upper,
     )
-    assert_dataarray_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_cdf_trapz():
@@ -128,7 +137,7 @@ def test_crps_cdf_trapz():
         "x",
         include_components=True,
     )
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=4)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT, atol=4)
 
     result2 = crps_cdf_trapz(
         crps_test_data.DA_FCST_CRPS_DENSE,
@@ -137,7 +146,7 @@ def test_crps_cdf_trapz():
         "x",
         include_components=False,
     )
-    assert_dataset_equal(result, crps_test_data.EXP_CRPS_EXACT, decimals=4)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT, atol=4)
     assert list(result2.data_vars) == ["total"]
 
 
@@ -175,15 +184,15 @@ def test_crps_cdf_reformat_inputs(
         crps_test_data.DA_FCST_REFORMAT1,
         crps_test_data.DA_OBS_REFORMAT1,
         "x",
-        threshold_weight,
-        additional_thresholds,
-        "linear",
-        "forward",
+        threshold_weight=threshold_weight,
+        additional_thresholds=additional_thresholds,
+        fcst_fill_method="linear",
+        threshold_weight_fill_method="forward",
     )
     assert len(result) == len(expected)
 
     for res, exp in zip(result, expected):
-        assert_dataarray_equal(res, exp, decimals=7)
+        xr.testing.assert_allclose(res, exp)
 
 
 @pytest.mark.parametrize(
@@ -254,7 +263,7 @@ def test_crps_cdf_reformat_inputs(
             None,
             "Dimensions of `threshold_weight` must be a subset of dimensions of `fcst`",
         ),
-        # TODO: Revisit if still needed after more handling in gather_dimensions
+        # FIXLATER: Revisit if still needed after more handling in gather_dimensions
         # (
         #     crps_test_data.DA_FCST_REFORMAT1,
         #     crps_test_data.DA_OBS_REFORMAT1,
@@ -362,14 +371,14 @@ def test_crps_cdf_raises(
         crps_cdf(
             fcst,
             obs,
-            threshold_dim,
-            threshold_weight,
-            [],
-            True,
-            fcst_fill_method,
-            threshold_weight_fill_method,
-            integration_method,
-            dims,
+            threshold_dim=threshold_dim,
+            threshold_weight=threshold_weight,
+            additional_thresholds=[],
+            propagate_nans=True,
+            fcst_fill_method=fcst_fill_method,
+            threshold_weight_fill_method=threshold_weight_fill_method,
+            integration_method=integration_method,
+            preserve_dims=dims,
         )
 
 
@@ -446,7 +455,7 @@ def test_crps_cdf(
     result = crps_cdf(
         fcst,
         crps_test_data.DA_OBS_CRPS,
-        "x",
+        threshold_dim="x",
         threshold_weight=threshold_weight,
         additional_thresholds=None,
         propagate_nans=propagate_nan,
@@ -456,8 +465,7 @@ def test_crps_cdf(
         preserve_dims=dims,
         include_components=True,
     )
-
-    assert_dataset_equal(result, expected_and_dec[0], decimals=expected_and_dec[1])
+    xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
 
 
 @pytest.mark.parametrize(
@@ -489,8 +497,8 @@ def test_adjust_fcst_for_crps(
     expected,
 ):
     """Tests `adjust_fcst_for_crps` with a variety of inputs."""
-    result = adjust_fcst_for_crps(fcst, "x", obs, decreasing_tolerance)
-    assert_dataarray_equal(result, expected, decimals=7)
+    result = adjust_fcst_for_crps(fcst, "x", obs, decreasing_tolerance=decreasing_tolerance)
+    xr.testing.assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
@@ -523,7 +531,7 @@ def test_adjust_fcst_raises(
             crps_test_data.DA_FCST_ADJUST1,
             threshold_dim,
             crps_test_data.DA_OBS_ADJUST1,
-            decreasing_tolerance,
+            decreasing_tolerance=decreasing_tolerance,
         )
 
 
@@ -590,7 +598,9 @@ def test_crps_cdf_brier_raises(
 ):
     """Check that `crps_cdf_brier_decomposition` raises exceptions as expected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
-        crps_cdf_brier_decomposition(fcst, obs, threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims)
+        crps_cdf_brier_decomposition(
+            fcst, obs, threshold_dim=threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims
+        )
 
 
 @pytest.mark.parametrize(
@@ -603,9 +613,9 @@ def test_crps_cdf_brier_raises(
 def test_crps_cdf_brier_decomposition(dims, expected):
     """Tests `crps_cdf_brier_decomposition` with a variety of inputs."""
     result = crps_cdf_brier_decomposition(
-        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, "x", preserve_dims=dims
+        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, threshold_dim="x", preserve_dims=dims
     )
-    assert_dataset_equal(result, expected, decimals=7)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_for_ensemble():
@@ -623,21 +633,24 @@ def test_crps_for_ensemble():
         method="ecdf",
         weights=crps_test_data.DA_WT_CRPSENS,
     )
-
-    assert_dataarray_equal(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF, decimals=7)
-    assert_dataarray_equal(result_fair, crps_test_data.EXP_CRPSENS_FAIR, decimals=7)
-    assert_dataarray_equal(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT, decimals=7)
+    xr.testing.assert_allclose(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF)
+    xr.testing.assert_allclose(result_fair, crps_test_data.EXP_CRPSENS_FAIR)
+    xr.testing.assert_allclose(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT)
 
 
 def test_crps_for_ensemble_raises():
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
-        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", "unfair")
+        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", method="unfair")
     assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
 
 
 def test_crps_for_ensemble_dask():
     """Tests `crps_for_ensemble` works with dask."""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     result = crps_for_ensemble(
         fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
@@ -648,4 +661,4 @@ def test_crps_for_ensemble_dask():
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
-    assert_dataarray_equal(result, crps_test_data.EXP_CRPSENS_ECDF, decimals=7)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)

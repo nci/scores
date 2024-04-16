@@ -1,4 +1,7 @@
-from typing import overload
+"""
+Contains functions which transform data or perform calculations
+"""
+from typing import Optional, overload
 
 import numpy as np
 import xarray as xr
@@ -6,7 +9,7 @@ import xarray as xr
 from scores.typing import XarrayLike
 
 
-def apply_weights(values, weights=None):
+def apply_weights(values, *, weights: Optional[XarrayLike] = None):
     """
     Returns:
         A new array with the elements of values multiplied by the specified weights.
@@ -56,7 +59,7 @@ def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset
 
 # DataArray input types lead to a DataArray return type
 @overload
-def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:
+def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:  # type: ignore
     ...
 
 
@@ -73,5 +76,5 @@ def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike
         An array containing angles within the range [0, 180].
     """
     difference = np.abs(source_a - source_b) % 360
-    difference = difference.where(difference <= 180, 360 - difference)
-    return difference
+    difference = difference.where(difference <= 180, 360 - difference)  # type: ignore
+    return difference  # type: ignore

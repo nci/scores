@@ -44,7 +44,7 @@ def check_binary(data: XarrayLike, name: str):
 
 
 def comparative_discretise(
-    data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, abs_tolerance: Optional[float] = None
+    data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, *, abs_tolerance: Optional[float] = None
 ) -> XarrayLike:
     """
     Converts the values of `data` to 0 or 1 based on how they relate to the specified
@@ -115,13 +115,14 @@ def comparative_discretise(
     discrete_data.attrs["discretisation_tolerance"] = abs_tolerance
     discrete_data.attrs["discretisation_mode"] = mode
 
-    return discrete_data
+    return discrete_data  # type: ignore
 
 
 def binary_discretise(
     data: XarrayLike,
-    thresholds: FlexibleDimensionTypes,
+    thresholds: Optional[FlexibleDimensionTypes],
     mode: str,
+    *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,
     autosqueeze: Optional[bool] = False,
 ):
@@ -268,8 +269,9 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
 def proportion_exceeding(
     data: XarrayLike,
     thresholds: Iterable,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ):
     """
     Calculates the proportion of `data` equal to or exceeding `thresholds`.
@@ -296,8 +298,9 @@ def _binary_discretise_proportion(
     data: XarrayLike,
     thresholds: Iterable,
     mode: str,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     abs_tolerance: Optional[bool] = None,
     autosqueeze: bool = False,
 ):

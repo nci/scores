@@ -9,13 +9,15 @@ import scipy as sp
 import xarray as xr
 from scipy.optimize import least_squares
 
+from scores.stats.statistical_tests.acovf import acovf
 from scores.utils import dims_complement
 
 
-def diebold_mariano(
+def diebold_mariano(  # pylint: disable=R0914
     da_timeseries: xr.DataArray,
     ts_dim: str,
     h_coord: str,
+    *,  # Force keywords arguments to be keyword-only
     method: Literal["HG", "HLN"] = "HG",
     confidence_level: float = 0.95,
     statistic_distribution: Literal["normal", "t"] = "normal",
@@ -157,7 +159,7 @@ def diebold_mariano(
     if (da_timeseries[h_coord] <= 0).any():
         raise ValueError("Every value in `da_timeseries[h_coord]` must be positive.")
 
-    other_dim = dims_complement(da_timeseries, [ts_dim])[0]
+    other_dim = dims_complement(da_timeseries, dims=[ts_dim])[0]
     da_timeseries_len = da_timeseries.count(other_dim)
 
     if (da_timeseries_len <= da_timeseries[h_coord]).any():
@@ -171,7 +173,7 @@ def diebold_mariano(
     for i in range(ts_dim_len):
         timeseries = da_timeseries.isel({ts_dim: i})
         h = int(timeseries[h_coord])
-        test_stats[i] = _dm_test_statistic(timeseries.values, h, method)
+        test_stats[i] = _dm_test_statistic(timeseries.values, h, method=method)
 
     if statistic_distribution == "normal":
         pvals = sp.stats.norm.cdf(test_stats)
@@ -181,21 +183,21 @@ def diebold_mariano(
         ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, da_timeseries_len.values - 1)
 
     result = xr.Dataset(
-        data_vars=dict(
-            mean=([ts_dim], ts_mean),
-            dm_test_stat=([ts_dim], test_stats),
-            timeseries_len=([ts_dim], da_timeseries_len.values),
-            confidence_gt_0=([ts_dim], pvals),
-            ci_upper=([ts_dim], ts_mean * (1 + ci_quantile / test_stats)),
-            ci_lower=([ts_dim], ts_mean * (1 - ci_quantile / test_stats)),
-        ),
+        data_vars={
+            "mean": ([ts_dim], ts_mean),
+            "dm_test_stat": ([ts_dim], test_stats),
+            "timeseries_len": ([ts_dim], da_timeseries_len.values),
+            "confidence_gt_0": ([ts_dim], pvals),
+            "ci_upper": ([ts_dim], ts_mean * (1 + ci_quantile / test_stats)),
+            "ci_lower": ([ts_dim], ts_mean * (1 - ci_quantile / test_stats)),
+        },
         coords={ts_dim: da_timeseries[ts_dim].values},
     )
 
     return result
 
 
-def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] = "HG") -> float:
+def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG") -> float:
     """
     Given a timeseries of score differences for h-step ahead forecasts, as a 1D numpy
     array, returns a modified Diebold-Mariano test statistic. NaNs are removed prior
@@ -269,7 +271,7 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, method: Literal["HG", "HLN"] =
     else:  # method == 'HG'
         test_stat = _hg_method_stat(diffs, h)
 
-    return test_stat
+    return test_stat  # type: ignore
 
 
 def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
@@ -292,7 +294,7 @@ def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
         Hering and Genton, 'Comparing spatial predictions',
         Technometrics 53 no. 4 (2011), 414-425.
     """
-    return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv
+    return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv  # type: ignore
 
 
 def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
@@ -308,7 +310,6 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     Returns:
         Diebold-Mariano test statistic using the HG method.
     """
-    from scores.stats.statistical_tests.acovf import acovf
 
     n = len(diffs)
 
@@ -324,7 +325,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     density_estimate = model_autocovs[0] + 2 * np.sum(model_autocovs[1:])
     test_stat = np.mean(diffs) / np.sqrt(density_estimate / n)
 
-    return test_stat
+    return test_stat  # type: ignore
 
 
 def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
@@ -353,7 +354,7 @@ def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
     correction_factor = (n + 1 - 2 * h + h * (h - 1) / n) / n
     test_stat = (correction_factor**0.5) * test_stat
 
-    return test_stat
+    return test_stat  # type: ignore
 
 
 def _dm_gamma_hat_k(diffs: np.ndarray, diffs_bar: float, n: int, k: int) -> float:
@@ -372,7 +373,7 @@ def _dm_gamma_hat_k(diffs: np.ndarray, diffs_bar: float, n: int, k: int) -> floa
     """
     prod = (diffs[k:n] - diffs_bar) * (diffs[0 : n - k] - diffs_bar)
 
-    return np.sum(prod)
+    return np.sum(prod)  # type: ignore
 
 
 def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
@@ -395,6 +396,6 @@ def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
     result = (_dm_gamma_hat_k(diffs, diffs_bar, n, 0) + 2 * np.sum(summands)) / n**2
 
     if result <= 0:
-        result = np.nan
+        result = np.nan  # type: ignore
 
-    return result
+    return result  # type: ignore

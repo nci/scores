@@ -11,6 +11,7 @@ from scores.pandas.typing import PandasReturnType, PandasType
 def mse(
     fcst: PandasType,
     obs: PandasType,
+    *,  # Force keywords arguments to be keyword-only
     angular: bool = False,
 ) -> PandasReturnType:
     """Calculates the mean squared error from forecast and observed data.
@@ -43,6 +44,7 @@ def mse(
 def rmse(
     fcst: PandasType,
     obs: PandasType,
+    *,  # Force keywords arguments to be keyword-only
     angular: bool = False,
 ) -> PandasReturnType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
@@ -74,6 +76,7 @@ def rmse(
 def mae(
     fcst: PandasType,
     obs: PandasType,
+    *,  # Force keywords arguments to be keyword-only
     angular: bool = False,
 ) -> PandasReturnType:
     """Calculates the mean absolute error from forecast and observed data.

@@ -1,3 +1,8 @@
+"""
+Containts tests for weighting scores appropriately.
+"""
+
+
 # pylint: disable=missing-function-docstring
 import numpy as np
 import xarray as xr
@@ -93,7 +98,7 @@ def test_weights_latitude():
     assert found.equals(expected)
 
 
-def test_weights_NaN_matching():
+def test_weights_nan_matching():
     da = xr.DataArray
 
     fcst = da([np.nan, 0, 1, 2, 7, 0, 7, 1])

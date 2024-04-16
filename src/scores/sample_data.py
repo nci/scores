@@ -5,7 +5,7 @@ Module to generate simple sample data for users (not tests). Supports tutorials 
 import numpy as np
 import pandas as pd
 import xarray as xr
-from scipy.stats import skewnorm
+from scipy.stats import skewnorm  # type: ignore
 
 
 def simple_forecast() -> xr.DataArray:
@@ -18,7 +18,17 @@ def simple_observations() -> xr.DataArray:
     return xr.DataArray(data=[11, 11, 12, 14, 11, 14, 12, 11])
 
 
-def continuous_observations(large_size: bool = False) -> xr.DataArray:
+def simple_forecast_pandas() -> pd.Series:
+    """Generate a simple series of prediction values"""
+    return pd.Series([10, 10, 11, 13, 14, 17, 15, 14])
+
+
+def simple_observations_pandas() -> pd.Series:
+    """Generate a simple series of observation values"""
+    return pd.Series([11, 11, 12, 14, 11, 14, 12, 11])
+
+
+def continuous_observations(*, large_size: bool = False) -> xr.DataArray:
     """Creates a obs array with continuous values.
 
     Args:
@@ -53,7 +63,7 @@ def continuous_observations(large_size: bool = False) -> xr.DataArray:
     return obs
 
 
-def continuous_forecast(large_size: bool = False, lead_days: bool = False) -> xr.DataArray:
+def continuous_forecast(*, large_size: bool = False, lead_days: bool = False) -> xr.DataArray:
     """Creates a forecast array with continuous values.
 
     Args:
@@ -64,7 +74,7 @@ def continuous_forecast(large_size: bool = False, lead_days: bool = False) -> xr
     Returns:
         xr.Datarray: Containing synthetic forecast data.
     """
-    obs = continuous_observations(large_size)
+    obs = continuous_observations(large_size=large_size)
     np.random.seed(42)
     forecast = obs + np.random.normal(0, 2, obs.shape)
     if lead_days:
@@ -74,7 +84,7 @@ def continuous_forecast(large_size: bool = False, lead_days: bool = False) -> xr
     return forecast
 
 
-def cdf_forecast(lead_days: bool = False) -> xr.DataArray:
+def cdf_forecast(*, lead_days: bool = False) -> xr.DataArray:
     """
     Creates a forecast array with a CDF at each point.
 

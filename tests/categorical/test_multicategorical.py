@@ -1,8 +1,14 @@
 """
 Contains unit tests for scores.categorical
 """
-import dask
-import dask.array
+
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name
+
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -39,7 +45,12 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
     risk_parameter = 0.7
 
     calculated = _single_category_score(
-        fcst, obs, risk_parameter, categorical_threshold, discount_distance, threshold_assignment
+        fcst,
+        obs,
+        risk_parameter,
+        categorical_threshold,
+        discount_distance=discount_distance,
+        threshold_assignment=threshold_assignment,
     )
     xr.testing.assert_allclose(calculated, expected)
 
@@ -239,11 +250,11 @@ def test_firm(
         risk_parameters,
         categorical_thresholds,
         weights,
-        discount_distance,
-        reduce_dims,
-        preserve_dims,
+        discount_distance=discount_distance,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
     )
-    if preserve_dims != None:
+    if preserve_dims is not None:
         calculated = calculated.transpose(*preserve_dims)
     xr.testing.assert_allclose(
         calculated,
@@ -254,13 +265,17 @@ def test_firm(
 
 def test_firm_dask():
     """Tests firm works with dask"""
+
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run dask tests")
+
     calculated = firm(
         mtd.DA_FCST_FIRM.chunk(),
         mtd.DA_OBS_FIRM.chunk(),
         0.7,
         [0, 5],
         mtd.LIST_WEIGHTS_FIRM2,
-        0,
+        discount_distance=0,
         reduce_dims=None,
         preserve_dims=["i", "j", "k"],
     )
@@ -458,8 +473,8 @@ def test_firm_raises(
             risk_parameters,
             categorical_thresholds,
             weights,
-            discount_distance,
-            None,
-            preserve_dims,
+            discount_distance=discount_distance,
+            reduce_dims=None,
+            preserve_dims=preserve_dims,
             threshold_assignment=threshold_assignment,
         )

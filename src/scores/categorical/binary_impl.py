@@ -15,8 +15,9 @@ from scores.utils import gather_dimensions
 def probability_of_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     check_args: Optional[bool] = True,
 ) -> XarrayLike:
@@ -60,7 +61,7 @@ def probability_of_detection(
     if check_args:
         check_binary(fcst, "fcst")
         check_binary(obs, "obs")
-    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     misses = (obs == 1) & (fcst == 0)
     hits = (obs == 1) & (fcst == 1)
@@ -69,8 +70,8 @@ def probability_of_detection(
     misses = misses.where((~np.isnan(fcst)) & (~np.isnan(obs)))
     hits = hits.where((~np.isnan(fcst)) & (~np.isnan(obs)))
 
-    misses = apply_weights(misses, weights)
-    hits = apply_weights(hits, weights)
+    misses = apply_weights(misses, weights=weights)
+    hits = apply_weights(hits, weights=weights)
 
     misses = misses.sum(dim=dims_to_sum)
     hits = hits.sum(dim=dims_to_sum)
@@ -82,8 +83,9 @@ def probability_of_detection(
 def probability_of_false_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     check_args: Optional[bool] = True,
 ) -> XarrayLike:
@@ -127,7 +129,7 @@ def probability_of_false_detection(
     if check_args:
         check_binary(fcst, "fcst")
         check_binary(obs, "obs")
-    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims, preserve_dims)
+    dims_to_sum = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     false_alarms = (obs == 0) & (fcst == 1)
     correct_negatives = (obs == 0) & (fcst == 0)
@@ -136,8 +138,8 @@ def probability_of_false_detection(
     false_alarms = false_alarms.where((~np.isnan(fcst)) & (~np.isnan(obs)))
     correct_negatives = correct_negatives.where((~np.isnan(fcst)) & (~np.isnan(obs)))
 
-    false_alarms = apply_weights(false_alarms, weights)
-    correct_negatives = apply_weights(correct_negatives, weights)
+    false_alarms = apply_weights(false_alarms, weights=weights)
+    correct_negatives = apply_weights(correct_negatives, weights=weights)
 
     false_alarms = false_alarms.sum(dim=dims_to_sum)
     correct_negatives = correct_negatives.sum(dim=dims_to_sum)

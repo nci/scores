@@ -18,4 +18,5 @@ api
 contributing
 data
 maintainer
+tutorials/Explanation
 ```
