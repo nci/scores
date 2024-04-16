@@ -16,8 +16,8 @@ def probability_of_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     check_args: Optional[bool] = True,
 ) -> XarrayLike:
@@ -84,8 +84,8 @@ def probability_of_false_detection(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     check_args: Optional[bool] = True,
 ) -> XarrayLike:

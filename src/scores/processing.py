@@ -120,7 +120,7 @@ def comparative_discretise(
 
 def binary_discretise(
     data: XarrayLike,
-    thresholds: FlexibleDimensionTypes,
+    thresholds: Optional[FlexibleDimensionTypes],
     mode: str,
     *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,
@@ -270,8 +270,8 @@ def proportion_exceeding(
     data: XarrayLike,
     thresholds: Iterable,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ):
     """
     Calculates the proportion of `data` equal to or exceeding `thresholds`.
@@ -299,8 +299,8 @@ def _binary_discretise_proportion(
     thresholds: Iterable,
     mode: str,
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     abs_tolerance: Optional[bool] = None,
     autosqueeze: bool = False,
 ):

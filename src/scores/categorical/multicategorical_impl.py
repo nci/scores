@@ -20,8 +20,8 @@ def firm(  # pylint: disable=too-many-arguments
     threshold_weights: Sequence[Union[float, xr.DataArray]],
     *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = 0,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     threshold_assignment: Optional[str] = "lower",
 ) -> xr.Dataset:
