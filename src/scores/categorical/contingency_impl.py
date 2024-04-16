@@ -19,7 +19,6 @@ Users can supply their own event operators to the top-level module functions.
 """
 
 import operator
-
 import xarray as xr
 
 import scores.utils
@@ -56,13 +55,157 @@ def accuracy(
     return acc
 
 
-class BinaryContingencyTable:
+class BasicContingencyTable:
+    '''
+    A BasicContingencyTable is produced when a BinaryContingencyTable is transformed.
+    
+    A basic contingency table is built only from the event counts, losing the connection
+    to the actual event tables in their full dimensionality.
+
+    The event count data is much smaller than the full event tables, particularly when
+    considering very large data sets like NWP data, which could be terabytes to petabytes
+    in size.
+    '''
+
+    def __init__(self, counts):
+        self.counts = counts
+
+    def __repr__(self):
+
+        table = self.generate_counts()
+        return str(table)        
+
+    def generate_counts(self):
+        return self.counts
+
+    def accuracy(self):
+        """
+        The proportion of forecasts which are true
+        """
+        count_dictionary = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
+        ratio = correct_count / count_dictionary["total_count"]
+        return ratio
+
+    def frequency_bias(self):
+        """ """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
+
+        return freq_bias
+
+    def hit_rate(self):
+        """
+        What proportion of the observed events where correctly forecast?
+        Identical to probability_of_detection
+        Range: 0 to 1.  Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
+
+        return pod
+
+    def probability_of_detection(self):
+        """
+        What proportion of the observed events where correctly forecast?
+        Identical to hit_rate
+        Range: 0 to 1.  Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
+
+        return pod
+
+    def false_alarm_rate(self):
+        """
+        What fraction of the non-events were incorrectly predicted?
+        Identical to probability_of_false_detection
+        Range: 0 to 1.  Perfect score: 0.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
+
+        return far
+
+    def probability_of_false_detection(self):
+        """
+        What fraction of the non-events were incorrectly predicted?
+        Identical to false_alarm_rate
+        Range: 0 to 1.  Perfect score: 0.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
+
+        return far
+
+    def success_ratio(self):
+        """
+        What proportion of the forecast events actually eventuated?
+        Range: 0 to 1.  Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
+
+        return sr
+
+    def threat_score(self):
+        """
+        How well did the forecast "yes" events correspond to the observed "yes" events?
+        Identical to critical_success_index
+        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
+        return ts
+
+    def critical_success_index(self):
+        """
+        How well did the forecast "yes" events correspond to the observed "yes" events?
+        Identical to threat_score
+        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
+        return ts        
+
+    def pierce_skill_score(self):
+        """
+        Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
+        How well did the forecast separate the "yes" events from the "no" events?
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.        
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        componentA = cd['tp_count'] / (cd['tp_count'] + cd['fn_count'])
+        componentB = cd['fn_count'] / (cd['fn_count'] + cd['tn_count'])
+        skill_score = componentA - componentB
+        return skill_score
+
+    def sensitivity(self):
+        """        
+        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        s = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
+        return s
+
+    def specificity(self):
+        """        
+        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        """
+        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+        s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
+        return s                
+
+
+
+
+class BinaryContingencyTable(BasicContingencyTable):
     """
     At each location, the value will either be:
-     - A true positive    (0)
-     - A false positive   (1)
-     - A true negative    (2)
-     - A false negative   (3)
+     - A true positive
+     - A false positive
+     - A true negative   
+     - A false negative
 
     It will be common to want to operate on masks of these values,
     such as:
@@ -72,7 +215,7 @@ class BinaryContingencyTable:
        masked by geographical area (e.g. accuracy in a region)
 
     As such, the per-pixel information is useful as well as the overall
-    ratios involved.
+    ratios involved. 
     """
 
     def __init__(self, forecast_events, observed_events):
@@ -92,10 +235,13 @@ class BinaryContingencyTable:
         self.fn_count = self.fn.sum()  # Count of true negatives
         self.total_count = self.tp_count + self.tn_count + self.fp_count + self.fn_count
 
+    def transform(self, *, reduce_dims=None, preserve_dims=None):
+        '''
+        '''
+        cd = self.generate_counts(reduce_dims, preserve_dims)
+        return BasicContingencyTable(cd)
+
     def generate_counts(self, *, reduce_dims=None, preserve_dims=None):
-        to_reduce = scores.utils.gather_dimensions(
-            self.forecast_events.dims, self.observed_events.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
 
         cd = {
             "tp_count": self.tp.sum(to_reduce),
@@ -108,130 +254,14 @@ class BinaryContingencyTable:
 
         return cd
 
-    def accuracy(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        The proportion of forecasts which are true
-        """
-        count_dictionary = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
-        ratio = correct_count / count_dictionary["total_count"]
-        return ratio
-
-    def frequency_bias(self, *, preserve_dims=None, reduce_dims=None):
-        """ """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
-
-        return freq_bias
-
-    def hit_rate(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        What proportion of the observed events where correctly forecast?
-        Identical to probability_of_detection
-        Range: 0 to 1.  Perfect score: 1.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
-
-        return pod
-
-    def probability_of_detection(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        What proportion of the observed events where correctly forecast?
-        Identical to hit_rate
-        Range: 0 to 1.  Perfect score: 1.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
-
-        return pod
-
-    def false_alarm_rate(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        What fraction of the non-events were incorrectly predicted?
-        Identical to probability_of_false_detection
-        Range: 0 to 1.  Perfect score: 0.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
-
-        return far
-
-    def probability_of_false_detection(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        What fraction of the non-events were incorrectly predicted?
-        Identical to false_alarm_rate
-        Range: 0 to 1.  Perfect score: 0.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
-
-        return far
-
-    def success_ratio(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        What proportion of the forecast events actually eventuated?
-        Range: 0 to 1.  Perfect score: 1.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
-
-        return sr
-
-    def threat_score(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        How well did the forecast "yes" events correspond to the observed "yes" events?
-        Identical to critical_success_index
-        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
-        return ts
-
-    def critical_success_index(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        How well did the forecast "yes" events correspond to the observed "yes" events?
-        Identical to threat_score
-        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
-        return ts        
-
-    def pierce_skill_score(self, *, preserve_dims=None, reduce_dims=None):
-        """
-        Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
-        How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.        
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        componentA = cd['tp_count'] / (cd['tp_count'] + cd['fn_count'])
-        componentB = cd['fn_count'] / (cd['fn_count'] + cd['tn_count'])
-        skill_score = componentA - componentB
-        return skill_score
-
-    def sensitivity(self, *, preserve_dims=None, reduce_dims=None):
-        """        
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        s = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
-        return s
-
-    def specificity(self, *, preserve_dims=None, reduce_dims=None):
-        """        
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-        """
-        cd = self.generate_counts(preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s        
 
 
-class MatchingOperator:
+
+class EventOperator:
     pass
 
 
-class EventThresholdOperator(MatchingOperator):
+class ThresholdEventOperator(EventOperator):
     """
     Given a forecast and and an observation, consider an event defined by
     particular variables meeting a threshold condition (e.g. rainfall above 1mm).
@@ -242,6 +272,24 @@ class EventThresholdOperator(MatchingOperator):
     def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001):
         self.precision = precision
         self.default_event_threshold = default_event_threshold
+
+    def make_event_tables(self, forecast, observed, *, event_threshold=None, op_fn=operator.gt):
+        """
+        Using this function requires a careful understanding of the structure of the data
+        and the use of the operator function. The default operator is a simple greater-than
+        operator, so this will work on a simple DataArray. To work on a DataSet, a richer
+        understanding is required. It is recommended to work through the Contingency Table
+        tutorial to review more complex use cases, including on multivariate gridded model
+        data, and on station data structures.
+        """
+
+        if not event_threshold:
+            event_threshold = self.default_event_threshold
+
+        forecast_events = op_fn(forecast, event_threshold)
+        observed_events = op_fn(observed, event_threshold)
+
+        return (forecast_events, observed_events)        
 
     def make_table(self, forecast, observed, *, event_threshold=None, op_fn=operator.gt):
         """
