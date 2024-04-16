@@ -88,7 +88,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         if fcst.max().item() > 1 or fcst.min().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
-        if np.max(thresholds) > 1 or np.min(thresholds) < 0:
+        if np.max(thresholds) > 1 or np.min(thresholds) < 0:  # type: ignore
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
         if not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
