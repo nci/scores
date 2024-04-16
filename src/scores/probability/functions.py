@@ -127,7 +127,7 @@ def observed_cdf(
     # pandas.unique retains the original ordering whereas set() may not
     # pandas.unique no longer accepts a simple array as input
     thresholds = pd.Series(thresholds)
-    thresholds = np.sort(pd.unique(thresholds))
+    thresholds = np.sort(pd.unique(thresholds))  # type: ignore
 
     da_thresholds = xr.DataArray(
         thresholds,
