@@ -42,6 +42,34 @@ def test_mse_dataframe():
     assert round(result, PRECISION) == expected
 
 
+def test_mse_dataframe_decorator():
+    """
+    Test calculation works correctly on dataframe using the decorator
+    """
+
+    fcst_pd_series = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    df = pd.DataFrame({"fcst": fcst_pd_series, "obs": obs_pd_series})
+    expected = 1.0909
+    result = scores.continuous.mse(df=df, fcst="fcst", obs="obs")
+    assert isinstance(result, float)
+    assert round(result, PRECISION) == expected
+
+
+def test_mse_dataframe_decorator_alternate_name():
+    """
+    Test calculation works correctly on dataframe using the decorator
+    """
+
+    fcst_pd_series = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs_pd_series = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    df = pd.DataFrame({"Series_1": fcst_pd_series, "Series_2": obs_pd_series})
+    expected = 1.0909
+    result = scores.continuous.mse(df=df, fcst="Series_1", obs="Series_2")
+    assert isinstance(result, float)
+    assert round(result, PRECISION) == expected
+
+
 # Root Mean Squared Error
 
 

@@ -37,6 +37,13 @@ def split_dataframe(*series_keywords: str):
         -0.5
         >>> mean_error(fcst = 'fcst', obs = 'obs', df = pd_dataframe)
         -0.5
+
+
+        >>> @split_dataframe('model', 'expected') # Atypical argument names
+        >>> def difference(model, expected):
+                return (model - expected)
+        >>> difference(model = 'fcst', expected = 'obs', df = pd_dataframe)
+
     """
 
     def internal_function(func):
