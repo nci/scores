@@ -27,8 +27,8 @@ def murphy_score(  # pylint: disable=R0914
     alpha: float,
     huber_a: Optional[float] = None,
     decomposition: bool = False,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> xr.Dataset:
     """Returns the mean elementary score (Ehm et. al. 2016), also known as Murphy score,
     evaluated at decision thresholds specified by thetas. Optionally returns a decomposition

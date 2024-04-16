@@ -375,8 +375,8 @@ def flip_flop_index_proportion_exceeding(
     thresholds: Iterable,
     *,  # Force keywords arguments to be keyword-only
     is_angular: bool = False,
-    preserve_dims: FlexibleDimensionTypes = None,
-    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
     **selections: Iterable[int],
 ):
     """
