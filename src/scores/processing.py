@@ -258,7 +258,7 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
         if isinstance(arg, xr.DataArray):
             mask = update_mask(mask, arg)
         # update the mask for Datasets
-        elif isinstance(arg, xr.Dataset):
+        else:
             for data_var in arg.data_vars:
                 mask = update_mask(mask, arg[data_var])
 
