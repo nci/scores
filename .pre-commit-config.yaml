@@ -1,35 +1,40 @@
 ---
 repos:
-- repo: https://github.com/psf/black
-  rev: 23.3.0
-  hooks:
-    - id: black
-      name: black
-      entry: black --check
-# use local version of package with core deps to avoid import-errors from virtual env
-- repo: local
-  hooks:
-    - id: pylint
-      name: pylint
-      entry: pylint --reports=n
-      language: system
-      types: [python]
-      stages: [pre-commit]
-- repo: https://github.com/PyCQA/isort
-  rev: 5.11.5
-  hooks:
-    - id: isort
-      entry: isort --profile=black
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.3.0
-  hooks:
-    - id: mypy
-- repo: local
-  hooks:
-    - id: pytest
-      name: pytest
-      entry: pytest tests/ --cov=src/scores --cov-report term-missing
-      language: system
-      stages: [push]
-      always_run: true
-      pass_filenames: false
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        name: black
+        entry: black --check
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: [--skip, "B101", --recursive, src/scores]
+  # use local version of package with core deps to avoid import-errors from virtual env
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint --reports=n
+        language: system
+        types: [python]
+        stages: [pre-commit]
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.11.5
+    hooks:
+      - id: isort
+        entry: isort --profile=black
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.3.0
+    hooks:
+      - id: mypy
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest tests/ --cov=src/scores --cov-report term-missing
+        language: system
+        stages: [push]
+        always_run: true
+        pass_filenames: false
