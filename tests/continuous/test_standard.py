@@ -537,7 +537,7 @@ DA2_ANGULAR = xr.DataArray([[350, 180], [270, 280]], coords=[[0, 1], [0, 1]], di
 
 
 def test_mse_angular():
-    """Tests that `mse` returns the expected object with `angular` is True"""
+    """Tests that `mse` returns the expected object with `is_angular` is True"""
 
     expected = xr.DataArray(
         [[20**2, 170**2], [180**2, 170**2]],
@@ -546,13 +546,13 @@ def test_mse_angular():
         name="mean_squared_error",
     )
 
-    result = scores.continuous.mse(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i", "j"], angular=True)
+    result = scores.continuous.mse(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i", "j"], is_angular=True)
 
     xr.testing.assert_equal(result, expected)
 
 
 def test_mae_angular():
-    """Tests that `mae` returns the expected object with `angular` is True"""
+    """Tests that `mae` returns the expected object with `is_angular` is True"""
 
     expected = xr.DataArray(
         [[20, 170], [180, 170]],
@@ -561,13 +561,13 @@ def test_mae_angular():
         name="mean_squared_error",
     )
 
-    result = scores.continuous.mae(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i", "j"], angular=True)
+    result = scores.continuous.mae(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i", "j"], is_angular=True)
 
     xr.testing.assert_equal(result, expected)
 
 
 def test_rmse_angular():
-    """Tests that `rmse` returns the expected object with `angular` is True"""
+    """Tests that `rmse` returns the expected object with `is_angular` is True"""
 
     expected = xr.DataArray(
         [((20**2 + 170**2) / 2) ** 0.5, ((180**2 + 170**2) / 2) ** 0.5],
@@ -576,7 +576,7 @@ def test_rmse_angular():
         name="mean_squared_error",
     )
 
-    result = scores.continuous.rmse(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i"], angular=True)
+    result = scores.continuous.rmse(DA1_ANGULAR, DA2_ANGULAR, preserve_dims=["i"], is_angular=True)
 
     xr.testing.assert_equal(result, expected)
 

@@ -24,7 +24,7 @@ from tests.continuous import flip_flop_test_data as ntd
 
 
 @pytest.mark.parametrize(
-    ("data", "sampling_dim", "angular", "expected"),
+    ("data", "sampling_dim", "is_angular", "expected"),
     [
         # 0: 1-D, length=6
         (ntd.DATA_FFI_1D_6, "letter", False, xr.DataArray(12.5)),
@@ -58,9 +58,9 @@ from tests.continuous import flip_flop_test_data as ntd
         (ntd.DATA_FFI_3D_DIR, "letter", True, ntd.EXP_FFI_CASE9),
     ],
 )
-def test__flip_flop_index(data, sampling_dim, angular, expected):
+def test__flip_flop_index(data, sampling_dim, is_angular, expected):
     """Tests that _flip_flop_index returns the correct object"""
-    calculated = _flip_flop_index(data, sampling_dim, angular=angular)
+    calculated = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
     xr.testing.assert_allclose(calculated, expected)
 
 
@@ -72,7 +72,7 @@ def test__flip_flop_index_smoke_raises():
 
 
 @pytest.mark.parametrize(
-    ("data", "sampling_dim", "angular", "expected"),
+    ("data", "sampling_dim", "is_angular", "expected"),
     [
         # 0: 1-D, selections={}
         (ntd.DATA_FFI_1D_6, "letter", False, ntd.EXP_FFI_SUB_CASE0),
@@ -87,21 +87,21 @@ def test__flip_flop_index_smoke_raises():
             False,
             ntd.EXP_FFI_SUB_CASE3,
         ),
-        # 4: 2-D, angular=True, selections={}
+        # 4: 2-D, is_angular=True, selections={}
         (ntd.DATA_FFI_2D_6, "letter", True, ntd.EXP_FFI_SUB_CASE2),
     ],
 )
-def test_flip_flop_index_no_selections(data, sampling_dim, angular, expected):
+def test_flip_flop_index_no_selections(data, sampling_dim, is_angular, expected):
     """
     Tests that flip_flop_index returns the correct result  when
     **selections are not supplied
     """
-    calculated = flip_flop_index(data, sampling_dim, angular=angular)
+    calculated = flip_flop_index(data, sampling_dim, is_angular=is_angular)
     xr.testing.assert_allclose(calculated, expected)
 
 
 @pytest.mark.parametrize(
-    ("data", "sampling_dim", "angular", "selections", "expected"),
+    ("data", "sampling_dim", "is_angular", "selections", "expected"),
     [
         # 0: 1-D, selections pulling out in different order
         (
@@ -170,12 +170,12 @@ def test_flip_flop_index_no_selections(data, sampling_dim, angular, expected):
         ),
     ],
 )
-def test_flip_flop_index(data, sampling_dim, angular, selections, expected):
+def test_flip_flop_index(data, sampling_dim, is_angular, selections, expected):
     """
     Tests that flip_flop_index returns the correct result when
     **selections are supplied
     """
-    calculated = flip_flop_index(data, sampling_dim, angular=angular, **selections)
+    calculated = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)
     xr.testing.assert_allclose(calculated, expected)
 
 
@@ -300,7 +300,7 @@ def test_encompassing_sector_size_raises(data, dims, skipna):
         "data",
         "sampling_dim",
         "thresholds",
-        "angular",
+        "is_angular",
         "selections",
         "reduce_dims",
         "preserve_dims",
@@ -365,7 +365,7 @@ def test_encompassing_sector_size_raises(data, dims, skipna):
     ],
 )
 def test_flip_flop_index_proportion_exceeding(
-    data, sampling_dim, thresholds, angular, selections, reduce_dims, preserve_dims, expected
+    data, sampling_dim, thresholds, is_angular, selections, reduce_dims, preserve_dims, expected
 ):
     """
     Tests that flip_flop_index_proportion_exceeding returns the correct object
@@ -374,7 +374,7 @@ def test_flip_flop_index_proportion_exceeding(
         data,
         sampling_dim,
         thresholds,
-        angular=angular,
+        is_angular=is_angular,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         **selections,

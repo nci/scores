@@ -15,7 +15,7 @@ from scores.utils import DimensionError, check_dims, dims_complement
 
 
 def _flip_flop_index(
-    data: xr.DataArray, sampling_dim: str, *, angular: bool = False  # Force keywords arguments to be keyword-only
+    data: xr.DataArray, sampling_dim: str, *, is_angular: bool = False  # Force keywords arguments to be keyword-only
 ) -> xr.DataArray:
     """
     Calculates the Flip-Flop Index by collapsing the dimension specified by
@@ -25,7 +25,7 @@ def _flip_flop_index(
         data: Data from which to draw subsets.
         sampling_dim: The name of the dimension along which to calculate
             the Flip-Flop Index.
-        angular: specifies whether `data` is directional data (e.g. wind
+        is_angular: specifies whether `data` is directional data (e.g. wind
             direction).
 
     Returns:
@@ -44,7 +44,7 @@ def _flip_flop_index(
     # calculate the range
     # skip_na=False guarantees that if there is a nan in that row,
     # it will show up as nan in the end
-    if angular:
+    if is_angular:
         # get complementary dimensions as `encompassing_sector_size` takes
         # dimensions to be preserved, not collapsed
         dims_to_preserve = dims_complement(data, dims=[sampling_dim])
@@ -75,7 +75,7 @@ def flip_flop_index(
     data: xr.DataArray,
     sampling_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
     **selections: Iterable[int],
 ) -> xr.Dataset:
     ...
@@ -87,7 +87,7 @@ def flip_flop_index(
     data: xr.DataArray,
     sampling_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
     **selections: None,
 ) -> xr.DataArray:
     ...
@@ -98,7 +98,7 @@ def flip_flop_index(
     data: xr.DataArray,
     sampling_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
     **selections: Optional[Iterable[int]],
 ) -> XarrayLike:
     """
@@ -108,7 +108,7 @@ def flip_flop_index(
         data: Data from which to draw subsets.
         sampling_dim: The name of the dimension along which to calculate
             the Flip-Flop Index.
-        angular: specifies whether `data` is directional data (e.g. wind
+        is_angular: specifies whether `data` is directional data (e.g. wind
             direction).
         **selections: Additional keyword arguments specify
             subsets to draw from the dimension `sampling_dim` of the supplied `data`
@@ -160,12 +160,12 @@ def flip_flop_index(
     """
 
     if not selections and isinstance(data, xr.DataArray):
-        result = _flip_flop_index(data, sampling_dim, angular=angular)
+        result = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
     else:
         result = xr.Dataset()  # type: ignore
         result.attrs["selections"] = selections
         for key, data_subset in iter_selections(data, sampling_dim, **selections):
-            result[key] = _flip_flop_index(data_subset, sampling_dim, angular=angular)
+            result[key] = _flip_flop_index(data_subset, sampling_dim, is_angular=is_angular)
     result.attrs["sampling_dim"] = sampling_dim
 
     return result
@@ -374,7 +374,7 @@ def flip_flop_index_proportion_exceeding(
     sampling_dim: str,
     thresholds: Iterable,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     **selections: Iterable[int],
@@ -389,7 +389,7 @@ def flip_flop_index_proportion_exceeding(
         thresholds: The proportion of Flip-Flop Index results
             equal to or exceeding these thresholds will be calculated.
             the Flip-Flop Index.
-        angular: specifies whether `data` is directional data (e.g. wind
+        is_angular: specifies whether `data` is directional data (e.g. wind
             direction).
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
@@ -451,7 +451,7 @@ def flip_flop_index_proportion_exceeding(
             f"`reduce_dims`: {list(reduce_dims)}"
         )
     # calculate the Flip-Flop Index
-    flip_flop_data = flip_flop_index(data, sampling_dim, angular=angular, **selections)
+    flip_flop_data = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)
     # calculate the proportion exceeding each threshold
     flip_flop_exceeding = proportion_exceeding(
         flip_flop_data, thresholds, reduce_dims=reduce_dims, preserve_dims=preserve_dims
