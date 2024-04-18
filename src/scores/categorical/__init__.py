@@ -8,7 +8,6 @@ from scores.categorical.binary_impl import (
 from scores.categorical.contingency_impl import (
     BinaryContingencyTable,
     ThresholdEventOperator,
-    accuracy,
 )
 from scores.categorical.multicategorical_impl import firm
 
@@ -18,5 +17,4 @@ __all__ = [
     "firm",
     "BinaryContingencyTable",
     "ThresholdEventOperator",
-    "accuracy",
 ]

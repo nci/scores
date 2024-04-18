@@ -1,3 +1,7 @@
+"""
+Test functions for contingency tables
+"""
+
 import xarray as xr
 
 import scores
@@ -77,14 +81,18 @@ somewhat_near_matches = xr.DataArray(
 
 
 def test_categorical_table():
-    match = scores.categorical.EventThresholdOperator()
+    """
+    Test the basic calculations of the contingency table
+    """
+    match = scores.categorical.ThresholdEventOperator()
     table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    counts = table.generate_counts()
 
-    assert table.tp_count == 9
-    assert table.tn_count == 6
-    assert table.fp_count == 2
-    assert table.fn_count == 1
-    assert table.total_count == 18
+    assert counts["tp_count"] == 9
+    assert counts["tn_count"] == 6
+    assert counts["fp_count"] == 2
+    assert counts["fn_count"] == 1
+    assert counts["total_count"] == 18
 
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
@@ -102,17 +110,15 @@ def test_categorical_table():
     assert table.specificity() is not None
 
 
-def test_functional_interface_accuracy():
-    event_operator = scores.categorical.EventThresholdOperator(default_event_threshold=1.3)
-    accuracy = scores.categorical.accuracy(simple_forecast, simple_obs, event_operator=event_operator)
-    assert accuracy == (9 + 6) / 18
-
-
 def test_categorical_table_dims_handling():
-    match = scores.categorical.EventThresholdOperator()
+    """
+    Test that the transform function correctly allows dimensional transforms
+    """
+    match = scores.categorical.ThresholdEventOperator()
     table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    transformed = table.transform(preserve_dims=["height"])
 
-    acc_withheight = table.accuracy(preserve_dims=["height"])
+    acc_withheight = transformed.accuracy()
     assert acc_withheight.sel(height=10).sum().values.item() == 8 / 9
     assert acc_withheight.sel(height=20).sum().values.item() == 7 / 9
 
@@ -121,7 +127,7 @@ def test_categorical_table_dims_handling():
     # assert pod_withheight.sel(height=20).sum().values.item() == 9 / (9+1)
 
     # far_withheight = table.false_alarm_rate(preserve_dims=['height'])
-    # assert far_withheight is not None  # TODO: Add a value-asserting test
+    # assert far_withheight is not None
 
 
 # def test_dask_if_available_categorical():
