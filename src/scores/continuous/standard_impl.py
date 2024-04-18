@@ -19,7 +19,7 @@ def mse(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-    angular: Optional[bool] = False,
+    is_angular: Optional[bool] = False,
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
@@ -46,7 +46,7 @@ def mse(
             must match precisely.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
-        angular: specifies whether `fcst` and `obs` are angular
+        is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
@@ -60,7 +60,7 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
-    if angular:
+    if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore
@@ -87,7 +87,7 @@ def rmse(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-    angular: bool = False,
+    is_angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
@@ -117,7 +117,7 @@ def rmse(
             must match precisely.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
-        angular: specifies whether `fcst` and `obs` are angular
+        is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
@@ -131,7 +131,7 @@ def rmse(
             reduced along the relevant dimensions and weighted appropriately.
 
     """
-    _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, angular=angular)
+    _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
 
     _rmse = pow(_mse, (1 / 2))
 
@@ -145,7 +145,7 @@ def mae(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-    angular: bool = False,
+    is_angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
 
@@ -170,7 +170,7 @@ def mae(
             forecast and observed dimensions must match precisely.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
-        angular: specifies whether `fcst` and `obs` are angular
+        is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
@@ -184,7 +184,7 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-    if angular:
+    if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore

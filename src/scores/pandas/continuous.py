@@ -10,7 +10,7 @@ def mse(
     fcst: PandasType,
     obs: PandasType,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
 ) -> PandasType:
     """Calculates the mean squared error from forecast and observed data.
 
@@ -23,7 +23,7 @@ def mse(
     Args:
         fcst: Forecast or predicted variables in pandas.
         obs: Observed variables in pandas.
-        angular: specifies whether `fcst` and `obs` are angular
+        is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
@@ -35,14 +35,14 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.mse(fcst, obs, angular=angular)  # type: ignore  # mypy is wrong, I think
+    return __continuous.mse(fcst, obs, is_angular=is_angular)  # type: ignore  # mypy is wrong, I think
 
 
 def rmse(
     fcst: PandasType,
     obs: PandasType,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
 ) -> PandasType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
@@ -54,7 +54,7 @@ def rmse(
     Args:
         fcst: Forecast or predicted variables in pandas.
         obs: Observed variables in pandas.
-        angular: specifies whether `fcst` and `obs` are angular
+        is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
@@ -66,14 +66,14 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.rmse(fcst, obs, angular=angular)  # type: ignore  # mypy is wrong, I think
+    return __continuous.rmse(fcst, obs, is_angular=is_angular)  # type: ignore  # mypy is wrong, I think
 
 
 def mae(
     fcst: PandasType,
     obs: PandasType,
     *,  # Force keywords arguments to be keyword-only
-    angular: bool = False,
+    is_angular: bool = False,
 ) -> PandasType:
     """Calculates the mean absolute error from forecast and observed data.
 
@@ -86,7 +86,7 @@ def mae(
     Args:
         fcst: Forecast or predicted variables in pandas.
         obs: Observed variables in pandas.
-        angular: specifies whether `fcst` and `obs` are angular
+        is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
@@ -98,4 +98,4 @@ def mae(
             error for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.mae(fcst, obs, angular=angular)  # type: ignore  # mypy is wrong, I think
+    return __continuous.mae(fcst, obs, is_angular=is_angular)  # type: ignore  # mypy is wrong, I think
