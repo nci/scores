@@ -3,9 +3,16 @@ Test functions for contingency tables
 """
 
 import numpy as np
+import pytest
 import xarray as xr
 
 import scores
+
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(
@@ -131,10 +138,8 @@ def test_dask_if_available_categorical():
     compatibility.
     """
 
-    try:
-        import dask  # noqa: F401
-    except ImportError:
-        pytest.skip("Dask not available on this system")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
 
     fcst = simple_forecast.chunk()
     obs = simple_obs.chunk()
@@ -152,8 +157,7 @@ def test_dask_if_available_categorical():
 
     # And that transformed tables are built out of computed things
     simple_counts = table.transform().get_counts()
-    assert isinstance(simple_counts['tp_count'].data, np.ndarray)
+    assert isinstance(simple_counts["tp_count"].data, np.ndarray)
 
     # And that transformed things get the same numbers
     assert table.false_alarm_rate() == table.transform().false_alarm_rate()
-

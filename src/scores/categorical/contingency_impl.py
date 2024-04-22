@@ -21,6 +21,7 @@ Users can supply their own event operators to the top-level module functions.
 import operator
 from abc import ABC, abstractmethod
 from typing import Optional
+
 import xarray as xr
 
 import scores.utils
@@ -42,16 +43,18 @@ class BasicContingencyTable:
     """
 
     def __init__(self, counts: dict):
-        '''
+        """
         Compute any arrays required and store the resulting counts.
-        '''
+        """
         for key, arr in counts.items():
             counts[key] = arr.compute()
 
         self.counts = counts
         self._make_xr_table()
 
-    def _make_xr_table(self,):
+    def _make_xr_table(
+        self,
+    ):
         """
         From a dictionary of the skill score elements, produce an xarray
         structure which corresponds.
@@ -72,7 +75,7 @@ class BasicContingencyTable:
         heading = "Contingency Table (xarray view):"
         table = self.xr_table
         tablerepr = repr(table)
-        final = '\n'.join([heading, tablerepr])
+        final = "\n".join([heading, tablerepr])
         return final
 
     def __str__(self):
