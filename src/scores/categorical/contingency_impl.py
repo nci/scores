@@ -21,6 +21,7 @@ Users can supply their own event operators to the top-level module functions.
 import operator
 from abc import ABC, abstractmethod
 from typing import Optional
+import xarray as xr
 
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
@@ -41,17 +42,48 @@ class BasicContingencyTable:
     """
 
     def __init__(self, counts: dict):
-        for _, arr in counts.items():
-            arr.compute()
+        '''
+        Compute any arrays required and store the resulting counts.
+        '''
+        for key, arr in counts.items():
+            counts[key] = arr.compute()
 
         self.counts = counts
+        self._make_xr_table()
+
+    def _make_xr_table(self,):
+        """
+        From a dictionary of the skill score elements, produce an xarray
+        structure which corresponds.
+        """
+        ctable_list = []
+        entry_name = []
+        for i, j in self.counts.items():
+            entry_name.append(i)
+            ctable_list.append(j)
+
+        xr_table = xr.concat(ctable_list, dim="contingency")
+        xr_table["contingency"] = entry_name
+        xr_table
+
+        self.xr_table = xr_table
 
     def __repr__(self):
-        table = self.generate_counts()
+        heading = "Contingency Table (xarray view):"
+        table = self.xr_table
+        tablerepr = repr(table)
+        final = '\n'.join([heading, tablerepr])
+        return final
+
+    def __str__(self):
+        table = self.xr_table
         return str(table)
 
-    def generate_counts(self):
+    def get_counts(self):
         return self.counts
+
+    def get_table(self):
+        return self.xr_table
 
     def accuracy(self):
         """
@@ -204,7 +236,8 @@ class BinaryContingencyTable(BasicContingencyTable):
         self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
 
         # Variables for count-based metrics
-        self.counts = self._generate_counts()
+        self.counts = self._get_counts()
+        self._make_xr_table()
 
     def transform(
         self,
@@ -215,10 +248,10 @@ class BinaryContingencyTable(BasicContingencyTable):
         """
         Calculate and compute the contingency table according to the specified dimensions
         """
-        cd = self._generate_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+        cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
         return BasicContingencyTable(cd)
 
-    def _generate_counts(
+    def _get_counts(
         self,
         *,
         reduce_dims: Optional[FlexibleDimensionTypes] = None,

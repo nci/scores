@@ -2,6 +2,7 @@
 Test functions for contingency tables
 """
 
+import numpy as np
 import xarray as xr
 
 import scores
@@ -86,7 +87,7 @@ def test_categorical_table():
     """
     match = scores.categorical.ThresholdEventOperator()
     table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
-    counts = table.generate_counts()
+    counts = table.get_counts()
 
     assert counts["tp_count"] == 9
     assert counts["tn_count"] == 6
@@ -122,35 +123,37 @@ def test_categorical_table_dims_handling():
     assert acc_withheight.sel(height=10).sum().values.item() == 8 / 9
     assert acc_withheight.sel(height=20).sum().values.item() == 7 / 9
 
-    # pod_withheight = table.probability_of_detection(preserve_dims=['height'])
-    # assert pod_withheight.sel(height=10).sum().values.item() == 9 / (9+1)
-    # assert pod_withheight.sel(height=20).sum().values.item() == 9 / (9+1)
 
-    # far_withheight = table.false_alarm_rate(preserve_dims=['height'])
-    # assert far_withheight is not None
+def test_dask_if_available_categorical():
+    """
+    A basic smoke test on a dask object. More rigorous exploration of dask
+    is probably needed beyond this. Performance is not explored here, just
+    compatibility.
+    """
 
+    try:
+        import dask  # noqa: F401
+    except ImportError:
+        pytest.skip("Dask not available on this system")
 
-# def test_dask_if_available_categorical():
-# 	'''
-# 	A basic smoke test on a dask object. More rigorous exploration of dask
-# 	is probably needed beyond this. Performance is not explored here, just
-# 	compatibility.
-# 	'''
+    fcst = simple_forecast.chunk()
+    obs = simple_obs.chunk()
 
-# 	try:
-# 		import dask  # noqa: F401
-# 	except ImportError:
-# 		pytest.skip("Dask not available on this system")
+    match = scores.categorical.ThresholdEventOperator()
+    table = match.make_table(fcst, obs, event_threshold=1.3)
 
-# 	fcst = simple_forecast.chunk()
-# 	obs = simple_obs.chunk()
+    # Assert things start life as dask types
+    assert isinstance(table.forecast_events.data, dask.array.Array)
+    assert isinstance(table.tp.data, dask.array.Array)
 
-# 	match = scores.categorical.EventThresholdOperator()
-# 	table = match.make_table(fcst, obs, event_threshold=1.3)
+    # That can be computed to hold numpy data types
+    computed = table.forecast_events.compute()
+    assert isinstance(computed.data, np.ndarray)
 
-# 	assert isinstance(table.forecast_events, dask.array.Array)
-# 	assert isinstance(table.tp, dask.array.Array)
+    # And that transformed tables are built out of computed things
+    simple_counts = table.transform().get_counts()
+    assert isinstance(simple_counts['tp_count'].data, np.ndarray)
 
-# 	computed = table.forecast_events.compute()
+    # And that transformed things get the same numbers
+    assert table.false_alarm_rate() == table.transform().false_alarm_rate()
 
-# 	assert isinstance(computed.data, np.ndarray)
