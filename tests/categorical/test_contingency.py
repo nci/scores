@@ -88,23 +88,46 @@ somewhat_near_matches = xr.DataArray(
 )
 
 
+def test_str_view():
+    """
+    Smoke test for string representation
+    """
+    match = scores.categorical.ThresholdEventOperator()
+    table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    _stringrep = str(table)
+
+
 def test_categorical_table():
     """
     Test the basic calculations of the contingency table
     """
-    match = scores.categorical.ThresholdEventOperator()
-    table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3)
+    table = match.make_table(simple_forecast, simple_obs)
+    table2 = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
     counts = table.get_counts()
 
+    # Test event tables creation matches the stored tables
+    fcst_events, obs_events = match.make_event_tables(simple_forecast, simple_obs)
+    fcst_events2, obs_events2 = match.make_event_tables(simple_forecast, simple_obs, event_threshold=1.3)
+    assert (fcst_events == table.forecast_events).all()
+    assert (fcst_events2 == table.forecast_events).all()
+    assert (obs_events == table.observed_events).all()
+    assert (obs_events2 == table.observed_events).all()
+    assert (table.forecast_events == table2.forecast_events).all()
+    assert (table.observed_events == table2.observed_events).all()
+
+    # Confirm values in the contingency table are correct
     assert counts["tp_count"] == 9
     assert counts["tn_count"] == 6
     assert counts["fp_count"] == 2
     assert counts["fn_count"] == 1
     assert counts["total_count"] == 18
 
+    # Confirm calculations of metrics are correct
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
+    assert table.false_alarm_rate() == table.probability_of_false_detection()
 
     # Smoke tests only
     assert table.frequency_bias() is not None
@@ -116,6 +139,7 @@ def test_categorical_table():
     assert table.pierce_skill_score() is not None
     assert table.sensitivity() is not None
     assert table.specificity() is not None
+    assert table.get_table() is not None
 
 
 def test_categorical_table_dims_handling():

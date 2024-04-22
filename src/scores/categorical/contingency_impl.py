@@ -293,7 +293,7 @@ class EventOperator(ABC):
         """
         This method should be over-ridden to return forecast and observed event tables
         """
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     def make_table(
@@ -302,7 +302,7 @@ class EventOperator(ABC):
         """
         This method should be over-ridden to return a contingency table.
         """
-        ...
+        ...  # pragma: no cover
 
 
 class ThresholdEventOperator(EventOperator):
