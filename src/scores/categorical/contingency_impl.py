@@ -71,16 +71,13 @@ class BasicContingencyTable:
 
         self.xr_table = xr_table
 
-    def __repr__(self):
+
+    def __str__(self):
         heading = "Contingency Table (xarray view):"
         table = self.xr_table
         tablerepr = repr(table)
         final = "\n".join([heading, tablerepr])
         return final
-
-    def __str__(self):
-        table = self.xr_table
-        return str(table)
 
     def get_counts(self):
         return self.counts
