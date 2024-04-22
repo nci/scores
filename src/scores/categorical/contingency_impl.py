@@ -71,7 +71,6 @@ class BasicContingencyTable:
 
         self.xr_table = xr_table
 
-
     def __str__(self):
         heading = "Contingency Table (xarray view):"
         table = self.xr_table
