@@ -5,6 +5,8 @@ This module contains standard methods which may be used for continuous scoring
 from typing import Optional
 
 import xarray as xr
+import numpy as np
+import pandas as pd
 
 import scores.functions
 import scores.utils
@@ -338,9 +340,6 @@ def multiplicative_bias(
 
 
 # add NSE code
-import numpy as np
-import pandas as pd
-import xarray as xr
 
 
 def lst_to_array(fcst):
