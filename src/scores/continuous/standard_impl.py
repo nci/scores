@@ -6,6 +6,8 @@ from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
+import numpy as np
+import pandas as pd
 
 import scores.functions
 import scores.utils
