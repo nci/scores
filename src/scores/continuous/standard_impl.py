@@ -335,3 +335,106 @@ def multiplicative_bias(
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return multi_bias
+
+# add NSE code
+import numpy as np
+import xarray as xr
+import pandas as pd
+
+def lst_to_array(fcst):
+    # Convert lists to xarray DataArrays
+    if not isinstance(fcst, xr.DataArray):
+        fcst = xr.DataArray(fcst)
+    return fcst
+
+
+def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=False):
+    """
+    Calculate Nash-Sutcliffe Efficiency (NSE) for forecast and observed data.
+
+    Args:
+        fcst (FlexibleArrayType or list): Forecast or predicted variables.
+        obs (FlexibleArrayType or list): Observed variables.
+        reduce_dims (FlexibleDimensionTypes, optional): Dimensions to reduce along. Defaults to None.
+        preserve_dims (FlexibleDimensionTypes, optional): Dimensions to preserve. Defaults to None.
+        weights (xr.DataArray, optional): Weights to apply to error calculation. Defaults to None.
+        angular (bool, optional): Whether to treat data as angular (circular). Defaults to False.
+
+    Returns:
+        FlexibleArrayType: Nash-Sutcliffe Efficiency (NSE) value.
+
+    Raises:
+        ValueError: If the input arrays are of different lengths or incompatible types.
+
+    References:
+        - references 
+        - https://en.wikipedia.org/wiki/Nash–Sutcliffe_model_efficiency_coefficient
+
+    Examples:
+        # Case 1: NumPy arrays
+        >>> fcst_np = np.array([3, 4, 5, 6, 7])
+        >>> obs_np = np.array([2, 3, 4, 5, 6])
+        >>> nse(fcst_np, obs_np)
+        0.5
+
+        # Case 2: Pandas Series
+        >>> fcst_series = pd.Series([3, 4, 5, 6, 7])
+        >>> obs_series = pd.Series([2, 3, 4, 5, 6])
+        >>> nse(fcst_series, obs_series)
+        0.50
+
+        # Case 3: Xarray DataArray
+        >>> fcst_xr = xr.DataArray([3, 4, 5, 6, 7])
+        >>> obs_xr = xr.DataArray([2, 3, 4, 5, 6])
+        >>> nse(fcst_xr, obs_xr)
+        0.50
+
+        # Case 4: Lists
+        >>> fcst_list = [3, 4, 5, 6, 7]
+        >>> obs_list = [2, 3, 4, 5, 6]
+        >>> nse(fcst_list, obs_list)
+        0.50
+
+        # Case 5: Mixed types - NumPy array and Pandas Series
+        >>> fcst_mix = np.array([3, 4, 5, 6, 7])
+        >>> obs_mix = pd.Series([2, 3, 4, 5, 6])
+        >>> nse(fcst_mix, obs_mix)
+        0.50
+
+    """
+    # convert to array
+    fcst = lst_to_array(fcst)
+
+    obs = lst_to_array(obs)
+    #if not isinstance(obs, xr.DataArray):
+    #    obs = xr.DataArray(obs)
+
+    # Check for input compatibility
+    if angular:
+        error = scores.functions.angular_difference(fcst, obs)
+        mean_obs = np.mean(obs)
+        diff_mean = scores.functions.angular_difference(obs, mean_obs)
+    else:
+        error = fcst - obs
+        mean_obs = np.mean(obs)
+        diff_mean = obs - mean_obs
+    #calculate nse
+    nse = 1 - np.sum((error) ** 2) / np.sum((diff_mean) ** 2)
+
+    # Apply weights
+    if weights is not None:
+        error = error * weights
+        diff_mean = diff_mean * weights
+
+    # Reduce dimensions
+    if preserve_dims or reduce_dims:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+    
+    if reduce_dims is not None:
+        _nse = nse.mean(dim=reduce_dims)
+    else:
+        _nse = nse
+
+    return _nse
