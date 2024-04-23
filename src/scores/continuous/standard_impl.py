@@ -336,10 +336,12 @@ def multiplicative_bias(
     multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return multi_bias
 
+
 # add NSE code
 import numpy as np
-import xarray as xr
 import pandas as pd
+import xarray as xr
+
 
 def lst_to_array(fcst):
     # Convert lists to xarray DataArrays
@@ -367,7 +369,7 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
         ValueError: If the input arrays are of different lengths or incompatible types.
 
     References:
-        - references 
+        - references
         - https://en.wikipedia.org/wiki/Nash–Sutcliffe_model_efficiency_coefficient
 
     Examples:
@@ -406,7 +408,7 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
     fcst = lst_to_array(fcst)
 
     obs = lst_to_array(obs)
-    #if not isinstance(obs, xr.DataArray):
+    # if not isinstance(obs, xr.DataArray):
     #    obs = xr.DataArray(obs)
 
     # Check for input compatibility
@@ -418,7 +420,7 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
         error = fcst - obs
         mean_obs = np.mean(obs)
         diff_mean = obs - mean_obs
-    #calculate nse
+    # calculate nse
     nse = 1 - np.sum((error) ** 2) / np.sum((diff_mean) ** 2)
 
     # Apply weights
@@ -431,7 +433,7 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
-    
+
     if reduce_dims is not None:
         _nse = nse.mean(dim=reduce_dims)
     else:
