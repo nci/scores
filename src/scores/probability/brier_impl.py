@@ -7,8 +7,8 @@ from typing import Optional
 import xarray as xr
 
 from scores.continuous import mse
-from scores.processing import check_binary
 from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import check_binary
 
 
 def brier_score(

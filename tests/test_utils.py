@@ -2,11 +2,12 @@
 Containts tests for the scores.utils file
 """
 
+import numpy as np
 import pytest
 import xarray as xr
 
 from scores import utils
-from scores.utils import DimensionError
+from scores.utils import DimensionError, check_binary
 from scores.utils import gather_dimensions as gd
 from scores.utils import gather_dimensions2
 from tests import utils_test_data
@@ -689,3 +690,34 @@ def test_tmp_coord_name():
 
     data = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords={"stn": [101, 202, 304], "elevation": ("stn", [0, 3, 24])})
     assert utils.tmp_coord_name(data) == "newstnstnelevation"
+
+
+@pytest.mark.parametrize(
+    ("da"),
+    [
+        (xr.DataArray([0, 1, 2])),
+        (xr.DataArray([0, 1, -1])),
+        (xr.DataArray([0, 1, 0.5])),
+        (xr.DataArray([[0, 1, 1.0000001], [0, 1, 1]])),
+    ],
+)
+def test_check_binary_raises(da):
+    """test check_binary raises"""
+    with pytest.raises(ValueError) as exc:
+        check_binary(da, "my name")
+    assert "`my name` contains values that are not in the set {0, 1, np.nan}" in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    ("da"),
+    [
+        (xr.DataArray([0, 1])),
+        (xr.DataArray([0, 0])),
+        (xr.DataArray([1, 1])),
+        (xr.DataArray([0, 1, np.nan])),
+        (xr.DataArray([[0, 1, np.nan], [0, 1, np.nan]])),
+    ],
+)
+def test_check_binary_doesnt_raise(da):
+    """test check_binary doesn't raise"""
+    check_binary(da, "my name")
