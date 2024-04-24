@@ -19,7 +19,6 @@
 .. autofunction:: scores.continuous.murphy.thetas
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
-.. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.correlation
 ```
 
@@ -40,6 +39,16 @@
 .. autofunction:: scores.categorical.firm
 .. autofunction:: scores.categorical.probability_of_detection
 .. autofunction:: scores.categorical.probability_of_false_detection
+```
+
+## scores.processing
+```{eval-rst}
+.. autofunction:: scores.processing.isotonic_fit
+.. autofunction:: scores.processing.broadcast_and_match_nan
+.. autofunction:: scores.processing.comparative_discretise
+.. autofunction:: scores.processing.binary_discretise
+.. autofunction:: scores.processing.binary_discretise_proportion
+.. autofunction:: scores.processing.proportion_exceeding
 ```
 
 ## scores.stats

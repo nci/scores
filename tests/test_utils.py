@@ -1,5 +1,5 @@
 """
-Containts tests for the scores.utils file
+Contains tests for the scores.utils file
 """
 
 import numpy as np
