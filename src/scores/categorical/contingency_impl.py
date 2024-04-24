@@ -30,9 +30,9 @@ from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 DEFAULT_PRECISION = 8
 
 
-class BasicContingencyTable:
+class BasicContingencyManager:
     """
-    A BasicContingencyTable is produced when a BinaryContingencyTable is transformed.
+    A BasicContingencyManager is produced when a BinaryContingencyManager is transformed.
 
     A basic contingency table is built only from the event counts, losing the connection
     to the actual event tables in their full dimensionality.
@@ -72,7 +72,7 @@ class BasicContingencyTable:
         self.xr_table = xr_table
 
     def __str__(self):
-        heading = "Contingency Table (xarray view):"
+        heading = "Contingency Manager (xarray view of table):"
         table = self.xr_table
         tablerepr = repr(table)
         final = "\n".join([heading, tablerepr])
@@ -205,7 +205,7 @@ class BasicContingencyTable:
         return s
 
 
-class BinaryContingencyTable(BasicContingencyTable):
+class BinaryContingencyManager(BasicContingencyManager):
     """
     At each location, the value will either be:
      - A true positive
@@ -248,7 +248,7 @@ class BinaryContingencyTable(BasicContingencyTable):
         Calculate and compute the contingency table according to the specified dimensions
         """
         cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
-        return BasicContingencyTable(cd)
+        return BasicContingencyManager(cd)
 
     def _get_counts(
         self,
@@ -355,5 +355,5 @@ class ThresholdEventOperator(EventOperator):
         forecast_events = op_fn(forecast, event_threshold)
         observed_events = op_fn(observed, event_threshold)
 
-        table = BinaryContingencyTable(forecast_events, observed_events)
+        table = BinaryContingencyManager(forecast_events, observed_events)
         return table
