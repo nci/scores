@@ -1,4 +1,4 @@
-"""Test data for `scores.isoreg`."""
+"""Test data for `scores.processing.isoreg`."""
 
 from functools import partial
 

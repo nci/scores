@@ -1,12 +1,13 @@
 """
 Tests for `scores.isoreg_impl`.
 """
+
 import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.continuous.isoreg_impl import (
+from scores.processing.isoreg_impl import (
     _bootstrap_ir,
     _confidence_band,
     _contiguous_ir,
@@ -17,7 +18,7 @@ from scores.continuous.isoreg_impl import (
     _xr_to_np,
     isotonic_fit,
 )
-from tests.continuous import isoreg_test_data as itd
+from tests.processing import isoreg_test_data as itd
 
 
 @pytest.mark.parametrize(
