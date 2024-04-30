@@ -1,10 +1,13 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
+
 import warnings
 from collections.abc import Hashable, Iterable, Sequence
 from typing import Optional, Union
 
+import numpy as np
+import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
@@ -359,3 +362,24 @@ def tmp_coord_name(xr_data: xr.DataArray, *, count=1) -> Union[str, list[str]]:
 
     results = [str(i) + result for i in range(count)]
     return results
+
+
+def check_binary(data: XarrayLike, name: str):
+    """
+    Checks that data does not have any non-NaN values out of the set {0, 1}
+
+    Args:
+        data: The data to convert to check if only contains binary values
+    Raises:
+        ValueError: if there are values in `fcst` and `obs` that are not in the
+            set {0, 1, np.nan} and `check_args` is true.
+    """
+    if isinstance(data, xr.DataArray):
+        unique_values = pd.unique(data.values.flatten())
+    else:
+        unique_values = pd.unique(data.to_array().values.flatten())
+    unique_values = unique_values[~np.isnan(unique_values)]
+    binary_set = {0, 1}
+
+    if not set(unique_values).issubset(binary_set):
+        raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")

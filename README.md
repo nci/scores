@@ -9,7 +9,7 @@ Currently Included Metrics and Tools:
 
 | continuous                      | probability | categorical      | statistical tests |
 | ----------                      | ----------- | -----------      | ----------------- |
-| MAE, MSE, RMSE, Flip-Flop Index, Quantile Score, Isotonic Regression, Pearson's Correlation Coefficient, Additive Bias, Multiplicative Bias  | CRPS for CDF, CRPS for ensemble, ROC, Brier Score   | FIRM, POD, POFD  |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
+| MAE, MSE, RMSE, Flip-Flop Index, Quantile Score, Murphy score, Pearson's Correlation Coefficient, Additive Bias, Multiplicative Bias  | CRPS for CDF, CRPS for ensemble, ROC, Brier Score   | FIRM, POD, POFD  |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is getting much closer to our goals for version one, but there are a few more things to add. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 

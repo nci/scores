@@ -1,4 +1,4 @@
-"""Tools for processing data for verification"""
+"""Tools for discretising data for verification"""
 
 import operator
 from collections.abc import Iterable
@@ -22,27 +22,6 @@ INEQUALITY_MODES = {
 EQUALITY_MODES = {"==": (operator.le), "!=": (operator.gt)}
 
 
-def check_binary(data: XarrayLike, name: str):
-    """
-    Checks that data does not have any non-NaN values out of the set {0, 1}
-
-    Args:
-        data: The data to convert to check if only contains binary values
-    Raises:
-        ValueError: if there are values in `fcst` and `obs` that are not in the
-            set {0, 1, np.nan} and `check_args` is true.
-    """
-    if isinstance(data, xr.DataArray):
-        unique_values = pd.unique(data.values.flatten())
-    else:
-        unique_values = pd.unique(data.to_array().values.flatten())
-    unique_values = unique_values[~np.isnan(unique_values)]
-    binary_set = {0, 1}
-
-    if not set(unique_values).issubset(binary_set):
-        raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
-
-
 def comparative_discretise(
     data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, *, abs_tolerance: Optional[float] = None
 ) -> XarrayLike:
@@ -51,10 +30,8 @@ def comparative_discretise(
     values in `comparison` via the `mode` operator.
 
     Args:
-        data: The data to convert to
-            discrete values.
-        comparison: The values to which
-            to compare `data`.
+        data: The data to convert to discrete values.
+        comparison: The values to which to compare `data`.
         mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:
@@ -131,10 +108,8 @@ def binary_discretise(
     according to the operation defined by `mode`.
 
     Args:
-        data: The data to convert to
-            discrete values.
-        thresholds: Threshold(s) at which to convert the
-            values of `data` to 0 or 1.
+        data: The data to convert to discrete values.
+        thresholds: Threshold(s) at which to convert the values of `data` to 0 or 1.
         mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:
@@ -171,7 +146,7 @@ def binary_discretise(
 
     Raises:
         ValueError: if 'threshold' is a dimension in `data`.
-        ValueError: if "Values in `thresholds` are not montonic increasing"
+        ValueError: if "Values in `thresholds` are not monotonic increasing"
     """
     if "threshold" in data.dims:
         raise ValueError("'threshold' must not be in the supplied data object dimensions")
@@ -185,7 +160,7 @@ def binary_discretise(
 
     # sanitise thresholds
     if not (thresholds_np[1:] - thresholds_np[:-1] >= 0).all():
-        raise ValueError("Values in `thresholds` are not montonic increasing")
+        raise ValueError("Values in `thresholds` are not monotonic increasing")
 
     # make thresholds DataArray
     thresholds_da = xr.DataArray(thresholds_np, dims=["threshold"], coords={"threshold": thresholds_np})
@@ -199,71 +174,6 @@ def binary_discretise(
         discrete_data = discrete_data.squeeze(dim="threshold")
 
     return discrete_data
-
-
-def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
-    """
-    Input xarray data objects are 'matched' - they are broadcast against each
-    other (forced to have the same dimensions), and the position of nans are
-    forced onto all DataArrays. This matching process is applied across all
-    supplied DataArrays, as well as all DataArrays inside supplied Datasets.
-
-    Args:
-        *args: any number of xarray data objects supplied as positional arguments. See
-            examples below.
-
-    Returns:
-        A tuple of data objects of the same length as the number of data objects
-        supplied as input. Each returned object is the 'matched' version of the
-        input.
-
-    Raises:
-        ValueError: if any input args is not an xarray data
-            object.
-
-    Examples:
-
-        >>> # Matching xarray data objects
-        >>> da1_matched, ds_matched, da2_matched = xrtools.broadcast_and_match_nan(da1, ds, da2)
-
-        >>> # Matching a tuple of xarray data objects
-        >>> input_tuple = (da1, ds, da2)
-        >>> matched_tuple = broadcast_and_match_nan(*input_tuple)
-        >>> da1_matched = matched_tuple[0]
-        >>> ds_matched = matched_tuple[1]
-        >>> da2_matched = matched_tuple[2]
-    """
-
-    # sanitise inputs
-    for i, arg in enumerate(args):
-        if not isinstance(arg, (xr.Dataset, xr.DataArray)):
-            raise ValueError(
-                f"Argument {i} is not an xarray data object. (counting from 0, i.e. "
-                "argument 0 is the first argument)"
-            )
-
-    # internal function to update the mask
-    def update_mask(mask, data_array):
-        """
-        Perform the boolean AND operation on a mask (DataArray) and
-        data_array.notnull()
-        """
-        return mask & data_array.notnull()
-
-    # initialise the mask
-    mask = True
-    # generate the mask
-    for arg in args:
-        # update the mask for a DataArray
-        if isinstance(arg, xr.DataArray):
-            mask = update_mask(mask, arg)
-        # update the mask for Datasets
-        else:
-            for data_var in arg.data_vars:
-                mask = update_mask(mask, arg[data_var])
-
-    # return matched data objects
-    return tuple(arg.where(mask) for arg in args)
 
 
 def proportion_exceeding(
@@ -291,10 +201,10 @@ def proportion_exceeding(
         that are greater than or equal to the corresponding threshold.
 
     """
-    return _binary_discretise_proportion(data, thresholds, ">=", reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    return binary_discretise_proportion(data, thresholds, ">=", reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
 
-def _binary_discretise_proportion(
+def binary_discretise_proportion(
     data: XarrayLike,
     thresholds: Iterable,
     mode: str,
