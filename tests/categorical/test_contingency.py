@@ -125,11 +125,11 @@ def test_categorical_table():
     assert counts["total_count"] == 18
 
     # Confirm that the xarray table object has the correct counts too
-    assert actual_table.sel(contingency='tp_count') == 9    
-    assert actual_table.sel(contingency='tn_count') == 6
-    assert actual_table.sel(contingency='fp_count') == 2
-    assert actual_table.sel(contingency='fn_count') == 1
-    assert actual_table.sel(contingency='total_count') == 18
+    assert actual_table.sel(contingency="tp_count") == 9
+    assert actual_table.sel(contingency="tn_count") == 6
+    assert actual_table.sel(contingency="fp_count") == 2
+    assert actual_table.sel(contingency="fn_count") == 1
+    assert actual_table.sel(contingency="total_count") == 18
 
     # Confirm calculations of metrics are correct
     assert table.accuracy() == (9 + 6) / 18
@@ -138,8 +138,8 @@ def test_categorical_table():
     assert table.threat_score() == 9 / (9 + 2 + 6)
     assert table.frequency_bias() == (9 + 2) / (9 + 1)
     assert table.hit_rate() == 9 / (9 + 1)
-    assert table.probability_of_detection() == 9 / (9 + 1)    
-    assert table.success_ratio() == 9 / (9 + 2)    
+    assert table.probability_of_detection() == 9 / (9 + 1)
+    assert table.success_ratio() == 9 / (9 + 2)
     assert table.specificity() == 6 / (6 + 2)
 
     # These methods are redirects to eachother

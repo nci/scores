@@ -67,7 +67,6 @@ class BasicContingencyManager:
 
         xr_table = xr.concat(ctable_list, dim="contingency")
         xr_table["contingency"] = entry_name
-        xr_table
 
         self.xr_table = xr_table
 
@@ -79,9 +78,15 @@ class BasicContingencyManager:
         return final
 
     def get_counts(self):
+        """
+        Return the contingency table counts (tp, fp, tn, fn)
+        """
         return self.counts
 
     def get_table(self):
+        """
+        Return the contingency table as an xarray object
+        """
         return self.xr_table
 
     def accuracy(self):
@@ -292,7 +297,7 @@ class EventOperator(ABC):
         """
         This method should be over-ridden to return forecast and observed event tables
         """
-        ...  # pragma: no cover
+        ...  # pragma: no cover # pylint disable=unnecessary-ellipsis
 
     @abstractmethod
     def make_table(
@@ -301,7 +306,7 @@ class EventOperator(ABC):
         """
         This method should be over-ridden to return a contingency table.
         """
-        ...  # pragma: no cover
+        ...  # pragma: no cover # pylint disable=unnecessary-ellipsis
 
 
 class ThresholdEventOperator(EventOperator):

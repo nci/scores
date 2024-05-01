@@ -4,6 +4,7 @@ Contains unit tests for scores.continuous.standard
 
 # pylint: disable=missing-function-docstring
 # pylint: disable=line-too-long
+# pylint: disable=R0801
 
 try:
     import dask

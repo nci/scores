@@ -3,7 +3,7 @@ This module contains various compound or union types which can be used across th
 a consistent approach to typing is handled.
 """
 from collections.abc import Hashable, Iterable
-from typing import Optional, Union
+from typing import Union
 
 import pandas as pd
 import xarray as xr
