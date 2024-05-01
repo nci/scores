@@ -130,6 +130,7 @@ class BasicContingencyManager:
         Identical to probability_of_false_detection
         Range: 0 to 1.  Perfect score: 0.
         """
+        # Note - probability of false detection calls this function
         cd = self.counts
         far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
 
@@ -141,10 +142,7 @@ class BasicContingencyManager:
         Identical to false_alarm_rate
         Range: 0 to 1.  Perfect score: 0.
         """
-        cd = self.counts
-        far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
-
-        return far
+        return self.false_alarm_rate()
 
     def success_ratio(self):
         """
@@ -162,6 +160,8 @@ class BasicContingencyManager:
         Identical to critical_success_index
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
         """
+        # Note - critical success index just calls this method
+
         cd = self.counts
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
         return ts
@@ -172,9 +172,8 @@ class BasicContingencyManager:
         Identical to threat_score
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
         """
-        cd = self.counts
-        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
-        return ts
+
+        return self.threat_score()
 
     def pierce_skill_score(self):
         """

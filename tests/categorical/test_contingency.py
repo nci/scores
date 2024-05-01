@@ -105,6 +105,7 @@ def test_categorical_table():
     table = match.make_table(simple_forecast, simple_obs)
     table2 = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
     counts = table.get_counts()
+    actual_table = table.get_table()
 
     # Test event tables creation matches the stored tables
     fcst_events, obs_events = match.make_event_tables(simple_forecast, simple_obs)
@@ -123,23 +124,33 @@ def test_categorical_table():
     assert counts["fn_count"] == 1
     assert counts["total_count"] == 18
 
+    # Confirm that the xarray table object has the correct counts too
+    assert actual_table.sel(contingency='tp_count') == 9    
+    assert actual_table.sel(contingency='tn_count') == 6
+    assert actual_table.sel(contingency='fp_count') == 2
+    assert actual_table.sel(contingency='fn_count') == 1
+    assert actual_table.sel(contingency='total_count') == 18
+
     # Confirm calculations of metrics are correct
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
+    assert table.threat_score() == 9 / (9 + 2 + 6)
+    assert table.frequency_bias() == (9 + 2) / (9 + 1)
+    assert table.hit_rate() == 9 / (9 + 1)
+    assert table.probability_of_detection() == 9 / (9 + 1)    
+    assert table.success_ratio() == 9 / (9 + 2)    
+    assert table.specificity() == 6 / (6 + 2)
+
+    # These methods are redirects to eachother
+    assert table.critical_success_index() == table.threat_score()
+    assert table.sensitivity() == table.hit_rate()
     assert table.false_alarm_rate() == table.probability_of_false_detection()
 
-    # Smoke tests only
-    assert table.frequency_bias() is not None
-    assert table.hit_rate() is not None
-    assert table.probability_of_detection() is not None
-    assert table.success_ratio() is not None
-    assert table.threat_score() is not None
-    assert table.critical_success_index() is not None
-    assert table.pierce_skill_score() is not None
-    assert table.sensitivity() is not None
-    assert table.specificity() is not None
-    assert table.get_table() is not None
+    pierce_component_a = 9 / (9 + 1)
+    pierce_component_b = 1 / (1 + 6)
+    pierce_expected = pierce_component_a - pierce_component_b
+    assert table.pierce_skill_score() == pierce_expected
 
 
 def test_categorical_table_dims_handling():
