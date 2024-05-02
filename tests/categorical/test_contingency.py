@@ -87,6 +87,40 @@ somewhat_near_matches = xr.DataArray(
     dims=["height", "lat", "lon"],
 )
 
+simple_forecast_with_nan = xr.DataArray(
+    [
+        [
+            [np.nan, 0.0, 5],
+            [0.7, np.nan, 2.8],
+            [0.4, 0.5, 2.3],
+        ],
+        [
+            [1.9, 1.0, 1.5],
+            [1.7, 2.4, 1.1],
+            [1.4, 1.5, 3.3],
+        ],
+    ],
+    coords=[[10, 20], [0, 1, 2], [5, 6, 7]],
+    dims=["height", "lat", "lon"],
+)
+
+simple_obs_with_nan = xr.DataArray(
+    [
+        [
+            [0.9, 0.0, np.nan],
+            [0.7, np.nan, 2.7],
+            [0.3, 0.4, 2.2],
+        ],
+        [
+            [1.7, 1.2, 1.7],
+            [1.7, 2.2, 3.9],
+            [1.6, 1.2, 9.9],
+        ],
+    ],
+    coords=[[10, 20], [0, 1, 2], [5, 6, 7]],
+    dims=["height", "lat", "lon"],
+)
+
 
 def test_str_view():
     """
@@ -110,12 +144,12 @@ def test_categorical_table():
     # Test event tables creation matches the stored tables
     fcst_events, obs_events = match.make_event_tables(simple_forecast, simple_obs)
     fcst_events2, obs_events2 = match.make_event_tables(simple_forecast, simple_obs, event_threshold=1.3)
-    assert (fcst_events == table.forecast_events).all()
-    assert (fcst_events2 == table.forecast_events).all()
-    assert (obs_events == table.observed_events).all()
-    assert (obs_events2 == table.observed_events).all()
-    assert (table.forecast_events == table2.forecast_events).all()
-    assert (table.observed_events == table2.observed_events).all()
+    xr.testing.assert_equal(fcst_events, table.forecast_events)
+    xr.testing.assert_equal(fcst_events2, table.forecast_events)
+    xr.testing.assert_equal(obs_events, table.observed_events)
+    xr.testing.assert_equal(obs_events2, table.observed_events)
+    xr.testing.assert_equal(table.forecast_events, table2.forecast_events)
+    xr.testing.assert_equal(table.observed_events, table2.observed_events)
 
     # Confirm values in the contingency table are correct
     assert counts["tp_count"] == 9
@@ -151,6 +185,23 @@ def test_categorical_table():
     pierce_component_b = 1 / (1 + 6)
     pierce_expected = pierce_component_a - pierce_component_b
     assert table.pierce_skill_score() == pierce_expected
+
+
+def test_nan_handling():
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3)
+    table = match.make_table(simple_forecast_with_nan, simple_obs_with_nan)
+    counts = table.get_counts()
+
+    # Confirm values in the contingency table are correct
+    # Note - currently nans count as "not an event" rather than a mask
+    assert counts["tp_count"] == 8
+    assert counts["tn_count"] == 7
+    assert counts["fp_count"] == 2
+    assert counts["fn_count"] == 1
+    assert counts["total_count"] == 18
+
+    # Confirm calculation of a score is correct
+    assert table.accuracy() == (8 + 7) / 18
 
 
 def test_categorical_table_dims_handling():

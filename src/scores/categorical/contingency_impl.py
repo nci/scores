@@ -5,8 +5,8 @@ contingency tables of various kinds, also known as a confusion matrix.
 It allows the careful setting out of when and where forecasts closely match
 observations.
 
-The binary contingency table captures true positives, true negatives, false positives and 
-false negatives. 
+The binary contingency table captures true positives (hits), true negatives (correct negatives), 
+false positives (false alarms) and false negatives (misses). 
 
 The process of deriving a contingency table relies on the forecast data, the observation
 data, and a matching or event operator. The event operator will produce the category from the
@@ -113,10 +113,7 @@ class BasicContingencyManager:
         Identical to probability_of_detection
         Range: 0 to 1.  Perfect score: 1.
         """
-        cd = self.counts
-        pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
-
-        return pod
+        return self.probability_of_detection()
 
     def probability_of_detection(self):
         """
@@ -124,6 +121,7 @@ class BasicContingencyManager:
         Identical to hit_rate
         Range: 0 to 1.  Perfect score: 1.
         """
+        # Note - hit_rate calls this function
         cd = self.counts
         pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
 
@@ -147,6 +145,7 @@ class BasicContingencyManager:
         Identical to false_alarm_rate
         Range: 0 to 1.  Perfect score: 0.
         """
+
         return self.false_alarm_rate()
 
     def success_ratio(self):
@@ -186,6 +185,7 @@ class BasicContingencyManager:
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
         """
+
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
         component_b = cd["fn_count"] / (cd["fn_count"] + cd["tn_count"])
@@ -212,10 +212,10 @@ class BasicContingencyManager:
 class BinaryContingencyManager(BasicContingencyManager):
     """
     At each location, the value will either be:
-     - A true positive
-     - A false positive
-     - A true negative
-     - A false negative
+     - A true positive (hit)
+     - A false positive (false alarm)
+     - A true negative (correct negative)
+     - A false negative (miss)
 
     It will be common to want to operate on masks of these values,
     such as:
