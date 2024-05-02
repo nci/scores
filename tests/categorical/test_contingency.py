@@ -178,6 +178,7 @@ def test_categorical_table():
 
     # These methods are redirects to eachother
     assert table.critical_success_index() == table.threat_score()
+    assert table.hit_rate() == table.probability_of_detection()
     assert table.sensitivity() == table.hit_rate()
     assert table.false_alarm_rate() == table.probability_of_false_detection()
     assert table.frequency_bias() == table.bias_score()
