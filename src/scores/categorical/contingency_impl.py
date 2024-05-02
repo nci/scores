@@ -121,7 +121,7 @@ class BasicContingencyManager:
         Identical to hit_rate
         Range: 0 to 1.  Perfect score: 1.
         """
-        # Note - hit_rate calls this function
+        # Note - hit_rate and sensitiviy call this function
         cd = self.counts
         pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
 
@@ -196,9 +196,8 @@ class BasicContingencyManager:
         """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
-        cd = self.counts
-        s = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
-        return s
+
+        return probability_of_detection()
 
     def specificity(self):
         """
