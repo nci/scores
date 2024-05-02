@@ -180,6 +180,7 @@ def test_categorical_table():
     assert table.critical_success_index() == table.threat_score()
     assert table.sensitivity() == table.hit_rate()
     assert table.false_alarm_rate() == table.probability_of_false_detection()
+    assert table.frequency_bias() == table.bias_score()
 
     pierce_component_a = 9 / (9 + 1)
     pierce_component_b = 1 / (1 + 6)

@@ -102,10 +102,18 @@ class BasicContingencyManager:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
         """
+        # Note - bias_score calls this method
         cd = self.counts
         freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
 
         return freq_bias
+
+    def bias_score(self):
+        """
+        How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
+        """
+        
+        return self.frequency_bias()
 
     def hit_rate(self):
         """
