@@ -197,7 +197,7 @@ class BasicContingencyManager:
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
 
-        return probability_of_detection()
+        return self.probability_of_detection()
 
     def specificity(self):
         """
