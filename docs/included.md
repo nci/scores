@@ -7,7 +7,7 @@
 | Additive Bias (Mean Error)        |               |                           |              |
 | Flip-Flop Index                   |               |                           |              |
 | Mean Absolute Error (MAE)         |               |                           |              |
-| Mean Error (see Additive Bias)    |               |                           |              |
+| Mean Error (see Additive Bias)    |      -        |               -           |       -      |
 | Mean Squared Error (MS            |               |                           |              |
 | Murphy Score (Mean Elementary Score) | [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.murphy_score) | [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html) | [Ehm et al. (2016) - Theorem 1](https://www.jstor.org/stable/24775351); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957) |
 | Multiplicative Bias               |               |                           |              |
