@@ -13,8 +13,8 @@
 
 self
 quickstart
-included
 installation
+included
 api
 contributing
 data
