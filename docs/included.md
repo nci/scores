@@ -13,7 +13,7 @@
 | Multiplicative Bias               |               |                           |              |
 | Pearson's Correlation Coefficient |               |                           |              |
 | Quantile Score                    |               |                           |              |
-| Root Mean Square Error (RMSE)     | [API]([scores.continuous.rmse](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.rmse)) | [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Root_Mean_Squared_Error.html) | [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation) |
+| Root Mean Square Error (RMSE)     | [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.rmse)) | [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Root_Mean_Squared_Error.html) | [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation) |
 
 
 ## Probability
