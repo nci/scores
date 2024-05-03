@@ -67,7 +67,7 @@ The `scores` roadmap includes:
 
 ## Use in Academic Work
 
-In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@Loveday:2023].
+In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@loveday2024jive].
 
 The Jive verification metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
 
