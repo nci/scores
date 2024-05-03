@@ -113,7 +113,7 @@ class BasicContingencyManager:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
         """
-        
+
         return self.frequency_bias()
 
     def hit_rate(self):
@@ -253,7 +253,7 @@ class BinaryContingencyManager(BasicContingencyManager):
         self.fp = self.fp.where(~np.isnan(forecast_events))
         self.fp = self.fp.where(~np.isnan(observed_events))
         self.fn = self.fn.where(~np.isnan(forecast_events))
-        self.fn = self.fn.where(~np.isnan(observed_events))        
+        self.fn = self.fn.where(~np.isnan(observed_events))
 
         # Variables for count-based metrics
         self.counts = self._get_counts()
@@ -357,7 +357,7 @@ class ThresholdEventOperator(EventOperator):
         observed_events = op_fn(observed, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))                   
+        forecast_events = forecast_events.where(~np.isnan(forecast))
         observed_events = observed_events.where(~np.isnan(observed))
 
         return (forecast_events, observed_events)
@@ -381,8 +381,8 @@ class ThresholdEventOperator(EventOperator):
         observed_events = op_fn(observed, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))                   
-        observed_events = observed_events.where(~np.isnan(observed))        
+        forecast_events = forecast_events.where(~np.isnan(forecast))
+        observed_events = observed_events.where(~np.isnan(observed))
 
         table = BinaryContingencyManager(forecast_events, observed_events)
         return table

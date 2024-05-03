@@ -190,7 +190,6 @@ def test_categorical_table():
 
 
 def test_nan_handling():
-
     # import pudb; pudb.set_trace()
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3)
     table = match.make_table(simple_forecast_with_nan, simple_obs_with_nan)
@@ -208,10 +207,10 @@ def test_nan_handling():
 
 
 def test_threshold_variation():
-    '''
+    """
     Some basic tests to ensure the event operator is responding correctly to
     variations in event thredhold which should override the default
-    '''
+    """
 
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=0.5)
     table_05 = match.make_table(simple_forecast, simple_obs)
@@ -219,15 +218,15 @@ def test_threshold_variation():
     table_15 = match.make_table(simple_forecast, simple_obs, event_threshold=1.5)
 
     # Consistent with generally used examples from other tests
-    counts_13 = table_13.get_counts()    
+    counts_13 = table_13.get_counts()
     assert counts_13["tp_count"] == 9
     assert counts_13["tn_count"] == 6
     assert counts_13["fp_count"] == 2
     assert counts_13["fn_count"] == 1
     assert counts_13["total_count"] == 18
 
-    counts_05 = table_05.get_counts()  
-    counts_15 = table_15.get_counts()  
+    counts_05 = table_05.get_counts()
+    counts_15 = table_15.get_counts()
     assert counts_05["tp_count"] != counts_13["tp_count"]
     assert counts_05["tp_count"] != counts_15["tp_count"]
     assert counts_05["tp_count"] == 15
