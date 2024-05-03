@@ -13,6 +13,7 @@
 
 self
 quickstart
+included
 installation
 api
 contributing
