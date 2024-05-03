@@ -22,7 +22,7 @@
 | ------------------------          | -----------   | -----------               | -----------  |
 | Brier Score                       |               |                           |              |
 | Continuous Ranked Probability Score (CRPS) for cumulative distribution functions (CDFs) |       |    |
-| Continuous Ranked Probability Score (CRPS) |               |                           |              |
+| Continuous Ranked Probability Score (CRPS) for ensembles |               |                           |              |
 | Isotonic Regression (reliability diagrams) |               |                           |              |
 | Receiver (Relative) Operating Characteristic (ROC) |      |                           |              |
 
