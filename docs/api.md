@@ -49,6 +49,14 @@
 .. autofunction:: scores.processing.binary_discretise
 .. autofunction:: scores.processing.binary_discretise_proportion
 .. autofunction:: scores.processing.proportion_exceeding
+.. autofunction:: scores.processing.cdf.round_values
+.. autofunction:: scores.processing.cdf.propagate_nan
+.. autofunction:: scores.processing.cdf.observed_cdf
+.. autofunction:: scores.processing.cdf.integrate_square_piecewise_linear
+.. autofunction:: scores.processing.cdf.add_thresholds
+.. autofunction:: scores.processing.cdf.fill_cdf
+.. autofunction:: scores.processing.cdf.decreasing_cdfs
+.. autofunction:: scores.processing.cdf.cdf_envelope
 ```
 
 ## scores.stats

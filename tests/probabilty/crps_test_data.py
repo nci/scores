@@ -7,7 +7,7 @@ import xarray as xr
 from numpy import nan
 
 # pylint disable=no-name-in-module
-from scores.probability.functions import add_thresholds
+from scores.processing.cdf import add_thresholds
 
 DA_ISPL1 = xr.DataArray(  # simple case, easy to calculate
     data=[[0, 1], [1, 1], [nan, 1]],

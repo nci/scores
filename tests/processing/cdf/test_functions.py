@@ -1,21 +1,27 @@
 """
-This module contains unit tests for scores.probability.functions
+This module contains unit tests for scores.processing.cdf
 """
 
 import numpy as np
 import pytest
 import xarray as xr
 
-import scores.probability.checks
-import scores.probability.functions
+from scores.processing.cdf import (
+    cdf_envelope,
+    fill_cdf,
+    integrate_square_piecewise_linear,
+    observed_cdf,
+    propagate_nan,
+    round_values,
+)
 from tests.probabilty import cdf_test_data, crps_test_data
-from tests.probabilty import functions_test_data as ftd
+from tests.processing.cdf import functions_test_data as ftd
 
 
 def test_round_values_exception():
     """Test rounding throws the right exceptions"""
     with pytest.raises(ValueError):
-        scores.probability.functions.round_values(xr.DataArray(), -1, final_round_decpl=5)
+        round_values(xr.DataArray(), -1, final_round_decpl=5)
 
 
 @pytest.mark.parametrize(
@@ -28,7 +34,7 @@ def test_round_values_exception():
 )
 def test_round_values(array, rounding_precision, expected):
     """Tests `round_values` with a variety of inputs."""
-    output_as = scores.probability.functions.round_values(array, rounding_precision)
+    output_as = round_values(array, rounding_precision)
     xr.testing.assert_allclose(output_as, expected)
 
 
@@ -36,7 +42,7 @@ def test_propagate_nan_error():
     """Test propagating throws the right exceptions"""
     faulty_array = xr.Dataset({"lertitude": [1, 2, np.NaN, 4], "longitude": [20, 21, 22, 23, 24]})
     with pytest.raises(ValueError):
-        scores.probability.functions.propagate_nan(faulty_array, "latitude")
+        propagate_nan(faulty_array, "latitude")
 
 
 @pytest.mark.parametrize(
@@ -48,7 +54,7 @@ def test_propagate_nan_error():
 )
 def test_propagate_nan(dim, expected):
     """Tests `propagate_nan` with a variety of inputs."""
-    result = scores.probability.functions.propagate_nan(cdf_test_data.DA_PROPNAN, dim)
+    result = propagate_nan(cdf_test_data.DA_PROPNAN, dim)
     xr.testing.assert_allclose(result, expected)
 
 
@@ -61,13 +67,11 @@ def test_observed_cdf_errors():
 
     # Bad precision raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(
-            obs, threshold_dim, threshold_values=threshold_values, precision=badprecision
-        )
+        observed_cdf(obs, threshold_dim, threshold_values=threshold_values, precision=badprecision)
 
     # Null obs and a null threshold value raises a value error
     with pytest.raises(ValueError):
-        scores.probability.functions.observed_cdf(obs, threshold_dim, threshold_values=threshold_values)
+        observed_cdf(obs, threshold_dim, threshold_values=threshold_values)
 
 
 @pytest.mark.parametrize(
@@ -80,7 +84,7 @@ def test_observed_cdf_errors():
 )
 def test_integrate_square_piecewise_linear(function_values, expected):
     """Tests `integrate_square_piecewise_linear` with a variety of inputs."""
-    result = scores.probability.functions.integrate_square_piecewise_linear(function_values, "x")
+    result = integrate_square_piecewise_linear(function_values, "x")
     xr.testing.assert_allclose(result, expected)
 
 
@@ -96,7 +100,7 @@ def test_integrate_square_piecewise_linear(function_values, expected):
 )
 def test_fill_cdf(method, min_nonnan, expected):
     """Tests `fill_cdf` with a variety of inputs."""
-    output = scores.probability.functions.fill_cdf(cdf_test_data.DA_FILL_CDF1, "x", method, min_nonnan)
+    output = fill_cdf(cdf_test_data.DA_FILL_CDF1, "x", method, min_nonnan)
     xr.testing.assert_allclose(output, expected)
 
 
@@ -156,58 +160,12 @@ def test_fill_cdf(method, min_nonnan, expected):
 def test_fill_cdf_raises(cdf, threshold_dim, method, min_nonnan, error_class, error_msg_snippet):
     """`fill_cdf` raises an exception as expected."""
     with pytest.raises(error_class, match=error_msg_snippet):
-        scores.probability.functions.fill_cdf(
+        fill_cdf(
             cdf,
             threshold_dim,
             method,
             min_nonnan,
         )
-
-
-@pytest.mark.parametrize(
-    (
-        "cdf",
-        "threshold_dim",
-        "tolerance",
-        "error_msg_snippet",
-    ),
-    [
-        (
-            cdf_test_data.DA_DECREASING_CDFS1,
-            "y",
-            0,
-            "'y' is not a dimension of `cdf`",
-        ),
-        (
-            cdf_test_data.DA_DECREASING_CDFS1,
-            "x",
-            -1,
-            "`tolerance` must be nonnegative.",
-        ),
-        (
-            cdf_test_data.DA_CDF_ENVELOPE2,
-            "y",
-            0,
-            "'y' is not a dimension of `cdf`",
-        ),
-        (
-            cdf_test_data.DA_CDF_ENVELOPE1,
-            "x",
-            0,
-            "CDFs should have no NaNs or be all NaN along `threshold_dim`",
-        ),
-        (
-            cdf_test_data.DA_NAN_DECREASING_CDFS2,
-            "x",
-            0,
-            "Coordinates along 'x' dimension should be increasing.",
-        ),
-    ],
-)
-def test_check_nan_decreasing_inputs(cdf, threshold_dim, tolerance, error_msg_snippet):
-    """Tests that `_check_nan_decreasing_inputs` raises an exception as expected."""
-    with pytest.raises(ValueError, match=error_msg_snippet):
-        scores.probability.checks.check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)
 
 
 @pytest.mark.parametrize(
@@ -219,11 +177,11 @@ def test_check_nan_decreasing_inputs(cdf, threshold_dim, tolerance, error_msg_sn
 )
 def test_cdf_envelope(cdf):
     """Tests `cdf_envelope` with a variety of inputs."""
-    result = scores.probability.functions.cdf_envelope(cdf, "x")
+    result = cdf_envelope(cdf, "x")
     xr.testing.assert_allclose(result, cdf_test_data.EXP_CDF_ENVELOPE1)
 
 
 def test_cdf_envelope_raises():
     """Tests that `cdf_envelope` raises the correct error."""
     with pytest.raises(ValueError, match="'y' is not a dimension of `cdf`"):
-        scores.probability.functions.cdf_envelope(cdf_test_data.DA_CDF_ENVELOPE1, "y")
+        cdf_envelope(cdf_test_data.DA_CDF_ENVELOPE1, "y")

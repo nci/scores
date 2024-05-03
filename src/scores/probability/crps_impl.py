@@ -3,6 +3,7 @@ This module supports the implementation of the CRPS scoring function, drawing fr
 The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into 
 the probability module to be part of the probability API.
 """
+
 from collections.abc import Iterable
 from typing import Literal, Optional, Sequence
 
@@ -12,7 +13,7 @@ import xarray as xr
 
 import scores.utils
 from scores.probability.checks import coords_increasing
-from scores.probability.functions import (
+from scores.processing.cdf import (
     add_thresholds,
     cdf_envelope,
     decreasing_cdfs,
