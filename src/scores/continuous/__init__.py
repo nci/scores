@@ -16,6 +16,7 @@ from scores.continuous.standard_impl import (
     multiplicative_bias,
     rmse,
 )
+from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
     "flip_flop_index",
@@ -29,4 +30,5 @@ __all__ = [
     "rmse",
     "additive_bias",
     "multiplicative_bias",
+    "isotonic_fit",
 ]

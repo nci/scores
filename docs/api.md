@@ -20,6 +20,7 @@
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
 .. autofunction:: scores.continuous.correlation
+.. autofunction:: scores.continuous.isotonic_fit
 ```
 
 ## scores.probability
@@ -32,6 +33,7 @@
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data
 .. autofunction:: scores.probability.brier_score
+.. autofunction:: scores.probability.isotonic_fit
 ```
 
 ## scores.categorical
