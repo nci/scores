@@ -7,7 +7,9 @@ import pytest
 import xarray as xr
 
 from scores.processing.cdf import (
+    add_thresholds,
     cdf_envelope,
+    decreasing_cdfs,
     fill_cdf,
     integrate_square_piecewise_linear,
     observed_cdf,
@@ -185,3 +187,29 @@ def test_cdf_envelope_raises():
     """Tests that `cdf_envelope` raises the correct error."""
     with pytest.raises(ValueError, match="'y' is not a dimension of `cdf`"):
         cdf_envelope(cdf_test_data.DA_CDF_ENVELOPE1, "y")
+
+
+@pytest.mark.parametrize(
+    ("fill_method", "expected"),
+    [
+        ("linear", ftd.EXP_ADD_THRESHOLDS1),
+        ("none", ftd.EXP_ADD_THRESHOLDS2),
+    ],
+)
+def test_add_thresholds(fill_method, expected):
+    """Tests `add_thresholds` with a variety of inputs."""
+    result = add_thresholds(ftd.DA_ADD_THRESHOLDS, "x", [0.5, 0.2, 0.75, np.nan], fill_method)
+    xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("cdf", "tolerance", "expected"),
+    [
+        (ftd.DA_DECREASING_CDFS1, 0, ftd.EXP_DECREASING_CDFS1A),
+        (ftd.DA_DECREASING_CDFS1, 0.3, ftd.EXP_DECREASING_CDFS1B),
+    ],
+)
+def test_decreasing_cdfs(cdf, tolerance, expected):
+    """Tests `decreasing_cdfs` with a variety of inputs."""
+    result = decreasing_cdfs(cdf, "x", tolerance)
+    xr.testing.assert_equal(result, expected)
