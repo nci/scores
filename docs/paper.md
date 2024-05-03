@@ -54,7 +54,7 @@ In order to meet the needs of researchers, `scores`:
 
 ## Roadmap and Future Development
 
-At the time of writing, the scores contained in this package are: Mean Squared Error (MSE), Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), the Fixed Risk Multicategorical (FIRM) score [@Taggart:2022a], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), CRPS for ensembles [@Gneiting_2007], [@Ferro_2013], the Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Receiver Operating Characteristic (ROC) curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable]. We anticipate more scores, metrics and statistical techniques will be added over time.
+At the time of writing, the scores contained in this package are: Mean Squared Error (MSE), Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), the Fixed Risk Multicategorical (FIRM) score [@Taggart:2022a], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], the Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Receiver Operating Characteristic (ROC) curves, the quantile score, and the Murphy score [@Ehm:2016]. It also includes the Diebold-Mariano statistical test [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications. Additionally it contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams [@dimitriadis2021stable]. We anticipate more scores, metrics and statistical techniques will be added over time.
 
 The `scores` roadmap includes:
 
@@ -69,7 +69,7 @@ The `scores` roadmap includes:
 
 In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@loveday2024jive].
 
-The Jive verification metrics have been used by [@Griffiths:2017], [@Foley:2020], [@Taggart:2022b], [@Taggart:2022c] and [@Taggart:2022d].
+The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022b; @Taggart:2022c; @Taggart:2022d].
 
 `scores` has arisen from the Jive verification system. `scores` includes mathematical functions from Jive and is intended to modularise these functions and make them available as an open source package. 
 
