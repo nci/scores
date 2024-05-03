@@ -55,11 +55,12 @@
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
 ```
 
+
 ## Probability
 
-| Name (Alphabetical order)                | API           |  Tutorial                 | Reference(s) |
-| ------------------------                 | -----------   | -----------               | -----------  |
-| Brier Score                              |               |                           |              |
+| Name (Alphabetical order)         | API           | Jupyter Notebook Tutorial | Reference(s) |
+| ------------------------          | -----------   | -----------               | -----------  |
+| Brier Score                       |               |                           |              |
 | Continuous Ranked Probability Score (CRPS) for cumulative distribution functions (CDFs) |       |    |
 | Continuous Ranked Probability Score (CRPS) for ensembles |               |                           |              |
 | Isotonic Regression (reliability diagrams) |               |                           |              |
