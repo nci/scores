@@ -22,6 +22,7 @@ import operator
 from abc import ABC, abstractmethod
 from typing import Optional
 
+import numpy as np
 import xarray as xr
 
 import scores.utils
@@ -236,7 +237,6 @@ class BinaryContingencyManager(BasicContingencyManager):
     """
 
     def __init__(self, forecast_events: FlexibleArrayType, observed_events: FlexibleArrayType):
-        # type checking goes here
         self.forecast_events = forecast_events
         self.observed_events = observed_events
 
@@ -244,6 +244,16 @@ class BinaryContingencyManager(BasicContingencyManager):
         self.tn = (self.forecast_events == 0) & (self.observed_events == 0)  # true negatives
         self.fp = (self.forecast_events == 1) & (self.observed_events == 0)  # false positives
         self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
+
+        # Bring back NaNs where there is either a forecast or observed event nan
+        self.tp = self.tp.where(~np.isnan(forecast_events))
+        self.tp = self.tp.where(~np.isnan(observed_events))
+        self.tn = self.tn.where(~np.isnan(forecast_events))
+        self.tn = self.tn.where(~np.isnan(observed_events))
+        self.fp = self.fp.where(~np.isnan(forecast_events))
+        self.fp = self.fp.where(~np.isnan(observed_events))
+        self.fn = self.fn.where(~np.isnan(forecast_events))
+        self.fn = self.fn.where(~np.isnan(observed_events))        
 
         # Variables for count-based metrics
         self.counts = self._get_counts()
@@ -346,6 +356,10 @@ class ThresholdEventOperator(EventOperator):
         forecast_events = op_fn(forecast, event_threshold)
         observed_events = op_fn(observed, event_threshold)
 
+        # Bring back NaNs
+        forecast_events = forecast_events.where(~np.isnan(forecast))                   
+        observed_events = observed_events.where(~np.isnan(observed))
+
         return (forecast_events, observed_events)
 
     def make_table(
@@ -365,6 +379,10 @@ class ThresholdEventOperator(EventOperator):
 
         forecast_events = op_fn(forecast, event_threshold)
         observed_events = op_fn(observed, event_threshold)
+
+        # Bring back NaNs
+        forecast_events = forecast_events.where(~np.isnan(forecast))                   
+        observed_events = observed_events.where(~np.isnan(observed))        
 
         table = BinaryContingencyManager(forecast_events, observed_events)
         return table

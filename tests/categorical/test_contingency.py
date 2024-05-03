@@ -190,20 +190,21 @@ def test_categorical_table():
 
 
 def test_nan_handling():
+
+    # import pudb; pudb.set_trace()
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3)
     table = match.make_table(simple_forecast_with_nan, simple_obs_with_nan)
     counts = table.get_counts()
 
     # Confirm values in the contingency table are correct
-    # Note - currently nans count as "not an event" rather than a mask
     assert counts["tp_count"] == 8
-    assert counts["tn_count"] == 7
-    assert counts["fp_count"] == 2
+    assert counts["tn_count"] == 5
+    assert counts["fp_count"] == 1
     assert counts["fn_count"] == 1
-    assert counts["total_count"] == 18
+    assert counts["total_count"] == 15
 
     # Confirm calculation of a score is correct
-    assert table.accuracy() == (8 + 7) / 18
+    assert table.accuracy() == (8 + 5) / 15
 
 
 def test_threshold_variation():
