@@ -12,7 +12,7 @@
 * - Additive Bias (Mean Error)
   - TBA
   - TBA
-  - [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
 * - Flip-Flop Index
   - 
   - 
@@ -52,7 +52,7 @@
 * - Multiplicative Bias
   - TBA
   - TBA
-  - [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+  - [Multiplicative bias (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#multiplicative_bias)
 * - Murphy Score (Mean Elementary Score) 
   - 
   - 
@@ -116,29 +116,6 @@
 
 ## Categorical
 
-#### Version One: Including what is currently in main (i.e. no binary contingency table class)
-```{list-table}
-:header-rows: 1
-
-* - Name (Alphabetical order)
-  - API
-  - Tutorial
-  - Reference(s)
-* - FIxed Risk Multicategorical (FIRM)
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
-  - [Taggart et al. (2022)](https://doi.org/10.1002/qj.4266)
-* - POD - implementation as used in ROC
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_detection)   
-  - Not available
-  - Missing Ref
-* - POFD - implementation as used in ROC
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_false_detection)
-  - Not available
-  - Missing Ref
-```
-
-#### Version two: based on what is in main plus the current binary contingency table class work
 ```{list-table}
 :header-rows: 1
 
@@ -157,7 +134,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
     - False alarm rate (probability of false detection (POFD))
   -
@@ -165,7 +142,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 * -  
     - Frequency bias (bias score)
   -
@@ -173,7 +150,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
     - Hit rate (true positive rate, probability of detection (POD), sensitivity)
   -
@@ -181,7 +158,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
     - Peirce's skill score (true skill statistic, Hannssen and Kuipers' discriminant)
   -
@@ -189,7 +166,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
     - Specificity
   -
@@ -205,7 +182,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)    
+    [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)    
 * -  
     - Threat score (critical success index)
   -
@@ -213,7 +190,7 @@
   - 
     TBA
   - 
-    [Forecast Verification Site by WWRP/WGNE Joint Working Group on Forecast Verification Research](https://www.cawcr.gov.au/projects/verification/)    
+    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
 * - FIxed Risk Multicategorical (FIRM)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
@@ -240,10 +217,10 @@
 * - Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.stats.statistical_tests.diebold_mariano)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Diebold_Mariano_Test_Statistic.html)
-  - [Diebold and Mariano (1995)](https://doi.org/10.1080/07350015.1995.10524599);[Harvey et al. (1997)](https://doi.org/10.1016/S0169-2070(96)00719-4);[Hering and Genton (2011)](https://doi.org/10.1198/TECH.2011.10136)
+  - [Diebold and Mariano (1995)](https://doi.org/10.1080/07350015.1995.10524599); [Harvey et al. (1997)](https://doi.org/10.1016/S0169-2070(96)00719-4); [Hering and Genton (2011)](https://doi.org/10.1198/TECH.2011.10136)
 ```
 
-## Other: Processing (Pre-processing tools for preparing data)
+## Processing (tools for preparing data)
 
 ```{list-table}
 :header-rows: 1
@@ -273,3 +250,28 @@
   - 
   -   
 ```
+
+## Pandas
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Mean Absolute Error
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.pandas.continuous.mae)
+  - TBA
+  - [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
+* - Mean Squared Error
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.pandas.continuous.mse)  
+  - TBA
+  - [Wikipedia](https://en.wikipedia.org/wiki/Mean_squared_error)
+* - Root Mean Squared Error
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.pandas.continuous.rmse)   
+  - TBA
+  - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+```
+
+
