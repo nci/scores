@@ -65,17 +65,96 @@
 
 ## Probability
 
-| Name (Alphabetical order)                | API           |  Tutorial                 | Reference(s) |
-| ------------------------                 | -----------   | -----------               | -----------  |
-| Brier Score                              |               |                           |              |
-| Continuous Ranked Probability Score (CRPS) for cumulative distribution functions (CDFs) |       |    |
-| Continuous Ranked Probability Score (CRPS) for ensembles |               |                           |              |
-| Isotonic Regression (reliability diagrams) |               |                           |              |
-| Receiver (Relative) Operating Characteristic (ROC) |      |                           |              |
+```{list-table}
+:header-rows: 1
 
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Brier Score
+  - 
+  - 
+  - 
+* - Continuous Ranked Probability Score (CRPS) for cumulative distribution functions (CDFs)
+  -    
+  - 
+  -
+* - Continuous Ranked Probability Score (CRPS) for ensembles
+  -    
+  - 
+  -
+* - Receiver (Relative) Operating Characteristic (ROC)
+  -    
+  - 
+  -
+```
 
 ## Categorical
 
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - FIRM
+  - 
+  - 
+  - 
+* - POD
+  -    
+  - 
+  -
+* - POFD
+  - 
+  - 
+  - 
+```
+
 ## Statistical Tests
 
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications)
+  - 
+  - 
+  - 
+```
+
 ## Other: Processing (Pre-processing tools for preparing data)
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Isotonic Regression (Isotonic Fit, Reliability Diagram)
+  - 
+  - 
+  - 
+* - Broadcast and Match NaN
+  -    
+  - 
+  -
+* - Comparative Discretise
+  -    
+  - 
+  -
+* - Binary Discretise
+  -    
+  - 
+  - 
+* - Proportion Exceeding
+  -    
+  - 
+  -   
+```
