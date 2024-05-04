@@ -49,6 +49,7 @@ Information relevant for package maintenance
  - Markdown files as the text source for all the documentation
  - Myst Parser to enable Sphinx to utilise the markdown syntax
  - The 'sphinx book' theme for Sphinx
+ - Pandoc should be installed through the OS package manager separately
 
 ## 2. Useful information resources are:
 
