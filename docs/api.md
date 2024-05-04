@@ -16,7 +16,7 @@
 .. autofunction:: scores.continuous.quantile_score
 .. autofunction:: scores.continuous.rmse
 .. autofunction:: scores.continuous.murphy_score
-.. autofunction:: scores.continuous.murphy.thetas
+.. autofunction:: scores.continuous.murphy_thetas
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
 .. autofunction:: scores.continuous.correlation
