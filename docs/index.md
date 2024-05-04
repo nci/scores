@@ -14,6 +14,7 @@
 self
 quickstart
 installation
+included
 api
 contributing
 data
