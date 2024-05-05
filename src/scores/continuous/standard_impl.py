@@ -263,7 +263,7 @@ def mean_error(
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the mean error. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the additive bias. All other dimensions will be reduced. As a
+            calculating the mean error. All other dimensions will be reduced. As a
             special case, 'all' will allow all dimensions to be preserved. In
             this case, the result will be in the same shape/dimensionality
             as the forecast, and the errors will be the error at each
@@ -273,7 +273,7 @@ def mean_error(
             by population, custom)
 
     Returns:
-        An xarray object with the additive bias of a forecast.
+        An xarray object with the mean error of a forecast.
 
     """
     return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
@@ -317,6 +317,7 @@ def additive_bias(
         An xarray object with the additive bias of a forecast.
 
     """
+    # Note - mean error call this function
     error = fcst - obs
     score = scores.functions.apply_weights(error, weights=weights)
     reduce_dims = scores.utils.gather_dimensions(

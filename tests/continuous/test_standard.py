@@ -770,6 +770,7 @@ EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
 def test_additive_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
     """
     Tests continuous.additive_bias
+    Also tests mean_error (which is an identical function)
     """
     result = scores.continuous.additive_bias(
         fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
