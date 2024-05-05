@@ -11,6 +11,7 @@ from scores.probability.crps_impl import (
     crps_for_ensemble,
 )
 from scores.probability.roc_impl import roc_curve_data
+from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
     "murphy_score",
@@ -21,4 +22,5 @@ __all__ = [
     "crps_cdf_brier_decomposition",
     "crps_for_ensemble",
     "roc_curve_data",
+    "isotonic_fit",
 ]
