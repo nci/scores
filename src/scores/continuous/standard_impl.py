@@ -261,7 +261,7 @@ def mean_error(
         fcst: Forecast or predicted variables.
         obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating the additive bias. All other dimensions will be preserved.
+            calculating the mean error. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
             calculating the additive bias. All other dimensions will be reduced. As a
             special case, 'all' will allow all dimensions to be preserved. In
