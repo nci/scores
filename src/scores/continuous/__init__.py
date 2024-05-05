@@ -12,6 +12,7 @@ from scores.continuous.standard_impl import (
     additive_bias,
     correlation,
     mae,
+    mean_error,
     mse,
     multiplicative_bias,
     rmse,
@@ -29,6 +30,7 @@ __all__ = [
     "mse",
     "rmse",
     "additive_bias",
+    "mean_error",
     "multiplicative_bias",
     "isotonic_fit",
 ]

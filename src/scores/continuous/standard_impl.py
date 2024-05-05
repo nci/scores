@@ -238,6 +238,47 @@ def correlation(
     return xr.corr(fcst, obs, reduce_dims)
 
 
+def mean_error(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
+    """
+    Calculates the mean error which is also sometimes called the additive bias.
+
+    It is defined as
+    .. math::
+        \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
+        \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
+
+
+    See "Mean error" section at https://www.cawcr.gov.au/projects/verification/ for more information
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the additive bias. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the additive bias. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        An xarray object with the additive bias of a forecast.
+
+    """
+    return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
+
+
 def additive_bias(
     fcst: XarrayLike,
     obs: XarrayLike,

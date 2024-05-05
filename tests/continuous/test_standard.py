@@ -774,7 +774,11 @@ def test_additive_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected)
     result = scores.continuous.additive_bias(
         fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
+    result2 = scores.continuous.mean_error(
+        fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
+    )
     xr.testing.assert_equal(result, expected)
+    xr.testing.assert_equal(result, result2)
 
 
 def test_additive_bias_dask():
