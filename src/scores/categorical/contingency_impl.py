@@ -188,7 +188,7 @@ class BasicContingencyManager:
 
         return self.threat_score()
 
-    def pierce_skill_score(self):
+    def peirce_skill_score(self):
         """
         Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
         How well did the forecast separate the "yes" events from the "no" events?

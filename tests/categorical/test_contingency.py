@@ -183,10 +183,10 @@ def test_categorical_table():
     assert table.false_alarm_rate() == table.probability_of_false_detection()
     assert table.frequency_bias() == table.bias_score()
 
-    pierce_component_a = 9 / (9 + 1)
-    pierce_component_b = 1 / (1 + 6)
-    pierce_expected = pierce_component_a - pierce_component_b
-    assert table.pierce_skill_score() == pierce_expected
+    peirce_component_a = 9 / (9 + 1)
+    peirce_component_b = 1 / (1 + 6)
+    peirce_expected = peirce_component_a - peirce_component_b
+    assert table.peirce_skill_score() == peirce_expected
 
 
 def test_nan_handling():
