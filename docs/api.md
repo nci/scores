@@ -11,6 +11,8 @@
 ## scores.continuous
 ```{eval-rst}
 .. automodule:: scores.continuous
+.. autofunction:: scores.continuous.additive_bias
+.. autofunction:: scores.continuous.mean_error
 .. autofunction:: scores.continuous.mae
 .. autofunction:: scores.continuous.mse
 .. autofunction:: scores.continuous.quantile_score
