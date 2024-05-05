@@ -118,14 +118,38 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.brier_score)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Brier_Score.html)
   - [Brier (1950)](https://doi.org/10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO;2)
-* - Continuous Ranked Probability Score (CRPS) for cumulative distribution functions (CDFs)
+* - Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs)
   -    
-  - TBA
+  - 
   -
-* - Continuous Ranked Probability Score (CRPS) for ensembles
-  -    
-  - TBA
+* -  
+    - CRPS for CDFs
   -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_cdf)
+  - 
+    TBA
+  - 
+    [Matheson and Winkler (1976)](https://doi.org/10.1287/mnsc.22.10.1087); [Gneiting and Ranjan (2011)](https://doi.org/10.1198/jbes.2010.08110)
+* -  
+    - Adjust Forecast for CRPS
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.adjust_fcst_for_crps)
+  - 
+    TBA
+  - 
+    &mdash;
+* -  
+    - CRPS CDF Brier Decomposition
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_cdf_brier_decomposition)
+  - 
+    TBA
+  - 
+    &mdash;    
+* - Continuous Ranked Probability Score (CRPS) for Ensembles
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_for_ensemble)   
+  - TBA
+  - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
