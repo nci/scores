@@ -43,6 +43,14 @@
 .. autofunction:: scores.categorical.firm
 .. autofunction:: scores.categorical.probability_of_detection
 .. autofunction:: scores.categorical.probability_of_false_detection
+.. autoclass:: scores.categorical.BinaryContingencyManager
+    :members:
+.. autoclass:: scores.categorical.BasicContingencyManager
+    :members:
+.. autoclass:: scores.categorical.ThresholdEventOperator
+    :members:
+.. autoclass:: scores.categorical.EventOperator
+    :members:
 ```
 
 ## scores.processing

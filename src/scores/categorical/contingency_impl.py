@@ -234,6 +234,9 @@ class BinaryContingencyManager(BasicContingencyManager):
 
     As such, the per-pixel information is useful as well as the overall
     ratios involved.
+
+    BinaryContingencyManager utilises the BasicContingencyManager class to provide
+    most functionality.
     """
 
     def __init__(
