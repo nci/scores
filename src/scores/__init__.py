@@ -17,6 +17,7 @@ __version__ = "v0.7"
 
 __all__ = [
     "scores.categorical",
+    "scores.contingency",
     "scores.continuous",
     "scores.functions",
     "scores.pandas",

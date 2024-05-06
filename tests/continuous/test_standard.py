@@ -4,12 +4,13 @@ Contains unit tests for scores.continuous.standard
 
 # pylint: disable=missing-function-docstring
 # pylint: disable=line-too-long
+# pylint: disable=R0801
 
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import numpy.random
@@ -467,8 +468,8 @@ def test_mse_with_dask():
     Test that mse works with dask
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
         data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
@@ -490,8 +491,8 @@ def test_mae_with_dask():
     Test that mae works with dask
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
         data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
@@ -513,8 +514,8 @@ def test_rmse_with_dask():
     Test that rmse works with dask
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
         data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
@@ -662,8 +663,8 @@ def test_correlation_dask():
     Tests continuous.correlation works with Dask
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = scores.continuous.correlation(DA3_CORR.chunk(), DA2_CORR.chunk())
     assert isinstance(result.data, dask.array.Array)

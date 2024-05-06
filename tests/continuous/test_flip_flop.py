@@ -4,9 +4,8 @@ This module contains tests for scores.continuous.flip_flop
 
 try:
     import dask
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name
-
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -407,8 +406,8 @@ def test_flip_flop_index_is_dask_compatible():
     Test that flip flop works with dask.
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     dask_array = ntd.DATA_FFI_1D_6.chunk()
     result = flip_flop_index(dask_array, "letter")
@@ -423,8 +422,8 @@ def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
     Test that flip flop proportion exceeding works with dask.
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     dask_array = ntd.DATA_FFI_2X2X4.chunk()
     result = flip_flop_index_proportion_exceeding(dask_array, "int", [0, 1, 5], **{"one": [1, 2, 3], "two": [2, 3, 4]})
