@@ -334,12 +334,13 @@ class ThresholdEventOperator(EventOperator):
     This class abstracts that concept for any event definition.
     """
 
-    def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001):
+    def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001, default_op_fn=operator.ge):
         self.precision = precision
         self.default_event_threshold = default_event_threshold
+        self.default_op_fn = default_op_fn
 
     def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=operator.gt
+        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         Using this function requires a careful understanding of the structure of the data
@@ -352,6 +353,9 @@ class ThresholdEventOperator(EventOperator):
 
         if not event_threshold:
             event_threshold = self.default_event_threshold
+
+        if not op_fn:
+            op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
         observed_events = op_fn(observed, event_threshold)
