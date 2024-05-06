@@ -1,7 +1,5 @@
 # Index of Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
-****NOTE: TBA = To be added**** - these are things either already merged into development or currently in a pull request 
-
 ## Continuous
 
 ```{list-table} 
