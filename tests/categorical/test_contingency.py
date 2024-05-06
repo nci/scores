@@ -129,7 +129,7 @@ def test_str_view():
     Smoke test for string representation
     """
     match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
-    table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     _stringrep = str(table)
 
 
@@ -138,8 +138,8 @@ def test_categorical_table():
     Test the basic calculations of the contingency table
     """
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
-    table = match.make_table(simple_forecast, simple_obs)
-    table2 = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    table = match.make_contingency_manager(simple_forecast, simple_obs)
+    table2 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     counts = table.get_counts()
     actual_table = table.get_table()
 
@@ -205,7 +205,7 @@ def test_dimension_broadcasting():
     base_forecasts = [simple_forecast + i * 0.5 for i in range(5)]
     complex_forecast = xr.concat(base_forecasts, dim="time")
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
-    table = match.make_table(complex_forecast, simple_obs)
+    table = match.make_contingency_manager(complex_forecast, simple_obs)
     withtime = table.transform(preserve_dims="time")
     accuracy = withtime.accuracy()
     assert accuracy.dims == ("time",)
@@ -228,7 +228,7 @@ def test_nan_handling():
     """
 
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
-    table = match.make_table(simple_forecast_with_nan, simple_obs_with_nan)
+    table = match.make_contingency_manager(simple_forecast_with_nan, simple_obs_with_nan)
     counts = table.get_counts()
 
     # Confirm values in the contingency table are correct
@@ -249,9 +249,9 @@ def test_threshold_variation():
     """
 
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=0.5, default_op_fn=operator.gt)
-    table_05 = match.make_table(simple_forecast, simple_obs)
-    table_13 = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
-    table_15 = match.make_table(simple_forecast, simple_obs, event_threshold=1.5)
+    table_05 = match.make_contingency_manager(simple_forecast, simple_obs)
+    table_13 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
+    table_15 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.5)
 
     # Consistent with generally used examples from other tests
     counts_13 = table_13.get_counts()
@@ -274,7 +274,7 @@ def test_categorical_table_dims_handling():
     Test that the transform function correctly allows dimensional transforms
     """
     match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
-    table = match.make_table(simple_forecast, simple_obs, event_threshold=1.3)
+    table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     transformed = table.transform(preserve_dims=["height"])
     transformed2 = table.transform(reduce_dims=["lat", "lon"])
 
@@ -300,7 +300,7 @@ def test_dask_if_available_categorical():
     obs = simple_obs.chunk()
 
     match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
-    table = match.make_table(fcst, obs, event_threshold=1.3)
+    table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
     assert isinstance(table.forecast_events.data, dask.array.Array)

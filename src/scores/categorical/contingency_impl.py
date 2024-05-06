@@ -319,7 +319,7 @@ class EventOperator(ABC):
         ...  # pragma: no cover # pylint: disable=unnecessary-ellipsis
 
     @abstractmethod
-    def make_table(
+    def make_contingency_manager(
         self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=operator.gt
     ):
         """
@@ -368,7 +368,7 @@ class ThresholdEventOperator(EventOperator):
 
         return (forecast_events, observed_events)
 
-    def make_table(
+    def make_contingency_manager(
         self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=operator.gt
     ):
         """
