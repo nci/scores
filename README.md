@@ -5,6 +5,8 @@
 One-line intro: xarray based verification scores and tools that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
+A complete list of the Metrics, Statistical Techniques and Data Processing Tools Included in scores is [available here](https://scores.readthedocs.io/en/develop/included.html).
+
 A Selection of the Metrics and Tools included in `scores`:
 
 | continuous                      | probability | categorical      | statistical tests |
@@ -12,8 +14,6 @@ A Selection of the Metrics and Tools included in `scores`:
 | MAE, MSE, RMSE, Flip-Flop Index, Quantile Score, Murphy score, Pearson's Correlation Coefficient, Additive Bias, Multiplicative Bias  | CRPS for CDF, CRPS for ensemble, ROC, Brier Score, Isotonic Regression (reliability diagrams)   | FIRM, POD, POFD  |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is getting much closer to our goals for version one, but there are a few more things to add. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
-
-A complete list of the Metrics, Statistical Techniques and Data Processing Tools Included in scores is [available here](https://scores.readthedocs.io/en/develop/included.html).
 
 Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io).  
 Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).  
