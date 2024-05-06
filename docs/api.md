@@ -22,6 +22,7 @@
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
 .. autofunction:: scores.continuous.correlation
+.. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.isotonic_fit
 ```
 
