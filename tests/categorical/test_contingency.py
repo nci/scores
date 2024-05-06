@@ -209,7 +209,20 @@ def test_dimension_broadcasting():
     assert len(accuracy.time) == 5
 
 def test_nan_handling():
-    # import pudb; pudb.set_trace()
+    '''
+    This is important because the default handling of NaN with regards to operators
+    is not suitable for calculating contingency scores. The strategy in `scores`
+    is to disregard any case with a NaN in it, regardless of whether that is present
+    in the forecast data or the observed data or both. There may be specific use cases
+    where for example a nan could be regarded as a 'missed forecast' and should count.
+    This situation is not regarded as 'standard', and only fully valid data is considered
+    and aggregated in the scores.
+
+    This test sets up data which has a nan forecast matched to a valid observation, a 
+    nan observation is matched to a valid forecast, and a nan forecast is matched to a 
+    nan observation.
+    '''
+
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3)
     table = match.make_table(simple_forecast_with_nan, simple_obs_with_nan)
     counts = table.get_counts()
