@@ -5,7 +5,7 @@
 One-line intro: xarray based verification scores and tools that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
-A complete list of the Metrics, Statistical Techniques and Data Processing Tools Included in scores is [available here](https://scores.readthedocs.io/en/develop/included.html).
+A complete list of the included Metrics, Statistical Techniques and Data Processing Tools is [available here](https://scores.readthedocs.io/en/develop/included.html).
 
 A Selection of the Metrics and Tools included in `scores`:
 
