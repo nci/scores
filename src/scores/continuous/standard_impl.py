@@ -28,6 +28,8 @@ def mse(
     most one of reduce_dims and preserve_dims may be specified.
     Specifying both will result in an exception.
 
+    See "Mean squared error" section at https://www.cawcr.gov.au/projects/verification/#MSE for more information
+
     Args:
         fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]):
             Forecast or predicted variables in xarray or pandas.
