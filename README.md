@@ -13,7 +13,7 @@ A Selection of the Metrics and Tools included in `scores`:
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is getting much closer to our goals for version one, but there are a few more things to add. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
-A complete list of the Metrics, Statistical Techniques and Data Processing Tools Included in scores is included [in the documentation, here](https://scores.readthedocs.io/en/develop/included.html).  
+A complete list of the Metrics, Statistical Techniques and Data Processing Tools Included in scores ]can be found here](https://scores.readthedocs.io/en/develop/included.html).  
 Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io).  
 Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores).  
 The tutorial gallery is hosted at [as part of the documentation, here](https://scores.readthedocs.io/en/latest/tutorials/Explanation.html).
