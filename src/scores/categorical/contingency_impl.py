@@ -236,7 +236,9 @@ class BinaryContingencyManager(BasicContingencyManager):
     ratios involved.
     """
 
-    def __init__(self, forecast_events: FlexibleArrayType, observed_events: FlexibleArrayType):
+    def __init__(
+        self, forecast_events: FlexibleArrayType, observed_events: FlexibleArrayType
+    ):  # pylint: disable=super-init-not-called
         self.forecast_events = forecast_events
         self.observed_events = observed_events
 
@@ -314,7 +316,7 @@ class EventOperator(ABC):
         """
         This method should be over-ridden to return forecast and observed event tables
         """
-        ...  # pragma: no cover # pylint disable=unnecessary-ellipsis
+        ...  # pragma: no cover # pylint: disable=unnecessary-ellipsis
 
     @abstractmethod
     def make_table(
@@ -323,7 +325,7 @@ class EventOperator(ABC):
         """
         This method should be over-ridden to return a contingency table.
         """
-        ...  # pragma: no cover # pylint disable=unnecessary-ellipsis
+        ...  # pragma: no cover # pylint: disable=unnecessary-ellipsis
 
 
 class ThresholdEventOperator(EventOperator):
