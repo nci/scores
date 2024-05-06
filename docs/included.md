@@ -347,12 +347,12 @@
   - [Taggart et al. (2022)](https://doi.org/10.1002/qj.4266)
 * - POD - implementation as used in ROC
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_detection)   
-  - Not available
-  - Missing Ref
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
+  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * - POFD - implementation as used in ROC
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_false_detection)
-  - Not available
-  - Missing Ref
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
+  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 ```
 
 ## Statistical Tests
