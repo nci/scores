@@ -87,7 +87,11 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.correlation)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pearsons_Correlation.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
-* - Quantile Loss (Quantile Score)
+* - Pinball Loss, *see Quantile Loss*
+  - &mdash;
+  - &mdash;
+  - &mdash;
+* - Quantile Loss (Quantile Score, Pinball Loss)
   - TBA
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Quantile_Loss.html)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
