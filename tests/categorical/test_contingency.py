@@ -188,6 +188,25 @@ def test_categorical_table():
     peirce_expected = peirce_component_a - peirce_component_b
     assert table.peirce_skill_score() == peirce_expected
 
+def test_dimension_broadcasting():   
+    '''
+    Confirm that dimension broadcasting is working, through an example where a time
+    dimension is introduced to the forecast object. Each element of the time dimension
+    should be compared to the observation, and the final accuracy should have an
+    accuracy score at each time.
+
+    The actual calculated accuracy at each time is not tested here, this test is about
+    dimension handling not score calculation maths.
+    ''' 
+
+    base_forecasts = [simple_forecast + i*0.5 for i in range(5)]
+    complex_forecast = xr.concat(base_forecasts, dim="time")
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3)
+    table = match.make_table(complex_forecast, simple_obs)
+    withtime = table.transform(preserve_dims='time')
+    accuracy = withtime.accuracy()
+    assert accuracy.dims == ('time',)
+    assert len(accuracy.time) == 5
 
 def test_nan_handling():
     # import pudb; pudb.set_trace()
