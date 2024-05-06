@@ -7,7 +7,7 @@ Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
 A complete list of included Metrics, Statistical Techniques and Data Processing Tools is [available here](https://scores.readthedocs.io/en/develop/included.html).
 
-A Selection of the Metrics and Tools included in `scores`:
+A selection of the Metrics and Tools included in `scores`:
 
 | continuous                      | probability | categorical      | statistical tests |
 | ----------                      | ----------- | -----------      | ----------------- |
