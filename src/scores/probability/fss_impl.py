@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 
 class FssComputeMethod(Enum):
@@ -21,17 +21,55 @@ class FssComputeMethod(Enum):
     RUST_OCL = 5
 
 
-def fss(
-    fcst: npt.NDArray[np.float64],  # TODO: change to XarrayLike once support is implemented
-    obs: npt.NDArray[np.float64],  # TODO: change to XarrayLike once support is implemented
+def fss_2d(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    threshold: np.float64,
+    spatial_dims: Tuple[str, str],
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[Iterable[str]] = None,
+    preserve_dims: Optional[Iterable[str]] = None,
+):
+    def _spatial_dims_exist(_dims):
+        s_spatial_dims = set(spatial_dims)
+        s_dims = set(_dims)
+        return s_spatial_dims.intersection(s_dims) == s_spatial_dims
+
+    assert _spatial_dims_exist(fcst), f"missing spatial dims {spatial_dims} in fcst"
+    assert _spatial_dims_exist(obs), f"missing spatial dims {spatial_dims} in obs"
+
+    # apply_ufunc here to reduce spatial dims and calculate fss score for all 2D fields.
+    xr.apply_ufunc(...)
+
+    # gather dimensions to keep.
+    dims = scores.utils.gather_dimensions2(
+        fcst,
+        obs,
+        weights=None,  # weighted score currently not supported
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+    )
+    all_dims = set(fcst.dims).union(set(obs.dims))
+    dims_reduce = all_dims - set(dims) - set(spatial_dims)
+
+    if len(dims_reduce) == 0:
+        # if dimensions to reduce is empty, we're done - return output with fss
+        # scores along all dims.
+        ...
+    else:
+        # otherwise, we want to further reduce dimensions. Do a second
+        # apply_ufunc, but this time to accumulate (mean) the decomposed fss
+        # score along the core axes (i.e. dims_to_reduce)
+        xr.apply_ufunc(...)
+
+
+def fss_2d_single_field(
+    fcst: npt.NDArray[np.float64],
+    obs: npt.NDArray[np.float64],
     *,
-    threshold: np.float64,  # TODO: support for multiple thresholds
-    window: Tuple[int, int],  # TODO: support for multiple windows
+    threshold: np.float64,
+    window: Tuple[int, int],
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
-    reduce_dims: Optional[FlexibleDimensionTypes] = None,  # FIXME: unused
-    preserve_dims: Optional[FlexibleDimensionTypes] = None,  # FIXME: unused
-    weights: Optional[xr.DataArray] = None,  # FIXME: unused
-    check_args: bool = False,  # FIXME: unused
 ) -> np.float64:
     """
     Calculates the FSS (Fractions Skill Score) for forecast and observed data.
@@ -55,13 +93,6 @@ def fss(
 
     TODO: docstring is WIP
     """
-    # Temporary assert unimplemented arguments, as aggregation is not implemented.
-    # TODO: To be removed once implemented.
-    assert reduce_dims is None, "`reduce_dims` is not implemented."
-    assert preserve_dims is None, "`preserve_dims` is not implemented."
-    assert weights is None, "`weights` is not implemented."
-    assert check_args is False, "`check_args` is not implemented."
-
     fss_backend = FssBackend.get_compute_backend(compute_method)
     fb_obj = fss_backend(fcst, obs, threshold=threshold, window=window)
     fss_score = fb_obj.compute_fss()
@@ -187,4 +218,5 @@ class FssNumpy(FssBackend):
             fss = 1.0 - float(num) / float(denom)
             # TODO: assert negative or > 1.0 values with error tolerance to avoid masking large errors.
             fss = min(max(fss, 0.0), 1.0)
+        # TODO: return decomposed fss score instead
         return fss
