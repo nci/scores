@@ -2,19 +2,22 @@
 This module contains methods related to the Brier score
 """
 
+from typing import Optional
+
 import xarray as xr
 
 from scores.continuous import mse
-from scores.processing import check_binary
 from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import check_binary
 
 
 def brier_score(
     fcst: XarrayLike,
     obs: XarrayLike,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
-    weights: xr.DataArray = None,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
     check_args: bool = True,
 ):
     """
@@ -53,4 +56,4 @@ def brier_score(
                 raise error_msg
         check_binary(obs, "obs")
 
-    return mse(fcst, obs, reduce_dims, preserve_dims, weights)
+    return mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)

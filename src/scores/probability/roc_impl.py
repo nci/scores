@@ -1,6 +1,7 @@
 """
 Implementation of Reciever Operating Characteristic (ROC) calculations
 """
+
 from collections.abc import Iterable, Sequence
 from typing import Optional
 
@@ -16,6 +17,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     thresholds: Iterable[float],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[xr.DataArray] = None,
@@ -80,14 +82,14 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         ValueError: if `fcst` contains values outside of the range [0, 1]
         ValueError: if `obs` contains non-nan values not in the set {0, 1}
         ValueError: if 'threshold' is a dimension in `fcst`.
-        ValueError: if values in `thresholds` are not montonic increasing or are outside
+        ValueError: if values in `thresholds` are not monotonic increasing or are outside
           the range [0, 1]
     """
     if check_args:
         if fcst.max().item() > 1 or fcst.min().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
-        if np.max(thresholds) > 1 or np.min(thresholds) < 0:
+        if np.max(thresholds) > 1 or np.min(thresholds) < 0:  # type: ignore
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
         if not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
@@ -119,7 +121,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         np.trapz,
         pod,
         pofd,
-        input_core_dims=[pod.dims, pofd.dims],
+        input_core_dims=[pod.dims, pofd.dims],  # type: ignore
         output_core_dims=[auc_dims],
         dask="parallelized",
     )

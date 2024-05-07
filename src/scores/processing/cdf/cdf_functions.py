@@ -1,7 +1,8 @@
 """
 This module contains a variety of functions which modify data in various ways to process data structures
-to support probablistic verification.
+to support probabilistic verification.
 """
+
 from collections.abc import Iterable
 from typing import Literal, Optional
 
@@ -16,7 +17,7 @@ from scores.probability.checks import (
 from scores.typing import XarrayLike
 
 
-def round_values(array: xr.DataArray, rounding_precision: float, final_round_decpl: int = 7) -> xr.DataArray:
+def round_values(array: xr.DataArray, rounding_precision: float, *, final_round_decpl: int = 7) -> xr.DataArray:
     """Round data array to specified precision.
 
     Rounding is done differently to `xarray.DataArray.round` or `numpy.round` where
@@ -78,6 +79,7 @@ def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
 def observed_cdf(
     obs: xr.DataArray,
     threshold_dim: str,
+    *,  # Force keywords arguments to be keyword-only
     threshold_values: Optional[Iterable[float]] = None,
     include_obs_in_thresholds: bool = True,
     precision: float = 0,
@@ -118,12 +120,15 @@ def observed_cdf(
     thresholds = threshold_values_as_array if threshold_values is not None else []
 
     if include_obs_in_thresholds:
-        thresholds = np.concatenate((obs.values.flatten(), thresholds))
+        thresholds = np.concatenate((obs.values.flatten(), thresholds))  # type: ignore
 
     # remove any NaN
-    thresholds = [x for x in thresholds if not np.isnan(x)]
+    thresholds = [x for x in thresholds if not np.isnan(x)]  # type: ignore
 
-    thresholds = np.sort(pd.unique(thresholds))
+    # pandas.unique retains the original ordering whereas set() may not
+    # pandas.unique no longer accepts a simple array as input
+    thresholds = pd.Series(thresholds)
+    thresholds = np.sort(pd.unique(thresholds))  # type: ignore
 
     da_thresholds = xr.DataArray(
         thresholds,
@@ -168,16 +173,16 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
     # F(t) = mt + b, whenever x[i-1] <= t <= x[i].
 
     # difference in x
-    diff_xs = function_values[threshold_dim] - function_values[threshold_dim].shift(**{threshold_dim: 1})
+    diff_xs = function_values[threshold_dim] - function_values[threshold_dim].shift(**{threshold_dim: 1})  # type: ignore
 
     # difference in function values
-    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})
+    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})  # type: ignore
 
     # gradients m
     m_values = diff_ys / diff_xs
 
     # y intercepts b
-    b_values = function_values.shift(**{threshold_dim: 1})
+    b_values = function_values.shift(**{threshold_dim: 1})  # type: ignore
 
     # integral for x[i-1] <= t <= x[i]
     piece_integral = (
@@ -194,6 +199,7 @@ def add_thresholds(
     threshold_dim: str,
     new_thresholds: Iterable[float],
     fill_method: Literal["linear", "step", "forward", "backward", "none"],
+    *,  # Force keywords arguments to be keyword-only
     min_nonnan: int = 2,
 ) -> xr.DataArray:
     """Takes a CDF data array with dimension `threshold_dim` and adds values from `new_thresholds`.
@@ -214,7 +220,7 @@ def add_thresholds(
         determined by the specified fill method.
     """
 
-    thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))
+    thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))  # type: ignore
     thresholds = np.sort(pd.unique(thresholds))
     thresholds = thresholds[~np.isnan(thresholds)]
 
@@ -331,7 +337,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)
 
     # difference between consecutive terms along threshold_dim
-    diff = cdf - cdf.shift(**{threshold_dim: 1})
+    diff = cdf - cdf.shift(**{threshold_dim: 1})  # type: ignore
 
     result = diff.clip(max=0).sum(dim=threshold_dim) < -tolerance
 

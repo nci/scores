@@ -1,10 +1,13 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
+
 import warnings
 from collections.abc import Hashable, Iterable, Sequence
 from typing import Optional, Union
 
+import numpy as np
+import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
@@ -56,8 +59,8 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
     *,  # Force keywords arguments to be keyword-only
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> set[Hashable]:
     """
     Establish which dimensions to reduce when calculating errors but before taking means.
@@ -126,7 +129,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
         reduce_dims = set([reduce_dims])
 
     # Turn into a set if needed
-    assert reduce_dims is not None
+    assert reduce_dims is not None  # nosec - this is just to modify type hinting
     reduce_dims = set(reduce_dims)
 
     # Reduce by list is the default so no handling needed
@@ -137,10 +140,10 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
-    weights: xr.DataArray = None,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
-    special_fcst_dims: FlexibleDimensionTypes = None,
+    weights: Optional[xr.DataArray] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    special_fcst_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> set[Hashable]:
     """
     Performs standard dimensions checks for inputs of functions that calculate (mean) scores.
@@ -232,7 +235,7 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
     return all_scoring_dims.difference(set(specified_dims))
 
 
-def dims_complement(data, dims=None) -> list[str]:
+def dims_complement(data, *, dims=None) -> list[str]:
     """Returns the complement of data.dims and dims
 
     Args:
@@ -253,7 +256,7 @@ def dims_complement(data, dims=None) -> list[str]:
     return sorted(list(complement))
 
 
-def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional[str] = None):
+def check_dims(xr_data: XarrayLike, expected_dims: Iterable[Hashable], *, mode: Optional[str] = None):
     """
     Checks the dimensions xr_data with expected_dims, according to `mode`.
 
@@ -297,7 +300,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
             f"Cannot convert supplied dims {expected_dims} into a set. Check debug log for more information."
         ) from exc
 
-    if len(dims_set) != len(expected_dims):
+    if len(list(dims_set)) != len(list(expected_dims)):
         raise ValueError(f"Supplied dimensions {expected_dims} contains duplicate values.")
 
     if not hasattr(xr_data, "dims"):
@@ -324,7 +327,7 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
     if not check_fn(xr_data, dims_set):
         raise DimensionError(
             f"Dimensions {list(xr_data.dims)} of data object are not {mode} to the "
-            f"dimensions {sorted(list(dims_set))}."
+            f"dimensions {sorted([str(d) for d in dims_set])}."
         )
 
     if isinstance(xr_data, xr.Dataset):
@@ -333,11 +336,11 @@ def check_dims(xr_data: XarrayLike, expected_dims: Sequence[str], mode: Optional
             if not check_fn(xr_data[data_var], dims_set):
                 raise DimensionError(
                     f"Dimensions {list(xr_data[data_var].dims)} of data variable "
-                    f"'{data_var}' are not {mode} to the dimensions {sorted(dims_set)}"
+                    f"'{data_var}' are not {mode} to the dimensions {sorted([str(d) for d in dims_set])}"
                 )
 
 
-def tmp_coord_name(xr_data: xr.DataArray, count=1) -> Union[str, list[str]]:
+def tmp_coord_name(xr_data: xr.DataArray, *, count=1) -> Union[str, list[str]]:
     """
     Generates temporary coordinate names that are not among the coordinate or dimension
     names of `xr_data`.
@@ -352,10 +355,31 @@ def tmp_coord_name(xr_data: xr.DataArray, count=1) -> Union[str, list[str]]:
         If count > 1, a list of such strings, each unique from one another
     """
     all_names = ["new"] + list(xr_data.dims) + list(xr_data.coords)
-    result = "".join(all_names)
+    result = "".join(all_names)  # type: ignore
 
     if count == 1:
         return result
 
     results = [str(i) + result for i in range(count)]
     return results
+
+
+def check_binary(data: XarrayLike, name: str):
+    """
+    Checks that data does not have any non-NaN values out of the set {0, 1}
+
+    Args:
+        data: The data to convert to check if only contains binary values
+    Raises:
+        ValueError: if there are values in `fcst` and `obs` that are not in the
+            set {0, 1, np.nan} and `check_args` is true.
+    """
+    if isinstance(data, xr.DataArray):
+        unique_values = pd.unique(data.values.flatten())
+    else:
+        unique_values = pd.unique(data.to_array().values.flatten())
+    unique_values = unique_values[~np.isnan(unique_values)]
+    binary_set = {0, 1}
+
+    if not set(unique_values).issubset(binary_set):
+        raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")

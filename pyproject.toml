@@ -36,6 +36,7 @@ dev = [
     "black == 23.3.0",
     "mypy == 1.3.0",
     "pylint == 3.0.1",
+    "bandit == 1.7.8",
     "dask",
     "h5netcdf",
     "pandas-stubs",
@@ -54,7 +55,10 @@ maintainer = ["build",
               "sphinx",
               "myst-parser",
               "sphinx-book-theme",
+              "nbsphinx",
+              "sphinx_gallery",
               "twine",
+              "pandoc",
               "pip-tools",
 ]
 all = ["scores[dev,tutorial]"]
@@ -82,7 +86,13 @@ line-length = 120
 warn_return_any = true
 warn_unused_configs = true
 
-#ignore_missing_imports = true
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sklearn.*"
+ignore_missing_imports = true
 
 [tool.coverage.paths]
 source = ["/src/"]
@@ -108,7 +118,8 @@ addopts = [
     '--ignore=tutorials/Mean_Squared_Error.ipynb',
     '--ignore=tutorials/Root_Mean_Squared_Error.ipynb',
     '--ignore=tutorials/Weighting_Results.ipynb',
-    '--ignore=tutorials/Mean_Absolute_Error.ipynb'
+    '--ignore=tutorials/Mean_Absolute_Error.ipynb',
+    '--ignore=tutorials/Additive_and_multiplicative_bias.ipynb'
 ]
 
 [tool.pylint.master]

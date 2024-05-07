@@ -1,5 +1,5 @@
 """
-This module contains functions for calculating flip flop indices
+This module contains functions for calculating Flip-Flop indices
 """
 
 from collections.abc import Generator, Iterable, Sequence
@@ -18,18 +18,18 @@ def _flip_flop_index(
     data: xr.DataArray, sampling_dim: str, *, is_angular: bool = False  # Force keywords arguments to be keyword-only
 ) -> xr.DataArray:
     """
-    Calculates the flip-flop index by collapsing the dimension specified by
+    Calculates the Flip-Flop Index by collapsing the dimension specified by
     `sampling_dim`.
 
     Args:
         data: Data from which to draw subsets.
         sampling_dim: The name of the dimension along which to calculate
-            the flip-flop index.
+            the Flip-Flop Index.
         is_angular: specifies whether `data` is directional data (e.g. wind
             direction).
 
     Returns:
-        A xarray.DataArray of the flip-flop index with the dimensions of
+        A xarray.DataArray of the Flip-Flop Index with the dimensions of
         `data`, except for the `sampling_dim` dimension which is collapsed.
 
     See also:
@@ -47,7 +47,7 @@ def _flip_flop_index(
     if is_angular:
         # get complementary dimensions as `encompassing_sector_size` takes
         # dimensions to be preserved, not collapsed
-        dims_to_preserve = dims_complement(data, [sampling_dim])
+        dims_to_preserve = dims_complement(data, dims=[sampling_dim])
         # get maximum forecast range, if > 180 then clip to 180 as this is the
         # maximum possible angular difference between two forecasts
         enc_size = encompassing_sector_size(data=data, dims=dims_to_preserve)
@@ -56,7 +56,7 @@ def _flip_flop_index(
     else:
         max_val = data.max(dim=sampling_dim, skipna=False)
         min_val = data.min(dim=sampling_dim, skipna=False)
-        range_val = max_val - min_val
+        range_val = max_val - min_val  # type: ignore
         # subtract each consecutive 'row' from eachother
         flip_flop = data.shift({sampling_dim: 1}) - data
 
@@ -102,25 +102,25 @@ def flip_flop_index(
     **selections: Optional[Iterable[int]],
 ) -> XarrayLike:
     """
-    Calculates the Flip-flop Index along the dimensions `sampling_dim`.
+    Calculates the Flip-Flop Index along the dimensions `sampling_dim`.
 
     Args:
         data: Data from which to draw subsets.
         sampling_dim: The name of the dimension along which to calculate
-            the flip-flop index.
+            the Flip-Flop Index.
         is_angular: specifies whether `data` is directional data (e.g. wind
             direction).
         **selections: Additional keyword arguments specify
             subsets to draw from the dimension `sampling_dim` of the supplied `data`
-            before calculation of the flip_flop index. e.g. days123=[1, 2, 3]
+            before calculation of the Flip_Flop Index. e.g. days123=[1, 2, 3]
 
     Returns:
-        If `selections` are not supplied: An xarray.DataArray, the Flip-flop
+        If `selections` are not supplied: An xarray.DataArray, the Flip-Flop
         Index by collapsing the dimension `sampling_dim`.
 
         If `selections` are supplied: An xarray.Dataset. Each data variable
         is a supplied key-word argument, and corresponds to selecting the
-        values specified from `sampling_dim` of `data`. The Flip-flop Index
+        values specified from `sampling_dim` of `data`. The Flip-Flop Index
         is calculated for each of these selections.
 
     Notes:
@@ -162,7 +162,7 @@ def flip_flop_index(
     if not selections and isinstance(data, xr.DataArray):
         result = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
     else:
-        result = xr.Dataset()
+        result = xr.Dataset()  # type: ignore
         result.attrs["selections"] = selections
         for key, data_subset in iter_selections(data, sampling_dim, **selections):
             result[key] = _flip_flop_index(data_subset, sampling_dim, is_angular=is_angular)
@@ -228,7 +228,7 @@ def iter_selections(
           * lead_day  (lead_day) int64 1 2 3
 
     """
-    check_dims(data, [sampling_dim], "superset")
+    check_dims(data, [sampling_dim], mode="superset")
 
     for key, values in selections.items():
         try:
@@ -272,8 +272,8 @@ def encompassing_sector_size(
             - the set of data dimensions is not a proper superset of `dims`
             - dimension to be collapsed isn't 1
     """
-    check_dims(data, dims, "proper superset")
-    dims_to_collapse = dims_complement(data, dims)
+    check_dims(data, dims, mode="proper superset")
+    dims_to_collapse = dims_complement(data, dims=dims)
     if len(dims_to_collapse) != 1:
         raise DimensionError("can only collapse one dimension")
     dim_to_collapse = dims_to_collapse[0]
@@ -375,30 +375,30 @@ def flip_flop_index_proportion_exceeding(
     thresholds: Iterable,
     *,  # Force keywords arguments to be keyword-only
     is_angular: bool = False,
-    preserve_dims: FlexibleDimensionTypes = None,
-    reduce_dims: FlexibleDimensionTypes = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
     **selections: Iterable[int],
 ):
     """
-    Calculates the flip-flop index and returns the proportion exceeding
+    Calculates the Flip-Flop Index and returns the proportion exceeding
     (or equal to) each of the supplied `thresholds`.
 
     Args:
         data: Data from which to draw subsets.
         sampling_dim: The name of the dimension along which to calculate
-        thresholds: The proportion of Flip-Flop index results
+        thresholds: The proportion of Flip-Flop Index results
             equal to or exceeding these thresholds will be calculated.
-            the flip-flop index.
+            the Flip-Flop Index.
         is_angular: specifies whether `data` is directional data (e.g. wind
             direction).
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
         **selections: Additional keyword arguments specify
             subsets to draw from the dimension `sampling_dim` of the supplied `data`
-            before calculation of the flip_flop index. e.g. days123=[1, 2, 3]
+            before calculation of the Flip_Flop Index. e.g. days123=[1, 2, 3]
     Returns:
         If `selections` are not supplied - An xarray.DataArray with dimensions
-        `dims` + 'threshold'. The DataArray is the proportion of the Flip-flop
+        `dims` + 'threshold'. The DataArray is the proportion of the Flip-Flop
         Index calculated by collapsing dimension `sampling_dim` exceeding or
         equal to `thresholds`.
 
@@ -450,7 +450,7 @@ def flip_flop_index_proportion_exceeding(
             f"`sampling_dim`: '{sampling_dim}' must not be in dimensions to reduce "
             f"`reduce_dims`: {list(reduce_dims)}"
         )
-    # calculate the flip-flop index
+    # calculate the Flip-Flop Index
     flip_flop_data = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)
     # calculate the proportion exceeding each threshold
     flip_flop_exceeding = proportion_exceeding(

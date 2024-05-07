@@ -6,7 +6,7 @@ from typing import Optional, Sequence
 import xarray as xr
 
 from scores.functions import apply_weights
-from scores.typing import XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, gather_dimensions
 
 
@@ -14,9 +14,10 @@ def quantile_score(
     fcst: XarrayLike,
     obs: XarrayLike,
     alpha: float,
-    reduce_dims: Optional[Sequence[str]] = None,
-    preserve_dims: Optional[Sequence[str]] = None,
-    weights: XarrayLike = None,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
     Calculates a score that targets alpha-quantiles.
@@ -56,8 +57,8 @@ def quantile_score(
 
         .. math::
 
-            gpl(x) = \\begin{{cases}}\\alpha * (-x) & x \\leq 0\\\\
-           (1-\\alpha) x & x > 0\\end{{cases}}
+            gpl(x) = \\begin{cases}\\alpha * (-x) & x \\leq 0\\\\
+           (1-\\alpha) x & x > 0\\end{cases}
 
         where:
 
@@ -65,7 +66,7 @@ def quantile_score(
             - :math:`x` is the difference, fcst - obs
 
     References:
-        T. Geinting, "Making and evaluating point forecasts",
+        T. Gneiting, "Making and evaluating point forecasts",
         J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
         Theorem 9
 
@@ -75,7 +76,7 @@ def quantile_score(
     if specified_dims is not None:
         check_dims(xr_data=fcst, expected_dims=specified_dims, mode="superset")
     # check obs dimensions are a subset of fcst dimensions
-    check_dims(xr_data=obs, expected_dims=fcst.dims, mode="subset")
+    check_dims(xr_data=obs, expected_dims=fcst.dims, mode="subset")  # type: ignore
 
     # check that alpha is between 0 and 1 as required
     if (alpha <= 0) or (alpha >= 1):
@@ -93,7 +94,7 @@ def quantile_score(
     result = xr.where(diff > 0, score_fcst_ge_obs, score_fcst_lte_obs)
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
-    results = apply_weights(result, weights)
+    results = apply_weights(result, weights=weights)
     score = results.mean(dim=reduce_dims)
 
-    return score
+    return score  # type: ignore

@@ -22,12 +22,13 @@ def murphy_score(  # pylint: disable=R0914
     fcst: xr.DataArray,
     obs: xr.DataArray,
     thetas: Union[Sequence[float], xr.DataArray],
+    *,  # Force keywords arguments to be keyword-only
     functional: Literal["quantile", "huber", "expectile"],
     alpha: float,
     huber_a: Optional[float] = None,
     decomposition: bool = False,
-    reduce_dims: FlexibleDimensionTypes = None,
-    preserve_dims: FlexibleDimensionTypes = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> xr.Dataset:
     """Returns the mean elementary score (Ehm et. al. 2016), also known as Murphy score,
     evaluated at decision thresholds specified by thetas. Optionally returns a decomposition
@@ -99,7 +100,7 @@ def murphy_score(  # pylint: disable=R0914
         theta1 = thetas
     else:
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords={"theta": thetas})
-    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
+    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)  # type: ignore
 
     over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
         fcst1, obs1, theta1, alpha, huber_a=huber_a
@@ -148,7 +149,7 @@ def _expectile_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType,
     return over, under
 
 
-def _check_murphy_inputs(alpha=None, functional=None, huber_a=None, left_limit_delta=None):
+def _check_murphy_inputs(*, alpha=None, functional=None, huber_a=None, left_limit_delta=None):
     """Raise ValueError if the arguments have unexpected values."""
     if (alpha is not None) and not (0 < alpha < 1):  # pylint: disable=C0325
         err = f"alpha (={alpha}) argument for Murphy scoring function should be strictly " "between 0 and 1."
@@ -171,6 +172,7 @@ def murphy_thetas(
     forecasts: list[xr.DataArray],
     obs: xr.DataArray,
     functional: Literal["quantile", "huber", "expectile"],
+    *,  # Force keywords arguments to be keyword-only
     huber_a: Optional[float] = None,
     left_limit_delta: Optional[float] = None,
 ) -> list[float]:

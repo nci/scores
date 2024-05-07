@@ -5,8 +5,8 @@ Contains unit tests for scores.probability.brier_impl
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # pylint: disable=invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -83,8 +83,8 @@ def test_brier_score_dask():
     Tests that the Brier score works with dask
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = brier_score(FCST1.chunk(), OBS1.chunk())
     assert isinstance(result.data, dask.array.Array)

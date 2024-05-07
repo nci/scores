@@ -7,8 +7,8 @@ from unittest.mock import Mock, patch
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # pylint: disable=invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -124,8 +124,8 @@ thetas_list = [0.0, 2.0, 10.0]
 def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, daskinput):
     """murphy_score makes the expected operations on the scoring function output."""
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable - could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable - could not run test")  # pragma: no cover
 
     fcst = _test_array([1.0, 2.0, 3.0, 4.0])
     obs = _test_array([0.0, np.nan, 0.6, 137.4])

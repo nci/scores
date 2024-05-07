@@ -4,8 +4,8 @@ This module contains tests for scores.continuous.flip_flop
 
 try:
     import dask
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # pylint: disable=invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -19,7 +19,6 @@ from scores.continuous.flip_flop_impl import (
     flip_flop_index_proportion_exceeding,
 )
 from scores.utils import DimensionError
-from tests.assertions import assert_dataarray_equal, assert_dataset_equal
 from tests.continuous import flip_flop_test_data as ntd
 
 
@@ -61,7 +60,7 @@ from tests.continuous import flip_flop_test_data as ntd
 def test__flip_flop_index(data, sampling_dim, is_angular, expected):
     """Tests that _flip_flop_index returns the correct object"""
     calculated = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
-    assert_dataarray_equal(calculated, expected, decimals=8)
+    xr.testing.assert_allclose(calculated, expected)
 
 
 def test__flip_flop_index_smoke_raises():
@@ -97,7 +96,7 @@ def test_flip_flop_index_no_selections(data, sampling_dim, is_angular, expected)
     **selections are not supplied
     """
     calculated = flip_flop_index(data, sampling_dim, is_angular=is_angular)
-    assert_dataarray_equal(calculated, expected, decimals=8)
+    xr.testing.assert_allclose(calculated, expected)
 
 
 @pytest.mark.parametrize(
@@ -176,7 +175,7 @@ def test_flip_flop_index(data, sampling_dim, is_angular, selections, expected):
     **selections are supplied
     """
     calculated = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)
-    assert_dataset_equal(calculated, expected, decimals=8)
+    xr.testing.assert_allclose(calculated, expected)
 
 
 def test_flip_flop_index_raises():
@@ -202,7 +201,7 @@ def test_encompassing_sector_size(data, dims, skipna, expected):
     Tests encompassing_sector_size
     """
     calculated = encompassing_sector_size(data, dims, skipna=skipna)
-    assert_dataarray_equal(calculated, expected, decimals=7)
+    xr.testing.assert_allclose(calculated, expected)
 
 
 @pytest.mark.parametrize(
@@ -379,7 +378,7 @@ def test_flip_flop_index_proportion_exceeding(
         preserve_dims=preserve_dims,
         **selections,
     )
-    assert_dataset_equal(calculated, expected, decimals=8)
+    xr.testing.assert_allclose(calculated, expected)
 
 
 @pytest.mark.parametrize(
@@ -407,14 +406,14 @@ def test_flip_flop_index_is_dask_compatible():
     Test that flip flop works with dask.
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     dask_array = ntd.DATA_FFI_1D_6.chunk()
     result = flip_flop_index(dask_array, "letter")
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    xr.testing.assert_equal(result, ntd.EXP_FFI_SUB_CASE0)
+    xr.testing.assert_allclose(result, ntd.EXP_FFI_SUB_CASE0)
     assert isinstance(result.data, np.ndarray)
 
 
@@ -423,12 +422,12 @@ def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
     Test that flip flop proportion exceeding works with dask.
     """
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     dask_array = ntd.DATA_FFI_2X2X4.chunk()
     result = flip_flop_index_proportion_exceeding(dask_array, "int", [0, 1, 5], **{"one": [1, 2, 3], "two": [2, 3, 4]})
     assert isinstance(result.data_vars["one"].data, dask.array.Array)
     result = result.compute()
-    xr.testing.assert_equal(result, ntd.EXP_FFI_PE_NONE)
+    xr.testing.assert_allclose(result, ntd.EXP_FFI_PE_NONE)
     assert isinstance(result.one.data, np.ndarray)

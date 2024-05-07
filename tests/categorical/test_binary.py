@@ -5,8 +5,9 @@ Tests scores.categorical.binary
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # pylint: disable=invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name # pragma: no cover
+
 
 import numpy as np
 import pytest
@@ -127,8 +128,8 @@ def test_probability_of_false_detection(fcst, obs, reduce_dims, check_args, weig
 def test_pofd_dask():
     "Tests that probability_of_false_detection works with dask"
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover (requires special testing)
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover (requires special testing)
 
     result = probability_of_false_detection(fcst_mix.chunk(), obs0.chunk())
     assert isinstance(result.data, dask.array.Array)

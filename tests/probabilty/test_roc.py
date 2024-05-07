@@ -4,8 +4,8 @@ Contains unit tests for scores.probability.roc_impl
 
 try:
     import dask
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
-    dask = "Unavailable"  # pylint: disable=invalid-name
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -103,8 +103,8 @@ def test_roc_curve_data(fcst, obs, thresholds, preserve_dims, reduce_dims, weigh
 def test_roc_curve_data_dask():
     """tests that roc_curve_data works with dask"""
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = roc_curve_data(
         rtd.FCST_2X3X2_WITH_NAN.chunk(),

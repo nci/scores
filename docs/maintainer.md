@@ -49,6 +49,7 @@ Information relevant for package maintenance
  - Markdown files as the text source for all the documentation
  - Myst Parser to enable Sphinx to utilise the markdown syntax
  - The 'sphinx book' theme for Sphinx
+ - Pandoc should be installed through the OS package manager separately
 
 ## 2. Useful information resources are:
 
@@ -70,7 +71,6 @@ Information relevant for package maintenance
 
 |     what                 |     when                 |      why     |
 | ------------             | -----------              | ------------ | 
-|  README                  |  a new is score added    | README does not read from summary_table_of_scores.md
-|  summary_table_of_scores |  a new is score added    | The rest of the docs includes this in various spots
+|  README                  |  a new is score added    | in case it deserves a mention
 |  api.md                  |  a new function is added | Each function must be added individually 
 |  Explanation.ipynb       |  a new tutorial is added | Navigation throughout the docs

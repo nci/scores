@@ -17,6 +17,16 @@ def test_simple_forecast():
     assert len(fcst) == len(obs)
 
 
+def test_simple_forecast_pandas():
+    """
+    Very basic test that the functions return comparable things
+    """
+    fcst = sd.simple_forecast_pandas()
+    obs = sd.simple_observations_pandas()
+
+    assert len(fcst) == len(obs)
+
+
 def test_continuous_data():
     """tests sample_data.continuous_forecast and sample_data.continuous_observations"""
     obs_small = sd.continuous_observations(large_size=False)

@@ -11,16 +11,19 @@
 ## scores.continuous
 ```{eval-rst}
 .. automodule:: scores.continuous
+.. autofunction:: scores.continuous.additive_bias
+.. autofunction:: scores.continuous.mean_error
 .. autofunction:: scores.continuous.mae
 .. autofunction:: scores.continuous.mse
-.. autofunction:: scores.probability.quantile_score
+.. autofunction:: scores.continuous.quantile_score
 .. autofunction:: scores.continuous.rmse
 .. autofunction:: scores.continuous.murphy_score
-.. autofunction:: scores.continuous.murphy.thetas
+.. autofunction:: scores.continuous.murphy_thetas
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
-.. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.correlation
+.. autofunction:: scores.continuous.multiplicative_bias
+.. autofunction:: scores.continuous.isotonic_fit
 ```
 
 ## scores.probability
@@ -33,6 +36,7 @@
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data
 .. autofunction:: scores.probability.brier_score
+.. autofunction:: scores.probability.isotonic_fit
 ```
 
 ## scores.categorical
@@ -40,6 +44,32 @@
 .. autofunction:: scores.categorical.firm
 .. autofunction:: scores.categorical.probability_of_detection
 .. autofunction:: scores.categorical.probability_of_false_detection
+.. autoclass:: scores.categorical.BinaryContingencyManager
+    :members:
+.. autoclass:: scores.categorical.BasicContingencyManager
+    :members:
+.. autoclass:: scores.categorical.ThresholdEventOperator
+    :members:
+.. autoclass:: scores.categorical.EventOperator
+    :members:
+```
+
+## scores.processing
+```{eval-rst}
+.. autofunction:: scores.processing.isotonic_fit
+.. autofunction:: scores.processing.broadcast_and_match_nan
+.. autofunction:: scores.processing.comparative_discretise
+.. autofunction:: scores.processing.binary_discretise
+.. autofunction:: scores.processing.binary_discretise_proportion
+.. autofunction:: scores.processing.proportion_exceeding
+.. autofunction:: scores.processing.cdf.round_values
+.. autofunction:: scores.processing.cdf.propagate_nan
+.. autofunction:: scores.processing.cdf.observed_cdf
+.. autofunction:: scores.processing.cdf.integrate_square_piecewise_linear
+.. autofunction:: scores.processing.cdf.add_thresholds
+.. autofunction:: scores.processing.cdf.fill_cdf
+.. autofunction:: scores.processing.cdf.decreasing_cdfs
+.. autofunction:: scores.processing.cdf.cdf_envelope
 ```
 
 ## scores.stats
