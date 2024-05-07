@@ -182,7 +182,9 @@ class FssNumpy(FssBackend):
     def _compute_fss_score(self) -> np.float64:
         num = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
         denom = np.nanmean(np.power(self._fcst_img, 2) + np.power(self._obs_img, 2))
+        fss = 0.0
         if denom > 0:
-            return 1.0 - float(num) / float(denom)
-        else:
-            return 0.0
+            fss = 1.0 - float(num) / float(denom)
+            # TODO: assert negative or > 1.0 values with error tolerance to avoid masking large errors.
+            fss = min(max(fss, 0.0), 1.0)
+        return fss
