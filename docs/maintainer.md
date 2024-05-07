@@ -8,16 +8,28 @@ Information relevant for package maintenance
 2. Run the unit tests
 3. Prepare the merge request in github (do not do a rebase merge to main -- do a regular merge commit)
 4. Check readthedocs rebuilds correctly, including manually checking the version number looks right
-5. Prepare the PyPI update (should move to a Github Action)
-6. Perform the PyPI update (should move to a Github Action)
+5. Perform the merge to main
+6. Build a new environment and perform basic testing on main
+7. Update github with a tagged release
+7. Prepare the package files (see below)
+8. Prepare the PyPI update (should move to a Github Action)
+9. Perform the PyPI update (should move to a Github Action)
 
-### Creating the Package Files Locally
+### Test the new main branch
 
 1. Create a new virtual environment
 2. Make sure you check out the 'main' branch'
-3. Install scores[all] and scores[maintainer]
+3. Install scores[all] 
 4. Run the tests again, just for surety
-5. Run 'hatch build'. This will make the release files (sdist and wheel).
+
+### Updating GitHub with a tagged release
+1. Go click on the "releases" area of the front page
+2. Follow the 'create release' workflow, and create a tag at the same time
+
+### Creating the Package Files Locally
+1. Install scores[maintainer]
+2. Run pytest again
+3. Run 'hatch build'. This will make the release files (sdist and wheel).
 
 ### Updating PyPI Manually
 6. Run python3 -m keyring --disable 
@@ -26,10 +38,6 @@ Information relevant for package maintenance
 9. Do a little manual testing
 10. Run hatch publish
 11. Uninstall the test scores, re-install the now-updated package, do a little testing
-
-### Updating GitHub with a tagged release
-12. Go click on the "releases" area of the front page
-13. Follow the 'create release' workflow, and create a tag at the same time
 
 
 ## This section covers how to build the documentation locally. 
