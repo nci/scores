@@ -1,5 +1,7 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["maturin>=1.0,<2.0", "hatchling"]
+# swap build-backend to maturin to lump rust build process in pip install
+# otherwise manually call maturin develop --release first.
 build-backend = "hatchling.build"
 
 [project]
@@ -40,7 +42,11 @@ dev = [
     "dask",
     "h5netcdf",
     "pandas-stubs",
-    "nbmake"
+    "nbmake",
+]
+experimental = [
+    "maturin",
+    "numba",
 ]
 tutorial = [
     "jupyterlab",
@@ -66,6 +72,10 @@ all = ["scores[dev,tutorial]"]
 [project.urls]
 "Repository" = "https://github.com/nci/scores" 
 "Documentation" = "https://scores.readthedocs.io/en/latest/"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "scores._rust_experimental"
 
 [tool.hatch.build]
 exclude = [
