@@ -252,6 +252,7 @@ def mean_error(
     Calculates the mean error which is also sometimes called the additive bias.
 
     It is defined as
+
     .. math::
         \\text{mean error} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
@@ -293,6 +294,7 @@ def additive_bias(
     Calculates the additive bias which is also sometimes called the mean error.
 
     It is defined as
+
     .. math::
         \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
@@ -343,6 +345,7 @@ def multiplicative_bias(
     Most suited for forecasts that have a lower bound at 0 such as wind speed. Will return
     a np.inf where the mean of `obs` across the dims to be reduced is 0.
     It is defined as
+
     .. math::
         \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
