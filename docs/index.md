@@ -12,7 +12,6 @@
 :maxdepth: 2
 
 self
-quickstart
 installation
 included
 api
