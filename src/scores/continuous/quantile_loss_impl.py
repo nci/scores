@@ -57,8 +57,8 @@ def quantile_score(
 
         .. math::
 
-            gpl(x) = \\begin{{cases}}\\alpha * (-x) & x \\leq 0\\\\
-           (1-\\alpha) x & x > 0\\end{{cases}}
+            gpl(x) = \\begin{cases}\\alpha * (-x) & x \\leq 0\\\\
+           (1-\\alpha) x & x > 0\\end{cases}
 
         where:
 
@@ -66,7 +66,7 @@ def quantile_score(
             - :math:`x` is the difference, fcst - obs
 
     References:
-        T. Geinting, "Making and evaluating point forecasts",
+        T. Gneiting, "Making and evaluating point forecasts",
         J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
         Theorem 9
 
