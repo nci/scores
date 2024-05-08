@@ -119,7 +119,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
                 raise ValueError("`reduce_dims` and `preserve_dims` must not contain any `score_specific_fcst_dims`")
 
         # Finally, remove score_specific_fcst_dims from all_scoring_dims
-        all_scoring_dims = all_scoring_dims.difference(set(score_specific_fcst_dims))                
+        all_scoring_dims = all_data_dims.difference(set(score_specific_fcst_dims))                
 
     if specified_dims is not None and specified_dims != "all":
         if not set(specified_dims).issubset(all_data_dims):
@@ -128,9 +128,9 @@ def gather_dimensions(  # pylint: disable=too-many-branches
             raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
 
     # SAME UP TO HERE
+    # Different after, hopefully same results
 
-
-    # Handle preserve_dims case
+    # Turn preserve dims into reduce dims, if needed
     if preserve_dims is not None:
         if preserve_dims == "all":
             return set([])
@@ -138,19 +138,19 @@ def gather_dimensions(  # pylint: disable=too-many-branches
         if isinstance(preserve_dims, str):
             preserve_dims = [preserve_dims]
 
-        reduce_dims = set(all_data_dims).difference(preserve_dims)
+        reduce_dims = set(all_scoring_dims).difference(preserve_dims)
 
-    # Handle reduce all
+    # Handle reduction of all dimensions by string "all""
     elif reduce_dims == "all":
-        reduce_dims = set(all_data_dims)
+        reduce_dims = set(all_scoring_dims)
 
-    # Handle is reduce_dims and preserve_dims are both None
-    if reduce_dims is None and preserve_dims is None:
-        reduce_dims = set(all_data_dims)
-
-    # Handle reduce by string
+    # Handle reduction of a single dim by string name
     elif isinstance(reduce_dims, str):
         reduce_dims = set([reduce_dims])
+
+    # Handle when reduce_dims and preserve_dims are both None
+    elif reduce_dims is None and preserve_dims is None:
+        reduce_dims = set(all_scoring_dims)
 
     # Turn into a set if needed
     assert reduce_dims is not None  # nosec - this is just to modify type hinting
@@ -245,6 +245,7 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
 
 
     # SAME_UP_TO_HERE
+    # Different after, hopefully same results
 
     # all errors have been captured, so now return list of dims to reduce
     if specified_dims is None:
@@ -258,6 +259,7 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
     if preserve_dims == "all":
         return set([])
 
+    # I think this is implicitly the preservation case
     reduce_dims = all_scoring_dims.difference(set(specified_dims))
 
     return reduce_dims
