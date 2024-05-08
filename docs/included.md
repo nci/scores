@@ -10,8 +10,8 @@
   - Tutorial
   - Reference(s)
 * - Additive Bias (Mean Error)
-  - [API](https://scores.readthedocs.io/en/develop/api.html#scores.continuous.additive_bias)
-  - [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Additive_and_multiplicative_bias.html)
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.additive_bias)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Additive_and_multiplicative_bias.html)
   - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
 * - Flip-Flop Index
   - 
@@ -39,7 +39,7 @@
   - &mdash;
 * - Isotonic Regression (Isotonic Fit, Relability Diagram)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.isotonic_fit)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression.html)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)   
 * - Mean Absolute Error (MAE)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.mae)
@@ -58,8 +58,8 @@
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Mean_Squared_Error.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Mean_squared_error)
 * - Multiplicative Bias
-  - [API](https://scores.readthedocs.io/en/develop/api.html#scores.continuous.multiplicative_bias)
-  - [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Additive_and_multiplicative_bias.html)
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.multiplicative_bias)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Additive_and_multiplicative_bias.html)
   - [Multiplicative bias (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#multiplicative_bias)
 * - Murphy Score (Mean Elementary Score) 
   - 
@@ -76,7 +76,7 @@
 * -  
     - Murphy Score (Mean Elementary Score) - theta values
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.continuous.murphy_thetas)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.murphy_thetas)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
@@ -90,7 +90,7 @@
   - &mdash;
   - &mdash;
 * - Quantile Loss (Quantile Score, Pinball Loss)
-  - [API](https://scores.readthedocs.io/en/develop/api.html#scores.continuous.quantile_score)
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.quantile_score)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Quantile_Loss.html)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
 * - Quantile Score, *see Quantile Loss*
@@ -129,7 +129,7 @@
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_cdf)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/CRPS_for_CDFs.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/CRPS_for_CDFs.html)
   - 
     [Matheson and Winkler (1976)](https://doi.org/10.1287/mnsc.22.10.1087); [Gneiting and Ranjan (2011)](https://doi.org/10.1198/jbes.2010.08110)
 * -  
@@ -137,7 +137,7 @@
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.adjust_fcst_for_crps)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/CRPS_for_CDFs.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/CRPS_for_CDFs.html)
   - 
     &mdash;
 * -  
@@ -145,20 +145,20 @@
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_cdf_brier_decomposition)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/CRPS_for_CDFs.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/CRPS_for_CDFs.html)
   - 
     &mdash;    
 * - Continuous Ranked Probability Score (CRPS) for Ensembles
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_for_ensemble)   
-  - [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/CRPS_for_Ensembles.html)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/CRPS_for_Ensembles.html)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
   - &mdash;
 * - Isotonic Regression (Isotonic Fit, Relability Diagram)
-  - [API](https://scores.readthedocs.io/en/develop/api.html#scores.probability.isotonic_fit)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression.html)
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.isotonic_fit)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)
 * - Mean Elementary Score, *see Murphy Score*
   - &mdash;
@@ -204,15 +204,15 @@
   - Tutorial
   - Reference(s)
 * - Binary Contingency Table Class (Binary Contingency Scores)
-  - 
-  - 
-  - 
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - [Methods for dichotomous (yes/no) forecasts](https://www.cawcr.gov.au/projects/verification/#Methods_for_dichotomous_forecasts)
 * -  
     - Accuracy (Fraction Correct)
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.accuracy)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
@@ -234,9 +234,9 @@
 * -  
     - False Alarm Rate (Probability of False Detection (POFD))
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.false_alarm_rate)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 * -  
@@ -250,9 +250,9 @@
 * -  
     - Frequency Bias (Bias Score)
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.frequency_bias)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
@@ -266,17 +266,17 @@
 * -  
     - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity)
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.hit_rate)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
     - Peirce's Skill Score (True Skill Statistic, Hannssen and Kuipers' Discriminant)
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.peirce_skill_score)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
@@ -306,25 +306,25 @@
 * -  
     - Specificity
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.specificity)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
     - Success Ratio
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.success_ratio)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)    
 * -  
     - Threat Score (Critical Success Index)
   -
-    TBA
+    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.threat_score)
   - 
-    [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Binary_Contingency_Scores.html)
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
 * -  
@@ -354,7 +354,7 @@
 * - POFD - implementation as used in ROC
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_false_detection)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
-  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+  - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 ```
 
 ## Statistical Tests
@@ -494,15 +494,15 @@
   - Reference(s)
 * - Mean Absolute Error
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.pandas.continuous.mae)
-  - [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Pandas_API.html)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pandas_API.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
 * - Mean Squared Error
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.pandas.continuous.mse)  
-  - [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Pandas_API.html)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pandas_API.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Mean_squared_error)
 * - Root Mean Squared Error
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.pandas.continuous.rmse)   
-  - [Tutorial](https://scores.readthedocs.io/en/develop/tutorials/Pandas_API.html)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pandas_API.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
 ```
 
