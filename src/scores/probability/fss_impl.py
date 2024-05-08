@@ -10,21 +10,34 @@ https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fract
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass, field
 from enum import Enum
-from typing import Optional, Tuple, Iterable
+from typing import Iterable, Optional, Tuple, TypeAlias
 
-from scores import utils
-
-import functools
 import numpy as np
 import numpy.typing as npt
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores import utils
+from scores.typing import XarrayLike
 
 # Note: soft keyword `type` only support from >=3.10
-DecomposedFss = np.dtype("f8, f8, f8")
+# "tuple" of 64 bit floats
+f8x3 = np.dtype("f8, f8, f8")
+FssDecomposed: TypeAlias = np.typing.NDArray[f8x3]
+
 
 class FssComputeMethod(Enum):
+    """
+    Choice of compute backend for FSS.
+    - Standard
+        - NUMPY (default)
+    - Optimized
+        - NUMBA_NATIVE (unavailable)
+        - NUMBA_PARALLEL (unavailable)
+    - Experimental
+        - RUST_NATIVE (unavailable)
+        - RUST_OCL (unavailable)
+    """
+
     NUMPY = 1  # (default)
     NUMBA_NATIVE = 2
     NUMBA_PARALLEL = 3
@@ -52,6 +65,7 @@ def fss_2d(
 
     TODO: docstring is WIP
     """
+
     def _spatial_dims_exist(_dims):
         s_spatial_dims = set(spatial_dims)
         s_dims = set(_dims)
@@ -61,7 +75,7 @@ def fss_2d(
     assert _spatial_dims_exist(obs.dims), f"missing spatial dims {spatial_dims} in obs"
 
     # wrapper defined for convenience, since it's too long for a lambda.
-    def fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> DecomposedFss:
+    def fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
         fss_backend = FssBackend.get_compute_backend(compute_method)
         fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window)
         return fb_obj.compute_fss_decomposed()
@@ -83,13 +97,7 @@ def fss_2d(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
-    all_dims = set(fcst.dims).union(set(obs.dims))
     dims_reduce = set(dims) - set(spatial_dims)
-
-    if len(dims_reduce) == 0:
-        # if dimensions to reduce is empty, return output with fss
-        # scores along all dims.
-        dims_reduce = None
 
     # apply ufunc again but this time to compute the fss, reducing
     # any non-spatial dimensions.
@@ -102,6 +110,7 @@ def fss_2d(
     )
 
     return da_fss
+
 
 def fss_2d_single_field(
     fcst: npt.NDArray[np.float64],
@@ -135,7 +144,7 @@ def fss_2d_single_field(
     return fss_score
 
 
-def _aggregate_fss_decomposed(fss_d: npt.NDArray[DecomposedFss]) -> np.float64:
+def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     """
     Aggregates the results of individual fss scores from 2d fields
     """
@@ -169,7 +178,7 @@ def _aggregate_fss_decomposed(fss_d: npt.NDArray[DecomposedFss]) -> np.float64:
 
 
 @dataclass
-class FssBackend(ABC):
+class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
     """
     Abstract base class for computing fss.
 
@@ -191,11 +200,15 @@ class FssBackend(ABC):
     _fcst_img: npt.NDArray[np.int64] = field(init=False)
 
     def __post_init__(self):
+        """
+        Post-initialization checks go here.
+        """
         self._check_dims()
 
     @staticmethod
     def get_compute_backend(compute_method: FssComputeMethod):
-        if compute_method == FssComputeMethod.NUMPY:
+        # Note: compute methods other than NUMPY are currently stubs
+        if compute_method == FssComputeMethod.NUMPY:  # pylint: disable=no-else-return
             return FssNumpy
         elif compute_method == FssComputeMethod.NUMBA_NATIVE:
             raise NotImplementedError(f"compute method not implemented: {compute_method}")
@@ -234,7 +247,7 @@ class FssBackend(ABC):
 
         Note: for non-`python` backends e.g. `rust`, its often the case that the integral field is
         computed & cached in the native language. In which case this method can just be overriden
-        with a `return self`. 
+        with a `return self`.
         """
         raise NotImplementedError("_compute_integral_field not implemented")
 
@@ -265,10 +278,24 @@ class FssBackend(ABC):
         Returns:
             Tuple[float, float, float]: (power_fcst, power_obs, power_diff) as described above
         """
-        raise NotImplementedError("_compute_fss_components not implemented")
+        raise NotImplementedError("`_compute_fss_components` not implemented")
 
-    def compute_fss_decomposed(self) -> DecomposedFss:
-        return self._apply_threshold()._compute_integral_field()._compute_fss_components()
+    def compute_fss_decomposed(self) -> FssDecomposed:
+        """
+        Calls the main pipeline to compute the fss score.
+
+        Returns the decomposed scores for aggregation. This is because aggregation cannot be
+        done on the final score directly.
+
+        Note: FSS computations of stand-alone 2-D fields should use :py:meth:`compute_fss` instead.
+        """
+        # fmt: off
+        return (
+            self._apply_threshold()  # pylint: disable=protected-access
+                ._compute_integral_field()
+                ._compute_fss_components()
+        )
+        # fmt: on
 
     def compute_fss(self) -> np.float64:
         """
@@ -277,7 +304,7 @@ class FssBackend(ABC):
         """
         (fcst, obs, diff) = self.compute_fss_decomposed()
         denom = fcst + obs
-        fss = 0.0
+        fss: np.float = 0.0
 
         if denom >= 0.0:
             fss = 1.0 - diff / denom
@@ -287,12 +314,12 @@ class FssBackend(ABC):
         return fss_clamped
 
 
-
 @dataclass
 class FssNumpy(FssBackend):
     """
     Implementation of numpy backend for computing FSS
     """
+
     compute_method = FssComputeMethod.NUMPY
 
     def _compute_integral_field(self):
@@ -337,8 +364,8 @@ class FssNumpy(FssBackend):
 
         return self
 
-    def _compute_fss_components(self) -> np.float64:
+    def _compute_fss_components(self) -> FssDecomposed:
         diff = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
         fcst = np.nanmean(np.power(self._fcst_img, 2))
         obs = np.nanmean(np.power(self._obs_img, 2))
-        return np.void((fcst, obs, diff), dtype=DecomposedFss)
+        return np.void((fcst, obs, diff), dtype=f8x3)
