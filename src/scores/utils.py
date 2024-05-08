@@ -50,8 +50,10 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
     *,  # Force keywords arguments to be keyword-only
+    weights_dims: Optional[Iterable[Hashable]] = None,    
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    score_specific_fcst_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> set[Hashable]:
     """
     Establish which dimensions to reduce when calculating errors but before taking means.
@@ -128,13 +130,13 @@ def gather_dimensions(  # pylint: disable=too-many-branches
 
 
 def gather_dimensions2(  # pylint: disable=too-many-branches
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst_dims: xr.DataArray,
+    obs_dims: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
-    weights: Optional[xr.DataArray] = None,
+    weights_dims: Optional[Iterable[Hashable]] = None,    
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    special_fcst_dims: Optional[FlexibleDimensionTypes] = None,
+    score_specific_fcst_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> set[Hashable]:
     """
     Performs standard dimensions checks for inputs of functions that calculate (mean) scores.
@@ -171,9 +173,9 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
     See also:
         `scores.utils.gather_dimensions`
     """
-    all_data_dims = set(fcst.dims).union(set(obs.dims))
-    if weights is not None:
-        all_data_dims = all_data_dims.union(set(weights.dims))
+    all_data_dims = set(fcst_dims).union(set(obs_dims))
+    if weights_dims is not None:
+        all_data_dims = all_data_dims.union(set(weights_dims))
 
     # all_scoring_dims is the set of dims remaining after individual scores are computed.
     all_scoring_dims = all_data_dims.copy()
@@ -191,22 +193,22 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
         if isinstance(specified_dims, str):
             specified_dims = [specified_dims]
 
-    # check that special_fcst_dims are in fcst.dims only
-    if special_fcst_dims is not None:
-        if isinstance(special_fcst_dims, str):
-            special_fcst_dims = [special_fcst_dims]
-        if not set(special_fcst_dims).issubset(set(fcst.dims)):
-            raise ValueError("`special_fcst_dims` must be a subset of `fcst` dimensions")
-        if len(set(obs.dims).intersection(set(special_fcst_dims))) > 0:
-            raise ValueError("`obs.dims` must not contain any `special_fcst_dims`")
-        if weights is not None:
-            if len(set(weights.dims).intersection(set(special_fcst_dims))) > 0:
-                raise ValueError("`weights.dims` must not contain any `special_fcst_dims`")
+    # check that score_specific_fcst_dims are in fcst.dims only
+    if score_specific_fcst_dims is not None:
+        if isinstance(score_specific_fcst_dims, str):
+            score_specific_fcst_dims = [score_specific_fcst_dims]
+        if not set(score_specific_fcst_dims).issubset(set(fcst_dims)):
+            raise ValueError("`score_specific_fcst_dims` must be a subset of `fcst` dimensions")
+        if len(set(obs_dims).intersection(set(score_specific_fcst_dims))) > 0:
+            raise ValueError("`obs.dims` must not contain any `score_specific_fcst_dims`")
+        if weights_dims is not None:
+            if len(set(weights_dims).intersection(set(score_specific_fcst_dims))) > 0:
+                raise ValueError("`weights.dims` must not contain any `score_specific_fcst_dims`")
         if specified_dims is not None and specified_dims != "all":
-            if len(set(specified_dims).intersection(set(special_fcst_dims))) > 0:
-                raise ValueError("`reduce_dims` and `preserve_dims` must not contain any `special_fcst_dims`")
-        # remove special_fcst_dims from all_scoring_dims
-        all_scoring_dims = all_scoring_dims.difference(set(special_fcst_dims))
+            if len(set(specified_dims).intersection(set(score_specific_fcst_dims))) > 0:
+                raise ValueError("`reduce_dims` and `preserve_dims` must not contain any `score_specific_fcst_dims`")
+        # remove score_specific_fcst_dims from all_scoring_dims
+        all_scoring_dims = all_scoring_dims.difference(set(score_specific_fcst_dims))
 
     if specified_dims is not None and specified_dims != "all":
         if not set(specified_dims).issubset(all_scoring_dims):
