@@ -196,6 +196,16 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
             of the data (`fcst`, `obs` or `weights`).
 
     """
+
+    return gather_dimensions(
+        fcst_dims,
+        obs_dims,
+        weights_dims=weights_dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        score_specific_fcst_dims=score_specific_fcst_dims
+        )
+
     all_data_dims = set(fcst_dims).union(set(obs_dims))
     if weights_dims is not None:
         all_data_dims = all_data_dims.union(set(weights_dims))
