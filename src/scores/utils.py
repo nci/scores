@@ -50,7 +50,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
     *,  # Force keywords arguments to be keyword-only
-    weights_dims: Optional[Iterable[Hashable]] = None,    
+    weights_dims: Optional[Iterable[Hashable]] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     score_specific_fcst_dims: Optional[FlexibleDimensionTypes] = None,
@@ -119,7 +119,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
                 raise ValueError("`reduce_dims` and `preserve_dims` must not contain any `score_specific_fcst_dims`")
 
         # Finally, remove score_specific_fcst_dims from all_scoring_dims
-        all_scoring_dims = all_data_dims.difference(set(score_specific_fcst_dims))                
+        all_scoring_dims = all_data_dims.difference(set(score_specific_fcst_dims))
 
     if specified_dims is not None and specified_dims != "all":
         if not set(specified_dims).issubset(all_data_dims):

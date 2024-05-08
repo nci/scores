@@ -506,7 +506,15 @@ def test_gather_dimensions_exceptions():
 
 
 @pytest.mark.parametrize(
-    ("fcst_dims", "obs_dims", "weights_dims", "reduce_dims", "preserve_dims", "score_specific_fcst_dims", "error_msg_snippet"),
+    (
+        "fcst_dims",
+        "obs_dims",
+        "weights_dims",
+        "reduce_dims",
+        "preserve_dims",
+        "score_specific_fcst_dims",
+        "error_msg_snippet",
+    ),
     [
         (
             utils_test_data.DA_RGB.dims,
@@ -594,7 +602,7 @@ def test_gather_dimensions_exceptions():
 )
 def test_gather_dimensions_two_exceptions(
     fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, error_msg_snippet
-):  
+):
     """
     Confirm `gather_dimensions` raises exceptions as expected.
     """
@@ -616,15 +624,11 @@ def test_gather_dimensions_two_warnings():
     """Tests that gather_dimensions warns as expected with correct output."""
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
-        result = gd(
-            utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, preserve_dims="all"
-        )
+        result = gd(utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, preserve_dims="all")
         assert result == set([])
 
     with pytest.warns(UserWarning):
-        result = gd(
-            utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, reduce_dims="all"
-        )
+        result = gd(utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, reduce_dims="all")
         assert result == {"red", "all"}
 
 
@@ -634,25 +638,83 @@ def test_gather_dimensions_two_warnings():
         # test that fcst and obs dims are returned
         (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, None, None, None, None, {"blue", "red"}),
         # test that fcst, obs and weights dims are returned
-        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, None, None, {"blue", "red", "green"}),
+        (
+            utils_test_data.DA_B.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            None,
+            None,
+            None,
+            {"blue", "red", "green"},
+        ),
         # two tests that fcst, obs and weights dims are returned, without the special fcst dim
-        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, None, "blue", {"red", "green"}),
-        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, None, ["blue"], {"red", "green"}),
+        (
+            utils_test_data.DA_B.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            None,
+            None,
+            "blue",
+            {"red", "green"},
+        ),
+        (
+            utils_test_data.DA_B.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            None,
+            None,
+            ["blue"],
+            {"red", "green"},
+        ),
         # test that reduce_dims="all" behaves as expected
-        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, "all", None, None, {"blue", "red", "green"}),
+        (
+            utils_test_data.DA_B.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            "all",
+            None,
+            None,
+            {"blue", "red", "green"},
+        ),
         # three tests for reduce_dims
         (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, "blue", None, None, {"blue"}),
-        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, ["blue"], None, None, {"blue"}),
-        (utils_test_data.DA_RGB.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, ["green"], None, "blue", {"green"}),
+        (
+            utils_test_data.DA_B.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            ["blue"],
+            None,
+            None,
+            {"blue"},
+        ),
+        (
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            ["green"],
+            None,
+            "blue",
+            {"green"},
+        ),
         # test for preserve_dims="all"
         (utils_test_data.DA_RGB.dims, utils_test_data.DA_B.dims, None, None, "all", "red", set([])),
         # three tests for preserve_dims
-        (utils_test_data.DA_RGB.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, "green", None, {"red", "blue"}),
+        (
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            None,
+            "green",
+            None,
+            {"red", "blue"},
+        ),
         (utils_test_data.DA_RGB.dims, utils_test_data.DA_R.dims, None, None, ["green"], None, {"red", "blue"}),
         (utils_test_data.DA_RGB.dims, utils_test_data.DA_B.dims, None, None, ["green"], "red", {"blue"}),
     ],
 )
-def test_gather_dimensions_two_examples(fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected):
+def test_gather_dimensions_two_examples(
+    fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected
+):
     """
     Test that `gather_dimensions` gives outputs as expected.
     """
