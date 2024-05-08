@@ -61,9 +61,44 @@ def fss_2d(
     Aggregates the Fractions Skill Score (FSS) over 2-D spatial coordinates specified by
     `spatial_dims`.
 
+    Optionally aggregates the output along other dimensions if `reduce_dims` or
+    (mutually exclusive) `preserve_dims` are specified.
+
     For implementation for a single 2-D field see: :py:func:`fss_2d_single_field`
 
-    TODO: docstring is WIP
+    Args:
+        fcst: An array of forecasts
+        obs: An array of observations (same spatial shape as `fcst`)
+        threshold: A scalar to compare `fcst` and `obs` fields to generate a
+            binary "event" field.
+        window: A pair of positive integers `(height, width)` of the sliding
+            window; the window dimensions must be greater than 0 and fit within
+            the shape of `obs` and `fcst`.
+        spatial_dims: A pair of dimension names `(x, y)` where `x` and `y` are
+            the spatial dimensions to  slide the window along to compute the FSS.
+            e.g. `("lat", "lon")`.
+        reduce_dims: Optional set of additional dimensions to aggregate over
+            (mutually exclusive to `reduce_dims`).
+        preserve_dims: Optional set of dimensions to keep (all other dimensions
+            are reduced); By default all dimensions except `spatial_dims`
+            are preserved (mutually exclusive to `preserve_dims`).
+        compute_method: currently only supports `FssComputeMethod.NUMPY`
+            see: :py:class:`FssComputeMethod`
+
+    Returns:
+        An `xarray.DataArray` containing the FSS computed over the `spatial_dims`
+
+        The resultant array will have the score grouped against the remaining
+        dimensions, unless `reduce_dims`/`preserve_dims` are specified; in which
+        case, they will be aggregated over the specified dimensions accordingly.
+
+        For an exact usage please refer to `FSS.ipynb` in the tutorials.
+
+    Raises:
+        AssertionError: Various assertions are thrown if the input dimensions
+            do not conform. e.g. if the window size is larger than the input
+            arrays, or if the the spatial dimensions in the args are missing in
+            the input arrays.
     """
 
     def _spatial_dims_exist(_dims):
@@ -121,21 +156,51 @@ def fss_2d_single_field(
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
     """
-    Calculates the Fractions Skill Score (FSS) for a given forecast and observed 2-D field.
+    Calculates the Fractions Skill Score (FSS) for a given forecast and observed
+    2-D field.
 
-    The caller is responsible for making sure the input fields are in the 2-D spatial domain.
+    The FSS is computed by counting the squared sum of forecast and observation
+    events in a given window. This is repeated over all possible window
+    positions that can fit in the input arrays. A common method to do this is
+    via a sliding window.
 
-    Compute Methods:
-    - Supported
-        - `FssComputeMethod.NUMPY` (default)
-    - Optimized
-        - `FssComputeMethod.NUMBA_NATIVE`
-        - `FssComputeMethod.NUMBA_PARALLEL`
-    - Experimental
-        - `FssComputeMethod.RUST_NATIVE`
-        - `FssComputeMethod.RUST_OCL` (highly unstable, but potentially very fast)
+    While the various compute backends may have their own implementations; most
+    of them use some form of prefix sum algorithm to compute this quickly.
 
-    TODO: docstring is WIP
+    For 2-D fields this data structure is known as the "Summed Area
+    Table"<sup>1.</sup>.
+
+    Once the squared sums are computed, the final FSS value can be derived by
+    accumulating the squared sums<sup>2.</sup>.
+
+
+    The caller is responsible for making sure the input fields are in the 2-D
+    spatial domain. (Although it should work for any `np.array` as long as it's
+    2D, and `window` is appropriately sized.)
+
+    Args:
+        fcst: An array of forecasts
+        obs: An array of observations (same spatial shape as `fcst`)
+        threshold: A scalar to compare `fcst` and `obs` fields to generate a
+            binary "event" field.
+        window: A pair of positive integers `(height, width)` of the sliding
+            window; the window dimensions must be greater than 0 and fit within
+            the shape of `obs` and `fcst`.
+        compute_method: currently only supports `FssComputeMethod.NUMPY`
+            see: :py:class:`FssComputeMethod`
+
+    Returns:
+        A float representing the accumulated FSS.
+
+    Raises:
+        AssertionError: Various assertions are thrown if the input dimensions
+            do not conform. e.g. if the window size is larger than the input
+            arrays, or if the the spatial dimensions of the input arrays do
+            not match.
+
+    References:
+        1. https://en.wikipedia.org/wiki/Summed-area_table
+        2. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
     """
     fss_backend = FssBackend.get_compute_backend(compute_method)
     fb_obj = fss_backend(fcst, obs, threshold=threshold, window=window)
@@ -146,7 +211,7 @@ def fss_2d_single_field(
 
 def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     """
-    Aggregates the results of individual fss scores from 2d fields
+    Aggregates the results of decomposed fss scores.
     """
     # can't do ufuncs over custom void types currently...
     l = fss_d.size
@@ -225,6 +290,8 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         assert self.fcst.shape == self.obs.shape, "fcst and obs shapes do not match"
         assert self.window[0] < self.fcst.shape[0], "window must be smaller than data shape"
         assert self.window[1] < self.fcst.shape[1], "window must be smaller than data shape"
+        assert self.window[0] >= 1, "window dim must be be greater than 0"
+        assert self.window[1] >= 1, "window dim must be be greater than 0"
 
     def _apply_threshold(self):
         """
