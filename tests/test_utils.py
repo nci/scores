@@ -9,7 +9,6 @@ import xarray as xr
 from scores import utils
 from scores.utils import DimensionError, check_binary
 from scores.utils import gather_dimensions as gd
-from scores.utils import gather_dimensions2
 from tests import utils_test_data
 
 
@@ -593,15 +592,15 @@ def test_gather_dimensions_exceptions():
         ),
     ],
 )
-def test_gather_dimensions2_exceptions(
+def test_gather_dimensions_two_exceptions(
     fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, error_msg_snippet
 ):  
     """
-    Confirm `gather_dimensions2` raises exceptions as expected.
+    Confirm `gather_dimensions` raises exceptions as expected.
     """
 
     with pytest.raises(ValueError) as excinfo:
-        gather_dimensions2(
+        gd(
             fcst_dims,
             obs_dims,
             weights_dims=weights_dims,
@@ -613,17 +612,17 @@ def test_gather_dimensions2_exceptions(
     assert error_msg_snippet in str(excinfo.value)
 
 
-def test_gather_dimensions2_warnings():
-    """Tests that gather_dimensions2 warns as expected with correct output."""
+def test_gather_dimensions_two_warnings():
+    """Tests that gather_dimensions warns as expected with correct output."""
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
-        result = gather_dimensions2(
+        result = gd(
             utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, preserve_dims="all"
         )
         assert result == set([])
 
     with pytest.warns(UserWarning):
-        result = gather_dimensions2(
+        result = gd(
             utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, reduce_dims="all"
         )
         assert result == {"red", "all"}
@@ -653,12 +652,12 @@ def test_gather_dimensions2_warnings():
         (utils_test_data.DA_RGB.dims, utils_test_data.DA_B.dims, None, None, ["green"], "red", {"blue"}),
     ],
 )
-def test_gather_dimensions2_examples(fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected):
+def test_gather_dimensions_two_examples(fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected):
     """
-    Test that `gather_dimensions2` gives outputs as expected.
+    Test that `gather_dimensions` gives outputs as expected.
     """
 
-    result = gather_dimensions2(
+    result = gd(
         fcst_dims,
         obs_dims,
         weights_dims=weights_dims,
