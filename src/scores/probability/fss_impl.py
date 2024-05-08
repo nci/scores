@@ -1,11 +1,18 @@
 """
 This module contains methods related to the FSS score
+
+For an explanation of the FSS, and implementation considerations,
+see: [Fast calculation of the Fractions Skill Score][fss_ref]
+
+[fss_ref]:
+https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
 """
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass, field
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterable
 
+import functools
 import numpy as np
 import numpy.typing as npt
 import xarray as xr
@@ -24,12 +31,23 @@ class FssComputeMethod(Enum):
 def fss_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    threshold: np.float64,
-    spatial_dims: Tuple[str, str],
     *,  # Force keywords arguments to be keyword-only
+    threshold: np.float64,
+    window: Tuple[int, int],
+    spatial_dims: Tuple[str, str],
     reduce_dims: Optional[Iterable[str]] = None,
     preserve_dims: Optional[Iterable[str]] = None,
+    compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
+    dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
 ):
+    """
+    Aggregates the Fractions Skill Score (FSS) over 2-D spatial coordinates specified by
+    `spatial_dims`.
+
+    For implementation for a single 2-D field see: :py:func:`fss_2d_single_field`
+
+    TODO: docstring is WIP
+    """
     def _spatial_dims_exist(_dims):
         s_spatial_dims = set(spatial_dims)
         s_dims = set(_dims)
@@ -38,8 +56,22 @@ def fss_2d(
     assert _spatial_dims_exist(fcst), f"missing spatial dims {spatial_dims} in fcst"
     assert _spatial_dims_exist(obs), f"missing spatial dims {spatial_dims} in obs"
 
-    # apply_ufunc here to reduce spatial dims and calculate fss score for all 2D fields.
-    xr.apply_ufunc(...)
+    # `xr.apply_ufunc` here to reduce spatial dims and calculate fss score for all 2D fields.
+    # Note: `xr.apply_ufunc` signature doesn't allow for KW_ONLY args, using this wrapper to reduce
+    # the keyword only args first, to avoid confusion.
+    fss_wrapper = functools.partial(
+        fss_2d_single_field,
+        threshold=threshold,
+        window=window,
+        compute_method=compute_method,
+    )
+    xr.apply_ufunc(
+        fss_wrapper,
+        fcst,
+        obs,
+        input_core_dims=(spatial_dims, spatial_dims),
+        dask=dask,
+    )
 
     # gather dimensions to keep.
     dims = scores.utils.gather_dimensions2(
@@ -52,15 +84,15 @@ def fss_2d(
     all_dims = set(fcst.dims).union(set(obs.dims))
     dims_reduce = all_dims - set(dims) - set(spatial_dims)
 
-    if len(dims_reduce) == 0:
-        # if dimensions to reduce is empty, we're done - return output with fss
-        # scores along all dims.
-        ...
-    else:
-        # otherwise, we want to further reduce dimensions. Do a second
-        # apply_ufunc, but this time to accumulate (mean) the decomposed fss
-        # score along the core axes (i.e. dims_to_reduce)
-        xr.apply_ufunc(...)
+    # if len(dims_reduce) == 0:
+    #     # if dimensions to reduce is empty, we're done - return output with fss
+    #     # scores along all dims.
+    #     ...
+    # else:
+    #     # otherwise, we want to further reduce dimensions. Do a second
+    #     # apply_ufunc, but this time to accumulate (mean) the decomposed fss
+    #     # score along the core axes (i.e. dims_to_reduce)
+    #     xr.apply_ufunc(...)
 
 
 def fss_2d_single_field(
@@ -72,14 +104,9 @@ def fss_2d_single_field(
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
     """
-    Calculates the FSS (Fractions Skill Score) for forecast and observed data.
-    For an explanation of the FSS, and implementation considerations,
-    see: [Fast calculation of the Fractions Skill Score][fss_ref]
+    Calculates the Fractions Skill Score (FSS) for a given forecast and observed 2-D field.
 
-    [fss_ref]:
-    https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
-
-    Currently only supports a single field.
+    The caller is responsible for making sure the input fields are in the 2-D spatial domain.
 
     Compute Methods:
     - Supported
@@ -103,7 +130,11 @@ def fss_2d_single_field(
 @dataclass
 class FssBackend(ABC):
     """
-    Backend for computing fss.
+    Abstract base class for computing fss.
+
+    required methods:
+        - :py:meth:`_compute_fss_components`
+        - :py:meth:`_integral_field`
     """
 
     fcst: npt.NDArray[np.float64]
@@ -123,7 +154,6 @@ class FssBackend(ABC):
 
     @staticmethod
     def get_compute_backend(compute_method: FssComputeMethod):
-        # We should use python >=3.10 and use match statements. This is not the most elegant:
         if compute_method == FssComputeMethod.NUMPY:
             return FssNumpy
         elif compute_method == FssComputeMethod.NUMBA_NATIVE:
@@ -142,31 +172,81 @@ class FssBackend(ABC):
         assert self.window[0] < self.fcst.shape[0], "window must be smaller than data shape"
         assert self.window[1] < self.fcst.shape[1], "window must be smaller than data shape"
 
-    @abstractmethod
     def _apply_threshold(self):
-        raise NotImplementedError("_compute_integral_field not implemented")
+        """
+        Default implementation of converting the input fields into binary fields by comparing
+        against a threshold; using numpy. This is a relatively cheap operation, so a specific
+        implementation in derived backends is optional.
+        """
+        self._obs_pop = self.obs > self.threshold
+        self._fcst_pop = self.fcst > self.threshold
+        return self
 
     @abstractmethod
     def _compute_integral_field(self):
+        """
+        Computes the rolling windowed sums over the entire observation & forecast fields. The
+        resulting "integral field (or image)" can be cached in `self._obs_img` for observations, and
+        `self._obs_fcst` for forecast.
+
+        Note: for non-`python` backends e.g. `rust`, its often the case that the integral field is
+        computed & cached in the native language. In which case this method can just be overriden
+        with a `return self`. 
+        """
         raise NotImplementedError("_compute_integral_field not implemented")
 
     @abstractmethod
-    def _compute_fss_score(self) -> np.float64:
-        raise NotImplementedError("_compute_integral_field not implemented")
+    def _compute_fss_components(self) -> np.float64:
+        """
+        FSS is roughly defined as
+        ```
+            fss = 1 - sum_w((p_o - p_f)^2) / (sum_w(p_o^2) + sum_w(p_f^2))
+
+            where,
+            p_o: observation populace > threshold, in one window
+            p_f: forecast populace > threshold, in one window
+            sum_w: sum over all windows
+        ````
+
+        In order to accumulate scores over non spatial dimensions at a higher level operation, we
+        need to keep track of the de-composed sums as they need to be accumulated separately.
+
+        The "fss components", hence, consist of:
+        - `power_diff :: float = sum_w((p_o - p_f)^2)`
+        - `power_obs :: float = sum_w(p_o^2)`
+        - `power_fcst :: float = sum_w(p_f^2)`
+
+        WARNING: returning sums of powers can result in overflows on aggregation. It is advisable
+        to return the means instead, as it is equivilent with minimal computational trade-off.
+
+        Returns:
+            Tuple[float, float, float]: (power_fcst, power_obs, power_diff) as described above
+        """
+        raise NotImplementedError("_compute_fss_components not implemented")
+
+    def compute_fss_decomposed(self) -> Tuple[np.float64, np.float64, np.float64]:
+        return self._apply_threshold()._compute_integral_field()._compute_fss_components()
 
     def compute_fss(self) -> np.float64:
-        fss_result = self._apply_threshold()._compute_integral_field()._compute_fss_score()
-        return fss_result
+        """
+        Uses the components from :py:method:`compute_fss_decomposed` to compute the final
+        Fractions Skill Score.
+        """
+        (fcst, obs, diff) = self.compute_fss_decomposed()
+        denom = fcst + obs
+        fss = 0.0
+        if denom >= 0.0:
+            fss = 1.0 - diff / denom
+        fss_clamped = max(min(fss, 1.0), 0.0)
+        return fss_clamped
 
 
 @dataclass
 class FssNumpy(FssBackend):
+    """
+    Implementation of numpy backend for computing FSS
+    """
     compute_method = FssComputeMethod.NUMPY
-
-    def _apply_threshold(self):
-        self._obs_pop = self.obs > self.threshold
-        self._fcst_pop = self.fcst > self.threshold
-        return self
 
     def _compute_integral_field(self):
         # NOTE: no padding introduced in this implementation. Generally
@@ -210,13 +290,8 @@ class FssNumpy(FssBackend):
 
         return self
 
-    def _compute_fss_score(self) -> np.float64:
-        num = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
-        denom = np.nanmean(np.power(self._fcst_img, 2) + np.power(self._obs_img, 2))
-        fss = 0.0
-        if denom > 0:
-            fss = 1.0 - float(num) / float(denom)
-            # TODO: assert negative or > 1.0 values with error tolerance to avoid masking large errors.
-            fss = min(max(fss, 0.0), 1.0)
-        # TODO: return decomposed fss score instead
-        return fss
+    def _compute_fss_components(self) -> np.float64:
+        diff = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
+        fcst = np.nanmean(np.power(self._fcst_img, 2))
+        obs = np.nanmean(np.power(self._obs_img, 2))
+        return (fcst, obs, diff)
