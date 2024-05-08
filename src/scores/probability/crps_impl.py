@@ -818,7 +818,7 @@ def crps_for_ensemble(
     if weights is not None:
         weights_dims = weights.dims
 
-    dims_for_mean = scores.utils.gather_dimensions2(
+    dims_for_mean = scores.utils.gather_dimensions(
         fcst.dims,
         obs.dims,
         weights_dims=weights_dims,
