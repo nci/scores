@@ -4,7 +4,7 @@ Contains unit tests for scores.probability.fss_impl
 import numpy as np
 import pytest
 
-from scores.probability.fss_impl import fss
+from scores.probability.fss_impl import fss_2d_single_field
 from tests.probabilty import fss_test_data as ftd
 
 
@@ -23,5 +23,5 @@ def test_fss(obs_pdf, fcst_pdf, window, threshold, expected):
     # half the meaning of life, in order to maintain some mystery
     seed = 21
     (obs, fcst) = ftd.generate(obs_pdf, fcst_pdf, seed=seed)
-    res = fss(fcst, obs, threshold=threshold, window=window)
+    res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window)
     np.testing.assert_allclose(res, expected, rtol=1e-5)
