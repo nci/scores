@@ -507,85 +507,85 @@ def test_gather_dimensions_exceptions():
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "weights", "reduce_dims", "preserve_dims", "special_fcst_dims", "error_msg_snippet"),
+    ("fcst_dims", "obs_dims", "weights_dims", "reduce_dims", "preserve_dims", "score_specific_fcst_dims", "error_msg_snippet"),
     [
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
             None,
             ["red"],
             ["blue"],
             None,
             utils.ERROR_OVERSPECIFIED_PRESERVE_REDUCE,
         ),
-        # checks for special_fcst_dims
+        # checks for score_specific_fcst_dims
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
             None,
             None,
             None,
             ["black"],
-            "`special_fcst_dims` must be a subset of `fcst` dimensions",
+            "`score_specific_fcst_dims` must be a subset of `fcst` dimensions",
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
             None,
             None,
             None,
             ["red"],
-            "`obs.dims` must not contain any `special_fcst_dims`",
+            "`obs.dims` must not contain any `score_specific_fcst_dims`",
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
             None,
             None,
             None,
             "red",
-            "`obs.dims` must not contain any `special_fcst_dims`",
+            "`obs.dims` must not contain any `score_specific_fcst_dims`",
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
-            utils_test_data.DA_G,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
             None,
             None,
             "green",
-            "`weights.dims` must not contain any `special_fcst_dims`",
+            "`weights.dims` must not contain any `score_specific_fcst_dims`",
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
-            utils_test_data.DA_G,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
             "blue",
             None,
             "blue",
-            "`reduce_dims` and `preserve_dims` must not contain any `special_fcst_dims`",
+            "`reduce_dims` and `preserve_dims` must not contain any `score_specific_fcst_dims`",
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
-            utils_test_data.DA_G,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
             None,
             ["blue"],
             "blue",
-            "`reduce_dims` and `preserve_dims` must not contain any `special_fcst_dims`",
+            "`reduce_dims` and `preserve_dims` must not contain any `score_specific_fcst_dims`",
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
-            utils_test_data.DA_G,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
             None,
             ["blue", "yellow"],
             None,
             utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION,
         ),
         (
-            utils_test_data.DA_RGB,
-            utils_test_data.DA_R,
-            utils_test_data.DA_G,
+            utils_test_data.DA_RGB.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
             "yellow",
             None,
             "blue",
@@ -594,20 +594,22 @@ def test_gather_dimensions_exceptions():
     ],
 )
 def test_gather_dimensions2_exceptions(
-    fcst, obs, weights, reduce_dims, preserve_dims, special_fcst_dims, error_msg_snippet
-):
+    fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, error_msg_snippet
+):  
     """
     Confirm `gather_dimensions2` raises exceptions as expected.
     """
+
     with pytest.raises(ValueError) as excinfo:
         gather_dimensions2(
-            fcst,
-            obs,
-            weights=weights,
+            fcst_dims,
+            obs_dims,
+            weights_dims=weights_dims,
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
-            special_fcst_dims=special_fcst_dims,
+            score_specific_fcst_dims=score_specific_fcst_dims,
         )
+
     assert error_msg_snippet in str(excinfo.value)
 
 
@@ -616,52 +618,53 @@ def test_gather_dimensions2_warnings():
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
         result = gather_dimensions2(
-            utils_test_data.DA_R.rename({"red": "all"}), utils_test_data.DA_R, preserve_dims="all"
+            utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, preserve_dims="all"
         )
         assert result == set([])
 
     with pytest.warns(UserWarning):
         result = gather_dimensions2(
-            utils_test_data.DA_R.rename({"red": "all"}), utils_test_data.DA_R, reduce_dims="all"
+            utils_test_data.DA_R.rename({"red": "all"}).dims, utils_test_data.DA_R.dims, reduce_dims="all"
         )
         assert result == {"red", "all"}
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "weights", "reduce_dims", "preserve_dims", "special_fcst_dims", "expected"),
+    ("fcst_dims", "obs_dims", "weights_dims", "reduce_dims", "preserve_dims", "score_specific_fcst_dims", "expected"),
     [
         # test that fcst and obs dims are returned
-        (utils_test_data.DA_B, utils_test_data.DA_R, None, None, None, None, {"blue", "red"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, None, None, None, None, {"blue", "red"}),
         # test that fcst, obs and weights dims are returned
-        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, None, None, None, {"blue", "red", "green"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, None, None, {"blue", "red", "green"}),
         # two tests that fcst, obs and weights dims are returned, without the special fcst dim
-        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, None, None, "blue", {"red", "green"}),
-        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, None, None, ["blue"], {"red", "green"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, None, "blue", {"red", "green"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, None, ["blue"], {"red", "green"}),
         # test that reduce_dims="all" behaves as expected
-        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, "all", None, None, {"blue", "red", "green"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, "all", None, None, {"blue", "red", "green"}),
         # three tests for reduce_dims
-        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, "blue", None, None, {"blue"}),
-        (utils_test_data.DA_B, utils_test_data.DA_R, utils_test_data.DA_G, ["blue"], None, None, {"blue"}),
-        (utils_test_data.DA_RGB, utils_test_data.DA_R, utils_test_data.DA_G, ["green"], None, "blue", {"green"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, "blue", None, None, {"blue"}),
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, ["blue"], None, None, {"blue"}),
+        (utils_test_data.DA_RGB.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, ["green"], None, "blue", {"green"}),
         # test for preserve_dims="all"
-        (utils_test_data.DA_RGB, utils_test_data.DA_B, None, None, "all", "red", set([])),
+        (utils_test_data.DA_RGB.dims, utils_test_data.DA_B.dims, None, None, "all", "red", set([])),
         # three tests for preserve_dims
-        (utils_test_data.DA_RGB, utils_test_data.DA_R, utils_test_data.DA_G, None, "green", None, {"red", "blue"}),
-        (utils_test_data.DA_RGB, utils_test_data.DA_R, None, None, ["green"], None, {"red", "blue"}),
-        (utils_test_data.DA_RGB, utils_test_data.DA_B, None, None, ["green"], "red", {"blue"}),
+        (utils_test_data.DA_RGB.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, "green", None, {"red", "blue"}),
+        (utils_test_data.DA_RGB.dims, utils_test_data.DA_R.dims, None, None, ["green"], None, {"red", "blue"}),
+        (utils_test_data.DA_RGB.dims, utils_test_data.DA_B.dims, None, None, ["green"], "red", {"blue"}),
     ],
 )
-def test_gather_dimensions2_examples(fcst, obs, weights, reduce_dims, preserve_dims, special_fcst_dims, expected):
+def test_gather_dimensions2_examples(fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected):
     """
     Test that `gather_dimensions2` gives outputs as expected.
     """
+
     result = gather_dimensions2(
-        fcst,
-        obs,
-        weights=weights,
+        fcst_dims,
+        obs_dims,
+        weights_dims=weights_dims,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
-        special_fcst_dims=special_fcst_dims,
+        score_specific_fcst_dims=score_specific_fcst_dims,
     )
     assert result == expected
 
