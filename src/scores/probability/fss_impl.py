@@ -12,6 +12,8 @@ from dataclasses import KW_ONLY, dataclass, field
 from enum import Enum
 from typing import Optional, Tuple, Iterable
 
+from scores import utils
+
 import functools
 import numpy as np
 import numpy.typing as npt
@@ -19,6 +21,8 @@ import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 
+# Note: soft keyword `type` only support from >=3.10
+DecomposedFss = np.dtype("f8, f8, f8")
 
 class FssComputeMethod(Enum):
     NUMPY = 1  # (default)
@@ -39,7 +43,7 @@ def fss_2d(
     preserve_dims: Optional[Iterable[str]] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-):
+) -> XarrayLike:
     """
     Aggregates the Fractions Skill Score (FSS) over 2-D spatial coordinates specified by
     `spatial_dims`.
@@ -53,28 +57,26 @@ def fss_2d(
         s_dims = set(_dims)
         return s_spatial_dims.intersection(s_dims) == s_spatial_dims
 
-    assert _spatial_dims_exist(fcst), f"missing spatial dims {spatial_dims} in fcst"
-    assert _spatial_dims_exist(obs), f"missing spatial dims {spatial_dims} in obs"
+    assert _spatial_dims_exist(fcst.dims), f"missing spatial dims {spatial_dims} in fcst"
+    assert _spatial_dims_exist(obs.dims), f"missing spatial dims {spatial_dims} in obs"
 
-    # `xr.apply_ufunc` here to reduce spatial dims and calculate fss score for all 2D fields.
-    # Note: `xr.apply_ufunc` signature doesn't allow for KW_ONLY args, using this wrapper to reduce
-    # the keyword only args first, to avoid confusion.
-    fss_wrapper = functools.partial(
-        fss_2d_single_field,
-        threshold=threshold,
-        window=window,
-        compute_method=compute_method,
-    )
-    xr.apply_ufunc(
+    # wrapper defined for convenience, since it's too long for a lambda.
+    def fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> DecomposedFss:
+        fss_backend = FssBackend.get_compute_backend(compute_method)
+        fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window)
+        return fb_obj.compute_fss_decomposed()
+
+    da_fss = xr.apply_ufunc(
         fss_wrapper,
         fcst,
         obs,
-        input_core_dims=(spatial_dims, spatial_dims),
+        input_core_dims=[list(spatial_dims), list(spatial_dims)],
+        vectorize=True,
         dask=dask,
     )
 
     # gather dimensions to keep.
-    dims = scores.utils.gather_dimensions2(
+    dims = utils.gather_dimensions2(
         fcst,
         obs,
         weights=None,  # weighted score currently not supported
@@ -82,18 +84,24 @@ def fss_2d(
         preserve_dims=preserve_dims,
     )
     all_dims = set(fcst.dims).union(set(obs.dims))
-    dims_reduce = all_dims - set(dims) - set(spatial_dims)
+    dims_reduce = set(dims) - set(spatial_dims)
 
-    # if len(dims_reduce) == 0:
-    #     # if dimensions to reduce is empty, we're done - return output with fss
-    #     # scores along all dims.
-    #     ...
-    # else:
-    #     # otherwise, we want to further reduce dimensions. Do a second
-    #     # apply_ufunc, but this time to accumulate (mean) the decomposed fss
-    #     # score along the core axes (i.e. dims_to_reduce)
-    #     xr.apply_ufunc(...)
+    if len(dims_reduce) == 0:
+        # if dimensions to reduce is empty, return output with fss
+        # scores along all dims.
+        dims_reduce = None
 
+    # apply ufunc again but this time to compute the fss, reducing
+    # any non-spatial dimensions.
+    da_fss = xr.apply_ufunc(
+        _aggregate_fss_decomposed,
+        da_fss,
+        input_core_dims=[list(dims_reduce)],
+        vectorize=True,
+        dask=dask,
+    )
+
+    return da_fss
 
 def fss_2d_single_field(
     fcst: npt.NDArray[np.float64],
@@ -125,6 +133,39 @@ def fss_2d_single_field(
     fss_score = fb_obj.compute_fss()
 
     return fss_score
+
+
+def _aggregate_fss_decomposed(fss_d: npt.NDArray[DecomposedFss]) -> np.float64:
+    """
+    Aggregates the results of individual fss scores from 2d fields
+    """
+    # can't do ufuncs over custom void types currently...
+    l = fss_d.size
+
+    if l <= 0:
+        return 0.0
+
+    l = float(l)
+    fcst_sum = 0.0
+    obs_sum = 0.0
+    diff_sum = 0.0
+
+    with np.nditer(fss_d) as it:
+        for elem in it:
+            (fcst_, obs_, diff_) = elem.item()
+            fcst_sum += fcst_ / l
+            obs_sum += obs_ / l
+            diff_sum += diff_ / l
+
+    fss = 0.0
+    denom = obs_sum + fcst_sum
+
+    if denom >= 0.0:
+        fss = 1.0 - diff_sum / denom
+
+    fss_clamped = max(min(fss, 1.0), 0.0)
+
+    return fss_clamped
 
 
 @dataclass
@@ -187,7 +228,9 @@ class FssBackend(ABC):
         """
         Computes the rolling windowed sums over the entire observation & forecast fields. The
         resulting "integral field (or image)" can be cached in `self._obs_img` for observations, and
-        `self._obs_fcst` for forecast.
+        `self._fcst_img` for forecast.
+
+        See also: https://en.wikipedia.org/wiki/Summed-area_table
 
         Note: for non-`python` backends e.g. `rust`, its often the case that the integral field is
         computed & cached in the native language. In which case this method can just be overriden
@@ -224,7 +267,7 @@ class FssBackend(ABC):
         """
         raise NotImplementedError("_compute_fss_components not implemented")
 
-    def compute_fss_decomposed(self) -> Tuple[np.float64, np.float64, np.float64]:
+    def compute_fss_decomposed(self) -> DecomposedFss:
         return self._apply_threshold()._compute_integral_field()._compute_fss_components()
 
     def compute_fss(self) -> np.float64:
@@ -235,10 +278,14 @@ class FssBackend(ABC):
         (fcst, obs, diff) = self.compute_fss_decomposed()
         denom = fcst + obs
         fss = 0.0
+
         if denom >= 0.0:
             fss = 1.0 - diff / denom
+
         fss_clamped = max(min(fss, 1.0), 0.0)
+
         return fss_clamped
+
 
 
 @dataclass
@@ -294,4 +341,4 @@ class FssNumpy(FssBackend):
         diff = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
         fcst = np.nanmean(np.power(self._fcst_img, 2))
         obs = np.nanmean(np.power(self._obs_img, 2))
-        return (fcst, obs, diff)
+        return np.void((fcst, obs, diff), dtype=DecomposedFss)
