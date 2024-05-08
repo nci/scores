@@ -20,23 +20,14 @@ rather than relying on string interpretation. The program will continue to inter
 string as an instruction to reduce or preserve every dimension.
 """
 
-ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
-You are requesting to preserve a dimension which does not appear in your data (fcst or obs).
-It is ambiguous how to proceed therefore an exception has been raised instead.
-"""
 
-ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION2 = """
+ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
 You are requesting to preserve a dimension which does not appear in your data 
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
 ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = """
-You are requesting to reduce a dimension which does not appear in your data (fcst or obs).
-It is ambiguous how to proceed therefore an exception has been raised instead.
-"""
-
-ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION2 = """
 You are requesting to reduce a dimension which does not appear in your data
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been 
 raised instead.
@@ -220,8 +211,8 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
     if specified_dims is not None and specified_dims != "all":
         if not set(specified_dims).issubset(all_scoring_dims):
             if preserve_dims is not None:
-                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION2)
-            raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION2)
+                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
+            raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
 
     # all errors have been captured, so now return list of dims to reduce
     if specified_dims is None:

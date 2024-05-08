@@ -580,7 +580,7 @@ def test_gather_dimensions_exceptions():
             None,
             ["blue", "yellow"],
             None,
-            utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION2,
+            utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION,
         ),
         (
             utils_test_data.DA_RGB,
@@ -589,7 +589,7 @@ def test_gather_dimensions_exceptions():
             "yellow",
             None,
             "blue",
-            utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION2,
+            utils.ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION,
         ),
     ],
 )
