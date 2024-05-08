@@ -1,4 +1,3 @@
-import fss_fast
 import numba
 import numpy as np
 from numba import prange
@@ -36,7 +35,6 @@ def test_rust_fss_basic():
 
     out = 0
     res_numba = fss_numba(fcst, obs, img_w, img_h, threshold, window[0], out, _print=True)
-    res_fss_fast = __fss_fast(fcst, obs, threshold, window[0], _print=True)
 
 
 def fss_numba(arr_1, arr_2, w, h, thresh, window_size, out, _print=False):
@@ -118,21 +116,6 @@ def fss_parallel(sat_1, sat_2, w, h, window_size, obs_total, fcst_total, diff_to
 
     out = 1.0 - float(diff_total_sum) / float(obs_total_sum + fcst_total_sum)
     return out
-
-
-def __fss_fast(fcst, obs, threshold, window_size, _print=False):
-    """
-    Adapted from: https://github.com/nathan-eize/fss/blob/master/fss_core.py
-    Which contains code from:
-      Faggian N, Roux B, Steinle P, Ebert B. 2015.
-      Fast calculation of the fractions skill score. Mausam 66: 457466.
-
-    This function to be used for benchmarking purposes only.
-    """
-    fss = fss_fast.fss(fcst, obs, threshold, window_size)
-    if _print:
-        print("fss_fast result: ", fss)
-    return fss
 
 
 if __name__ == "__main__":
