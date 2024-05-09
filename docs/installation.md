@@ -2,7 +2,7 @@
 
 This page describes the most common installation options for `scores`. Expert users of pip and conda will note that there are more variations possible.
 
-## Setting up a Virtual Environment
+## Setting up a virtual environment
 
 In almost all cases, it is recommended to use a virtualised Python environment. 
 
@@ -24,7 +24,7 @@ conda activate <path_to_environment>
 
 ```
 
-## Installation Options
+## Installation options
 
 Most users will want the "all" installation option. There are also more specialised options for those who need them.  
 
@@ -35,7 +35,7 @@ The 4 supported installation options are:
 - tutorial: ONLY contains mathematical functions and tutorials.
 - maintainer: ONLY contains tools for building the documentation and building for PyPI.
 
-### 1. "All" Dependencies (excludes some maintainer-only packages)
+### 1. "All" dependencies (excludes some maintainer-only packages)
 
 Use this for `scores` development and general use.
 
@@ -45,13 +45,13 @@ Installs:
 * Testing, static analysis and other developer libraries
 * Does **not** install tools for making packages and releasing new versions
 
-#### From a Local Checkout of the Git Repository
+#### From a local checkout of the git repository
 
 ```bash
 pip install -e .[all]
 ```
 
-### 2. "Minimal" Dependencies (Mathematical API Functions Only)
+### 2. "Minimal" dependencies (mathematical API functions only)
 Use this to install the `scores` code into another package or system.
 
 Installs:
@@ -65,20 +65,20 @@ Installs:
 pip install scores
 ```
 
-### 3. "Tutorial" Dependencies
+### 3. "Tutorial" dependencies
 Use this for running tutorials using `scores`, but when you don't need or want developer tools.
 
 Installs:
 * Mathematical API functions and libraries
 * Jupyter Lab, Plotly, and libraries for reading data, so that the tutorial notebooks can be run
 
-#### From a Local Git Repository
+#### From a local git repository
 
 ```bash
 pip install .[tutorial]
 ```
 
-### 4. "Maintainer" Dependencies
+### 4. "Maintainer" dependencies
 Use this to build the docs, create packages and prepare new versions for release.
 
 Installs:
@@ -86,7 +86,7 @@ Installs:
 * Dependencies for building new versions of the `scores` package
 * Dependencies for building the documentation as HTML
 
-#### From a Local Git Repository
+#### From a local git repository
 
 ```bash
 pip install -e .[maintainer]
