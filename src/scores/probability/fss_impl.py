@@ -144,7 +144,7 @@ def fss_2d(
         fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window, zero_padding=zero_padding)
         return fb_obj.compute_fss_decomposed()
 
-    # apply ufunc to get the decomposed forecast skills score aggregated over
+    # apply ufunc to get the decomposed fractions skill score aggregated over
     # the 2D spatial dims.
     da_fss = xr.apply_ufunc(
         fss_wrapper,
@@ -155,7 +155,7 @@ def fss_2d(
         dask=dask,  # pragma: no cover
     )
 
-    # gather dimensions to aggregate over.
+    # gather additional dimensions to aggregate over.
     dims = utils.gather_dimensions2(
         fcst,
         obs,
