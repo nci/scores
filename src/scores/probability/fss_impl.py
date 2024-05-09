@@ -214,27 +214,27 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     Aggregates the results of decomposed fss scores.
     """
     # can't do ufuncs over custom void types currently...
-    l = fss_d.size
-
-    if l <= 0:
-        return 0.0
-
-    l = float(l)
     fcst_sum = 0.0
     obs_sum = 0.0
     diff_sum = 0.0
 
-    with np.nditer(fss_d) as it:
-        for elem in it:
-            (fcst_, obs_, diff_) = elem.item()
-            fcst_sum += fcst_ / l
-            obs_sum += obs_ / l
-            diff_sum += diff_ / l
+    if isinstance(fss_d, np.ndarray):
+        l = fss_d.size
+        if l < 1:
+            return 0.0
+        with np.nditer(fss_d) as it:
+            for elem in it:
+                (fcst_, obs_, diff_) = elem.item()
+                fcst_sum += fcst_ / l
+                obs_sum += obs_ / l
+                diff_sum += diff_ / l
+    else:
+        (fcst_sum, obs_sum, diff_sum) = fss_d
 
     fss = 0.0
     denom = obs_sum + fcst_sum
 
-    if denom >= 0.0:
+    if denom > 0.0:
         fss = 1.0 - diff_sum / denom
 
     fss_clamped = max(min(fss, 1.0), 0.0)
@@ -288,8 +288,8 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
 
     def _check_dims(self):
         assert self.fcst.shape == self.obs.shape, "fcst and obs shapes do not match"
-        assert self.window[0] < self.fcst.shape[0], "window must be smaller than data shape"
-        assert self.window[1] < self.fcst.shape[1], "window must be smaller than data shape"
+        assert self.window[0] <= self.fcst.shape[0], "window must be smaller than data shape"
+        assert self.window[1] <= self.fcst.shape[1], "window must be smaller than data shape"
         assert self.window[0] >= 1, "window dim must be be greater than 0"
         assert self.window[1] >= 1, "window dim must be be greater than 0"
 
@@ -373,7 +373,7 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         denom = fcst + obs
         fss: np.float = 0.0
 
-        if denom >= 0.0:
+        if denom > 0.0:
             fss = 1.0 - diff / denom
 
         fss_clamped = max(min(fss, 1.0), 0.0)

@@ -3,25 +3,66 @@ Contains unit tests for scores.probability.fss_impl
 """
 import numpy as np
 import pytest
+import xarray as xr
 
-from scores.probability.fss_impl import fss_2d_single_field
+from scores import sample_data as sd
+from scores.probability.fss_impl import fss_2d, fss_2d_single_field
 from tests.probabilty import fss_test_data as ftd
 
 
 @pytest.mark.parametrize(
     ("obs_pdf", "fcst_pdf", "window", "threshold", "expected"),
     [
-        ((0.0, 1.0), (0.0, 1.0), (100, 100), 0.5, 0.999803),
-        ((0.0, 1.0), (0.0, 2.0), (50, 50), 0.5, 0.966572),
-        ((0.0, 1.0), (1.0, 1.0), (100, 100), 0.25, 0.819179),
+        ((0.0, 1.0), (0.0, 1.0), (10, 10), 0.5, 0.974078),
+        ((0.0, 1.0), (0.0, 2.0), (5, 5), 0.5, 0.888756),
+        ((0.0, 1.0), (1.0, 1.0), (10, 10), 0.25, 0.812008),
     ],
 )
-def test_fss(obs_pdf, fcst_pdf, window, threshold, expected):
+def test_fss_2d_single_field(obs_pdf, fcst_pdf, window, threshold, expected):
     """
-    Integration test to check that fss is generally working
+    Integration test to check that fss is generally working for a single field
     """
     # half the meaning of life, in order to maintain some mystery
     seed = 21
     (obs, fcst) = ftd.generate(obs_pdf, fcst_pdf, seed=seed)
     res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window)
     np.testing.assert_allclose(res, expected, rtol=1e-5)
+
+
+@pytest.mark.parametrize(
+    ("window", "threshold", "reduce_dims", "preserve_dims", "expected"),
+    [
+        ((2, 2), 2.0, None, None, xr.DataArray(0.96813032)),
+        ((2, 2), 8.0, None, None, xr.DataArray(0.78144748)),
+        ((5, 5), 2.0, None, None, xr.DataArray(0.99381861)),
+        ((5, 5), 8.0, None, None, xr.DataArray(0.94054107)),  # output_dims: scalar
+        ((2, 2), 5.0, ["time"], None, ftd.EXPECTED_TEST_FSS_2D_REDUCE_TIME),  # output_dims: 1 x lead_time
+        ((2, 2), 5.0, None, ["time"], ftd.EXPECTED_TEST_FSS_2D_PRESERVE_TIME),  # output_dims: 1 x time
+        (
+            (2, 2),
+            5.0,
+            None,
+            ["time", "lead_time"],
+            ftd.EXPECTED_TEST_FSS_2D_PRESERVE_ALL,
+        ),  # output_dims: time x lead_time
+    ],
+)
+def test_fss_2d(window, threshold, reduce_dims, preserve_dims, expected):
+    """
+    Tests various combinations of window/threshold/preserve_dims/reduce_dims
+
+    Note: does not include error/assertion testing this will be done separately.
+    """
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=False)
+    res = fss_2d(
+        da_fcst,
+        da_obs,
+        threshold=threshold,
+        window=window,
+        spatial_dims=["lat", "lon"],
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+    )
+    print(res)
+    xr.testing.assert_allclose(res, expected)
