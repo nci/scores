@@ -10,7 +10,7 @@ from scores import __version__
 project = "scores"
 copyright = "2023, Australian Bureau of Meteorology"
 author = "Australian Bureau of Meteorology"
-release = "0.71"
+release = "0.72"
 
 version = __version__
 
