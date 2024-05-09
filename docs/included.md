@@ -343,22 +343,6 @@
     &mdash;
   - 
     &mdash; 
-* -  
-    - Make Contingency Manager 
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.EventOperator.make_contingency_manager)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    &mdash;
-* -  
-    - Make Event Tables
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.EventOperator.make_event_tables)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    &mdash;
 * - FIxed Risk Multicategorical (FIRM)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
