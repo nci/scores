@@ -2,12 +2,12 @@
 
 ## Overview of some relevant data sources
 
-Weather data is often global, big and complex. This brief section suggests how to obtain some 'getting started' data for examining the use of the scores and metrics contained in this package. Data referred to here is available under various licenses, and the onus is on the user to understand the conditions of those licenses. The tutorials and walkthroughs in the 'tutorials' directory contain more information and explore the data in more depth.
+This section suggests how to obtain some 'getting started' weather and climate data for examining the use of the scores and metrics contained in this package. Data referred to here is available under various licenses, and the onus is on the user to understand the conditions of those licenses. The tutorials and walkthroughs in the 'tutorials' directory contain more information and explore the data in more depth.
 
-This page describes data sets and will be improved to provide more specific instructions on downloading and preparing the data in accordance with the scores roadmap. For the moment, key data sets which have global coverage and are easily accessible are noted.
+This page will be improved to provide more specific instructions on downloading and preparing the data in accordance with the scores roadmap. For the moment, it notes a few key datasets which have global coverage and are easily accessible.
 
 ## Gridded global numerical weather prediction data
-Global weather prediction models are used for medium range forecasts and provide the initial and boundary conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
+Global weather prediction models are used to generate medium range forecasts and provide the initial and boundary conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
 
 The Bureau of Meteorology provides global model data from the ACCESS numerical weather prediction system. See https://geonetwork.nci.org.au/geonetwork/srv/eng/catalog.search#/metadata/f3307_5503_1483_3079 for more information.
 
@@ -22,13 +22,13 @@ The NOAA Integrated Surface Database provides hourly point-based (aka in-situ) d
 See https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database for more information.
 
 ## Gridded model reanalysis data
-Reanalysis data is useful for provide a very long history of data, estimating the atmospheric conditions over history. The ERA5 dataset is a well known and widely used global reanalysis dataset.
+Reanalysis data is useful for providing a very long history of atmospheric conditions. The ERA5 dataset is a well known and widely used global reanalysis dataset.
 
-https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5
+For more information see https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5 and
 https://github.com/pangeo-data/WeatherBench
 
 ## Gridded satellite (observation) data
-Satellite data varies according to region, type and age of satellite. It is too complex to quickly address in a demonstration. A guide on working with satellite data may be added in future if it is highlighted in the examples for specific scores.
+Satellite data varies according to the type of orbit and purpose of the mission. It is too complex to quickly address in a demonstration. A guide on working with satellite data may be added in future.
 
 ## Gridded radar (observation) data
 Radar data also varies according to region and is not a globally standardised data set. Information on Australian based radars can be found at https://www.openradar.io/
