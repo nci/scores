@@ -144,6 +144,8 @@ def fss_2d(
         fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window, zero_padding=zero_padding)
         return fb_obj.compute_fss_decomposed()
 
+    # apply ufunc to get the decomposed forecast skills score aggregated over
+    # the 2D spatial dims.
     da_fss = xr.apply_ufunc(
         fss_wrapper,
         fcst,
@@ -153,7 +155,7 @@ def fss_2d(
         dask=dask,  # pragma: no cover
     )
 
-    # gather dimensions to keep.
+    # gather dimensions to aggregate over.
     dims = utils.gather_dimensions2(
         fcst,
         obs,
@@ -446,6 +448,23 @@ class FssNumpy(FssBackend):
         # ------------------------------
 
         if self.zero_padding:
+            # --------------------------
+            # 0-padding
+            # --------------------------
+            #    ................
+            #    ................
+            #    ..+----------+..
+            #    ..|          |..
+            #    ..|          |..
+            #    ..|          |..
+            #    ..+----------+..
+            #    ................
+            #    ................
+            #
+            # ".." represents 0 padding
+            # the rectangle represents the
+            # FSS computation region.
+            # --------------------------
             # use ceil to avoid 1x1 windows to be coerced to 0x0
             # w_h = window height, w_w = window width
             half_w_h = int(np.ceil(self.window[0] / 2))
@@ -463,6 +482,22 @@ class FssNumpy(FssBackend):
             c_br = np.clip(np.arange(half_w_w, im_w + half_w_w), half_w_w, im_w - 1)
             mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
         else:
+            # --------------------------
+            # interior border
+            # --------------------------
+            # data at the border is trim
+            # -ed and used for padding
+            #    +-------------+
+            #    | +---------+ |
+            #    | |/////////| |
+            #    | |/////////| |
+            #    | |/////////| |
+            #    | +---------+ |
+            #    +-------------+
+            #
+            # "//" represents the effective
+            # FSS computation region
+            # --------------------------
             im_h = self.fcst.shape[0] - self.window[0]
             im_w = self.fcst.shape[1] - self.window[1]
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
