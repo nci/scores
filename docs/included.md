@@ -45,14 +45,6 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.mae)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Mean_Absolute_Error.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
-* - Mean Elementary Score, *see Murphy Score*
-  - &mdash;
-  - &mdash;
-  - &mdash;
-* - Mean Error (Additive Bias)
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.mean_error)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Additive_and_multiplicative_bias.html)
-  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
 * - Mean Squared Error (MSE)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.mse)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Mean_Squared_Error.html)
@@ -85,18 +77,10 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.correlation)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pearsons_Correlation.html)
   - [Wikipedia](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
-* - Pinball Loss, *see Quantile Loss*
-  - &mdash;
-  - &mdash;
-  - &mdash;
 * - Quantile Loss (Quantile Score, Pinball Loss)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.quantile_score)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Quantile_Loss.html)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
-* - Quantile Score, *see Quantile Loss*
-  - &mdash;
-  - &mdash;
-  - &mdash;
 * - Relability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -152,18 +136,10 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_for_ensemble)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/CRPS_for_Ensembles.html)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
-* - Isotonic Fit, *see Isotonic Regression*
-  - &mdash;
-  - &mdash;
-  - &mdash;
 * - Isotonic Regression (Isotonic Fit, Relability Diagram)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.isotonic_fit)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)
-* - Mean Elementary Score, *see Murphy Score*
-  - &mdash;
-  - &mdash;
-  - &mdash;
 * - Murphy Score (Mean Elementary Score) 
   - 
   - 
@@ -216,22 +192,6 @@
   - 
     [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
-    - Bias Score (Frequency Bias)
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.bias_score)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
-* -  
-    - Critical Success Index (Threat Score)
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.critical_success_index)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)
-* -  
     - False Alarm Rate (Probability of False Detection (POFD))
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.false_alarm_rate)
@@ -240,14 +200,6 @@
   - 
     [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 * -  
-    - Fraction Correct, *see Accuracy*
-  -
-    &mdash;
-  - 
-    &mdash;
-  - 
-    &mdash;
-* -  
     - Frequency Bias (Bias Score)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.frequency_bias)
@@ -255,14 +207,6 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
-* -  
-    - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
-  -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
     - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity)
   -
@@ -279,30 +223,6 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
-* -  
-    - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity)
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.probability_of_detection)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
-* -  
-    - Probability of False Detection (POFD) (False Alarm Rate)
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.probability_of_false_detection)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
-* -  
-    - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate)
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.sensitivity)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
     - Specificity
   -
@@ -327,22 +247,6 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
-* -  
-    - True Positive Rate, *see Hit Rate*
-  -
-    &mdash;
-  - 
-    &mdash;
-  - 
-    &mdash;
-* -  
-    - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
-  -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.true_skill_statistic)
-  - 
-    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
-  - 
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK) 
 * - FIxed Risk Multicategorical (FIRM)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
@@ -485,10 +389,6 @@
     
   - 
 
-* - Isotonic Fit, *see Isotonic Regression*
-  - &mdash;
-  - &mdash;
-  - &mdash;
 * - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - 
   - 
