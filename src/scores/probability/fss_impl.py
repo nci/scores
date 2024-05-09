@@ -307,13 +307,13 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
             raise ValueError(f"Invalid FSS compute backend, valid values: {list(FssComputeMethod)}")
 
     def _check_dims(self):
-        if self.fcst.shape == self.obs.shape:
+        if self.fcst.shape != self.obs.shape:
             raise DimensionError("fcst and obs shapes do not match")
         if (
-            self.window[0] <= self.fcst.shape[0]
-            or self.window[1] <= self.fcst.shape[1]
-            or self.window[0] >= 1
-            or self.window[1] >= 1
+            self.window[0] > self.fcst.shape[0]
+            or self.window[1] > self.fcst.shape[1]
+            or self.window[0] < 1
+            or self.window[1] < 1
         ):
             raise DimensionError("invalid window size, window must be smaller than input data shape and greater than 0")
 
