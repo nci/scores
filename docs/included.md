@@ -399,26 +399,20 @@
 
 * - Name (Alphabetical order)
   - API
-  - Tutorial
-  - Reference(s)
+  - Utilised For
 * - Binary Discretise
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.binary_discretise)   
+  - Receiver (Relative) Operating Characteristic (ROC)
 * - Binary Discretise Proportion
   -     
   - 
-  -
 * - Broadcast and Match Not-a-Number (NaN)
   -    
   - 
-  -
 * - Comparative Discretise
   -    
   - 
-  -
 * - Cumulative Distribution Functions (CDFs)
-  - 
   - 
   - 
 * -  
@@ -426,22 +420,16 @@
   -
     
   - 
-    
-  - 
-       
+     
 * -  
     - CDF Envelope
   -
     
   - 
-    
-  - 
-       
+         
 * -  
     - Decreasing CDFs
   -
-    
-  - 
     
   - 
     
@@ -451,13 +439,9 @@
     
   - 
     
-  - 
-    
 * -  
     - Integrate Square Piecewise Linear
   -
-    
-  - 
     
   - 
     
@@ -467,13 +451,9 @@
     
   - 
     
-  - 
-    
 * -  
     - Propagate Not-a-Number (NaN) 
   -
-    
-  - 
     
   - 
 
@@ -483,22 +463,16 @@
     
   - 
     
-  - 
-
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
-  - &mdash;
 * - Isotonic Regression (Isotonic Fit, Reliability Diagram)
-  - 
-  - 
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.isotonic_fit)
   - 
 * - Proportion Exceeding
   -    
-  - 
   -
 * - Reliability Diagram, *see Isotonic Regression*
-  - &mdash;
   - &mdash;
   - &mdash;   
 ```
