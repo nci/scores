@@ -10,7 +10,7 @@ https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fract
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Iterable, Optional, Tuple, TypeAlias
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -22,7 +22,11 @@ from scores.typing import XarrayLike
 # Note: soft keyword `type` only support from >=3.10
 # "tuple" of 64 bit floats
 f8x3 = np.dtype("f8, f8, f8")
-FssDecomposed: TypeAlias = np.typing.NDArray[f8x3]
+# Note: `TypeAlias` on variables for python <=3.9
+if TYPE_CHECKING:
+    FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
+else:
+    FssDecomposed = npt.NDArray[f8x3]
 
 
 class DimensionError(ValueError):
@@ -285,6 +289,9 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def get_compute_backend(compute_method: FssComputeMethod):
+        """
+        Returns the appropriate compute backend class constructor.
+        """
         # Note: compute methods other than NUMPY are currently stubs
         if compute_method == FssComputeMethod.NUMPY:  # pylint: disable=no-else-return
             return FssNumpy
