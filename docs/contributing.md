@@ -83,7 +83,7 @@ python -m build
 pip install dist/<my_latest_package>.whl
 ```
 
-### Setup `pre-commit` (optional) <a name="pre-commit"></a>
+### Set up `pre-commit` (optional) <a name="pre-commit"></a>
 
 To automate linter and fixer checks this project uses `pre-commit` which is set up to execute after every local commit. This ensures that code standards are flagged at the development stage rather than in the project CI/CD pipeline. Although it is optional we highly recommended to use the tool before pushing changes to the remote.
 
@@ -91,11 +91,11 @@ To automate linter and fixer checks this project uses `pre-commit` which is set 
 pre-commit install -t pre-commit -t pre-push
 ```
 
-### Coding practices
+## Coding practices
 
 Pylint and black should be used at all times to ensure a consistent approach to coding. Isort should be used for the ordering of import statements. All merge requests will be checked prior to acceptance. The project will include configuration files which may be used to capture any overrides to convention that may be adopted.
 
-### Branching and merge requests
+## Branching and merge requests
 
 Scores follows the [ git-flow ](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) branching model. This can be summarised as follows:
 
@@ -116,7 +116,7 @@ For most developers, this can be simplified to:
  - Create a merge request for your feature when you're ready.
 
 
-### Code review processes
+## Review processes
 
 Contributions of code through merge requests are welcomed. Prior to developing a merge request, it is a good idea to create an issue in the tracker to capture what the merge request is trying to achieve, any pertinent details, and how it aligns to the roadmap.
 
