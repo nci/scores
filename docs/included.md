@@ -203,7 +203,7 @@
   - API
   - Tutorial
   - Reference(s)
-* - Binary Contingency Scores and Binary Contigency Tables
+* - Binary Contingency Scores and Binary Contingency Tables
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BinaryContingencyManager); [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - [Methods for dichotomous (yes/no) forecasts](https://www.cawcr.gov.au/projects/verification/#Methods_for_dichotomous_forecasts)
@@ -347,11 +347,11 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
   - [Taggart et al. (2022)](https://doi.org/10.1002/qj.4266)
-* - POD - implementation as used in ROC (***NOTE:*** **Please use contigency table classes instead, this API may be removed in future**)
+* - POD - implementation as used in ROC (***NOTE:*** **Please use contingency table classes instead, this API may be removed in future**)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_detection)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
   - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
-* - POFD - implementation as used in ROC (***NOTE:*** **Please use contigency table classes instead, this API may be removed in future**)
+* - POFD - implementation as used in ROC (***NOTE:*** **Please use contingency table classes instead, this API may be removed in future**)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.probability_of_false_detection)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
   - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
