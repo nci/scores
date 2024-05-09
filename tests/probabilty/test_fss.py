@@ -6,7 +6,7 @@ import pytest
 import xarray as xr
 
 from scores import sample_data as sd
-from scores.probability.fss_impl import fss_2d, fss_2d_single_field
+from scores.probability.fss_impl import DimensionError, fss_2d, fss_2d_single_field
 from tests.probabilty import fss_test_data as ftd
 
 
@@ -64,5 +64,62 @@ def test_fss_2d(window, threshold, reduce_dims, preserve_dims, expected):
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
-    print(res)
     xr.testing.assert_allclose(res, expected)
+
+
+@pytest.mark.parametrize(("large_obs"), [(True), (False)])
+def test_invalid_dimensions(large_obs):
+    """
+    Compares a large input with a small input - should raise an error
+    """
+    da_fcst = sd.continuous_forecast(large_size=large_obs, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=(not large_obs))
+    with pytest.raises(ValueError):
+        fss_2d(
+            da_fcst,
+            da_obs,
+            threshold=5.0,
+            window=(5, 5),
+            spatial_dims=["lat", "lon"],
+        )
+
+    with pytest.raises(DimensionError):
+        fss_2d(
+            da_fcst,
+            da_obs,
+            threshold=5.0,
+            window=(5, 5),
+            spatial_dims=["lat"],
+        )
+
+
+@pytest.mark.parametrize(("window"), [(50, 10), (-1, 5), (5, -1), (-1, -1), (10, 50), (50, 50)])
+def test_invalid_window(window):
+    """
+    Check for various invalid window sizes (note: assumes small dataset is used)
+    """
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=False)
+    with pytest.raises(DimensionError):
+        fss_2d(
+            da_fcst,
+            da_obs,
+            threshold=5.0,
+            window=window,
+            spatial_dims=["lat", "lon"],
+        )
+
+
+def test_zero_denom_fss():
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=False)
+    da_fcst[:] = 0.0
+    da_obs[:] = 0.0
+    res = fss_2d(
+        da_fcst,
+        da_obs,
+        threshold=5.0,
+        window=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    assert res == xr.DataArray(0.0)

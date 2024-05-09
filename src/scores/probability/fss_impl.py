@@ -23,9 +23,9 @@ from scores.typing import XarrayLike
 # "tuple" of 64 bit floats
 f8x3 = np.dtype("f8, f8, f8")
 # Note: `TypeAlias` on variables for python <=3.9
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
-else:
+else:  # pragma: no cover
     FssDecomposed = npt.NDArray[f8x3]
 
 
@@ -98,6 +98,9 @@ def fss_2d(
             are preserved (mutually exclusive to `preserve_dims`).
         compute_method: currently only supports `FssComputeMethod.NUMPY`
             see: :py:class:`FssComputeMethod`
+        dask: See xarray.apply_ufunc for options
+
+    > **CAUTION:** `dask` option is not fully tested
 
     Returns:
         An `xarray.DataArray` containing the FSS computed over the `spatial_dims`
@@ -118,7 +121,7 @@ def fss_2d(
     def _spatial_dims_exist(_dims):
         s_spatial_dims = set(spatial_dims)
         s_dims = set(_dims)
-        return s_spatial_dims.intersection(s_dims) == s_spatial_dims
+        return s_spatial_dims.intersection(s_dims) == s_spatial_dims and len(spatial_dims) == 2
 
     if not _spatial_dims_exist(fcst.dims):
         raise DimensionError(f"missing spatial dims {spatial_dims} in fcst")
@@ -137,7 +140,7 @@ def fss_2d(
         obs,
         input_core_dims=[list(spatial_dims), list(spatial_dims)],
         vectorize=True,
-        dask=dask,
+        dask=dask,  # pragma: no cover
     )
 
     # gather dimensions to keep.
@@ -157,7 +160,7 @@ def fss_2d(
         da_fss,
         input_core_dims=[list(dims_reduce)],
         vectorize=True,
-        dask=dask,
+        dask=dask,  # pragma: no cover
     )
 
     return da_fss
