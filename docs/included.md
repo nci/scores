@@ -49,10 +49,10 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Mean Error, *see Additive Bias*
-  - &mdash;
-  - &mdash;
-  - &mdash;
+* - Mean Error (Additive Bias)
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.mean_error)
+  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Additive_and_multiplicative_bias.html)
+  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
 * - Mean Squared Error (MSE)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.mse)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Mean_Squared_Error.html)
@@ -203,8 +203,8 @@
   - API
   - Tutorial
   - Reference(s)
-* - Binary Contingency Table Class (Binary Contingency Scores)
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager)
+* - Binary Contingency Scores and Binary Contigency Tables
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BinaryContingencyManager); [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - [Methods for dichotomous (yes/no) forecasts](https://www.cawcr.gov.au/projects/verification/#Methods_for_dichotomous_forecasts)
 * -  
@@ -216,21 +216,21 @@
   - 
     [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
-    - Bias Score, *see Frequency Bias*
+    - Bias Score (Frequency Bias)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.bias_score)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
-    - Critical Success Index, *see Threat Score*
+    - Critical Success Index (Threat Score)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.critical_success_index)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)
 * -  
     - False Alarm Rate (Probability of False Detection (POFD))
   -
@@ -280,29 +280,29 @@
   - 
     [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
-    - Probability of Detection (POD), *see Hit Rate*
+    - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.probability_of_detection)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
-    - Probability of False Detection (POFD), *see False Alarm Rate*
+    - Probability of False Detection (POFD) (False Alarm Rate)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.probability_of_false_detection)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 * -  
-    - Sensitivity, *see Hit Rate*
+    - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.sensitivity)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
     - Specificity
   -
