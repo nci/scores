@@ -5,7 +5,7 @@
 One-line intro: xarray based verification scores and tools that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
 
-A **complete list** of the 47 included Metrics, Statistical Techniques and Data Processing Tools is: [available here](https://scores.readthedocs.io/en/develop/included.html).
+A **complete list** of the 47 included Metrics, Statistical Techniques and Data Processing Tools is: [available here](https://scores.readthedocs.io/en/latest/included.html).
 
 Here is a **curated selection** of the Metrics and Tools included in `scores`:
 
@@ -28,7 +28,7 @@ The tutorial gallery is hosted at [as part of the documentation, here](https://s
 All of the scores and metrics in this package have undergone a thorough statistical and scientific review. Every score has a companion Jupyter Notebook tutorial demonstrating its use in practice.
 
 ## Contributing
-To find out more about contributing, see our [contributor's guide](https://github.com/nci/scores/blob/develop/docs/contributing.md).
+To find out more about contributing, see our [contributor's guide](https://github.com/nci/scores/blob/main/docs/contributing.md).
 
 All interactions in discussions, issues, emails and code (e.g. merge requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40, 000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
