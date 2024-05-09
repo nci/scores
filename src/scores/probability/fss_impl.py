@@ -25,6 +25,16 @@ f8x3 = np.dtype("f8, f8, f8")
 FssDecomposed: TypeAlias = np.typing.NDArray[f8x3]
 
 
+class DimensionError(ValueError):
+    """
+    Wrapper for specific coordinate/dimension mismatch errors
+    """
+
+    # better to be explicit because python doesn't have braces for scoping its
+    # control flow
+    pass  # pylint: disable=unnecessary-pass
+
+
 class FssComputeMethod(Enum):
     """
     Choice of compute backend for FSS.
@@ -95,7 +105,7 @@ def fss_2d(
         For an exact usage please refer to `FSS.ipynb` in the tutorials.
 
     Raises:
-        AssertionError: Various assertions are thrown if the input dimensions
+        DimensionError: Various errors are thrown if the input dimensions
             do not conform. e.g. if the window size is larger than the input
             arrays, or if the the spatial dimensions in the args are missing in
             the input arrays.
@@ -106,8 +116,10 @@ def fss_2d(
         s_dims = set(_dims)
         return s_spatial_dims.intersection(s_dims) == s_spatial_dims
 
-    assert _spatial_dims_exist(fcst.dims), f"missing spatial dims {spatial_dims} in fcst"
-    assert _spatial_dims_exist(obs.dims), f"missing spatial dims {spatial_dims} in obs"
+    if not _spatial_dims_exist(fcst.dims):
+        raise DimensionError(f"missing spatial dims {spatial_dims} in fcst")
+    if not _spatial_dims_exist(obs.dims):
+        raise DimensionError(f"missing spatial dims {spatial_dims} in obs")
 
     # wrapper defined for convenience, since it's too long for a lambda.
     def fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
@@ -193,7 +205,7 @@ def fss_2d_single_field(
         A float representing the accumulated FSS.
 
     Raises:
-        AssertionError: Various assertions are thrown if the input dimensions
+        DimensionError: Various errors are thrown if the input dimensions
             do not conform. e.g. if the window size is larger than the input
             arrays, or if the the spatial dimensions of the input arrays do
             not match.
@@ -254,7 +266,8 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
 
     fcst: npt.NDArray[np.float64]
     obs: npt.NDArray[np.float64]
-    _: KW_ONLY
+    # KW_ONLY in dataclasses only supported for python >=3.10
+    # _: KW_ONLY
     threshold: np.float64
     window: Tuple[int, int]
 
@@ -287,11 +300,15 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
             raise ValueError(f"Invalid FSS compute backend, valid values: {list(FssComputeMethod)}")
 
     def _check_dims(self):
-        assert self.fcst.shape == self.obs.shape, "fcst and obs shapes do not match"
-        assert self.window[0] <= self.fcst.shape[0], "window must be smaller than data shape"
-        assert self.window[1] <= self.fcst.shape[1], "window must be smaller than data shape"
-        assert self.window[0] >= 1, "window dim must be be greater than 0"
-        assert self.window[1] >= 1, "window dim must be be greater than 0"
+        if self.fcst.shape == self.obs.shape:
+            raise DimensionError("fcst and obs shapes do not match")
+        if (
+            self.window[0] <= self.fcst.shape[0]
+            or self.window[1] <= self.fcst.shape[1]
+            or self.window[0] >= 1
+            or self.window[1] >= 1
+        ):
+            raise DimensionError("invalid window size, window must be smaller than input data shape and greater than 0")
 
     def _apply_threshold(self):
         """
