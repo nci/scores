@@ -66,11 +66,12 @@ def fss_2d(
     threshold: np.float64,
     window: Tuple[int, int],
     spatial_dims: Tuple[str, str],
+    zero_padding: bool = False,
     reduce_dims: Optional[Iterable[str]] = None,
     preserve_dims: Optional[Iterable[str]] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> XarrayLike:
+) -> XarrayLike:  # pylint: disable=too-many-locals
     """
     Aggregates the Fractions Skill Score (FSS) over 2-D spatial coordinates specified by
     `spatial_dims`.
@@ -91,6 +92,12 @@ def fss_2d(
         spatial_dims: A pair of dimension names `(x, y)` where `x` and `y` are
             the spatial dimensions to  slide the window along to compute the FSS.
             e.g. `("lat", "lon")`.
+        zero_padding: If set to true, applies a 0-valued window border around the
+            data field before computing the FSS. If set to false (default), it
+            uses the edges (thickness = window size) of the input fields as the border.
+            One can think of it as:
+            - zero_padding = False => inner window
+            - zero_padding = True => outer window with 0 values
         reduce_dims: Optional set of additional dimensions to aggregate over
             (mutually exclusive to `reduce_dims`).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
@@ -127,11 +134,14 @@ def fss_2d(
         raise DimensionError(f"missing spatial dims {spatial_dims} in fcst")
     if not _spatial_dims_exist(obs.dims):
         raise DimensionError(f"missing spatial dims {spatial_dims} in obs")
+    for s_dim in spatial_dims:
+        if obs[s_dim].shape != fcst[s_dim].shape:
+            raise DimensionError(f"spatial dims {spatial_dims} shapes do not match for fcst and obs")
 
     # wrapper defined for convenience, since it's too long for a lambda.
     def fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
         fss_backend = FssBackend.get_compute_backend(compute_method)
-        fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window)
+        fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window, zero_padding=zero_padding)
         return fb_obj.compute_fss_decomposed()
 
     da_fss = xr.apply_ufunc(
@@ -172,6 +182,7 @@ def fss_2d_single_field(
     *,
     threshold: np.float64,
     window: Tuple[int, int],
+    zero_padding: bool = False,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
     """
@@ -222,7 +233,7 @@ def fss_2d_single_field(
         2. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
     """
     fss_backend = FssBackend.get_compute_backend(compute_method)
-    fb_obj = fss_backend(fcst, obs, threshold=threshold, window=window)
+    fb_obj = fss_backend(fcst, obs, threshold=threshold, window=window, zero_padding=zero_padding)
     fss_score = fb_obj.compute_fss()
 
     return fss_score
@@ -277,6 +288,7 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
     # _: KW_ONLY
     threshold: np.float64
     window: Tuple[int, int]
+    zero_padding: bool
 
     # internal buffers
     _obs_pop: npt.NDArray[np.int64] = field(init=False)
@@ -291,7 +303,7 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         self._check_dims()
 
     @staticmethod
-    def get_compute_backend(compute_method: FssComputeMethod):
+    def get_compute_backend(compute_method: FssComputeMethod):  # pragma: no cover
         """
         Returns the appropriate compute backend class constructor.
         """
@@ -416,18 +428,9 @@ class FssNumpy(FssBackend):
 
     compute_method = FssComputeMethod.NUMPY
 
-    def _compute_integral_field(self):
-        # NOTE: no padding introduced in this implementation. Generally
-        # 0-padding is not equivilent to trimming and also includes statistics
-        # with partial windows, which may not be accurate - but will be equally
-        # weighted. I believe that padding is needed in FFT computations by
-        # nature of the algorithms and to avoid spectral issues. However, this
-        # is not strictly necessary for sum area table methods.
+    def _compute_integral_field(self):  # pylint: disable=too-many-locals
         obs_partial_sums = self._obs_pop.cumsum(1).cumsum(0)
         fcst_partial_sums = self._fcst_pop.cumsum(1).cumsum(0)
-        im_h = self.fcst.shape[0] - self.window[0]
-        im_w = self.fcst.shape[1] - self.window[1]
-
         # -----------------------------
         #     A          B
         # tl.0,tl.1    tl.0,br.1
@@ -441,8 +444,29 @@ class FssNumpy(FssBackend):
         #
         # area = D - B - C + A
         # ------------------------------
-        mesh_tl = np.mgrid[0:im_h, 0:im_w]
-        mesh_br = (mesh_tl[0] + self.window[0], mesh_tl[1] + self.window[1])
+
+        if self.zero_padding:
+            # use ceil to avoid 1x1 windows to be coerced to 0x0
+            # w_h = window height, w_w = window width
+            half_w_h = int(np.ceil(self.window[0] / 2))
+            half_w_w = int(np.ceil(self.window[1] / 2))
+            im_h = self.fcst.shape[0]
+            im_w = self.fcst.shape[1]
+
+            # Zero padding is equivilent to clamping the coordinate values at the border
+            # r = rows, c = cols, tl = top-left, br = bottom-right
+            r_tl = np.clip(np.arange(-half_w_h, im_h - half_w_h), 0, im_h - half_w_h - 1)
+            c_tl = np.clip(np.arange(-half_w_w, im_w - half_w_w), 0, im_w - half_w_w - 1)
+            mesh_tl = np.meshgrid(r_tl, c_tl, indexing="ij")
+
+            r_br = np.clip(np.arange(half_w_h, im_h + half_w_h), half_w_h, im_h - 1)
+            c_br = np.clip(np.arange(half_w_w, im_w + half_w_w), half_w_w, im_w - 1)
+            mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
+        else:
+            im_h = self.fcst.shape[0] - self.window[0]
+            im_w = self.fcst.shape[1] - self.window[1]
+            mesh_tl = np.mgrid[0:im_h, 0:im_w]
+            mesh_br = (mesh_tl[0] + self.window[0], mesh_tl[1] + self.window[1])
 
         obs_a = obs_partial_sums[mesh_tl[0], mesh_tl[1]]
         obs_b = obs_partial_sums[mesh_tl[0], mesh_br[1]]

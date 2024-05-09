@@ -25,7 +25,27 @@ def test_fss_2d_single_field(obs_pdf, fcst_pdf, window, threshold, expected):
     # half the meaning of life, in order to maintain some mystery
     seed = 21
     (obs, fcst) = ftd.generate(obs_pdf, fcst_pdf, seed=seed)
-    res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window)
+    res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window, zero_padding=False)
+    np.testing.assert_allclose(res, expected, rtol=1e-5)
+
+
+@pytest.mark.parametrize(
+    ("obs_pdf", "fcst_pdf", "window", "threshold", "expected"),
+    [
+        ((0.0, 1.0), (0.0, 1.0), (10, 10), 0.5, 0.970884),
+        ((0.0, 1.0), (0.0, 2.0), (5, 5), 0.5, 0.90405),
+        ((0.0, 1.0), (1.0, 1.0), (10, 10), 0.25, 0.811622),
+    ],
+)
+def test_fss_2d_single_field_zero_pad(obs_pdf, fcst_pdf, window, threshold, expected):
+    """
+    Integration test to check that fss is generally working for a single field,
+    but with zero padding instead of interior border.
+    """
+    # half the meaning of life, in order to maintain some mystery
+    seed = 21
+    (obs, fcst) = ftd.generate(obs_pdf, fcst_pdf, seed=seed)
+    res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window, zero_padding=True)
     np.testing.assert_allclose(res, expected, rtol=1e-5)
 
 
@@ -68,13 +88,16 @@ def test_fss_2d(window, threshold, reduce_dims, preserve_dims, expected):
 
 
 @pytest.mark.parametrize(("large_obs"), [(True), (False)])
-def test_invalid_dimensions(large_obs):
+def test_invalid_input_dimensions(large_obs):
     """
     Compares a large input with a small input - should raise an error
     """
-    da_fcst = sd.continuous_forecast(large_size=large_obs, lead_days=True)
-    da_obs = sd.continuous_observations(large_size=(not large_obs))
-    with pytest.raises(ValueError):
+    # NOTE: large continuous forecast takes too long, so using continuous_observations
+    # to generate the forecast dataset as well. This test only really cares about the
+    # input spatial dimensions being compatible.
+    da_fcst = sd.continuous_observations(large_size=large_obs)
+    da_obs = sd.continuous_observations(large_size=not large_obs)
+    with pytest.raises(DimensionError):
         fss_2d(
             da_fcst,
             da_obs,
@@ -111,6 +134,9 @@ def test_invalid_window(window):
 
 
 def test_zero_denom_fss():
+    """
+    Force denominator of the input field to be 0.0 to test against divide by zero
+    """
     da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
     da_obs = sd.continuous_observations(large_size=False)
     da_fcst[:] = 0.0
@@ -123,3 +149,14 @@ def test_zero_denom_fss():
         spatial_dims=["lat", "lon"],
     )
     assert res == xr.DataArray(0.0)
+
+
+def test_zero_denom_fss_single_field():
+    """
+    Force denominator of the input field to be 0.0 to test against divide by zero
+    """
+    # half the meaning of life, in order to maintain some mystery
+    seed = 21
+    (obs, fcst) = ftd.generate((0, 0), (0, 0), seed=seed)
+    res = fss_2d_single_field(fcst, obs, threshold=1.0, window=(5, 5))
+    assert res == 0.0
