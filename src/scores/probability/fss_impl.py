@@ -435,23 +435,23 @@ class FssNumpy(FssBackend):
         fcst_partial_sums = self._fcst_pop.cumsum(1).cumsum(0)
 
         if self.zero_padding:
-            # --------------------------
+            # ------------------------------
             # 0-padding
-            # --------------------------
-            #    ................
-            #    ................
-            #    ..+----------+..
-            #    ..|          |..
-            #    ..|          |..
-            #    ..|          |..
-            #    ..+----------+..
-            #    ................
-            #    ................
+            # ------------------------------
+            #    ..................
+            #    ..................
+            #    ..+------------+..
+            #    ..|            |..
+            #    ..|            |..
+            #    ..|            |..
+            #    ..+------------+..
+            #    ..................
+            #    ..................
             #
             # ".." represents 0 padding
             # the rectangle represents the
             # FSS computation region.
-            # --------------------------
+            # ------------------------------
             # use ceil to avoid 1x1 windows to be coerced to 0x0
             # w_h = window height, w_w = window width
             half_w_h = int(np.ceil(self.window[0] / 2))
@@ -469,30 +469,31 @@ class FssNumpy(FssBackend):
             c_br = np.clip(np.arange(half_w_w, im_w + half_w_w), half_w_w, im_w - 1)
             mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
         else:
-            # --------------------------
+            # ------------------------------
             # interior border
-            # --------------------------
+            # ------------------------------
             # data at the border is trim
             # -ed and used for padding
-            #    +-------------+
-            #    | +---------+ |
-            #    | |/////////| |
-            #    | |/////////| |
-            #    | |/////////| |
-            #    | +---------+ |
-            #    +-------------+
+            #    +---------------+
+            #    | +-----------+ |
+            #    | |///////////| |
+            #    | |///////////| |
+            #    | |///////////| |
+            #    | +-----------+ |
+            #    +---------------+
             #
             # "//" represents the effective
             # FSS computation region
-            # --------------------------
+            # ------------------------------
             im_h = self.fcst.shape[0] - self.window[0]
             im_w = self.fcst.shape[1] - self.window[1]
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
             mesh_br = (mesh_tl[0] + self.window[0], mesh_tl[1] + self.window[1])
 
-        # -----------------------------
-        # Sum area table
-        # -----------------------------
+        # ----------------------------------
+        # Computing window area from sum
+        # area table
+        # ----------------------------------
         #     A          B
         # tl.0,tl.1    tl.0,br.1
         #     +----------+
@@ -504,7 +505,7 @@ class FssNumpy(FssBackend):
         #     C          D
         #
         # area = D - B - C + A
-        # ------------------------------
+        # -----------------------------------
 
         obs_a = obs_partial_sums[mesh_tl[0], mesh_tl[1]]
         obs_b = obs_partial_sums[mesh_tl[0], mesh_br[1]]
