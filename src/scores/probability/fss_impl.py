@@ -8,7 +8,7 @@ see: [Fast calculation of the Fractions Skill Score][fss_ref]
 https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
 """
 from abc import ABC, abstractmethod
-from dataclasses import KW_ONLY, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Iterable, Optional, Tuple, TypeAlias
 
