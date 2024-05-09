@@ -37,7 +37,7 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Isotonic Regression (Isotonic Fit, Relability Diagram)
+* - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.isotonic_fit)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)   
@@ -81,7 +81,7 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.quantile_score)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Quantile_Loss.html)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
-* - Relability Diagram, *see Isotonic Regression*
+* - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
   - &mdash;
@@ -136,7 +136,7 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.crps_for_ensemble)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/CRPS_for_Ensembles.html)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
-* - Isotonic Regression (Isotonic Fit, Relability Diagram)
+* - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.isotonic_fit)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)
@@ -164,7 +164,7 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.roc_curve_data)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
-* - Relability Diagram, *see Isotonic Regression*
+* - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
   - &mdash;  
@@ -397,7 +397,7 @@
   -    
   - 
   -
-* - Relability Diagram, *see Isotonic Regression*
+* - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
   - &mdash;   
