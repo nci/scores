@@ -274,7 +274,7 @@
 * -  
     - Peirce's Skill Score (True Skill Statistic, Hannssen and Kuipers' Discriminant)
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.peirce_skill_score)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.peirce_skill_score)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
@@ -306,7 +306,7 @@
 * -  
     - Specificity
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.specificity)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.specificity)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
@@ -314,7 +314,7 @@
 * -  
     - Success Ratio
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.success_ratio)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.success_ratio)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
@@ -322,7 +322,7 @@
 * -  
     - Threat Score (Critical Success Index)
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.threat_score)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.threat_score)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
