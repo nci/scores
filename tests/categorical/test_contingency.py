@@ -184,6 +184,8 @@ def test_categorical_table():
     assert table.sensitivity() == table.hit_rate()
     assert table.false_alarm_rate() == table.probability_of_false_detection()
     assert table.frequency_bias() == table.bias_score()
+    assert table.peirce_skill_score() == table.true_skill_statistic()
+    assert table.hanssen_and_kuipers_discriminant() == table.peirce_skill_score()
 
     peirce_component_a = 9 / (9 + 1)
     peirce_component_b = 1 / (1 + 6)
