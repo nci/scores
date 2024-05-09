@@ -433,19 +433,6 @@ class FssNumpy(FssBackend):
     def _compute_integral_field(self):  # pylint: disable=too-many-locals
         obs_partial_sums = self._obs_pop.cumsum(1).cumsum(0)
         fcst_partial_sums = self._fcst_pop.cumsum(1).cumsum(0)
-        # -----------------------------
-        #     A          B
-        # tl.0,tl.1    tl.0,br.1
-        #     +----------+
-        #     |          |
-        #     |          |
-        #     |          |
-        #     +----------+
-        # br.0,tl.1   br.0,br.1
-        #     C          D
-        #
-        # area = D - B - C + A
-        # ------------------------------
 
         if self.zero_padding:
             # --------------------------
@@ -502,6 +489,22 @@ class FssNumpy(FssBackend):
             im_w = self.fcst.shape[1] - self.window[1]
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
             mesh_br = (mesh_tl[0] + self.window[0], mesh_tl[1] + self.window[1])
+
+        # -----------------------------
+        # Sum area table
+        # -----------------------------
+        #     A          B
+        # tl.0,tl.1    tl.0,br.1
+        #     +----------+
+        #     |          |
+        #     |          |
+        #     |          |
+        #     +----------+
+        # br.0,tl.1   br.0,br.1
+        #     C          D
+        #
+        # area = D - B - C + A
+        # ------------------------------
 
         obs_a = obs_partial_sums[mesh_tl[0], mesh_tl[1]]
         obs_b = obs_partial_sums[mesh_tl[0], mesh_br[1]]
