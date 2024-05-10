@@ -326,7 +326,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Stephenson (2000)](https://journals.ametsoc.org/view/journals/wefo/15/2/1520-0434_2000_015_0221_uotorf_2_0_co_2.xml?tab_body=fulltext-display)
+    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
 * -  
     - Odds Ratio Skill Score (Yule's Q)
   -
@@ -334,7 +334,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Stephenson (2000)](https://journals.ametsoc.org/view/journals/wefo/15/2/1520-0434_2000_015_0221_uotorf_2_0_co_2.xml?tab_body=fulltext-display)
+    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
 * -  
     - Peirce's Skill Score (True Skill Statistic, Hanssen and Kuipers' Discriminant)
   -
@@ -430,7 +430,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Stephenson (2000)](https://journals.ametsoc.org/view/journals/wefo/15/2/1520-0434_2000_015_0221_uotorf_2_0_co_2.xml?tab_body=fulltext-display) 
+    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2) 
 * - FIxed Risk Multicategorical (FIRM)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
