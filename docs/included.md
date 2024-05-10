@@ -224,7 +224,7 @@
   - 
     [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
-    - Cohen's Kappa (Heidke Skill Score))
+    - Cohen's Kappa (Heidke Skill Score)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.cohens_kappa)
   - 
@@ -408,13 +408,13 @@
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
 * -  
-    - True Positive Rate, *see Hit Rate*
+    - True Positive Rate (Hit Rate, Probability of Detection (POD), Sensitivity, Recall)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.true_positive_rate)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
     - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
   -

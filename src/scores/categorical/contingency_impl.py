@@ -93,6 +93,8 @@ class BasicContingencyManager:
     def accuracy(self):
         """
         The proportion of forecasts which are true
+
+        https://www.cawcr.gov.au/projects/verification/#acc
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
@@ -102,6 +104,8 @@ class BasicContingencyManager:
     def frequency_bias(self):
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
+
+        https://www.cawcr.gov.au/projects/verification/#bias
         """
         # Note - bias_score calls this method
         cd = self.counts
@@ -112,8 +116,9 @@ class BasicContingencyManager:
     def bias_score(self):
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#bias
+        """
         return self.frequency_bias()
 
     def hit_rate(self):
@@ -121,6 +126,8 @@ class BasicContingencyManager:
         What proportion of the observed events where correctly forecast?
         Identical to probability_of_detection
         Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#pod
         """
         return self.probability_of_detection()
 
@@ -129,6 +136,8 @@ class BasicContingencyManager:
         What proportion of the observed events where correctly forecast?
         Identical to hit_rate
         Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#pod
         """
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
@@ -136,11 +145,23 @@ class BasicContingencyManager:
 
         return pod
 
+    def true_positive_rate(self):
+        """
+        What proportion of the observed events where correctly forecast?
+        Identical to probability_of_detection
+        Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#pod
+        """
+        return self.probability_of_detection()
+
     def false_alarm_ratio(self):
         """
         What fraction of the predicted "yes" events actually did not occur (i.e.,
         were false alarms)?
         Range: 0 to 1. Perfect score: 0.
+
+        https://www.cawcr.gov.au/projects/verification/#FAR
         """
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -152,6 +173,8 @@ class BasicContingencyManager:
         What fraction of the non-events were incorrectly predicted?
         Identical to probability_of_false_detection
         Range: 0 to 1.  Perfect score: 0.
+
+        https://www.cawcr.gov.au/projects/verification/#pofd
         """
         # Note - probability of false detection calls this function
         cd = self.counts
@@ -164,6 +187,8 @@ class BasicContingencyManager:
         What fraction of the non-events were incorrectly predicted?
         Identical to false_alarm_rate
         Range: 0 to 1.  Perfect score: 0.
+
+        https://www.cawcr.gov.au/projects/verification/#pofd
         """
 
         return self.false_alarm_rate()
@@ -172,6 +197,8 @@ class BasicContingencyManager:
         """
         What proportion of the forecast events actually eventuated?
         Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#sr
         """
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -183,6 +210,8 @@ class BasicContingencyManager:
         How well did the forecast "yes" events correspond to the observed "yes" events?
         Identical to critical_success_index
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#csi
         """
         # Note - critical success index just calls this method
 
@@ -192,11 +221,14 @@ class BasicContingencyManager:
 
     def critical_success_index(self):
         """
+        Often known as CSI.
+
         How well did the forecast "yes" events correspond to the observed "yes" events?
         Identical to threat_score
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#csi
+        """
         return self.threat_score()
 
     def peirce_skill_score(self):
@@ -204,8 +236,9 @@ class BasicContingencyManager:
         Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#HK
+        """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
         component_b = cd["fn_count"] / (cd["fn_count"] + cd["tn_count"])
@@ -217,8 +250,9 @@ class BasicContingencyManager:
         Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#HK
+        """
         return self.peirce_skill_score()
 
     def hanssen_and_kuipers_discriminant(self):
@@ -226,15 +260,15 @@ class BasicContingencyManager:
         Identical to Peirce's skill score and to true skill statistic
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#HK
+        """
         return self.peirce_skill_score()
 
     def sensitivity(self):
         """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
-
         return self.probability_of_detection()
 
     def specificity(self):

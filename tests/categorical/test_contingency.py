@@ -184,9 +184,10 @@ def test_categorical_table():
     assert table.odds_ratio() == (9 / (9 + 1)) / (1 - (9 / (9 + 1))) / ((2 / (6 + 2)) / (1 - (2 / (6 + 2))))
     assert table.odds_ratio_skill_score() == (9 * 6 - 1 * 2) / (9 * 6 + 1 * 2)
 
-    # These methods are redirects to eachother
+    # These methods are redirects to each other
     assert table.critical_success_index() == table.threat_score()
     assert table.hit_rate() == table.probability_of_detection()
+    assert table.true_positive_rate() == table.probability_of_detection()
     assert table.sensitivity() == table.hit_rate()
     assert table.false_alarm_rate() == table.probability_of_false_detection()
     assert table.frequency_bias() == table.bias_score()
