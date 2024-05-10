@@ -607,13 +607,12 @@ def test_gather_dimensions_score_specific_fcst_dims_exceptions(
 @pytest.mark.parametrize(
     ("fcst_dims", "obs_dims", "weights_dims", "reduce_dims", "preserve_dims", "score_specific_fcst_dims", "expected"),
     [
-
         (
             utils_test_data.DA_B.dims,
             utils_test_data.DA_R.dims,
             utils_test_data.DA_G.dims,
             None,
-            None, 
+            None,
             "blue",
             {"red", "green"},
         ),
@@ -658,6 +657,48 @@ def test_gather_dimensions_score_specific_fcst_dims_examples(
         score_specific_fcst_dims=score_specific_fcst_dims,
     )
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("fcst_dims", "obs_dims", "weights_dims", "reduce_dims", "preserve_dims", "score_specific_fcst_dims", "expected"),
+    [
+
+        (
+            utils_test_data.DA_B.dims,
+            utils_test_data.DA_R.dims,
+            utils_test_data.DA_G.dims,
+            "all",
+            None,
+            None,
+            {"blue", "red", "green"},
+        ),
+        (
+            utils_test_data.DA_B.dims, 
+            utils_test_data.DA_R.dims, 
+            utils_test_data.DA_G.dims, 
+            None, 
+            "all", 
+            None, 
+            set([])
+        ),
+    ]
+)
+def test_gather_dimensions_weights_no_score_specific_examples(
+    fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected
+):
+    """
+    Test that `gather_dimensions` gives outputs as expected.
+    """
+
+    result = gd(
+        fcst_dims,
+        obs_dims,
+        weights_dims=weights_dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        score_specific_fcst_dims=score_specific_fcst_dims,
+    )
+    assert result == expected    
 
 
 def test_tmp_coord_name_namecollision():

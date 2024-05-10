@@ -64,7 +64,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
         weights: Weights for calculating a weighted mean of scores
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        special_fcst_dims: Dimension(s) in `fcst` that are reduced to calculate individual scores.
+        score_specific_fcst_dims: Dimension(s) in `fcst` that are reduced to calculate individual scores.
             Must not appear as a dimension in `obs`, `weights`, `reduce_dims` or `preserve_dims`.
             e.g. the ensemble member dimension if calculating CRPS for ensembles, or the
             threshold dimension of calculating CRPS for CDFs.
@@ -74,9 +74,9 @@ def gather_dimensions(  # pylint: disable=too-many-branches
 
     Raises:
         ValueError: when `preserve_dims and `reduce_dims` are both specified.
-        ValueError: when `special_fcst_dims` is not a subset of `fcst.dims`.
+        ValueError: when `score_specific_fcst_dims` is not a subset of `fcst.dims`.
         ValueError: when `obs.dims`, `weights.dims`, `reduce_dims` or `preserve_dims`
-            contains elements from `special_fcst_dims`.
+            contains elements from `score_specific_fcst_dims`.
         ValueError: when `preserve_dims and `reduce_dims` contain elements not among dimensions
             of the data (`fcst`, `obs` or `weights`).
 
