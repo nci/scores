@@ -94,7 +94,7 @@ class BasicContingencyManager:
         """
         The proportion of forecasts which are true
 
-        https://www.cawcr.gov.au/projects/verification/#acc
+        https://www.cawcr.gov.au/projects/verification/#ACC
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
@@ -105,7 +105,7 @@ class BasicContingencyManager:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
-        https://www.cawcr.gov.au/projects/verification/#bias
+        https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         # Note - bias_score calls this method
         cd = self.counts
@@ -117,7 +117,7 @@ class BasicContingencyManager:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
-        https://www.cawcr.gov.au/projects/verification/#bias
+        https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         return self.frequency_bias()
 
@@ -127,7 +127,7 @@ class BasicContingencyManager:
         Identical to probability_of_detection
         Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#pod
+        https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
@@ -137,7 +137,7 @@ class BasicContingencyManager:
         Identical to hit_rate
         Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#pod
+        https://www.cawcr.gov.au/projects/verification/#POD
         """
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
@@ -151,7 +151,7 @@ class BasicContingencyManager:
         Identical to probability_of_detection
         Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#pod
+        https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
@@ -174,7 +174,7 @@ class BasicContingencyManager:
         Identical to probability_of_false_detection
         Range: 0 to 1.  Perfect score: 0.
 
-        https://www.cawcr.gov.au/projects/verification/#pofd
+        https://www.cawcr.gov.au/projects/verification/#POFD
         """
         # Note - probability of false detection calls this function
         cd = self.counts
@@ -188,7 +188,7 @@ class BasicContingencyManager:
         Identical to false_alarm_rate
         Range: 0 to 1.  Perfect score: 0.
 
-        https://www.cawcr.gov.au/projects/verification/#pofd
+        https://www.cawcr.gov.au/projects/verification/#POFD
         """
 
         return self.false_alarm_rate()
@@ -198,7 +198,7 @@ class BasicContingencyManager:
         What proportion of the forecast events actually eventuated?
         Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#sr
+        https://www.cawcr.gov.au/projects/verification/#SR
         """
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -211,7 +211,7 @@ class BasicContingencyManager:
         Identical to critical_success_index
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#csi
+        https://www.cawcr.gov.au/projects/verification/#CSI
         """
         # Note - critical success index just calls this method
 
@@ -227,7 +227,7 @@ class BasicContingencyManager:
         Identical to threat_score
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#csi
+        https://www.cawcr.gov.au/projects/verification/#CSI
         """
         return self.threat_score()
 
