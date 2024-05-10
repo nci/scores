@@ -28,9 +28,11 @@ A new score or metric should be developed on a separate feature branch, rebased 
  - 100% unit test coverage
  - A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data
  - API documentation (docstrings) using [Napoleon (google)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) style, making sure to clearly explain the use of the metric
- - A reference to a peer-reviewed paper or other academic reference (e.g. a textbook), added to the API documentation.
- - For metrics which do not have a paper or academic reference, an online source or reference should be provided
- - Ideally, references should be open-access. It is reasonable to add an additional open-access link for further reading where relevant.
+ - A reference should be added to the API documentation.
+   - If there is an authoritative reference (e.g. an academic article that defines the metric, or the specific implementation, being used), please cite that reference.
+   - When there is an authoritative reference, please cite it even if it cannot be accessed without payment. In these instances, if there is another suitable reference that is open and available without payment, cite that as well.
+   - When there is no authoritative reference, please cite a reference that provides a clear description of the function. Where possible, please cite open references that can be accessed without payment.
+   - When available, please include DOIs.
  - Metrics which are still under development or which have not yet had an academic publication will be placed in a holding area within the API until the method has been properly published and peer reviewed (i.e. `scores.emerging`). The 'emerging' area of the API is subject to rapid change, still of sufficient community interest to include, similar to a 'preprint' of a score or metric.
 
 All merge requests should comply with the coding standards outlined in this document. Merge requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within 'scores'.
