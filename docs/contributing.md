@@ -12,15 +12,15 @@ Types of contributions include bug reports, merge requests, feature requests, an
 3. Increased support for machine learning library integration
 4. Additional notebooks exploring complex use cases in depth
 
-## Bug reports and feature requests
+## Bug Reports and Feature Requests
 
 Please submit bug requests and feature requests through Github as issues. No specific template or approach is requested at this stage. This may evolve, but is currently an open-ended approach.
 
-## Handling security concerns
+## Handling Security Concerns
 
 Please see the information provided in [SECURITY.md](SECURITY.md)
 
-## Development process for a new score or metric
+## Development Process for a New Score or Metric
 
 A new score or metric should be developed on a separate feature branch, rebased against the main branch. Each merge request should include:
 
@@ -36,11 +36,11 @@ All merge requests should comply with the coding standards outlined in this docu
 
 A github ticket should be created explaining the metric which is being implemented and why it is useful.
 
-## Development process for a correction or improvement
+## Development Process for a Correction or Improvement
 
 Merge requests addressing documentation changes, tutorial improvements, corrections to code or improvements (e.g. performance enhancements, improvements to error messages, greater flexibility) require only a github ticket explaining the goals of the merge request. Merge requests will still undergo both a technical code review and a scientific code review to ensure that the merge request maintains or improves the coding and scientific integrity while achieving the goals set out in the ticket. These are outlined further below.
 
-## Setting up for development
+## Setting up for Development
 
 There are many ways to set up a development environment, most of which should be okay to adopt. This document sets out just one possible way. Conda based virtual environments are also suitable.
 
@@ -91,11 +91,11 @@ To automate linter and fixer checks this project uses `pre-commit` which is set 
 pre-commit install -t pre-commit -t pre-push
 ```
 
-## Coding practices
+### Coding Practices
 
 Pylint and black should be used at all times to ensure a consistent approach to coding. Isort should be used for the ordering of import statements. All merge requests will be checked prior to acceptance. The project will include configuration files which may be used to capture any overrides to convention that may be adopted.
 
-## Branching and merge requests
+### Branching and Merge Requests
 
 Scores follows the [ git-flow ](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) branching model. This can be summarised as follows:
 
@@ -116,7 +116,7 @@ For most developers, this can be simplified to:
  - Create a merge request for your feature when you're ready.
 
 
-## Review processes
+## Review Processes
 
 Contributions of code through merge requests are welcomed. Prior to developing a merge request, it is a good idea to create an issue in the tracker to capture what the merge request is trying to achieve, any pertinent details, and how it aligns to the roadmap.
 
@@ -126,7 +126,7 @@ The code review process does not differ between contributions from the core team
 
 Code will also be reviewed for test coverage, stylistic conventions, thoroughness and correctness by a team of software specialists.
 
-### Scope of a code review
+### Scope of a Code Review
 
 A code review is not responsible for scientific correctness; that will be handled by the science review. A code review is responsible for checking the following:
 
@@ -138,7 +138,7 @@ A code review is not responsible for scientific correctness; that will be handle
 6. Code does not do anything unexpected or beyond the scope of the function
 7. Any additional dependencies are justified and do not result in bloat
 
-### Scope of a science review
+### Scope of a Science Review
 
 A science review should answer the following questions:
 
