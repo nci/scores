@@ -97,7 +97,7 @@ Pylint and black should be used at all times to ensure a consistent approach to 
 
 ### Branching and merge requests
 
-Scores follows the [ git-flow ](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) branching model. This can be summarised as follows:
+`scores` follows the [ git-flow ](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) branching model. This can be summarised as follows:
 
 - Create a github ticket to describe the goals of your change or feature
 - Check out a feature new branch for your work, branching from the 'develop' branch
