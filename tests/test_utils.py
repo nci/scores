@@ -662,7 +662,6 @@ def test_gather_dimensions_score_specific_fcst_dims_examples(
 @pytest.mark.parametrize(
     ("fcst_dims", "obs_dims", "weights_dims", "reduce_dims", "preserve_dims", "score_specific_fcst_dims", "expected"),
     [
-
         (
             utils_test_data.DA_B.dims,
             utils_test_data.DA_R.dims,
@@ -672,16 +671,8 @@ def test_gather_dimensions_score_specific_fcst_dims_examples(
             None,
             {"blue", "red", "green"},
         ),
-        (
-            utils_test_data.DA_B.dims, 
-            utils_test_data.DA_R.dims, 
-            utils_test_data.DA_G.dims, 
-            None, 
-            "all", 
-            None, 
-            set([])
-        ),
-    ]
+        (utils_test_data.DA_B.dims, utils_test_data.DA_R.dims, utils_test_data.DA_G.dims, None, "all", None, set([])),
+    ],
 )
 def test_gather_dimensions_weights_no_score_specific_examples(
     fcst_dims, obs_dims, weights_dims, reduce_dims, preserve_dims, score_specific_fcst_dims, expected
@@ -698,7 +689,7 @@ def test_gather_dimensions_weights_no_score_specific_examples(
         preserve_dims=preserve_dims,
         score_specific_fcst_dims=score_specific_fcst_dims,
     )
-    assert result == expected    
+    assert result == expected
 
 
 def test_tmp_coord_name_namecollision():
