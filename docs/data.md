@@ -14,7 +14,7 @@ The Bureau of Meteorology provides global model data from the ACCESS numerical w
 Global model data is also available from the NOAA Global Forecast System (GFS). See https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast for more information.
 
 ## CliMetLab
-ECMWF has developed the CliMetLab python package to simplify access a large range of climate and meteorological datasets. See https://climetlab.readthedocs.io/en/latest/
+ECMWF has developed the CliMetLab python package to simplify access to a large range of climate and meteorological datasets. See https://climetlab.readthedocs.io/en/latest/
 
 ## NOAA ISD dataset
 The NOAA Integrated Surface Database provides hourly point-based (aka in-situ) data globally and is a good starting point for understanding how to work with point-based data. Point-based observations are shared routinely between countries for the purposes of weather modelling.
