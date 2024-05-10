@@ -237,6 +237,14 @@ class BasicContingencyManager:
 
         return self.probability_of_detection()
 
+    def specificity(self):
+        """
+        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        """
+        cd = self.counts
+        s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
+        return s
+
     def recall(self):
         """
         Identical to probability of detection.
@@ -252,14 +260,6 @@ class BasicContingencyManager:
         https://en.wikipedia.org/wiki/Precision_and_recall
         """
         return self.success_ratio()
-
-    def specificity(self):
-        """
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-        """
-        cd = self.counts
-        s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s
 
     def f1_score(self):
         """
