@@ -350,7 +350,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall)
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
 * -  
     - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity, Recall)
   -
@@ -374,7 +374,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall)
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
