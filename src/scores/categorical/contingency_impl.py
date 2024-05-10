@@ -136,6 +136,17 @@ class BasicContingencyManager:
 
         return pod
 
+    def false_alarm_ratio(self):
+        """
+        What fraction of the predicted "yes" events actually did not occur (i.e.,
+        were false alarms)?
+        Range: 0 to 1. Perfect score: 0.
+        """
+        cd = self.counts
+        far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
+
+        return far
+
     def false_alarm_rate(self):
         """
         What fraction of the non-events were incorrectly predicted?
@@ -226,6 +237,22 @@ class BasicContingencyManager:
 
         return self.probability_of_detection()
 
+    def recall(self):
+        """
+        Identical to probability of detection.
+
+        https://en.wikipedia.org/wiki/Precision_and_recall
+        """
+        return self.probability_of_detection()
+
+    def precision(self):
+        """
+        Identical to the Success Ratio.
+
+        https://en.wikipedia.org/wiki/Precision_and_recall
+        """
+        return self.success_ratio()
+
     def specificity(self):
         """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
@@ -233,6 +260,126 @@ class BasicContingencyManager:
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
         return s
+
+    def f1_score(self):
+        """
+        Calculates the F1 score.
+        https://en.wikipedia.org/wiki/F-score
+        """
+        cd = self.counts
+        f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
+        return f1
+
+    def equitable_threat_score(self):
+        """
+        Calculates the Equitable threat score (also known as the Gilbert skill score).
+
+        How well did the forecast "yes" events correspond to the observed "yes"
+        events (accounting for hits due to chance)?
+
+        Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+
+        Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
+        Equitability revisited: Why the “equitable threat score” is not equitable.
+        Weather and Forecasting, 25(2), pp.710-726.
+        """
+        cd = self.counts
+        hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
+        ets = (cd["tp_count"] - hits_random) / (cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random)
+
+        return ets
+
+    def gilberts_skill_score(self):
+        """
+        Calculates the Gilbert skill score (also known as the Equitable threat score).
+
+        How well did the forecast "yes" events correspond to the observed "yes"
+        events (accounting for hits due to chance)?
+
+        Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+
+        Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
+        Equitability revisited: Why the “equitable threat score” is not equitable.
+        Weather and Forecasting, 25(2), pp.710-726.
+        """
+        return self.equitable_threat_score()
+
+    def heidke_skill_score(self):
+        """
+        Calculates the Heidke skill score (also known as Cohen's kappa).
+
+        What was the accuracy of the forecast relative to that of random chance?
+
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        https://en.wikipedia.org/wiki/Cohen%27s_kappa
+        """
+        cd = self.counts
+        exp_correct = (1 / cd["total_count"]) * (
+            (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"])
+            + ((cd["tn_count"] + cd["fn_count"]) * (cd["tn_count"] + cd["fp_count"]))
+        )
+        hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
+        return hss
+
+    def cohens_kappa(self):
+        """
+        Calculates the Cohen's kappa (also known as the Heidkey skill score).
+
+        What was the accuracy of the forecast relative to that of random chance?
+
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        https://en.wikipedia.org/wiki/Cohen%27s_kappa
+        """
+        return self.heidke_skill_score()
+
+    def odds_ratio(self):
+        """
+        Calculates the odds ratio
+
+        What is the ratio of the odds of a "yes" forecast being correct, to the odds of
+        a "yes" forecast being wrong?
+
+        Odds ratio - Range: 0 to ∞, 1 indicates no skill. Perfect score: ∞.
+
+        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+        Weather and Forecasting, 15(2), pp.221-232.
+        """
+        odds_r = (self.probability_of_detection() / (1 - self.probability_of_detection())) / (
+            self.probability_of_false_detection() / (1 - self.probability_of_false_detection())
+        )
+        return odds_r
+
+    def odds_ratio_skill_score(self):
+        """
+        Calculates the odds ratio skill score (also known as Yule's Q).
+
+        What was the improvement of the forecast over random chance?
+
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+        Weather and Forecasting, 15(2), pp.221-232.
+        """
+        cd = self.counts
+        orss = (cd["tp_count"] * cd["tn_count"] - cd["fn_count"] * cd["fp_count"]) / (
+            cd["tp_count"] * cd["tn_count"] + cd["fn_count"] * cd["fp_count"]
+        )
+        return orss
+
+    def yules_q(self):
+        """
+        Calculates the Yule's Q (also known as the odds ratio skill score).
+
+        What was the improvement of the forecast over random chance?
+
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+        Weather and Forecasting, 15(2), pp.221-232.
+        """
+        return self.odds_ratio_skill_score()
 
 
 class BinaryContingencyManager(BasicContingencyManager):
