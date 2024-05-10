@@ -256,13 +256,13 @@
   - 
     [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
-    - Hannssen and Kuipers' Discriminant, *see Peirce's Skill Score*
+    - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
     - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity)
   -
@@ -272,7 +272,7 @@
   - 
     [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
-    - Peirce's Skill Score (True Skill Statistic, Hannssen and Kuipers' Discriminant)
+    - Peirce's Skill Score (True Skill Statistic, Hanssen and Kuipers' Discriminant)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.peirce_skill_score)
   - 
@@ -336,13 +336,13 @@
   - 
     &mdash;
 * -  
-    - True Skill Statistic, *see Peirce's Skill Score*
+    - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.true_skill_statistic)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash; 
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK) 
 * - FIxed Risk Multicategorical (FIRM)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)

@@ -201,6 +201,24 @@ class BasicContingencyManager:
         skill_score = component_a - component_b
         return skill_score
 
+    def true_skill_statistic(self):
+        """
+        Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
+        How well did the forecast separate the "yes" events from the "no" events?
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+        """
+
+        return self.peirce_skill_score()
+
+    def hanssen_and_kuipers_discriminant(self):
+        """
+        Identical to Peirce's skill score and to true skill statistic
+        How well did the forecast separate the "yes" events from the "no" events?
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+        """
+
+        return self.peirce_skill_score()
+
     def sensitivity(self):
         """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
