@@ -11,33 +11,33 @@ from tests.probabilty import fss_test_data as ftd
 
 
 @pytest.mark.parametrize(
-    ("obs_pdf", "fcst_pdf", "window", "threshold", "expected"),
+    ("obs_pdf", "fcst_pdf", "window_size", "event_threshold", "expected"),
     [
         ((0.0, 1.0), (0.0, 1.0), (10, 10), 0.5, 0.974078),
         ((0.0, 1.0), (0.0, 2.0), (5, 5), 0.5, 0.888756),
         ((0.0, 1.0), (1.0, 1.0), (10, 10), 0.25, 0.812008),
     ],
 )
-def test_fss_2d_single_field(obs_pdf, fcst_pdf, window, threshold, expected):
+def test_fss_2d_single_field(obs_pdf, fcst_pdf, window_size, event_threshold, expected):
     """
     Integration test to check that fss is generally working for a single field
     """
     # half the meaning of life, in order to maintain some mystery
     seed = 21
     (obs, fcst) = ftd.generate(obs_pdf, fcst_pdf, seed=seed)
-    res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window, zero_padding=False)
+    res = fss_2d_single_field(fcst, obs, event_threshold=event_threshold, window_size=window_size, zero_padding=False)
     np.testing.assert_allclose(res, expected, rtol=1e-5)
 
 
 @pytest.mark.parametrize(
-    ("obs_pdf", "fcst_pdf", "window", "threshold", "expected"),
+    ("obs_pdf", "fcst_pdf", "window_size", "event_threshold", "expected"),
     [
         ((0.0, 1.0), (0.0, 1.0), (10, 10), 0.5, 0.970884),
         ((0.0, 1.0), (0.0, 2.0), (5, 5), 0.5, 0.90405),
         ((0.0, 1.0), (1.0, 1.0), (10, 10), 0.25, 0.811622),
     ],
 )
-def test_fss_2d_single_field_zero_pad(obs_pdf, fcst_pdf, window, threshold, expected):
+def test_fss_2d_single_field_zero_pad(obs_pdf, fcst_pdf, window_size, event_threshold, expected):
     """
     Integration test to check that fss is generally working for a single field,
     but with zero padding instead of interior border.
@@ -45,12 +45,12 @@ def test_fss_2d_single_field_zero_pad(obs_pdf, fcst_pdf, window, threshold, expe
     # half the meaning of life, in order to maintain some mystery
     seed = 21
     (obs, fcst) = ftd.generate(obs_pdf, fcst_pdf, seed=seed)
-    res = fss_2d_single_field(fcst, obs, threshold=threshold, window=window, zero_padding=True)
+    res = fss_2d_single_field(fcst, obs, event_threshold=event_threshold, window_size=window_size, zero_padding=True)
     np.testing.assert_allclose(res, expected, rtol=1e-5)
 
 
 @pytest.mark.parametrize(
-    ("window", "threshold", "reduce_dims", "preserve_dims", "expected"),
+    ("window_size", "event_threshold", "reduce_dims", "preserve_dims", "expected"),
     [
         ((2, 2), 2.0, None, None, xr.DataArray(0.96813032)),
         ((2, 2), 8.0, None, None, xr.DataArray(0.78144748)),
@@ -67,9 +67,9 @@ def test_fss_2d_single_field_zero_pad(obs_pdf, fcst_pdf, window, threshold, expe
         ),  # output_dims: time x lead_time
     ],
 )
-def test_fss_2d(window, threshold, reduce_dims, preserve_dims, expected):
+def test_fss_2d(window_size, event_threshold, reduce_dims, preserve_dims, expected):
     """
-    Tests various combinations of window/threshold/preserve_dims/reduce_dims
+    Tests various combinations of window_size/event_threshold/preserve_dims/reduce_dims
 
     Note: does not include error/assertion testing this will be done separately.
     """
@@ -78,8 +78,8 @@ def test_fss_2d(window, threshold, reduce_dims, preserve_dims, expected):
     res = fss_2d(
         da_fcst,
         da_obs,
-        threshold=threshold,
-        window=window,
+        event_threshold=event_threshold,
+        window_size=window_size,
         spatial_dims=["lat", "lon"],
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
@@ -101,8 +101,8 @@ def test_invalid_input_dimensions(large_obs):
         fss_2d(
             da_fcst,
             da_obs,
-            threshold=5.0,
-            window=(5, 5),
+            event_threshold=5.0,
+            window_size=(5, 5),
             spatial_dims=["lat", "lon"],
         )
 
@@ -110,16 +110,16 @@ def test_invalid_input_dimensions(large_obs):
         fss_2d(
             da_fcst,
             da_obs,
-            threshold=5.0,
-            window=(5, 5),
+            event_threshold=5.0,
+            window_size=(5, 5),
             spatial_dims=["lat"],
         )
 
 
-@pytest.mark.parametrize(("window"), [(50, 10), (-1, 5), (5, -1), (-1, -1), (10, 50), (50, 50)])
-def test_invalid_window(window):
+@pytest.mark.parametrize(("window_size"), [(50, 10), (-1, 5), (5, -1), (-1, -1), (10, 50), (50, 50)])
+def test_invalid_window_size(window_size):
     """
-    Check for various invalid window sizes (note: assumes small dataset is used)
+    Check for various invalid window_size sizes (note: assumes small dataset is used)
     """
     da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
     da_obs = sd.continuous_observations(large_size=False)
@@ -127,8 +127,8 @@ def test_invalid_window(window):
         fss_2d(
             da_fcst,
             da_obs,
-            threshold=5.0,
-            window=window,
+            event_threshold=5.0,
+            window_size=window_size,
             spatial_dims=["lat", "lon"],
         )
 
@@ -144,8 +144,8 @@ def test_zero_denom_fss():
     res = fss_2d(
         da_fcst,
         da_obs,
-        threshold=5.0,
-        window=(5, 5),
+        event_threshold=5.0,
+        window_size=(5, 5),
         spatial_dims=["lat", "lon"],
     )
     assert res == xr.DataArray(0.0)
@@ -158,5 +158,5 @@ def test_zero_denom_fss_single_field():
     # half the meaning of life, in order to maintain some mystery
     seed = 21
     (obs, fcst) = ftd.generate((0, 0), (0, 0), seed=seed)
-    res = fss_2d_single_field(fcst, obs, threshold=1.0, window=(5, 5))
+    res = fss_2d_single_field(fcst, obs, event_threshold=1.0, window_size=(5, 5))
     assert res == 0.0

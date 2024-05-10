@@ -7,6 +7,7 @@ see: [Fast calculation of the Fractions Skill Score][fss_ref]
 [fss_ref]:
 https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
 """
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
@@ -22,7 +23,7 @@ from scores.typing import XarrayLike
 # Note: soft keyword `type` only support from >=3.10
 # "tuple" of 64 bit floats
 f8x3 = np.dtype("f8, f8, f8")
-# Note: `TypeAlias` on variables for python <=3.9
+# Note: `TypeAlias` on variables for python <3.10
 if TYPE_CHECKING:  # pragma: no cover
     FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
 else:  # pragma: no cover
@@ -36,6 +37,14 @@ class DimensionError(ValueError):
 
     # better to be explicit because python doesn't have braces for scoping its
     # control flow
+    pass  # pylint: disable=unnecessary-pass
+
+
+class DimensionWarning(UserWarning):
+    """
+    Wrapper for warning against invalid dimension inputs, but do not affect functionality.
+    """
+
     pass  # pylint: disable=unnecessary-pass
 
 
@@ -63,8 +72,8 @@ def fss_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
-    threshold: np.float64,
-    window: Tuple[int, int],
+    event_threshold: np.float64,
+    window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
     zero_padding: bool = False,
     reduce_dims: Optional[Iterable[str]] = None,
@@ -73,8 +82,8 @@ def fss_2d(
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
 ) -> XarrayLike:  # pylint: disable=too-many-locals
     """
-    Aggregates the Fractions Skill Score (FSS) over 2-D spatial coordinates specified by
-    `spatial_dims`.
+    Uses `fss_2d_single_field` to compute the fraction skills score for each 2D spatial
+    field in the DataArray and then aggregates them over the output of `gather_dimensions`.
 
     Optionally aggregates the output along other dimensions if `reduce_dims` or
     (mutually exclusive) `preserve_dims` are specified.
@@ -84,25 +93,25 @@ def fss_2d(
     Args:
         fcst: An array of forecasts
         obs: An array of observations (same spatial shape as `fcst`)
-        threshold: A scalar to compare `fcst` and `obs` fields to generate a
+        event_threshold: A scalar to compare `fcst` and `obs` fields to generate a
             binary "event" field.
-        window: A pair of positive integers `(height, width)` of the sliding
-            window; the window dimensions must be greater than 0 and fit within
+        window_size: A pair of positive integers `(height, width)` of the sliding
+            window_size; the window size must be greater than 0 and fit within
             the shape of `obs` and `fcst`.
         spatial_dims: A pair of dimension names `(x, y)` where `x` and `y` are
-            the spatial dimensions to  slide the window along to compute the FSS.
+            the spatial dimensions to slide the window along to compute the FSS.
             e.g. `("lat", "lon")`.
         zero_padding: If set to true, applies a 0-valued window border around the
             data field before computing the FSS. If set to false (default), it
             uses the edges (thickness = window size) of the input fields as the border.
             One can think of it as:
-            - zero_padding = False => inner window
-            - zero_padding = True => outer window with 0 values
+            - zero_padding = False => inner border
+            - zero_padding = True => outer border with 0 values
         reduce_dims: Optional set of additional dimensions to aggregate over
-            (mutually exclusive to `reduce_dims`).
+            (mutually exclusive to `preserve_dims`).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
             are reduced); By default all dimensions except `spatial_dims`
-            are preserved (mutually exclusive to `preserve_dims`).
+            are preserved (mutually exclusive to `reduce_dims`).
         compute_method: currently only supports `FssComputeMethod.NUMPY`
             see: :py:class:`FssComputeMethod`
         dask: See xarray.apply_ufunc for options
@@ -136,18 +145,22 @@ def fss_2d(
         raise DimensionError(f"missing spatial dims {spatial_dims} in obs")
     for s_dim in spatial_dims:
         if obs[s_dim].shape != fcst[s_dim].shape:
-            raise DimensionError(f"spatial dims {spatial_dims} shapes do not match for fcst and obs")
+            raise DimensionError(
+                f"The spatial extent of fcst and obs do not match for the following spatial dimensions: {spatial_dims}."
+            )
 
     # wrapper defined for convenience, since it's too long for a lambda.
-    def fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
+    def _fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
         fss_backend = FssBackend.get_compute_backend(compute_method)
-        fb_obj = fss_backend(da_fcst, da_obs, threshold=threshold, window=window, zero_padding=zero_padding)
+        fb_obj = fss_backend(
+            da_fcst, da_obs, event_threshold=event_threshold, window_size=window_size, zero_padding=zero_padding
+        )
         return fb_obj.compute_fss_decomposed()
 
     # apply ufunc to get the decomposed fractions skill score aggregated over
     # the 2D spatial dims.
     da_fss = xr.apply_ufunc(
-        fss_wrapper,
+        _fss_wrapper,
         fcst,
         obs,
         input_core_dims=[list(spatial_dims), list(spatial_dims)],
@@ -156,21 +169,32 @@ def fss_2d(
     )
 
     # gather additional dimensions to aggregate over.
-    dims = utils.gather_dimensions2(
-        fcst,
-        obs,
-        weights=None,  # weighted score currently not supported
+    dims = utils.gather_dimensions(
+        fcst.dims,
+        obs.dims,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
-    dims_reduce = set(dims) - set(spatial_dims)
+
+    if not (spatial_dims[0] in dims and spatial_dims[1] in dims):
+        # at least one spatial dim is trying to be preserved.
+        warnings.warn(
+            f"At least one of the provided spatial dims = {spatial_dims} is attempting "
+            "to be preserved. Please make sure `preserve_dims` and `reduce_dims` "
+            "are configured to not preserve `spatial_dims`, in order to suppress this "
+            "warning.",
+            DimensionWarning,
+        )
+
+    # trim any spatial dimensions as they shouldn't appear.
+    dims = set(dims) - set(spatial_dims)
 
     # apply ufunc again but this time to compute the fss, reducing
     # any non-spatial dimensions.
     da_fss = xr.apply_ufunc(
         _aggregate_fss_decomposed,
         da_fss,
-        input_core_dims=[list(dims_reduce)],
+        input_core_dims=[list(dims)],
         vectorize=True,
         dask=dask,  # pragma: no cover
     )
@@ -182,8 +206,8 @@ def fss_2d_single_field(
     fcst: npt.NDArray[np.float64],
     obs: npt.NDArray[np.float64],
     *,
-    threshold: np.float64,
-    window: Tuple[int, int],
+    event_threshold: np.float64,
+    window_size: Tuple[int, int],
     zero_padding: bool = False,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
@@ -192,7 +216,7 @@ def fss_2d_single_field(
     2-D field.
 
     The FSS is computed by counting the squared sum of forecast and observation
-    events in a given window. This is repeated over all possible window
+    events in a given window size. This is repeated over all possible window
     positions that can fit in the input arrays. A common method to do this is
     via a sliding window.
 
@@ -208,14 +232,14 @@ def fss_2d_single_field(
 
     The caller is responsible for making sure the input fields are in the 2-D
     spatial domain. (Although it should work for any `np.array` as long as it's
-    2D, and `window` is appropriately sized.)
+    2D, and `window_size` is appropriately sized.)
 
     Args:
         fcst: An array of forecasts
         obs: An array of observations (same spatial shape as `fcst`)
-        threshold: A scalar to compare `fcst` and `obs` fields to generate a
+        event_threshold: A scalar to compare `fcst` and `obs` fields to generate a
             binary "event" field.
-        window: A pair of positive integers `(height, width)` of the sliding
+        window_size: A pair of positive integers `(height, width)` of the sliding
             window; the window dimensions must be greater than 0 and fit within
             the shape of `obs` and `fcst`.
         compute_method: currently only supports `FssComputeMethod.NUMPY`
@@ -235,7 +259,7 @@ def fss_2d_single_field(
         2. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
     """
     fss_backend = FssBackend.get_compute_backend(compute_method)
-    fb_obj = fss_backend(fcst, obs, threshold=threshold, window=window, zero_padding=zero_padding)
+    fb_obj = fss_backend(fcst, obs, event_threshold=event_threshold, window_size=window_size, zero_padding=zero_padding)
     fss_score = fb_obj.compute_fss()
 
     return fss_score
@@ -288,8 +312,8 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
     obs: npt.NDArray[np.float64]
     # KW_ONLY in dataclasses only supported for python >=3.10
     # _: KW_ONLY
-    threshold: np.float64
-    window: Tuple[int, int]
+    event_threshold: np.float64
+    window_size: Tuple[int, int]
     zero_padding: bool
 
     # internal buffers
@@ -327,21 +351,23 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         if self.fcst.shape != self.obs.shape:
             raise DimensionError("fcst and obs shapes do not match")
         if (
-            self.window[0] > self.fcst.shape[0]
-            or self.window[1] > self.fcst.shape[1]
-            or self.window[0] < 1
-            or self.window[1] < 1
+            self.window_size[0] > self.fcst.shape[0]
+            or self.window_size[1] > self.fcst.shape[1]
+            or self.window_size[0] < 1
+            or self.window_size[1] < 1
         ):
-            raise DimensionError("invalid window size, window must be smaller than input data shape and greater than 0")
+            raise DimensionError(
+                "invalid window size, `window_size` must be smaller than input data shape and greater than 0"
+            )
 
-    def _apply_threshold(self):
+    def _apply_event_threshold(self):
         """
         Default implementation of converting the input fields into binary fields by comparing
-        against a threshold; using numpy. This is a relatively cheap operation, so a specific
+        against a event threshold; using numpy. This is a relatively cheap operation, so a specific
         implementation in derived backends is optional.
         """
-        self._obs_pop = self.obs > self.threshold
-        self._fcst_pop = self.fcst > self.threshold
+        self._obs_pop = self.obs > self.event_threshold
+        self._fcst_pop = self.fcst > self.event_threshold
         return self
 
     @abstractmethod
@@ -367,8 +393,8 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
             fss = 1 - sum_w((p_o - p_f)^2) / (sum_w(p_o^2) + sum_w(p_f^2))
 
             where,
-            p_o: observation populace > threshold, in one window
-            p_f: forecast populace > threshold, in one window
+            p_o: observation populace > event_threshold, in one window
+            p_f: forecast populace > event_threshold, in one window
             sum_w: sum over all windows
         ````
 
@@ -380,7 +406,7 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         - `power_obs :: float = sum_w(p_o^2)`
         - `power_fcst :: float = sum_w(p_f^2)`
 
-        WARNING: returning sums of powers can result in overflows on aggregation. It is advisable
+        **WARNING:** returning sums of powers can result in overflows on aggregation. It is advisable
         to return the means instead, as it is equivilent with minimal computational trade-off.
 
         Returns:
@@ -399,7 +425,7 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         """
         # fmt: off
         return (
-            self._apply_threshold()  # pylint: disable=protected-access
+            self._apply_event_threshold()  # pylint: disable=protected-access
                 ._compute_integral_field()
                 ._compute_fss_components()
         )
@@ -454,8 +480,8 @@ class FssNumpy(FssBackend):
             # ------------------------------
             # use ceil to avoid 1x1 windows to be coerced to 0x0
             # w_h = window height, w_w = window width
-            half_w_h = int(np.ceil(self.window[0] / 2))
-            half_w_w = int(np.ceil(self.window[1] / 2))
+            half_w_h = int(np.ceil(self.window_size[0] / 2))
+            half_w_w = int(np.ceil(self.window_size[1] / 2))
             im_h = self.fcst.shape[0]
             im_w = self.fcst.shape[1]
 
@@ -485,10 +511,10 @@ class FssNumpy(FssBackend):
             # "//" represents the effective
             # FSS computation region
             # ------------------------------
-            im_h = self.fcst.shape[0] - self.window[0]
-            im_w = self.fcst.shape[1] - self.window[1]
+            im_h = self.fcst.shape[0] - self.window_size[0]
+            im_w = self.fcst.shape[1] - self.window_size[1]
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
-            mesh_br = (mesh_tl[0] + self.window[0], mesh_tl[1] + self.window[1])
+            mesh_br = (mesh_tl[0] + self.window_size[0], mesh_tl[1] + self.window_size[1])
 
         # ----------------------------------
         # Computing window area from sum
