@@ -1,6 +1,6 @@
 # Data Sources
 
-## Overview of some relevant data sources
+Overview of Some Relevant Data Sources
 
 This section suggests how to obtain some 'getting started' weather and climate data for examining the use of the scores and metrics contained in this package. Data referred to here is available under various licenses, and the onus is on the user to understand the conditions of those licenses. The tutorials and walkthroughs in the 'tutorials' directory contain more information and explore the data in more depth.
 
