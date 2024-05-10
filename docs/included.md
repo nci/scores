@@ -230,7 +230,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HSS) 
+     [Heidke Skill Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HSS) 
 * -  
     - Critical Success Index (Threat Score)
   -
