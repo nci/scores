@@ -76,6 +76,38 @@ class BinaryOperator(Generic[T]):
     """
     Generic datatype to represent binary operators. For specific event operators,
     refer to `scores.categorical.contingency.EventOperator`.
+
+    Note: This operator should not be called directly or on every computation.
+        Rather, it is intended to perform validation before passing in the "real"
+        operator `self.op` via an unwrapping call to `BinaryOperator.get`
+
+    Bad:
+
+    ```python
+        x = np.rand((1000, 1000))
+        threshold = 0.5
+
+        for it in np.nditer(x):
+            # validation check is done every loop - BAD
+            numpy_op = NumpyThresholdOperator(np.less).get()
+            binary_item = _op(it, threshold)
+            do_stuff(binary_item)
+    ```
+
+    Ok:
+
+    ```python
+        x = np.rand((1000, 1000))
+        threshold = 0.5
+
+        # validation check is done one-time here - GOOD
+        numpy_op = NumpyThresholdOperator(np.less).get()
+
+        # numpy operators are already vectorized so this will work fine.
+        numpy_op(x, 0.5)
+    ```
+
+    Key takeaway unwrap the operator using `.get()` as early as possible
     """
 
     op: Callable[[T, T], T]
