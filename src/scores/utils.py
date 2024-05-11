@@ -46,17 +46,19 @@ class DimensionError(ValueError):
     Dataset objects that do not have compatible dimensions.
     """
 
-    # better to be explicit because python doesn't have braces for scoping its
-    # control flow
-    pass  # pylint: disable=unnecessary-pass
-
 
 class DimensionWarning(UserWarning):
     """
-    Wrapper for warning against invalid dimension inputs, but do not affect functionality.
+    Custom warning against invalid dimension inputs that, while do not directly
+    affect functionality, may not necessarily be what the user intended.
     """
 
-    pass  # pylint: disable=unnecessary-pass
+
+class CompatibilityError(ImportError):
+    """
+    Custom exception used when attempting to access advanced functionality that
+    require extra/optional dependencies.
+    """
 
 
 T = TypeVar("T")
@@ -85,7 +87,11 @@ class BinaryOperator(Generic[T]):
         """
         # functions are objects so this should work in theory
         if not self.op in self.valid_ops.values():
-            raise ValueError(f"Invalid operator specified. Allowed operators: {[k for k in self.valid_ops.keys()]}")
+            # intentional list comprehension, for display reasons
+            raise ValueError(
+                "Invalid operator specified. Allowed operators: "
+                f"{[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
+            )
         return self
 
     def get(self):

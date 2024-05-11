@@ -6,7 +6,8 @@ import pytest
 import xarray as xr
 
 from scores import sample_data as sd
-from scores.probability.fss_impl import DimensionError, fss_2d, fss_2d_single_field
+from scores.probability.fss_impl import fss_2d, fss_2d_single_field
+from scores.utils import DimensionError
 from tests.probabilty import fss_test_data as ftd
 
 

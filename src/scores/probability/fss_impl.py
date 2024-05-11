@@ -8,55 +8,24 @@ see: [Fast calculation of the Fractions Skill Score][fss_ref]
 https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
 """
 import warnings
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
 import xarray as xr
 
+from scores.fast.fss.fss_backends import get_compute_backend
+from scores.fast.fss.typing import FssComputeMethod, FssDecomposed
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import (
-    BinaryOperator,
     DimensionError,
     DimensionWarning,
     NumpyThresholdOperator,
     gather_dimensions,
 )
 
-# Note: soft keyword `type` only support from >=3.10
-# "tuple" of 64 bit floats
-f8x3 = np.dtype("f8, f8, f8")
-# Note: `TypeAlias` on variables not available for python <3.10
-if TYPE_CHECKING:  # pragma: no cover
-    FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
-else:  # pragma: no cover
-    FssDecomposed = npt.NDArray[f8x3]
 
-
-class FssComputeMethod(Enum):
-    """
-    Choice of compute backend for FSS.
-    - Standard
-        - NUMPY (default)
-    - Optimized
-        - NUMBA_NATIVE (unavailable)
-        - NUMBA_PARALLEL (unavailable)
-    - Experimental
-        - RUST_NATIVE (unavailable)
-        - RUST_OCL (unavailable)
-    """
-
-    NUMPY = 1  # (default)
-    NUMBA_NATIVE = 2
-    NUMBA_PARALLEL = 3
-    RUST_NATIVE = 4
-    RUST_OCL = 5
-
-
-def fss_2d(
+def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
@@ -69,7 +38,7 @@ def fss_2d(
     threshold_operator: Callable = np.greater,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> XarrayLike:  # pylint: disable=too-many-locals disable=too-many-args
+) -> XarrayLike:
     """
     Uses `fss_2d_single_field` to compute the fraction skills score for each 2D spatial
     field in the DataArray and then aggregates them over the output of `gather_dimensions`.
@@ -144,7 +113,7 @@ def fss_2d(
 
     # wrapper defined for convenience, since it's too long for a lambda.
     def _fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
-        fss_backend = FssBackend.get_compute_backend(compute_method)
+        fss_backend = get_compute_backend(compute_method)
         fb_obj = fss_backend(
             da_fcst,
             da_obs,
@@ -261,7 +230,7 @@ def fss_2d_single_field(
         1. https://en.wikipedia.org/wiki/Summed-area_table
         2. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
     """
-    fss_backend = FssBackend.get_compute_backend(compute_method)
+    fss_backend = get_compute_backend(compute_method)
     fb_obj = fss_backend(
         fcst,
         obs,
@@ -306,261 +275,3 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     fss_clamped = max(min(fss, 1.0), 0.0)
 
     return fss_clamped
-
-
-@dataclass
-class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
-    """
-    Abstract base class for computing fss.
-
-    required methods:
-        - :py:meth:`_compute_fss_components`
-        - :py:meth:`_integral_field`
-    """
-
-    fcst: npt.NDArray[np.float64]
-    obs: npt.NDArray[np.float64]
-    # KW_ONLY in dataclasses only supported for python >=3.10
-    # _: KW_ONLY
-    event_threshold: np.float64
-    threshold_operator: BinaryOperator
-    window_size: Tuple[int, int]
-    zero_padding: bool
-
-    # internal buffers
-    _obs_pop: npt.NDArray[np.int64] = field(init=False)
-    _fcst_pop: npt.NDArray[np.int64] = field(init=False)
-    _obs_img: npt.NDArray[np.int64] = field(init=False)
-    _fcst_img: npt.NDArray[np.int64] = field(init=False)
-
-    def __post_init__(self):
-        """
-        Post-initialization checks go here.
-        """
-        self._check_dims()
-
-    @staticmethod
-    def get_compute_backend(compute_method: FssComputeMethod):  # pragma: no cover
-        """
-        Returns the appropriate compute backend class constructor.
-        """
-        # Note: compute methods other than NUMPY are currently stubs
-        if compute_method == FssComputeMethod.NUMPY:  # pylint: disable=no-else-return
-            return FssNumpy
-        elif compute_method == FssComputeMethod.NUMBA_NATIVE:
-            raise NotImplementedError(f"compute method not implemented: {compute_method}")
-        elif compute_method == FssComputeMethod.NUMBA_PARALLEL:
-            raise NotImplementedError(f"compute method not implemented: {compute_method}")
-        elif compute_method == FssComputeMethod.RUST_NATIVE:
-            raise NotImplementedError(f"compute method not implemented: {compute_method}")
-        elif compute_method == FssComputeMethod.RUST_OCL:
-            raise NotImplementedError(f"compute method not implemented: {compute_method}")
-        else:
-            raise ValueError(f"Invalid FSS compute backend, valid values: {list(FssComputeMethod)}")
-
-    def _check_dims(self):
-        if self.fcst.shape != self.obs.shape:
-            raise DimensionError("fcst and obs shapes do not match")
-        if (
-            self.window_size[0] > self.fcst.shape[0]
-            or self.window_size[1] > self.fcst.shape[1]
-            or self.window_size[0] < 1
-            or self.window_size[1] < 1
-        ):
-            raise DimensionError(
-                "invalid window size, `window_size` must be smaller than input data shape and greater than 0"
-            )
-
-    def _apply_event_threshold(self):
-        """
-        Default implementation of converting the input fields into binary fields by comparing
-        against a event threshold; using numpy. This is a relatively cheap operation, so a specific
-        implementation in derived backends is optional.
-        """
-        _op = self.threshold_operator.get()
-        self._obs_pop = _op(self.obs, self.event_threshold)
-        self._fcst_pop = _op(self.fcst, self.event_threshold)
-        return self
-
-    @abstractmethod
-    def _compute_integral_field(self):
-        """
-        Computes the rolling windowed sums over the entire observation & forecast fields. The
-        resulting "integral field (or image)" can be cached in `self._obs_img` for observations, and
-        `self._fcst_img` for forecast.
-
-        See also: https://en.wikipedia.org/wiki/Summed-area_table
-
-        Note: for non-`python` backends e.g. `rust`, its often the case that the integral field is
-        computed & cached in the native language. In which case this method can just be overriden
-        with a `return self`.
-        """
-        raise NotImplementedError("_compute_integral_field not implemented")
-
-    @abstractmethod
-    def _compute_fss_components(self) -> np.float64:
-        """
-        FSS is roughly defined as
-        ```
-            fss = 1 - sum_w((p_o - p_f)^2) / (sum_w(p_o^2) + sum_w(p_f^2))
-
-            where,
-            p_o: observation populace > event_threshold, in one window
-            p_f: forecast populace > event_threshold, in one window
-            sum_w: sum over all windows
-        ````
-
-        In order to accumulate scores over non spatial dimensions at a higher level operation, we
-        need to keep track of the de-composed sums as they need to be accumulated separately.
-
-        The "fss components", hence, consist of:
-        - `power_diff :: float = sum_w((p_o - p_f)^2)`
-        - `power_obs :: float = sum_w(p_o^2)`
-        - `power_fcst :: float = sum_w(p_f^2)`
-
-        **WARNING:** returning sums of powers can result in overflows on aggregation. It is advisable
-        to return the means instead, as it is equivilent with minimal computational trade-off.
-
-        Returns:
-            Tuple[float, float, float]: (power_fcst, power_obs, power_diff) as described above
-        """
-        raise NotImplementedError("`_compute_fss_components` not implemented")
-
-    def compute_fss_decomposed(self) -> FssDecomposed:
-        """
-        Calls the main pipeline to compute the fss score.
-
-        Returns the decomposed scores for aggregation. This is because aggregation cannot be
-        done on the final score directly.
-
-        Note: FSS computations of stand-alone 2-D fields should use :py:meth:`compute_fss` instead.
-        """
-        # fmt: off
-        return (
-            self._apply_event_threshold()  # pylint: disable=protected-access
-                ._compute_integral_field()
-                ._compute_fss_components()
-        )
-        # fmt: on
-
-    def compute_fss(self) -> np.float64:
-        """
-        Uses the components from :py:method:`compute_fss_decomposed` to compute the final
-        Fractions Skill Score.
-        """
-        (fcst, obs, diff) = self.compute_fss_decomposed()
-        denom = fcst + obs
-        fss: np.float = 0.0
-
-        if denom > 0.0:
-            fss = 1.0 - diff / denom
-
-        fss_clamped = max(min(fss, 1.0), 0.0)
-
-        return fss_clamped
-
-
-@dataclass
-class FssNumpy(FssBackend):
-    """
-    Implementation of numpy backend for computing FSS
-    """
-
-    compute_method = FssComputeMethod.NUMPY
-
-    def _compute_integral_field(self):  # pylint: disable=too-many-locals
-        obs_partial_sums = self._obs_pop.cumsum(1).cumsum(0)
-        fcst_partial_sums = self._fcst_pop.cumsum(1).cumsum(0)
-
-        if self.zero_padding:
-            # ------------------------------
-            # 0-padding
-            # ------------------------------
-            #    ..................
-            #    ..................
-            #    ..+------------+..
-            #    ..|            |..
-            #    ..|            |..
-            #    ..|            |..
-            #    ..+------------+..
-            #    ..................
-            #    ..................
-            #
-            # ".." represents 0 padding
-            # the rectangle represents the
-            # FSS computation region.
-            # ------------------------------
-            # use ceil to avoid 1x1 windows to be coerced to 0x0
-            # w_h = window height, w_w = window width
-            half_w_h = int(np.ceil(self.window_size[0] / 2))
-            half_w_w = int(np.ceil(self.window_size[1] / 2))
-            im_h = self.fcst.shape[0]
-            im_w = self.fcst.shape[1]
-
-            # Zero padding is equivilent to clamping the coordinate values at the border
-            # r = rows, c = cols, tl = top-left, br = bottom-right
-            r_tl = np.clip(np.arange(-half_w_h, im_h - half_w_h), 0, im_h - half_w_h - 1)
-            c_tl = np.clip(np.arange(-half_w_w, im_w - half_w_w), 0, im_w - half_w_w - 1)
-            mesh_tl = np.meshgrid(r_tl, c_tl, indexing="ij")
-
-            r_br = np.clip(np.arange(half_w_h, im_h + half_w_h), half_w_h, im_h - 1)
-            c_br = np.clip(np.arange(half_w_w, im_w + half_w_w), half_w_w, im_w - 1)
-            mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
-        else:
-            # ------------------------------
-            # interior border
-            # ------------------------------
-            # data at the border is trim
-            # -ed and used for padding
-            #    +---------------+
-            #    | +-----------+ |
-            #    | |///////////| |
-            #    | |///////////| |
-            #    | |///////////| |
-            #    | +-----------+ |
-            #    +---------------+
-            #
-            # "//" represents the effective
-            # FSS computation region
-            # ------------------------------
-            im_h = self.fcst.shape[0] - self.window_size[0]
-            im_w = self.fcst.shape[1] - self.window_size[1]
-            mesh_tl = np.mgrid[0:im_h, 0:im_w]
-            mesh_br = (mesh_tl[0] + self.window_size[0], mesh_tl[1] + self.window_size[1])
-
-        # ----------------------------------
-        # Computing window area from sum
-        # area table
-        # ----------------------------------
-        #     A          B
-        # tl.0,tl.1    tl.0,br.1
-        #     +----------+
-        #     |          |
-        #     |          |
-        #     |          |
-        #     +----------+
-        # br.0,tl.1   br.0,br.1
-        #     C          D
-        #
-        # area = D - B - C + A
-        # -----------------------------------
-
-        obs_a = obs_partial_sums[mesh_tl[0], mesh_tl[1]]
-        obs_b = obs_partial_sums[mesh_tl[0], mesh_br[1]]
-        obs_c = obs_partial_sums[mesh_br[0], mesh_tl[1]]
-        obs_d = obs_partial_sums[mesh_br[0], mesh_br[1]]
-        self._obs_img = obs_d - obs_b - obs_c + obs_a
-
-        fcst_a = fcst_partial_sums[mesh_tl[0], mesh_tl[1]]
-        fcst_b = fcst_partial_sums[mesh_tl[0], mesh_br[1]]
-        fcst_c = fcst_partial_sums[mesh_br[0], mesh_tl[1]]
-        fcst_d = fcst_partial_sums[mesh_br[0], mesh_br[1]]
-        self._fcst_img = fcst_d - fcst_b - fcst_c + fcst_a
-
-        return self
-
-    def _compute_fss_components(self) -> FssDecomposed:
-        diff = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
-        fcst = np.nanmean(np.power(self._fcst_img, 2))
-        obs = np.nanmean(np.power(self._obs_img, 2))
-        return np.void((fcst, obs, diff), dtype=f8x3)
