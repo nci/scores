@@ -6,9 +6,9 @@ import pytest
 import xarray as xr
 
 from scores import sample_data as sd
-from scores.probability.fss_impl import fss_2d, fss_2d_single_field
+from scores.continuous.fss_impl import fss_2d, fss_2d_single_field
 from scores.utils import DimensionError
-from tests.probabilty import fss_test_data as ftd
+from tests.continuous import fss_test_data as ftd
 
 
 @pytest.mark.parametrize(
@@ -50,6 +50,7 @@ def test_fss_2d_single_field_zero_pad(obs_pdf, fcst_pdf, window_size, event_thre
     np.testing.assert_allclose(res, expected, rtol=1e-5)
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
     ("window_size", "event_threshold", "reduce_dims", "preserve_dims", "expected"),
     [
