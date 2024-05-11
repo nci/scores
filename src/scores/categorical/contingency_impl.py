@@ -93,6 +93,8 @@ class BasicContingencyManager:
     def accuracy(self):
         """
         The proportion of forecasts which are true
+
+        https://www.cawcr.gov.au/projects/verification/#ACC
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
@@ -102,6 +104,8 @@ class BasicContingencyManager:
     def frequency_bias(self):
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
+
+        https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         # Note - bias_score calls this method
         cd = self.counts
@@ -112,8 +116,9 @@ class BasicContingencyManager:
     def bias_score(self):
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#BIAS
+        """
         return self.frequency_bias()
 
     def hit_rate(self):
@@ -121,6 +126,8 @@ class BasicContingencyManager:
         What proportion of the observed events where correctly forecast?
         Identical to probability_of_detection
         Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
@@ -129,6 +136,8 @@ class BasicContingencyManager:
         What proportion of the observed events where correctly forecast?
         Identical to hit_rate
         Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#POD
         """
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
@@ -136,11 +145,36 @@ class BasicContingencyManager:
 
         return pod
 
+    def true_positive_rate(self):
+        """
+        What proportion of the observed events where correctly forecast?
+        Identical to probability_of_detection
+        Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#POD
+        """
+        return self.probability_of_detection()
+
+    def false_alarm_ratio(self):
+        """
+        What fraction of the predicted "yes" events actually did not occur (i.e.,
+        were false alarms)?
+        Range: 0 to 1. Perfect score: 0.
+
+        https://www.cawcr.gov.au/projects/verification/#FAR
+        """
+        cd = self.counts
+        far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
+
+        return far
+
     def false_alarm_rate(self):
         """
         What fraction of the non-events were incorrectly predicted?
         Identical to probability_of_false_detection
         Range: 0 to 1.  Perfect score: 0.
+
+        https://www.cawcr.gov.au/projects/verification/#POFD
         """
         # Note - probability of false detection calls this function
         cd = self.counts
@@ -153,6 +187,8 @@ class BasicContingencyManager:
         What fraction of the non-events were incorrectly predicted?
         Identical to false_alarm_rate
         Range: 0 to 1.  Perfect score: 0.
+
+        https://www.cawcr.gov.au/projects/verification/#POFD
         """
 
         return self.false_alarm_rate()
@@ -161,6 +197,8 @@ class BasicContingencyManager:
         """
         What proportion of the forecast events actually eventuated?
         Range: 0 to 1.  Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#SR
         """
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -172,6 +210,8 @@ class BasicContingencyManager:
         How well did the forecast "yes" events correspond to the observed "yes" events?
         Identical to critical_success_index
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+
+        https://www.cawcr.gov.au/projects/verification/#CSI
         """
         # Note - critical success index just calls this method
 
@@ -181,11 +221,14 @@ class BasicContingencyManager:
 
     def critical_success_index(self):
         """
+        Often known as CSI.
+
         How well did the forecast "yes" events correspond to the observed "yes" events?
         Identical to threat_score
         Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#CSI
+        """
         return self.threat_score()
 
     def peirce_skill_score(self):
@@ -193,8 +236,9 @@ class BasicContingencyManager:
         Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#HK
+        """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
         component_b = cd["fn_count"] / (cd["fn_count"] + cd["tn_count"])
@@ -206,8 +250,9 @@ class BasicContingencyManager:
         Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#HK
+        """
         return self.peirce_skill_score()
 
     def hanssen_and_kuipers_discriminant(self):
@@ -215,15 +260,15 @@ class BasicContingencyManager:
         Identical to Peirce's skill score and to true skill statistic
         How well did the forecast separate the "yes" events from the "no" events?
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        """
 
+        https://www.cawcr.gov.au/projects/verification/#HK
+        """
         return self.peirce_skill_score()
 
     def sensitivity(self):
         """
         https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
-
         return self.probability_of_detection()
 
     def specificity(self):
@@ -233,6 +278,112 @@ class BasicContingencyManager:
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
         return s
+
+    def recall(self):
+        """
+        Identical to probability of detection.
+
+        https://en.wikipedia.org/wiki/Precision_and_recall
+        """
+        return self.probability_of_detection()
+
+    def precision(self):
+        """
+        Identical to the Success Ratio.
+
+        https://en.wikipedia.org/wiki/Precision_and_recall
+        """
+        return self.success_ratio()
+
+    def f1_score(self):
+        """
+        Calculates the F1 score.
+        https://en.wikipedia.org/wiki/F-score
+        """
+        cd = self.counts
+        f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
+        return f1
+
+    def equitable_threat_score(self):
+        """
+        Calculates the Equitable threat score (also known as the Gilbert skill score).
+
+        How well did the forecast "yes" events correspond to the observed "yes"
+        events (accounting for hits due to chance)?
+
+        Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+
+        Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
+        Equitability revisited: Why the “equitable threat score” is not equitable.
+        Weather and Forecasting, 25(2), pp.710-726.
+        """
+        cd = self.counts
+        hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
+        ets = (cd["tp_count"] - hits_random) / (cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random)
+
+        return ets
+
+    def gilberts_skill_score(self):
+        """
+        Calculates the Gilbert skill score (also known as the Equitable threat score).
+
+        How well did the forecast "yes" events correspond to the observed "yes"
+        events (accounting for hits due to chance)?
+
+        Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+
+        Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
+        Equitability revisited: Why the “equitable threat score” is not equitable.
+        Weather and Forecasting, 25(2), pp.710-726.
+        """
+        return self.equitable_threat_score()
+
+    def heidke_skill_score(self):
+        """
+        Calculates the Heidke skill score (also known as Cohen's kappa).
+
+        What was the accuracy of the forecast relative to that of random chance?
+
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        https://en.wikipedia.org/wiki/Cohen%27s_kappa
+        """
+        cd = self.counts
+        exp_correct = (1 / cd["total_count"]) * (
+            (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"])
+            + ((cd["tn_count"] + cd["fn_count"]) * (cd["tn_count"] + cd["fp_count"]))
+        )
+        hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
+        return hss
+
+    def cohens_kappa(self):
+        """
+        Calculates the Cohen's kappa (also known as the Heidke skill score).
+
+        What was the accuracy of the forecast relative to that of random chance?
+
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        https://en.wikipedia.org/wiki/Cohen%27s_kappa
+        """
+        return self.heidke_skill_score()
+
+    def odds_ratio(self):
+        """
+        Calculates the odds ratio
+
+        What is the ratio of the odds of a "yes" forecast being correct, to the odds of
+        a "yes" forecast being wrong?
+
+        Odds ratio - Range: 0 to ∞, 1 indicates no skill. Perfect score: ∞.
+
+        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+        Weather and Forecasting, 15(2), pp.221-232.
+        """
+        odds_r = (self.probability_of_detection() / (1 - self.probability_of_detection())) / (
+            self.probability_of_false_detection() / (1 - self.probability_of_false_detection())
+        )
+        return odds_r
 
 
 class BinaryContingencyManager(BasicContingencyManager):
