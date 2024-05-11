@@ -1,3 +1,7 @@
+"""
+Test data for Forecast Skill Score (FSS)    
+"""
+
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -24,11 +28,11 @@ def generate(obs_pdf, fcst_pdf, *, seed=42):
     return (obs, fcst)
 
 
-_periods = 10
-_time_series = pd.date_range(
+_PERIODS = 10
+_TIME_SERIES = pd.date_range(
     start="2022-11-20T01:00:00.000000000",
     freq="h",
-    periods=_periods,
+    periods=_PERIODS,
 )
 
 EXPECTED_TEST_FSS_2D_REDUCE_TIME = xr.DataArray(
@@ -37,7 +41,7 @@ EXPECTED_TEST_FSS_2D_REDUCE_TIME = xr.DataArray(
 )
 EXPECTED_TEST_FSS_2D_PRESERVE_TIME = xr.DataArray(
     data=[0.934381, 0.914105, 0.921647, 0.909383, 0.941691, 0.911977, 0.922896, 0.91629, 0.932657, 0.923547],
-    coords={"time": _time_series},
+    coords={"time": _TIME_SERIES},
 )
 EXPECTED_TEST_FSS_2D_PRESERVE_ALL = xr.DataArray(
     data=[
@@ -66,5 +70,5 @@ EXPECTED_TEST_FSS_2D_PRESERVE_ALL = xr.DataArray(
             0.90379747,
         ],
     ],
-    coords={"lead_time": [1, 2], "time": _time_series},
+    coords={"lead_time": [1, 2], "time": _TIME_SERIES},
 )

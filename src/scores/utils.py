@@ -47,6 +47,13 @@ class DimensionError(ValueError):
     """
 
 
+class FieldTypeError(TypeError):
+    """
+    Custom exception used when incompatible field types are used for a particular
+    operation.
+    """
+
+
 class DimensionWarning(UserWarning):
     """
     Custom warning against invalid dimension inputs that, while do not directly
@@ -69,7 +76,6 @@ class BinaryOperator(Generic[T]):
     """
     Generic datatype to represent binary operators. For specific event operators,
     refer to `scores.categorical.contingency.EventOperator`.
-
     """
 
     op: Callable[[T, T], T]
@@ -101,11 +107,23 @@ class BinaryOperator(Generic[T]):
         return self.op
 
 
+def left_identity_operator(x, _):
+    """
+    A binary operator that takes in two inputs but only returns the first.
+    """
+    return x
+
+
 @dataclass
 class NumpyThresholdOperator(BinaryOperator):
     """
-    Generic numpy threshold operator. For specific event operators, refer to
-    `scores.categorical.contingency.EventOperator`.
+    Generic numpy threshold operator to avoid function call over-head,
+    for light-weight comparisons. For specific event operators, refer to
+    `score.processing.discretize`
+
+    Important: The input field must be the first operand and the threshold
+    should be the second operand otherwise some operators may have unintended
+    behaviour.
     """
 
     def __post_init__(self):
@@ -114,6 +132,7 @@ class NumpyThresholdOperator(BinaryOperator):
             "numpy.greater_equal": np.greater_equal,
             "numpy.less": np.less,
             "numpy.less_equal": np.less_equal,
+            "LEFT_IDENTITY_OPERATOR": left_identity_operator,
         }
         super().__post_init__()
 

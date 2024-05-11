@@ -20,8 +20,10 @@ from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import (
     DimensionError,
     DimensionWarning,
+    FieldTypeError,
     NumpyThresholdOperator,
     gather_dimensions,
+    left_identity_operator,
 )
 
 
@@ -43,10 +45,19 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     Uses `fss_2d_single_field` to compute the fraction skills score for each 2D spatial
     field in the DataArray and then aggregates them over the output of `gather_dimensions`.
 
+    Note: this method takes in a `threshold_operator` to compare the input
+        fields against the `event_threshold` which defaults to `numpy.greater`,
+        and is compatible with lightweight numpy operators. If you would
+        like to do more advanced binary discretization consider doing this
+        separately and using :py:func:`fss_2d_binary` instead, which takes in a
+        pre-discretized binary field.
+
     Optionally aggregates the output along other dimensions if `reduce_dims` or
     (mutually exclusive) `preserve_dims` are specified.
 
-    For implementation for a single 2-D field see: :py:func:`fss_2d_single_field`
+    For implementation for a single 2-D field,
+    see: :py:func:`fss_2d_single_field`. This offers the user the ability to use
+    their own aggregation methods, rather than `xarray.ufunc`
 
     Args:
         fcst: An array of forecasts
@@ -167,6 +178,62 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     )
 
     return da_fss
+
+
+def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
+    window_size: Tuple[int, int],
+    spatial_dims: Tuple[str, str],
+    zero_padding: bool = False,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
+    check_boolean: bool = True,
+    dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
+) -> XarrayLike:
+    """
+    Takes in a binary (True or False) field of fcst and obs events. For example
+    the output of a binary threshold applied to a continuous field or an event
+    operator.
+
+    Optionally the user can set `check_boolean` to `True` to check that the
+    field is boolean before any computations. Note: this asserts that the
+    underlying fields are of type `np.bool_` but does not coerce them. If
+    the user is confident that the input field is binary (but not necessarily
+    boolean), they may set this flag to False, to allow for more flexible binary
+    configurations such as 0 and 1; this should give the same results.
+
+    Uses `fss_2d` from the `scores.spatial` module to perform fss
+    computation, but without the threshold operation.
+
+    see: :py:func:`scores.spatial.fss_2d` for more details and the continuous
+        version. As well as detailed argument definitions.
+    """
+
+    if check_boolean:
+        if not (fcst.dtype == np.bool_ and obs.dtype == np.bool_):
+            raise FieldTypeError("Input field is not boolean")
+
+    # Note: this s a dummy value that will be discarded by the
+    # `left_identity_operator` mainly used to circumvent passing in "None" to
+    # threshold operators which can have undefined behaviour.
+    _phantom_event_threshold = -999
+
+    return fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
+        fcst,
+        obs,
+        event_threshold=_phantom_event_threshold,
+        window_size=window_size,
+        spatial_dims=spatial_dims,
+        zero_padding=zero_padding,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        threshold_operator=left_identity_operator,
+        compute_method=compute_method,
+        dask=dask,  # see: `xarray.apply_ufunc` for options
+    )
 
 
 def fss_2d_single_field(

@@ -6,9 +6,9 @@ import pytest
 import xarray as xr
 
 from scores import sample_data as sd
-from scores.continuous.fss_impl import fss_2d, fss_2d_single_field
+from scores.spatial.fss_impl import fss_2d, fss_2d_binary, fss_2d_single_field
 from scores.utils import DimensionError
-from tests.continuous import fss_test_data as ftd
+from tests.spatial import fss_test_data as ftd
 
 
 @pytest.mark.parametrize(
@@ -81,6 +81,44 @@ def test_fss_2d(window_size, event_threshold, reduce_dims, preserve_dims, expect
         da_fcst,
         da_obs,
         event_threshold=event_threshold,
+        window_size=window_size,
+        spatial_dims=["lat", "lon"],
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+    )
+    xr.testing.assert_allclose(res, expected)
+
+
+@pytest.mark.filterwarnings("ignore::UserWarning")
+@pytest.mark.parametrize(
+    ("window_size", "event_threshold", "reduce_dims", "preserve_dims", "expected"),
+    [
+        ((2, 2), 2.0, None, None, xr.DataArray(0.96813032)),
+        ((2, 2), 8.0, None, None, xr.DataArray(0.78144748)),
+        ((5, 5), 2.0, None, None, xr.DataArray(0.99381861)),
+        ((5, 5), 8.0, None, None, xr.DataArray(0.94054107)),  # output_dims: scalar
+        ((2, 2), 5.0, ["time"], None, ftd.EXPECTED_TEST_FSS_2D_REDUCE_TIME),  # output_dims: 1 x lead_time
+        ((2, 2), 5.0, None, ["time"], ftd.EXPECTED_TEST_FSS_2D_PRESERVE_TIME),  # output_dims: 1 x time
+        (
+            (2, 2),
+            5.0,
+            None,
+            ["time", "lead_time"],
+            ftd.EXPECTED_TEST_FSS_2D_PRESERVE_ALL,
+        ),  # output_dims: time x lead_time
+    ],
+)
+def test_fss_2d_binary(window_size, event_threshold, reduce_dims, preserve_dims, expected):
+    """
+    Tests various combinations of window_size/event_threshold/preserve_dims/reduce_dims
+
+    Note: does not include error/assertion testing this will be done separately.
+    """
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=False)
+    res = fss_2d_binary(
+        np.greater(da_fcst, event_threshold),
+        np.greater(da_obs, event_threshold),
         window_size=window_size,
         spatial_dims=["lat", "lon"],
         reduce_dims=reduce_dims,
