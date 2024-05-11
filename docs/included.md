@@ -399,106 +399,80 @@
 
 * - Name (Alphabetical order)
   - API
-  - Tutorial
-  - Reference(s)
+  - Utilised For
 * - Binary Discretise
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.binary_discretise)   
+  - Receiver (Relative) Operating Characteristic (ROC)
 * - Binary Discretise Proportion
-  -     
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.binary_discretise_proportion)    
+  - Flip-Flop Index
 * - Broadcast and Match Not-a-Number (NaN)
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.broadcast_and_match_nan)   
+  - Murphy Score (Mean Elementary Score)
 * - Comparative Discretise
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.comparative_discretise)   
+  - Receiver (Relative) Operating Characteristic (ROC)
 * - Cumulative Distribution Functions (CDFs)
-  - 
   - 
   - 
 * -  
     - Add Thresholds
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.add_thresholds)
   - 
-    
-  - 
-       
+    Continuous Ranked Probability Score (CRPS) for CDFs; CRPS CDF Brier Decomposition
 * -  
     - CDF Envelope
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.cdf_envelope)
   - 
-    
-  - 
-       
+    Adjust Forecast for CRPS     
 * -  
     - Decreasing CDFs
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.decreasing_cdfs)
   - 
-    
-  - 
-    
+    Adjust Forecast for CRPS
 * -  
     - Fill CDF
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.fill_cdf)
   - 
-    
-  - 
-    
+    CRPS for CDFs; CRPS CDF Brier Decomposition
 * -  
     - Integrate Square Piecewise Linear
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.integrate_square_piecewise_linear)
   - 
-    
-  - 
-    
+    CRPS for CDFs 
 * -  
     - Observed CDF
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.observed_cdf)
   - 
-    
-  - 
-    
+    CRPS for CDFs; CRPS CDF Brier Decomposition
 * -  
     - Propagate Not-a-Number (NaN) 
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.propagate_nan)
   - 
-    
-  - 
-
+    Adjust Forecast for CRPS; CRPS CDF Brier Decomposition; CRPS for CDFs   
 * -  
     - Round Values 
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.round_values)
   - 
-    
-  - 
-
+    CRPS for CDFs; CRPS CDF Brier Decomposition
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
-  - &mdash;
 * - Isotonic Regression (Isotonic Fit, Reliability Diagram)
-  - 
-  - 
-  - 
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.isotonic_fit)
+  - See "Isotonic Regression (Isotonic Fit, Reliability Diagram)" entries in [Continuous](#continuous) and [Probability](#probability)
 * - Proportion Exceeding
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.proportion_exceeding)   
+  - Flip-Flop Index
 * - Reliability Diagram, *see Isotonic Regression*
-  - &mdash;
   - &mdash;
   - &mdash;   
 ```
