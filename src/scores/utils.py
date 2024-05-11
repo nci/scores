@@ -151,7 +151,7 @@ class NumpyThresholdOperator(BinaryOperator):
     """
     Generic numpy threshold operator to avoid function call over-head,
     for light-weight comparisons. For specific event operators, refer to
-    `score.processing.discretize`
+    `scores.processing.discretise`
 
     Important: The input field must be the first operand and the threshold
     should be the second operand otherwise some operators may have unintended
