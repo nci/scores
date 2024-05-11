@@ -4,7 +4,8 @@ Contains frequently-used functions of a general nature within scores
 
 import warnings
 from collections.abc import Hashable, Iterable
-from typing import Optional, Union
+from dataclasses import dataclass, field
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -39,11 +40,76 @@ to properly interpret that, therefore an exception has been raised.
 """
 
 
-class DimensionError(Exception):
+class DimensionError(ValueError):
     """
     Custom exception used when attempting to operate over xarray DataArray or
     Dataset objects that do not have compatible dimensions.
     """
+
+    # better to be explicit because python doesn't have braces for scoping its
+    # control flow
+    pass  # pylint: disable=unnecessary-pass
+
+
+class DimensionWarning(UserWarning):
+    """
+    Wrapper for warning against invalid dimension inputs, but do not affect functionality.
+    """
+
+    pass  # pylint: disable=unnecessary-pass
+
+
+T = TypeVar("T")
+
+
+@dataclass
+class BinaryOperator(Generic[T]):
+    """
+    Generic datatype to represent binary operators. For specific event operators,
+    refer to `scores.categorical.contingency.EventOperator`.
+
+    """
+
+    op: Callable[[T, T], T]
+    valid_ops: Dict[str, Callable[[T, T], T]] = field(init=False)
+
+    def __post_init__(self):
+        """
+        Post initialization checks go here
+        """
+        self._validate()
+
+    def _validate(self):
+        """
+        Default operator is valid
+        """
+        # functions are objects so this should work in theory
+        if not self.op in self.valid_ops.values():
+            raise ValueError(f"Invalid operator specified. Allowed operators: {[k for k in self.valid_ops.keys()]}")
+        return self
+
+    def get(self):
+        """
+        Return the underlying operator
+        """
+        return self.op
+
+
+@dataclass
+class NumpyThresholdOperator(BinaryOperator):
+    """
+    Generic numpy threshold operator. For specific event operators, refer to
+    `scores.categorical.contingency.EventOperator`.
+    """
+
+    def __post_init__(self):
+        self.valid_ops = {
+            "numpy.greater": np.greater,
+            "numpy.greater_equal": np.greater_equal,
+            "numpy.less": np.less,
+            "numpy.less_equal": np.less_equal,
+        }
+        super().__post_init__()
 
 
 def gather_dimensions(  # pylint: disable=too-many-branches
@@ -98,7 +164,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
 
     if specified_dims == "all":
         if "all" in all_data_dims:
-            warnings.warn(WARN_ALL_DATA_CONFLICT_MSG)
+            warnings.warn(WARN_ALL_DATA_CONFLICT_MSG, DimensionWarning)
     elif specified_dims is not None:
         if isinstance(specified_dims, str):
             specified_dims = [specified_dims]

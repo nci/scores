@@ -11,41 +11,29 @@ import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
 import xarray as xr
 
-from scores import utils
-from scores.typing import XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import (
+    BinaryOperator,
+    DimensionError,
+    DimensionWarning,
+    NumpyThresholdOperator,
+    gather_dimensions,
+)
 
 # Note: soft keyword `type` only support from >=3.10
 # "tuple" of 64 bit floats
 f8x3 = np.dtype("f8, f8, f8")
-# Note: `TypeAlias` on variables for python <3.10
+# Note: `TypeAlias` on variables not available for python <3.10
 if TYPE_CHECKING:  # pragma: no cover
     FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
 else:  # pragma: no cover
     FssDecomposed = npt.NDArray[f8x3]
-
-
-class DimensionError(ValueError):
-    """
-    Wrapper for specific coordinate/dimension mismatch errors
-    """
-
-    # better to be explicit because python doesn't have braces for scoping its
-    # control flow
-    pass  # pylint: disable=unnecessary-pass
-
-
-class DimensionWarning(UserWarning):
-    """
-    Wrapper for warning against invalid dimension inputs, but do not affect functionality.
-    """
-
-    pass  # pylint: disable=unnecessary-pass
 
 
 class FssComputeMethod(Enum):
@@ -76,11 +64,12 @@ def fss_2d(
     window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
     zero_padding: bool = False,
-    reduce_dims: Optional[Iterable[str]] = None,
-    preserve_dims: Optional[Iterable[str]] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    threshold_operator: Callable = np.greater,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> XarrayLike:  # pylint: disable=too-many-locals
+) -> XarrayLike:  # pylint: disable=too-many-locals disable=too-many-args
     """
     Uses `fss_2d_single_field` to compute the fraction skills score for each 2D spatial
     field in the DataArray and then aggregates them over the output of `gather_dimensions`.
@@ -112,6 +101,10 @@ def fss_2d(
         preserve_dims: Optional set of dimensions to keep (all other dimensions
             are reduced); By default all dimensions except `spatial_dims`
             are preserved (mutually exclusive to `reduce_dims`).
+        threshold_operator: The threshold operator used to generate the binary
+            event field. E.g. `np.greater`. Note: this may depend on the backend
+            `compute method` and not all operators may be supported. Generally,
+            `np.greater`, `np.less` and their counterparts. Defaults to "np.greater".
         compute_method: currently only supports `FssComputeMethod.NUMPY`
             see: :py:class:`FssComputeMethod`
         dask: See xarray.apply_ufunc for options
@@ -153,7 +146,12 @@ def fss_2d(
     def _fss_wrapper(da_fcst: xr.DataArray, da_obs: xr.DataArray) -> FssDecomposed:
         fss_backend = FssBackend.get_compute_backend(compute_method)
         fb_obj = fss_backend(
-            da_fcst, da_obs, event_threshold=event_threshold, window_size=window_size, zero_padding=zero_padding
+            da_fcst,
+            da_obs,
+            event_threshold=event_threshold,
+            window_size=window_size,
+            zero_padding=zero_padding,
+            threshold_operator=NumpyThresholdOperator(threshold_operator),
         )
         return fb_obj.compute_fss_decomposed()
 
@@ -169,7 +167,7 @@ def fss_2d(
     )
 
     # gather additional dimensions to aggregate over.
-    dims = utils.gather_dimensions(
+    dims = gather_dimensions(
         fcst.dims,
         obs.dims,
         reduce_dims=reduce_dims,
@@ -209,6 +207,7 @@ def fss_2d_single_field(
     event_threshold: np.float64,
     window_size: Tuple[int, int],
     zero_padding: bool = False,
+    threshold_operator: Callable = np.greater,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
     """
@@ -242,6 +241,10 @@ def fss_2d_single_field(
         window_size: A pair of positive integers `(height, width)` of the sliding
             window; the window dimensions must be greater than 0 and fit within
             the shape of `obs` and `fcst`.
+        threshold_operator: The threshold operator used to generate the binary
+            event field. E.g. `np.greater`. Note: this may depend on the backend
+            `compute method` and not all operators may be supported. Generally,
+            `np.greater`, `np.less` and their counterparts. Defaults to "np.greater".
         compute_method: currently only supports `FssComputeMethod.NUMPY`
             see: :py:class:`FssComputeMethod`
 
@@ -259,7 +262,14 @@ def fss_2d_single_field(
         2. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
     """
     fss_backend = FssBackend.get_compute_backend(compute_method)
-    fb_obj = fss_backend(fcst, obs, event_threshold=event_threshold, window_size=window_size, zero_padding=zero_padding)
+    fb_obj = fss_backend(
+        fcst,
+        obs,
+        window_size=window_size,
+        zero_padding=zero_padding,
+        event_threshold=event_threshold,
+        threshold_operator=NumpyThresholdOperator(threshold_operator),
+    )
     fss_score = fb_obj.compute_fss()
 
     return fss_score
@@ -313,6 +323,7 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
     # KW_ONLY in dataclasses only supported for python >=3.10
     # _: KW_ONLY
     event_threshold: np.float64
+    threshold_operator: BinaryOperator
     window_size: Tuple[int, int]
     zero_padding: bool
 
@@ -366,8 +377,9 @@ class FssBackend(ABC):  # pylint: disable=too-many-instance-attributes
         against a event threshold; using numpy. This is a relatively cheap operation, so a specific
         implementation in derived backends is optional.
         """
-        self._obs_pop = self.obs > self.event_threshold
-        self._fcst_pop = self.fcst > self.event_threshold
+        _op = self.threshold_operator.get()
+        self._obs_pop = _op(self.obs, self.event_threshold)
+        self._fcst_pop = _op(self.fcst, self.event_threshold)
         return self
 
     @abstractmethod
