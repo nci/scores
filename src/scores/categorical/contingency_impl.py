@@ -358,7 +358,7 @@ class BasicContingencyManager:
 
     def cohens_kappa(self):
         """
-        Calculates the Cohen's kappa (also known as the Heidkey skill score).
+        Calculates the Cohen's kappa (also known as the Heidke skill score).
 
         What was the accuracy of the forecast relative to that of random chance?
 
