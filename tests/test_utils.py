@@ -747,3 +747,12 @@ def test_check_binary_raises(da):
 def test_check_binary_doesnt_raise(da):
     """test check_binary doesn't raise"""
     check_binary(da, "my name")
+
+
+def test_invalid_numpy_operator():
+    """
+    Test exception is raised for specifying an invalid operator
+
+    """
+    with pytest.raises(ValueError):
+        utils.NumpyThresholdOperator(sorted)

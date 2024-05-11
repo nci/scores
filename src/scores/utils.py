@@ -164,7 +164,7 @@ class NumpyThresholdOperator(BinaryOperator):
             "numpy.greater_equal": np.greater_equal,
             "numpy.less": np.less,
             "numpy.less_equal": np.less_equal,
-            "LEFT_IDENTITY_OPERATOR": left_identity_operator,
+            "scores.utils.left_identity_operator": left_identity_operator,
         }
         super().__post_init__()
 

@@ -47,7 +47,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         self._check_dims()
         self._check_compatibility()
 
-    def _check_compatibility(self):
+    def _check_compatibility(self):  # pragma: no cover
         raise CompatibilityError(
             f"Unable to run `{self.compute_method}`. Are you missing extra/optional dependencies in your install?"
         )

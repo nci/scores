@@ -10,12 +10,12 @@ from scores.fast.fss.typing import FssComputeMethod
 _COMPATIBLE = True
 try:
     import numba  # pylint: disable=unused-import
-except ImportError:
+except ImportError:  # pragma: no cover
     _COMPATIBLE = False
 
 
 @dataclass
-class FssNumba(FssBackend):
+class FssNumba(FssBackend):  # pragma: no cover
     """
     Implementation of numba backend for computing FSS
 

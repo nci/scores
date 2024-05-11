@@ -6,8 +6,13 @@ import pytest
 import xarray as xr
 
 from scores import sample_data as sd
-from scores.spatial.fss_impl import fss_2d, fss_2d_binary, fss_2d_single_field
-from scores.utils import DimensionError
+from scores.spatial.fss_impl import (
+    _aggregate_fss_decomposed,
+    fss_2d,
+    fss_2d_binary,
+    fss_2d_single_field,
+)
+from scores.utils import DimensionError, FieldTypeError
 from tests.spatial import fss_test_data as ftd
 
 
@@ -127,6 +132,48 @@ def test_fss_2d_binary(window_size, event_threshold, reduce_dims, preserve_dims,
     xr.testing.assert_allclose(res, expected)
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_fss_2d_binary_bool_check():
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=False)
+    with pytest.raises(FieldTypeError):
+        fss_2d_binary(
+            da_fcst, np.greater(da_obs, 0.5), window_size=(5, 5), spatial_dims=["lat", "lon"], check_boolean=True
+        )
+
+
+def test_missing_spatial_dimensions():
+    """
+    Test for missing spatial dimensions in input data
+    """
+
+    # missing in forecast
+    da_fcst = sd.continuous_observations(large_size=False)
+    da_obs = sd.continuous_observations(large_size=False)
+    da_fcst = da_fcst.rename({"lat": "bat"})
+    with pytest.raises(DimensionError):
+        fss_2d(
+            da_fcst,
+            da_obs,
+            event_threshold=5.0,
+            window_size=(5, 5),
+            spatial_dims=["lat", "lon"],
+        )
+
+    # missing in obs
+    da_fcst = sd.continuous_observations(large_size=False)
+    da_obs = sd.continuous_observations(large_size=False)
+    da_obs = da_fcst.rename({"lat": "mat"})
+    with pytest.raises(DimensionError):
+        fss_2d(
+            da_fcst,
+            da_obs,
+            event_threshold=5.0,
+            window_size=(5, 5),
+            spatial_dims=["lat", "lon"],
+        )
+
+
 @pytest.mark.parametrize(("large_obs"), [(True), (False)])
 def test_invalid_input_dimensions(large_obs):
     """
@@ -200,3 +247,17 @@ def test_zero_denom_fss_single_field():
     (obs, fcst) = ftd.generate((0, 0), (0, 0), seed=seed)
     res = fss_2d_single_field(fcst, obs, event_threshold=1.0, window_size=(5, 5))
     assert res == 0.0
+
+
+def test_empty_score_aggregation():
+    """
+    Test for the scenario where the aggregation logic is being performed on an empty array.
+
+    Theoretically this shouldn't be possible... but in practicality may happen.
+
+    Note: `ufuncs` by design (which are typically implemented in C)
+        should obfuscate this and should not be reachable, think for loop:
+        `for (int i = 0; i < 0; i++) {...}` - this shouldn't reach any inner computations.
+    """
+    fss = _aggregate_fss_decomposed(np.empty(shape=(0, 0)))
+    assert fss == 0.0

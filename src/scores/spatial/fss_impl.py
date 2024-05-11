@@ -110,7 +110,10 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     def _spatial_dims_exist(_dims):
         s_spatial_dims = set(spatial_dims)
         s_dims = set(_dims)
-        return s_spatial_dims.intersection(s_dims) == s_spatial_dims and len(spatial_dims) == 2
+        return (
+            len(s_spatial_dims - s_dims) == 0
+            and len(spatial_dims) == 2  # all spatial dims present  # number of spatial dims = 2
+        )
 
     if not _spatial_dims_exist(fcst.dims):
         raise DimensionError(f"missing spatial dims {spatial_dims} in fcst")
@@ -322,8 +325,10 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     if isinstance(fss_d, np.ndarray):
         l = fss_d.size
+
         if l < 1:
             return 0.0
+
         with np.nditer(fss_d) as it:
             for elem in it:
                 (fcst_, obs_, diff_) = elem.item()

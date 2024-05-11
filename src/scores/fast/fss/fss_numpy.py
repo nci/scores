@@ -20,12 +20,15 @@ class FssNumpy(FssBackend):
 
     compute_method = FssComputeMethod.NUMPY
 
-    def _check_compatibility(self):
+    def _check_compatibility(self):  # pragma: no cover
         """
         Numpy should be compatible by default.
         """
+        # false branch - should always return
+        # kept here to preserve the pattern consistency with other backends
         if _COMPATIBLE:
             return
+        # unreachable
         super()._check_compatibility()
 
     def _compute_integral_field(self):  # pylint: disable=too-many-locals
