@@ -182,7 +182,6 @@ def test_categorical_table():
     assert table.equitable_threat_score() == (9 - (55 / 9)) / (9 + 1 + 2 - (55 / 9))
     assert table.heidke_skill_score() == (9 + 6 - (83 / 9)) / (18 - (83 / 9))
     assert table.odds_ratio() == (9 / (9 + 1)) / (1 - (9 / (9 + 1))) / ((2 / (6 + 2)) / (1 - (2 / (6 + 2))))
-    assert table.odds_ratio_skill_score() == (9 * 6 - 1 * 2) / (9 * 6 + 1 * 2)
 
     # These methods are redirects to each other
     assert table.critical_success_index() == table.threat_score()
@@ -197,7 +196,6 @@ def test_categorical_table():
     assert table.recall() == table.probability_of_detection()
     assert table.gilberts_skill_score() == table.equitable_threat_score()
     assert table.cohens_kappa() == table.heidke_skill_score()
-    assert table.yules_q() == table.odds_ratio_skill_score()
 
     peirce_component_a = 9 / (9 + 1)
     peirce_component_b = 1 / (1 + 6)

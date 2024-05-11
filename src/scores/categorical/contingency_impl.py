@@ -385,41 +385,6 @@ class BasicContingencyManager:
         )
         return odds_r
 
-    def odds_ratio_skill_score(self):
-        """
-        Calculates the odds ratio skill score (also known as Yule's Q).
-        
-        Note - the term 'skill score' is often used to describe the relative performance
-        of one source of predictoins over another - e.g. the relative performance of an
-        upgraded model on its predecessor, or the relative performance to a benchmark such
-        as climatology. The odds ratio skill score is not that kind of skill score.
-
-        What was the improvement of the forecast over random chance?
-
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-
-        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
-        Weather and Forecasting, 15(2), pp.221-232.
-        """
-        cd = self.counts
-        orss = (cd["tp_count"] * cd["tn_count"] - cd["fn_count"] * cd["fp_count"]) / (
-            cd["tp_count"] * cd["tn_count"] + cd["fn_count"] * cd["fp_count"]
-        )
-        return orss
-
-    def yules_q(self):
-        """
-        Calculates the Yule's Q (also known as the odds ratio skill score).
-
-        What was the improvement of the forecast over random chance?
-
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-
-        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
-        Weather and Forecasting, 15(2), pp.221-232.
-        """
-        return self.odds_ratio_skill_score()
-
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
