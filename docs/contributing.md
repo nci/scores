@@ -25,10 +25,10 @@ Please see the information provided in [SECURITY.md](SECURITY.md)
 **Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
 
 If you are already confident working with GitHub, please feel free to:
-(a) create a fork of the `scores` repository, 
-(b) create a feature branch on your fork,
-(c) keep your feature branch rebased and up-to-date with the `scores` develop branch,
-(d) when ready, submit a pull request to the develop branch of `scores`.
+1. create a fork of the `scores` repository, 
+2. create a feature branch on your fork,
+3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
+4. when ready, submit a pull request to the develop branch of `scores`.
 
 Pull requests will undergo both a technical code review and a scientific review to ensure that the merge request maintains or improves the coding and scientific integrity.
 
@@ -48,7 +48,7 @@ A new score or metric should be developed on a separate feature branch, rebased 
    - When there is no authoritative reference, please cite a reference that provides a clear description of the function. Where possible, please cite open references that can be accessed without payment.
    - When available, please include DOIs.
  - Metrics which are still under development or which have not yet had an academic publication will be placed in a holding area within the API until the method has been properly published and peer reviewed (i.e. `scores.emerging`). The 'emerging' area of the API is subject to rapid change, still of sufficient community interest to include, similar to a 'preprint' of a score or metric.
-
+  
 Merge requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within 'scores'.
 
 ## Setting up for Development
