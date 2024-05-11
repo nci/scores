@@ -388,6 +388,11 @@ class BasicContingencyManager:
     def odds_ratio_skill_score(self):
         """
         Calculates the odds ratio skill score (also known as Yule's Q).
+        
+        Note - the term 'skill score' is often used to describe the relative performance
+        of one source of predictoins over another - e.g. the relative performance of an
+        upgraded model on its predecessor, or the relative performance to a benchmark such
+        as climatology. The odds ratio skill score is not that kind of skill score.
 
         What was the improvement of the forecast over random chance?
 
