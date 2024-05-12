@@ -90,7 +90,7 @@ class BinaryOperator(Generic[T]):
         for it in np.nditer(x):
             # validation check is done every loop - BAD
             numpy_op = NumpyThresholdOperator(np.less).get()
-            binary_item = _op(it, threshold)
+            binary_item = numpy_op(it, threshold)
             do_stuff(binary_item)
 
     Ok:
@@ -102,10 +102,16 @@ class BinaryOperator(Generic[T]):
         # validation check is done one-time here - GOOD
         numpy_op = NumpyThresholdOperator(np.less).get()
 
-        # numpy operators are already vectorized so this will work fine.
-        numpy_op(x, 0.5)
+        for it in np.nditer(x):
+            binary_item = numpy_op(it, threshold)
+            do_stuff(binary_item)  # some elementry processing function
 
-    Key takeaway unwrap the operator using ``.get()`` as early as possible
+        # EVEN BETTER:
+        # basic numpy operators are already vectorized so this will work fine.
+        binary_items = numpy_op(x, threshold)
+        vec_do_stuff(binary_items) # vectorized version
+
+    Key takeaway - unwrap the operator using ``.get()`` as early as possible
     """
 
     op: Callable[[T, T], T]
