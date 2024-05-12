@@ -1,11 +1,22 @@
 """
-This module contains methods related to the FSS score
+This module contains methods related to the FSS score.
 
-For an explanation of the FSS, and implementation considerations,
-see: [Fast calculation of the Fractions Skill Score][fss_ref]
+For an explanation of the FSS, and implementation considerations, see references below.
 
-[fss_ref]:
-https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
+Currently uses the default score defined Robert and Leans (2008) :sup:`[1,2]`. Fine grained controls are considered in `#353 <GITHUB353_>`_.
+
+The default computation is performed using`numpy` :sup:`[3]` and summed-area tables, with future optimization options considered in:
+- `#269 <GITHUB269_>`_.
+- `#270 <GITHUB270_>`_.
+
+References:
+1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
+2. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml
+3. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
+
+.. _GITHUB269: https://github.com/nci/scores/issues/269
+.. _GITHUB270: https://github.com/nci/scores/issues/270
+.. _GITHUB353: https://github.com/nci/scores/issues/353
 """
 import warnings
 from typing import Callable, Optional, Tuple
@@ -44,6 +55,9 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     """
     Uses :py:func:`fss_2d_single_field` to compute the fraction skills score for each 2D spatial
     field in the DataArray and then aggregates them over the output of gather dimensions.
+
+    The aggregation method is the intended extension of the score defined by Robert and Leans (2008)
+    for multiple forecasts :sup:`[1]`
 
     .. note::
         This method takes in a ``threshold_operator`` to compare the input
@@ -107,6 +121,9 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             do not conform. e.g. if the window size is larger than the input
             arrays, or if the the spatial dimensions in the args are missing in
             the input arrays.
+
+    References:
+        1. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml#e3
     """
 
     def _spatial_dims_exist(_dims):
@@ -265,10 +282,10 @@ def fss_2d_single_field(
     of them use some form of prefix sum algorithm to compute this quickly.
 
     For 2-D fields this data structure is known as the "Summed Area
-    Table" :sup:`1`.
+    Table" :sup:`[1]`.
 
     Once the squared sums are computed, the final FSS value can be derived by
-    accumulating the squared sums :sup:`2`.
+    accumulating the squared sums :sup:`[2]`.
 
 
     The caller is responsible for making sure the input fields are in the 2-D
