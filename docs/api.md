@@ -83,3 +83,10 @@
 .. autofunction:: scores.pandas.continuous.rmse
 .. autofunction:: scores.pandas.continuous.mae
 ```
+
+## scores.spatial
+```{eval-rst}
+.. autofunction:: scores.spatial.fss_2d
+.. autofunction:: scores.spatial.fss_2d_binary
+.. autofunction:: scores.spatial.fss_2d_single_field
+```

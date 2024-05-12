@@ -42,34 +42,38 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
 ) -> XarrayLike:
     """
-    Uses `fss_2d_single_field` to compute the fraction skills score for each 2D spatial
-    field in the DataArray and then aggregates them over the output of `gather_dimensions`.
+    Uses :py:func:`fss_2d_single_field` to compute the fraction skills score for each 2D spatial
+    field in the DataArray and then aggregates them over the output of gather dimensions.
 
-    Note: this method takes in a `threshold_operator` to compare the input
-        fields against the `event_threshold` which defaults to `numpy.greater`,
+    .. note::
+        This method takes in a ``threshold_operator`` to compare the input
+        fields against the ``event_threshold`` which defaults to ``numpy.greater``,
         and is compatible with lightweight numpy operators. If you would
         like to do more advanced binary discretization consider doing this
-        separately and using :py:func:`fss_2d_binary` instead, which takes in a
+        separately and using :py:func:`scores.spatial.fss_2d_binary` instead, which takes in a
         pre-discretized binary field.
 
     Optionally aggregates the output along other dimensions if `reduce_dims` or
-    (mutually exclusive) `preserve_dims` are specified.
+    (mutually exclusive) ``preserve_dims`` are specified.
 
     For implementation for a single 2-D field,
     see: :py:func:`fss_2d_single_field`. This offers the user the ability to use
-    their own aggregation methods, rather than `xarray.ufunc`
+    their own aggregation methods, rather than ``xarray.ufunc``
+
+    .. warning::
+        ``dask`` option is not fully tested
 
     Args:
         fcst: An array of forecasts
-        obs: An array of observations (same spatial shape as `fcst`)
-        event_threshold: A scalar to compare `fcst` and `obs` fields to generate a
+        obs: An array of observations (same spatial shape as ``fcst``)
+        event_threshold: A scalar to compare ``fcst`` and ``obs`` fields to generate a
             binary "event" field.
-        window_size: A pair of positive integers `(height, width)` of the sliding
+        window_size: A pair of positive integers ``(height, width)`` of the sliding
             window_size; the window size must be greater than 0 and fit within
-            the shape of `obs` and `fcst`.
-        spatial_dims: A pair of dimension names `(x, y)` where `x` and `y` are
+            the shape of ``obs`` and ``fcst``.
+        spatial_dims: A pair of dimension names ``(x, y)`` where ``x`` and ``y`` are
             the spatial dimensions to slide the window along to compute the FSS.
-            e.g. `("lat", "lon")`.
+            e.g. ``("lat", "lon")``.
         zero_padding: If set to true, applies a 0-valued window border around the
             data field before computing the FSS. If set to false (default), it
             uses the edges (thickness = window size) of the input fields as the border.
@@ -77,28 +81,26 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             - zero_padding = False => inner border
             - zero_padding = True => outer border with 0 values
         reduce_dims: Optional set of additional dimensions to aggregate over
-            (mutually exclusive to `preserve_dims`).
+            (mutually exclusive to ``preserve_dims``).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
-            are reduced); By default all dimensions except `spatial_dims`
-            are preserved (mutually exclusive to `reduce_dims`).
+            are reduced); By default all dimensions except ``spatial_dims``
+            are preserved (mutually exclusive to ``reduce_dims``).
         threshold_operator: The threshold operator used to generate the binary
-            event field. E.g. `np.greater`. Note: this may depend on the backend
-            `compute method` and not all operators may be supported. Generally,
-            `np.greater`, `np.less` and their counterparts. Defaults to "np.greater".
-        compute_method: currently only supports `FssComputeMethod.NUMPY`
-            see: :py:class:`FssComputeMethod`
-        dask: See xarray.apply_ufunc for options
-
-    > **CAUTION:** `dask` option is not fully tested
+            event field. E.g. ``np.greater``. Note: this may depend on the backend
+            ``compute method`` and not all operators may be supported. Generally,
+            ``np.greater``, ``np.less`` and their counterparts. Defaults to "np.greater".
+        compute_method: currently only supports :py:obj:`FssComputeMethod.NUMPY`
+            see: :py:class:`scores.fast.fss.typing.FssComputeMethod`
+        dask: See ``xarray.apply_ufunc`` for options
 
     Returns:
-        An `xarray.DataArray` containing the FSS computed over the `spatial_dims`
+        An ``xarray.DataArray`` containing the FSS computed over the ``spatial_dims``
 
         The resultant array will have the score grouped against the remaining
         dimensions, unless `reduce_dims`/`preserve_dims` are specified; in which
         case, they will be aggregated over the specified dimensions accordingly.
 
-        For an exact usage please refer to `FSS.ipynb` in the tutorials.
+        For an exact usage please refer to ``FSS.ipynb`` in the tutorials.
 
     Raises:
         DimensionError: Various errors are thrown if the input dimensions
@@ -201,17 +203,18 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     the output of a binary threshold applied to a continuous field or an event
     operator.
 
-    Optionally the user can set `check_boolean` to `True` to check that the
+    Optionally the user can set ``check_boolean`` to ``True`` to check that the
     field is boolean before any computations. Note: this asserts that the
-    underlying fields are of type `np.bool_` but does not coerce them. If
+    underlying fields are of type ``np.bool_`` but does not coerce them. If
     the user is confident that the input field is binary (but not necessarily
-    boolean), they may set this flag to False, to allow for more flexible binary
+    boolean), they may set this flag to ``False``, to allow for more flexible binary
     configurations such as 0 and 1; this should give the same results.
 
-    Uses `fss_2d` from the `scores.spatial` module to perform fss
+    Uses ``fss_2d`` from the ``scores.spatial`` module to perform fss
     computation, but without the threshold operation.
 
-    see: :py:func:`scores.spatial.fss_2d` for more details and the continuous
+    .. seealso::
+        :py:func:`scores.spatial.fss_2d` for more details and the continuous
         version. As well as detailed argument definitions.
     """
 
@@ -262,10 +265,10 @@ def fss_2d_single_field(
     of them use some form of prefix sum algorithm to compute this quickly.
 
     For 2-D fields this data structure is known as the "Summed Area
-    Table"<sup>1.</sup>.
+    Table" :sup:`1`.
 
     Once the squared sums are computed, the final FSS value can be derived by
-    accumulating the squared sums<sup>2.</sup>.
+    accumulating the squared sums :sup:`2`.
 
 
     The caller is responsible for making sure the input fields are in the 2-D
@@ -274,18 +277,18 @@ def fss_2d_single_field(
 
     Args:
         fcst: An array of forecasts
-        obs: An array of observations (same spatial shape as `fcst`)
-        event_threshold: A scalar to compare `fcst` and `obs` fields to generate a
+        obs: An array of observations (same spatial shape as ``fcst``)
+        event_threshold: A scalar to compare ``fcst`` and ``obs`` fields to generate a
             binary "event" field.
-        window_size: A pair of positive integers `(height, width)` of the sliding
+        window_size: A pair of positive integers ``height, width)`` of the sliding
             window; the window dimensions must be greater than 0 and fit within
-            the shape of `obs` and `fcst`.
+            the shape of ``obs`` and ``fcst``.
         threshold_operator: The threshold operator used to generate the binary
-            event field. E.g. `np.greater`. Note: this may depend on the backend
-            `compute method` and not all operators may be supported. Generally,
-            `np.greater`, `np.less` and their counterparts. Defaults to "np.greater".
-        compute_method: currently only supports `FssComputeMethod.NUMPY`
-            see: :py:class:`FssComputeMethod`
+            event field. E.g. ``np.greater``. Note: this may depend on the backend
+            ``compute method`` and not all operators may be supported. Generally,
+            ``np.greater``, ``np.less`` and their counterparts. Defaults to "np.greater".
+        compute_method: currently only supports ``FssComputeMethod.NUMPY``
+            see: :py:class:``FssComputeMethod``
 
     Returns:
         A float representing the accumulated FSS.

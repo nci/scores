@@ -75,15 +75,15 @@ T = TypeVar("T")
 class BinaryOperator(Generic[T]):
     """
     Generic datatype to represent binary operators. For specific event operators,
-    refer to `scores.categorical.contingency.EventOperator`.
+    refer to ``scores.categorical.contingency.EventOperator``.
 
     Note: This operator should not be called directly or on every computation.
         Rather, it is intended to perform validation before passing in the "real"
-        operator `self.op` via an unwrapping call to `BinaryOperator.get`
+        operator ``self.op`` via an unwrapping call to ``BinaryOperator.get``
 
     Bad:
 
-    ```python
+    .. code-block:: python
         x = np.rand((1000, 1000))
         threshold = 0.5
 
@@ -92,11 +92,10 @@ class BinaryOperator(Generic[T]):
             numpy_op = NumpyThresholdOperator(np.less).get()
             binary_item = _op(it, threshold)
             do_stuff(binary_item)
-    ```
 
     Ok:
 
-    ```python
+    .. code-block:: python
         x = np.rand((1000, 1000))
         threshold = 0.5
 
@@ -105,9 +104,8 @@ class BinaryOperator(Generic[T]):
 
         # numpy operators are already vectorized so this will work fine.
         numpy_op(x, 0.5)
-    ```
 
-    Key takeaway unwrap the operator using `.get()` as early as possible
+    Key takeaway unwrap the operator using ``.get()`` as early as possible
     """
 
     op: Callable[[T, T], T]
@@ -151,7 +149,7 @@ class NumpyThresholdOperator(BinaryOperator):
     """
     Generic numpy threshold operator to avoid function call over-head,
     for light-weight comparisons. For specific event operators, refer to
-    `scores.processing.discretise`
+    ``scores.processing.discretise``
 
     Important: The input field must be the first operand and the threshold
     should be the second operand otherwise some operators may have unintended
