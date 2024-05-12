@@ -1,6 +1,6 @@
 ---
 name: New Score or Metric
-description: Suggest a new score or metric which could be added to the repository
+about: Suggest a new score or metric which could be added to the repository
 
 ---
 
