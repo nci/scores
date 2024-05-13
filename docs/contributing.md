@@ -1,4 +1,4 @@
-# Contributing guide
+# Contributing Guide
 
 Thank you for considering contributing to the scores project. Contributions of all kinds are welcome from the community!
 
