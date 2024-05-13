@@ -4,6 +4,7 @@
 
 `scores` is a python package of verification scores and tools based on xarray that can scale with Dask if needed. It supports pandas where possible.
 
+Why use `scores`?
 It provides trusted implementations of a large selection of standard metrics, as well as several novel metrics.
 
 > 
@@ -16,7 +17,7 @@ Here is a **curated selection** of the metrics and tools included in `scores`:
 |-----------------------	|-----------------	|--------------	|
 | **[Continuous](https://scores.readthedocs.io/en/latest/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts                  	|MAE, MSE, RMSE, Additive Bias, Multiplicative Bias, Flip-Flop Index, Quantile Score, Murphy score, Pearson's Correlation Coefficient              	|
 | **[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**       	|Scores for evaluating forecasts that are expressed as predictive distirbutions, ensembles, and probabilities of binary events.                 	|Brier Score, CRPS for CDF, CRPS for ensemble, ROC, Isotonic Regression (reliability diagrams)              	|
-| **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)**       	|Scores for evaluating forecasts based on categories                 	|Probability of Detection (POD), False Alarm Rate (FAR), Probability of False Detection (POFD), Success Ratio, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill score, Heidke Skill Score, Odds Ratio, FIRM               	|
+| **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)**       	|Scores for evaluating forecasts based on categories                 	|Probability of Detection (POD), False Alarm Rate (FAR), Probability of False Detection (POFD), Success Ratio, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill score, Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 score, FIRM               	|
 | **[Statistical Tests](https://scores.readthedocs.io/en/latest/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals                 	|Diebold Mariano              	|
 | **[Processing tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to preprocess data.                 	|Data matching, discretisation, cumulative density function manipulation.              	|
 
