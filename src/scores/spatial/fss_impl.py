@@ -51,7 +51,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     threshold_operator: Callable = np.greater,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> XarrayLike:
+) -> xr.DataArray:
     """
     Uses :py:func:`fss_2d_single_field` to compute the fraction skills score for each 2D spatial
     field in the DataArray and then aggregates them over the output of gather dimensions.
@@ -214,7 +214,7 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     check_boolean: bool = True,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> XarrayLike:
+) -> xr.DataArray:
     """
     Takes in a binary (True or False) field of fcst and obs events. For example
     the output of a binary threshold applied to a continuous field or an event
