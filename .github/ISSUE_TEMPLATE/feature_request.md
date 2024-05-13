@@ -1,5 +1,5 @@
 ---
-name: Feature request (anything not a new score or metric)
+name: Request a feature, improvement or correction
 about: Suggest an idea for this project
 title: ''
 labels: ''
