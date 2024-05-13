@@ -1,22 +1,16 @@
 ---
 name: New Score or Metric
 about: Suggest a new score or metric which could be added to the repository
-title: ''
-labels: ''
-assignees: ''
 
 ---
 
-A new score or metric should be developed on a separate feature branch, rebased against the main branch. Each merge request should include:
+**I would like the following metric or statistical test to be considered for addition to the `scores` repository**  
+Please briefly describe the metric or statistical test and why you think it would be useful.
 
-    The implementation of the new metric or score in xarray, ideally with support for pandas and dask
-    100% unit test coverage
-    A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data
-    API documentation (docstrings) using Napoleon (google) style, making sure to clearly explain the use of the metrics
-    A reference to the paper which described the metrics, added to the API documentation
-    For metrics which do not have a paper reference, an online source or reference should be provided
-    For metrics which are still under development or which have not yet had an academic publication, they will be placed in a holding area within the API until the method has been properly published and peer reviewed (i.e. scores.emerging). The 'emerging' area of the API is subject to rapid change, still of sufficient community interest to include, similar to a 'preprint' of a score or metric.
+**Please provide a reference that describes the metric or statistical test**  
+Note: if the reference includes multiple versions of the metric, and you are interested in a specific version, please note that (e.g. specify which theorem or corollary). 
 
-All merge requests should comply with the coding standards outlined in this document. Merge requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within 'scores'.
-
-A github ticket should be created explaining the metric which is being implemented and why it is useful.
+**(Please delete this section if not applicable) I intend to submit a pull request for the new metric or statistical test**
+- [ ] Please read the [Contributing guide,](https://scores.readthedocs.io/en/develop/contributing.html#contributing-guide) in particular the [Development Process for a New Score or Metric](https://scores.readthedocs.io/en/develop/contributing.html#development-process-for-a-new-score-or-metric) section
+- [ ] Please read the [pull request checklist](https://github.com/nci/scores/blob/develop/.github/pull_request_template.md)
+- [ ] I understand that, due to practical constraints, it may not always be possible for a metric or statistical test to be added
