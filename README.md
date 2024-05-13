@@ -1,19 +1,26 @@
-# About the Scores Project
+# Scores: forecast verification and evaluation software
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FExplanation.ipynb)
+
+`scores` is a python package of verification scores and tools based on xarray that can scale with Dask if needed. It supports pandas where possible.
+
+It provides trusted implementations of a large selection of standard metrics, as well as several novel metrics.
 
 > 
 > **A list of over 50 metrics, statistical techniques and data processing tools contained in `scores` is [available here](https://scores.readthedocs.io/en/latest/included.html).**
 
 
-One-line intro: xarray based verification scores and tools that can scale with Dask if needed. Pandas supported where possible.
-Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
-
 Here is a **curated selection** of the metrics and tools included in `scores`:
 
-| Continuous                      | Probability | Categorical      | Statistical Tests |
-| ----------                      | ----------- | -----------      | ----------------- |
-| MAE, MSE, RMSE, Additive Bias, Multiplicative Bias, Flip-Flop Index, Quantile Score, Murphy score, Pearson's Correlation Coefficient  | Brier Score, CRPS for CDF, CRPS for ensemble, ROC, Isotonic Regression (reliability diagrams)   | Hit Rate, Probability of False Detection, Success Ratio, Peirce's Skill Score, FIRM |  Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications) |
+|                       	| **Description** 	| **Included** 	|
+|-----------------------	|-----------------	|--------------	|
+| **[Continuous](https://scores.readthedocs.io/en/latest/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts                  	|MAE, MSE, RMSE, Additive Bias, Multiplicative Bias, Flip-Flop Index, Quantile Score, Murphy score, Pearson's Correlation Coefficient              	|
+| **[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**       	|Scores for evaluating forecasts that are expressed as predictive distirbutions, ensembles, and probabilities of binary events.                 	|Brier Score, CRPS for CDF, CRPS for ensemble, ROC, Isotonic Regression (reliability diagrams)              	|
+| **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)**       	|Scores for evaluating forecasts based on categories                 	|Probability of Detection (POD), False Alarm Rate (FAR), Probability of False Detection (POFD), Success Ratio, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill score, Heidke Skill Score, Odds Ratio, FIRM               	|
+| **[Statistical Tests](https://scores.readthedocs.io/en/latest/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals                 	|Diebold Mariano              	|
+| **[Processing tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to preprocess data.                 	|Data matching, discretisation, cumulative density function manipulation.              	|
+
+
 
 **Notice -- This repository is currently undergoing initial construction and maintenance. It is getting much closer to our goals for version one, but there are a few more things to add. This notice will be removed after the first feature release. In the meantime, please feel free to look around, and don't hesitate to get in touch with any questions (see the contributing guide for how).**
 
