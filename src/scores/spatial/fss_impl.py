@@ -57,7 +57,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     field in the DataArray and then aggregates them over the output of gather dimensions.
 
     The aggregation method is the intended extension of the score defined by Robert and Leans (2008)
-    for multiple forecasts :sup:`[1]`
+    for multiple forecasts :sup:`[1,2]`
 
     .. note::
         This method takes in a ``threshold_operator`` to compare the input
@@ -122,8 +122,10 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             arrays, or if the the spatial dimensions in the args are missing in
             the input arrays.
 
+        DimensionWarning: If ``spatial_dims`` are attempting to be preserved e.g. in ``preserve_dims``
     References:
-        1. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml#e3
+        1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
+        2. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml#e3
     """
 
     def _spatial_dims_exist(_dims):
@@ -270,7 +272,7 @@ def fss_2d_single_field(
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
     """
-    Calculates the Fractions Skill Score (FSS) for a given forecast and observed
+    Calculates the Fractions Skill Score (FSS) :sup:`[1]` for a given forecast and observed
     2-D field.
 
     The FSS is computed by counting the squared sum of forecast and observation
@@ -282,10 +284,10 @@ def fss_2d_single_field(
     of them use some form of prefix sum algorithm to compute this quickly.
 
     For 2-D fields this data structure is known as the "Summed Area
-    Table" :sup:`[1]`.
+    Table" :sup:`[2]`.
 
     Once the squared sums are computed, the final FSS value can be derived by
-    accumulating the squared sums :sup:`[2]`.
+    accumulating the squared sums :sup:`[3]`.
 
 
     The caller is responsible for making sure the input fields are in the 2-D
@@ -317,8 +319,9 @@ def fss_2d_single_field(
             not match.
 
     References:
-        1. https://en.wikipedia.org/wiki/Summed-area_table
-        2. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
+        1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
+        2. https://en.wikipedia.org/wiki/Summed-area_table
+        3. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
     """
     fss_backend = get_compute_backend(compute_method)
     fb_obj = fss_backend(
