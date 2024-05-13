@@ -1,9 +1,3 @@
----
-name: New Score or Metric
-about: Suggest a new score or metric which could be added to the repository
-
----
-
 Please work through the following checklists. Delete anything that isn't relevant.
 ## Development for new xarray-based metrics
 - [ ] Works with n-dimensional data and includes `reduce_dims`, `preserve_dims`, and `weights` args.
