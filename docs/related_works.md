@@ -1,10 +1,9 @@
-#Related Works
+# Related Works
 
 Here are some related packages, that you may wish to check out.
 
-
 **`climpred`**
-- Open source Python package for verification of weather and cliamte forecasts
+- Open source Python package for verification of weather and climate forecasts
 - Software Repository: https://github.com/pangeo-data/climpred
 - Documentation: https://climpred.readthedocs.io/en/stable/
 - Reference: Brady, R. X., & Spring, A. (2021). Climpred: Verification of weather and climate forecasts. *Journal of Open Source Software, 6*(59), 2781. https://doi.org/10.21105/joss.02781
