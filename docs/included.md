@@ -298,7 +298,7 @@
 * -  
     - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
@@ -418,7 +418,7 @@
 * -  
     - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
   -
-    [API](https://scores.readthedocs.io/en/develop/api.html#scores.categorical.BasicContingencyManager.true_skill_statistic)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.true_skill_statistic)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
