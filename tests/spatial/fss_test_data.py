@@ -130,19 +130,19 @@ FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_ZERO_PADDED_FCST = np.array([
 # fmt: on
 
 
-def fss_naive_4x5_data_3x3_window(fcst, obs, ws, th):
+def _fss_naive_small_data(fcst, obs, ws, th):  # pylint: disable=too-many-locals
     """
     Naive `O(N^2 * W^2)` implementation for FSS calculations
 
     .. warning::
         To be used for testing and small data sizes only
     """
-    (H, W) = fcst.shape
+    (h, w) = fcst.shape
     sum_sq_fcst = 0
     sum_sq_obs = 0
     sum_sq_diff = 0
-    for i in range(0, H - ws + 1):
-        for j in range(0, W - ws + 1):
+    for i in range(0, h - ws + 1):
+        for j in range(0, w - ws + 1):
             sum_fcst = 0
             sum_obs = 0
             for k in range(i, i + ws):
@@ -156,28 +156,28 @@ def fss_naive_4x5_data_3x3_window(fcst, obs, ws, th):
     return fss
 
 
-EXPECTED_FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW = fss_naive_4x5_data_3x3_window(
+EXPECTED_FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW = _fss_naive_small_data(
     FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_OBS,
     FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_FCST,
     FSS_CURATED_WINDOW_SIZE_3X3,
     FSS_CURATED_THRESHOLD,
 )
 
-EXPECTED_FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_ZERO_PADDED = fss_naive_4x5_data_3x3_window(
+EXPECTED_FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_ZERO_PADDED = _fss_naive_small_data(
     FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_ZERO_PADDED_OBS,
     FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_ZERO_PADDED_FCST,
     FSS_CURATED_WINDOW_SIZE_3X3,
     FSS_CURATED_THRESHOLD,
 )
 
-EXPECTED_FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW = fss_naive_4x5_data_3x3_window(
+EXPECTED_FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW = _fss_naive_small_data(
     FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_OBS,
     FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_FCST,
     FSS_CURATED_WINDOW_SIZE_4X4,
     FSS_CURATED_THRESHOLD,
 )
 
-EXPECTED_FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_ZERO_PADDED = fss_naive_4x5_data_3x3_window(
+EXPECTED_FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_ZERO_PADDED = _fss_naive_small_data(
     FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_ZERO_PADDED_OBS,
     FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_ZERO_PADDED_FCST,
     FSS_CURATED_WINDOW_SIZE_4X4,
