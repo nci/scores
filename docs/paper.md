@@ -42,7 +42,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 In order to meet the needs of researchers, `scores`:
 
-- is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `Scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: 
+- is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: 
   - gridded earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, lat/lon or site-based data (e.g. forecasts for specific locations).
 - it is designed to handle missing data, masking of data and weighting of results.
