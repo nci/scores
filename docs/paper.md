@@ -45,7 +45,7 @@ In order to meet the needs of researchers, `scores`:
 - is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: 
   - gridded earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, lat/lon or site-based data (e.g. forecasts for specific locations).
-- it is designed to handle missing data, masking of data and weighting of results.
+- is designed to handle missing data, masking of data and weighting of results.
 - includes a companion Jupyter Notebook for each score, metric and statistical test to demonstrate its use in practice.
 - includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
