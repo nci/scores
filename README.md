@@ -2,10 +2,12 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FExplanation.ipynb)
 
+> 
+> **A list of over 50 metrics, statistical techniques and data processing tools contained in `scores` is [available here](https://scores.readthedocs.io/en/latest/included.html).**
+
+
 One-line intro: xarray based verification scores and tools that can scale with Dask if needed. Pandas supported where possible.
 Why use it: trusted implementations, novel metrics, performance, one-stop-shop.
-
-A **complete list** of the 47 included metrics, statistical techniques and data processing tools is: [available here](https://scores.readthedocs.io/en/latest/included.html).
 
 Here is a **curated selection** of the metrics and tools included in `scores`:
 
@@ -21,7 +23,7 @@ The tutorial gallery is hosted at [as part of the documentation, here](https://s
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation, and optimisation of forecasts, predictions or models. It primarily supports the geoscience and Earth system science communities. It also has wide potential application in machine learning, and in other domains.
 
-`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, Flip-Flop Index), complex scores (e.g. threshold weighted CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including Cumulative Density Functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
+`scores` includes novel scores not commonly found elsewhere (e.g. FIRM, Flip-Flop Index), complex scores (e.g. threshold weighted CRPS), more common scores (e.g. MAE, RMSE) and statistical tests (such as the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
 `scores` is focused on supporting xarray datatypes for Earth system data. It also aims to be compatible with pandas, geopandas, pangeo and work with NetCDF4, hdf5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance.
 
