@@ -37,7 +37,7 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Isotonic Regression (Isotonic Fit, Relability Diagram)
+* - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.isotonic_fit)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)   
@@ -97,7 +97,7 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Relability Diagram, *see Isotonic Regression*
+* - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
   - &mdash;
@@ -156,7 +156,7 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Isotonic Regression (Isotonic Fit, Relability Diagram)
+* - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.isotonic_fit)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Isotonic_Regression_And_Reliability_Diagrams.html)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)
@@ -188,7 +188,7 @@
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.roc_curve_data)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
-* - Relability Diagram, *see Isotonic Regression*
+* - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
   - &mdash;  
@@ -224,6 +224,14 @@
   - 
     [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
+    - Cohen's Kappa (Heidke Skill Score)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.cohens_kappa)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+     [Heidke Skill Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HSS) 
+* -  
     - Critical Success Index (Threat Score)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.critical_success_index)
@@ -232,6 +240,22 @@
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)
 * -  
+    - Equitable Threat Score (Gilbert Skill Score)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.equitable_threat_score)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+     [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
+* -  
+    - F1 Score
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.f1_score)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/F-score)
+* -  
     - False Alarm Rate (Probability of False Detection (POFD))
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.false_alarm_rate)
@@ -239,6 +263,14 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+* -  
+    - False Alarm Ratio (FAR)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.false_alarm_ratio)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
 * -  
     - Fraction Correct, *see Accuracy*
   -
@@ -256,15 +288,31 @@
   - 
     [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
 * -  
-    - Hannssen and Kuipers' Discriminant, *see Peirce's Skill Score*
+    - Gilbert Skill Score (Equitable Threat Score)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.gilberts_skill_score)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+     [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS) 
 * -  
-    - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity)
+    - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+* -  
+    - Heidke Skill Score (Cohen's Kappa)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.heidke_skill_score)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+     [Heidke skill score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HSS) 
+* -  
+    - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity, Recall)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.hit_rate)
   - 
@@ -272,7 +320,23 @@
   - 
     [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
-    - Peirce's Skill Score (True Skill Statistic, Hannssen and Kuipers' Discriminant)
+    - Odds Ratio
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.odds_ratio)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
+* -  
+    - Odds Ratio Skill Score (Yule's Q)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.odds_ratio_skill_score)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
+* -  
+    - Peirce's Skill Score (True Skill Statistic, Hanssen and Kuipers' Discriminant)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.peirce_skill_score)
   - 
@@ -280,7 +344,15 @@
   - 
     [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
-    - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity)
+    - Precision (Success Ratio)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.precision)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
+* -  
+    - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity, Recall)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.probability_of_detection)
   - 
@@ -296,7 +368,15 @@
   - 
     [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
 * -  
-    - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate)
+    - Recall (Hit Rate, Probability of Detection (POD), True Positive Rate, Sensitivity)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.recall)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+* -  
+    - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.sensitivity)
   - 
@@ -312,7 +392,7 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
-    - Success Ratio
+    - Success Ratio (Precision)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.success_ratio)
   - 
@@ -328,21 +408,29 @@
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
 * -  
-    - True Positive Rate, *see Hit Rate*
+    - True Positive Rate (Hit Rate, Probability of Detection (POD), Sensitivity, Recall)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.true_positive_rate)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
-    - True Skill Statistic, *see Peirce's Skill Score*
+    - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.true_skill_statistic)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash; 
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+* -  
+    - Yule's Q (Odds Ratio Skill Score)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.odds_ratio_skill_score)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2) 
 * - FIxed Risk Multicategorical (FIRM)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.firm)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/FIRM.html)
@@ -399,106 +487,80 @@
 
 * - Name (Alphabetical order)
   - API
-  - Tutorial
-  - Reference(s)
+  - Utilised For
 * - Binary Discretise
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.binary_discretise)   
+  - Receiver (Relative) Operating Characteristic (ROC)
 * - Binary Discretise Proportion
-  -     
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.binary_discretise_proportion)    
+  - Flip-Flop Index
 * - Broadcast and Match Not-a-Number (NaN)
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.broadcast_and_match_nan)   
+  - Murphy Score (Mean Elementary Score)
 * - Comparative Discretise
-  -    
-  - 
-  -
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.comparative_discretise)   
+  - Receiver (Relative) Operating Characteristic (ROC)
 * - Cumulative Distribution Functions (CDFs)
-  - 
   - 
   - 
 * -  
     - Add Thresholds
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.add_thresholds)
   - 
-    
-  - 
-       
+    Continuous Ranked Probability Score (CRPS) for CDFs; CRPS CDF Brier Decomposition
 * -  
     - CDF Envelope
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.cdf_envelope)
   - 
-    
-  - 
-       
+    Adjust Forecast for CRPS     
 * -  
     - Decreasing CDFs
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.decreasing_cdfs)
   - 
-    
-  - 
-    
+    Adjust Forecast for CRPS
 * -  
     - Fill CDF
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.fill_cdf)
   - 
-    
-  - 
-    
+    CRPS for CDFs; CRPS CDF Brier Decomposition
 * -  
     - Integrate Square Piecewise Linear
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.integrate_square_piecewise_linear)
   - 
-    
-  - 
-    
+    CRPS for CDFs 
 * -  
     - Observed CDF
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.observed_cdf)
   - 
-    
-  - 
-    
+    CRPS for CDFs; CRPS CDF Brier Decomposition
 * -  
     - Propagate Not-a-Number (NaN) 
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.propagate_nan)
   - 
-    
-  - 
-
+    Adjust Forecast for CRPS; CRPS CDF Brier Decomposition; CRPS for CDFs   
 * -  
     - Round Values 
   -
-    
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.cdf.round_values)
   - 
-    
-  - 
-
+    CRPS for CDFs; CRPS CDF Brier Decomposition
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
-  - &mdash;
 * - Isotonic Regression (Isotonic Fit, Reliability Diagram)
-  - 
-  - 
-  - 
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.isotonic_fit)
+  - See "Isotonic Regression (Isotonic Fit, Reliability Diagram)" entries in [Continuous](#continuous) and [Probability](#probability)
 * - Proportion Exceeding
-  -    
-  - 
-  -
-* - Relability Diagram, *see Isotonic Regression*
-  - &mdash;
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.proportion_exceeding)   
+  - Flip-Flop Index
+* - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;   
 ```

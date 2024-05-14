@@ -1,13 +1,28 @@
-A new score or metric should be developed on a separate feature branch, rebased against the main branch. Each merge request should include:
+Please work through the following checklists. Delete anything that isn't relevant.
+## Development for new xarray-based metrics
+- [ ] Works with n-dimensional data and includes `reduce_dims`, `preserve_dims`, and `weights` args.
+- [ ] Typehints added
+- [ ] Docstrings complete and followed Napoleon (google) style
+- [ ] Reference to paper/webpage is in docstring
+- [ ] Add error handling
+- [ ] Imported into the API
 
-    The implementation of the new metric or score in xarray, ideally with support for pandas and dask
-    100% unit test coverage
-    A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data
-    API documentation (docstrings) using Napoleon (google) style, making sure to clearly explain the use of the metrics
-    A reference to the paper which described the metrics, added to the API documentation
-    For metrics which do not have a paper reference, an online source or reference should be provided
-    For metrics which are still under development or which have not yet had an academic publication, they will be placed in a holding area within the API until the method has been properly published and peer reviewed (i.e. scores.emerging). The 'emerging' area of the API is subject to rapid change, still of sufficient community interest to include, similar to a 'preprint' of a score or metric.
+## Testing of new xarray-based metrics
+- [ ] 100% unit test coverage
+- [ ] Test that metric is compatible with dask.
+- [ ] Test that metrics work with inputs that contain NaNs
+- [ ] Test that broadcasting with xarray works
+- [ ] Test both reduce and preserve dims arguments work
+- [ ] Test that errors are raised as expected
+- [ ] Test that it works with both `xr.Dataarrays` and `xr.Datasets`
 
-All merge requests should comply with the coding standards outlined in this document. Merge requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within 'scores'.
+## Tutorial notebook 
+- [ ] Short introduction to why you would use that metric and what it tells you
+- [ ] A link to a reference
+- [ ] A "things to try next" section at the end
+- [ ] Add notebook to [Explanation.ipynb](https://github.com/nci/scores/blob/develop/tutorials/Explanation.ipynb)
+- [ ] Optional - a detailed discussion of how the metric works at the end of the notebook
 
-A github ticket should be created explaining the metric which is being implemented and why it is useful.
+## Documentation
+- [ ] Add the score to the [API documentation](https://github.com/nci/scores/blob/develop/docs/api.md)
+- [ ] Add the score to the [included list of metrics and tools](https://github.com/nci/scores/blob/develop/docs/included.md)
