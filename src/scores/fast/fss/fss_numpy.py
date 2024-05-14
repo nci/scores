@@ -35,6 +35,16 @@ class FssNumpy(FssBackend):
         obs_partial_sums = self._obs_pop.cumsum(1).cumsum(0)
         fcst_partial_sums = self._fcst_pop.cumsum(1).cumsum(0)
 
+        # pad first row/column with 0s, addressses off-by-one window sizes for the first row/column
+        # due to the way meshgrid indexing works.
+        zero_row = np.zeros((fcst_partial_sums.shape[0], 1))
+        obs_partial_sums = np.hstack([zero_row, obs_partial_sums])
+        fcst_partial_sums = np.hstack([zero_row, fcst_partial_sums])
+
+        zero_col = np.zeros((1, fcst_partial_sums.shape[1]))
+        obs_partial_sums = np.vstack([zero_col, obs_partial_sums])
+        fcst_partial_sums = np.vstack([zero_col, fcst_partial_sums])
+
         if self.zero_padding:
             # ------------------------------
             # 0-padding
@@ -53,22 +63,26 @@ class FssNumpy(FssBackend):
             # the rectangle represents the
             # FSS computation region.
             # ------------------------------
-            # use ceil to avoid 1x1 windows to be coerced to 0x0
-            # w_h = window height, w_w = window width
-            half_w_h = int(np.ceil(self.window_size[0] / 2))
-            half_w_w = int(np.ceil(self.window_size[1] / 2))
-            im_h = self.fcst.shape[0]
-            im_w = self.fcst.shape[1]
+            (w_h, w_w) = (self.window_size[0], self.window_size[1])
+            half_w_h = int(w_h / 2)
+            half_w_w = int(w_w / 2)
+            im_h = fcst_partial_sums.shape[0]
+            im_w = fcst_partial_sums.shape[1]
+
+            # get remaining window size, incase window size is odd
+            rem_h = w_h - half_w_h
+            rem_w = w_w - half_w_w
 
             # Zero padding is equivilent to clamping the coordinate values at the border
             # r = rows, c = cols, tl = top-left, br = bottom-right
-            r_tl = np.clip(np.arange(-half_w_h, im_h - half_w_h), 0, im_h - half_w_h - 1)
-            c_tl = np.clip(np.arange(-half_w_w, im_w - half_w_w), 0, im_w - half_w_w - 1)
+            r_tl = np.clip(np.arange(-half_w_h, im_h - half_w_h), 0, im_h - 1)
+            c_tl = np.clip(np.arange(-half_w_w, im_w - half_w_w), 0, im_w - 1)
             mesh_tl = np.meshgrid(r_tl, c_tl, indexing="ij")
 
-            r_br = np.clip(np.arange(half_w_h, im_h + half_w_h), half_w_h, im_h - 1)
-            c_br = np.clip(np.arange(half_w_w, im_w + half_w_w), half_w_w, im_w - 1)
+            r_br = np.clip(np.arange(rem_h, im_h + rem_h), 1, im_h - 1)
+            c_br = np.clip(np.arange(rem_w, im_w + rem_w), 1, im_w - 1)
             mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
+
         else:
             # ------------------------------
             # interior border
@@ -86,8 +100,8 @@ class FssNumpy(FssBackend):
             # "//" represents the effective
             # FSS computation region
             # ------------------------------
-            im_h = self.fcst.shape[0] - self.window_size[0]
-            im_w = self.fcst.shape[1] - self.window_size[1]
+            im_h = fcst_partial_sums.shape[0] - self.window_size[0]
+            im_w = fcst_partial_sums.shape[1] - self.window_size[1]
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
             mesh_br = (mesh_tl[0] + self.window_size[0], mesh_tl[1] + self.window_size[1])
 
