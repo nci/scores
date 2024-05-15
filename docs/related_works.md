@@ -3,11 +3,11 @@
 Here are some related packages that may be of interest.
 
 - **`xskillscore`**
-	- Open source Python package that provides verification metrics of deterministic (and probabilistic from properscoring) forecasts with xarray
+	- Open source Python package that provides verification metrics of deterministic (and probabilistic from properscoring) forecasts with xarray.
 	- [Software Repository](https://github.com/xarray-contrib/xskillscore); [Documentation](https://xskillscore.readthedocs.io/en/latest/); [Reference](https://doi.org/10.5281/zenodo.5173153)
 
 - **`climpred`**
-	- Open source Python package for verification of weather and climate forecasts
+	- Open source Python package for verification of weather and climate forecasts.
 	- [Software Repository](https://github.com/pangeo-data/climpred); [Documentation](https://climpred.readthedocs.io/en/stable/); [Reference](https://doi.org/10.21105/joss.02781)
 
 - **`Verif`**  
