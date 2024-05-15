@@ -3,7 +3,7 @@ Contains frequently-used functions of a general nature within scores
 """
 
 import warnings
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Iterable
 from typing import Optional, Union
 
 import numpy as np
