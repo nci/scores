@@ -1,36 +1,22 @@
 # Related Works
 
-Here are some related packages, that you may wish to check out.
+Here are some related packages that may be of interest.
 
-**`climpred`**
-- Open source Python package for verification of weather and climate forecasts
-- Software Repository: https://github.com/pangeo-data/climpred
-- Documentation: https://climpred.readthedocs.io/en/stable/
-- Reference: Brady, R. X., & Spring, A. (2021). Climpred: Verification of weather and climate forecasts. *Journal of Open Source Software, 6*(59), 2781. https://doi.org/10.21105/joss.02781
+- **`xskillscore`**
+	- Open source Python package that provides verification metrics of deterministic (and probabilistic from properscoring) forecasts with xarray
+	- [Software Repository](https://github.com/xarray-contrib/xskillscore); [Documentation](https://xskillscore.readthedocs.io/en/latest/); [Reference](https://doi.org/10.5281/zenodo.5173153)
 
-**`xskillscore`**
-- Open source Python package that provides verification metrics of deterministic (and probabilistic from properscoring) forecasts with xarray
-- Software Repository: https://github.com/xarray-contrib/xskillscore
-- Documentation: https://xskillscore.readthedocs.io/en/latest/
-- Reference: Bell, R., Spring, A., Brady, R., Huang, A., Squire, D., Blackwood, Z., Sitter, M. C., & Chegini., T. (2021). *Xarray-contrib/xskillscore: Metrics for verifying forecasts.* Zenodo. https://doi.org/10.5281/zenodo.5173153
+- **`climpred`**
+	- Open source Python package for verification of weather and climate forecasts
+	- [Software Repository](https://github.com/pangeo-data/climpred); [Documentation](https://climpred.readthedocs.io/en/stable/); [Reference](https://doi.org/10.21105/joss.02781)
 
-**`Verif`**  
-- An open source command-line tool for forecast verification. It generates verification plots. It can evaluate deterministic and probabilistic predictions.
-- Software Repository: https://github.com/WFRT/verif
-- Documentation: https://github.com/WFRT/verif/wiki
-- Reference: Nipen, T. N., Stull, R. B., Lussana, C., & Seierstad, I. A. (2023). Verif: A weather-prediction verification tool for effective product development. *Bulletin of the American Meteorological Society, 104*(9), E1610–E1618. https://doi.org/10.1175/bams-d-22-0253.1
+- **`Verif`**  
+	- Open source command-line tool for forecast verification. Generates verification plots. Can evaluate deterministic and probabilistic predictions.
+	- [Software Repository](https://github.com/WFRT/verif); [Wiki](https://github.com/WFRT/verif/wiki); [Reference](https://doi.org/10.1175/bams-d-22-0253.1)
 
-**`METplus`**
-- `METplus` includes a database and visualisation system with python wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++. 
-- Website: https://dtcenter.org/community-code/metplus
-- Software Repository: https://github.com/dtcenter/METplus
-- Documentation: https://metplus.readthedocs.io/en/latest/
-- Reference: Brown, B., Jensen, T., Gotway, J. H., Bullock, R., Gilleland, E., Fowler, T., Newman, K., Adriaansen, D., Blank, L., Burek, T., & others. (2021). The model evaluation tools (MET): More than a decade of community-supported forecast verification. *Bulletin of the American Meteorological Society, 102*(4), E782-E807. https://doi.org/10.1175/bams-d-19-0093.1
-
-
-
-
-
+- **`METplus`**
+	- `METplus` includes a database and visualisation system with python wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++. 
+	- 	[Website](https://dtcenter.org/community-code/metplus); [Software Repository](https://github.com/dtcenter/METplus); [Documentation](https://metplus.readthedocs.io/en/latest/); [Reference](https://doi.org/10.1175/bams-d-19-0093.1) 
 
 
 
