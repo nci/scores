@@ -5,7 +5,6 @@ from collections.abc import Iterable
 from typing import Optional, Union
 
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
