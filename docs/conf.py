@@ -8,8 +8,7 @@
 from scores import __version__
 
 project = "scores"
-copyright = "2023, Australian Bureau of Meteorology"
-author = "Australian Bureau of Meteorology"
+copyright = "Licensed under Apache 2.0 - https://www.apache.org/licenses/LICENSE-2.0"
 release = "0.9"
 
 version = __version__
