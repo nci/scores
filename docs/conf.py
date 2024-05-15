@@ -37,7 +37,10 @@ exclude_patterns = [
 
 html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
-
+html_theme_options = {
+    "repository_url": "https://github.com/nci/scores",
+    "use_repository_button": True,
+}
 
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
