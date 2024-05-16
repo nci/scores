@@ -512,7 +512,7 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=operator.gt
+        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         This method should be over-ridden to return forecast and observed event tables
@@ -521,7 +521,7 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=operator.gt
+        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         This method should be over-ridden to return a contingency table.
@@ -557,7 +557,7 @@ class ThresholdEventOperator(EventOperator):
         if not event_threshold:
             event_threshold = self.default_event_threshold
 
-        if not op_fn:
+        if op_fn is None:
             op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
@@ -570,7 +570,7 @@ class ThresholdEventOperator(EventOperator):
         return (forecast_events, observed_events)
 
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=operator.gt
+        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         Using this function requires a careful understanding of the structure of the data
@@ -583,6 +583,9 @@ class ThresholdEventOperator(EventOperator):
 
         if not event_threshold:
             event_threshold = self.default_event_threshold
+
+        if op_fn is None:
+            op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
         observed_events = op_fn(observed, event_threshold)
