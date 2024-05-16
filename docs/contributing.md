@@ -48,6 +48,9 @@ A new score or metric should be developed on a separate feature branch, rebased 
    - When there is no authoritative reference, please cite a reference that provides a clear description of the function. Where possible, please cite open references that can be accessed without payment.
    - When available, please include DOIs.
  - Metrics which are still under development or which have not yet had an academic publication will be placed in a holding area within the API until the method has been properly published and peer reviewed (i.e. `scores.emerging`). The 'emerging' area of the API is subject to rapid change, still of sufficient community interest to include, similar to a 'preprint' of a score or metric.
+
+Please also read the [pull request checklist](https://github.com/nci/scores/blob/develop/.github/pull_request_template.md).
+
   
 Merge requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within 'scores'.
 
