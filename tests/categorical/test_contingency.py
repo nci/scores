@@ -139,7 +139,7 @@ def test_categorical_table():
     """
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
     table = match.make_contingency_manager(simple_forecast, simple_obs)
-    table2 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
+    table2 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt)
     counts = table.get_counts()
     actual_table = table.get_table()
 
