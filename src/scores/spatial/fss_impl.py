@@ -237,9 +237,8 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
         version. As well as detailed argument definitions.
     """
 
-    if check_boolean:
-        if not (fcst.dtype == np.bool_ and obs.dtype == np.bool_):
-            raise FieldTypeError("Input field is not boolean")
+    if check_boolean and not (fcst.dtype == np.bool_ and obs.dtype == np.bool_):
+        raise FieldTypeError("Input field is not boolean")
 
     # Note: this s a dummy value that will be discarded by the
     # `left_identity_operator` mainly used to circumvent passing in "None" to

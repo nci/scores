@@ -267,6 +267,7 @@ def test_fss_2d_binary(window_size, event_threshold, reduce_dims, preserve_dims,
         spatial_dims=["lat", "lon"],
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
+        check_boolean=False,
     )
     xr.testing.assert_allclose(res, expected)
 
@@ -278,6 +279,10 @@ def test_fss_2d_binary_bool_check():
     with pytest.raises(FieldTypeError):
         fss_2d_binary(
             da_fcst, np.greater(da_obs, 0.5), window_size=(5, 5), spatial_dims=["lat", "lon"], check_boolean=True
+        )
+    with pytest.raises(FieldTypeError):
+        fss_2d_binary(
+            np.greater(da_fcst, 0.5), da_obs, window_size=(5, 5), spatial_dims=["lat", "lon"], check_boolean=True
         )
 
 
@@ -330,6 +335,14 @@ def test_invalid_input_dimensions(large_obs):
             event_threshold=5.0,
             window_size=(5, 5),
             spatial_dims=["lat", "lon"],
+        )
+
+    with pytest.raises(DimensionError):
+        fss_2d_single_field(
+            da_fcst[0].values,
+            da_obs[0].values,
+            event_threshold=5.0,
+            window_size=(5, 5),
         )
 
     with pytest.raises(DimensionError):
