@@ -67,8 +67,6 @@ To install the mathematical functions ONLY (no tutorial notebooks, no developer 
 
 `scores` can be used with a broad variety of data sources. See the [Data Sources](https://scores.readthedocs.io/en/latest/data.html) page and this [tutorial](https://scores.readthedocs.io/en/latest/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
 
-The `scores` package does not contain datasets (aside from very small files to support automated testing). Therefore, users aren't required to download unnecessary datasets, and can instead supply the specific data they wish to work with.
-
 ## Acknowledging This Work
 
 If you find this work useful, please consider citing or acknowledging it. A citable DOI is coming soon. This section will be updated in the coming weeks to include the correct citation.
