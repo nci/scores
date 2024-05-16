@@ -31,7 +31,7 @@ from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 DEFAULT_PRECISION = 8
 
 
-class BasicContingencyManager:  # pylint: disable=too-many-public-methods
+class BasicContingencyManager:
     """
     A BasicContingencyManager is produced when a BinaryContingencyManager is transformed.
 
@@ -557,7 +557,7 @@ class ThresholdEventOperator(EventOperator):
         if not event_threshold:
             event_threshold = self.default_event_threshold
 
-        if not op_fn:
+        if not callable(op_fn):
             op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
@@ -584,7 +584,7 @@ class ThresholdEventOperator(EventOperator):
         if not event_threshold:
             event_threshold = self.default_event_threshold
 
-        if not op_fn:
+        if not callable(op_fn):
             op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
