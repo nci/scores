@@ -139,13 +139,15 @@ def test_categorical_table():
     """
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
     table = match.make_contingency_manager(simple_forecast, simple_obs)
-    table2 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
+    table2 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt)
     counts = table.get_counts()
     actual_table = table.get_table()
 
     # Test event tables creation matches the stored tables
     fcst_events, obs_events = match.make_event_tables(simple_forecast, simple_obs)
-    fcst_events2, obs_events2 = match.make_event_tables(simple_forecast, simple_obs, event_threshold=1.3)
+    fcst_events2, obs_events2 = match.make_event_tables(
+        simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt
+    )
     xr.testing.assert_equal(fcst_events, table.forecast_events)
     xr.testing.assert_equal(fcst_events2, table.forecast_events)
     xr.testing.assert_equal(obs_events, table.observed_events)

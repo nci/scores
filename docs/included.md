@@ -384,7 +384,7 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
-    - Specificity
+    - Specificity (True Negative Rate)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.specificity)
   - 
@@ -407,6 +407,14 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
+* -  
+    - True Negative Rate, *see Specificity*
+  -
+    &mdash;
+  - 
+    &mdash;
+  - 
+    &mdash;
 * -  
     - True Positive Rate (Hit Rate, Probability of Detection (POD), Sensitivity, Recall)
   -
