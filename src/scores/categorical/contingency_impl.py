@@ -31,7 +31,7 @@ from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 DEFAULT_PRECISION = 8
 
 
-class BasicContingencyManager:
+class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     """
     A BasicContingencyManager is produced when a BinaryContingencyManager is transformed.
 
