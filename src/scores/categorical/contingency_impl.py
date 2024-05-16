@@ -557,7 +557,7 @@ class ThresholdEventOperator(EventOperator):
         if not event_threshold:
             event_threshold = self.default_event_threshold
 
-        if not callable(op_fn):
+        if op_fn is None:
             op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
@@ -584,7 +584,7 @@ class ThresholdEventOperator(EventOperator):
         if not event_threshold:
             event_threshold = self.default_event_threshold
 
-        if not callable(op_fn):
+        if op_fn is None:
             op_fn = self.default_op_fn
 
         forecast_events = op_fn(forecast, event_threshold)
