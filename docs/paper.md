@@ -27,7 +27,7 @@ bibliography: paper.bib
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities. In addition to supporting the Earth system science communities, it also has wide potential application in machine learning and other domains such as economics.
 
-`scores` not only includes common scores (e.g. Mean Aboslute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold weighted continuous probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
+`scores` not only includes common scores (e.g. Mean Aboslute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
@@ -45,9 +45,9 @@ In order to meet the needs of researchers, `scores`:
 
 - is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: 
   - gridded earth system data (e.g. Numerical Weather Prediction models)
-  - tabular, point, lat/lon or site-based data (e.g. forecasts for specific locations).
+  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
 - is designed to handle missing data, masking of data and weighting of results.
-- includes a companion Jupyter Notebook for each metric and statistical test that demonstrates its use in practice.
+- includes a companion Jupyter Notebook tutorial for each metric and statistical test that demonstrates its use in practice.
 - includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
 - is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
