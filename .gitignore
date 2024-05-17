@@ -109,3 +109,5 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+#ignore directory
+.DS_Store
