@@ -1,12 +1,13 @@
 ---
-title: 'scores: A Python package for verifying accuracy using xarray'
+title: 'scores: A Python package for evaluating and verifying forecasts using xarray'
 tags:
   - Python
-  - geoscience
   - verification
-  - science
-  - earth system science
   - statistics
+  - modelling
+  - geoscience
+  - earth system science
+ 
 authors:
   - name: Tennessee Leeuwenburg
     orcid: 0009-0008-2024-1967
@@ -17,7 +18,7 @@ authors:
 affiliations:
  - name: Bureau of Meteorology, Australia
    index: 1
-date: 1 December 2023
+date: 17 May 2024
 bibliography: paper.bib 
 
 ---
