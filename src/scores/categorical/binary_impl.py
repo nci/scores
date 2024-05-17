@@ -1,15 +1,15 @@
 """
 This module contains methods for binary categories
 """
+
 from typing import Optional
 
 import numpy as np
 import xarray as xr
 
 from scores.functions import apply_weights
-from scores.processing import check_binary
 from scores.typing import FlexibleDimensionTypes, XarrayLike
-from scores.utils import gather_dimensions
+from scores.utils import check_binary, gather_dimensions
 
 
 def probability_of_detection(

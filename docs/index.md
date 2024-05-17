@@ -12,11 +12,12 @@
 :maxdepth: 2
 
 self
-quickstart
 installation
+included
 api
 contributing
 data
 maintainer
 tutorials/Explanation
+related_works
 ```

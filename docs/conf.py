@@ -8,9 +8,8 @@
 from scores import __version__
 
 project = "scores"
-copyright = "2023, Australian Bureau of Meteorology"
-author = "Australian Bureau of Meteorology"
-release = "0.7"
+copyright = "Licensed under Apache 2.0 - https://www.apache.org/licenses/LICENSE-2.0"
+release = "0.8.1"
 
 version = __version__
 
@@ -37,18 +36,21 @@ exclude_patterns = [
 
 html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
-
+html_theme_options = {
+    "repository_url": "https://github.com/nci/scores",
+    "use_repository_button": True,
+}
 
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
 nbsphinx_prolog = r"""
-{% set docname = 'doc/' + env.doc2path(env.docname, base=None) %}
+{% set docname = '' + env.doc2path(env.docname, base=False) %}
 
 .. raw:: html
 
     <div class="admonition note">
       Interactive online version:
-      <span style="white-space: nowrap;"><a href="https://mybinder.org/v2/gh/nci/scores/{{ env.config.release|e }}?filepath={{ docname|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>.</span>
+      <span style="white-space: nowrap;"><a href="https://mybinder.org/v2/gh/nci/scores/main?labpath={{ docname|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>.</span>
       <a href="{{ env.docname.split('/')|last|e + '.ipynb' }}" class="reference download internal" download>Download notebook</a>.
       <script>
         if (document.location.host) {

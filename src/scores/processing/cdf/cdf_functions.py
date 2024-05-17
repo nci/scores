@@ -1,7 +1,8 @@
 """
 This module contains a variety of functions which modify data in various ways to process data structures
-to support probablistic verification.
+to support probabilistic verification.
 """
+
 from collections.abc import Iterable
 from typing import Literal, Optional
 

@@ -1,6 +1,7 @@
 """
 Implementation of Reciever Operating Characteristic (ROC) calculations
 """
+
 from collections.abc import Iterable, Sequence
 from typing import Optional
 
@@ -81,7 +82,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         ValueError: if `fcst` contains values outside of the range [0, 1]
         ValueError: if `obs` contains non-nan values not in the set {0, 1}
         ValueError: if 'threshold' is a dimension in `fcst`.
-        ValueError: if values in `thresholds` are not montonic increasing or are outside
+        ValueError: if values in `thresholds` are not monotonic increasing or are outside
           the range [0, 1]
     """
     if check_args:

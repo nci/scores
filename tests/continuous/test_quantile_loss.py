@@ -5,9 +5,8 @@ Contains unit tests for scores.probability.continuous
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name
-
+except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -132,8 +131,8 @@ def test_qsf_calculations(fcst, obs, alpha, preserve_dims, reduce_dims, weights,
 def test_quantile_score_dask():
     """Tests quantile_score works with dask"""
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = quantile_score(
         fcst=qltd.FCST1.chunk(),

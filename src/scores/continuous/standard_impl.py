@@ -29,6 +29,8 @@ def mse(
     most one of reduce_dims and preserve_dims may be specified.
     Specifying both will result in an exception.
 
+    See "Mean squared error" section at https://www.cawcr.gov.au/projects/verification/#MSE for more information
+
     Args:
         fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]):
             Forecast or predicted variables in xarray or pandas.
@@ -239,6 +241,48 @@ def correlation(
     return xr.corr(fcst, obs, reduce_dims)
 
 
+def mean_error(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
+    """
+    Calculates the mean error which is also sometimes called the additive bias.
+
+    It is defined as
+
+    .. math::
+        \\text{mean error} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
+        \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
+
+
+    See "Mean error" section at https://www.cawcr.gov.au/projects/verification/ for more information
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the mean error. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the mean error. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        An xarray object with the mean error of a forecast.
+
+    """
+    return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
+
+
 def additive_bias(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -251,6 +295,7 @@ def additive_bias(
     Calculates the additive bias which is also sometimes called the mean error.
 
     It is defined as
+
     .. math::
         \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
@@ -277,6 +322,7 @@ def additive_bias(
         An xarray object with the additive bias of a forecast.
 
     """
+    # Note - mean error call this function
     error = fcst - obs
     score = scores.functions.apply_weights(error, weights=weights)
     reduce_dims = scores.utils.gather_dimensions(
@@ -300,6 +346,7 @@ def multiplicative_bias(
     Most suited for forecasts that have a lower bound at 0 such as wind speed. Will return
     a np.inf where the mean of `obs` across the dims to be reduced is 0.
     It is defined as
+
     .. math::
         \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}

@@ -1,10 +1,13 @@
 """
 Contains frequently-used functions of a general nature within scores
 """
+
 import warnings
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Iterable
 from typing import Optional, Union
 
+import numpy as np
+import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
@@ -17,23 +20,14 @@ rather than relying on string interpretation. The program will continue to inter
 string as an instruction to reduce or preserve every dimension.
 """
 
-ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
-You are requesting to preserve a dimension which does not appear in your data (fcst or obs).
-It is ambiguous how to proceed therefore an exception has been raised instead.
-"""
 
-ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION2 = """
+ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
 You are requesting to preserve a dimension which does not appear in your data 
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
 ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = """
-You are requesting to reduce a dimension which does not appear in your data (fcst or obs).
-It is ambiguous how to proceed therefore an exception has been raised instead.
-"""
-
-ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION2 = """
 You are requesting to reduce a dimension which does not appear in your data
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been 
 raised instead.
@@ -56,101 +50,13 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     fcst_dims: Iterable[Hashable],
     obs_dims: Iterable[Hashable],
     *,  # Force keywords arguments to be keyword-only
+    weights_dims: Optional[Iterable[Hashable]] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    score_specific_fcst_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> set[Hashable]:
     """
     Establish which dimensions to reduce when calculating errors but before taking means.
-
-    Note: `scores.utils.gather_dimensions` and `scores.utils.gather_dimensions2` will be
-    integrated at some point in the future. `scores.utils.gather_dimensions2` offers
-    more comprehensive and less restrictive dimension checking and should be preferred in
-    the meantime. See `scores.probability.crps_cdf` for an example of
-    `scores.utils.gather_dimensions2` usage.
-
-    Args:
-        fcst_dims: Forecast dimensions inputs
-        obs_dims: Observation dimensions inputs.
-        reduce_dims: Dimensions to reduce.
-        preserve_dims: Dimensions to preserve.
-
-    Returns:
-        Dimensions based on optional args.
-    Raises:
-        ValueError: When `preserve_dims and `reduce_dims` are both specified.
-
-    See also:
-        `scores.utils.gather_dimensions2`
-    """
-
-    all_dims = set(fcst_dims).union(set(obs_dims))
-
-    # Handle error conditions related to specified dimensions
-    if preserve_dims is not None and reduce_dims is not None:
-        raise ValueError(ERROR_OVERSPECIFIED_PRESERVE_REDUCE)
-
-    # Handle error conditions related to specified dimensions
-    specified = preserve_dims or reduce_dims
-    if specified == "all":
-        if "all" in all_dims:
-            warnings.warn(WARN_ALL_DATA_CONFLICT_MSG)
-    elif specified is not None:
-        if isinstance(specified, str):
-            specified = [specified]
-
-        if not set(specified).issubset(all_dims):
-            if preserve_dims is not None:
-                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
-            raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
-
-    # Handle preserve_dims case
-    if preserve_dims is not None:
-        if preserve_dims == "all":
-            return set([])
-
-        if isinstance(preserve_dims, str):
-            preserve_dims = [preserve_dims]
-
-        reduce_dims = set(all_dims).difference(preserve_dims)
-
-    # Handle reduce all
-    elif reduce_dims == "all":
-        reduce_dims = set(all_dims)
-
-    # Handle is reduce_dims and preserve_dims are both None
-    if reduce_dims is None and preserve_dims is None:
-        reduce_dims = set(all_dims)
-
-    # Handle reduce by string
-    elif isinstance(reduce_dims, str):
-        reduce_dims = set([reduce_dims])
-
-    # Turn into a set if needed
-    assert reduce_dims is not None  # nosec - this is just to modify type hinting
-    reduce_dims = set(reduce_dims)
-
-    # Reduce by list is the default so no handling needed
-    return reduce_dims
-
-
-def gather_dimensions2(  # pylint: disable=too-many-branches
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
-    *,  # Force keywords arguments to be keyword-only
-    weights: Optional[xr.DataArray] = None,
-    reduce_dims: Optional[FlexibleDimensionTypes] = None,
-    preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    special_fcst_dims: Optional[FlexibleDimensionTypes] = None,
-) -> set[Hashable]:
-    """
-    Performs standard dimensions checks for inputs of functions that calculate (mean) scores.
-    Returns a set of the dimensions to reduce.
-
-    Note: `scores.utils.gather_dimensions` and `scores.utils.gather_dimensions2` will be
-    integrated at some point in the future. `scores.utils.gather_dimensions2` offers
-    more comprehensive and less restrictive dimension checking and should be preferred in
-    the meantime. See `scores.probability.crps_cdf` for an example of
-    `scores.utils.gather_dimensions2` usage.
 
     Args:
         fcst: Forecast data
@@ -158,7 +64,7 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
         weights: Weights for calculating a weighted mean of scores
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        special_fcst_dims: Dimension(s) in `fcst` that are reduced to calculate individual scores.
+        score_specific_fcst_dims: Dimension(s) in `fcst` that are reduced to calculate individual scores.
             Must not appear as a dimension in `obs`, `weights`, `reduce_dims` or `preserve_dims`.
             e.g. the ensemble member dimension if calculating CRPS for ensembles, or the
             threshold dimension of calculating CRPS for CDFs.
@@ -168,26 +74,26 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
 
     Raises:
         ValueError: when `preserve_dims and `reduce_dims` are both specified.
-        ValueError: when `special_fcst_dims` is not a subset of `fcst.dims`.
+        ValueError: when `score_specific_fcst_dims` is not a subset of `fcst.dims`.
         ValueError: when `obs.dims`, `weights.dims`, `reduce_dims` or `preserve_dims`
-            contains elements from `special_fcst_dims`.
+            contains elements from `score_specific_fcst_dims`.
         ValueError: when `preserve_dims and `reduce_dims` contain elements not among dimensions
             of the data (`fcst`, `obs` or `weights`).
 
-    See also:
-        `scores.utils.gather_dimensions`
     """
-    all_data_dims = set(fcst.dims).union(set(obs.dims))
-    if weights is not None:
-        all_data_dims = all_data_dims.union(set(weights.dims))
 
-    # all_scoring_dims is the set of dims remaining after individual scores are computed.
-    all_scoring_dims = all_data_dims.copy()
+    all_data_dims = set(fcst_dims).union(set(obs_dims))
+    if weights_dims is not None:
+        all_data_dims = all_data_dims.union(set(weights_dims))
 
     # Handle error conditions related to specified dimensions
     if preserve_dims is not None and reduce_dims is not None:
         raise ValueError(ERROR_OVERSPECIFIED_PRESERVE_REDUCE)
 
+    # all_scoring_dims is the set of dims remaining after individual scores are computed.
+    all_scoring_dims = all_data_dims.copy()
+
+    # Handle error conditions related to specified dimensions
     specified_dims = preserve_dims or reduce_dims
 
     if specified_dims == "all":
@@ -197,39 +103,58 @@ def gather_dimensions2(  # pylint: disable=too-many-branches
         if isinstance(specified_dims, str):
             specified_dims = [specified_dims]
 
-    # check that special_fcst_dims are in fcst.dims only
-    if special_fcst_dims is not None:
-        if isinstance(special_fcst_dims, str):
-            special_fcst_dims = [special_fcst_dims]
-        if not set(special_fcst_dims).issubset(set(fcst.dims)):
-            raise ValueError("`special_fcst_dims` must be a subset of `fcst` dimensions")
-        if len(set(obs.dims).intersection(set(special_fcst_dims))) > 0:
-            raise ValueError("`obs.dims` must not contain any `special_fcst_dims`")
-        if weights is not None:
-            if len(set(weights.dims).intersection(set(special_fcst_dims))) > 0:
-                raise ValueError("`weights.dims` must not contain any `special_fcst_dims`")
+    # Raise errors unless score_specific_fcst_dims are in fcst.dims only
+    if score_specific_fcst_dims is not None:
+        if isinstance(score_specific_fcst_dims, str):
+            score_specific_fcst_dims = [score_specific_fcst_dims]
+        if not set(score_specific_fcst_dims).issubset(set(fcst_dims)):
+            raise ValueError("`score_specific_fcst_dims` must be a subset of `fcst` dimensions")
+        if len(set(obs_dims).intersection(set(score_specific_fcst_dims))) > 0:
+            raise ValueError("`obs.dims` must not contain any `score_specific_fcst_dims`")
+        if weights_dims is not None:
+            if len(set(weights_dims).intersection(set(score_specific_fcst_dims))) > 0:
+                raise ValueError("`weights.dims` must not contain any `score_specific_fcst_dims`")
         if specified_dims is not None and specified_dims != "all":
-            if len(set(specified_dims).intersection(set(special_fcst_dims))) > 0:
-                raise ValueError("`reduce_dims` and `preserve_dims` must not contain any `special_fcst_dims`")
-        # remove special_fcst_dims from all_scoring_dims
-        all_scoring_dims = all_scoring_dims.difference(set(special_fcst_dims))
+            if len(set(specified_dims).intersection(set(score_specific_fcst_dims))) > 0:
+                raise ValueError("`reduce_dims` and `preserve_dims` must not contain any `score_specific_fcst_dims`")
+
+        # Finally, remove score_specific_fcst_dims from all_scoring_dims
+        all_scoring_dims = all_data_dims.difference(set(score_specific_fcst_dims))
 
     if specified_dims is not None and specified_dims != "all":
-        if not set(specified_dims).issubset(all_scoring_dims):
+        if not set(specified_dims).issubset(all_data_dims):
             if preserve_dims is not None:
-                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION2)
-            raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION2)
+                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
+            raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
 
-    # all errors have been captured, so now return list of dims to reduce
-    if specified_dims is None:
-        return all_scoring_dims
-    if reduce_dims is not None:
-        if reduce_dims == "all":
-            return all_scoring_dims
-        return set(specified_dims)
-    if preserve_dims == "all":
-        return set([])
-    return all_scoring_dims.difference(set(specified_dims))
+    # Turn preserve dims into reduce dims, if needed
+    if preserve_dims is not None:
+        if preserve_dims == "all":
+            return set([])
+
+        if isinstance(preserve_dims, str):
+            preserve_dims = [preserve_dims]
+
+        reduce_dims = set(all_scoring_dims).difference(preserve_dims)
+
+    # Handle reduction of all dimensions by string "all""
+    elif reduce_dims == "all":
+        reduce_dims = set(all_scoring_dims)
+
+    # Handle reduction of a single dim by string name
+    elif isinstance(reduce_dims, str):
+        reduce_dims = set([reduce_dims])
+
+    # Handle when reduce_dims and preserve_dims are both None
+    elif reduce_dims is None and preserve_dims is None:
+        reduce_dims = set(all_scoring_dims)
+
+    # Turn into a set if needed
+    assert reduce_dims is not None  # nosec - this is just to modify type hinting
+    reduce_dims = set(reduce_dims)
+
+    # Reduce by list is the default so no handling needed
+    return reduce_dims
 
 
 def dims_complement(data, *, dims=None) -> list[str]:
@@ -359,3 +284,24 @@ def tmp_coord_name(xr_data: xr.DataArray, *, count=1) -> Union[str, list[str]]:
 
     results = [str(i) + result for i in range(count)]
     return results
+
+
+def check_binary(data: XarrayLike, name: str):
+    """
+    Checks that data does not have any non-NaN values out of the set {0, 1}
+
+    Args:
+        data: The data to convert to check if only contains binary values
+    Raises:
+        ValueError: if there are values in `fcst` and `obs` that are not in the
+            set {0, 1, np.nan} and `check_args` is true.
+    """
+    if isinstance(data, xr.DataArray):
+        unique_values = pd.unique(data.values.flatten())
+    else:
+        unique_values = pd.unique(data.to_array().values.flatten())
+    unique_values = unique_values[~np.isnan(unique_values)]
+    binary_set = {0, 1}
+
+    if not set(unique_values).issubset(binary_set):
+        raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
