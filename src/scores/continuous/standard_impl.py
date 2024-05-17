@@ -1,7 +1,6 @@
 """
 This module contains standard methods which may be used for continuous scoring
 """
-
 from typing import Optional
 
 import xarray as xr
@@ -339,16 +338,7 @@ def multiplicative_bias(
     return multi_bias
 
 
-# add NSE code
-
-
-def lst_to_array(fcst):
-    # Convert lists to xarray DataArrays
-    if not isinstance(fcst, xr.DataArray):
-        fcst = xr.DataArray(fcst)
-    return fcst
-
-
+# NSE code
 def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=False):
     """
     Calculate Nash-Sutcliffe Efficiency (NSE) for forecast and observed data.
@@ -372,43 +362,20 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
         - https://en.wikipedia.org/wiki/Nash–Sutcliffe_model_efficiency_coefficient
 
     Examples:
-        # Case 1: NumPy arrays
-        >>> fcst_np = np.array([3, 4, 5, 6, 7])
-        >>> obs_np = np.array([2, 3, 4, 5, 6])
-        >>> nse(fcst_np, obs_np)
-        0.5
-
-        # Case 2: Pandas Series
-        >>> fcst_series = pd.Series([3, 4, 5, 6, 7])
-        >>> obs_series = pd.Series([2, 3, 4, 5, 6])
-        >>> nse(fcst_series, obs_series)
-        0.50
-
-        # Case 3: Xarray DataArray
+        # Case 1: Xarray DataArray
         >>> fcst_xr = xr.DataArray([3, 4, 5, 6, 7])
         >>> obs_xr = xr.DataArray([2, 3, 4, 5, 6])
         >>> nse(fcst_xr, obs_xr)
         0.50
-
-        # Case 4: Lists
-        >>> fcst_list = [3, 4, 5, 6, 7]
-        >>> obs_list = [2, 3, 4, 5, 6]
-        >>> nse(fcst_list, obs_list)
-        0.50
-
-        # Case 5: Mixed types - NumPy array and Pandas Series
-        >>> fcst_mix = np.array([3, 4, 5, 6, 7])
-        >>> obs_mix = pd.Series([2, 3, 4, 5, 6])
-        >>> nse(fcst_mix, obs_mix)
-        0.50
-
     """
-    # convert to array
-    fcst = lst_to_array(fcst)
+        # Convert datasets to data arrays if needed
+    if isinstance(fcst, xr.Dataset):
+        data_variable_name = list(fcst.data_vars.keys())[0]  # Get the name of the first data variable
+        fcst = fcst.to_array(dim=data_variable_name)
 
-    obs = lst_to_array(obs)
-    # if not isinstance(obs, xr.DataArray):
-    #    obs = xr.DataArray(obs)
+    if isinstance(obs, xr.Dataset):
+        data_variable_name = list(obs.data_vars.keys())[0]  # Get the name of the first data variable
+        obs= obs.to_array(dim=data_variable_name)
 
     # Check for input compatibility
     if angular:
