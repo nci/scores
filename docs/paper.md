@@ -73,7 +73,7 @@ Additionally, `scores` has an area specifically to hold emerging scores which ar
 
 ## Use in Academic Work
 
-In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@loveday2024jive]. The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022b; @Taggart:2022c; @Taggart:2022d]. `scores` has arisen from the Jive verification system and includes mathematical functions from Jive with the aim to modularise these functions and make them available as an open source package. 
+In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@loveday2024jive]. The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022b; @Taggart:2022c; @Taggart:2022d]. `scores` has arisen from the Jive verification system and was created to modularise the Jive verification functions and make them available as an open source package. 
 
 `scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts [@loveday2024user].
 
