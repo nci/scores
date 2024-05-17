@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 import xarray as xr
-from scores.continuous import nse
+import scores
+from scores.continuous.standard_impl import nse
 
 def test_xarray_dataarray():
     fcst_xr = xr.DataArray([3, 4, 5, 6, 7])
@@ -58,13 +59,15 @@ def test_nse_with_datasets_noconversion():
     # Calculate NSE and assert the result
     assert nse(fcst_ds, obs_ds) == 0.5
 
-def test_angular():
-    fcst = np.array([0, 90, 180, 270, 360])
-    obs = np.array([0, 90, 180, 270, 360])
-    assert nse(fcst, obs, angular=True) == 1.0
-
 def test_weights():
     fcst = np.array([3, 4, 5, 6, 7])
     obs = np.array([2, 3, 4, 5, 6])
     weights = np.array([1, 2, 3, 2, 1])
-    assert nse(fcst, obs, weights=weights) == 0.5
+    nse_value = nse(fcst, obs, weights=weights)
+    assert nse_value  == 0.5
+
+def test_angular():
+    fcst = np.array([0, 90, 180, 270, 360])
+    obs = np.array([0, 90, 180, 270, 360])
+    nse_value = nse(fcst, obs, angular=True)
+    assert nse_value  == 1.0

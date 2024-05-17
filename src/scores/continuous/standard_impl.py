@@ -407,6 +407,7 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
     References:
         - references
         - https://en.wikipedia.org/wiki/Nash–Sutcliffe_model_efficiency_coefficient
+        - https://hess.copernicus.org/articles/26/4801/2022/
 
     Examples:
         # Case 1: Xarray DataArray
