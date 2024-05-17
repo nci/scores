@@ -415,15 +415,16 @@ def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=F
         >>> obs_xr = xr.DataArray([2, 3, 4, 5, 6])
         >>> nse(fcst_xr, obs_xr)
         0.50
+
     """
-        # Convert datasets to data arrays if needed
+    # Convert datasets to data arrays if needed
     if isinstance(fcst, xr.Dataset):
         data_variable_name = list(fcst.data_vars.keys())[0]  # Get the name of the first data variable
         fcst = fcst.to_array(dim=data_variable_name)
 
     if isinstance(obs, xr.Dataset):
         data_variable_name = list(obs.data_vars.keys())[0]  # Get the name of the first data variable
-        obs= obs.to_array(dim=data_variable_name)
+        obs = obs.to_array(dim=data_variable_name)
 
     # Check for input compatibility
     if angular:
