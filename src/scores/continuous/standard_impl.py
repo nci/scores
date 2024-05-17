@@ -503,6 +503,7 @@ def kge(
             Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences, 23(10), 4323-4331.
             https://doi.org/10.5194/hess-23-4323-2019.
 
+        - https://hess.copernicus.org/articles/26/4801/2022/
 
     Examples:
         >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
