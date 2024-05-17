@@ -76,6 +76,6 @@ def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike
         An array containing angles within the range [0, 180].
     """
     difference = np.abs(source_a - source_b) % 360
-    #difference = difference.where(difference <= 180, 360 - difference)  # type: ignore
+    # difference = difference.where(difference <= 180, 360 - difference)  # type: ignore
     difference = xr.where(difference <= 180, difference, 360 - difference)
     return difference  # type: ignore
