@@ -3,9 +3,9 @@ This module contains standard methods which may be used for continuous scoring
 """
 from typing import Optional
 
-import xarray as xr
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 import scores.functions
 import scores.utils
