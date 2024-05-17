@@ -47,7 +47,7 @@ In order to meet the needs of researchers, `scores`:
   - gridded earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, lat/lon or site-based data (e.g. forecasts for specific locations).
 - is designed to handle missing data, masking of data and weighting of results.
-- includes a companion Jupyter Notebook for each score, metric and statistical test to demonstrate its use in practice.
+- includes a companion Jupyter Notebook for each metric and statistical test that demonstrates its use in practice.
 - includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
 - is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
@@ -67,7 +67,7 @@ Here is a **curated selection** of the metrics, tools and statistical tests curr
 | **[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score, Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see [@Gneiting:2011]), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	|
 | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)**       	|Scores for evaluating forecasts based on categories.                	|Probability of Detection (POD), False Alarm Rate (FAR), Probability of False Detection (POFD), Success Ratio, Accuracy, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill Score, Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 score, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].               	|
 | **[Statistical Tests](https://scores.readthedocs.io/en/latest/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications.              	|
-| **[Processing tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretization, Cumulative Density Function Manipulation.              	|
+| **[Processing Tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretization, Cumulative Density Function Manipulation.              	|
 
 Additionally, `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
