@@ -10,7 +10,7 @@ authors = [
 ]
 description = """\
 Scores is a package containing mathematical functions \
-for the verification, evaluation and optimisation of model outputs and predictions.
+for the verification, evaluation and optimisation of forecasts, predictions or models.
 """
 readme = "README.md"
 requires-python = ">=3.7"
@@ -64,7 +64,8 @@ maintainer = ["build",
 all = ["scores[dev,tutorial]"]
 
 [project.urls]
-"Homepage" = "http://www.bom.gov.au"
+"Repository" = "https://github.com/nci/scores" 
+"Documentation" = "https://scores.readthedocs.io/en/latest/"
 
 [tool.hatch.build]
 exclude = [
