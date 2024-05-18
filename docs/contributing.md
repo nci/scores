@@ -1,26 +1,29 @@
 # Contributing Guide
 
-Thank you for considering contributing to the scores project. Contributions of all kinds are welcome from the community!
+Thank you for considering contributing to `scores`. Contributions of all kinds are welcome from the community!
 
 These guidelines describe how to collaborate effectively.
 
-Types of contributions include bug reports, merge requests and feature requests. Contributions which are in line with the roadmap will be prioritised. The roadmap outlines the intentions for this package.
+Types of contributions include bug reports, feature requests and pull requests. Contributions which are in line with the roadmap will be prioritised. The roadmap outlines the intentions for this package.
 
 ## Roadmap
-1. Addition of more scores, metrics and statistical techniques
-2. Further optimisation and performance improvements
-3. Increased support for machine learning library integration
-4. Additional notebooks exploring complex use cases in depth
+- Addition of more scores, metrics and statistical techniques
+- Further optimisation and performance improvements
+- Increase pandas support
+- Increased support for machine learning library integration
+- Additional notebooks exploring complex use cases in depth
 
 ## Bug Reports and Feature Requests
 
-Please submit bug requests and feature requests through GitHub as issues. No specific template or approach is requested at this stage. This may evolve, but is currently an open-ended approach.
+Please submit bug reports and feature requests as issues in GitHub: [https://github.com/nci/scores/issues](https://github.com/nci/scores/issues).
 
 ## Handling Security Concerns
 
 Please see the information provided in [SECURITY.md](SECURITY.md)
 
-## Development Process for a Correction or Improvement
+## Pull Requests
+
+### Workflow for Submitting Pull Requests
 
 **Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
 
@@ -30,13 +33,19 @@ If you are already confident working with GitHub, please feel free to:
 3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
 4. when ready, submit a pull request to the develop branch of `scores`.
 
-Pull requests will undergo both a technical code review and a scientific review to ensure that the merge request maintains or improves the coding and scientific integrity.
+### Development Process for a Feature, Improvement or Correction
 
-The package maintainer may make changes to the code during the merge process or afterwards, such as resolving last-minute conflicts or making any key technical tweaks that are simple to implement.
+Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
 
-## Development Process for a New Score or Metric
+Pull requests will undergo both a technical code review and a scientific review to ensure that the pull request maintains or improves the coding and scientific integrity of `scores`.
 
-A new score or metric should be developed on a separate feature branch, rebased against the develop branch. Each merge request should include:
+The package maintainer may make changes to the code during the pull process or afterwards, such as resolving last-minute conflicts or making any key technical tweaks that are simple to implement.
+
+### Development Process for a New Metric, Statistical Technique or Tool
+
+Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
+
+Each pull request should include:
 
  - The implementation of the new metric or score in xarray, ideally with support for pandas and dask
  - 100% unit test coverage
@@ -51,7 +60,7 @@ A new score or metric should be developed on a separate feature branch, rebased 
 
 Please also read the [pull request checklist](https://github.com/nci/scores/blob/develop/.github/pull_request_template.md).
   
-Merge requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within 'scores'.
+Pull requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within `scores`.
 
 ## Setting up for Development
 
@@ -94,7 +103,7 @@ pre-commit install -t pre-commit -t pre-push
 
 ## Review Processes
 
-Contributions of code through merge requests are welcomed. Prior to developing a merge request, it may be a good idea to create a GitHub issue to capture what the merge request is trying to achieve, any pertinent details, and how it aligns to the roadmap. Otherwise, please explain this in the pull request.
+Contributions of code through pull requests are welcomed. Prior to developing a pull request, it may be a good idea to create a GitHub issue to capture what the pull request is trying to achieve, any pertinent details, and how it aligns to the roadmap. Otherwise, please explain this in the pull request.
 
 All code will undergo a review process prior to being included in the develop branch in order to ensure both the coding and the statistical and scientific validity of changes. 
 
