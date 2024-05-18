@@ -1,4 +1,4 @@
-# Scores: Forecast and Model Verification and Evaluation Software
+# Scores: Verification and Evaluation for Forecasts and Models
 > 
 > **A list of over 50 metrics, statistical techniques and data processing tools contained in `scores` is [available here](https://scores.readthedocs.io/en/latest/included.html).**
 
