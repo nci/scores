@@ -25,6 +25,8 @@ Please see the information provided in [SECURITY.md](SECURITY.md)
 
 **Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
 
+Prior to developing a pull request, it may be a good idea to create a [GitHub issue](https://github.com/nci/scores/issues) to capture what the pull request is trying to achieve, any pertinent details, and (if applicable) how it aligns to the roadmap. Otherwise, please explain this in the pull request.
+
 If you are already confident working with GitHub, please feel free to:
 1. create a fork of the `scores` repository, 
 2. create a feature branch on your fork,
@@ -35,9 +37,9 @@ If you are already confident working with GitHub, please feel free to:
 
 Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
 
-Pull requests will undergo both a technical code review and a scientific review to ensure that the pull request maintains or improves the coding and scientific integrity of `scores`.
+All pull requests will undergo a code review. When required, pull requests will also undergo a science review. Some examples of when a science review may be required include pull requests that propose changes to existing metrics and proposals for new or updated tutorials. More information about the code review and science review process is provided in the [Review Processes](#review-processes) section below.
 
-The package maintainer may make changes to the code during the pull process or afterwards, such as resolving last-minute conflicts or making any key technical tweaks that are simple to implement.
+The `scores` package maintainer may make changes to the code during the pull process or afterwards, such as resolving last-minute conflicts or making any required technical tweaks.
 
 ### Submitting a Pull Request for a New Metric, Statistical Technique or Tool
 
@@ -45,20 +47,20 @@ Please follow the [workflow for submitting pull requests](#workflow-for-submitti
 
 Each pull request should include:
 
- - The implementation of the new metric or score in xarray, ideally with support for pandas and dask
- - 100% unit test coverage
- - A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data
- - API documentation (docstrings) using [Napoleon (google)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) style, making sure to clearly explain the use of the metric
+ - The implementation of the new metric or score in xarray, ideally with support for pandas and dask.
+ - 100% unit test coverage.
+ - A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data.
+ - API documentation (docstrings) using [Napoleon (google)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) style, making sure to clearly explain the use of the metric.
  - A reference should be added to the API documentation.
    - If there is an authoritative reference (e.g. an academic article that defines the metric, or the specific implementation, being used), please cite that reference.
    - When there is an authoritative reference, please cite it even if it cannot be accessed without payment. In these instances, if there is another suitable reference that is open and available without payment, cite that as well.
    - When there is no authoritative reference, please cite a reference that provides a clear description of the function. Where possible, please cite open references that can be accessed without payment.
    - When available, please include DOIs.
- - Metrics which are still under development or which have not yet had an academic publication will be placed in a holding area within the API until the method has been properly published and peer reviewed (i.e. `scores.emerging`). The 'emerging' area of the API is subject to rapid change, still of sufficient community interest to include, similar to a 'preprint' of a score or metric.
+ - Metrics which are still under development or which have not yet had an academic publication will be placed in a holding area within the API (`scores.emerging`) until the method has been published and peer reviewed. The `scores.emerging` section provides a clear mechanism for people to share, access and collaborate on new metrics, and be able to easily re-use versioned implementations of those metrics. 
 
 Please also read the [pull request checklist](https://github.com/nci/scores/blob/develop/.github/pull_request_template.md).
   
-Pull requests will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within `scores`.
+All pull requests for new metrics, statistical techniques or tools will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within `scores`. More information about the code review and science review process is provided in the [Review Processes](#review-processes) section below.
 
 ## Setting up for Development
 
@@ -100,9 +102,7 @@ pre-commit install -t pre-commit -t pre-push
 
 ## Review Processes
 
-Contributions of code through pull requests are welcomed. Prior to developing a pull request, it may be a good idea to create a GitHub issue to capture what the pull request is trying to achieve, any pertinent details, and how it aligns to the roadmap. Otherwise, please explain this in the pull request.
-
-All code will undergo a review process prior to being included in the develop branch in order to ensure both the coding and the statistical and scientific validity of changes. 
+All pull requests will undergo a review process prior to being included in the develop branch in order to ensure both the coding and the scientific validity of changes. 
 
 The code review process does not differ between contributions from the core team and contributions from the community.
 
