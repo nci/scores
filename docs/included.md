@@ -434,7 +434,7 @@
 * -  
     - Yule's Q (Odds Ratio Skill Score)
   -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.odds_ratio_skill_score)
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.yules_q)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
