@@ -21,9 +21,7 @@ Please submit bug reports and feature requests as issues in GitHub: [https://git
 
 Please see the information provided in [SECURITY.md](SECURITY.md)
 
-## Pull Requests
-
-### Workflow for Submitting Pull Requests
+## Workflow for Submitting Pull Requests
 
 **Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
 
@@ -33,7 +31,7 @@ If you are already confident working with GitHub, please feel free to:
 3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
 4. when ready, submit a pull request to the develop branch of `scores`.
 
-### Development Process for a Feature, Improvement or Correction
+### Submitting a Pull Request for a Feature, Improvement or Correction
 
 Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
 
@@ -41,7 +39,7 @@ Pull requests will undergo both a technical code review and a scientific review 
 
 The package maintainer may make changes to the code during the pull process or afterwards, such as resolving last-minute conflicts or making any key technical tweaks that are simple to implement.
 
-### Development Process for a New Metric, Statistical Technique or Tool
+### Submitting a Pull Request for a New Metric, Statistical Technique or Tool
 
 Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
 
@@ -90,8 +88,7 @@ The `environment.yml` file refers to the `pip` package management repositories t
 
 This process should result in an editable installation with all tests passing.
 
-An editable installation is recommended. This is deliberate, to make the process more robust and less prone to 'happy accidents' during import of packages. If you wish to avoid editable installations then refer to the [building a package](#build) section.
-
+An editable installation is recommended. This is deliberate, to make the process more robust and less prone to 'happy accidents' during import of packages. 
 
 ### Set up `pre-commit` (optional) <a name="pre-commit"></a>
 
