@@ -41,7 +41,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 ## Key Benefits
 
-In order to meet the needs of researchers, `scores`:  
+In order to meet the needs of researchers, `scores`:
 
 - is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
   - gridded earth system data (e.g. Numerical Weather Prediction models)
