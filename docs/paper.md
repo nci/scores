@@ -53,6 +53,8 @@ In order to meet the needs of researchers, `scores`:
 
 - includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).  
 
+- has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
+
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.  
 
 - is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments.  
@@ -61,9 +63,7 @@ In order to meet the needs of researchers, `scores`:
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
-At the time of writing, `scores` includes **over 50** metrics, statistical techniques and data processing tools. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
-
-We anticipate more metrics, tools and statistical techniques will be added over time. 
+At the time of writing, `scores` includes **over 50** metrics, statistical techniques and data processing tools. We anticipate more metrics, tools and statistical techniques will be added over time. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
 
 Here is a **curated selection** of the metrics, tools and statistical tests currently included in `scores`:
 
@@ -78,8 +78,6 @@ Here is a **curated selection** of the metrics, tools and statistical tests curr
 | **[Statistical Tests](https://scores.readthedocs.io/en/latest/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications.              	  
 |
 | **[Processing Tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation. |
-
-Additionally, `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
 ## Use in Academic Work
 
