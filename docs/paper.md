@@ -41,8 +41,7 @@ The research purpose of this software is (a) to mathematically verify and valida
 
 ## Key Benefits
 
-In order to meet the needs of researchers, `scores`:
-
+In order to meet the needs of researchers, `scores`:  
 - is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
   - gridded earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).  
@@ -58,31 +57,6 @@ In order to meet the needs of researchers, `scores`:
 - is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments.  
 
 - uses Dask [@Dask:2016] for scaling and performance.
-
-## Key Benefits
-
-In order to meet the needs of researchers, `scores` has the following key benefits.
-
-**Data - `scores is designed to:**. 
-
-- work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
-  - gridded earth system data (e.g. Numerical Weather Prediction models)
-  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
-- handle missing data, masking of data and weighting of results.
-- work with xarray [@Hoyer:2017] datatypes, and NetCDF4, hdf5, Zarr and GRIB data sources among others.  
-
-**Features - `scores` includes**  
-
-- a companion Jupyter Notebook tutorial for each metric and statistical test that demonstrates its use in practice.
-- novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular])
-- an area to hold emerging scores which are still undergoing research and development.
-
-**Ease of Use - `scores`:**  
-  
-- is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
-- is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments.
-- uses Dask [@Dask:2016] for scaling and performance.
-- aims to be compatible with pandas [@pandas:2024; @McKinney:2010] and geopandas [@geopandas:2024].
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in Scores 
 
