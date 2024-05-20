@@ -23,15 +23,15 @@ Please see the information provided in [SECURITY.md](SECURITY.md)
 
 ## Workflow for Submitting Pull Requests
 
-**Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
-
 Prior to developing a pull request, it may be a good idea to create a [GitHub issue](https://github.com/nci/scores/issues) to capture what the pull request is trying to achieve, any pertinent details, and (if applicable) how it aligns to the roadmap. Otherwise, please explain this in the pull request.
 
-If you are already confident working with GitHub, please feel free to:
+To submit a pull request, please use the following workflow: 
 1. create a fork of the `scores` repository, 
 2. create a feature branch on your fork,
 3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
 4. when ready, submit a pull request to the develop branch of `scores`.
+
+**Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
 
 ### Submitting a Pull Request for a Feature, Improvement or Correction
 
