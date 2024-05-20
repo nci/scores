@@ -51,7 +51,7 @@ In order to meet the needs of researchers, `scores`:
 - includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
 - is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
-- uses Dask for scaling and performance.
+- uses Dask [@Dask:2016; @Rocklin:2015] for scaling and performance.
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in Scores 
 
