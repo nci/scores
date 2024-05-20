@@ -63,7 +63,9 @@ In order to meet the needs of researchers, `scores`:
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
-At the time of writing, `scores` includes **over 50** metrics, statistical techniques and data processing tools. We anticipate more metrics, tools and statistical techniques will be added over time. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
+At the time of writing, `scores` includes **over 50** metrics, statistical techniques and data processing tools. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
+
+We anticipate more metrics, tools and statistical techniques will be added over time.
 
 Here is a **curated selection** of the metrics, tools and statistical tests currently included in `scores`:
 
