@@ -31,7 +31,7 @@ bibliography: paper.bib
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
-`scores` is focused on supporting xarray [@Hoyer:2017] datatypes for earth system data. It also aims to be compatible with pandas [@pandas:2020; @McKinney:2010] and geopandas [@geopandas:2024], and to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. Scores is designed to utilise Dask for scaling and performance.
+`scores` is focused on supporting xarray [@Hoyer:2017] datatypes for earth system data. It also aims to be compatible with pandas [@pandas:2024; @McKinney:2010] and geopandas [@geopandas:2024], and to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. Scores is designed to utilise Dask for scaling and performance.
 
 The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
@@ -51,7 +51,7 @@ In order to meet the needs of researchers, `scores`:
 - includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
 - is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
 - is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
-- uses Dask [@Dask:2016; @Rocklin:2015] for scaling and performance.
+- uses Dask [@Dask:2016] for scaling and performance.
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in Scores 
 
@@ -77,7 +77,7 @@ Additionally, `scores` has an area specifically to hold emerging scores which ar
 
 ## Use in Academic Work
 
-In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see [@loveday2024jive]. The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022b; @Taggart:2022c; @Taggart:2022d]. `scores` has arisen from the Jive verification system and was created to modularise the Jive verification functions and make them available as an open source package. 
+In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive. For a description of Jive see @loveday2024jive. The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022b; @Taggart:2022c; @Taggart:2022d]. `scores` has arisen from the Jive verification system and was created to modularise the Jive verification functions and make them available as an open source package. 
 
 `scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts [@loveday2024user].
 
