@@ -33,6 +33,8 @@ All of the scores and statistical techniques in this package have undergone a th
 
 `scores` is focused on supporting xarray [@Hoyer:2017] datatypes for Earth system data. It also aims to be compatible with pandas [@pandas:2024; @McKinney:2010] and geopandas [@geopandas:2024], and to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. `scores` is designed to utilise Dask for scaling and performance.
 
+`scores` primarily supports xarray datatypes for Earth system data, allowing it to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. It also aims to be compatible with pandas and geopandas. `scores` uses Dask for scaling and performance.
+
 The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
 # Statement of Need
@@ -70,7 +72,8 @@ In order to meet the needs of researchers, `scores` has the following key benefi
 | Data        | • Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: |  
 |             |  - gridded Earth system data (e.g. Numerical Weather Prediction models) | 
 |             |  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations). |     
-|             | • Handles missing data, masking of data and weighting of results.  
+|             | • Handles missing data, masking of data and weighting of results. |
+|             | • Supports xarray [@Hoyer:2017] datatypes, and works with NetCDF4, hdf5, Zarr and GRIB data sources among others.  
 |
 | Inclusions  | • A companion Jupyter Notebook tutorial for each metric and statistical test that demonstrates its use in practice. |
 |             | • Novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]). |
@@ -79,6 +82,7 @@ In order to meet the needs of researchers, `scores` has the following key benefi
 | Ease of Use | • Highly modular and avoids extensive dependencies by providing its own implementations where relevant. |  
 |             | • Easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. |
 |             | • Uses Dask [@Dask:2016] for scaling and performance. |
+|             | • Aims to be compatible with pandas [@pandas:2024; @McKinney:2010] and geopandas [@geopandas:2024] |
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
@@ -87,13 +91,19 @@ At the time of writing, `scores` includes **over 50** metrics, statistical techn
 We anticipate more metrics, tools and statistical techniques will be added over time.
 
 
-[A **curated selection** of the metrics, tools and statistical tests currently included in `scores`]{.smallcaps}
+[A <b>curated selection</b> of the metrics, tools and statistical tests currently included in `scores`]{.smallcaps}
 
 <span class="smallcaps">Small caps</span>
 
 <span style="font-variant:small-caps;">A **curated selection** of the metrics, tools and statistical tests currently included in `scores`</span>
 
-Table: [A **curated selection** of the metrics, tools and statistical tests currently included in `scores`]{.smallcaps}
+<span style="font-variant:small-caps;">A <b>curated selection</b> of the metrics, tools and statistical tests currently included in `scores`</span>
+
+ <b>This text is bold</b> 
+
+[A <b>Curated Selection</b> of the Metrics, Tools and Statistical Tests Currently Included in `scores`]{.smallcaps}
+
+Table: [A <b>curated selection</b> of the metrics, tools and statistical tests currently included in `scores`]{.smallcaps}
 
 |              | **Description** |**A Selection of the Functions Included in `scores`**|
 |--------------|-----------------|-----------------------------------------------------|
