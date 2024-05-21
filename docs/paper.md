@@ -91,7 +91,7 @@ We anticipate more metrics, tools and statistical techniques will be added over 
 
 <span class="smallcaps">Small caps</span>
 
-<span style="font-variant:small-caps;">Small caps</span>
+<span style="font-variant:small-caps;">A **curated selection** of the metrics, tools and statistical tests currently included in `scores`</span>
 
 Table: [A **curated selection** of the metrics, tools and statistical tests currently included in `scores`]{.smallcaps}
 
