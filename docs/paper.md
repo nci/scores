@@ -68,6 +68,23 @@ In order to meet the needs of researchers, `scores`:
 | Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
 
 
+|              |                                                     |
+|--------------|-----------------------------------------------------|
+| Data         |Scores for evaluating single-valued continuous forecasts. |
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
+| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+|              |                                                     |
+| Data         |Scores for evaluating single-valued continuous forecasts. |
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
+| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+                                                                  
+| Data         |Scores for evaluating single-valued continuous forecasts. |
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
+| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+
 |--------------|-----------------------------------------------------|
 | Data         |Scores for evaluating single-valued continuous forecasts. |
 | Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
