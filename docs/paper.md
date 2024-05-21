@@ -63,7 +63,7 @@ In order to meet the needs of researchers, `scores`:
 
 ## Key Benefits
 
-To meet the needs of researchers, `scores` has the following key benefits:
+In order to meet the needs of researchers, `scores` has the following key benefits:
                  
 |             |                                                                                     |
 |-------------|-------------------------------------------------------------------------------------|
