@@ -69,7 +69,7 @@ In order to meet the needs of researchers, `scores` has the following key benefi
                  
 |             |                                                                                     |
 |-------------|-------------------------------------------------------------------------------------|
-| Data        | • Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: |  
+| Data Handling | • Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: |  
 |             |  - gridded Earth system data (e.g. Numerical Weather Prediction models) | 
 |             |  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations). |     
 |             | • Handles missing data, masking of data and weighting of results. |
@@ -99,11 +99,14 @@ We anticipate more metrics, tools and statistical techniques will be added over 
 
 <span style="font-variant:small-caps;">A <b>curated selection</b> of the metrics, tools and statistical tests currently included in `scores`</span>
 
- <b>This text is bold</b> 
+<span style="font-variant:small-caps;">A</span> <span style="font-variant:small-caps; font-weight:bold">Curated Selection</span> <span style="font-variant:small-caps;">of the Metrics, Tools and Statistical Tests Currently Included in `scores`</span>
+
+
+ <span style="color:blue; font-weight:bold">This is blue</span>
 
 [A <b>Curated Selection</b> of the Metrics, Tools and Statistical Tests Currently Included in `scores`]{.smallcaps}
 
-Table: [A <b>curated selection</b> of the metrics, tools and statistical tests currently included in `scores`]{.smallcaps}
+Table: [A <b>Curated Selection</b> of the Metrics, Tools and Statistical Tests Currently Included in `scores`]{.smallcaps}
 
 |              | **Description** |**A Selection of the Functions Included in `scores`**|
 |--------------|-----------------|-----------------------------------------------------|
