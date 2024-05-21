@@ -31,35 +31,45 @@ bibliography: paper.bib
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
-`scores` is focused on supporting xarray [@Hoyer:2017] datatypes for earth system data. It also aims to be compatible with pandas [@pandas:2024; @McKinney:2010] and geopandas [@geopandas:2024], and to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. Scores is designed to utilise Dask for scaling and performance.
+`scores` primarily supports xarray datatypes for Earth system data, allowing it to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It also aims to be compatible with pandas and geopandas. 
 
 The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
 # Statement of Need
 
-The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics.
+The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics. 
 
-## Key Benefits
+In order to meet the needs of researchers, `scores` provides the following key benefits.
 
-In order to meet the needs of researchers, `scores`:
+**Data Handling**
 
-- is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for: 
-  - gridded earth system data (e.g. Numerical Weather Prediction models)
+- Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
+  - gridded Earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
-- is designed to handle missing data, masking of data and weighting of results.
-- includes a companion Jupyter Notebook tutorial for each metric and statistical test that demonstrates its use in practice.
-- includes novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
-- is highly modular and avoids extensive dependencies by providing its own implementations where relevant.
-- is intended to be easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments. 
-- uses Dask [@Dask:2016] for scaling and performance.
+- Handles missing data, masking of data and weighting of results.
+- Supports xarray [@Hoyer:2017] datatypes, and works with NetCDF4, hdf5, Zarr and GRIB data sources among others.
 
-## Metrics, Statistical Techniques and Data Processing Tools Included in Scores 
+**Usability**
+
+- A companion Jupyter Notebook tutorial for each metric and statistical test that demonstrates its use in practice.
+- Novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular])
+- All scores and statistical techniques have undergone a thorough scientific and software review.
+- An area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores.  
+
+**Compatability**
+
+- Highly modular and avoids extensive dependencies by providing its own implementations where relevant.
+- Easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments.
+- Uses Dask [@Dask:2016] for scaling and performance.
+- Aims to be compatible with pandas [@pandas:2024; @McKinney:2010] and geopandas [@geopandas:2024] |
+
+## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
 At the time of writing, `scores` includes **over 50** metrics, statistical techniques and data processing tools. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
 
-We anticipate more metrics, tools and statistical techniques will be added over time. 
+We anticipate more metrics, tools and statistical techniques will be added over time.
 
-Here is a **curated selection** of the metrics, tools and statistical tests currently included in `scores`:
+Table: A **Curated Selection** of the Metrics, Tools and Statistical Tests Currently Included in `scores`
 
 |              | **Description** |**A Selection of the Functions Included in `scores`**|
 |--------------|-----------------|-----------------------------------------------------|
@@ -72,8 +82,6 @@ Here is a **curated selection** of the metrics, tools and statistical tests curr
 | **[Statistical Tests](https://scores.readthedocs.io/en/latest/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the [@Harvey:1997] and [@Hering:2011] modifications.              	  
 |
 | **[Processing Tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation. |
-
-Additionally, `scores` has an area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores. 
 
 ## Use in Academic Work
 
