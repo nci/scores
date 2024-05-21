@@ -69,6 +69,7 @@ We anticipate more metrics, tools and statistical techniques will be added over 
 
 Here is a **curated selection** of the metrics, tools and statistical tests currently included in `scores`:
 
+Table: Here is a **curated selection** of the metrics, tools and statistical tests currently included in `scores`:
 |              | **Description** |**A Selection of the Functions Included in `scores`**|
 |--------------|-----------------|-----------------------------------------------------|
 | **[Continuous](https://scores.readthedocs.io/en/latest/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts.                  	|Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Additive Bias, Multiplicative Bias, Pearson's Correlation Coefficient, Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Quantile loss, Murphy score [@Ehm:2016].              	  
