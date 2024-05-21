@@ -61,13 +61,6 @@ In order to meet the needs of researchers, `scores`:
 
 - uses Dask [@Dask:2016] for scaling and performance.
 
-|  Text        | Text                                                |
-|--------------|-----------------------------------------------------|
-| Data         |Scores for evaluating single-valued continuous forecasts. |
-| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
-| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
-
-
 |              |                                                     |
 |--------------|-----------------------------------------------------|
 | Data         |Scores for evaluating single-valued continuous forecasts. |
@@ -75,20 +68,39 @@ In order to meet the needs of researchers, `scores`:
 | Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
 
 |              |                                                     |
-| Data         |Scores for evaluating single-valued continuous forecasts. |
-| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
-| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
-
-                                                                  
-| Data         |Scores for evaluating single-valued continuous forecasts. |
-| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
-| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
-
-
 |--------------|-----------------------------------------------------|
-| Data         |Scores for evaluating single-valued continuous forecasts. |
+| Data         |Scores for evaluating single-valued continuous forecasts.  
+- is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
+  - gridded Earth system data (e.g. Numerical Weather Prediction models)
+  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).  
+- is designed to handle missing data, masking of data and weighting of results.    
+|
 | Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
 | Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+|              |                                                     |
+|--------------|-----------------------------------------------------|
+| Data         |Scores for evaluating single-valued continuous forecasts.  
+is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
+  - gridded Earth system data (e.g. Numerical Weather Prediction models)
+  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).  
+is designed to handle missing data, masking of data and weighting of results.    
+|
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
+| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+|              |                                                     |
+|--------------|-----------------------------------------------------|
+| Data         |Scores for evaluating single-valued continuous forecasts.  
+is designed to work with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
+  gridded Earth system data (e.g. Numerical Weather Prediction models)
+  tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).  
+is designed to handle missing data, masking of data and weighting of results.    
+|
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
+| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
