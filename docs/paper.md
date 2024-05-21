@@ -86,6 +86,16 @@ At the time of writing, `scores` includes **over 50** metrics, statistical techn
 
 We anticipate more metrics, tools and statistical techniques will be added over time.
 
+[Small Caps]{.sc}
+
+****Small Caps****
+
+[Small caps]{.smallcaps}
+
+<span class="smallcaps">Small caps</span>
+
+<span style="font-variant:small-caps;">Small caps</span>
+
 Table: A **curated selection** of the metrics, tools and statistical tests currently included in `scores`
 
 |              | **Description** |**A Selection of the Functions Included in `scores`**|
