@@ -61,11 +61,16 @@ In order to meet the needs of researchers, `scores`:
 
 - uses Dask [@Dask:2016] for scaling and performance.
 
+|  Text        | Text                                                |
 |--------------|-----------------------------------------------------|
-| Data         |Scores for evaluating single-valued continuous forecasts.                  	             	  
-|
-| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**       	
-|
+| Data         |Scores for evaluating single-valued continuous forecasts. |
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
+| Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
+
+
+|--------------|-----------------------------------------------------|
+| Data         |Scores for evaluating single-valued continuous forecasts. |
+| Features     |**[Probability](https://scores.readthedocs.io/en/latest/included.html#probability)**  |
 | Ease of Use  | **[Categorical](https://scores.readthedocs.io/en/latest/included.html#categorical)** |       	              	  
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
