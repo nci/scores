@@ -246,7 +246,8 @@
 }
 @article{Gneiting_2007, 
 	title={Strictly Proper Scoring Rules, Prediction, and Estimation}, 
-	volume={102}, ISSN={1537-274X}, 
+	volume={102}, 
+	ISSN={1537-274X}, 
 	url={http://dx.doi.org/10.1198/016214506000001437}, 
 	DOI={10.1198/016214506000001437}, 
 	number={477}, 
@@ -256,6 +257,31 @@
 	year={2007}, 
 	month=mar, 
 	pages={359–378}
+}
+@article{gmd-12-4185-2019,
+	author = {Pulkkinen, S. and Nerini, D. and P\'erez Hortal, A. A. and Velasco-Forero, C. and Seed, A. and Germann, U. and Foresti, L.},
+	title = {Pysteps: an open-source Python library  for probabilistic precipitation nowcasting (v1.0)},
+	JOURNAL = {Geoscientific Model Development},
+	VOLUME = {12},
+	YEAR = {2019},
+	NUMBER = {10},
+	PAGES = {4185--4219},
+	URL = {https://gmd.copernicus.org/articles/12/4185/2019/},
+	DOI = {10.5194/gmd-12-4185-2019}
+}
+@article{https://doi.org/10.1002/qj.4461,
+	author = {Imhoff, Ruben O. and De Cruz, Lesley and Dewettinck, Wout and Brauer, Claudia C. and Uijlenhoet, Remko and van Heeringen, Klaas-Jan and Velasco-Forero, Carlos and Nerini, Daniele and Van Ginderachter, Michiel and Weerts, Albrecht H.},
+	title = {Scale-dependent blending of ensemble rainfall nowcasts and numerical weather prediction in the open-source pysteps library},
+	journal = {Quarterly Journal of the Royal Meteorological Society},
+	volume = {149},
+	number = {753},
+	pages = {1335-1364},
+	keywords = {blending, early warning, nowcasting, numerical weather prediction, open source, rainfall},
+	doi = {https://doi.org/10.1002/qj.4461},
+	url = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/qj.4461},
+	eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/qj.4461},
+	abstract = {Abstract Flash flood early warning requires accurate rainfall forecasts with a high spatial and temporal resolution. As the first few hours ahead are already not sufficiently well captured by the rainfall forecasts of numerical weather prediction (NWP) models, radar rainfall nowcasting can provide an alternative. Because this observation-based method quickly loses skill after the first 2 hr of the forecast, it needs to be combined with NWP forecasts to extend the skillful lead time of short-term rainfall forecasts, which should increase decision-making times. We implemented an adaptive scale-dependent ensemble blending method in the open-source pysteps library, based on the Short-Term Ensemble Prediction System scheme. In this implementation, the extrapolation (ensemble) nowcast, (ensemble) NWP, and noise components are combined with skill-dependent weights that vary per spatial scale level. To constrain the (dis)appearance of rain in the ensemble members to regions around the rainy areas, we have developed a Lagrangian blended probability matching scheme and incremental masking strategy. We describe the implementation details and evaluate the method using three heavy and extreme (July 2021) rainfall events in four Belgian and Dutch catchments. We benchmark the results of the 48-member blended forecasts against the Belgian NWP forecast, a 48-member nowcast, and a simple 48-member linear blending approach. Both on the radar domain and catchment scale, the introduced blending approach predominantly performs similarly or better than only nowcasting (in terms of event-averaged continuous ranked probability score and critical success index values) and adds value compared with NWP for the first hours of the forecast, although the difference, particularly with the linear blending method, reduces when we focus on catchment-average cumulative rainfall sums instead of instantaneous rainfall rates. By properly combining observations and NWP forecasts, blending methods such as these are a crucial component of seamless prediction systems.},
+	year = {2023}
 }
 @software{pandas:2024,
   author       = {{The pandas development team}},
