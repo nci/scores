@@ -1,5 +1,5 @@
 ---
-title: 'scores: A Python package for evaluating and verifying forecasts using xarray'
+title: 'scores: A Python package for verifying and evaluating models and predictions with xarray and pandas'
 tags:
   - Python
   - verification
