@@ -101,7 +101,7 @@ There are multiple verification packages for other programming languages. `score
 
 `Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
 
-`PySteps` [@gmd-12-4185-2019], [@https://doi.org/10.1002/qj.4461] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. PySteps includes functionality well beyond verification and so is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
+`PySteps` [@gmd-12-4185-2019], [@Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. PySteps includes functionality well beyond verification and so is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
 
 # Acknowledgements
 
