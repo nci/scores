@@ -91,13 +91,17 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-`climpred` [@Brady:2021] provides some related functionality and provides many of the same scores. `climpred` does not contain some of the novel functions contained within `scores`, and at the same time makes some design choices specifically associated with climate modelling which do not generalise as effectively to broader use cases as may be needed in some circumstances. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
+There are multiple verification packages for other programming languages. `scores` is differentiated from these by providing a Python implementation. There are also some Python verification packages, and their relationship to scores is discussed below.
 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain some of the novel functions contained within `scores` and does not contain the Jupyter Notebook tutorials which provide users with clear guidance on the use of the verification metrics. 
 
-`METplus` [@Brown:2021] provides related functionality. `METplus` includes a database and visualisation system with python wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not contain some of the novel functions contained within `scores`.
+`climpred` [@Brady:2021] utilises xskillscore combined with data handling functionality which is focused on ensemble forecasts for climate and weather. `climpred` does not contain some of the novel functions contained within `scores`, and at the same time makes some design choices specifically associated with climate modelling which do not generalise as effectively to broader use cases as may be needed in some circumstances. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
+
+`METplus` [@Brown:2021] provides related functionality and is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system with python wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not contain some of the novel functions contained within `scores`.
 
 `Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
+
+`PySteps` [@gmd-12-4185-2019], [https://doi.org/10.1002/qj.4461] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. PySteps includes functionality well beyond verification and so is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
 
 # Acknowledgements
 
