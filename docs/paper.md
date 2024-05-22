@@ -39,6 +39,8 @@ The software repository can be found at [https://github.com/nci/scores/](https:/
 
 The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics. 
 
+## Key Benefits of `scores`
+
 In order to meet the needs of researchers, `scores` provides the following key benefits.
 
 **Data Handling**
