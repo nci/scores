@@ -91,17 +91,17 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-There are multiple open source verification packages for other programming languages. `scores` is differentiated from these by providing a Python implementation. There are also open source Python verification packages, and their relationship to scores is discussed below.
+There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages.
 
-`xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain some of the novel functions contained within `scores` and does not contain the Jupyter Notebook tutorials which provide users with clear guidance on the use of the verification metrics. 
+`xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain all of the novel functions contained within `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
 
-`climpred` [@Brady:2021] utilises xskillscore combined with data handling functionality which is focused on ensemble forecasts for climate and weather. `climpred` does not contain some of the novel functions contained within `scores`, and at the same time makes some design choices specifically associated with climate modelling which do not generalise as effectively to broader use cases as may be needed in some circumstances. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
+`climpred` [@Brady:2021] utilises xskillscore combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community. `climpred` does not include all of the novel functions contained within `scores`.
 
-`METplus` [@Brown:2021] provides related functionality and is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system with python wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not contain some of the novel functions contained within `scores`.
+`METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not include all of the novel functions contained within `scores`.
 
-`Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
+`Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. `Verif` does not include all of the novel metrics in `scores`.
 
-`PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. PySteps includes functionality well beyond verification and so is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
+`PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `PySteps` includes functionality well beyond verification, it is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
 
 `PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support xarray data structures and does not include Jupyter Notebook tutorials.
 
