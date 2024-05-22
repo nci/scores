@@ -14,10 +14,41 @@ authors:
     affiliation: 1 
     corresponding: true # (This is how to denote the corresponding author)    
   - name: Nicholas Loveday
+    orcid: 0009-0000-5796-7069
     affiliation: 1
+  - name: Elizabeth E. Ebert
+    affiliation: 1    
+  - name: Harrison Cook
+    orcid: 0009-0009-3207-4876
+    affiliation: 1    
+  - name: Mohammadreza Khanarmuei
+    orcid: 0000-0002-5017-9622
+    affiliation: 1    
+  - name: Robert J. Taggart
+    orcid: 0000-0002-0067-5687
+    affiliation: 1
+  - name: Nikeeth Ramanathan
+    orcid: 0009-0002-7406-7438
+    affiliation: 1
+  - name: Maree Carroll
+    orcid: 0009-0008-6830-8251
+    affiliation: 1
+  - name: Stephanie Chong
+    orcid: 0009-0007-0796-4127
+    affiliation: 3
+  - name: Aidan Griffiths
+    affiliation: 2
+  - name: John Sharples
+    affiliation: 1
+
 affiliations:
  - name: Bureau of Meteorology, Australia
    index: 1
+ - name: Work undertaken while at Bureau of Meteorology, Australia
+   index: 2
+ - name: Independent, Australia
+   index: 3
+
 date: 17 May 2024
 bibliography: paper.bib 
 
