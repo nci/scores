@@ -91,7 +91,7 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-There are multiple verification packages for other programming languages. `scores` is differentiated from these by providing a Python implementation. There are also some Python verification packages, and their relationship to scores is discussed below.
+There are multiple open source verification packages for other programming languages. `scores` is differentiated from these by providing a Python implementation. There are also open source Python verification packages, and their relationship to scores is discussed below.
 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain some of the novel functions contained within `scores` and does not contain the Jupyter Notebook tutorials which provide users with clear guidance on the use of the verification metrics. 
 
@@ -101,7 +101,9 @@ There are multiple verification packages for other programming languages. `score
 
 `Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. It also does not contain some of the novel metrics in `scores`.
 
-`PySteps` [@gmd-12-4185-2019], [@Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. PySteps includes functionality well beyond verification and so is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
+`PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. PySteps includes functionality well beyond verification and so is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
+
+`PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support xarray data structures and does not include Jupyter Notebook tutorials.
 
 # Acknowledgements
 
