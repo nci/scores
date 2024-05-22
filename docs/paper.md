@@ -103,7 +103,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `PySteps` includes functionality well beyond verification, it is not as modular. `PySteps` does not contain all of the metrics implemented in `scores` and vice versa.
 
-`PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support xarray data structures and does not include Jupyter Notebook tutorials.
+`PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support `xarray` data structures and does not include Jupyter Notebook tutorials.
 
 # Acknowledgements
 
