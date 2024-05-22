@@ -95,7 +95,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain all of the novel functions contained within `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
 
-`climpred` [@Brady:2021] utilises xskillscore combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community. `climpred` does not include all of the novel functions contained within `scores`.
+`climpred` [@Brady:2021] utilises `xskillscore` combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community. `climpred` does not include all of the novel functions contained within `scores`.
 
 `METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not include all of the novel functions contained within `scores`.
 
