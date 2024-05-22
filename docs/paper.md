@@ -101,7 +101,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. `Verif` does not include all of the novel metrics in `scores`.
 
-`PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `PySteps` includes functionality well beyond verification, it is not as modular. PySteps does not contain all of the metrics implemented in `scores` and vice versa.
+`PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `PySteps` includes functionality well beyond verification, it is not as modular. `PySteps` does not contain all of the metrics implemented in `scores` and vice versa.
 
 `PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support xarray data structures and does not include Jupyter Notebook tutorials.
 
