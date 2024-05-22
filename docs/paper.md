@@ -31,7 +31,7 @@ bibliography: paper.bib
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
-`scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, hdf5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It also aims to be compatible with `pandas` and `geopandas`. 
+`scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It also aims to be compatible with `pandas` and `geopandas`. 
 
 The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
@@ -49,7 +49,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
   - gridded Earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
-- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], hdf5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data sources among others.
+- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data sources among others.
 
 **Usability**
 
