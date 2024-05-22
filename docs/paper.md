@@ -47,7 +47,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
   - gridded Earth system data (e.g. Numerical Weather Prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
-- Supports xarray [@Hoyer:2017] datatypes, and works with NetCDF4, hdf5, Zarr and GRIB data sources among others.
+- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4, hdf5, Zarr and GRIB data sources among others.
 
 **Usability**
 
