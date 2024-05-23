@@ -44,7 +44,7 @@ authors:
 affiliations:
  - name: Bureau of Meteorology, Australia
    index: 1
- - name: Work undertaken while at Bureau of Meteorology, Australia
+ - name: Work undertaken while at the Bureau of Meteorology, Australia
    index: 2
  - name: Independent, Australia
    index: 3
@@ -98,7 +98,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
-At the time of writing, `scores` includes **over 50** metrics, statistical techniques and data processing tools. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
+At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools. For an up to date list, please see the `scores` [documentation](https://scores.readthedocs.io/en/latest/included.html).
 
 We anticipate more metrics, tools and statistical techniques will be added over time.
 
@@ -114,7 +114,7 @@ Table: A **Curated Selection** of the Metrics, Tools and Statistical Tests Curre
 |
 | **[Statistical Tests](https://scores.readthedocs.io/en/latest/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the @Harvey:1997 and @Hering:2011 modifications.              	  
 |
-| **[Processing Tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation. |
+| **[Processing Tools](https://scores.readthedocs.io/en/latest/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function manipulation. |
 
 ## Use in Academic Work
 
@@ -134,7 +134,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. `Verif` does not include all of the novel metrics in `scores`.
 
-`PySteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `PySteps` includes functionality well beyond verification, it is not as modular. `PySteps` does not contain all of the metrics implemented in `scores` and vice versa.
+`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `Pysteps` includes functionality well beyond verification, it is not as modular. `Pysteps` does not contain all of the metrics implemented in `scores` and vice versa.
 
 `PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support `xarray` data structures and does not include Jupyter Notebook tutorials.
 
