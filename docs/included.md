@@ -665,6 +665,10 @@
   - 
     Continuous Ranked Probability Score (CRPS) for CDFs; CRPS CDF Brier Decomposition
 * -  
+    - Block Bootstrap
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.block_bootstrap)
+* -  
     - CDF Envelope
   -
     [API](api.md#scores.processing.cdf.cdf_envelope)
