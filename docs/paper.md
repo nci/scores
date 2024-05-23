@@ -66,6 +66,8 @@ All of the scores and statistical techniques in this package have undergone a th
 
 The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
++++ { "page-break": true }
+
 # Statement of Need
 
 The research purpose of this software is (a) to mathematically verify and validate scientific research and (b) to foster research into new scores and metrics. 
