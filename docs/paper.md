@@ -66,7 +66,6 @@ All of the scores and statistical techniques in this package have undergone a th
 
 The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
-\newpage
 \pagebreak
 
 # Statement of Need
