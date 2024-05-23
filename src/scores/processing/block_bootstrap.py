@@ -1,17 +1,38 @@
+"""
+Functions for performing block bootstrapping of arrays. This is inspired from
+https://github.com/dougiesquire/xbootstrap with modifications to make the functions more
+testable and also consistent with the scores package.
+"""
+
 import math
 from collections import OrderedDict
 from itertools import chain, cycle, islice
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import xarray as xr
 
+from scores.typing import XarrayLike
+
+MAX_CHUNK_SIZE_MB = 200
+
 
 def _get_blocked_random_indices(
-    shape, block_axis, block_size, prev_block_sizes, circular
-):
+    shape: list[int], block_axis: int, block_size: int, prev_block_sizes: list[int], circular: bool = True
+) -> np.ndarray:
     """
     Return indices to randomly sample an axis of an array in consecutive
-    (cyclic) blocks
+    (cyclic) blocks.
+
+    Args:
+        shape: The shape of the array to sample
+        block_axis: The axis along which to sample blocks
+        block_size: The size of each block to sample
+        prev_block_sizes: Sizes of previous blocks along other axes
+        circular: whether to sample block circularly.
+
+    Returns:
+        An array of indices to use for block resampling.
     """
 
     def _random_blocks(length, block, circular):
@@ -21,25 +42,22 @@ def _get_blocked_random_indices(
         """
         if block == length:
             return list(range(length))
+        repeats = math.ceil(length / block)
+        if circular:
+            indices = list(
+                chain.from_iterable(
+                    islice(cycle(range(length)), s, s + block) for s in np.random.randint(0, length, repeats)
+                )
+            )
         else:
-            repeats = math.ceil(length / block)
-            if circular:
-                indices = list(
-                    chain.from_iterable(
-                        islice(cycle(range(length)), s, s + block)
-                        for s in np.random.randint(0, length, repeats)
-                    )
+            indices = list(
+                chain.from_iterable(
+                    islice(range(length), s, s + block) for s in np.random.randint(0, length - block + 1, repeats)
                 )
-            else:
-                indices = list(
-                    chain.from_iterable(
-                        islice(range(length), s, s + block)
-                        for s in np.random.randint(0, length - block + 1, repeats)
-                    )
-                )
-            return indices[:length]
+            )
+        return indices[:length]
 
-    # Don't randomize within an outer block
+    # Don't randomise within an outer block
     if len(prev_block_sizes) > 0:
         orig_shape = shape.copy()
         for i, b in enumerate(prev_block_sizes[::-1]):
@@ -56,10 +74,7 @@ def _get_blocked_random_indices(
         non_block_shapes = [s for i, s in enumerate(shape) if i != block_axis]
         indices = np.moveaxis(
             np.stack(
-                [
-                    _random_blocks(shape[block_axis], block_size, circular)
-                    for _ in range(np.prod(non_block_shapes))
-                ],
+                [_random_blocks(shape[block_axis], block_size, circular) for _ in range(np.prod(non_block_shapes))],
                 axis=-1,
             ).reshape([shape[block_axis]] + non_block_shapes),
             0,
@@ -69,15 +84,14 @@ def _get_blocked_random_indices(
     if len(prev_block_sizes) > 0:
         for i, b in enumerate(prev_block_sizes[::-1]):
             prev_ax = block_axis - (i + 1)
-            indices = np.repeat(indices, b, axis=prev_ax).take(
-                range(orig_shape[prev_ax]), axis=prev_ax
-            )
+            indices = np.repeat(indices, b, axis=prev_ax).take(range(orig_shape[prev_ax]), axis=prev_ax)
         return indices
-    else:
-        return indices
+    return indices
 
 
-def _n_nested_blocked_random_indices(sizes, n_iteration, circular):
+def _n_nested_blocked_random_indices(
+    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True
+) -> OrderedDict[str, np.ndarray]:
     """
     Returns indices to randomly resample blocks of an array (with replacement)
     in a nested manner many times. Here, "nested" resampling means to randomly
@@ -86,38 +100,37 @@ def _n_nested_blocked_random_indices(sizes, n_iteration, circular):
     randomly sampled element along that dimension, randomly resample the third
     dimension etc.
 
-    Parameters
-    ----------
-    sizes : OrderedDict
-        Dictionary with {names: (sizes, blocks)} of the dimensions to resample
-    n_iteration : int
-        The number of times to repeat the random resampling
-    circular : bool
-        Whether or not to do circular resampling
+    Args:
+    sizes: Dictionary with {names: (sizes, blocks)} of the dimensions to resample
+    n_iteration: The number of times to repeat the random resampling
+    circular: Whether or not to do circular resampling.
+
+    Returns:
+        A dictionary of arrays containing indices for nested block resampling.
+
     """
 
     shape = [s[0] for s in sizes.values()]
     indices = OrderedDict()
-    prev_blocks = []
+    prev_blocks: List[int] = []
     for ax, (key, (_, block)) in enumerate(sizes.items()):
-        indices[key] = _get_blocked_random_indices(
-            shape[: ax + 1] + [n_iteration], ax, block, prev_blocks, circular
-        )
+        indices[key] = _get_blocked_random_indices(shape[: ax + 1] + [n_iteration], ax, block, prev_blocks, circular)
         prev_blocks.append(block)
     return indices
 
 
-def _expand_n_nested_random_indices(indices):
+def _expand_n_nested_random_indices(indices: list[np.ndarray]) -> Tuple[np.ndarray, ...]:
     """
     Expand the dimensions of the nested input arrays so that they can be
     broadcast and return a tuple that can be directly indexed
 
-    Parameters
-    ----------
-    indices : list of numpy arrays
-        List of numpy arrays of sequentially increasing dimension as output by
+    Args:
+    indices:List of numpy arrays of sequentially increasing dimension as output by
         the function `_n_nested_blocked_random_indices`. The last axis on all
         inputs is assumed to correspond to the iteration axis
+
+    Returns:
+        Expanded indices suitable for broadcasting.
     """
     broadcast_ndim = indices[-1].ndim
     broadcast_indices = []
@@ -127,93 +140,100 @@ def _expand_n_nested_random_indices(indices):
     return (..., *tuple(broadcast_indices))
 
 
-def _block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=True):
+def _bootstrap(*arrays: np.ndarray, indices: List[np.ndarray]) -> Union[np.ndarray, Tuple[np.ndarray, ...]]:
     """
-    Repeatedly circularly bootstrap the provided arrays across the specified
-    dimension(s) and stack the new arrays along a new "iteration"
-    dimension. The boostrapping is done in a nested manner. I.e. bootstrap
-    the first provided dimension, then for each bootstrapped sample along
-    that dimenion, bootstrap the second provided dimension, then for each
-    bootstrapped sample along that dimenion etc.
+    Bootstrap the array(s) using the provided indices
 
-    Note, this function expands out the iteration dimension inside a
-    universal function. However, this can generate very large chunks (it
-    multiplies chunk size by the number of iterations) and it falls over for
-    large numbers of iterations for reasons I don't understand. It is thus
-    best to apply this function in blocks using `block_bootstrap`
+    Args:
+        arrays: list of arrays to bootstrap
+        indices: list of arrays containing indices to use for bootstrapping each input array
 
-    Parameters
-    ----------
-    objects : xarray DataArray(s) or Dataset(s)
-        The data to bootstrap. Multiple datasets can be passed to be
-        bootstrapped in the same way. Where multiple datasets are passed, all
-        datasets need not contain all bootstrapped dimensions. However, because
-        of the bootstrapping is applied in a nested manner, the dimensions in
-        all input objects must also be nested. E.g., for `blocks.keys=['d1',
-        'd2','d3']` an object with dimensions 'd1' and 'd2' is valid but an
-        object with only dimension 'd2' is not. All datasets are boostrapped
-        according to the same random samples along available dimensions.
-    blocks : dict
-        Dictionary of the dimension(s) to bootstrap and the block sizes to use
-        along each dimension: `{dim: blocksize}`. Nesting is carried out according
-        to the order of this dictionary.
-    n_iteration : int
-        The number of times to repeat the bootstrapping.
-    exclude_dims : list of list
-        List of the same length as the number of objects giving a list of
-        dimensions specifed in `blocks` to exclude from each object. Default is
-        to assume that no dimensions are excluded and all `objects` are
-        bootstrapped across all (available) dimensions `blocks`.
-    circular : boolean, optional
-        Whether or not to do circular block bootstrapping
+    Returns:
+        Bootstrapped arrays
+    """
+    bootstrapped = [array[ind] for array, ind in zip(arrays, indices)]
+    if len(bootstrapped) == 1:
+        return bootstrapped[0]
+    return tuple(bootstrapped)
 
-    References
-    ----------
+
+def _block_bootstrap(  # pylint: disable=too-many-locals
+    *objects: XarrayLike,
+    blocks: Dict[str, int],
+    n_iteration: int,
+    exclude_dims: Union[List[List[str]], None] = None,
+    circular: bool = True,
+) -> Tuple[xr.DataArray, ...]:
+    """
+    Repeatedly performs bootstrapping on provided arrays across specified dimensions, stacking
+    the new arrays along a new "iteration" dimension. Bootstrapping is executed in a nested
+    manner: the first provided dimension is bootstrapped, then for each bootstrapped sample
+    along that dimension, the second provided dimension is bootstrapped, and so forth.
+
+    Args:
+        *objects: Data to bootstrap. Multiple datasets can be passed to be bootstrapped
+            in the same way. All input objects must have nested dimensions.
+        blocks: Dictionary of dimension(s) to bootstrap and the block sizes to use
+            along each dimension: `{dim: blocksize}`. Nesting is based on the order of
+            this dictionary.
+        n_iteration: The number of iterations to repeat the bootstrapping process. Determines
+            how many bootstrapped arrays will be generated and stacked along the iteration
+            dimension.
+        exclude_dims: An optional parameter indicating the dimensions to be excluded during
+            bootstrapping for each object provided in `objects`. This parameter expects a list
+            of lists, where each inner list corresponds to the dimensions to be excluded for
+            the respective object. By default, the assumption is that no dimensions are
+            excluded, and all objects are bootstrapped across all specified dimensions in `blocks`.
+        circular: A boolean flag indicating whether circular block bootstrapping should be
+            performed. Circular bootstrapping means that bootstrapping continues from the beginning
+            when the end of the data is reached. By default, this parameter is set to True.
+
+     Returns:
+        Tuple of bootstrapped xarray DataArrays or Datasets, based on the input.
+
+    Note:
+        This function expands out the iteration dimension inside a universal function.
+        However, this may generate very large chunks (multiplying chunk size by the number
+        of iterations), causing issues for larger iterations. It's advisable to apply this
+        function in blocks using 'block_bootstrap'.
+
+    References:
     Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
       Academic press, 2011.
     """
 
-    def _bootstrap(*arrays, indices):
-        """Bootstrap the array(s) using the provided indices"""
-        bootstrapped = [array[ind] for array, ind in zip(arrays, indices)]
-        if len(bootstrapped) == 1:
-            return bootstrapped[0]
-        else:
-            return tuple(bootstrapped)
-
-    objects = list(objects)
+    objects_list = list(objects)
 
     # Rename exclude_dims so they are not bootstrapped
     if exclude_dims is None:
-        exclude_dims = [[] for _ in range(len(objects))]
-    msg = (
-        "exclude_dims should be a list of the same length as the number of "
-        "objects containing lists of dimensions to exclude for each object"
-    )
-    assert isinstance(exclude_dims, list), msg
-    assert len(exclude_dims) == len(objects), msg
-    assert all(isinstance(x, list) for x in exclude_dims), msg
+        exclude_dims = [[] for _ in range(len(objects_list))]
+    if (
+        not isinstance(exclude_dims, list)
+        or len(exclude_dims) != len(objects_list)
+        or not all(isinstance(x, list) for x in exclude_dims)
+    ):
+        raise ValueError(
+            "exclude_dims should be a list of the same length as the number of "
+            "objects containing lists of dimensions to exclude for each object"
+        )
     renames = []
-    for i, (obj, exclude) in enumerate(zip(objects, exclude_dims)):
-        objects[i] = obj.rename(
+    for i, (obj, exclude) in enumerate(zip(objects_list, exclude_dims)):
+        objects_list[i] = obj.rename(
             {d: f"dim{ii}" for ii, d in enumerate(exclude)},
         )
         renames.append({f"dim{ii}": d for ii, d in enumerate(exclude)})
 
     dim = list(blocks.keys())
-    if isinstance(dim, str):
-        dim = [dim]
 
-    # Check that boostrapped dimensions are the same size on all objects
+    # Ensure bootstrapped dimensions have consistent sizes across objects_list
     for d in blocks.keys():
-        dim_sizes = [o.sizes[d] for o in objects if d in o.dims]
-        assert all(
-            s == dim_sizes[0] for s in dim_sizes
-        ), f"Block dimension {d} is not the same size on all input objects"
+        dim_sizes = [o.sizes[d] for o in objects_list if d in o.dims]
+        if not all(s == dim_sizes[0] for s in dim_sizes):
+            raise ValueError(f"Block dimension {d} is not the same size on all input objects")
 
-    # Get the sizes of the bootstrap dimensions
+    # Retrieve sizes of the bootstrap dimensions from objects_list
     sizes = None
-    for obj in objects:
+    for obj in objects_list:
         try:
             sizes = OrderedDict(
                 {d: (obj.sizes[d], b) for d, b in blocks.items()},
@@ -226,34 +246,22 @@ def _block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=
             "At least one input object must contain all dimensions in blocks.keys()",
         )
 
-    # Generate the random indices first so that we can be sure that each
-    # dask chunk uses the same indices. Note, I tried using random.seed()
-    # to achieve this but it was flaky. These are the indices to bootstrap
-    # all objects.
+    # Generate random indices for bootstrapping all objects_list
     nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
 
-    # Need to expand the indices for broadcasting for each object separately
-    # as each object may have different dimensions
+    # Expand indices for broadcasting for each object separately
     indices = []
     input_core_dims = []
-    for obj in objects:
+    for obj in objects_list:
         available_dims = [d for d in dim if d in obj.dims]
         indices_to_expand = [nested_indices[key] for key in available_dims]
-
-        # Check that dimensions are nested
-        ndims = [i.ndim for i in indices_to_expand]
-        # Start at 2 due to iteration dim
-        if ndims != list(range(2, len(ndims) + 2)):
-            raise ValueError("The dimensions of all inputs must be nested")
 
         indices.append(_expand_n_nested_random_indices(indices_to_expand))
         input_core_dims.append(available_dims)
 
-    # Loop over objects because they may have non-matching dimensions and
-    # we don't want to broadcast them as this will unnecessarily increase
-    # chunk size for dask arrays
+    # Process objects_list separately to handle non-matching dimensions
     result = []
-    for obj, ind, core_dims in zip(objects, indices, input_core_dims):
+    for obj, ind, core_dims in zip(objects_list, indices, input_core_dims):
         if isinstance(obj, xr.Dataset):
             # Assume all variables have the same dtype
             output_dtype = obj[list(obj.data_vars)[0]].dtype
@@ -264,15 +272,11 @@ def _block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=
             xr.apply_ufunc(
                 _bootstrap,
                 obj,
-                kwargs=dict(
-                    indices=[ind],
-                ),
+                kwargs={"indices": [ind]},
                 input_core_dims=[core_dims],
                 output_core_dims=[core_dims + ["iteration"]],
                 dask="parallelized",
-                dask_gufunc_kwargs=dict(
-                    output_sizes={"iteration": n_iteration},
-                ),
+                dask_gufunc_kwargs={"output_sizes": {"iteration": n_iteration}},
                 output_dtypes=[output_dtype],
             )
         )
@@ -281,54 +285,59 @@ def _block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=
     return tuple(res.rename(rename) for res, rename in zip(result, renames))
 
 
-def block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=True):
+def block_bootstrap(
+    *objects: XarrayLike,
+    blocks: Dict[str, int],
+    n_iteration: int,
+    exclude_dims: Union[List[List[str]], None] = None,
+    circular: bool = True,
+) -> Union[XarrayLike, Tuple[XarrayLike, ...]]:
     """
-    Repeatedly circularly bootstrap the provided arrays across the specified
-    dimension(s) and stack the new arrays along a new "iteration"
-    dimension. The boostrapping is done in a nested manner. I.e. bootstrap
-    the first provided dimension, then for each bootstrapped sample along
-    that dimenion, bootstrap the second provided dimension, then for each
-    bootstrapped sample along that dimenion etc.
+    Perform block bootstrapping on provided arrays. The function creates new arrays by repeatedly
+    bootstrapping along specified dimensions and stacking the new arrays alone a new "iteration"
+    dimension. Additionally, it includes internal functions for chunk size calculation and
+    handling Dask arrays for chunk size limitation.
 
-    Parameters
-    ----------
-    objects : xarray DataArray(s) or Dataset(s)
-        The data to bootstrap. Multiple datasets can be passed to be
-        bootstrapped in the same way. Where multiple datasets are passed, all
-        datasets need not contain all bootstrapped dimensions. However, because
-        of the bootstrapping is applied in a nested manner, the dimensions in
-        all input objects must also be nested. E.g., for `blocks.keys=['d1',
-        'd2','d3']` an object with dimensions 'd1' and 'd2' is valid but an
-        object with only dimension 'd2' is not. All datasets are boostrapped
-        according to the same random samples along available dimensions.
-    blocks : dict
-        Dictionary of the dimension(s) to bootstrap and the block sizes to use
-        along each dimension: `{dim: blocksize}`. Nesting is carried out according
-        to the order of this dictionary.
-    n_iteration : int
-        The number of times to repeat the bootstrapping.
-    exclude_dims : list of list
-        List of the same length as the number of objects giving a list of
-        dimensions specifed in `blocks` to exclude from each object. Default is
-        to assume that no dimensions are excluded and all `objects` are
-        bootstrapped across all (available) dimensions `blocks`.
-    circular : boolean, optional
-        Whether or not to do circular block bootstrapping
+    Args:
+        objects: The data to bootstrap, which can be multiple datasets. In the case where
+            multiple datasets are passed, each dataset can have its own set of dimension. However,
+            for successful bootstrapping, dimensions across all input objects must be nested.
+            For instance, for `block.keys=['d1', 'd2', 'd3'], an object with dimension 'd1' and
+            'd2' is valid, but an object with only dimension 'd2' is not valid. All datasets
+            are bootstrapped according to the same random samples along available dimensions.
+        blocks: A dictionary specifying the dimension(s) to bootstrap and the block sizes to
+            use along each dimension: `{dimension: block_size}`. The keys represent the dimensions
+            to be bootstrapped, and the values indicate the block sizes along each dimension.
+            The dimension provided here should exist in the data provided as `objects`.
+        n_iteration: The number of iterations to repeat the bootstrapping process. Determines
+            how many bootstrapped arrays will be generated and stacked along the iteration
+            dimension.
+        exclude_dims: An optional parameter indicating the dimensions to be excluded during
+            bootstrapping for each object provided in `objects`. This parameter expects a list
+            of lists, where each inner list corresponds to the dimensions to be excluded for
+            the respective object. By default, the assumption is that no dimensions are
+            excluded, and all objects are bootstrapped across all specified dimensions in `blocks`.
+        circular: A boolean flag indicating whether circular block bootstrapping should be
+            performed. Circular bootstrapping means that bootstrapping continues from the beginning
+            when the end of the data is reached. By default, this parameter is set to True.
 
-    References
-    ----------
+    Returns:
+        If a single Dataset/DataArray (XarrayLike) is provided, the functions returns a
+        bootstrapped XarrayLike object along the "iteration" dimension. If multiple XarrayLike
+        objects are provided, it returns a tuple of bootstrapped XarrayLike objects, each stacked
+        along the "iteration" dimension.
+
+    References:
     Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
       Academic press, 2011.
     """
-    # The fastest way to perform the iterations is to expand out the
-    # iteration dimension inside the universal function (see
-    # _iterative_bootstrap). However, this can generate very large chunks (it
-    # multiplies chunk size by the number of iterations) and it falls over
-    # for large numbers of iterations for reasons I don't understand. Thus
-    # here we loop over blocks of iterations to generate the total number
-    # of iterations.
+    # While the most efficient method involves expanding the iteration dimension withing the
+    # universal function, this approach might generate excessively large chunks (resulting
+    # from multiplying chunk size by iterations) leading to issues with large numbers of
+    # iterations. Hence, here function loops over blocks of iterations to generate the total
+    # number of iterations.
 
-    def _max_chunk_size_MB(ds):
+    def _max_chunk_size_mb(ds):
         """
         Get the max chunk size in a dataset
         """
@@ -337,41 +346,30 @@ def block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=T
             """
             Returns size of chunk in MB given dictionary of chunk sizes
             """
-            N = 1
+            num = 1
             for value in chunks:
-                if not isinstance(value, int):
-                    value = max(value)
-                N = N * value
-            return itemsize * N / 1024**2
+                value = max(value) if not isinstance(value, int) else value
+                num = num * value
+            return itemsize * num / 1024**2
 
-        if isinstance(ds, xr.DataArray):
-            ds = ds.to_dataset(name="ds")
+        ds = ds.to_dataset(name="ds") if isinstance(ds, xr.DataArray) else ds
 
         chunks = []
         for var in ds.data_vars:
             da = ds[var]
             chunk = da.chunks
             itemsize = da.data.itemsize
-            if chunk is None:
-                # numpy array
-                chunks.append((da.data.size * itemsize) / 1024**2)
-            else:
-                chunks.append(size_of_chunk(chunk, itemsize))
+            chunks.append(size_of_chunk(chunk, itemsize))
         return max(chunks)
 
     # Choose iteration blocks to limit chunk size on dask arrays
-    if objects[
-        0
-    ].chunks:  # TO DO: this is not a very good check that input is dask array
-        MAX_CHUNK_SIZE_MB = 200
-        ds_max_chunk_size_MB = max(
-            [_max_chunk_size_MB(obj) for obj in objects],
-        )
-        blocksize = int(MAX_CHUNK_SIZE_MB / ds_max_chunk_size_MB)
-        if blocksize > n_iteration:
-            blocksize = n_iteration
-        if blocksize < 1:
-            blocksize = 1
+    if objects[0].chunks:  # Note: This is a way to check if the array is backed by a dask.array
+        # without loading data into memory.
+        # See https://docs.xarray.dev/en/stable/generated/xarray.DataArray.chunks.html
+        ds_max_chunk_size_mb = max(_max_chunk_size_mb(obj) for obj in objects)
+        blocksize = int(MAX_CHUNK_SIZE_MB / ds_max_chunk_size_mb)
+        blocksize = min(blocksize, n_iteration)
+        blocksize = max(blocksize, 1)
     else:
         blocksize = n_iteration
 
@@ -386,7 +384,6 @@ def block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=T
                 circular=circular,
             )
         )
-
     leftover = n_iteration % blocksize
     if leftover:
         bootstraps.append(
@@ -400,18 +397,15 @@ def block_bootstrap(*objects, blocks, n_iteration, exclude_dims=None, circular=T
         )
 
     bootstraps_concat = tuple(
-        [
-            xr.concat(
-                b,
-                dim="iteration",
-                coords="minimal",
-                compat="override",
-            )
-            for b in zip(*bootstraps)
-        ]
+        xr.concat(
+            bootstrap,
+            dim="iteration",
+            coords="minimal",
+            compat="override",
+        )
+        for bootstrap in zip(*bootstraps)
     )
 
     if len(objects) == 1:
         return bootstraps_concat[0]
-    else:
-        return bootstraps_concat
+    return bootstraps_concat
