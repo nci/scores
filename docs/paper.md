@@ -79,7 +79,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
 **Data Handling**
 
 - Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
-  - gridded Earth system data (e.g. Numerical Weather Prediction models)
+  - gridded Earth system data (e.g. numerical weather prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
 - Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data sources among others.
@@ -108,15 +108,15 @@ Table: A **Curated Selection** of the Metrics, Tools and Statistical Tests Curre
 
 |              | **Description** |**A Selection of the Functions Included in `scores`**|
 |--------------|-----------------|-----------------------------------------------------|
-| **Continuous**        	|Scores for evaluating single-valued continuous forecasts.                  	|Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Additive Bias, Multiplicative Bias, Pearson's Correlation Coefficient, Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Quantile loss, Murphy score [@Ehm:2016].              	  
+| **Continuous**        	|Scores for evaluating single-valued continuous forecasts.                  	|Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Additive Bias, Multiplicative Bias, Pearson's Correlation Coefficient, Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Quantile Loss, Murphy Score [@Ehm:2016].              	  
 |
 | **Probability**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score [@BRIER_1950], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see @Gneiting:2011), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	  
 |
-| **Categorical**       	|Scores for evaluating forecasts based on categories.                	|Probability of Detection (POD), False Alarm Rate (FAR), Success Ratio, Accuracy, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill Score, Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 score, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].               	  
+| **Categorical**       	|Scores for evaluating forecasts based on categories.                	|Probability of Detection (POD), False Alarm Rate , Success Ratio, Accuracy, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill Score, Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].               	  
 |
 | **Statistical Tests** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the @Harvey:1997 and @Hering:2011 modifications.              	  
 |
-| **Processing Tools**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function manipulation. |
+| **Processing Tools**        	|Tools to pre-process data.                 	|Data matching, discretisation, cumulative density function manipulation. |
 
 ## Use in Academic Work
 
@@ -126,19 +126,19 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages.
+There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the functions implemented within `scores`, and vice versa.
 
-`xskillscore` [@xskillscore] provides many of the same functions as `scores`. `xskillscore` does not contain all of the novel functions contained within `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
+`xskillscore` [@xskillscore] provides many of the same functions as `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
 
-`climpred` [@Brady:2021] utilises `xskillscore` combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community. `climpred` does not include all of the novel functions contained within `scores`.
+`climpred` [@Brady:2021] utilises `xskillscore` combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
-`METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.  `METplus` does not include all of the novel functions contained within `scores`.
+`METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.
 
-`Verif` [@nipen2023verif] is a command line tool for forecast verification and is utilised very differently to `scores`. `Verif` does not include all of the novel metrics in `scores`.
+`Verif` [@nipen2023verif] is a command line tool for generating verification plots and is utilised very differently to `scores`. 
 
-`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `Pysteps` includes functionality well beyond verification, it is not as modular. `Pysteps` does not contain all of the metrics implemented in `scores` and vice versa.
+`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `Pysteps` includes functionality well beyond verification, it is not as modular. 
 
-`PyForecastTools` [@Morley:2020] is a Python package with many of the same metrics, but does not support `xarray` data structures and does not include Jupyter Notebook tutorials.
+`PyForecastTools` [@Morley:2020] is a Python package for model and forecast validation which supports `dmarray` rather than `xarray` data structures and does not include Jupyter Notebook tutorials.
 
 # Acknowledgements
 
