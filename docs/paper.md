@@ -35,19 +35,20 @@ authors:
     affiliation: 1
   - name: Stephanie Chong
     orcid: 0009-0007-0796-4127
-    affiliation: 3
-  - name: Aidan Griffiths
     affiliation: 2
+  - name: Aidan Griffiths
+    affiliation: 3
   - name: John Sharples
     affiliation: 1
 
 affiliations:
  - name: Bureau of Meteorology, Australia
    index: 1
- - name: Work undertaken while at the Bureau of Meteorology, Australia
+ - name: Independent Contributor, Australia
    index: 2
- - name: Independent, Australia
+ - name: Work undertaken while at the Bureau of Meteorology, Australia
    index: 3
+
 
 date: 17 May 2024
 bibliography: paper.bib 
