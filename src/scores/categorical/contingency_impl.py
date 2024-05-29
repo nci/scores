@@ -315,7 +315,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 
         References:
-    
+
         Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
 
         Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
