@@ -313,9 +313,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
 
+
+        References:
+
+        Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+
         Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
         Equitability revisited: Why the “equitable threat score” is not equitable.
-        Weather and Forecasting, 25(2), pp.710-726.
+        Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         cd = self.counts
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -332,9 +337,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
 
+        References:
+
+        Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+
         Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
         Equitability revisited: Why the “equitable threat score” is not equitable.
-        Weather and Forecasting, 25(2), pp.710-726.
+        Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         return self.equitable_threat_score()
 
