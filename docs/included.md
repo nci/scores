@@ -216,6 +216,14 @@
   - 
     [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
+    - Base rate
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.base_rate)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Base_rate)
+* -  
     - Bias Score (Frequency Bias)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.bias_score)
@@ -271,6 +279,14 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
+* -  
+    - Forecast rate
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.forecast_rate)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Chapter 3, Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a practitioner's guide in atmospheric science. John Wiley & Sons.](https://www.wiley.com/en-au/Forecast+Verification%3A+A+Practitioner's+Guide+in+Atmospheric+Science%2C+2nd+Edition-p-9780470660713)
 * -  
     - Fraction Correct (Accuracy)
   -
@@ -375,6 +391,14 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+* -  
+    - Symmetric Extremal Dependence Index (SEDI)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1.)
 * -  
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
