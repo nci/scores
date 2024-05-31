@@ -187,6 +187,9 @@ def test_categorical_table():
     assert table.heidke_skill_score() == (9 + 6 - (83 / 9)) / (18 - (83 / 9))
     assert table.odds_ratio() == (9 / (9 + 1)) / (1 - (9 / (9 + 1))) / ((2 / (6 + 2)) / (1 - (2 / (6 + 2))))
     assert table.odds_ratio_skill_score() == (9 * 6 - 1 * 2) / (9 * 6 + 1 * 2)
+    assert table.symmetric_extremal_dependence_index() == (np.log(0.25) - np.log(0.9) + np.log(0.1) - np.log(0.75)) / (
+        np.log(0.25) + np.log(0.9) + np.log(0.1) + np.log(0.75)
+    )
 
     # These methods are redirects to each other
     assert table.critical_success_index() == table.threat_score()
