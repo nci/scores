@@ -171,6 +171,7 @@ def test_categorical_table():
 
     # Confirm calculations of metrics are correct
     assert table.base_rate() == (9 + 1) / 18
+    assert table.forecast_rate() == (9 + 2) / 18
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
