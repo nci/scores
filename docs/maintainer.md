@@ -71,12 +71,38 @@ Information relevant for package maintenance
 
 ### 5. What to update, when and why
 
+```{table} 
+:class: table
+
 |     what                 |     when                 |      why     |
 | ------------             | -----------              | ------------ | 
 |  README                  |  a new is score added    | in case it deserves a mention
 |  api.md                  |  a new function is added | each function must be added individually 
 |  included.md             |  a new function is added | each function (and each variation of the function name) must be added individually
 |  Explanation.ipynb       |  a new tutorial is added | navigation throughout the docs
+```
+
+```{table} 
+:class:
+
+|     what                 |     when                 |      why     |
+| ------------             | -----------              | ------------ | 
+|  README                  |  a new is score added    | in case it deserves a mention
+|  api.md                  |  a new function is added | each function must be added individually 
+|  included.md             |  a new function is added | each function (and each variation of the function name) must be added individually
+|  Explanation.ipynb       |  a new tutorial is added | navigation throughout the docs
+```
+
+```{table} 
+:class: tables.docutils
+
+|     what                 |     when                 |      why     |
+| ------------             | -----------              | ------------ | 
+|  README                  |  a new is score added    | in case it deserves a mention
+|  api.md                  |  a new function is added | each function must be added individually 
+|  included.md             |  a new function is added | each function (and each variation of the function name) must be added individually
+|  Explanation.ipynb       |  a new tutorial is added | navigation throughout the docs
+```
 
 ## This section covers checking the documentation renders properly in readthedocs
 
