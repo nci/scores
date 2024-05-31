@@ -2,6 +2,11 @@
 Import the functions from the implementations into the public API
 """
 
+from scores.continuous.consistent_impl import (
+    consistent_expectile_score,
+    consistent_huber_score,
+    consistent_quantile_score,
+)
 from scores.continuous.flip_flop_impl import (
     flip_flop_index,
     flip_flop_index_proportion_exceeding,
@@ -33,4 +38,7 @@ __all__ = [
     "mean_error",
     "multiplicative_bias",
     "isotonic_fit",
+    "consistent_expectile_score",
+    "consistent_huber_score",
+    "consistent_quantile_score",
 ]

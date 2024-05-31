@@ -3,13 +3,13 @@ Implementation of scoring functions that are consistent for
 single-valued forecasts targeting quantiles, expectiles or Huber functionals.
 """
 
-from typing import Callable, Optional, Sequence
+from typing import Callable, Optional
 
 import xarray as xr
 
-from scores.utils import gather_dimensions
-from scores.typing import FlexibleDimensionTypes
 from scores.functions import apply_weights
+from scores.typing import FlexibleDimensionTypes
+from scores.utils import gather_dimensions
 
 
 def consistent_expectile_score(
