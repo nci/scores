@@ -126,6 +126,17 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
         return br
 
+    def forecast_rate(self):
+        """
+        The forecast event frequency.
+
+        Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
+        practitioner's guide in atmospheric science. John Wiley & Sons.
+        """
+        cd = self.counts
+        br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
+        return br
+
     def fraction_correct(self) -> xr.DataArray:
         """
         Identical to accuracy.
