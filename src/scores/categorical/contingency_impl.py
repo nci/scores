@@ -101,6 +101,17 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
 
+    def base_rate(self):
+        """
+        The observed event frequency.
+
+        Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
+        practitioner's guide in atmospheric science. John Wiley & Sons.
+        """
+        cd = self.counts
+        br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
+        return br
+
     def frequency_bias(self):
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
