@@ -93,8 +93,8 @@ Information relevant for package maintenance
 |  Explanation.ipynb       |  a new tutorial is added | navigation throughout the docs
 ```
 
-```{table} 
-:class: tables.docutils
+```{container}
+{table} 
 
 |     what                 |     when                 |      why     |
 | ------------             | -----------              | ------------ | 
