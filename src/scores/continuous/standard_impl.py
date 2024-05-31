@@ -1,9 +1,10 @@
 """
 This module contains standard methods which may be used for continuous scoring
 """
-
 from typing import Optional
 
+import numpy as np
+import pandas as pd
 import xarray as xr
 
 import scores.functions
@@ -382,3 +383,75 @@ def multiplicative_bias(
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return multi_bias
+
+
+# NSE code
+def nse(fcst, obs, reduce_dims=None, preserve_dims=None, weights=None, angular=False):
+    """
+    Calculate Nash-Sutcliffe Efficiency (NSE) for forecast and observed data.
+
+    Args:
+        fcst (FlexibleArrayType or list): Forecast or predicted variables.
+        obs (FlexibleArrayType or list): Observed variables.
+        reduce_dims (FlexibleDimensionTypes, optional): Dimensions to reduce along. Defaults to None.
+        preserve_dims (FlexibleDimensionTypes, optional): Dimensions to preserve. Defaults to None.
+        weights (xr.DataArray, optional): Weights to apply to error calculation. Defaults to None.
+        angular (bool, optional): Whether to treat data as angular (circular). Defaults to False.
+
+    Returns:
+        FlexibleArrayType: Nash-Sutcliffe Efficiency (NSE) value.
+
+    Raises:
+        ValueError: If the input arrays are of different lengths or incompatible types.
+
+    References:
+        - references
+        - https://en.wikipedia.org/wiki/Nash–Sutcliffe_model_efficiency_coefficient
+        - https://hess.copernicus.org/articles/26/4801/2022/
+
+    Examples:
+        # Case 1: Xarray DataArray
+        >>> fcst_xr = xr.DataArray([3, 4, 5, 6, 7])
+        >>> obs_xr = xr.DataArray([2, 3, 4, 5, 6])
+        >>> nse(fcst_xr, obs_xr)
+        0.50
+
+    """
+    # Convert datasets to data arrays if needed
+    if isinstance(fcst, xr.Dataset):
+        data_variable_name = list(fcst.data_vars.keys())[0]  # Get the name of the first data variable
+        fcst = fcst.to_array(dim=data_variable_name)
+
+    if isinstance(obs, xr.Dataset):
+        data_variable_name = list(obs.data_vars.keys())[0]  # Get the name of the first data variable
+        obs = obs.to_array(dim=data_variable_name)
+
+    # Check for input compatibility
+    if angular:
+        error = scores.functions.angular_difference(fcst, obs)
+        mean_obs = np.mean(obs)
+        diff_mean = scores.functions.angular_difference(obs, mean_obs)
+    else:
+        error = fcst - obs
+        mean_obs = np.mean(obs)
+        diff_mean = obs - mean_obs
+    # calculate nse
+    nse = 1 - np.sum((error) ** 2) / np.sum((diff_mean) ** 2)
+
+    # Apply weights
+    if weights is not None:
+        error = error * weights
+        diff_mean = diff_mean * weights
+
+    # Reduce dimensions
+    if preserve_dims or reduce_dims:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
+    if reduce_dims is not None:
+        _nse = nse.mean(dim=reduce_dims)
+    else:
+        _nse = nse
+
+    return _nse
