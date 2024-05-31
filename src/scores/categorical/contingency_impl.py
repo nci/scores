@@ -445,6 +445,30 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.odds_ratio_skill_score()
 
+    def symmetric_extremal_dependence_index(self):
+        """
+        Calculates the Symmetric Extremal Dependence Index (SEDI).
+
+        Range: -1 to 1.
+
+        Ferro, C.A. and Stephenson, D.B., 2011. Extremal dependence indices: Improved
+        verification measures for deterministic forecasts of rare binary events. Weather
+        and Forecasting, 26(5), pp.699-713. https://doi.org/10.1175/WAF-D-10-05030.1
+        """
+        cd = self.counts
+        score = (
+            np.log(self.probability_of_false_detection())
+            - np.log(self.probability_of_detection())
+            + np.log(1 - self.probability_of_detection())
+            - np.log(1 - self.probability_of_false_detection())
+        ) / (
+            np.log(self.probability_of_false_detection())
+            + np.log(self.probability_of_detection())
+            + np.log(1 - self.probability_of_detection())
+            + np.log(1 - self.probability_of_false_detection())
+        )
+        return score
+
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
