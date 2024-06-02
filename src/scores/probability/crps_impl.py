@@ -781,22 +781,26 @@ def crps_for_ensemble(
     An ensemble of forecasts can also be thought of as a random sample from the predictive
     distribution.
 
-    Given an observation y, and ensemble member values {x_i} (for 1 <= i <= M), the CRPS is
+    Given an observation y, and ensemble member values :math:`x_i` (for 1 <= i <= M), the CRPS is
     calculated by the formula
-        CRPS({x_i}, y) = (1 / M) * sum(|x_i - y|) - (1 / 2 * K) * sum(|x_i - x_j|),
+
+
+    .. math::
+        CRPS(x_i, y) = (1 / M) * sum(|x_i - y|) - (1 / 2 * K) * sum(|x_i - x_j|)
+
     where the first sum is iterated over 1 <= i <= M and the second sum is iterated over
     1 <= i <= M and 1 <= j <= M.
 
-    The value of the constant K in this formula depends on the method.
-        - If `method="ecdf"` then K = M ** 2. In this case the CRPS value returned is
-            the exact CRPS value for the emprical cumulation distribution function
+    The value of the constant K in this formula depends on the method:
+        - If `method="ecdf"` then :math:`K = M ** 2`. In this case the CRPS value returned is \
+            the exact CRPS value for the emprical cumulation distribution function \
             constructed using the ensemble values.
-        - If `method="fair"` then K = M * (M - 1). In this case the CRPS value returned
-            is the approximated CRPS where the ensemble values can be interpreted as a
-            random sample from the underlying predictive distribution. This interpretation
-            stems from the formula CRPS(F, Y) = E|X - Y| - E|X - X'|/2, where X and X'
-            are independent samples of the predictive distribution F, Y is the observation
-            (possibly unknown) and E denotes the expectation. This choice of K gives an
+        - If `method="fair"` then :math:`K = M * (M - 1)`. In this case the CRPS value returned \
+            is the approximated CRPS where the ensemble values can be interpreted as a \
+            random sample from the underlying predictive distribution. This interpretation \
+            stems from the formula :math:`CRPS(F, Y) = E|X - Y| - E|X - X'|/2`, where X and X' \
+            are independent samples of the predictive distribution F, Y is the observation \
+            (possibly unknown) and E denotes the expectation. This choice of K gives an \
             unbiased estimate for the second expectation.
 
     Args:
@@ -819,13 +823,14 @@ def crps_for_ensemble(
         `scores.probability.crps_cdf`
 
     References:
-        - C. Ferro (2014), "Fair scores for ensemble forecasts", Q J R Meteorol Soc
-            140(683):1917-1923.
-        - T. Gneiting T and A. Raftery (2007), "Strictly proper scoring rules, prediction,
-            and estimation", J Am Stat Assoc, 102(477):359-37.
-        - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability
-            Score with Limited Information and Applications to Ensemble Weather Forecasts",
-            Math Geosci 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
+        - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \
+            Royal Meteorol Society, 140(683):1917-1923. https://doi.org/10.1002/qj.2270
+        - T. Gneiting T and A. Raftery (2007), "Strictly proper scoring rules, prediction, \
+            and estimation", Journal of the American Statistical Association, 102(477):359-378. \
+            https://doi.org/10.1198/016214506000001437
+        - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability \
+            Score with Limited Information and Applications to Ensemble Weather Forecasts", \
+            Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
     """
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
