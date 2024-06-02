@@ -241,7 +241,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
-        component_b = cd["fn_count"] / (cd["fn_count"] + cd["tn_count"])
+        component_b = cd["fp_count"] / (cd["fp_count"] + cd["tn_count"])
         skill_score = component_a - component_b
         return skill_score
 
