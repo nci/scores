@@ -180,29 +180,33 @@ def crps_cdf(
         - a `threshold_weight` array indexed by variable x,
 
     The threshold-weighted CRPS is given by:
-        `CRPS = integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x.
-    The usual CRPS is the threshold-weighted CRPS with `threshold_weight(x) = 1` for all x.
-    This can be decomposed into an over-forecast penalty
+        - `CRPS = integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x.
+        - The usual CRPS is the threshold-weighted CRPS with `threshold_weight(x) = 1` for all x.
+
+    This can be decomposed into an over-forecast penalty:
         `integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x where x >= obs
-    and an under-forecast penalty
+    
+    and an under-forecast penalty:
         `integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x where x <= obs.
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
     calculate the CRPS.
 
-    To calculate CRPS, integration is applied over the set of thresholds x taken from
+    To calculate CRPS, integration is applied over the set of thresholds x taken from:
         - `fcst[threshold_dim].values`,
         - `obs.values`.
         - `threshold_weight[threshold_dim].values` if applicable.
         - `additional_thresholds` if applicable.
-    With NaN values excluded. There are two methods of integration:
-        - "exact" gives the exact integral under that assumption that that `fcst` is
-          continuous and piecewise linear between its specified values, and that
-          `threshold_weight` (if supplied) is piecewise constant and right-continuous
+        - (with NaN values excluded)
+
+    There are two methods of integration:
+        - "exact" gives the exact integral under that assumption that that `fcst` is 
+          continuous and piecewise linear between its specified values, and that 
+          `threshold_weight` (if supplied) is piecewise constant and right-continuous 
           between its specified values.
-        - "trapz" simply uses a trapezoidal rule using the specified values, and so is
-          an approximation of the CRPS. To get an accurate approximation, the density
+        - "trapz" simply uses a trapezoidal rule using the specified values, and so is 
+          an approximation of the CRPS. To get an accurate approximation, the density 
           of threshold values can be increased by supplying `additional_thresholds`.
 
     Both methods of calculating CRPS may require adding additional values to the
@@ -219,35 +223,38 @@ def crps_cdf(
         fcst: array of forecast CDFs, with the threshold dimension given by `threshold_dim`.
         obs: array of observations, not in CDF form.
         threshold_dim: name of the dimension in `fcst` that indexes the thresholds.
-        threshold_weight: weight to be applied along `threshold_dim` to calculat
-            threshold-weighted CRPS. Must contain `threshold_dim` as a dimension, and may
-            also include other dimensions from `fcst`. If `weight=None`, a weight of 1
+        threshold_weight: weight to be applied along `threshold_dim` to calculate 
+            threshold-weighted CRPS. Must contain `threshold_dim` as a dimension, and may 
+            also include other dimensions from `fcst`. If `weight=None`, a weight of 1 
             is applied everywhere, which gives the usual CRPS.
-        additional_thresholds: additional thresholds values to add to `fcst` and (if
+        additional_thresholds: additional thresholds values to add to `fcst` and (if 
             applicable) `threshold_weight` prior to calculating CRPS.
-        propagate_nans: If `True`, propagate NaN values along `threshold_dim` in `fcst`
-            and `threshold_weight` prior to calculating CRPS. This will result in CRPS
-            being NaN for these cases. If `False`, NaN values in `fcst` and `weight` will
-            be replaced, wherever possible, with non-NaN values using the fill method
+        propagate_nans: If `True`, propagate NaN values along `threshold_dim` in `fcst` 
+            and `threshold_weight` prior to calculating CRPS. This will result in CRPS 
+            being NaN for these cases. If `False`, NaN values in `fcst` and `weight` will 
+            be replaced, wherever possible, with non-NaN values using the fill method 
             specified by `fcst_fill_method` and `threshold_weight_fill_method`.
-        fcst_fill_method: how to fill values in `fcst` when NaNs have been introduced
-            (by including additional thresholds) or are specified to be removed (by
-            setting `propagate_nans=False`). Select one of:
-                - "linear": use linear interpolation, then replace any leading or
-                  trailing NaNs using linear extrapolation. Afterwards, all values are
-                  clipped to the closed interval [0, 1].
-                - "step": apply forward filling, then replace any leading NaNs with 0.
-                - "forward": first apply forward filling, then remove any leading NaNs by
-                  back filling.
-                - "backward": first apply back filling, then remove any trailing NaNs by
-                  forward filling.
-            In most cases, "linear" is likely the appropriate choice.
+        fcst_fill_method: how to fill values in `fcst` when NaNs have been introduced 
+            (by including additional thresholds) or are specified to be removed (by 
+            setting `propagate_nans=False`). Select one of: 
+                - "linear": use linear interpolation, then replace any leading or \
+                trailing NaNs using linear extrapolation. Afterwards, all values are \
+                clipped to the closed interval [0, 1].
+                - "step": apply forward filling, then replace any leading NaNs with 0. 
+                - "forward": first apply forward filling, then remove any leading NaNs by \
+                back filling.
+                - "backward": first apply back filling, then remove any trailing NaNs by \
+                forward filling.
+                - (In most cases, "linear" is likely the appropriate choice.)
+
         threshold_weight_fill_method: how to fill values in `threshold_weight` when NaNs
             have been introduced (by including additional thresholds) or are specified
-            to be removed (by setting `propagate_nans=False`). Select one of "linear",
-            "step", "forward" or "backward". If the weight function is continuous,
-            "linear" is probably the best choice. If it is an increasing step function,
-            "forward" may be best.
+            to be removed (by setting `propagate_nans=False`). Select one of: 
+                - "linear",
+                - "step", "forward" or "backward". If the weight function is continuous,
+                - "linear" is probably the best choice. If it is an increasing step function, \
+                  "forward" may be best.
+                  
         integration_method (str): one of "exact" or "trapz".
         preserve_dims (Tuple[str]): dimensions to preserve in the output. All other dimensions are collapsed
             by taking the mean.
