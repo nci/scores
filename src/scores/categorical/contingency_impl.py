@@ -418,7 +418,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             An xarray object containing the true skill statistic
 
         .. math::
-            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}        
+            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -439,7 +439,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         How well did the forecast separate the "yes" events from the "no" events?
 
         .. math::
-            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}        
+            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
 
         Where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
 
