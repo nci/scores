@@ -383,7 +383,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def critical_success_index(self):
         """
-        Identical to threat_score        
+        Identical to threat_score
 
         .. math::
             \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{true negatives}}
