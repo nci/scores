@@ -113,17 +113,17 @@ def binary_discretise(
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:
 
-            - '>=' values in `data` greater than or equal to the
+            - '>=' values in `data` greater than or equal to the \
             corresponding threshold are assigned as 1.
-            - '>' values in `data` greater than the corresponding threshold
+            - '>' values in `data` greater than the corresponding threshold \
             are assigned as 1.
-            - '<=' values in `data` less than or equal to the corresponding
+            - '<=' values in `data` less than or equal to the corresponding \
             threshold are assigned as 1.
-            - '<' values in `data` less than the corresponding threshold
+            - '<' values in `data` less than the corresponding threshold \
             are assigned as 1.
-            - '==' values in `data` equal to the corresponding threshold
+            - '==' values in `data` equal to the corresponding threshold \
             are assigned as 1
-            - '!=' values in `data` not equal to the corresponding threshold
+            - '!=' values in `data` not equal to the corresponding threshold \
             are assigned as 1.
 
         abs_tolerance: If supplied, values in data that are
