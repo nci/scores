@@ -573,13 +573,17 @@ def adjust_fcst_for_crps(
 ) -> xr.DataArray:
     """
     This function takes a forecast cumulative distribution functions (CDF) `fcst`.
+
     If `fcst` is not decreasing outside of specified tolerance, it returns `fcst`.
-    Otherwise, the CDF envelope for `fcst` is computed, and the CDF from among
+
+    Otherwise, the CDF envelope for `fcst` is computed, and the CDF from among:
         - `fcst`,
         - the upper envelope, and
         - the lower envelope
+
     that has the higher (i.e. worse) CRPS is returned. In the event of a tie,
     preference is given in the order `fcst` then upper.
+
     See `scores.probability.functions.cdf_envelope` for details about the CDF envelope.
 
     The use case for this is when, either due to rounding or poor forecast process, the
@@ -589,21 +593,26 @@ def adjust_fcst_for_crps(
 
     Whether a CDF is decreasing outside specified tolerance is determined as follows.
     For each CDF in `fcst`, the sum of incremental decreases along the threshold dimension
-    is calculated. For example, if the CDF values are
-        [0, 0.4, 0.3, 0.9, 0.88, 1]
+    is calculated. For example, if the CDF values are 
+
+    `[0, 0.4, 0.3, 0.9, 0.88, 1]`
+
     then the sum of incremental decreases is -0.12. This CDF decreases outside specified
     tolerance if 0.12 > `decreasing_tolerance`.
 
     The adjusted array of forecast CDFs is determined as follows:
-        - any NaN values in `fcst` are propagated along `threshold_dim` so that in each case
+        - any NaN values in `fcst` are propagated along `threshold_dim` so that in each case \
             the entire CDF is NaN;
         - any CDFs in `fcst` that are decreasing within specified tolerance are unchanged;
-        - any CDFs in `fcst` that are decreasing outside specified tolerance are replaced with
-            whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original
+        - any CDFs in `fcst` that are decreasing outside specified tolerance are replaced with \
+            whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
             values give a higher CRPS in which case original values are kept.
+
     See `scores.probability.functions.cdf_envelope` for a description of the 'CDF envelope'.
+
     If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
     `scores.probability.functions.fill_cdf`.
+
     The CRPS for each forecast case is calculated using `crps`, with a weight of 1.
 
     Args:
@@ -611,8 +620,7 @@ def adjust_fcst_for_crps(
         threshold_dim: name of the threshold dimension in `fcst`.
         obs: DataArray of observations.
         decreasing_tolerance: nonnegative tolerance value.
-        additional_thresholds: optional additional thresholds passed on to `crps` when
-            calculating CRPS.
+        additional_thresholds: optional additional thresholds passed on to `crps` when calculating CRPS.
         fcst_fill_method: `fcst` fill method passed on to `crps` when calculating CRPS.
         integration_method: integration method passed on to `crps` when calculating CRPS.
 
