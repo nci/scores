@@ -243,15 +243,17 @@ def fill_cdf(
     method: Literal["linear", "step", "forward", "backward"],
     min_nonnan: int,
 ) -> xr.DataArray:
-    """Fills NaNs in a CDF of a real-valued random variable along `threshold_dim` with appropriate values between 0 and 1.
+    """
+    Fills NaNs in a CDF of a real-valued random variable along `threshold_dim` with appropriate values between 0 and 1.
 
     Args:
         cdf (xr.DataArray): CDF values, where P(Y <= threshold) = cdf_value for each threshold in `threshold_dim`.
         threshold_dim (str): the threshold dimension in the CDF, along which filling is performed.
-        method (Literal["linear", "step", "forward", "backward"]): one of
-            - "linear": use linear interpolation, and if needed also extrapolate linearly. Clip to 0 and 1.
+        method (Literal["linear", "step", "forward", "backward"]): one of:
+        
+            - "linear": use linear interpolation, and if needed also extrapolate linearly. Clip to 0 and 1. \
               Needs at least two non-NaN values for interpolation, so returns NaNs where this condition fails.
-            - "step": use forward filling then set remaining leading NaNs to 0.
+            - "step": use forward filling then set remaining leading NaNs to 0. \
               Produces a step function CDF (i.e. piecewise constant).
             - "forward": use forward filling then fill any remaining leading NaNs with backward filling.
             - "backward": use backward filling then fill any remaining trailing NaNs with forward filling.
