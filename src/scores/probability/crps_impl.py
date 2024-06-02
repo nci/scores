@@ -461,21 +461,22 @@ def crps_cdf_brier_decomposition(
         fcst (xr.DataArray): DataArray of CDF values with threshold dimension `threshold_dim`.
         obs (xr.DataArray): DataArray of observations, not in CDF form.
         threshold_dim (str): name of the threshold dimension in `fcst`.
-        additional_thresholds (Optional[Iterable[float]]): additional thresholds
+        additional_thresholds (Optional[Iterable[float]]): additional thresholds \
             at which to calculate the mean Brier score.
         fcst_fill_method (Literal["linear", "step", "forward", "backward"]): How to fill NaN
             values in `fcst` that arise from new user-supplied thresholds or thresholds derived
             from observations.
-            - "linear": use linear interpolation, and if needed also extrapolate linearly.
-              Clip to 0 and 1. Needs at least two non-NaN values for interpolation,
+
+            - "linear": use linear interpolation, and if needed also extrapolate linearly. \
+              Clip to 0 and 1. Needs at least two non-NaN values for interpolation, \
               so returns NaNs where this condition fails.
-            - "step": use forward filling then set remaining leading NaNs to 0.
+            - "step": use forward filling then set remaining leading NaNs to 0. \
               Produces a step function CDF (i.e. piecewise constant).
-            - "forward": use forward filling then fill any remaining leading NaNs with
+            - "forward": use forward filling then fill any remaining leading NaNs with \
               backward filling.
-            - "backward": use backward filling then fill any remaining trailing NaNs with
+            - "backward": use backward filling then fill any remaining trailing NaNs with \
               forward filling.
-        dims: dimensions to preserve in the output. The dimension `threshold_dim` is always
+        dims: dimensions to preserve in the output. The dimension `threshold_dim` is always \
             preserved, even if not specified here.
 
     Returns:
@@ -609,7 +610,7 @@ def adjust_fcst_for_crps(
             values give a higher CRPS in which case original values are kept.
 
     See `scores.probability.functions.cdf_envelope` for a description of the 'CDF envelope'.
-
+ 
     If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
     `scores.probability.functions.fill_cdf`.
 
