@@ -174,9 +174,9 @@ def crps_cdf(
     is used as an index for predictive CDF values. Various techniques are used to
     interpolate CDF values between indexed thresholds.
 
-    Given
-        - a predictive CDF `fcst` indexed at thresholds by variable x,
-        - an observation in CDF form `obs_cdf` (i.e., obs_cdf(x) = 0 if x < obs and 1 if x >= obs),
+    Given:
+        - a predictive CDF `fcst` indexed at thresholds by variable x
+        - an observation in CDF form `obs_cdf` (i.e., obs_cdf(x) = 0 if x < obs and 1 if x >= obs)
         - a `threshold_weight` array indexed by variable x,
 
     The threshold-weighted CRPS is given by:
