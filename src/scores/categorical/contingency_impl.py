@@ -106,8 +106,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - True positives is the same at hits
             - False negatives is the same as misses
 
-        References: 
-            https://www.cawcr.gov.au/projects/verification/#ACC            
+        References:
+            https://www.cawcr.gov.au/projects/verification/#ACC
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
@@ -187,7 +187,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def probability_of_detection(self):
         """
-        Identical to hit_rate
+        Identical to hit rate
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -195,8 +195,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             An xarray object containing the probability of detection
 
         .. math::
-            \\text{hit rate} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}}            
-        
+            \\text{hit rate} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}}
+
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
             - "True positives" is the same as "hits"
