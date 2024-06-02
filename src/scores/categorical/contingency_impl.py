@@ -94,7 +94,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         Identical to fraction correct.
 
-        Accuracy calculates the proportion of forecasts which are true.
+        Accuracy calculates the proportion of forecasts which are correct.
 
         Returns:
             xr.DataArray: A DataArray containing the accuracy score
@@ -105,8 +105,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Notes:
 
             - Range: 0 to 1, where 1 indicates a perfect score.
-            - True positives is the same at hits
-            - False negatives is the same as misses
+            - "True positives" is the same at "hits".
+            - "False negatives" is the same as "misses".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#ACC
@@ -381,7 +381,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
         return ts
 
-    def critical_success_index(self):
+    def critical_success_index(self) -> xr.DataArray:
         """
         Identical to threat_score
 
@@ -403,7 +403,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.threat_score()
 
-    def peirce_skill_score(self):
+    def peirce_skill_score(self) -> xr.DataArray:
         """
         Identical to Hanssen and Kuipers discriminant and the true skill statistic
 
@@ -431,31 +431,74 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         skill_score = component_a - component_b
         return skill_score
 
-    def true_skill_statistic(self):
+    def true_skill_statistic(self) -> xr.DataArray:
         """
         Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
 
         How well did the forecast separate the "yes" events from the "no" events?
 
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+        Returns:
+            xr.DataArray: An xarray object containing the true skill statistic
 
-        https://www.cawcr.gov.au/projects/verification/#HK
+        .. math::
+            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}        
+
+        Notes:
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#HK
         """
         return self.peirce_skill_score()
 
-    def hanssen_and_kuipers_discriminant(self):
+    def hanssen_and_kuipers_discriminant(self) -> xr.DataArray:
         """
         Identical to Peirce's skill score and to true skill statistic
-        How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#HK
+        How well did the forecast separate the "yes" events from the "no" events?
+
+        .. math::
+            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}        
+
+        Where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
+
+        Notes:
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#HK
         """
         return self.peirce_skill_score()
 
-    def sensitivity(self):
+    def sensitivity(self) -> xr.DataArray:
         """
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        Identical to probability of detection and hit_rate
+
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            An xarray object containing the probability of detection
+
+        .. math::
+            \\text{sensitivity} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            - https://www.cawcr.gov.au/projects/verification/#POD
+            - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+
         """
         return self.probability_of_detection()
 
@@ -503,11 +546,26 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.specificity()
 
-    def recall(self):
+    def recall(self) -> xr.DataArray:
         """
         Identical to probability of detection.
 
-        https://en.wikipedia.org/wiki/Precision_and_recall
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            An xarray object containing the probability of detection
+
+        .. math::
+            \\text{recall} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            - https://www.cawcr.gov.au/projects/verification/#POD
+            - https://en.wikipedia.org/wiki/Precision_and_recall
         """
         return self.probability_of_detection()
 
