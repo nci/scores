@@ -1,5 +1,5 @@
 """
-This module contains methods related to the FSS score.
+This module contains methods related to the Fractions Skill Score (FSS).
 
 For an explanation of the FSS, and implementation considerations, see references below.
 
@@ -53,8 +53,8 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
 ) -> xr.DataArray:
     """
-    Uses :py:func:`fss_2d_single_field` to compute the fraction skills score for each 2D spatial
-    field in the DataArray and then aggregates them over the output of gather dimensions.
+    Uses :py:func:`fss_2d_single_field` to compute the Fractions Skill Score (FSS) for each 2D
+    spatial field in the DataArray and then aggregates them over the output of gather dimensions.
 
     The aggregation method is the intended extension of the score defined by Robert and Leans (2008)
     for multiple forecasts :sup:`[1,2]`
@@ -111,7 +111,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         An ``xarray.DataArray`` containing the FSS computed over the ``spatial_dims``
 
         The resultant array will have the score grouped against the remaining
-        dimensions, unless `reduce_dims`/`preserve_dims` are specified; in which
+        dimensions, unless ``reduce_dims``/``preserve_dims`` are specified; in which
         case, they will be aggregated over the specified dimensions accordingly.
 
         For an exact usage please refer to ``FSS.ipynb`` in the tutorials.
@@ -123,6 +123,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             the input arrays.
 
         DimensionWarning: If ``spatial_dims`` are attempting to be preserved e.g. in ``preserve_dims``
+
     References:
         1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
         2. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml#e3
@@ -218,6 +219,8 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
 ) -> xr.DataArray:
     """
+    Computes the Fractions Skill Score (FSS) using a binary field.
+
     Takes in a binary (True or False) field of fcst and obs events. For example
     the output of a binary threshold applied to a continuous field or an event
     operator.
