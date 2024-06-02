@@ -366,9 +366,10 @@ def cdf_envelope(
     The following example shows values from an original CDF that has a decreasing subsequence
     (and so is not a true CDF). The resulting "upper" and "lower" CDFs minimally adjust
     "original" so that "lower" <= "original" <= "upper".
-        "original": [0, .5, .2, .8, 1]
-        "upper": [0, .5, .5, .8, 1]
-        "lower": [0, .2, .2, .8, 1]
+
+    - "original": [0, .5, .2, .8, 1]
+    - "upper": [0, .5, .5, .8, 1]
+    - "lower": [0, .2, .2, .8, 1]
 
     This function does not perform checks that `0 <= cdf <= 1`.
 
@@ -377,13 +378,15 @@ def cdf_envelope(
         threshold_dim (str): dimension in fcst_cdf that contains the threshold ordinates.
 
     Returns:
-        An xarray DataArray consisting of three CDF arrays indexed along the `"cdf_type"` dimension
+        xr.DataArray: An xarray DataArray consisting of three CDF arrays indexed along the `"cdf_type"` dimension
         with the following indices:
+
             - "original": same data as `cdf`.
-            - "upper": minimally adjusted "original" CDF that is nondecreasing and
+            - "upper": minimally adjusted "original" CDF that is nondecreasing and \
               satisfies "upper" >= "original".
-            - "lower": minimally adjusted "original" CDF that is nondecreasing and
+            - "lower": minimally adjusted "original" CDF that is nondecreasing and \
               satisfies "lower" <= "original".
+              
         NaN values in `cdf` are maintained in "original", "upper" and "lower".
 
     Raises:
