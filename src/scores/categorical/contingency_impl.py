@@ -414,6 +414,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         How well did the forecast separate the "yes" events from the "no" events?
 
+        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
         Returns:
             An xarray object containing the true skill statistic
 
