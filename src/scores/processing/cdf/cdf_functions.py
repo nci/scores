@@ -168,8 +168,8 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
         xr.DataArray: Integral values and `threshold_dim` collapsed:
 
         - Returns value of the integral with `threshold_dim` collapsed and other dimensions preserved.
-        - Returns NaN if there are less than two non-NaN function_values.            
-        
+        - Returns NaN if there are less than two non-NaN function_values.
+
     """
 
     # notation: Since F is piecewise linear we have
@@ -317,7 +317,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     whenever the sum of the incremental decreases exceeds tolerarance.
 
     For example, if the CDF values are
-        
+
     `[0, 0.4, 0.3, 0.9, 0.88, 1]`
 
     then the sum of incremental decreases is -0.12. Given a specified positive `tolerance`,
