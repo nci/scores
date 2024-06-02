@@ -520,32 +520,51 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.success_ratio()
 
-    def f1_score(self):
+    def f1_score(self) -> XarrayLike:
         """
         Calculates the F1 score.
-        https://en.wikipedia.org/wiki/F-score
+
+        Returns:
+            An xarray object containing the F1 score
+
+        .. math::
+            \\text{F1} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+
+        Notes:
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "False negatives" is the same as "misses"
+
+        References:
+            - https://en.wikipedia.org/wiki/F-score
         """
         cd = self.counts
         f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
         return f1
 
-    def equitable_threat_score(self):
+    def equitable_threat_score(self) -> XarrayLike:
         """
         Calculates the Equitable threat score (also known as the Gilbert skill score).
 
         How well did the forecast "yes" events correspond to the observed "yes"
         events (accounting for hits due to chance)?
 
-        Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+        Returns:
+            An xarray object containing the equitable threat score
 
+        .. math::
+            \\text{ETS} = \\frac{\\text{hits} - \\text{hits} _\\text{random}}\
+            {\\text{hits} + \\text{misses} + \\text{false alarms} - \\text{hits} _\\text{random}}
+
+        Notes:
+            - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
 
         References:
 
-        Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
-
-        Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
-        Equitability revisited: Why the “equitable threat score” is not equitable.
-        Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
+        - Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+        - Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010. \
+            Equitability revisited: Why the “equitable threat score” is not equitable. \
+            Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         cd = self.counts
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
