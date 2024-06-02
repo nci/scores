@@ -558,13 +558,15 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+            - "Hits" is the same as "true positives"
+            - "Misses" is the same as "false negatives"
+            - "False alarms" is the same as "false positives"            
 
         References:
-
-        - Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
-        - Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010. \
-            Equitability revisited: Why the “equitable threat score” is not equitable. \
-            Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
+            - Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+            - Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010. \
+                Equitability revisited: Why the “equitable threat score” is not equitable. \
+                Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         cd = self.counts
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -572,26 +574,36 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         return ets
 
-    def gilberts_skill_score(self):
+    def gilberts_skill_score(self) -> XarrayLike:
         """
         Calculates the Gilbert skill score (also known as the Equitable threat score).
 
         How well did the forecast "yes" events correspond to the observed "yes"
         events (accounting for hits due to chance)?
 
-        Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+        Returns:
+            An xarray object containing the Gilberts Skill Score
+
+        .. math::
+            \\text{GSS} = \\frac{\\text{hits} - \\text{hits} _\\text{random}}\
+            {\\text{hits} + \\text{misses} + \\text{false alarms} - \\text{hits} _\\text{random}}        
+
+
+        Notes:
+            - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
+            - "Hits" is the same as "true positives"
+            - "Misses" is the same as "false negatives"
+            - "False alarms" is the same as "false positives"            
 
         References:
-
-        Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
-
-        Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
-        Equitability revisited: Why the “equitable threat score” is not equitable.
-        Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
+            - Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+            - Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010. \
+                Equitability revisited: Why the “equitable threat score” is not equitable. \
+                Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         return self.equitable_threat_score()
 
-    def heidke_skill_score(self):
+    def heidke_skill_score(self) -> XarrayLike:
         """
         Calculates the Heidke skill score (also known as Cohen's kappa).
 
@@ -609,7 +621,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
         return hss
 
-    def cohens_kappa(self):
+    def cohens_kappa(self) -> XarrayLike:
         """
         Calculates the Cohen's kappa (also known as the Heidke skill score).
 
@@ -621,7 +633,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.heidke_skill_score()
 
-    def odds_ratio(self):
+    def odds_ratio(self) -> XarrayLike:
         """
         Calculates the odds ratio
 
@@ -638,7 +650,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         )
         return odds_r
 
-    def odds_ratio_skill_score(self):
+    def odds_ratio_skill_score(self) -> XarrayLike:
         """
         Calculates the odds ratio skill score (also known as Yule's Q).
 
@@ -657,7 +669,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         )
         return orss
 
-    def yules_q(self):
+    def yules_q(self) -> XarrayLike:
         """
         Calculates the Yule's Q (also known as the odds ratio skill score).
         What was the improvement of the forecast over random chance?
