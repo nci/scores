@@ -188,7 +188,7 @@ def proportion_exceeding(
     Args:
         data (xarray.Dataset or xarray.DataArray): The data from which
             to calculate the proportion exceeding `thresholds`
-        thresholds (iterable): The proportion of results
+        thresholds (iterable): The proportion of values
             equal to or exceeding these thresholds will be calculated.
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
