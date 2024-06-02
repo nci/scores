@@ -202,7 +202,7 @@ def test_categorical_table():
     assert table.yules_q() == table.odds_ratio_skill_score()
 
     peirce_component_a = 9 / (9 + 1)
-    peirce_component_b = 1 / (1 + 6)
+    peirce_component_b = 2 / (2 + 6)
     peirce_expected = peirce_component_a - peirce_component_b
     assert table.peirce_skill_score() == peirce_expected
 
