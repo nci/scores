@@ -250,7 +250,7 @@ def fill_cdf(
         cdf (xr.DataArray): CDF values, where P(Y <= threshold) = cdf_value for each threshold in `threshold_dim`.
         threshold_dim (str): the threshold dimension in the CDF, along which filling is performed.
         method (Literal["linear", "step", "forward", "backward"]): one of:
-        
+
             - "linear": use linear interpolation, and if needed also extrapolate linearly. Clip to 0 and 1. \
               Needs at least two non-NaN values for interpolation, so returns NaNs where this condition fails.
             - "step": use forward filling then set remaining leading NaNs to 0. \
@@ -315,8 +315,11 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     This is sometimes violated due to rounding issues or bad forecast process.
     `decreasing_cdfs` checks CDF values decrease beyond specified tolerance; that is,
     whenever the sum of the incremental decreases exceeds tolerarance.
+
     For example, if the CDF values are
-        [0, 0.4, 0.3, 0.9, 0.88, 1]
+        
+    `[0, 0.4, 0.3, 0.9, 0.88, 1]`
+
     then the sum of incremental decreases is -0.12. Given a specified positive `tolerance`,
     the CDF values decrease beyond tolerance if the sum of incremental decreases < -`tolerance`.
 
