@@ -438,6 +438,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         How well did the forecast separate the "yes" events from the "no" events?
 
+        Returns:
+            An xarray object containing Hanssen and Kuipers' discriminant
+
         .. math::
             \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
 
