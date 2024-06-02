@@ -151,13 +151,11 @@ def observed_cdf(
 def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_dim: str) -> xr.DataArray:
     """Calculates integral values and collapses `threshold_dim`.
 
-    Calculates integral(F(t)^2), where
+    Calculates :math:`\\text{ integral(F(t)^2)}`, where:
         - If t in a threshold value in `threshold_dim` then F(t) is in `function_values`,
         - F is piecewise linear between each of the t values in `threshold_dim`.
-    Returns value of the integral with `threshold_dim` collapsed and other dimensions preserved.
-    Returns NaN if there are less than two non-NaN function_values.
 
-    This function assumes that
+    This function assumes that:
         - `threshold_dim` is a dimension of `function_values`
         - coordinates of `threshold_dim` are increasing.
 
@@ -166,7 +164,12 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
         threshold_dim (xr.DataArray): dimension along which to integrate.
 
     Returns:
-        xr.DataArray: Integral values and `threshold_dim` collapsed.
+
+        xr.DataArray: Integral values and `threshold_dim` collapsed:
+
+        - Returns value of the integral with `threshold_dim` collapsed and other dimensions preserved.
+        - Returns NaN if there are less than two non-NaN function_values.            
+        
     """
 
     # notation: Since F is piecewise linear we have
