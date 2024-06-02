@@ -237,23 +237,24 @@ def crps_cdf(
         fcst_fill_method: how to fill values in `fcst` when NaNs have been introduced 
             (by including additional thresholds) or are specified to be removed (by 
             setting `propagate_nans=False`). Select one of: 
-                - "linear": use linear interpolation, then replace any leading or \
-                trailing NaNs using linear extrapolation. Afterwards, all values are \
-                clipped to the closed interval [0, 1].
-                - "step": apply forward filling, then replace any leading NaNs with 0. 
-                - "forward": first apply forward filling, then remove any leading NaNs by \
-                back filling.
-                - "backward": first apply back filling, then remove any trailing NaNs by \
-                forward filling.
-                - (In most cases, "linear" is likely the appropriate choice.)
+
+            - "linear": use linear interpolation, then replace any leading or \
+            trailing NaNs using linear extrapolation. Afterwards, all values are \
+            clipped to the closed interval [0, 1].
+            - "step": apply forward filling, then replace any leading NaNs with 0. 
+            - "forward": first apply forward filling, then remove any leading NaNs by \
+            back filling.
+            - "backward": first apply back filling, then remove any trailing NaNs by \
+            forward filling.
+            - (In most cases, "linear" is likely the appropriate choice.)
 
         threshold_weight_fill_method: how to fill values in `threshold_weight` when NaNs
             have been introduced (by including additional thresholds) or are specified
-            to be removed (by setting `propagate_nans=False`). Select one of: 
-                - "linear",
-                - "step", "forward" or "backward". If the weight function is continuous,
-                - "linear" is probably the best choice. If it is an increasing step function, \
-                  "forward" may be best.
+            to be removed (by setting `propagate_nans=False`):
+
+            - Select one of "linear", "step", "forward" or "backward". 
+            - If the weight function is continuous, "linear" is probably the best choice. 
+            - If it is an increasing step function, "forward" may be best.
                   
         integration_method (str): one of "exact" or "trapz".
         preserve_dims (Tuple[str]): dimensions to preserve in the output. All other dimensions are collapsed
