@@ -221,7 +221,7 @@ def binary_discretise_proportion(
         data: The data to convert
            into 0 and 1 according the thresholds before calculating the
            proportion.
-        thresholds: The proportion of results
+        thresholds: The proportion of values
             equal to or exceeding these thresholds will be calculated.
         mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
