@@ -26,7 +26,7 @@ import numpy as np
 import xarray as xr
 
 import scores.utils
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 DEFAULT_PRECISION = 8
 
