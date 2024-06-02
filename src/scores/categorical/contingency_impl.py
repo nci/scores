@@ -343,6 +343,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
 
         References:
             https://www.cawcr.gov.au/projects/verification/#CSI
@@ -355,22 +358,47 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def critical_success_index(self):
         """
-        Often known as CSI.
+        Identical to threat_score        
 
-        Identical to threat_score
-        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+        .. math::
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{true negatives}}
 
-        https://www.cawcr.gov.au/projects/verification/#CSI
+        Returns:
+            An xarray object containing the critical success index
+
+        Notes:
+            - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+            - Often known as CSI.
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#CSI
         """
         return self.threat_score()
 
     def peirce_skill_score(self):
         """
-        Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
-        How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+        Identical to Hanssen and Kuipers discriminant and the true skill statistic
 
-        https://www.cawcr.gov.au/projects/verification/#HK
+        How well did the forecast separate the "yes" events from the "no" events?
+
+        Returns:
+            An xarray object containing the Peirce Skill Score
+
+        .. math::
+            \\text{Peirce skill score} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}} - \\frac{\\text{false alarms}}{\\text{false alarms} + \\text{correct negatives}}
+
+        Notes:
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "Hits" is the same as "true positives"
+            - "Misses" is the same as "false negatives"
+            - "False alarms" is the same as "false positives"
+            - "Correct negatives" is the same as "true negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#HK
         """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
@@ -381,7 +409,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     def true_skill_statistic(self):
         """
         Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
+
         How well did the forecast separate the "yes" events from the "no" events?
+
         Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
 
         https://www.cawcr.gov.au/projects/verification/#HK
