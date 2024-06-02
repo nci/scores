@@ -190,7 +190,6 @@ def proportion_exceeding(
             to calculate the proportion exceeding `thresholds`
         thresholds (iterable): The proportion of Flip-Flop Index results
             equal to or exceeding these thresholds will be calculated.
-            the Flip-Flop Index.
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
 
@@ -224,7 +223,6 @@ def binary_discretise_proportion(
            proportion.
         thresholds: The proportion of Flip-Flop Index results
             equal to or exceeding these thresholds will be calculated.
-            the Flip-Flop Index.
         mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:
