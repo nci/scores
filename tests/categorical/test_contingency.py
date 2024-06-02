@@ -221,8 +221,10 @@ def test_dimension_broadcasting():
     should be compared to the observation, and the final accuracy should have an
     accuracy score at each time.
 
-    The actual calculated accuracy at each time is not tested here, this test is about
-    dimension handling not score calculation maths.
+    In this example, the same forecast values are repeated for each of 5 lead times
+    A single observations array is provided
+    Broadcasting rules mean the accuracy should be calculated at each lead time,
+    comparing the observations against each lead time
     """
 
     base_forecasts = [simple_forecast + i * 0.5 for i in range(5)]
@@ -233,6 +235,12 @@ def test_dimension_broadcasting():
     accuracy = withtime.accuracy()
     assert accuracy.dims == ("time",)
     assert len(accuracy.time) == 5
+
+    assert accuracy[0] == (9 + 6) / 18
+    assert accuracy[1] == (10 + 4) / 18
+    assert accuracy[2] == (10 + 1) / 18
+    assert accuracy[3] == (10 + 0) / 18
+    assert accuracy[4] == (10 + 0) / 18
 
 
 def test_nan_handling():
