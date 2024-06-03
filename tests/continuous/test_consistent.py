@@ -2,6 +2,13 @@
 Tests for scores.continuous.consistent_impl
 """
 
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+
+import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
@@ -14,6 +21,7 @@ from scores.continuous.consistent_impl import (
     consistent_huber_score,
     consistent_quantile_score,
 )
+
 
 DA_FCST = xr.DataArray(
     data=[[3.0, 1.0, nan, 3.0], [-4.0, 0.0, 1.0, 3.0]],
@@ -113,6 +121,24 @@ def test_consistent_expectile_score(preserve_dims, reduce_dims, weights, expecte
     assert_allclose(result, expected)
 
 
+def test_expectile_score_with_dask():
+    """
+    Tests that the consistent expectile scores work with Dask
+    """
+    result = consistent_expectile_score(
+        DA_FCST.chunk(),
+        DA_OBS.chunk(),
+        alpha=ALPHA,
+        phi=squared_loss,
+        phi_prime=squared_loss_prime,
+        preserve_dims="all",
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    assert_allclose(result, EXP_EXPECTILE_SCORE1)
+
+
 @pytest.mark.parametrize("alpha", [1.0, 0.0])
 def test_check_alpha(alpha):
     """Tests that `check_alpha` raises as expected."""
@@ -151,6 +177,24 @@ def test_consistent_huber_score(preserve_dims, reduce_dims, weights, expected):
     assert_allclose(result, expected)
 
 
+def test_huber_score_with_dask():
+    """
+    Tests that the consistent huber scores work with Dask
+    """
+    result = consistent_huber_score(
+        DA_FCST.chunk(),
+        DA_OBS.chunk(),
+        huber_param=TUNING_PARAM,
+        phi=squared_loss,
+        phi_prime=squared_loss_prime,
+        preserve_dims="all",
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    assert_allclose(result, EXP_HUBER_SCORE1)
+
+
 @pytest.mark.parametrize(
     ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
@@ -172,3 +216,20 @@ def test_consistent_quantile_score(preserve_dims, reduce_dims, weights, expected
         weights=weights,
     )
     assert_allclose(result, expected)
+
+
+def test_quantile_score_with_dask():
+    """
+    Tests that the consistent quantile scores work with Dask
+    """
+    result = consistent_quantile_score(
+        DA_FCST.chunk(),
+        DA_OBS.chunk(),
+        alpha=ALPHA,
+        g=simple_linear,
+        preserve_dims="all",
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    assert_allclose(result, EXP_QUANTILE_SCORE1)
