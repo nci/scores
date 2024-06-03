@@ -386,7 +386,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Identical to threat_score
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{true negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
 
         Returns:
             An xarray object containing the critical success index
