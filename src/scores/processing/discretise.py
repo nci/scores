@@ -188,9 +188,8 @@ def proportion_exceeding(
     Args:
         data (xarray.Dataset or xarray.DataArray): The data from which
             to calculate the proportion exceeding `thresholds`
-        thresholds (iterable): The proportion of Flip-Flop Index results
+        thresholds (iterable): The proportion of values
             equal to or exceeding these thresholds will be calculated.
-            the Flip-Flop Index.
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
 
@@ -222,9 +221,8 @@ def binary_discretise_proportion(
         data: The data to convert
            into 0 and 1 according the thresholds before calculating the
            proportion.
-        thresholds: The proportion of Flip-Flop Index results
+        thresholds: The proportion of values
             equal to or exceeding these thresholds will be calculated.
-            the Flip-Flop Index.
         mode: Specifies the required relation of `data` to `thresholds`
             for a value to fall in the 'event' category (i.e. assigned to 1).
             Allowed modes are:

@@ -4,7 +4,7 @@ Thank you for considering contributing to `scores`. Contributions of all kinds a
 
 These guidelines describe how to collaborate effectively.
 
-Types of contributions include bug reports, feature requests and pull requests. Contributions which are in line with the roadmap will be prioritised. The roadmap outlines the intentions for this package.
+Types of contributions include bug reports, feature requests, feedback and pull requests. Contributions which are in line with the roadmap will be prioritised. The roadmap outlines the intentions for this package.
 
 ## Roadmap
 - Addition of more scores, metrics and statistical techniques
@@ -13,9 +13,13 @@ Types of contributions include bug reports, feature requests and pull requests. 
 - Increased support for machine learning library integration
 - Additional notebooks exploring complex use cases in depth
 
-## Bug Reports and Feature Requests
+## Code of Conduct and Respectful Behaviour
 
-Please submit bug reports and feature requests as issues in GitHub: [https://github.com/nci/scores/issues](https://github.com/nci/scores/issues).
+All interactions in discussions, issues, emails and code (e.g. pull requests, code comments) will be managed according to the expectations outlined in the [code of conduct](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40,000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
+
+## Bug Reports, Feature Requests and Feedback
+
+Please submit bug reports, feature requests and feedback as issues in GitHub: [https://github.com/nci/scores/issues](https://github.com/nci/scores/issues).
 
 ## Handling Security Concerns
 

@@ -272,13 +272,13 @@
   - 
     [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
 * -  
-    - Fraction Correct, *see Accuracy*
+    - Fraction Correct (Accuracy)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.fraction_correct)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
     - Frequency Bias (Bias Score)
   -
@@ -408,13 +408,13 @@
   - 
     [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)    
 * -  
-    - True Negative Rate, *see Specificity*
+    - True Negative Rate (Specificity)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.true_negative_rate)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
     - True Positive Rate (Hit Rate, Probability of Detection (POD), Sensitivity, Recall)
   -
