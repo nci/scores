@@ -237,20 +237,20 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def true_positive_rate(self) -> xr.DataArray:
         """
-        Identical to probability_of_detection
+        Identical to hit rate, probability of detection (POD), sensitivity and recall.
 
         What proportion of the observed events where correctly forecast?
 
         Returns:
-            An xarray object containing the true positive rate
+            xr.DataArray: An xarray object containing the true positive rate
 
         .. math::
             \\text{true positive rate} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False negatives" is the same as "misses"
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
@@ -334,18 +334,20 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def success_ratio(self) -> xr.DataArray:
         """
+        Identical to precision.
+
         What proportion of the forecast events actually eventuated?
 
         Returns:
-            An xarray object containing the success ratio
+            xr.DataArray: An xarray object containing the success ratio
 
         .. math::
             \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False positives" is the same as "misses"
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "misses".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#SR
@@ -357,7 +359,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def threat_score(self) -> xr.DataArray:
         """
-        Identical to critical_success_index
+        Identical to critical success index.
 
         Returns:
             xr.DataArray: An xarray object containing the threat score
@@ -367,9 +369,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False positives" is the same as "false alarms"
-            - "True negatives" is the same as "correct negatives"
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#CSI
@@ -434,7 +436,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def true_skill_statistic(self) -> xr.DataArray:
         """
-        Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
+        Identical to Peirce's skill score and to Hanssen and Kuipers discriminant.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
@@ -446,10 +448,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False negatives" is the same as "misses"
-            - "False positives" is the same as "false alarms"
-            - "True negatives" is the same as "correct negatives"
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#HK
@@ -484,20 +486,20 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def sensitivity(self) -> xr.DataArray:
         """
-        Identical to probability of detection and hit_rate
+        Identical to hit rate, probability of detection (POD), true positive rate and recall.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
         Returns:
-            An xarray object containing the probability of detection
+            xr.DataArray: An xarray object containing the probability of detection
 
         .. math::
             \\text{sensitivity} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False negatives" is the same as "misses"
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
 
         References:
             - https://www.cawcr.gov.au/projects/verification/#POD
@@ -777,11 +779,22 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def yules_q(self) -> xr.DataArray:
         """
-        Calculates the Yule's Q (also known as the odds ratio skill score).
+        Identical to the odds ratio skill score.
+
+        Calculates the Yule's Q.
+
         What was the improvement of the forecast over random chance?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-        Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
-        Weather and Forecasting, 15(2), pp.221-232.
+
+        Returns:
+            xr.DataArray: An xarray object containing Yule's Q
+
+        Notes:    
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+
+        References:
+            Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
+            Weather and Forecasting, 15(2), pp.221-232. \
+            https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
         """
         return self.odds_ratio_skill_score()
 
@@ -841,7 +854,7 @@ class BinaryContingencyManager(BasicContingencyManager):
         *,
         reduce_dims: Optional[FlexibleDimensionTypes] = None,
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    ):
+    ) -> BasicContingencyManager:
         """
         Calculate and compute the contingency table according to the specified dimensions
         """
@@ -853,7 +866,7 @@ class BinaryContingencyManager(BasicContingencyManager):
         *,
         reduce_dims: Optional[FlexibleDimensionTypes] = None,
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    ):
+    ) -> dict:
         """
         Generates the uncomputed count values
         """
@@ -945,7 +958,7 @@ class ThresholdEventOperator(EventOperator):
 
     def make_contingency_manager(
         self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
-    ):
+    ) -> BinaryContingencyManager:
         """
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
