@@ -16,9 +16,9 @@ from scores.continuous.consistent_impl import (
 )
 
 DA_FCST = xr.DataArray(
-    data=[[3.0, 1.0, nan], [-4.0, 0.0, 1.0]],
+    data=[[3.0, 1.0, nan, 3.0], [-4.0, 0.0, 1.0, 3.0]],
     dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102]),
+    coords=dict(date=["1", "2"], station=[100, 101, 102, 104]),
 )
 
 DA_OBS = xr.DataArray(
