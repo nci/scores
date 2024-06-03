@@ -26,7 +26,7 @@ import numpy as np
 import xarray as xr
 
 import scores.utils
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 DEFAULT_PRECISION = 8
 
@@ -90,22 +90,49 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.xr_table
 
-    def accuracy(self):
+    def accuracy(self) -> xr.DataArray:
         """
-        The proportion of forecasts which are true
+        Accuracy calculates the proportion of forecasts which are true.
 
-        https://www.cawcr.gov.au/projects/verification/#ACC
+        Returns:
+            xr.DataArray: A DataArray containing the accuracy score
+
+        .. math::
+            \\text{accuracy} = \\frac{\\text{true positives} + \\text{true negatives}}{\\text{total count}}
+
+        Notes:
+
+            - Range: 0 to 1, where 0 indicates no skill, and 1 indicates a perfect score.
+            - True positives is the same at hits
+            - False negatives is the same as misses
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#ACC
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
 
-    def frequency_bias(self):
+    def frequency_bias(self) -> xr.DataArray:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
-        https://www.cawcr.gov.au/projects/verification/#BIAS
+        Returns:
+            xr.DataAray: An xarray object containing the frequency bias
+
+        .. math::
+            \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+
+            - Range: 0 to ∞ (infinity), where 1 indicates a perfect score
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         # Note - bias_score calls this method
         cd = self.counts
@@ -113,31 +140,70 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         return freq_bias
 
-    def bias_score(self):
+    def bias_score(self) -> xr.DataArray:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
-        https://www.cawcr.gov.au/projects/verification/#BIAS
+        Returns:
+            xr.DataArray: An xarray object containing the bias score
+
+        .. math::
+            \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+
+            - Range: 0 to ∞ (infinity), where 1 indicates a perfect score
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         return self.frequency_bias()
 
-    def hit_rate(self):
+    def hit_rate(self) -> xr.DataArray:
         """
-        What proportion of the observed events where correctly forecast?
         Identical to probability_of_detection
-        Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#POD
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            xr.DataArray: An xarray object containing the hit rate
+
+        .. math::
+            \\text{true positives} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
-    def probability_of_detection(self):
+    def probability_of_detection(self) -> xr.DataArray:
         """
-        What proportion of the observed events where correctly forecast?
-        Identical to hit_rate
-        Range: 0 to 1.  Perfect score: 1.
+        Identical to hit rate
 
-        https://www.cawcr.gov.au/projects/verification/#POD
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            xr.DataArray: An xarray object containing the probability of detection
+
+        .. math::
+            \\text{hit rate} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POD
         """
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
