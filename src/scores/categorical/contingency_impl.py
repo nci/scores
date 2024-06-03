@@ -362,13 +362,49 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.probability_of_detection()
 
-    def specificity(self):
+    def specificity(self) -> xr.DataArray:
         """
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        Identical to true negative rate.
+
+        The probability that an observed non-event will be correctly predicted.
+
+        Returns:
+            xr.DataArray: An xarray object containing the true negative rate (specificity).
+
+        .. math::
+            \\text{specificity} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
+
+        Notes:
+            - "True negatives" is the same as "correct negatives".
+            - "False positives" is the same as "false alarms".
+
+        Reference:
+            https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
         return s
+
+    def true_negative_rate(self) -> xr.DataArray:
+        """
+        Identical to specificity.
+
+        The probability that an observed non-event will be correctly predicted.
+
+        Returns:
+            xr.DataArray: An xarray object containing the true negative rate.
+
+        .. math::
+            \\text{true negative rate} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
+
+        Notes:
+            - "True negatives" is the same as "correct negatives".
+            - "False positives" is the same as "false alarms".
+
+        Reference:
+            https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        """
+        return self.specificity()
 
     def recall(self):
         """

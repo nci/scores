@@ -201,6 +201,7 @@ def test_categorical_table():
     assert table.cohens_kappa() == table.heidke_skill_score()
     assert table.yules_q() == table.odds_ratio_skill_score()
     assert table.accuracy() == table.fraction_correct()
+    assert table.specificity() == table.true_negative_rate()
 
     peirce_component_a = 9 / (9 + 1)
     peirce_component_b = 2 / (2 + 6)
