@@ -151,13 +151,11 @@ def observed_cdf(
 def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_dim: str) -> xr.DataArray:
     """Calculates integral values and collapses `threshold_dim`.
 
-    Calculates integral(F(t)^2), where
+    Calculates :math:`\\text{ integral(F(t)^2)}`, where:
         - If t in a threshold value in `threshold_dim` then F(t) is in `function_values`,
         - F is piecewise linear between each of the t values in `threshold_dim`.
-    Returns value of the integral with `threshold_dim` collapsed and other dimensions preserved.
-    Returns NaN if there are less than two non-NaN function_values.
 
-    This function assumes that
+    This function assumes that:
         - `threshold_dim` is a dimension of `function_values`
         - coordinates of `threshold_dim` are increasing.
 
@@ -166,7 +164,12 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
         threshold_dim (xr.DataArray): dimension along which to integrate.
 
     Returns:
-        xr.DataArray: Integral values and `threshold_dim` collapsed.
+
+        xr.DataArray: Integral values and `threshold_dim` collapsed:
+
+        - Returns value of the integral with `threshold_dim` collapsed and other dimensions preserved.
+        - Returns NaN if there are less than two non-NaN function_values.
+
     """
 
     # notation: Since F is piecewise linear we have
@@ -240,15 +243,17 @@ def fill_cdf(
     method: Literal["linear", "step", "forward", "backward"],
     min_nonnan: int,
 ) -> xr.DataArray:
-    """Fills NaNs in a CDF of a real-valued random variable along `threshold_dim` with appropriate values between 0 and 1.
+    """
+    Fills NaNs in a CDF of a real-valued random variable along `threshold_dim` with appropriate values between 0 and 1.
 
     Args:
         cdf (xr.DataArray): CDF values, where P(Y <= threshold) = cdf_value for each threshold in `threshold_dim`.
         threshold_dim (str): the threshold dimension in the CDF, along which filling is performed.
-        method (Literal["linear", "step", "forward", "backward"]): one of
-            - "linear": use linear interpolation, and if needed also extrapolate linearly. Clip to 0 and 1.
+        method (Literal["linear", "step", "forward", "backward"]): one of:
+
+            - "linear": use linear interpolation, and if needed also extrapolate linearly. Clip to 0 and 1. \
               Needs at least two non-NaN values for interpolation, so returns NaNs where this condition fails.
-            - "step": use forward filling then set remaining leading NaNs to 0.
+            - "step": use forward filling then set remaining leading NaNs to 0. \
               Produces a step function CDF (i.e. piecewise constant).
             - "forward": use forward filling then fill any remaining leading NaNs with backward filling.
             - "backward": use backward filling then fill any remaining trailing NaNs with forward filling.
@@ -310,8 +315,11 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     This is sometimes violated due to rounding issues or bad forecast process.
     `decreasing_cdfs` checks CDF values decrease beyond specified tolerance; that is,
     whenever the sum of the incremental decreases exceeds tolerarance.
+
     For example, if the CDF values are
-        [0, 0.4, 0.3, 0.9, 0.88, 1]
+
+    `[0, 0.4, 0.3, 0.9, 0.88, 1]`
+
     then the sum of incremental decreases is -0.12. Given a specified positive `tolerance`,
     the CDF values decrease beyond tolerance if the sum of incremental decreases < -`tolerance`.
 
@@ -358,9 +366,10 @@ def cdf_envelope(
     The following example shows values from an original CDF that has a decreasing subsequence
     (and so is not a true CDF). The resulting "upper" and "lower" CDFs minimally adjust
     "original" so that "lower" <= "original" <= "upper".
-        "original": [0, .5, .2, .8, 1]
-        "upper": [0, .5, .5, .8, 1]
-        "lower": [0, .2, .2, .8, 1]
+
+    - "original": [0, .5, .2, .8, 1]
+    - "upper": [0, .5, .5, .8, 1]
+    - "lower": [0, .2, .2, .8, 1]
 
     This function does not perform checks that `0 <= cdf <= 1`.
 
@@ -369,13 +378,15 @@ def cdf_envelope(
         threshold_dim (str): dimension in fcst_cdf that contains the threshold ordinates.
 
     Returns:
-        An xarray DataArray consisting of three CDF arrays indexed along the `"cdf_type"` dimension
+        xr.DataArray: An xarray DataArray consisting of three CDF arrays indexed along the `"cdf_type"` dimension
         with the following indices:
+
             - "original": same data as `cdf`.
-            - "upper": minimally adjusted "original" CDF that is nondecreasing and
+            - "upper": minimally adjusted "original" CDF that is nondecreasing and \
               satisfies "upper" >= "original".
-            - "lower": minimally adjusted "original" CDF that is nondecreasing and
+            - "lower": minimally adjusted "original" CDF that is nondecreasing and \
               satisfies "lower" <= "original".
+              
         NaN values in `cdf` are maintained in "original", "upper" and "lower".
 
     Raises:
