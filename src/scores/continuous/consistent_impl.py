@@ -34,8 +34,21 @@ def consistent_expectile_score(
         alpha: expectile level. Must be strictly between 0 and 1.
         phi: a convex function on the real numbers, accepting a single array like argument.
         phi_prime: a subderivative of `phi`, accepting a single array like argument.
-        dims: dimensions to preserve in the output.
-            All other dimensions are collapsed by taking the mean.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the consistent expectile score. All other dimensions will be preserved. As a
+            special case, 'all' will allow all dimensions to be reduced. Only one
+            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating
+            the consistent quantile score. All other dimensions will be reduced. As a special case, 'all'
+            will allow all dimensions to be preserved. In this case, the result will be in
+            the same shape/dimensionality as the forecast, and the errors will be the consistent quantile
+            score at each point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
+            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         array of (mean) scores that is consistent for alpha-expectile functional,
@@ -111,8 +124,21 @@ def consistent_huber_score(
             linear and quadratic loss for Huber loss. Must be positive.
         phi: a convex function on the real numbers, accepting a single array like argument.
         phi_prime: a subderivative of `phi`, accepting a single array like argument.
-        dims: dimensions to preserve in the output.
-            All other dimensions are collapsed by taking the mean.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the consistent Huber score. All other dimensions will be preserved. As a
+            special case, 'all' will allow all dimensions to be reduced. Only one
+            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating
+            the consistent Huber score. All other dimensions will be reduced. As a special case, 'all'
+            will allow all dimensions to be preserved. In this case, the result will be in
+            the same shape/dimensionality as the forecast, and the errors will be the consistent Huber
+            score at each point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
+            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         array of (mean) scores that is consistent for Huber mean functional,
@@ -161,8 +187,21 @@ def consistent_quantile_score(
         obs: array of corresponding observation values.
         alpha: quantile level. Must be strictly between 0 and 1.
         g: nondecreasing function on the real numbers, accepting a single array like argument.
-        dims: dimensions to preserve in the output.
-            All other dimensions are collapsed by taking the mean.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the consistent quantile score. All other dimensions will be preserved. As a
+            special case, 'all' will allow all dimensions to be reduced. Only one
+            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating
+            the consistent quantile score. All other dimensions will be reduced. As a special case, 'all'
+            will allow all dimensions to be preserved. In this case, the result will be in
+            the same shape/dimensionality as the forecast, and the errors will be the consistent quantile
+            score at each point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
+            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
 
     Returns:
         array of (mean) scores that are consistent for alpha-quantile functional,
