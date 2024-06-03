@@ -26,7 +26,7 @@ import numpy as np
 import xarray as xr
 
 import scores.utils
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
 DEFAULT_PRECISION = 8
 
@@ -271,14 +271,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.probability_of_detection()
 
-    def specificity(self) -> XarrayLike:
+    def specificity(self) -> xr.DataArray:
         """
         Identical to true negative rate.
 
         The probability that an observed non-event will be correctly predicted.
 
         Returns:
-            An xarray object containing the true negative rate (specificity).
+            xr.DataArray: An xarray object containing the true negative rate (specificity).
 
         .. math::
             \\text{specificity} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
@@ -294,14 +294,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
         return s
 
-    def true_negative_rate(self) -> XarrayLike:
+    def true_negative_rate(self) -> xr.DataArray:
         """
         Identical to specificity.
 
         The probability that an observed non-event will be correctly predicted.
 
         Returns:
-            An xarray object containing the true negative rate.
+            xr.DataArray: An xarray object containing the true negative rate.
 
         .. math::
             \\text{true negative rate} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
