@@ -226,7 +226,6 @@ def consistent_quantile_score(
             - :math:`y` is the observation
             - :math:`\\alpha` is the quantile level
             - :math:`g` is a nondecreasing function of a single variable
-            - :math:`\\phi'` is the subderivative of :math:`\\phi`
             - :math:`S(x,y)` is the score.
 
         Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
