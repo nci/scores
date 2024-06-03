@@ -173,7 +173,7 @@ def test_categorical_table():
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
-    assert table.threat_score() == 9 / (9 + 2 + 6)
+    assert table.threat_score() == 9 / (9 + 2 + 1)
     assert table.frequency_bias() == (9 + 2) / (9 + 1)
     assert table.hit_rate() == 9 / (9 + 1)
     assert table.probability_of_false_detection() == 2 / (6 + 2)

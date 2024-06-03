@@ -339,7 +339,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the threat score
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{true negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -350,7 +350,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         # Note - critical success index just calls this method
 
         cd = self.counts
-        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
+        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
         return ts
 
     def critical_success_index(self):
