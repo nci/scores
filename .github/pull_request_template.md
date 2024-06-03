@@ -20,7 +20,7 @@ Please work through the following checklists. Delete anything that isn't relevan
 - [ ] Short introduction to why you would use that metric and what it tells you
 - [ ] A link to a reference
 - [ ] A "things to try next" section at the end
-- [ ] Add notebook to [Explanation.ipynb](https://github.com/nci/scores/blob/develop/tutorials/Explanation.ipynb)
+- [ ] Add notebook to [Tutorial_Gallery.ipynb](https://github.com/nci/scores/blob/develop/tutorials/Tutorial_Gallery.ipynb)
 - [ ] Optional - a detailed discussion of how the metric works at the end of the notebook
 
 ## Documentation
