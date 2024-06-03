@@ -90,12 +90,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.xr_table
 
-    def accuracy(self) -> XarrayLike:
+    def accuracy(self) -> xr.DataArray:
         """
         Accuracy calculates the proportion of forecasts which are true.
 
         Returns:
-            An xarray object containing the accuracy score
+            xr.DataArray: A DataArray containing the accuracy score
 
         .. math::
             \\text{accuracy} = \\frac{\\text{true positives} + \\text{true negatives}}{\\text{total count}}
@@ -114,12 +114,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
 
-    def frequency_bias(self):
+    def frequency_bias(self) -> xr.DataArray:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
         Returns:
-            An xarray object containing the frequency bias
+            xr.DataAray: An xarray object containing the frequency bias
 
         .. math::
             \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{true positives} + \\text{false negatives}}
@@ -140,12 +140,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         return freq_bias
 
-    def bias_score(self):
+    def bias_score(self) -> xr.DataArray:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
         Returns:
-            An xarray object containing the bias score
+            xr.DataArray: An xarray object containing the bias score
 
         .. math::
             \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{true positives} + \\text{false negatives}}
@@ -162,40 +162,40 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.frequency_bias()
 
-    def hit_rate(self):
+    def hit_rate(self) -> xr.DataArray:
         """
         Identical to probability_of_detection
 
         Calculates the proportion of the observed events that were correctly forecast.
 
         Returns:
-            An xarray object containing the hit rate
+            xr.DataArray: An xarray object containing the hit rate
 
         .. math::
-            \\text{hit rate} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}}
+            \\text{true positives} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
 
         Notes:
 
             - Range: 0 to 1.  Perfect score: 1.
-            - "Hits" is the same as "true positives"
-            - "Misses" is the same as "false negatives"
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
-    def probability_of_detection(self):
+    def probability_of_detection(self) -> xr.DataArray:
         """
         Identical to hit rate
 
         Calculates the proportion of the observed events that were correctly forecast.
 
         Returns:
-            An xarray object containing the probability of detection
+            xr.DataArray: An xarray object containing the probability of detection
 
         .. math::
-            \\text{hit rate} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}}
+            \\text{hit rate} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
