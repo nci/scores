@@ -1,5 +1,5 @@
 """
-Tests for scores.continuous.consistent
+Tests for scores.continuous.consistent_impl
 """
 
 import pytest
@@ -88,16 +88,16 @@ def simple_linear(x):
 
 
 @pytest.mark.parametrize(
-    ("dims", "expected"),
+    ("preserve_dims", "expected"),
     [
         (["date", "station"], EXP_EXPECTILE_SCORE1),
         (["station"], EXP_EXPECTILE_SCORE2),
     ],
 )
-def test_consistent_expectile_score(dims, expected):
+def test_consistent_expectile_score(preserve_dims, expected):
     """Tests that `consistent_expectile_score` gives results as expected."""
     result = consistent_expectile_score(
-        DA_FCST, DA_OBS, alpha=ALPHA, phi=squared_loss, phi_prime=squared_loss_prime, preserve_dims=dims
+        DA_FCST, DA_OBS, alpha=ALPHA, phi=squared_loss, phi_prime=squared_loss_prime, preserve_dims=preserve_dims
     )
     assert_allclose(result, expected)
 
@@ -116,14 +116,14 @@ def test_check_huber_param():
 
 
 @pytest.mark.parametrize(
-    ("dims", "expected"),
+    ("preserve_dims", "expected"),
     [
         (["date", "station"], EXP_HUBER_SCORE1),
         (["date"], EXP_HUBER_SCORE2),
         (None, EXP_HUBER_SCORE3),
     ],
 )
-def test_consistent_huber_score(dims, expected):
+def test_consistent_huber_score(preserve_dims, expected):
     """Tests that `consistent_huber_score` gives results as expected."""
     result = consistent_huber_score(
         DA_FCST,
@@ -131,16 +131,16 @@ def test_consistent_huber_score(dims, expected):
         huber_param=TUNING_PARAM,
         phi=squared_loss,
         phi_prime=squared_loss_prime,
-        preserve_dims=dims,
+        preserve_dims=preserve_dims,
     )
     assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
-    ("dims", "expected"),
+    ("preserve_dims", "expected"),
     [(["date", "station"], EXP_QUANTILE_SCORE1), (["date"], EXP_QUANTILE_SCORE2)],
 )
-def test_consistent_quantile_score(dims, expected):
+def test_consistent_quantile_score(preserve_dims, expected):
     """Tests that `consistent_quantile_score` gives results as expected."""
-    result = consistent_quantile_score(DA_FCST, DA_OBS, alpha=ALPHA, g=simple_linear, preserve_dims=dims)
+    result = consistent_quantile_score(DA_FCST, DA_OBS, alpha=ALPHA, g=simple_linear, preserve_dims=preserve_dims)
     assert_allclose(result, expected)
