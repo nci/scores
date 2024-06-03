@@ -27,6 +27,8 @@ DA_OBS = xr.DataArray(
     coords=dict(date=["1", "2", "3"], station=[100, 101, 102]),
 )
 
+WEIGHTS = DA_FCST * 0 + 2
+
 ALPHA = 0.3
 
 EXP_EXPECTILE_SCORE1 = xr.DataArray(
@@ -88,14 +90,15 @@ def simple_linear(x):
 
 
 @pytest.mark.parametrize(
-    ("preserve_dims", "reduce_dims", "expected"),
+    ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
-        (["date", "station"], None, EXP_EXPECTILE_SCORE1),
-        (["station"], None, EXP_EXPECTILE_SCORE2),
-        (None, ["date"], EXP_EXPECTILE_SCORE2),
+        (["date", "station"], None, None, EXP_EXPECTILE_SCORE1),
+        (["date", "station"], None, WEIGHTS, 2 * EXP_EXPECTILE_SCORE1),
+        (["station"], None, None, EXP_EXPECTILE_SCORE2),
+        (None, ["date"], None, EXP_EXPECTILE_SCORE2),
     ],
 )
-def test_consistent_expectile_score(preserve_dims, reduce_dims, expected):
+def test_consistent_expectile_score(preserve_dims, reduce_dims, weights, expected):
     """Tests that `consistent_expectile_score` gives results as expected."""
     result = consistent_expectile_score(
         DA_FCST,
@@ -105,6 +108,7 @@ def test_consistent_expectile_score(preserve_dims, reduce_dims, expected):
         phi_prime=squared_loss_prime,
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
+        weights=weights,
     )
     assert_allclose(result, expected)
 
@@ -123,15 +127,16 @@ def test_check_huber_param():
 
 
 @pytest.mark.parametrize(
-    ("preserve_dims", "reduce_dims", "expected"),
+    ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
-        (["date", "station"], None, EXP_HUBER_SCORE1),
-        (["date"], None, EXP_HUBER_SCORE2),
-        (None, ["station"], EXP_HUBER_SCORE2),
-        (None, None, EXP_HUBER_SCORE3),
+        (["date", "station"], None, None, EXP_HUBER_SCORE1),
+        (["date", "station"], None, WEIGHTS, 2 * EXP_HUBER_SCORE1),
+        (["date"], None, None, EXP_HUBER_SCORE2),
+        (None, ["station"], None, EXP_HUBER_SCORE2),
+        (None, None, None, EXP_HUBER_SCORE3),
     ],
 )
-def test_consistent_huber_score(preserve_dims, reduce_dims, expected):
+def test_consistent_huber_score(preserve_dims, reduce_dims, weights, expected):
     """Tests that `consistent_huber_score` gives results as expected."""
     result = consistent_huber_score(
         DA_FCST,
@@ -141,21 +146,29 @@ def test_consistent_huber_score(preserve_dims, reduce_dims, expected):
         phi_prime=squared_loss_prime,
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
+        weights=weights,
     )
     assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
-    ("preserve_dims", "reduce_dims", "expected"),
+    ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
-        (["date", "station"], None, EXP_QUANTILE_SCORE1),
-        (["date"], None, EXP_QUANTILE_SCORE2),
-        (None, ["station"], EXP_QUANTILE_SCORE2),
+        (["date", "station"], None, None, EXP_QUANTILE_SCORE1),
+        (["date", "station"], None, WEIGHTS, 2 * EXP_QUANTILE_SCORE1),
+        (["date"], None, None, EXP_QUANTILE_SCORE2),
+        (None, ["station"], None, EXP_QUANTILE_SCORE2),
     ],
 )
-def test_consistent_quantile_score(preserve_dims, reduce_dims, expected):
+def test_consistent_quantile_score(preserve_dims, reduce_dims, weights, expected):
     """Tests that `consistent_quantile_score` gives results as expected."""
     result = consistent_quantile_score(
-        DA_FCST, DA_OBS, alpha=ALPHA, g=simple_linear, preserve_dims=preserve_dims, reduce_dims=reduce_dims
+        DA_FCST,
+        DA_OBS,
+        alpha=ALPHA,
+        g=simple_linear,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights,
     )
     assert_allclose(result, expected)
