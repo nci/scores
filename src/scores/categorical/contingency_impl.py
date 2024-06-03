@@ -259,7 +259,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def false_alarm_ratio(self) -> xr.DataArray:
         """
-        The false alarm ratio (FAR) calculates the fraction of the predicted "yes" events 
+        The false alarm ratio (FAR) calculates the fraction of the predicted "yes" events
         which did not eventuate (i.e., were false alarms).
 
         Returns:
