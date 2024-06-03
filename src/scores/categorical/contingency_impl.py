@@ -39,8 +39,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     to the actual event tables in their full dimensionality.
 
     The event count data is much smaller than the full event tables, particularly when
-    considering very large data sets like NWP data, which could be terabytes to petabytes
-    in size.
+    considering very large data sets like Numerical Weather Prediction (NWP) data, which
+    could be terabytes to petabytes in size.
     """
 
     def __init__(self, counts: dict):
@@ -90,22 +90,74 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.xr_table
 
-    def accuracy(self):
+    def accuracy(self) -> xr.DataArray:
         """
-        The proportion of forecasts which are true
+        Identical to fraction correct.
 
-        https://www.cawcr.gov.au/projects/verification/#ACC
+        Accuracy calculates the proportion of forecasts which are correct.
+
+        Returns:
+            xr.DataArray: A DataArray containing the accuracy score
+
+        .. math::
+            \\text{accuracy} = \\frac{\\text{true positives} + \\text{true negatives}}{\\text{total count}}
+
+        Notes:
+
+            - Range: 0 to 1, where 1 indicates a perfect score.
+            - "True positives" is the same at "hits".
+            - "False negatives" is the same as "misses".
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#ACC
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
 
-    def frequency_bias(self):
+    def fraction_correct(self) -> xr.DataArray:
+        """
+        Identical to accuracy.
+
+        Fraction correct calculates the proportion of forecasts which are correct.
+
+        Returns:
+            xr.DataArray: An xarray object containing the fraction correct.
+
+        .. math::
+            \\text{fraction correct} = \\frac{\\text{true positives} + \\text{true negatives}}{\\text{total count}}
+
+        Notes:
+
+            - Range: 0 to 1, where 1 indicates a perfect score.
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#ACC
+        """
+        return self.accuracy()
+
+    def frequency_bias(self) -> xr.DataArray:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
-        https://www.cawcr.gov.au/projects/verification/#BIAS
+        Returns:
+            xr.DataAray: An xarray object containing the frequency bias
+
+        .. math::
+            \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+
+            - Range: 0 to ∞ (infinity), where 1 indicates a perfect score
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         # Note - bias_score calls this method
         cd = self.counts
@@ -113,31 +165,70 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         return freq_bias
 
-    def bias_score(self):
+    def bias_score(self) -> xr.DataArray:
         """
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
-        https://www.cawcr.gov.au/projects/verification/#BIAS
+        Returns:
+            xr.DataArray: An xarray object containing the bias score
+
+        .. math::
+            \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+
+            - Range: 0 to ∞ (infinity), where 1 indicates a perfect score
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#BIAS
         """
         return self.frequency_bias()
 
-    def hit_rate(self):
+    def hit_rate(self) -> xr.DataArray:
         """
-        What proportion of the observed events where correctly forecast?
         Identical to probability_of_detection
-        Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#POD
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            xr.DataArray: An xarray object containing the hit rate
+
+        .. math::
+            \\text{true positives} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
-    def probability_of_detection(self):
+    def probability_of_detection(self) -> xr.DataArray:
         """
-        What proportion of the observed events where correctly forecast?
-        Identical to hit_rate
-        Range: 0 to 1.  Perfect score: 1.
+        Identical to hit rate
 
-        https://www.cawcr.gov.au/projects/verification/#POD
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            xr.DataArray: An xarray object containing the probability of detection
+
+        .. math::
+            \\text{hit rate} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POD
         """
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
@@ -145,36 +236,73 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         return pod
 
-    def true_positive_rate(self):
+    def true_positive_rate(self) -> xr.DataArray:
         """
-        What proportion of the observed events where correctly forecast?
         Identical to probability_of_detection
-        Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#POD
+        What proportion of the observed events where correctly forecast?
+
+        Returns:
+            An xarray object containing the true positive rate
+
+        .. math::
+            \\text{true positive rate} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POD
         """
         return self.probability_of_detection()
 
-    def false_alarm_ratio(self):
+    def false_alarm_ratio(self) -> xr.DataArray:
         """
         What fraction of the predicted "yes" events actually did not occur (i.e.,
         were false alarms)?
-        Range: 0 to 1. Perfect score: 0.
 
-        https://www.cawcr.gov.au/projects/verification/#FAR
+        Returns:
+            xr.DataArray: An xarray object containing the false alarm ratio
+
+        .. math::
+            \\text{false alarm ratio} = \\frac{\\text{false positives}}{\\text{true positives} + \\text{false positives}}
+
+        Notes:
+            - Range: 0 to 1. Perfect score: 0.
+            - Not to be confused with the False Alarm Rate
+            - "False positives" is the same as "false alarms"
+            - "True positives" is the same as "hits"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#FAR
         """
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
 
         return far
 
-    def false_alarm_rate(self):
+    def false_alarm_rate(self) -> xr.DataArray:
         """
-        What fraction of the non-events were incorrectly predicted?
         Identical to probability_of_false_detection
-        Range: 0 to 1.  Perfect score: 0.
 
-        https://www.cawcr.gov.au/projects/verification/#POFD
+        What fraction of the non-events were incorrectly predicted?
+
+        Returns:
+            xr.DataArray: An xarray object containing the false alarm rate
+
+        .. math::
+            \\text{false alarm rate} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 0.
+            - Not to be confused with the false alarm ratio
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POFD
         """
         # Note - probability of false detection calls this function
         cd = self.counts
@@ -182,62 +310,120 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         return far
 
-    def probability_of_false_detection(self):
+    def probability_of_false_detection(self) -> xr.DataArray:
         """
-        What fraction of the non-events were incorrectly predicted?
         Identical to false_alarm_rate
-        Range: 0 to 1.  Perfect score: 0.
 
-        https://www.cawcr.gov.au/projects/verification/#POFD
+        What fraction of the non-events were incorrectly predicted?
+
+        Returns:
+            An xarray object containing the probability of false detection
+
+        .. math::
+            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 0.
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#POFD
         """
 
         return self.false_alarm_rate()
 
-    def success_ratio(self):
+    def success_ratio(self) -> xr.DataArray:
         """
         What proportion of the forecast events actually eventuated?
-        Range: 0 to 1.  Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#SR
+        Returns:
+            An xarray object containing the success ratio
+
+        .. math::
+            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "misses"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#SR
         """
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
 
         return sr
 
-    def threat_score(self):
+    def threat_score(self) -> xr.DataArray:
         """
-        How well did the forecast "yes" events correspond to the observed "yes" events?
         Identical to critical_success_index
-        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#CSI
+        Returns:
+            xr.DataArray: An xarray object containing the threat score
+
+        .. math::
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#CSI
         """
         # Note - critical success index just calls this method
 
         cd = self.counts
-        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["tn_count"])
+        ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
         return ts
 
-    def critical_success_index(self):
+    def critical_success_index(self) -> xr.DataArray:
         """
-        Often known as CSI.
-
-        How well did the forecast "yes" events correspond to the observed "yes" events?
         Identical to threat_score
-        Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#CSI
+        .. math::
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+
+        Returns:
+            An xarray object containing the critical success index
+
+        Notes:
+            - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
+            - Often known as CSI.
+            - "True positives" is the same as "hits"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#CSI
         """
         return self.threat_score()
 
-    def peirce_skill_score(self):
+    def peirce_skill_score(self) -> xr.DataArray:
         """
-        Hanssen and Kuipers discriminant (true skill statistic, Peirce's skill score)
-        How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+        Identical to Hanssen and Kuipers discriminant and the true skill statistic
 
-        https://www.cawcr.gov.au/projects/verification/#HK
+        How well did the forecast separate the "yes" events from the "no" events?
+
+        Returns:
+            An xarray object containing the Peirce Skill Score
+
+        .. math::
+            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+
+        Notes:
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#HK
         """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
@@ -245,45 +431,144 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         skill_score = component_a - component_b
         return skill_score
 
-    def true_skill_statistic(self):
+    def true_skill_statistic(self) -> xr.DataArray:
         """
         Identical to Peirce's skill score and to Hanssen and Kuipers discriminant
-        How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#HK
+        How well did the forecast separate the "yes" events from the "no" events?
+
+        Returns:
+            xr.DataArray: An xarray object containing the true skill statistic
+
+        .. math::
+            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+
+        Notes:
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#HK
         """
         return self.peirce_skill_score()
 
-    def hanssen_and_kuipers_discriminant(self):
+    def hanssen_and_kuipers_discriminant(self) -> xr.DataArray:
         """
         Identical to Peirce's skill score and to true skill statistic
-        How well did the forecast separate the "yes" events from the "no" events?
-        Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
 
-        https://www.cawcr.gov.au/projects/verification/#HK
+        How well did the forecast separate the "yes" events from the "no" events?
+
+        Returns:
+            xr.DataArray: An xarray object containing Hanssen and Kuipers' Discriminant
+
+        .. math::
+            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+
+        Where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
+
+        Notes:
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#HK
         """
         return self.peirce_skill_score()
 
-    def sensitivity(self):
+    def sensitivity(self) -> xr.DataArray:
         """
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        Identical to probability of detection and hit_rate
+
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            An xarray object containing the probability of detection
+
+        .. math::
+            \\text{sensitivity} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            - https://www.cawcr.gov.au/projects/verification/#POD
+            - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+
         """
         return self.probability_of_detection()
 
-    def specificity(self):
+    def specificity(self) -> xr.DataArray:
         """
-        https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        Identical to true negative rate.
+
+        The probability that an observed non-event will be correctly predicted.
+
+        Returns:
+            xr.DataArray: An xarray object containing the true negative rate (specificity).
+
+        .. math::
+            \\text{specificity} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
+
+        Notes:
+            - "True negatives" is the same as "correct negatives".
+            - "False positives" is the same as "false alarms".
+
+        Reference:
+            https://en.wikipedia.org/wiki/Sensitivity_and_specificity
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
         return s
 
-    def recall(self):
+    def true_negative_rate(self) -> xr.DataArray:
+        """
+        Identical to specificity.
+
+        The probability that an observed non-event will be correctly predicted.
+
+        Returns:
+            xr.DataArray: An xarray object containing the true negative rate.
+
+        .. math::
+            \\text{true negative rate} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
+
+        Notes:
+            - "True negatives" is the same as "correct negatives".
+            - "False positives" is the same as "false alarms".
+
+        Reference:
+            https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+        """
+        return self.specificity()
+
+    def recall(self) -> xr.DataArray:
         """
         Identical to probability of detection.
 
-        https://en.wikipedia.org/wiki/Precision_and_recall
+        Calculates the proportion of the observed events that were correctly forecast.
+
+        Returns:
+            An xarray object containing the probability of detection
+
+        .. math::
+            \\text{recall} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+
+        References:
+            - https://www.cawcr.gov.au/projects/verification/#POD
+            - https://en.wikipedia.org/wiki/Precision_and_recall
         """
         return self.probability_of_detection()
 
@@ -313,9 +598,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
 
+
+        References:
+
+        Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+
         Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
         Equitability revisited: Why the “equitable threat score” is not equitable.
-        Weather and Forecasting, 25(2), pp.710-726.
+        Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         cd = self.counts
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -332,9 +622,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
 
+        References:
+
+        Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
+
         Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010.
         Equitability revisited: Why the “equitable threat score” is not equitable.
-        Weather and Forecasting, 25(2), pp.710-726.
+        Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         return self.equitable_threat_score()
 
@@ -417,18 +711,21 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
+
     At each location, the value will either be:
-     - A true positive (hit)
-     - A false positive (false alarm)
-     - A true negative (correct negative)
-     - A false negative (miss)
+
+    - A true positive (hit)
+    - A false positive (false alarm)
+    - A true negative (correct negative)
+    - A false negative (miss)
+
 
     It will be common to want to operate on masks of these values,
     such as:
-     - Plotting these attributes on a map
-     - Calculating the total number of these attributes
-     - Calculating various ratios of these attributes, potentially
-       masked by geographical area (e.g. accuracy in a region)
+
+    - Plotting these attributes on a map
+    - Calculating the total number of these attributes
+    - Calculating various ratios of these attributes, potentially masked by geographical area (e.g. accuracy in a region)
 
     As such, the per-pixel information is useful as well as the overall
     ratios involved.
