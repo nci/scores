@@ -88,16 +88,23 @@ def simple_linear(x):
 
 
 @pytest.mark.parametrize(
-    ("preserve_dims", "expected"),
+    ("preserve_dims", "reduce_dims", "expected"),
     [
-        (["date", "station"], EXP_EXPECTILE_SCORE1),
-        (["station"], EXP_EXPECTILE_SCORE2),
+        (["date", "station"], None, EXP_EXPECTILE_SCORE1),
+        (["station"], None, EXP_EXPECTILE_SCORE2),
+        (None, ["date"], EXP_EXPECTILE_SCORE2),
     ],
 )
-def test_consistent_expectile_score(preserve_dims, expected):
+def test_consistent_expectile_score(preserve_dims, reduce_dims, expected):
     """Tests that `consistent_expectile_score` gives results as expected."""
     result = consistent_expectile_score(
-        DA_FCST, DA_OBS, alpha=ALPHA, phi=squared_loss, phi_prime=squared_loss_prime, preserve_dims=preserve_dims
+        DA_FCST,
+        DA_OBS,
+        alpha=ALPHA,
+        phi=squared_loss,
+        phi_prime=squared_loss_prime,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
     )
     assert_allclose(result, expected)
 
@@ -116,14 +123,15 @@ def test_check_huber_param():
 
 
 @pytest.mark.parametrize(
-    ("preserve_dims", "expected"),
+    ("preserve_dims", "reduce_dims", "expected"),
     [
-        (["date", "station"], EXP_HUBER_SCORE1),
-        (["date"], EXP_HUBER_SCORE2),
-        (None, EXP_HUBER_SCORE3),
+        (["date", "station"], None, EXP_HUBER_SCORE1),
+        (["date"], None, EXP_HUBER_SCORE2),
+        (None, ["station"], EXP_HUBER_SCORE2),
+        (None, None, EXP_HUBER_SCORE3),
     ],
 )
-def test_consistent_huber_score(preserve_dims, expected):
+def test_consistent_huber_score(preserve_dims, reduce_dims, expected):
     """Tests that `consistent_huber_score` gives results as expected."""
     result = consistent_huber_score(
         DA_FCST,
@@ -132,15 +140,22 @@ def test_consistent_huber_score(preserve_dims, expected):
         phi=squared_loss,
         phi_prime=squared_loss_prime,
         preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
     )
     assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
-    ("preserve_dims", "expected"),
-    [(["date", "station"], EXP_QUANTILE_SCORE1), (["date"], EXP_QUANTILE_SCORE2)],
+    ("preserve_dims", "reduce_dims", "expected"),
+    [
+        (["date", "station"], None, EXP_QUANTILE_SCORE1),
+        (["date"], None, EXP_QUANTILE_SCORE2),
+        (None, ["station"], EXP_QUANTILE_SCORE2),
+    ],
 )
-def test_consistent_quantile_score(preserve_dims, expected):
+def test_consistent_quantile_score(preserve_dims, reduce_dims, expected):
     """Tests that `consistent_quantile_score` gives results as expected."""
-    result = consistent_quantile_score(DA_FCST, DA_OBS, alpha=ALPHA, g=simple_linear, preserve_dims=preserve_dims)
+    result = consistent_quantile_score(
+        DA_FCST, DA_OBS, alpha=ALPHA, g=simple_linear, preserve_dims=preserve_dims, reduce_dims=reduce_dims
+    )
     assert_allclose(result, expected)
