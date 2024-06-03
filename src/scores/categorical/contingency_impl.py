@@ -221,7 +221,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             An xarray object containing the true positive rate
 
         .. math::
-            \\text{hit rate} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}}
+            \\text{true positive rate} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
@@ -242,13 +242,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the false alarm ratio
 
         .. math::
-            \\text{false alarm ratio} = \\frac{\\text{false alarms}}{\\text{hits} + \\text{false alarms}}
+            \\text{false alarm ratio} = \\frac{\\text{false positives}}{\\text{true positives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1. Perfect score: 0.
             - Not to be confused with the False Alarm Rate
-            - "False alarms" is the same as "false positives"
-            - "Hits" is the same as "true positives"
+            - "False positives" is the same as "false alarms"
+            - "True positives" is the same as "hits"
 
         References:
             https://www.cawcr.gov.au/projects/verification/#FAR
@@ -268,13 +268,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the false alarm rate
 
         .. math::
-            \\text{false alarm rate} = \\frac{\\text{false alarms}}{\\text{correct negatives} + \\text{false alarms}}
+            \\text{false alarm rate} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 0.
             - Not to be confused with the false alarm ratio
-            - "False alarms" is the same as "false positives"
-            - "Correct negatives" is the same as "true negatives"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POFD
