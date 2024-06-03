@@ -10,9 +10,9 @@ The default computation is performed using`numpy` :sup:`[3]` and summed-area tab
 - `#270 <GITHUB270_>`_.
 
 References:
-1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
-2. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml
-3. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
+1. https://doi.org/10.1175/2007MWR2123.1
+2. https://doi.org/10.1175/MWR-D-18-0106.1
+3. http://dx.doi.org/10.54302/mausam.v66i3.555
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270
@@ -125,8 +125,8 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         DimensionWarning: If ``spatial_dims`` are attempting to be preserved e.g. in ``preserve_dims``
 
     References:
-        1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
-        2. https://journals.ametsoc.org/view/journals/mwre/149/10/MWR-D-18-0106.1.xml#e3
+        1. https://doi.org/10.1175/2007MWR2123.1
+        2. https://doi.org/10.1175/MWR-D-18-0106.1
     """
 
     def _spatial_dims_exist(_dims):
@@ -321,9 +321,9 @@ def fss_2d_single_field(
             not match.
 
     References:
-        1. https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml
+        1. https://doi.org/10.1175/2007MWR2123.1
         2. https://en.wikipedia.org/wiki/Summed-area_table
-        3. https://www.researchgate.net/publication/269222763_Fast_calculation_of_the_Fractions_Skill_Score
+        3. http://dx.doi.org/10.54302/mausam.v66i3.555
     """
     fss_backend = get_compute_backend(compute_method)
     fb_obj = fss_backend(
