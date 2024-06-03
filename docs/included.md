@@ -272,13 +272,13 @@
   - 
     [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
 * -  
-    - Fraction Correct, *see Accuracy*
+    - Fraction Correct (Accuracy)
   -
-    &mdash;
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.fraction_correct)
   - 
-    &mdash;
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    &mdash;
+    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
     - Frequency Bias (Bias Score)
   -

@@ -92,6 +92,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def accuracy(self) -> xr.DataArray:
         """
+        Identical to fraction correct.
+
         Accuracy calculates the proportion of forecasts which are true.
 
         Returns:
@@ -113,6 +115,29 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
+
+    def fraction_correct(self) -> xr.DataArray:
+        """
+        Identical to accuracy.
+
+        Fraction correct calculates the proportion of forecasts which are correct.
+
+        Returns:
+            xr.DataArray: An xarray object containing the fraction correct.
+
+        .. math::
+            \\text{fraction correct} = \\frac{\\text{true positives} + \\text{true negatives}}{\\text{total count}}
+
+        Notes:
+
+            - Range: 0 to 1, where 1 indicates a perfect score.
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+
+        References:
+            https://www.cawcr.gov.au/projects/verification/#ACC
+        """
+        return self.accuracy()
 
     def frequency_bias(self) -> xr.DataArray:
         """
