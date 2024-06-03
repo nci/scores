@@ -17,7 +17,7 @@ included
 api
 contributing
 data
-maintainer
 tutorials/Explanation
 related_works
+maintainer
 ```

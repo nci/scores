@@ -102,6 +102,7 @@ Frequent issues include:
 - Plots: check **each** plot appears and renders properly
 - Tables: check **each** table appears and renders properly
 - Formulae: check **each** formula appears and renders properly
+- API Documentation: in addition to checking the above items, also confirm "Returns" and "Return Type" are rendering as expected
 
 ### Tutorial rendering
 
