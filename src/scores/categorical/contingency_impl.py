@@ -413,14 +413,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             An xarray object containing the Peirce Skill Score
 
         .. math::
-            \\text{Peirce skill score} = \\frac{\\text{hits}}{\\text{hits} + \\text{misses}} - \\frac{\\text{false alarms}}{\\text{false alarms} + \\text{correct negatives}}
+            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-            - "Hits" is the same as "true positives"
-            - "Misses" is the same as "false negatives"
-            - "False alarms" is the same as "false positives"
-            - "Correct negatives" is the same as "true negatives"
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
 
         References:
             https://www.cawcr.gov.au/projects/verification/#HK
@@ -460,6 +460,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Identical to Peirce's skill score and to true skill statistic
 
         How well did the forecast separate the "yes" events from the "no" events?
+
+        Returns:
+            xr.DataArray: An xarray object containing Hanssen and Kuipers' Discriminant
 
         .. math::
             \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
