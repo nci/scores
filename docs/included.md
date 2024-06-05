@@ -72,7 +72,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Theorem 1](https://www.jstor.org/stable/24775351); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -  
     - Murphy Score (Mean Elementary Score) - theta values
   -
@@ -80,7 +80,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://www.jstor.org/stable/24775351); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Pearson's Correlation Coefficient
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.correlation)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pearsons_Correlation.html)
@@ -175,7 +175,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Theorem 1](https://www.jstor.org/stable/24775351); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -  
     - Murphy Score (Mean Elementary Score) - theta values
   -
@@ -183,7 +183,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://www.jstor.org/stable/24775351); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.roc_curve_data)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
@@ -246,7 +246,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-     [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
+    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
 * -  
     - F1 Score
   -
@@ -294,7 +294,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-     [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS) 
+    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS) 
 * -  
     - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
   -
@@ -342,7 +342,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+    [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
     - Precision (Success Ratio)
   -
