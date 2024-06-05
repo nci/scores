@@ -20,7 +20,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
 
     required methods:
         - :py:meth:`_compute_fss_components`
-        - :py:meth:`_integral_field`
+        - :py:meth:`_compute_integral_field`
     """
 
     compute_method = FssComputeMethod.INVALID

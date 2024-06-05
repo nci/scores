@@ -1,5 +1,5 @@
 """
-Test data for Forecast Skill Score (FSS)    
+Test data for Fractions Skill Score (FSS)
 """
 
 import numpy as np
