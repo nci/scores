@@ -181,7 +181,7 @@ def crps_cdf(
 
     The threshold-weighted CRPS is given by:
         - :math:`CRPS = \\int{[threshold\\_weight_x \\times (fcst_x - obs\\_cdf_x)^2]}`, over all thresholds x.
-        - The usual CRPS is the threshold-weighted CRPS with :math:`threshold_weight(x) = 1` for all x.
+        - The usual CRPS is the threshold-weighted CRPS with :math:`threshold\\_weight(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
         :math:`\\int{[threshold\\_weight_x \\times (fcst_x - obs\\_cdf_x)^2]}`, over all thresholds x where x >= obs
