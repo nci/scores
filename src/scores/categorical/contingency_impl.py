@@ -426,7 +426,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         References:
             - https://www.cawcr.gov.au/projects/verification/#HK
             - Peirce, C.S., 1884. The numerical measure of the success of predictions. \
-              Science, 4(93), pp.453-454. https://doi.org/10.1126/science.ns-4.93.453.b
+              Science, ns-4(93), pp.453-454. https://doi.org/10.1126/science.ns-4.93.453.b
         """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
