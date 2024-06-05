@@ -18,7 +18,7 @@ Here are some related packages that may be of interest.
 	- Reference: [Nipen et al. (2023)](https://doi.org/10.1175/bams-d-22-0253.1)
 
 - **`METplus`**
-	- `METplus` includes a database and visualisation system, with Python and shell script wrappers to utilise the `MET` package. Verification scores in `MET` are implemented in C++. 
+	- `METplus` includes a database and visualisation system, with Python and shell script wrappers to utilise the [`MET`](https://github.com/dtcenter/MET) package. Verification scores in [`MET`](https://github.com/dtcenter/MET) are implemented in C++. 
 	- 	[Software Repository](https://github.com/dtcenter/METplus); [Documentation](https://metplus.readthedocs.io/en/latest/); [Website](https://dtcenter.org/community-code/metplus)
 	- Reference: [Brown et al. (2021)](https://doi.org/10.1175/bams-d-19-0093.1) 
 
