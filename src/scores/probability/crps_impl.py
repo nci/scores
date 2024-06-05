@@ -250,11 +250,10 @@ def crps_cdf(
 
         threshold_weight_fill_method: how to fill values in `threshold_weight` when NaNs
             have been introduced (by including additional thresholds) or are specified
-            to be removed (by setting `propagate_nans=False`):
-
-            - Select one of "linear", "step", "forward" or "backward". 
-            - If the weight function is continuous, "linear" is probably the best choice. 
-            - If it is an increasing step function, "forward" may be best.
+            to be removed (by setting `propagate_nans=False`). Select one of "linear", 
+            "step", "forward" or "backward". If the weight function is continuous, 
+            "linear" is probably the best choice. If it is an increasing step function, 
+            "forward" may be best.
                   
         integration_method (str): one of "exact" or "trapz".
         preserve_dims (Tuple[str]): dimensions to preserve in the output. All other dimensions are collapsed

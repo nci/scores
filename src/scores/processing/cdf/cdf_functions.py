@@ -151,8 +151,8 @@ def observed_cdf(
 def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_dim: str) -> xr.DataArray:
     """Calculates integral values and collapses `threshold_dim`.
 
-    Calculates :math:`\\text{ integral(F(t)^2)}`, where:
-        - If t in a threshold value in `threshold_dim` then F(t) is in `function_values`,
+    Calculates :math:`\\int{(F(t)^2)}`, where:
+        - If t is a threshold value in `threshold_dim` then F(t) is in `function_values`,
         - F is piecewise linear between each of the t values in `threshold_dim`.
 
     This function assumes that:
@@ -316,10 +316,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     `decreasing_cdfs` checks CDF values decrease beyond specified tolerance; that is,
     whenever the sum of the incremental decreases exceeds tolerarance.
 
-    For example, if the CDF values are
-
-    `[0, 0.4, 0.3, 0.9, 0.88, 1]`
-
+    For example, if the CDF values are `[0, 0.4, 0.3, 0.9, 0.88, 1]`
     then the sum of incremental decreases is -0.12. Given a specified positive `tolerance`,
     the CDF values decrease beyond tolerance if the sum of incremental decreases < -`tolerance`.
 
