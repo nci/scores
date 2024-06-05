@@ -176,18 +176,18 @@ def crps_cdf(
 
     Given:
         - a predictive CDF `fcst` indexed at thresholds by variable x
-        - an observation in CDF form `obs_cdf` (i.e., obs_cdf(x) = 0 if x < obs and 1 if x >= obs)
-        - a `threshold_weight` array indexed by variable x,
+        - an observation in CDF form `obs_cdf` (i.e., :math:`obs\\_cdf_x = 0` if :math:`x < obs` and 1 if :math:`x >= obs`)
+        - a `threshold_weight` array indexed by variable x
 
     The threshold-weighted CRPS is given by:
-        - `CRPS = integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x.
-        - The usual CRPS is the threshold-weighted CRPS with `threshold_weight(x) = 1` for all x.
+        - :math:`CRPS = \\int{[threshold\\_weight_x \\times (fcst_x - obs\\_cdf_x)^2]}`, over all thresholds x.
+        - The usual CRPS is the threshold-weighted CRPS with :math:`threshold_weight(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
-        `integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x where x >= obs
+        :math:`\\int{[threshold\\_weight_x \\times (fcst_x - obs\\_cdf_x)^2]}`, over all thresholds x where x >= obs
     
     and an under-forecast penalty:
-        `integral(threshold_weight(x) * (fcst(x) - obs_cdf(x))**2)`, over all thresholds x where x <= obs.
+        :math:`\\int{[threshold\\_weight_x \\times (fcst_x - obs\\_cdf_x)^2]}`, over all thresholds x where x <= obs.
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
