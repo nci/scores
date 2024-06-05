@@ -607,7 +607,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the F1 score
 
         .. math::
-            \\text{F1} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{F1} = \\frac{2 \\times \\text{true positives}}{(2 \\times  \\text{true positives}) + \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - "True positives" is the same as "hits".
