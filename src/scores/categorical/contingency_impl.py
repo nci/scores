@@ -634,14 +634,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the equitable threat score
 
         .. math::
-            \\text{ETS} = \\frac{\\text{hits} - \\text{hits} _\\text{random}}\
-            {\\text{hits} + \\text{misses} + \\text{false alarms} - \\text{hits} _\\text{random}}
+            \\text{ETS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positives} _\\text{random}}
+
+        where
+
+        .. math::
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}            
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
-            - "Hits" is the same as "true positives".
-            - "Misses" is the same as "false negatives".
-            - "False alarms" is the same as "false positives".
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms"
 
         References:
             - Gilbert, G.K., 1884. Finley’s tornado predictions. American Meteorological Journal, 1(5), pp.166–172.
@@ -669,7 +674,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{GSS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positivies} _\\text{random}}        
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positivies} _\\text{random}}
+
+        where
+
+        .. math::
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
