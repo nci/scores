@@ -10,9 +10,14 @@ The default computation is performed using`numpy` :sup:`[3]` and summed-area tab
 - `#270 <GITHUB270_>`_.
 
 References:
-1. https://doi.org/10.1175/2007MWR2123.1
-2. https://doi.org/10.1175/MWR-D-18-0106.1
-3. http://dx.doi.org/10.54302/mausam.v66i3.555
+1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall Accumulations from
+   High-Resolution Forecasts of Convective Events. Monthly Weather Review, 136, 78–97,
+   https://doi.org/10.1175/2007mwr2123.1.
+2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting Case and
+   Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
+   https://doi.org/10.1175/mwr-d-18-0106.1.
+3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions skill
+   score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270
@@ -125,8 +130,12 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         DimensionWarning: If ``spatial_dims`` are attempting to be preserved e.g. in ``preserve_dims``
 
     References:
-        1. https://doi.org/10.1175/2007MWR2123.1
-        2. https://doi.org/10.1175/MWR-D-18-0106.1
+        1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
+           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather
+           Review, 136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
+        2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting
+           Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
+           https://doi.org/10.1175/mwr-d-18-0106.1.
     """
 
     def _spatial_dims_exist(_dims):
@@ -321,9 +330,12 @@ def fss_2d_single_field(
             not match.
 
     References:
-        1. https://doi.org/10.1175/2007MWR2123.1
+        1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
+           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather Review
+           136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
         2. https://en.wikipedia.org/wiki/Summed-area_table
-        3. http://dx.doi.org/10.54302/mausam.v66i3.555
+        3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
+           skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
     """
     fss_backend = get_compute_backend(compute_method)
     fb_obj = fss_backend(
