@@ -21,6 +21,7 @@ data AxisInfo = AxisInfo
   deriving (Eq, Show)
 
 type AxisBlockIdx = (V.Vector (V.Vector Int))
+type AxisBlockIdxExpanded = (V.Vector (V.Vector Int))
 
 -- | Struct to hold axis information. Trims axis if block size is not a multiple of axis length.
 mkAxisInfo :: Int -> Int -> AxisInfo
@@ -51,9 +52,23 @@ mkAxisBlockSampleNM a@(AxisInfo _ _ n) =
 btstrpIndices :: [AxisInfo] -> State StdGen [AxisBlockIdx]
 btstrpIndices = mapM mkAxisBlockSampleNM
 
+-- | Unfolds indices for axes based on axis length
+indexRange :: [AxisInfo] -> AxisBlockIdx
+indexRange = foldMap (\x -> V.singleton (V.iterateN (_axisLen x) (+ 1) 0))
+
+-- | Expand indices into a vector of coordinates. A coordinate is a Vector of integers representing
+-- the outermost -> innermost axis
+expandIndices :: AxisBlockIdx -> AxisBlockIdxExpanded
+expandIndices = foldr (\z acc -> foldMap (\x -> V.cons x <$> acc) z) (V.singleton V.empty)
+
 main :: IO ()
 main = do
   let axi = mkAxisInfo 10 5
+  let axi2 = mkAxisInfo 21 7
+  let axi3 = mkAxisInfo 8 2
   let pureGen = mkStdGen 32
-  print $ axi
-  print $ evalState (btstrpIndices [axi, axi]) pureGen
+  let idxRange = indexRange [axi, axi3]
+  print axi
+  print idxRange
+  print $ expandIndices idxRange
+  print $ evalState (btstrpIndices [axi, axi2]) pureGen
