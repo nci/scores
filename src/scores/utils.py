@@ -56,8 +56,18 @@ class FieldTypeError(TypeError):
 
 class DimensionWarning(UserWarning):
     """
-    Custom warning against invalid dimension inputs that, while do not directly
-    affect functionality, may not necessarily be what the user intended.
+    Custom warning raised when dimensional arguments are ambiguous, but the
+    ambiguity is implicitly resolved by the underlying algorithm. The warning
+    can be nullified if the user resolves the ambiguity, by explicitly providing
+    supporting arguments.
+
+    For example, in Fractions Skill Score (FSS) the user must provide spatial
+    dimensions used to compute the score. If the user also attempts to preserve
+    these dimensions, e.g. due to the default behaviour of `gather_dimensions`,
+    this will cause ambiguity. However, the underlying algorithm itself
+    necessitates that the spatial dimensions be reduced and hence takes
+    priority. This warning is raised to alert the user of this behaviour, as
+    well as actions that can be taken to suppress it.
     """
 
 
