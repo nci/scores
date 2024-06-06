@@ -61,7 +61,7 @@ bibliography: paper.bib
 
 `scores` not only includes common scores (e.g. Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
 
-All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
+All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice. `scores` maintains 100% automated test coverage.
 
 `scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It has expanding support for `pandas`.  
 
@@ -113,7 +113,7 @@ Table: A **Curated Selection** of the Metrics, Tools and Statistical Tests Curre
 |
 | **Probability**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score [@BRIER_1950], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see @Gneiting:2011), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	  
 |
-| **Categorical**       	|Scores for evaluating forecasts based on categories.                	|Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].               	  
+| **Categorical**       	|Scores for evaluating forecasts based on categories.                	|Probability of Detection (POD), False Alarm Rate , Success Ratio, Accuracy, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].               	  
 |
 | **Statistical Tests** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the @Harvey:1997 and @Hering:2011 modifications.              	  
 |
@@ -127,7 +127,7 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the functions implemented within `scores`, and vice versa.
+There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the functions implemented within `scores`, and vice versa. 
 
 `xskillscore` [@xskillscore] provides many of the same functions as `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
 
@@ -135,7 +135,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.
 
-`Verif` [@nipen2023verif] is a command line tool for generating verification plots and is utilised very differently to `scores`. 
+`Verif` [@nipen2023verif] is a command line tool for generating verification plots where `scores` provides a Python API for generating numerical scores. 
 
 `Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `Pysteps` includes functionality well beyond verification, it is not as modular. 
 
