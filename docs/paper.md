@@ -94,7 +94,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
 
 **Compatability**
 
-- Highly modular - provides its own implementations, avoids extensive dependencies and allows greater API consistency.
+- Highly modular - provides its own implementations, avoids extensive dependencies and offers a consistent API.
 - Easy to integrate and use in a wide variety of environments. It has been used on workstations, servers and in high performance computing (supercomputing) environments. 
 - Maintains 100% automated test coverage.
 - Uses Dask [@Dask:2016] for scaling and performance.
