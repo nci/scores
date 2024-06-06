@@ -176,18 +176,18 @@ def crps_cdf(
 
     Given:
         - a predictive CDF `fcst` indexed at thresholds by variable x
-        - an observation in CDF form `obs_cdf` (i.e., :math:`obs\\_cdf_x = 0` if :math:`x < obs` and 1 if :math:`x >= obs`)
+        - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
         - a `threshold_weight` array indexed by variable x
 
     The threshold-weighted CRPS is given by:
-        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{dx}}`, over all thresholds x.
+        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
         - The usual CRPS is the threshold-weighted CRPS with :math:`threshold\\_weight(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{dx}}`, over all thresholds x where x >= obs
+        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
     
     and an under-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - \\text{obs_cdf}(x)^2]\\text{dx}}`, over all thresholds x where x <= obs.
+        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
@@ -798,7 +798,7 @@ def crps_for_ensemble(
         - If `method="fair"` then :math:`K = M * (M - 1)`. In this case the CRPS value returned \
             is the approximated CRPS where the ensemble values can be interpreted as a \
             random sample from the underlying predictive distribution. This interpretation \
-            stems from the formula :math:`CRPS(F, Y) = E|X - Y| - E|X - X'|/2`, where X and X' \
+            stems from the formula :math:`\\text{CRPS}(F, Y) = E|X - Y| - E|X - X'|/2`, where X and X' \
             are independent samples of the predictive distribution F, Y is the observation \
             (possibly unknown) and E denotes the expectation. This choice of K gives an \
             unbiased estimate for the second expectation.
