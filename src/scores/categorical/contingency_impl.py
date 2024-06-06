@@ -115,7 +115,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
 
-    def base_rate(self):
+    def base_rate(self) -> xr.DataArray:
         """
         The observed event frequency.
 
@@ -138,7 +138,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
         return br
 
-    def forecast_rate(self):
+    def forecast_rate(self) -> xr.DataArray:
         """
         The forecast event frequency.
 
@@ -854,7 +854,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.odds_ratio_skill_score()
 
-    def symmetric_extremal_dependence_index(self):
+    def symmetric_extremal_dependence_index(self) -> xr.DataArray:
         """
         Calculates the Symmetric Extremal Dependence Index (SEDI).
 
