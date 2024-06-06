@@ -61,7 +61,7 @@ bibliography: paper.bib
 
 `scores` not only includes common scores (e.g. Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
 
-All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice. `scores` maintains 100% automated test coverage.
+All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
 `scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It has expanding support for `pandas`.  
 
@@ -129,7 +129,7 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the metrics implemented in `scores` (and vice versa). None of these include specific support for emerging metrics.
+There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the metrics implemented in `scores` (and vice versa).
  
 `xskillscore` [@xskillscore] provides many but not all of the same functions as `scores` and does not have direct support for pandas. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
 
