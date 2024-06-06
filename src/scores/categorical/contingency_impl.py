@@ -119,8 +119,20 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         The observed event frequency.
 
-        Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
-        practitioner's guide in atmospheric science. John Wiley & Sons.
+        Returns:
+            xr.DataArray: An xarray object containing the base rate.
+
+        .. math::
+            \\text{base rate} = \\frac{\\text{true positives} + \\text{false negatives}}{\\text{total count}}
+
+        Notes:
+            - Range: 0 to 1, where 1 indicates the event occurred every time.
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+
+        References:
+            Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
+            practitioner's guide in atmospheric science. John Wiley & Sons.
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
@@ -130,8 +142,20 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         The forecast event frequency.
 
-        Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
-        practitioner's guide in atmospheric science. John Wiley & Sons.
+        Returns:
+            xr.DataArray: An xarray object containing the forecast rate.
+
+        .. math::
+            \\text{forecast rate} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{total count}}
+
+        Notes:
+            - Range: 0 to 1, where 1 indicates the event was forecast every time.
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
+
+        References:
+            Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
+            practitioner's guide in atmospheric science. John Wiley & Sons.
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -152,7 +176,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Notes:
             - Range: 0 to 1, where 1 indicates a perfect score.
             - "True positives" is the same as "hits".
-            - "False negatives" is the same as "misses".
+            - "True negatives" is the same as "correct negatives".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#ACC
@@ -834,11 +858,36 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         Calculates the Symmetric Extremal Dependence Index (SEDI).
 
-        Range: -1 to 1.
+        Returns:
+            xr.DataArray: An xarray object containing the SEDI score
 
-        Ferro, C.A. and Stephenson, D.B., 2011. Extremal dependence indices: Improved
-        verification measures for deterministic forecasts of rare binary events. Weather
-        and Forecasting, 26(5), pp.699-713. https://doi.org/10.1175/WAF-D-10-05030.1
+        .. math::
+            \\frac{\\ln(\\text{POFD}) - \\ln(\\text{POD}) + \\ln(\\text{1-POD}) - \\ln(\\text{1 -POFD})}
+            {\\ln(\\text{POFD}) + \\ln(\\text{POD}) + \\ln(\\text{1-POD}) + \\ln(\\text{1 -POFD})}
+
+        Where:
+        .. math::
+            \\text{POD} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        and
+        .. math::
+            \\text{POFD} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+
+
+        Notes:
+            - POD = Probability of Detection
+            - POFD = Probability of False Detection
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
+            - Range: -1 to 1, Perfect score: 1.
+
+
+        References:
+            Ferro, C.A. and Stephenson, D.B., 2011. Extremal dependence indices: Improved
+            verification measures for deterministic forecasts of rare binary events. Weather
+            and Forecasting, 26(5), pp.699-713. https://doi.org/10.1175/WAF-D-10-05030.1
         """
         cd = self.counts
         score = (
