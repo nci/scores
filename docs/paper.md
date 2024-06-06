@@ -94,7 +94,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
 
 **Compatability**
 
-- Highly modular and avoids extensive dependencies by providing its own implementations where relevant.
+- Provides its own implementations where relevant, avoiding extensive dependencies and allowing greater API consistency.
 - Easy to integrate and use in a wide variety of environments. It has been tested and used on workstations, servers and in high performance computing (supercomputing) environments.
 - Uses Dask [@Dask:2016] for scaling and performance.
 - Expanding support for `pandas` [@pandas:2024; @McKinney:2010].
@@ -103,7 +103,7 @@ In order to meet the needs of researchers, `scores` provides the following key b
 
 At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools. For an up to date list, please see the `scores` documentation.
 
-We anticipate more metrics, tools and statistical techniques will be added over time.
+The ongoing development roadmap includes additional metrics, tools, and statistical tests.
 
 Table: A **Curated Selection** of the Metrics, Tools and Statistical Tests Currently Included in `scores`
 
@@ -127,17 +127,17 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 ## Related Software Packages
 
-There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the functions implemented within `scores`, and vice versa. 
+There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the functions and key benefits of `scores`(and vice versa). None of these include specific support for emerging metrics.
 
-`xskillscore` [@xskillscore] provides many of the same functions as `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
+`xskillscore` [@xskillscore] provides many but not all of the same functions as `scores` and does not have direct support for pandas. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
 
 `climpred` [@Brady:2021] utilises `xskillscore` combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
-`METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python.
+`METplus` [@Brown:2021] is widely used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the complex `MET` package. Verification scores in `MET` are implemented in C++ rather than Python. `METplus` is used as a system rather than providing a modular Python API.
 
-`Verif` [@nipen2023verif] is a command line tool for generating verification plots where `scores` provides a Python API for generating numerical scores. 
+`Verif` [@nipen2023verif] is a command line tool for generating verification plots whereas `scores` provides a Python API for generating numerical scores. 
 
-`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. As `Pysteps` includes functionality well beyond verification, it is not as modular. 
+`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. `PySteps` does not provide a modular (standalone) verification API. 
 
 `PyForecastTools` [@Morley:2020] is a Python package for model and forecast validation which supports `dmarray` rather than `xarray` data structures and does not include Jupyter Notebook tutorials.
 
