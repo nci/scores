@@ -145,7 +145,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 # Acknowledgements
 
-We would like to thank Jason West and Robert Johnson from the Bureau of Meteorology for their feedback on this manuscript.
+We would like to thank Jason West and Robert Johnson from the Bureau of Meteorology for their feedback on an earlier version of this manuscript.
 
 We would like to thank and acknowledge the National Computational Infrastructure (nci.org.au) for hosting the `scores` repository within their GitHub organisation.
 
