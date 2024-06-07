@@ -79,7 +79,7 @@ In order to meet the needs of researchers and other users, `scores` provides the
 
 **Data Handling**
 
-- Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly utilised for:
+- Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly used for:
   - gridded Earth system data (e.g. numerical weather prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
@@ -135,7 +135,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `climpred` [@Brady:2021] uses `xskillscore` combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
-`METplus` [@Brown:2021] is a substantial verification system used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to utilise the `MET` package for the calculation of scores. `MET` is implemented in C++ rather than Python. `METplus` is used as a system rather than providing a modular Python API.
+`METplus` [@Brown:2021] is a substantial verification system used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to use the `MET` package for the calculation of scores. `MET` is implemented in C++ rather than Python. `METplus` is used as a system rather than providing a modular Python API.
 
 `Verif` [@nipen2023verif] is a command line tool for generating verification plots whereas `scores` provides a Python API for generating numerical scores. 
 
