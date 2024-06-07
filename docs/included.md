@@ -398,7 +398,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1.)
+    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
 * -  
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -

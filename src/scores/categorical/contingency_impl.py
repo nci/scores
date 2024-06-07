@@ -866,10 +866,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             {\\ln(\\text{POFD}) + \\ln(\\text{POD}) + \\ln(\\text{1-POD}) + \\ln(\\text{1 -POFD})}
 
         Where:
+
         .. math::
             \\text{POD} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
 
         and
+
         .. math::
             \\text{POFD} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
 
