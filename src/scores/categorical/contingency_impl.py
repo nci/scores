@@ -131,8 +131,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
-            practitioner's guide in atmospheric science. John Wiley & Sons.
+            Hogan, R. J. & Mason, I. B. (2011). Deterministic forecasts of binary events.
+            In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast Verification (2nd ed,
+            pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
@@ -154,8 +155,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         References:
-            Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
-            practitioner's guide in atmospheric science. John Wiley & Sons.
+            Hogan, R. J. & Mason, I. B. (2011). Deterministic forecasts of binary events.
+            In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast Verification (2nd ed,
+            pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -887,11 +889,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 
         References:
-            Ferro, C.A. and Stephenson, D.B., 2011. Extremal dependence indices: Improved
-            verification measures for deterministic forecasts of rare binary events. Weather
-            and Forecasting, 26(5), pp.699-713. https://doi.org/10.1175/WAF-D-10-05030.1
+            Ferro, C. A. T., and D. B. Stephenson, 2011: Extremal Dependence Indices:
+            Improved Verification Measures for Deterministic Forecasts of Rare Binary
+            Events. Wea. Forecasting, 26, 699–713, https://doi.org/10.1175/WAF-D-10-05030.1.
         """
-        cd = self.counts
         score = (
             np.log(self.probability_of_false_detection())
             - np.log(self.probability_of_detection())

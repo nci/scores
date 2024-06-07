@@ -216,13 +216,13 @@
   - 
     [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
-    - Base rate
+    - Base Rate
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.base_rate)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Base_rate)
+    [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
 * -  
     - Bias Score (Frequency Bias)
   -
@@ -280,13 +280,13 @@
   - 
     [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
 * -  
-    - Forecast rate
+    - Forecast Rate
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.forecast_rate)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Chapter 3, Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a practitioner's guide in atmospheric science. John Wiley & Sons.](https://www.wiley.com/en-au/Forecast+Verification%3A+A+Practitioner's+Guide+in+Atmospheric+Science%2C+2nd+Edition-p-9780470660713)
+    [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
 * -  
     - Fraction Correct (Accuracy)
   -
