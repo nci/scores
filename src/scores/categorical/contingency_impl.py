@@ -115,6 +115,52 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         ratio = correct_count / count_dictionary["total_count"]
         return ratio
 
+    def base_rate(self) -> xr.DataArray:
+        """
+        The observed event frequency.
+
+        Returns:
+            xr.DataArray: An xarray object containing the base rate.
+
+        .. math::
+            \\text{base rate} = \\frac{\\text{true positives} + \\text{false negatives}}{\\text{total count}}
+
+        Notes:
+            - Range: 0 to 1, where 1 indicates the event occurred every time.
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+
+        References:
+            Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
+            practitioner's guide in atmospheric science. John Wiley & Sons.
+        """
+        cd = self.counts
+        br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
+        return br
+
+    def forecast_rate(self) -> xr.DataArray:
+        """
+        The forecast event frequency.
+
+        Returns:
+            xr.DataArray: An xarray object containing the forecast rate.
+
+        .. math::
+            \\text{forecast rate} = \\frac{\\text{true positives} + \\text{false positives}}{\\text{total count}}
+
+        Notes:
+            - Range: 0 to 1, where 1 indicates the event was forecast every time.
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
+
+        References:
+            Jolliffe, I.T. and Stephenson, D.B. eds., 2012. Forecast verification: a
+            practitioner's guide in atmospheric science. John Wiley & Sons.
+        """
+        cd = self.counts
+        br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
+        return br
+
     def fraction_correct(self) -> xr.DataArray:
         """
         Identical to accuracy.
@@ -130,7 +176,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Notes:
             - Range: 0 to 1, where 1 indicates a perfect score.
             - "True positives" is the same as "hits".
-            - "False negatives" is the same as "misses".
+            - "True negatives" is the same as "correct negatives".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#ACC
@@ -807,6 +853,57 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
         """
         return self.odds_ratio_skill_score()
+
+    def symmetric_extremal_dependence_index(self) -> xr.DataArray:
+        """
+        Calculates the Symmetric Extremal Dependence Index (SEDI).
+
+        Returns:
+            xr.DataArray: An xarray object containing the SEDI score
+
+        .. math::
+            \\frac{\\ln(\\text{POFD}) - \\ln(\\text{POD}) + \\ln(\\text{1-POD}) - \\ln(\\text{1 -POFD})}
+            {\\ln(\\text{POFD}) + \\ln(\\text{POD}) + \\ln(\\text{1-POD}) + \\ln(\\text{1 -POFD})}
+
+        Where:
+
+        .. math::
+            \\text{POD} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        and
+
+        .. math::
+            \\text{POFD} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+
+
+        Notes:
+            - POD = Probability of Detection
+            - POFD = Probability of False Detection
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
+            - Range: -1 to 1, Perfect score: 1.
+
+
+        References:
+            Ferro, C.A. and Stephenson, D.B., 2011. Extremal dependence indices: Improved
+            verification measures for deterministic forecasts of rare binary events. Weather
+            and Forecasting, 26(5), pp.699-713. https://doi.org/10.1175/WAF-D-10-05030.1
+        """
+        cd = self.counts
+        score = (
+            np.log(self.probability_of_false_detection())
+            - np.log(self.probability_of_detection())
+            + np.log(1 - self.probability_of_detection())
+            - np.log(1 - self.probability_of_false_detection())
+        ) / (
+            np.log(self.probability_of_false_detection())
+            + np.log(self.probability_of_detection())
+            + np.log(1 - self.probability_of_detection())
+            + np.log(1 - self.probability_of_false_detection())
+        )
+        return score
 
 
 class BinaryContingencyManager(BasicContingencyManager):

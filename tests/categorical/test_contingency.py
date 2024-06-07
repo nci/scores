@@ -170,6 +170,8 @@ def test_categorical_table():
     assert actual_table.sel(contingency="total_count") == 18
 
     # Confirm calculations of metrics are correct
+    assert table.base_rate() == (9 + 1) / 18
+    assert table.forecast_rate() == (9 + 2) / 18
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
@@ -185,6 +187,9 @@ def test_categorical_table():
     assert table.heidke_skill_score() == (9 + 6 - (83 / 9)) / (18 - (83 / 9))
     assert table.odds_ratio() == (9 / (9 + 1)) / (1 - (9 / (9 + 1))) / ((2 / (6 + 2)) / (1 - (2 / (6 + 2))))
     assert table.odds_ratio_skill_score() == (9 * 6 - 1 * 2) / (9 * 6 + 1 * 2)
+    assert table.symmetric_extremal_dependence_index() == (np.log(0.25) - np.log(0.9) + np.log(0.1) - np.log(0.75)) / (
+        np.log(0.25) + np.log(0.9) + np.log(0.1) + np.log(0.75)
+    )
 
     # These methods are redirects to each other
     assert table.critical_success_index() == table.threat_score()
