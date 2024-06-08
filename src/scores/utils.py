@@ -4,7 +4,8 @@ Contains frequently-used functions of a general nature within scores
 
 import warnings
 from collections.abc import Hashable, Iterable
-from typing import Optional, Union
+from dataclasses import dataclass, field
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -39,11 +40,147 @@ to properly interpret that, therefore an exception has been raised.
 """
 
 
-class DimensionError(Exception):
+class DimensionError(ValueError):
     """
     Custom exception used when attempting to operate over xarray DataArray or
     Dataset objects that do not have compatible dimensions.
     """
+
+
+class FieldTypeError(TypeError):
+    """
+    Custom exception used when incompatible field types are used for a particular
+    operation.
+    """
+
+
+class DimensionWarning(UserWarning):
+    """
+    Custom warning raised when dimensional arguments are ambiguous, but the
+    ambiguity is implicitly resolved by the underlying algorithm. The warning
+    can be nullified if the user resolves the ambiguity, by explicitly providing
+    supporting arguments.
+
+    For example, in Fractions Skill Score (FSS) the user must provide spatial
+    dimensions used to compute the score. If the user also attempts to preserve
+    these dimensions, e.g. due to the default behaviour of `gather_dimensions`,
+    this will cause ambiguity. However, the underlying algorithm itself
+    necessitates that the spatial dimensions be reduced and hence takes
+    priority. This warning is raised to alert the user of this behaviour, as
+    well as actions that can be taken to suppress it.
+    """
+
+
+class CompatibilityError(ImportError):
+    """
+    Custom exception used when attempting to access advanced functionality that
+    require extra/optional dependencies.
+    """
+
+
+T = TypeVar("T")
+
+
+@dataclass
+class BinaryOperator(Generic[T]):
+    """
+    Generic datatype to represent binary operators. For specific event operators,
+    refer to ``scores.categorical.contingency.EventOperator``.
+
+    Note: This operator should not be called directly or on every computation.
+        Rather, it is intended to perform validation before passing in the "real"
+        operator ``self.op`` via an unwrapping call to ``BinaryOperator.get``
+
+    Bad:
+
+    .. code-block:: python
+        x = np.rand((1000, 1000))
+        threshold = 0.5
+
+        for it in np.nditer(x):
+            # validation check is done every loop - BAD
+            numpy_op = NumpyThresholdOperator(np.less).get()
+            binary_item = numpy_op(it, threshold)
+            do_stuff(binary_item)
+
+    Ok:
+
+    .. code-block:: python
+        x = np.rand((1000, 1000))
+        threshold = 0.5
+
+        # validation check is done one-time here - GOOD
+        numpy_op = NumpyThresholdOperator(np.less).get()
+
+        for it in np.nditer(x):
+            binary_item = numpy_op(it, threshold)
+            do_stuff(binary_item)  # some elementry processing function
+
+        # EVEN BETTER:
+        # basic numpy operators are already vectorized so this will work fine.
+        binary_items = numpy_op(x, threshold)
+        vec_do_stuff(binary_items) # vectorized version
+
+    Key takeaway - unwrap the operator using ``.get()`` as early as possible
+    """
+
+    op: Callable[[T, T], T]
+    valid_ops: Dict[str, Callable[[T, T], T]] = field(init=False)
+
+    def __post_init__(self):
+        """
+        Post initialization checks go here
+        """
+        self._validate()
+
+    def _validate(self):
+        """
+        Default operator is valid
+        """
+        # functions are objects so this should work in theory
+        if not self.op in self.valid_ops.values():
+            # intentional list comprehension, for display reasons
+            raise ValueError(
+                "Invalid operator specified. Allowed operators: "
+                f"{[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
+            )
+        return self
+
+    def get(self):
+        """
+        Return the underlying operator
+        """
+        return self.op
+
+
+def left_identity_operator(x, _):
+    """
+    A binary operator that takes in two inputs but only returns the first.
+    """
+    return x
+
+
+@dataclass
+class NumpyThresholdOperator(BinaryOperator):
+    """
+    Generic numpy threshold operator to avoid function call over-head,
+    for light-weight comparisons. For specific event operators, refer to
+    ``scores.processing.discretise``
+
+    Important: The input field must be the first operand and the threshold
+    should be the second operand otherwise some operators may have unintended
+    behaviour.
+    """
+
+    def __post_init__(self):
+        self.valid_ops = {
+            "numpy.greater": np.greater,
+            "numpy.greater_equal": np.greater_equal,
+            "numpy.less": np.less,
+            "numpy.less_equal": np.less_equal,
+            "scores.utils.left_identity_operator": left_identity_operator,
+        }
+        super().__post_init__()
 
 
 def gather_dimensions(  # pylint: disable=too-many-branches
@@ -98,7 +235,7 @@ def gather_dimensions(  # pylint: disable=too-many-branches
 
     if specified_dims == "all":
         if "all" in all_data_dims:
-            warnings.warn(WARN_ALL_DATA_CONFLICT_MSG)
+            warnings.warn(WARN_ALL_DATA_CONFLICT_MSG, DimensionWarning)
     elif specified_dims is not None:
         if isinstance(specified_dims, str):
             specified_dims = [specified_dims]
