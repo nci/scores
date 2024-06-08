@@ -151,12 +151,10 @@ def mae(
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
 
-    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
+    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
 
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the metric.
-    At most one of reduce_dims and preserve_dims may be specified.
-    Specifying both will result in an exception.
+    .. math ::
+        1/n \\sum_{i=1}^n | forecast_i - observed_i |
 
     Args:
         fcst: Forecast or predicted variables in xarray or pandas.
