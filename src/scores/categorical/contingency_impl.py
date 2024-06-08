@@ -655,7 +655,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the F1 score
 
         .. math::
-            \\text{F1} = \\frac{2 \\times \\text{true positives}}{(2 \\times  \\text{true positives}) + \\text{false positives} + \\text{false negatives}}
+            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) + \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - "True positives" is the same as "hits".
@@ -851,7 +851,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         .. math::
 
             \\begin{aligned}
-                \\text{ORSS} &= \\frac{\\theta - 1}{\\theta + 1}
+                \\text{ORSS} &= \\frac{\\text{OR} - 1}{\\text{OR} + 1}
                         \\\\ &= \\frac{\\text{true positives} \\cdot \\text{true negatives}
                                          - \\text{false positives} \\cdot \\text{false negatives}}{
                                        \\text{true positives} \\cdot \\text{true negatives}
@@ -861,11 +861,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
             - ORSS = Odds Ratio Skill Score
+            - OR = Odds ratio. see: :meth:`odds_ratio`
             - "True positives" is the same as "hits".
             - "False negatives" is the same as "misses".
             - "False positives" is the same as "false alarms".
             - "True negatives" is the same as "correct negatives".
-            - :math:`\\theta` = Odds ratio. see: :meth:`odds_ratio`
 
         References:
             - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
@@ -892,7 +892,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         .. math::
 
             \\begin{aligned}
-                \\text{ORSS} &= \\frac{\\theta - 1}{\\theta + 1}
+                \\text{Yule's Q} &= \\frac{\\text{OR} - 1}{\\text{OR} + 1}
                         \\\\ &= \\frac{\\text{true positives} \\cdot \\text{true negatives}
                                          - \\text{false positives} \\cdot \\text{false negatives}}{
                                        \\text{true positives} \\cdot \\text{true negatives}
@@ -901,12 +901,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-            - ORSS = Odds Ratio Skill Score
+            - OR = Odds ratio. see: :meth:`odds_ratio`.
             - "True positives" is the same as "hits".
             - "False negatives" is the same as "misses".
             - "False positives" is the same as "false alarms".
             - "True negatives" is the same as "correct negatives".
-            - :math:`\\theta` = Odds ratio. see: :meth:`odds_ratio`.
 
         References:
             Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
