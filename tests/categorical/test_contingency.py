@@ -255,12 +255,13 @@ def test_dimension_broadcasting():
     # Check dimension broadcasting against forecasts and observations together
     table = match.make_contingency_manager(complex_forecast, complex_obs)
     preserved = table.transform(preserve_dims=["time", "source"])
-    accuracy = preserved.accuracy()
-    assert accuracy.dims == ("time", "source")
-    assert len(accuracy.time) == 5
-    assert len(accuracy.source) == 2
+    accuracy_time_source = preserved.accuracy()
+    assert accuracy_time_source.dims == ("time", "source")
+    assert len(accuracy_time_source.time) == 5
+    assert len(accuracy_time_source.source) == 2
 
-    
+    # The first "source" should match the previous calculations
+    xr.testing.assert_allclose(accuracy_time_source.sel(source=0), withtime.accuracy())
 
 
 def test_nan_handling():
