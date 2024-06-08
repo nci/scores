@@ -126,7 +126,7 @@ def rmse(
             a single floating point number representing the root mean squared
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the root mean squared error,
-            reduced along the relevant dimensions and weighted appropriately.            
+            reduced along the relevant dimensions and weighted appropriately.
 
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)

@@ -49,7 +49,7 @@ def rmse(
     A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
     .. math ::
-        \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (forecast_i - observed_i)^2}    
+        \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (forecast_i - observed_i)^2}
 
     Args:
         fcst: Forecast or predicted variables in pandas.
@@ -61,7 +61,7 @@ def rmse(
             degrees rather than radians.
 
     Notes:
-        Dimensional reduction is not supported for pandas and users wishing this extra functionality 
+        Dimensional reduction is not supported for pandas and users wishing this extra functionality
         should convert their data to xarray to formulate the call to `scores.continuous.rmse`.
 
     Returns:
