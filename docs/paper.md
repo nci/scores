@@ -117,7 +117,7 @@ Table: A **curated selection** of the metrics, tools and statistical tests curre
 |
 | **Categorical**         |Scores for evaluating forecasts of categories.                 |Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, Symmetric Extremal Dependence Index, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].        	  
 |
-| **[Spatial]**           |Scores that take into account spatial structure.                   |Fractions Skill Score.  
+| **Spatial**           |Scores that take into account spatial structure.                   |Fractions Skill Score.  
 |
 | **Statistical Tests** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the @Harvey:1997 and @Hering:2011 modifications.              	  
 |
