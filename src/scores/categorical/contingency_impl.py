@@ -518,7 +518,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         .. math::
             \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
 
-        Where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
+        where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -794,11 +794,38 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         What is the ratio of the odds of a "yes" forecast being correct, to the odds of
         a "yes" forecast being wrong?
 
-        Notes:
-            Odds ratio - Range: 0 to ∞, 1 indicates no skill. Perfect score: ∞.
-
         Returns:
             xr.DataArray: An xarray object containing the odds ratio
+
+        .. math::
+            \\begin{aligned}
+                \\text{odds ratio} &=
+                    \\left[\\frac{\\text{POD}}{\\text{1 - POD}}\\right]
+                        \\div
+                    \\left[\\frac{\\text{POFD}}{\\text{1 - POFD}}\\right]
+                              \\\\ &=
+                    \\frac{\\text{true positives} \\cdot \\text{true negatives}}{\\text{false positives} \\cdot \\text{false negatives}}
+            \\end{aligned}
+
+        where
+
+        .. math::
+            \\text{POD} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+
+        and
+
+        .. math::
+            \\text{POFD} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+
+
+        Notes:
+            - Range: 0 to ∞, 1 indicates no skill. Perfect score: ∞.
+            - POD = Probability of Detection
+            - POFD = Probability of False Detection
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
 
         References:
             - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
@@ -867,7 +894,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             \\frac{\\ln(\\text{POFD}) - \\ln(\\text{POD}) + \\ln(\\text{1-POD}) - \\ln(\\text{1 -POFD})}
             {\\ln(\\text{POFD}) + \\ln(\\text{POD}) + \\ln(\\text{1-POD}) + \\ln(\\text{1 -POFD})}
 
-        Where:
+        where
 
         .. math::
             \\text{POD} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
