@@ -91,16 +91,12 @@ def rmse(
     weights: Optional[xr.DataArray] = None,
     is_angular: bool = False,
 ) -> FlexibleArrayType:
-    """Calculate the Root Mean Squared Error from xarray or pandas objects.
+    """Calculate the Root Mean Squared Error
 
-    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+    A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
-
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the metric.
-    At most one of `reduce_dims` and `preserve_dims` may be specified.
-    Specifying both will result in an exception.
-
+    .. math ::
+        \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2}
 
     Args:
         fcst: Forecast
