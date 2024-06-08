@@ -333,7 +333,7 @@ tinycss2==1.2.1
     # via nbconvert
 tomli==2.0.1
     # via jupyterlab
-tornado==6.4
+tornado==6.4.1
     # via
     #   ipykernel
     #   jupyter-client
