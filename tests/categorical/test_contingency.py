@@ -230,7 +230,7 @@ def test_dimension_broadcasting():
     base_forecasts = [simple_forecast + i * 0.5 for i in range(5)]
     complex_forecast = xr.concat(base_forecasts, dim="time")
     complex_obs = xr.concat([simple_obs, simple_obs + 1], dim="source")
-    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)    
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
 
     # Check dimension broadcasting for forecasts
     table = match.make_contingency_manager(complex_forecast, simple_obs)
