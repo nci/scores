@@ -154,7 +154,7 @@ def mae(
     A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
 
     .. math ::
-        1/n \\sum_{i=1}^n | forecast_i - observed_i |
+        \\frac{1}{n} \\sum_{i=1}^n | forecast_i - observed_i |
 
     Args:
         fcst: Forecast or predicted variables in xarray or pandas.

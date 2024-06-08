@@ -80,7 +80,7 @@ def mae(
     A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
 
     .. math ::
-        1/n \\sum_{i=1}^n | forecast_i - observed_i |    
+        \\frac{1}{n} \\sum_{i=1}^n | forecast_i - observed_i |    
 
     Dimensional reduction is not supported for pandas and the user should
     convert their data to xarray to formulate the call to `scores.continuous.mae`.
