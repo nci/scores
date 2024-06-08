@@ -7,7 +7,6 @@
    :backlinks: none
 ```
 
-
 ## scores.continuous
 ```{eval-rst}
 .. automodule:: scores.continuous
@@ -54,6 +53,18 @@
     :members:
 ```
 
+## scores.spatial
+```{eval-rst}
+.. autofunction:: scores.spatial.fss_2d
+.. autofunction:: scores.spatial.fss_2d_binary
+.. autofunction:: scores.spatial.fss_2d_single_field
+```
+
+## scores.stats
+```{eval-rst}
+.. autofunction:: scores.stats.statistical_tests.diebold_mariano
+```
+
 ## scores.processing
 ```{eval-rst}
 .. autofunction:: scores.processing.isotonic_fit
@@ -72,11 +83,6 @@
 .. autofunction:: scores.processing.cdf.cdf_envelope
 ```
 
-## scores.stats
-```{eval-rst}
-.. autofunction:: scores.stats.statistical_tests.diebold_mariano
-```
-
 ## scores.pandas
 ```{eval-rst}
 .. autofunction:: scores.pandas.continuous.mse
@@ -84,9 +90,3 @@
 .. autofunction:: scores.pandas.continuous.mae
 ```
 
-## scores.spatial
-```{eval-rst}
-.. autofunction:: scores.spatial.fss_2d
-.. autofunction:: scores.spatial.fss_2d_binary
-.. autofunction:: scores.spatial.fss_2d_single_field
-```
