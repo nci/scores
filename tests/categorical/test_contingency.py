@@ -221,18 +221,47 @@ def test_dimension_broadcasting():
     should be compared to the observation, and the final accuracy should have an
     accuracy score at each time.
 
-    The actual calculated accuracy at each time is not tested here, this test is about
-    dimension handling not score calculation maths.
+    In this example, the same forecast values are repeated for each of 5 lead times
+    A single observations array is provided
+    Broadcasting rules mean the accuracy should be calculated at each lead time,
+    comparing the observations against each lead time
     """
 
     base_forecasts = [simple_forecast + i * 0.5 for i in range(5)]
     complex_forecast = xr.concat(base_forecasts, dim="time")
+    complex_obs = xr.concat([simple_obs, simple_obs + 1], dim="source")
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
+
+    # Check dimension broadcasting for forecasts
     table = match.make_contingency_manager(complex_forecast, simple_obs)
     withtime = table.transform(preserve_dims="time")
     accuracy = withtime.accuracy()
     assert accuracy.dims == ("time",)
     assert len(accuracy.time) == 5
+
+    assert accuracy[0] == (9 + 6) / 18
+    assert accuracy[1] == (10 + 4) / 18
+    assert accuracy[2] == (10 + 1) / 18
+    assert accuracy[3] == (10 + 0) / 18
+    assert accuracy[4] == (10 + 0) / 18
+
+    # Check dimension broadcasting against observations
+    table = match.make_contingency_manager(simple_forecast, complex_obs)
+    withsource = table.transform(preserve_dims="source")
+    accuracy = withsource.accuracy()
+    assert accuracy.dims == ("source",)
+    assert len(accuracy.source) == 2
+
+    # Check dimension broadcasting against forecasts and observations together
+    table = match.make_contingency_manager(complex_forecast, complex_obs)
+    preserved = table.transform(preserve_dims=["time", "source"])
+    accuracy_time_source = preserved.accuracy()
+    assert accuracy_time_source.dims == ("time", "source")
+    assert len(accuracy_time_source.time) == 5
+    assert len(accuracy_time_source.source) == 2
+
+    # The first "source" should match the previous calculations
+    xr.testing.assert_allclose(accuracy_time_source.sel(source=0), withtime.accuracy())
 
 
 def test_nan_handling():
