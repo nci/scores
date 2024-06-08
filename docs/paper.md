@@ -115,7 +115,9 @@ Table: A **curated selection** of the metrics, tools and statistical tests curre
 |
 | **Probability**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score [@BRIER_1950], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see @Gneiting:2011), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	  
 |
-| **Categorical**         |Scores for evaluating forecasts of categories.                 |Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].        	  
+| **Categorical**         |Scores for evaluating forecasts of categories.                 |Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, Symmetric Extremal Dependence Index, FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].        	  
+|
+| **[Spatial]**           |Scores that take into account spatial structure.                   |Fractions Skill Score.  
 |
 | **Statistical Tests** 	|Tools to conduct statistical tests and generate confidence intervals.                 	| Diebold-Mariano [@Diebold:1995] with both the @Harvey:1997 and @Hering:2011 modifications.              	  
 |
