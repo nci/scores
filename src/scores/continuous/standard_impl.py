@@ -91,12 +91,12 @@ def rmse(
     weights: Optional[xr.DataArray] = None,
     is_angular: bool = False,
 ) -> FlexibleArrayType:
-    """Calculate the Root Mean Squared Error from xarray or pandas objects.
+    """Calculate the Root Mean Squared Error
 
     A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
     .. math ::
-        \\sqrt{1/n \\sum_{i=1}^n (forecast_i - observed_i)^2}
+        \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (forecast_i - observed_i)^2}
 
     Args:
         fcst: Forecast
