@@ -861,7 +861,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
             - ORSS = Odds Ratio Skill Score
-            - OR = Odds ratio. see: :meth:`odds_ratio`
+            - OR = Odds ratio, see: :meth:`odds_ratio`
             - "True positives" is the same as "hits".
             - "False negatives" is the same as "misses".
             - "False positives" is the same as "false alarms".
@@ -901,7 +901,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
-            - OR = Odds ratio. see: :meth:`odds_ratio`.
+            - OR = Odds ratio, see: :meth:`odds_ratio`.
             - "True positives" is the same as "hits".
             - "False negatives" is the same as "misses".
             - "False positives" is the same as "false alarms".
