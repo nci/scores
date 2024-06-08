@@ -26,7 +26,7 @@
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
 * -  
-    - Flip-Flop Index - proportion exceeding
+    - Flip-Flop Index - Proportion Exceeding
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.flip_flop_index_proportion_exceeding)
   - 
@@ -74,7 +74,7 @@
   - 
     [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -  
-    - Murphy Score (Mean Elementary Score) - theta values
+    - Murphy Score (Mean Elementary Score) - Theta Values
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.murphy_thetas)
   - 
@@ -177,7 +177,7 @@
   - 
     [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -  
-    - Murphy Score (Mean Elementary Score) - theta values
+    - Murphy Score (Mean Elementary Score) - Theta Values
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.murphy_thetas)
   - 
@@ -495,6 +495,45 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     &mdash;    
+```
+
+## Spatial
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Fractions Skill Score (FSS)
+  - 
+  - 
+  - 
+* -  
+    - FSS - 2D
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.spatial.fss_2d)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Fractions_Skill_Score.html)
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
+* -  
+    - FSS - 2D Binary
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.spatial.fss_2d_binary)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Fractions_Skill_Score.html)
+  - 
+    &mdash;
+* -  
+    - FSS - 2D Single Field
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.spatial.fss_2d_single_field)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Fractions_Skill_Score.html)
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 ```
 
 ## Statistical Tests
