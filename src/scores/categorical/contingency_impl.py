@@ -889,8 +889,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 
         References:
-            Ferro, C.A.T. and Stephenson, D.B., 2011. Extremal dependence indices: Improved verification 
-            measures for deterministic forecasts of rare binary events. Weather and Forecasting, 26(5), pp.699-713. 
+            Ferro, C.A.T. and Stephenson, D.B., 2011. Extremal dependence indices: Improved verification
+            measures for deterministic forecasts of rare binary events. Weather and Forecasting, 26(5), pp.699-713.
             https://doi.org/10.1175/WAF-D-10-05030.1
         """
         score = (
