@@ -1,12 +1,12 @@
 """
-This foundation class provides an underpinning data structure which can be used for 
+This foundation class provides an underpinning data structure which can be used for
 contingency tables of various kinds, also known as a confusion matrix.
 
 It allows the careful setting out of when and where forecasts closely match
 observations.
 
-The binary contingency table captures true positives (hits), true negatives (correct negatives), 
-false positives (false alarms) and false negatives (misses). 
+The binary contingency table captures true positives (hits), true negatives (correct negatives),
+false positives (false alarms) and false negatives (misses).
 
 The process of deriving a contingency table relies on the forecast data, the observation
 data, and a matching or event operator. The event operator will produce the category from the
@@ -688,7 +688,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}            
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
@@ -848,8 +848,24 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Returns:
             xr.DataArray: An xarray object containing the odds ratio skill score
 
+        .. math::
+
+            \\begin{aligned}
+                \\text{ORSS} &= \\frac{\\theta - 1}{\\theta + 1}
+                        \\\\ &= \\frac{\\text{true positives} \\cdot \\text{true negatives}
+                                         - \\text{false positives} \\cdot \\text{false negatives}}{
+                                       \\text{true positives} \\cdot \\text{true negatives}
+                                         + \\text{false positives} \\cdot \\text{false negatives}}
+            \\end{aligned}
+
         Notes:
-            Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - ORSS = Odds Ratio Skill Score
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
+            - :math:`\\theta` = Odds ratio. see: :meth:`odds_ratio`
 
         References:
             - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
@@ -873,8 +889,24 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Returns:
             xr.DataArray: An xarray object containing Yule's Q
 
-        Notes:    
+        .. math::
+
+            \\begin{aligned}
+                \\text{ORSS} &= \\frac{\\theta - 1}{\\theta + 1}
+                        \\\\ &= \\frac{\\text{true positives} \\cdot \\text{true negatives}
+                                         - \\text{false positives} \\cdot \\text{false negatives}}{
+                                       \\text{true positives} \\cdot \\text{true negatives}
+                                         + \\text{false positives} \\cdot \\text{false negatives}}
+            \\end{aligned}
+
+        Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - ORSS = Odds Ratio Skill Score
+            - "True positives" is the same as "hits".
+            - "False negatives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
+            - "True negatives" is the same as "correct negatives".
+            - :math:`\\theta` = Odds ratio. see: :meth:`odds_ratio`.
 
         References:
             Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
