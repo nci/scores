@@ -1,4 +1,4 @@
-## Handling Security Concerns
+# Handling Security Concerns
 
 The scores package is not intended to function as a security boundary, checker or gatekeeper on untrusted or malicious data inputs. It should not be passed user-generated data or be used directly in web applications. 
 

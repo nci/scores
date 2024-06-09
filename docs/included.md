@@ -26,7 +26,7 @@
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
 * -  
-    - Flip-Flop Index - proportion exceeding
+    - Flip-Flop Index - Proportion Exceeding
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.flip_flop_index_proportion_exceeding)
   - 
@@ -72,15 +72,15 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Theorem 1](https://www.jstor.org/stable/24775351); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -  
-    - Murphy Score (Mean Elementary Score) - theta values
+    - Murphy Score (Mean Elementary Score) - Theta Values
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.murphy_thetas)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://www.jstor.org/stable/24775351); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Pearson's Correlation Coefficient
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.correlation)
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Pearsons_Correlation.html)
@@ -175,15 +175,15 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Theorem 1](https://www.jstor.org/stable/24775351); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -  
-    - Murphy Score (Mean Elementary Score) - theta values
+    - Murphy Score (Mean Elementary Score) - Theta Values
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.murphy_thetas)
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Murphy_Diagrams.html)
   - 
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://www.jstor.org/stable/24775351); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](https://scores.readthedocs.io/en/latest/api.html#scores.probability.roc_curve_data)   
   - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/ROC.html)
@@ -216,6 +216,14 @@
   - 
     [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
 * -  
+    - Base Rate
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.base_rate)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
+* -  
     - Bias Score (Frequency Bias)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.bias_score)
@@ -246,7 +254,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-     [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
+    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
 * -  
     - F1 Score
   -
@@ -272,6 +280,14 @@
   - 
     [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
 * -  
+    - Forecast Rate
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.forecast_rate)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
+* -  
     - Fraction Correct (Accuracy)
   -
     [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.fraction_correct)
@@ -294,7 +310,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-     [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS) 
+    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS) 
 * -  
     - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
   -
@@ -342,7 +358,7 @@
   - 
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+    [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
     - Precision (Success Ratio)
   -
@@ -375,6 +391,14 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+* -  
+    - Symmetric Extremal Dependence Index (SEDI)
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
+  - 
+    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
 * -  
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
@@ -471,6 +495,45 @@
     [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Binary_Contingency_Scores.html)
   - 
     &mdash;    
+```
+
+## Spatial
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Fractions Skill Score (FSS)
+  - 
+  - 
+  - 
+* -  
+    - FSS - 2D
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.spatial.fss_2d)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Fractions_Skill_Score.html)
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
+* -  
+    - FSS - 2D Binary
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.spatial.fss_2d_binary)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Fractions_Skill_Score.html)
+  - 
+    &mdash;
+* -  
+    - FSS - 2D Single Field
+  -
+    [API](https://scores.readthedocs.io/en/latest/api.html#scores.spatial.fss_2d_single_field)
+  - 
+    [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Fractions_Skill_Score.html)
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 ```
 
 ## Statistical Tests

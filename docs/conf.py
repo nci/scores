@@ -9,7 +9,7 @@ from scores import __version__
 
 project = "scores"
 copyright = "Licensed under Apache 2.0 - https://www.apache.org/licenses/LICENSE-2.0"
-release = "0.8.4"
+release = "0.8.5"
 
 version = __version__
 
@@ -38,8 +38,11 @@ html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/nci/scores",
+    "canonical_url": "https://scores.readthedocs.io/en/latest/",
     "use_repository_button": True,
+    "show_toc_level": 3,
 }
+html_baseurl = "https://scores.readthedocs.io/en/latest/"
 
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
