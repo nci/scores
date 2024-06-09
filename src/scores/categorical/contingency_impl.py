@@ -754,8 +754,32 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Returns:
             xr.DataArray: An xarray object containing the Heidke skill score
 
+        .. math::
+            \\\\
+            \\text{HSS} =
+                \\frac{\\text{true positives} + \\text{true negatives} - E_{random}}{
+                       \\text{total count} - E_{\\text{random}}}
+
+        where
+
+        .. math::
+            \\begin{aligned}
+                E_{\\text{random}}
+                    &= \\text{expected correct matches due to random chance}
+                \\\\&= \\frac{\\left(\\text{tp} + \\text{fn}\\right) \\cdot
+                              \\left(\\text{tp} + \\text{fp}\\right) +
+                              \\left(\\text{tn} + \\text{fn}\\right) \\cdot
+                              \\left(\\text{tn} + \\text{fp}\\right)}{
+                              \\text{total count}}
+            \\end{aligned}
+
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - HSS = Heidke Skill Score
+            - "True positives" (:math:`\\text{tp}`) is the same as "hits".
+            - "False negatives" (:math:`\\text{fn}`) is the same as "misses".
+            - "False positives" (:math:`\\text{fp}`) is the same as "false alarms".
+            - "True negatives" (:math:`\\text{tn}`) is the same as "correct negatives".
 
         References:
             - https://en.wikipedia.org/wiki/Cohen%27s_kappa
@@ -779,8 +803,31 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Returns:
             xr.DataArray: An xarray object containing the Cohen's Kappa score
 
+        .. math::
+            \\\\
+            \\text{Cohen's Kappa} \\left(\\kappa\\right) =
+                \\frac{\\text{true positives} + \\text{true negatives} - E_{random}}{
+                       \\text{total count} - E_{\\text{random}}}
+
+        where
+
+        .. math::
+            \\begin{aligned}
+                E_{\\text{random}}
+                    &= \\text{expected correct matches due to random chance}
+                \\\\&= \\frac{\\left(\\text{tp} + \\text{fn}\\right) \\cdot
+                              \\left(\\text{tp} + \\text{fp}\\right) +
+                              \\left(\\text{tn} + \\text{fn}\\right) \\cdot
+                              \\left(\\text{tn} + \\text{fp}\\right)}{
+                              \\text{total count}}
+            \\end{aligned}
+
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
+            - "True positives" (:math:`\\text{tp}`) is the same as "hits".
+            - "False negatives" (:math:`\\text{fn}`) is the same as "misses".
+            - "False positives" (:math:`\\text{fp}`) is the same as "false alarms".
+            - "True negatives" (:math:`\\text{tn}`) is the same as "correct negatives".
 
         References:
             - https://en.wikipedia.org/wiki/Cohen%27s_kappa
