@@ -110,11 +110,11 @@ def sample_axis_block_indices(ax_info: list[AxisInfo], cyclic: bool = True) -> l
         if cyclic:
             # sample from 0 -> l - 1, since wrap around is allowed
             start_idx = rng.integers(low=0, high=l - 1, size=n)
-            block_idx = np.apply_along_axis(lambda x: np.array(list(_cyclic_expand(x, b, l))), 0, start_idx)
+            block_idx = np.apply_along_axis(lambda x: np.array(list(_cyclic_expand(x, b, l))), 0, start_idx).T
         else:
             # sample from 0 -> l - b, to avoid overflow
             start_idx = rng.integers(low=0, high=l - 1 - b, size=n)
-            block_idx = np.apply_along_axis(lambda x: np.arange(start=x, stop=x + b), 0, start_idx)
+            block_idx = np.apply_along_axis(lambda x: np.arange(start=x, stop=x + b), 0, start_idx).T
 
         assert not (block_idx is None)
         ax_block_samples.append(block_idx)
@@ -173,7 +173,7 @@ def construct_block_bootstrap_array(
         """
         _block_sample = np.empty(block_sizes_)
         _block_it = np.nditer(_block_sample, flags=["multi_index"], op_flags=["writeonly"])
-        _bootstrap_ax_idx = [b.T[i] for b, i in zip(block_bootstrap_idx_, ax_idx_)]
+        _bootstrap_ax_idx = [b[i] for b, i in zip(block_bootstrap_idx_, ax_idx_)]
         with _block_it:
             for x in _block_it:
                 _bootstrap_idx = tuple(b[i] for b, i in zip(_bootstrap_ax_idx, _block_it.multi_index))
