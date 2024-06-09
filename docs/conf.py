@@ -42,6 +42,7 @@ html_theme_options = {
     "use_repository_button": True,
     "show_toc_level": 3,
 }
+html_baseurl = "https://scores.readthedocs.io/en/latest/"
 
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
