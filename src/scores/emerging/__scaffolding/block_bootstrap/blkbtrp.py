@@ -1,3 +1,19 @@
+"""
+Sample implementation of block bootstrapping.
+
+.. note::
+
+    currently only does a single bootstrap iteration on a single numpy array.
+
+TODO:
+    - support for xarray
+    - support for multiple array inputs of with different subset of axes
+    - expand dims with multiple bootstrap iterations
+    - support for dask & chunking
+    - match api call with ``xbootstrap`` for ease of transition for existing code that relies on it
+"""
+
+import functools
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -7,22 +23,27 @@ import numpy.typing as npt
 
 class FitBlocksMethod(Enum):
     """
-    Method to use to fit blocks into axis e.g. if the axis length is not a
+    Choice of method to fit blocks into axis, if the axis length is not a
     multiple of blocksize.
 
-    Supported:
+    Currently supported:
+        - ``PARTIAL``: allows sampling of partial blocks (default)
+        - ``SHRINK_TO_FIT``: shrinks axis length to fit whole blocks
+        - ``EXPAND_TO_FIT``: expands axis tlength o fit whole blocks
 
-    - FitBlocksMethod.SHRINK_TO_FIT: shrinks axis to fit whole blocks
+    .. note::
 
-    Currently unimplemented:
+        ``PARTIAL`` is currently the only method that guarentees that the
+        input array and sampled output array sizes will match.
 
-    - FitBlocksMethod.EXPAND_TO_FIT: expands axis to fit whole blocks
-    - FitBlocksMethod.PARTIAL: allows sampling of partial blocks
+        However, there may be scientific reasons for using "whole" blocks
+        only, in which case ``SHRINK_TO_FIT`` or ``EXPAND_TO_FIT`` may be
+        better options.
     """
 
-    SHRINK_TO_FIT = 0
-    EXPAND_TO_FIT = 1
-    PARTIAL = 2
+    PARTIAL = 0  # default
+    SHRINK_TO_FIT = 1
+    EXPAND_TO_FIT = 2
 
 
 @dataclass
@@ -33,7 +54,7 @@ class AxisInfo:
 
     axis_length_in: int
     axis_block_size: int
-    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.SHRINK_TO_FIT
+    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
 
     # derived members:
     axis_length_out: int = field(init=False)
@@ -55,26 +76,25 @@ class AxisInfo:
 
         if (n, r) == (0, 0):
             raise ValueError("Empty block")
-        elif r == 0:
+        if r == 0:
             self.axis_num_blocks = n
             self.axis_length_out = l
             self.axis_block_size_partial = 0
         else:
             # key=method, value=(axis_length_out, axis_num_blocks, axis_block_size_partial)
             fit_blocks_params = {
+                FitBlocksMethod.PARTIAL: (l, n + 1, r),
                 FitBlocksMethod.SHRINK_TO_FIT: (n * b, n, 0),
                 FitBlocksMethod.EXPAND_TO_FIT: ((n + 1) * b, n + 1, 0),
-                FitBlocksMethod.PARTIAL: (l, n + 1, r),
             }
-
             try:
                 (
                     self.axis_length_out,
                     self.axis_num_blocks,
                     self.axis_block_size_partial,
                 ) = fit_blocks_params[self.axis_fit_blocks_method]
-            except KeyError:
-                raise NotImplementedError(f"Unsupported method: {self.axis_fit_blocks_method}")
+            except KeyError as e:
+                raise NotImplementedError(f"Unsupported method: {self.axis_fit_blocks_method}") from e
 
         self._validate()
 
@@ -88,7 +108,7 @@ class AxisInfo:
 def make_axis_info(
     arr: npt.NDArray,
     block_sizes: list[int],
-    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.SHRINK_TO_FIT,
+    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
 ) -> list[AxisInfo]:
     """
     Returns list of AxisInfo (outer-most axis -> inner-most axis), given a numpy
@@ -130,17 +150,22 @@ def sample_axis_block_indices(
             yield (idx_ + i) % length_
             i = i + 1
 
+    def _linear_expand(idx_, block_size_):
+        return np.arange(start=idx_, stop=idx_ + block_size_)
+
     for axi in ax_info:
         (l, b, n) = (axi.axis_length_in, axi.axis_block_size, axi.axis_num_blocks)
+        cyc_fn = functools.partial(_cyclic_expand, block_size_=b, length_=l)
+        lin_fn = functools.partial(_linear_expand, block_size_=b)
 
         if cyclic:
             # sample from 0 -> l - 1, since wrap around is allowed
             start_idx = rng.integers(low=0, high=l - 1, size=n)
-            block_idx = np.apply_along_axis(lambda x: np.array(list(_cyclic_expand(x, b, l))), 0, start_idx).T
+            block_idx = np.apply_along_axis(lambda x: np.array(list(cyc_fn(x))), 0, start_idx).T
         else:
             # sample from 0 -> l - b, to avoid overflow
             start_idx = rng.integers(low=0, high=l - b, size=n)
-            block_idx = np.apply_along_axis(lambda x: np.arange(start=x, stop=x + b), 0, start_idx).T
+            block_idx = np.apply_along_axis(lin_fn, 0, start_idx).T
 
         ax_block_indices.append(block_idx)
 
@@ -152,7 +177,7 @@ def sample_block_values(
     ax_info: list[AxisInfo],
     ax_idx: list[int],
     ax_block_indices: list[npt.NDArray],
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.SHRINK_TO_FIT,
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
 ):
     """
     Returns a sampled block of values from the input array, using a mult-index
@@ -241,7 +266,7 @@ def construct_block_bootstrap_array(
     input_arr: npt.NDArray,
     block_sizes: list[int],
     cyclic: bool = True,
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.SHRINK_TO_FIT,
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
 ) -> npt.NDArray:
     """
     takes a numpy array and performs block resampling for 1 iteration,
@@ -255,7 +280,7 @@ def construct_block_bootstrap_array(
     ax_info = make_axis_info(input_arr, block_sizes, fit_blocks_method)
 
     # get sample block indices for each axis
-    ax_block_indices = sample_axis_block_indices(ax_info)
+    ax_block_indices = sample_axis_block_indices(ax_info, cyclic)
 
     # re-fetch block-sizes (since internal functions may update this, e.g. based on dask chunks)
     ax_blk_sizes = [axi.axis_block_size for axi in ax_info]
@@ -290,8 +315,8 @@ def construct_block_bootstrap_array(
     return (output_arr, ax_block_indices)
 
 
-if __name__ == "__main__":
-    import pprint
+def _test_numpy_blk_bootstrap_single_iter():
+    import pprint  # pylint: disable=import-outside-toplevel
 
     # generate test data
     axis_len = [13, 10, 8, 7]
@@ -326,3 +351,7 @@ if __name__ == "__main__":
     # print(output_arr)
     res = np.histogram(output_arr, bins=5)
     pprint.pp(res)
+
+
+if __name__ == "__main__":
+    _test_numpy_blk_bootstrap_single_iter()
