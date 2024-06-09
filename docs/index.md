@@ -3,10 +3,6 @@
 % You can adapt this file completely to your liking, but it should at least
 % contain the root `toctree` directive.
 
-```.. meta::
-   :google-site-verification: "dJFOaYQ0qSZOFQF6kZ-fhkp_PkLBFHKRWNJZiNqmzwU"
-```
-
 ```{include} ../README.md
 ```
 
