@@ -38,6 +38,7 @@ html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/nci/scores",
+    "canonical_url": "https://scores.readthedocs.io/en/latest/",
     "use_repository_button": True,
     "show_toc_level": 3,
 }
