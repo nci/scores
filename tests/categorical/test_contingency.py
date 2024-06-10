@@ -388,8 +388,8 @@ def test_heidke_table():
     cm = scores.categorical.BasicContingencyManager(table)
     heidke = cm.heidke_skill_score()
 
-    # Note - the reference in the CAWCR verification site has 0.36 for
-    # the expected result, but presumably this is rounded to two decimal
-    # places
+    # Note - the reference in the verification site has 0.36 for the expected
+    # result, but presumably this is rounded to two decimal places
+    # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
     expected = xr.DataArray(0.355325)
     xr.testing.assert_allclose(heidke, expected)
