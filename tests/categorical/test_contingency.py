@@ -71,6 +71,15 @@ exact_matches = xr.DataArray(
     dims=["height", "lat", "lon"],
 )
 
+finlayson_table = {
+    "tp_count": xr.DataArray(28),
+    "fp_count": xr.DataArray(72),
+    "fn_count": xr.DataArray(23),
+    "tn_count": xr.DataArray(2680),
+    "total_count": xr.DataArray(2803),
+}
+
+
 # This truth table shows where the forecast and obs match within 0.2
 somewhat_near_matches = xr.DataArray(
     [
@@ -368,3 +377,19 @@ def test_dask_if_available_categorical():
 
     # And that transformed things get the same numbers
     assert table.false_alarm_rate() == table.transform().false_alarm_rate()
+
+
+def test_heidke_table():
+    """
+    Test the Heidke Skill Score with a known example
+    """
+
+    table = finlayson_table
+    cm = scores.categorical.BasicContingencyManager(table)
+    heidke = cm.heidke_skill_score()
+
+    # Note - the reference in the CAWCR verification site has 0.36 for
+    # the expected result, but presumably this is rounded to two decimal
+    # places
+    expected = xr.DataArray(0.355325)
+    xr.testing.assert_allclose(heidke, expected)
