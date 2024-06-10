@@ -820,7 +820,7 @@ def crps_for_ensemble(
         ValueError: when method is not one of "ecdf" or "fair".
 
     See also:
-        `scores.probability.crps_cdf`
+        :py:func:`scores.probability.crps_cdf`
 
     References:
         - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \
