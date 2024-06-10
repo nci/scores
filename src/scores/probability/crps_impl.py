@@ -792,7 +792,7 @@ def crps_for_ensemble(
     1 <= i <= M and 1 <= j <= M.
 
     The value of the constant K in this formula depends on the method:
-        - If `method="ecdf"` then :math:`K = M ** 2`. In this case the CRPS value returned is \
+        - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
             the exact CRPS value for the emprical cumulation distribution function \
             constructed using the ensemble values.
         - If `method="fair"` then :math:`K = M * (M - 1)`. In this case the CRPS value returned \
