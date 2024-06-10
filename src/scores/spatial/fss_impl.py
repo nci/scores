@@ -23,16 +23,20 @@ References:
 .. _GITHUB270: https://github.com/nci/scores/issues/270
 .. _GITHUB353: https://github.com/nci/scores/issues/353
 """
+# sphinx docstrings: issue with inconsistent type rerpesentations
+# see: https://github.com/sphinx-doc/sphinx/issues/9813
+from __future__ import annotations  # isort: off
+
 import warnings
 from typing import Callable, Optional, Tuple
 
 import numpy as np
-import numpy.typing as npt
 import xarray as xr
+from numpy import typing as npt
 
 from scores.fast.fss.fss_backends import get_compute_backend
 from scores.fast.fss.typing import FssComputeMethod, FssDecomposed
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes
 from scores.utils import (
     DimensionError,
     DimensionWarning,
@@ -47,13 +51,13 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
-    event_threshold: np.float64,
+    event_threshold: float,
     window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
     zero_padding: bool = False,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    threshold_operator: Callable = np.greater,
+    threshold_operator: Optional[Callable] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
 ) -> xr.DataArray:
@@ -86,7 +90,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         fcst: An array of forecasts
         obs: An array of observations (same spatial shape as ``fcst``)
         event_threshold: A scalar to compare ``fcst`` and ``obs`` fields to generate a
-            binary "event" field.
+            binary "event" field. (defaults to ``np.greater``).
         window_size: A pair of positive integers ``(height, width)`` of the sliding
             window_size; the window size must be greater than 0 and fit within
             the shape of ``obs`` and ``fcst``.
@@ -137,6 +141,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
            Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
            https://doi.org/10.1175/mwr-d-18-0106.1.
     """
+    np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 
     def _spatial_dims_exist(_dims):
         s_spatial_dims = set(spatial_dims)
@@ -165,7 +170,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             event_threshold=event_threshold,
             window_size=window_size,
             zero_padding=zero_padding,
-            threshold_operator=NumpyThresholdOperator(threshold_operator),
+            threshold_operator=np_thrsh_op,
         )
         return fb_obj.compute_fss_decomposed()
 
@@ -273,13 +278,13 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
 
 def fss_2d_single_field(
-    fcst: npt.NDArray[np.float64],
-    obs: npt.NDArray[np.float64],
+    fcst: npt.NDArray[float],
+    obs: npt.NDArray[float],
     *,
-    event_threshold: np.float64,
+    event_threshold: float,
     window_size: Tuple[int, int],
     zero_padding: bool = False,
-    threshold_operator: Callable = np.greater,
+    threshold_operator: Optional[Callable] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
     """
@@ -302,8 +307,8 @@ def fss_2d_single_field(
 
 
     The caller is responsible for making sure the input fields are in the 2-D
-    spatial domain. (Although it should work for any `np.array` as long as it's
-    2D, and `window_size` is appropriately sized.)
+    spatial domain. (Although it should work for any ``np.array`` as long as it's
+    2D, and ``window_size`` is appropriately sized.)
 
     Args:
         fcst: An array of forecasts
@@ -337,18 +342,33 @@ def fss_2d_single_field(
         3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
            skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
     """
+    np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
+
     fss_backend = get_compute_backend(compute_method)
+
     fb_obj = fss_backend(
         fcst,
         obs,
         window_size=window_size,
         zero_padding=zero_padding,
         event_threshold=event_threshold,
-        threshold_operator=NumpyThresholdOperator(threshold_operator),
+        threshold_operator=np_thrsh_op,
     )
+
     fss_score = fb_obj.compute_fss()
 
     return fss_score
+
+
+def _make_numpy_threshold_operator(threshold_operator: Optional[Callable]) -> NumpyThresholdOperator:
+    thrsh_op: Callable
+
+    if threshold_operator is None:
+        thrsh_op = np.greater
+    else:
+        thrsh_op = threshold_operator
+
+    return NumpyThresholdOperator(thrsh_op)
 
 
 def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
