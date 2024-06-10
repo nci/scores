@@ -795,10 +795,10 @@ def crps_for_ensemble(
         - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
             the exact CRPS value for the emprical cumulation distribution function \
             constructed using the ensemble values.
-        - If `method="fair"` then :math:`K = M * (M - 1)`. In this case the CRPS value returned \
+        - If `method="fair"` then :math:`K = M \\times (M - 1)`. In this case the CRPS value returned \
             is the approximated CRPS where the ensemble values can be interpreted as a \
             random sample from the underlying predictive distribution. This interpretation \
-            stems from the formula :math:`\\text{CRPS}(F, Y) = E|X - Y| - E|X - X'|/2`, where X and X' \
+            stems from the formula :math:`\\text{CRPS}(F, Y) = E \\times |X - Y| - \\frac{E \\times |X - X'|}2`, where X and X' \
             are independent samples of the predictive distribution F, Y is the observation \
             (possibly unknown) and E denotes the expectation. This choice of K gives an \
             unbiased estimate for the second expectation.
