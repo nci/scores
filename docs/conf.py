@@ -44,6 +44,12 @@ html_theme_options = {
 html_baseurl = "https://scores.readthedocs.io/en/latest/"
 autodoc_typehints = "description"
 
+# This is needed to allow linking into auto-generated API documentation
+# It means there is a risk that genuine cross-referencing errors will be
+# suppressed. Perhaps some way around this could be found in future.
+suppress_warnings = ["myst.xref_missing"]
+
+
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
 nbsphinx_prolog = r"""
