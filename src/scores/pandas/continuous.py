@@ -14,7 +14,7 @@ def mse(
 ) -> PandasType:
     """Calculates the mean squared error from forecast and observed data.
 
-    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_squared_error)
+    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_squared_error
 
 
     Notes:
