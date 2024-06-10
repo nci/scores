@@ -23,12 +23,10 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the metric. At
-    most one of reduce_dims and preserve_dims may be specified.
-    Specifying both will result in an exception.
-
     See "Mean squared error" section at https://www.cawcr.gov.au/projects/verification/#MSE for more information
+
+    .. math ::
+        \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
     Args:
         fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]):

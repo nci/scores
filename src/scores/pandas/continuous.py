@@ -16,6 +16,9 @@ def mse(
 
     A detailed explanation is on https://en.wikipedia.org/wiki/Mean_squared_error
 
+    .. math ::
+        \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
+
 
     Notes:
         Dimensional reduction is not supported for pandas and the user should
