@@ -71,7 +71,7 @@ exact_matches = xr.DataArray(
     dims=["height", "lat", "lon"],
 )
 
-finlayson_table = {
+finleys_table = {
     "tp_count": xr.DataArray(28),
     "fp_count": xr.DataArray(72),
     "fn_count": xr.DataArray(23),
@@ -379,17 +379,24 @@ def test_dask_if_available_categorical():
     assert table.false_alarm_rate() == table.transform().false_alarm_rate()
 
 
-def test_heidke_table():
+def test_examples_with_finley():
     """
-    Test the Heidke Skill Score with a known example
+    Test some of the complex scores with the Finley tornado example
     """
 
-    table = finlayson_table
+    table = finleys_table
     cm = scores.categorical.BasicContingencyManager(table)
     heidke = cm.heidke_skill_score()
+    gilbert = cm.gilberts_skill_score()
 
     # Note - the reference in the verification site has 0.36 for the expected
     # result, but presumably this is rounded to two decimal places
     # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
-    expected = xr.DataArray(0.355325)
-    xr.testing.assert_allclose(heidke, expected)
+    heidke_expected = xr.DataArray(0.355325)
+    xr.testing.assert_allclose(heidke, heidke_expected)
+
+    # Note - the reference in the verification site has 0.22 for the expected
+    # result, but presumably this is rounded to two decimal places
+    # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
+    gilbert_expected = xr.DataArray(0.216046)
+    xr.testing.assert_allclose(gilbert_expected, gilbert)
