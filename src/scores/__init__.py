@@ -6,6 +6,7 @@ The philosphy is to import the public API during the init phase rather than leav
 
 import scores.categorical
 import scores.continuous
+import scores.emerging
 import scores.functions
 import scores.pandas
 import scores.probability
@@ -19,6 +20,7 @@ __all__ = [
     "scores.categorical",
     "scores.contingency",
     "scores.continuous",
+    "scores.emerging",
     "scores.functions",
     "scores.pandas",
     "scores.probability",
