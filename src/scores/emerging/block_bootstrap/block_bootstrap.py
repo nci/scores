@@ -14,112 +14,12 @@ TODO:
 """
 
 import functools
-from dataclasses import dataclass, field
-from enum import Enum
 
 import numpy as np
 import numpy.typing as npt
 
-
-class FitBlocksMethod(Enum):
-    """
-    Choice of method to fit blocks into axis, if the axis length is not a
-    multiple of blocksize.
-
-    Currently supported:
-        - ``PARTIAL``: allows sampling of partial blocks (default)
-        - ``SHRINK_TO_FIT``: shrinks axis length to fit whole blocks
-        - ``EXPAND_TO_FIT``: expands axis tlength o fit whole blocks
-
-    .. note::
-
-        ``PARTIAL`` is currently the only method that guarentees that the
-        input array and sampled output array sizes will match.
-
-        However, there may be scientific reasons for using "whole" blocks
-        only, in which case ``SHRINK_TO_FIT`` or ``EXPAND_TO_FIT`` may be
-        better options.
-    """
-
-    PARTIAL = 0  # default
-    SHRINK_TO_FIT = 1
-    EXPAND_TO_FIT = 2
-
-
-@dataclass
-class AxisInfo:
-    """
-    Structure to hold axis information
-    """
-
-    axis_length_in: int
-    axis_block_size: int
-    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
-
-    # derived members:
-    axis_length_out: int = field(init=False)
-    axis_num_blocks: int = field(init=False)
-    axis_block_size_partial: int = field(init=False)
-
-    def __post_init__(self):
-        """
-        Adjust the axis length, block size and number of blocks based
-        on the method used to fit blocks in the axis.
-        """
-
-        (l, b) = (self.axis_length_in, self.axis_block_size)
-
-        assert b <= l
-
-        n = l // b  # multiple
-        r = l - (n * b)  # remainder
-
-        if (n, r) == (0, 0):
-            raise ValueError("Empty block")
-        if r == 0:
-            self.axis_num_blocks = n
-            self.axis_length_out = l
-            self.axis_block_size_partial = 0
-        else:
-            # key=method, value=(axis_length_out, axis_num_blocks, axis_block_size_partial)
-            fit_blocks_params = {
-                FitBlocksMethod.PARTIAL: (l, n + 1, r),
-                FitBlocksMethod.SHRINK_TO_FIT: (n * b, n, 0),
-                FitBlocksMethod.EXPAND_TO_FIT: ((n + 1) * b, n + 1, 0),
-            }
-            try:
-                (
-                    self.axis_length_out,
-                    self.axis_num_blocks,
-                    self.axis_block_size_partial,
-                ) = fit_blocks_params[self.axis_fit_blocks_method]
-            except KeyError as e:
-                raise NotImplementedError(f"Unsupported method: {self.axis_fit_blocks_method}") from e
-
-        self._validate()
-
-    def _validate(self):
-        """
-        TODO: Add more validation checks here
-        """
-        assert self.axis_length_out > 0 and self.axis_block_size < self.axis_length_out
-
-
-def make_axis_info(
-    arr: npt.NDArray,
-    block_sizes: list[int],
-    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
-) -> list[AxisInfo]:
-    """
-    Returns list of AxisInfo (outer-most axis -> inner-most axis), given a numpy
-    ndarray as input
-    """
-    assert len(arr.shape) == len(block_sizes)
-
-    return [
-        AxisInfo(axis_length_in=l, axis_block_size=b, axis_fit_blocks_method=axis_fit_blocks_method)
-        for l, b in zip(np.shape(arr), block_sizes)
-    ]
+from scores.emerging.block_bootstrap.axis_info import AxisInfo, make_axis_info
+from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
 def sample_axis_block_indices(
@@ -313,45 +213,3 @@ def construct_block_bootstrap_array(
             output_arr[output_idx] = block_sample
 
     return (output_arr, ax_block_indices)
-
-
-def _test_numpy_blk_bootstrap_single_iter():
-    import pprint  # pylint: disable=import-outside-toplevel
-
-    # generate test data
-    axis_len = [13, 10, 8, 7]
-    block_sizes = [4, 3, 2, 3]
-    method = FitBlocksMethod.PARTIAL
-    rng = np.random.default_rng(seed=42)
-    # random dataset with integers so its easy to visualize
-    input_arr = rng.integers(low=0, high=10, size=axis_len)
-
-    print("--- axis info ---")
-    axis_info = make_axis_info(input_arr, block_sizes, method)
-    pprint.pp(axis_info)
-
-    print("\n--- input array ---")
-    pprint.pp(input_arr.shape)
-    res = np.histogram(input_arr, bins=5)
-    pprint.pp(res)
-
-    print("\nBOOTSTRAPPING...")
-    (output_arr, block_sample_idx) = construct_block_bootstrap_array(
-        input_arr,
-        block_sizes,
-        cyclic=True,
-        fit_blocks_method=method,
-    )
-
-    print("\n--- sample axis block indices ---")
-    pprint.pp(block_sample_idx)
-
-    print("\n--- output array ---")
-    pprint.pp(output_arr.shape)
-    # print(output_arr)
-    res = np.histogram(output_arr, bins=5)
-    pprint.pp(res)
-
-
-if __name__ == "__main__":
-    _test_numpy_blk_bootstrap_single_iter()
