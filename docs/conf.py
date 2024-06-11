@@ -38,11 +38,18 @@ html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/nci/scores",
-    "canonical_url": "https://scores.readthedocs.io/en/latest/",
     "use_repository_button": True,
     "show_toc_level": 3,
 }
-html_baseurl = "https://scores.readthedocs.io/en/latest/"
+html_baseurl = "https://scores.readthedocs.io/en/stable/"
+autodoc_typehints = "description"
+
+# This is needed to allow linking into auto-generated API documentation
+# It means there is a risk that genuine cross-referencing errors will be
+# suppressed. Perhaps some way around this could be found in future.
+# Uncomment this during testing to reveal potential errors
+suppress_warnings = ["myst.xref_missing"]
+
 
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook

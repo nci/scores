@@ -65,7 +65,7 @@ all = ["scores[dev,tutorial]"]
 
 [project.urls]
 "Repository" = "https://github.com/nci/scores" 
-"Documentation" = "https://scores.readthedocs.io/en/latest/"
+"Documentation" = "https://scores.readthedocs.io/en/stable/"
 
 [tool.hatch.build]
 exclude = [

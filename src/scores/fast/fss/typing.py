@@ -20,12 +20,11 @@ else:  # pragma: no cover
 class FssComputeMethod(Enum):
     """
     Choice of compute backend for FSS.
-    - Standard
-        - NUMPY (default)
-    - Optimized
-        - NUMBA (currently unavailable)
     """
 
+    #: invalid backend
     INVALID = -1
-    NUMPY = 1  # (default)
+    #: computations using numpy (default)
+    NUMPY = 1
+    #: computations using numba (currently unimplemented)
     NUMBA = 2
