@@ -392,14 +392,6 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
-    - Symmetric Extremal Dependence Index (SEDI)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
-  - 
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  - 
-    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
-* -  
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.sensitivity)
@@ -423,6 +415,14 @@
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
     [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)    
+* -  
+    - Symmetric Extremal Dependence Index (SEDI)
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
 * -  
     - Threat Score (Critical Success Index)
   -

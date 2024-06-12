@@ -48,7 +48,8 @@ tutorial = [
     "h5netcdf",
     "rasterio",
     "rioxarray",
-    "plotly"
+    "plotly",
+    "dask"
 ]
 maintainer = ["build",
               "hatch",
