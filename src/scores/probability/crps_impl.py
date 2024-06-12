@@ -786,20 +786,20 @@ def crps_for_ensemble(
 
 
     .. math::
-        CRPS(x_i, y) = (1 / M) * sum(|x_i - y|) - (1 / 2 * K) * sum(|x_i - x_j|)
+        CRPS(x_i, y) = \\frac{\\sum_{i=1}^{M}(|x_i - y|)}{M} - \\frac{\\sum_{i=1}^{M}(|x_i - x_j|)}{2K}
 
     where the first sum is iterated over 1 <= i <= M and the second sum is iterated over
     1 <= i <= M and 1 <= j <= M.
 
     The value of the constant K in this formula depends on the method:
-        - If `method="ecdf"` then :math:`K = M ** 2`. In this case the CRPS value returned is \
+        - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
             the exact CRPS value for the emprical cumulation distribution function \
             constructed using the ensemble values.
-        - If `method="fair"` then :math:`K = M * (M - 1)`. In this case the CRPS value returned \
+        - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned \
             is the approximated CRPS where the ensemble values can be interpreted as a \
             random sample from the underlying predictive distribution. This interpretation \
-            stems from the formula :math:`\\text{CRPS}(F, Y) = E|X - Y| - E|X - X'|/2`, where X and X' \
-            are independent samples of the predictive distribution F, Y is the observation \
+            stems from the formula :math:`\\text{CRPS}(F, y) = \\mathbb{E}(|X - y|) - \\frac{1}{2}\\mathbb{E}(|X - X'|)`, where X and X' \
+            are independent samples of the predictive distribution F, y is the observation \
             (possibly unknown) and E denotes the expectation. This choice of K gives an \
             unbiased estimate for the second expectation.
 
@@ -820,7 +820,7 @@ def crps_for_ensemble(
         ValueError: when method is not one of "ecdf" or "fair".
 
     See also:
-        `scores.probability.crps_cdf`
+        :py:func:`scores.probability.crps_cdf`
 
     References:
         - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \

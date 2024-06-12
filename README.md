@@ -1,8 +1,5 @@
 # Scores: Verification and Evaluation for Forecasts and Models
 
-> **Notice:**
-> **`scores` is undergoing final testing and review. When this is completed, this notice will be removed.**
-
 > 
 > **A list of over 50 metrics, statistical techniques and data processing tools contained in `scores` is [available here](https://scores.readthedocs.io/en/stable/included.html).**
 

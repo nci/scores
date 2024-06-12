@@ -23,12 +23,10 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the metric. At
-    most one of reduce_dims and preserve_dims may be specified.
-    Specifying both will result in an exception.
-
     See "Mean squared error" section at https://www.cawcr.gov.au/projects/verification/#MSE for more information
+
+    .. math ::
+        \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
     Args:
         fcst (Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]):
@@ -211,6 +209,16 @@ def correlation(
     """
     Calculates the Pearson's correlation coefficient between two xarray DataArrays
 
+    .. math::
+        \\rho = \\frac{\\sum_{i=1}^{n}{(x_i - \\bar{x})(y_i - \\bar{y})}}{\\sqrt{\\sum_{i=1}^{n}{(x_i-\\bar{x})^2}\\sum_{i=1}^{n}{(y_i - \\bar{y})^2}}}
+
+    where:
+        - :math:`\\rho` = Pearson's correlation coefficient
+        - :math:`x_i` = the values of x in a sample (i.e. forecast values)
+        - :math:`\\bar{x}` = the mean value of the forecast sample
+        - :math:`y_i` = the values of y in a sample (i.e. observed values)
+        - :math:`\\bar{y}` = the mean value of the observed sample value
+
     Args:
         fcst: Forecast or predicted variables
         obs: Observed variables.
@@ -225,7 +233,7 @@ def correlation(
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
     Returns:
-        An xarray object with Pearson's correlation coefficient values
+        xr.DataArray: An xarray object with Pearson's correlation coefficient values
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
