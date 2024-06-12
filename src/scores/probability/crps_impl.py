@@ -799,7 +799,7 @@ def crps_for_ensemble(
             is the approximated CRPS where the ensemble values can be interpreted as a \
             random sample from the underlying predictive distribution. This interpretation \
             stems from the formula :math:`\\text{CRPS}(F, y) = \\mathbb{E}(|X - y|) - \\frac{1}{2}\\mathbb{E}(|X - X'|)`, where X and X' \
-            are independent samples of the predictive distribution F, Y is the observation \
+            are independent samples of the predictive distribution F, y is the observation \
             (possibly unknown) and E denotes the expectation. This choice of K gives an \
             unbiased estimate for the second expectation.
 
