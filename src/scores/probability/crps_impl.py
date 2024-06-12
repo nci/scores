@@ -786,7 +786,7 @@ def crps_for_ensemble(
 
 
     .. math::
-        CRPS(x_i, y) = \\frac{sum(|x_i - y|)}{M} - \\frac{sum(|x_i - x_j|)}{2K}
+        CRPS(x_i, y) = \\frac{\\sum_{i=1}^{M}(|x_i - y|)}{M} - \\frac{\\sum_{i=1}^{M}(|x_i - x_j|)}{2K}
 
     where the first sum is iterated over 1 <= i <= M and the second sum is iterated over
     1 <= i <= M and 1 <= j <= M.
