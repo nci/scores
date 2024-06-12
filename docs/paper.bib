@@ -1,0 +1,456 @@
+@article{Brady:2021,
+	title        = {{climpred: Verification of weather and climate forecasts}},
+	author       = {Riley X. Brady and Aaron Spring},
+	year         = 2021,
+	journal      = {Journal of Open Source Software},
+	publisher    = {The Open Journal},
+	volume       = 6,
+	number       = 59,
+	pages        = 2781,
+	doi          = {10.21105/joss.02781},
+	url          = {https://doi.org/10.21105/joss.02781}
+}
+@article{Griffiths:2019,
+	title        = {{Flip-Flop Index: Quantifying revision stability for fixed-event forecasts}},
+	author       = {Griffiths, Deryn and Foley, Michael and Ioannou, Ioanna and Leeuwenburg, Tennessee},
+	year         = 2019,
+	journal      = {Meteorological Applications},
+	volume       = 26,
+	number       = 1,
+	pages        = {30--35},
+	doi          = {10.1002/met.1732},
+	url          = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/met.1732},
+	keywords     = {Flip-Flop Index, forecast convergence, forecast oscillations, forecast stability, forecast volatility},
+	eprint       = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/met.1732},
+	abstract     = {The degree to which a forecast changes from one issue time to the next is an interesting aspect of a forecast system. Weather forecasters report that they are reluctant to change a forecast if they judge there is a risk of it being changed back again. They believe such instability detracts from the message being delivered and are reluctant to use automated guidance which they perceive as having lack of stability. A Flip-Flop Index was developed to quantify this characteristic of revisions of fixed-event forecasts. The index retains physically meaningful units, has a simple definition and does not penalize a sequence of forecasts that show a trend, which is important when assessing forecasts where a trend can be interpreted as a forecast becoming more confident with a shorter lead time. The Flip-Flop Index was used to compare the stability of sequences of automated guidance with the official Australian Bureau of Meteorology forecasts, which are prepared manually. The results show that the forecasts for chance of rain from the automated guidance are often more stable than the official, manual forecasts. However, the official forecasts for maximum temperature are more stable than those based on automated guidance. The Flip-Flop Index is independent of observations and does not measure skill, but it can play a complementary role in characterizing and evaluating a forecasting system.}
+}
+@misc{xskillscore,
+	title        = {{xarray-contrib/xskillscore: Metrics for verifying forecasts}},
+	author       = {Ray Bell and Aaron Spring and Riley Brady and Andrew Huang and Dougie Squire and Zachary Blackwood and Maximillian Cosmo Sitter and Taher Chegini.},
+	month        = aug,
+	year         = 2021,
+	publisher    = {Zenodo},
+	doi          = {10.5281/zenodo.5173153},	
+	url          = {https://github.com/xarray-contrib/xskillscore}
+}
+@article{Ehm:2016,
+	title        = {Of quantiles and expectiles: consistent scoring functions, {C}hoquet representations and forecast rankings},
+	author       = {Werner Ehm and Tilmann Gneiting and Alexander Jordan and Fabian Krüger},
+	year         = 2016,
+	journal      = {Journal of the Royal Statistical Society. Series B (Statistical Methodology)},
+	publisher    = {[Royal Statistical Society, Wiley]},
+	volume       = 78,
+	number       = 3,
+	pages        = {505--562},
+	issn         = {13697412, 14679868},
+	url          = {http://www.jstor.org/stable/24775351},
+	doi        = {10.1111/rssb.12154},
+	urldate      = {2023-09-06},
+	abstract     = {In the practice of point prediction, it is desirable that forecasters receive a directive in the form of a statistical functional. For example, forecasters might be asked to report the mean or a quantile of their predictive distributions. When evaluating and comparing competing forecasts, it is then critical that the scoring function used for these purposes be consistent for the functional at hand, in the sense that the expected score is minimized when following the directive. We show that any scoring function that is consistent for a quantile or an expectile functional can be represented as a mixture of elementary or extremal scoring functions that form a linearly parameterized family. Scoring functions for the mean value and probability forecasts of binary events constitute important examples. The extremal scoring functions admit appealing economic interpretations of quantiles and expectiles in the context of betting and investment problems. The Choquet-type mixture representations give rise to simple checks of whether a forecast dominates another in the sense that it is preferable under any consistent scoring function. In empirical settings it suffices to compare the average scores for only a finite number of extremal elements. Plots of the average scores with respect to the extremal scoring functions, which we call Murphy diagrams, permit detailed comparisons of the relative merits of competing forecasts.}
+}
+@article{Taggart:2022a,
+	title        = {A scoring framework for tiered warnings and multicategorical forecasts based on fixed risk measures},
+	author       = {Taggart, Robert and Loveday, Nicholas and Griffiths, Deryn},
+	year         = 2022,
+	journal      = {Quarterly Journal of the Royal Meteorological Society},
+	volume       = 148,
+	number       = 744,
+	pages        = {1389--1406},
+	doi          = {10.1002/qj.4266},
+	url          = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/qj.4266},
+	keywords     = {categorical forecasts, consistent scoring function, decision theory, forecast ranking, forecast verification, risk, warnings},
+	eprint       = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/qj.4266},
+	abstract     = {Abstract The use of tiered warnings and multicategorical forecasts are ubiquitous in meteorological operations. Here, a flexible family of scoring functions is presented for evaluating the performance of ordered multicategorical forecasts. Each score has a risk parameter α\$\$ \alpha \$\$, selected for the specific use case, so that it is consistent with a forecast directive based on the fixed threshold probability 1−α\$\$ 1-\alpha \$\$ (equivalently, a fixed α\$\$ \alpha \$\$-quantile mapping). Each score also has use-case specific weights so that forecasters who accurately discriminate between categorical thresholds are rewarded in proportion to the weight for that threshold. A variation is presented where the penalty assigned to near misses or close false alarms is discounted, which again is consistent with directives based on fixed risk measures. The scores presented provide an alternative to many performance measures currently in use, whose optimal threshold probabilities for forecasting an event typically vary with each forecast case, and in the case of equitable scores are based around sample base rates rather than risk measures suitable for users.}
+}
+@article{Hering:2011,
+	title        = {Comparing Spatial Predictions},
+	author       = {Amanda S. Hering and Marc G. Genton},
+	year         = 2011,
+	journal      = {Technometrics},
+	publisher    = {Taylor & Francis, Ltd.},
+	volume       = 53,
+	number       = 4,
+	pages        = {414--425},
+	issn         = {00401706},
+	url          = {http://www.jstor.org/stable/41714954},
+	doi          = {10.1198/tech.2011.10136},
+	urldate      = {2023-09-06},
+	abstract     = {Under a general loss function, we develop a hypothesis test to determine whether a significant difference in the spatial predictions produced by two competing models exists on average across the entire spatial domain of interest. The null hypothesis is that of no difference, and a spatial loss differential is created based on the observed data, the two sets of predictions, and the loss function chosen by the researcher. The test assumes only isotropy and short-range spatial dependence of the loss differential but does allow it to be non-Gaussian, non-zero-mean, and spatially correlated. Constant and nonconstant spatial trends in the loss differential are treated in two separate cases. Monte Carlo simulations illustrate the size and power properties of this test, and an example based on daily average wind speeds in Oklahoma is used for illustration. Supplemental results are available online.}
+}
+@article{Harvey:1997,
+	title        = {Testing the equality of prediction mean squared errors},
+	author       = {David Harvey and Stephen Leybourne and Paul Newbold},
+	year         = 1997,
+	journal      = {International Journal of Forecasting},
+	volume       = 13,
+	number       = 2,
+	pages        = {281--291},
+	doi          = {10.1016/S0169-2070(96)00719-4},
+	issn         = {0169-2070},
+	url          = {https://www.sciencedirect.com/science/article/pii/S0169207096007194},
+	keywords     = {Comparing forecasts, Correlated forecast errors, Evaluation of forecasts, Non-normality},
+	abstract     = {Given two sources of forecasts of the same quantity, it is possible to compare prediction records. In particular, it can be useful to test the hypothesis of equal accuracy in forecast performance. We analyse the behaviour of two possible tests, and of modifications of these tests designed to circumvent shortcomings in the original formulations. As a result of this analysis, a recommendation for one particular testing approach is made for practical applications.}
+}
+@article{Hoyer:2017,
+  title         = {{x}array: {N-D} labeled Arrays and Datasets in {P}ython},
+  author        = {Hoyer, S. and Hamman, J.},
+  year          = 2017,
+  journal       = {Journal of Open Research Software},
+  volume        = 5,
+  number        = 1,
+  doi           = {10.5334/jors.148},
+  keywords      = {Python, pandas, netCDF, multidimensional data, data handling, data analysis}
+}
+@Article{Diebold:1995,
+	title		 = {Comparing predictive accuracy},
+	author		 = {Diebold, Francis X and Mariano, Robert S},
+	journal		 = {Journal of Business & economic statistics},
+	volume		 = {13},
+	number		 = {3},
+	pages		 = {253--263},
+	year		 = {1995},
+	doi          = {10.3386/t0169}
+}
+@Article{Brown:2021,
+	  author = "Barbara Brown and Tara Jensen and John Halley Gotway and Randy Bullock and Eric Gilleland and Tressa Fowler and Kathryn Newman and Dan Adriaansen and Lindsay Blank and Tatiana Burek and Michelle Harrold and Tracy Hertneky and Christina Kalb and Paul Kucera and Louisa Nance and John Opatz and Jonathan Vigh and Jamie Wolff",
+      title = {The {M}odel {E}valuation {T}ools (MET): More than a Decade of Community-Supported Forecast Verification},
+      journal = "Bulletin of the American Meteorological Society",
+      year = "2021",
+      publisher = "American Meteorological Society",
+      address = "Boston MA, USA",
+      volume = "102",
+      number = "4",
+      doi = "10.1175/BAMS-D-19-0093.1",
+      pages=      "E782 - E807",
+      url = "https://journals.ametsoc.org/view/journals/bams/102/4/BAMS-D-19-0093.1.xml"
+}
+@book{Griffiths:2017,
+	title	     = {Advice for automation of forecasts: a framework},
+	author		 = {Griffiths, Deryn and Jack, Harry and Foley, Michael and Ioannou, Ioanna and Liu, Maoyuan},
+	year		 = {2017},
+	publisher	 = {Bureau of Meteorology},
+	url          = {http://www.bom.gov.au/research/publications/researchreports/BRR-021.pdf},
+	doi          = {10.22499/4.0021}
+}
+@Article{Foley:2020,
+	title	 	 = {Comparison of Single-Valued Forecasts in a User-Oriented Framework},
+	author		 = {Foley, Michael and Loveday, Nicholas},
+	journal		 = {Weather and Forecasting},
+	volume		 = {35},
+	number		 = {3},
+	pages		 = {1067--1080},
+	year		 = {2020},
+	publisher	 = {American Meteorological Society},
+	doi          = {10.1175/waf-d-19-0248.1}
+}
+@Article{Taggart:2022b,
+	title	 	 = {Evaluation of point forecasts for extreme events using consistent scoring functions},
+	author		 = {Taggart, Robert},
+	journal		 = {Quarterly Journal of the Royal Meteorological Society},
+	volume		 = {148},
+	number		 = {742},
+	pages		 = {306--320},
+	year		 = {2022},
+	publisher	 = {Wiley Online Library},
+	doi          = {10.1002/qj.4206}
+}
+@Article{Taggart:2022c,
+	title		 = {Point forecasting and forecast evaluation with generalized Huber loss},
+	author		 = {Taggart, Robert},
+	journal		 = {Electronic Journal of Statistics},
+	volume		 = {16},
+	number		 = {1},
+	pages		 = {201--231},
+	year		 = {2022},
+	publisher	 = {The Institute of Mathematical Statistics and the Bernoulli Society},
+	doi          = {10.1214/21-ejs1957}
+}
+@Article{Gneiting:2011,
+	title		 = {Comparing density forecasts using threshold-and quantile-weighted scoring rules},
+	author		 = {Gneiting, Tilmann and Ranjan, Roopesh},
+	journal		 = {Journal of Business & Economic Statistics},
+	volume		 = {29},
+	number		 = {3},
+	pages		 = {411--422},
+	year		 = {2011},
+	publisher	 = {Taylor & Francis},
+	doi          = {10.1198/jbes.2010.08110}
+}
+@misc{Taggart:2022d,   
+    title    	 = {Assessing calibration when predictive distributions have discontinuities.},   
+    url 		 = {http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf},   
+    author 		 = {Taggart, Robert},   
+    year 		 = {2022},   
+    note 		 = {Accessed on September 9, 2023} 
+}
+@article{Loveday2024ts, 
+	title={A User-Focused Approach to Evaluating Probabilistic and Categorical Forecasts}, 
+	ISSN={1520-0434}, 
+	url={http://dx.doi.org/10.1175/waf-d-23-0201.1}, 
+	DOI={10.1175/waf-d-23-0201.1}, 
+	journal={Weather and Forecasting}, 
+	publisher={American Meteorological Society}, 
+	author={Loveday, Nicholas and Taggart, Robert and Khanarmuei, Mohammadreza}, 
+	year={2024}, 
+	month=may
+}
+@article{nipen2023verif,
+  title={Verif: A weather-prediction verification tool for effective product development},
+  author={Nipen, Thomas N and Stull, Roland B and Lussana, Cristian and Seierstad, Ivar A},
+  journal={Bulletin of the American Meteorological Society},
+  volume={104},
+  number={9},
+  pages={E1610--E1618},
+  year={2023},
+  publisher={American Meteorological Society},
+  doi={10.1175/bams-d-22-0253.1}
+}
+@article{dimitriadis2021stable,
+  title={Stable reliability diagrams for probabilistic classifiers},
+  author={Dimitriadis, Timo and Gneiting, Tilmann and Jordan, Alexander I},
+  journal={Proceedings of the National Academy of Sciences},
+  volume={118},
+  number={8},
+  pages={e2016191118},
+  year={2021},
+  publisher={National Acad Sciences},
+  doi={10.1073/pnas.2016191118}
+}
+@article{griffiths2021circular,
+  title={{Circular Flip-Flop Index:} quantifying revision stability of forecasts of direction},
+  author={Griffiths, Deryn and Loveday, Nicholas and Price, Benjamin and Foley, Michael and McKelvie, Alistair},
+  journal={Journal of Southern Hemisphere Earth Systems Science},
+  volume={71},
+  number={3},
+  pages={266--271},
+  year={2021},
+  publisher={CSIRO Publishing},
+  doi={10.1071/es21010}
+}
+@misc{loveday2024jive,
+      title={{The Jive verification system and its transformative impact on weather forecasting operations}}, 
+      author={Nicholas Loveday and Deryn Griffiths and Tennessee Leeuwenburg and Robert Taggart and Thomas C. Pagano and George Cheng and Kevin Plastow and Elizabeth Ebert and Cassandra Templeton and Maree Carroll and Mohammadreza Khanarmuei and Isha Nagpal},
+      year={2024},
+      eprint={2404.18429},
+      archivePrefix={arXiv},
+      primaryClass={physics.ao-ph},
+      publisher={arXiv},
+	  doi={10.48550/arXiv.2404.18429}
+}
+@article{Ferro_2013, 
+	title={Fair scores for ensemble forecasts: Fair Scores for Ensemble Forecasts}, 
+	volume={140}, 
+	ISSN={0035-9009}, 
+	url={http://dx.doi.org/10.1002/qj.2270}, 
+	DOI={10.1002/qj.2270}, 
+	number={683}, 
+	journal={Quarterly Journal of the Royal Meteorological Society}, 
+	publisher={Wiley}, 
+	author={Ferro, C. A. T.}, 
+	year={2013}, 
+	month=dec, 
+	pages={1917–1923}
+}
+@article{Gneiting_2007, 
+	title={Strictly Proper Scoring Rules, Prediction, and Estimation}, 
+	volume={102}, 
+	ISSN={1537-274X}, 
+	url={http://dx.doi.org/10.1198/016214506000001437}, 
+	DOI={10.1198/016214506000001437}, 
+	number={477}, 
+	journal={Journal of the American Statistical Association}, 
+	publisher={Informa UK Limited}, 
+	author={Gneiting, Tilmann and Raftery, Adrian E}, 
+	year={2007}, 
+	month=mar, 
+	pages={359–378}
+}
+@article{gmd-12-4185-2019,
+	author = {Pulkkinen, S. and Nerini, D. and P\'erez Hortal, A. A. and Velasco-Forero, C. and Seed, A. and Germann, U. and Foresti, L.},
+	title = {Pysteps: an open-source {P}ython library  for probabilistic precipitation nowcasting (v1.0)},
+	JOURNAL = {Geoscientific Model Development},
+	VOLUME = {12},
+	YEAR = {2019},
+	NUMBER = {10},
+	PAGES = {4185--4219},
+	URL = {https://gmd.copernicus.org/articles/12/4185/2019/},
+	DOI = {10.5194/gmd-12-4185-2019}
+}
+@article{Imhoff:2023,
+	author = {Imhoff, Ruben O. and De Cruz, Lesley and Dewettinck, Wout and Brauer, Claudia C. and Uijlenhoet, Remko and van Heeringen, Klaas-Jan and Velasco-Forero, Carlos and Nerini, Daniele and Van Ginderachter, Michiel and Weerts, Albrecht H.},
+	title = {Scale-dependent blending of ensemble rainfall nowcasts and numerical weather prediction in the open-source pysteps library},
+	journal = {Quarterly Journal of the Royal Meteorological Society},
+	volume = {149},
+	number = {753},
+	pages = {1335-1364},
+	keywords = {blending, early warning, nowcasting, numerical weather prediction, open source, rainfall},
+	doi = {10.1002/qj.4461},
+	url = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/qj.4461},
+	eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/qj.4461},
+	abstract = {Abstract Flash flood early warning requires accurate rainfall forecasts with a high spatial and temporal resolution. As the first few hours ahead are already not sufficiently well captured by the rainfall forecasts of numerical weather prediction (NWP) models, radar rainfall nowcasting can provide an alternative. Because this observation-based method quickly loses skill after the first 2 hr of the forecast, it needs to be combined with NWP forecasts to extend the skillful lead time of short-term rainfall forecasts, which should increase decision-making times. We implemented an adaptive scale-dependent ensemble blending method in the open-source pysteps library, based on the Short-Term Ensemble Prediction System scheme. In this implementation, the extrapolation (ensemble) nowcast, (ensemble) NWP, and noise components are combined with skill-dependent weights that vary per spatial scale level. To constrain the (dis)appearance of rain in the ensemble members to regions around the rainy areas, we have developed a Lagrangian blended probability matching scheme and incremental masking strategy. We describe the implementation details and evaluate the method using three heavy and extreme (July 2021) rainfall events in four Belgian and Dutch catchments. We benchmark the results of the 48-member blended forecasts against the Belgian NWP forecast, a 48-member nowcast, and a simple 48-member linear blending approach. Both on the radar domain and catchment scale, the introduced blending approach predominantly performs similarly or better than only nowcasting (in terms of event-averaged continuous ranked probability score and critical success index values) and adds value compared with NWP for the first hours of the forecast, although the difference, particularly with the linear blending method, reduces when we focus on catchment-average cumulative rainfall sums instead of instantaneous rainfall rates. By properly combining observations and NWP forecasts, blending methods such as these are a crucial component of seamless prediction systems.},
+	year = {2023}
+}
+@software{pandas:2024,
+  author       = {{The pandas development team}},
+  title        = {pandas-dev/pandas: Pandas},
+  month        = apr,
+  year         = 2024,
+  publisher    = {Zenodo},
+  version      = {v2.2.2},
+  doi          = {10.5281/zenodo.10957263},
+  url          = {https://doi.org/10.5281/zenodo.10957263}
+}
+@InProceedings{McKinney:2010,
+  author    = { Wes McKinney },
+  title     = { Data Structures for Statistical Computing in {P}ython },
+  booktitle = { {P}roceedings of the 9th {P}ython in {S}cience {C}onference },
+  pages     = { 56 - 61 },
+  year      = { 2010 },
+  editor    = { St\'efan van der Walt and Jarrod Millman },
+  doi       = { 10.25080/Majora-92bf1922-00a }
+}
+@Manual{Dask:2016,
+  title = {Dask: Library for dynamic task scheduling},
+  author = {{Dask Development Team}},
+  year = {2016},
+  url = {http://dask.pydata.org},
+}
+@software{Morley:2020,
+  author       = {Steve Morley and
+                  Angeline Burrell},
+  title        = {drsteve/PyForecastTools: Version 1.1.1},
+  month        = apr,
+  year         = 2020,
+  publisher    = {Zenodo},
+  version      = {v1.1.1},
+  doi          = {10.5281/zenodo.3764117},
+  url          = {https://doi.org/10.5281/zenodo.3764117}
+}
+@software{NetCDF:2024,
+  author       = {Unidata},
+  title        = {Network Common Data Form (NetCDF)},
+  year         = 2024,
+  publisher    = {UCAR/Unidata Program Center},
+  doi          = {10.5065/D6H70CW6},
+  url          = {http://doi.org/10.5065/D6H70CW6}
+}
+@misc{HDF5:2020,
+  title = {HDF5-Version 1.12.0},
+  author = {{The HDF Group} and Koziol, Quincey},
+  doi = {10.11578/dc.20180330.1},
+  url = {https://doi.org/10.11578/dc.20180330.1},
+  year = {2020},
+  month = {feb}
+}
+@software{zarr:2020,
+  author       = {Alistair Miles and
+                  John Kirkham and
+                  Martin Durant and
+                  James Bourbeau and
+                  Tarik Onalan and
+                  Joe Hamman and
+                  Zain Patel and
+                  shikharsg and
+                  Matthew Rocklin and
+                  raphael dussin and
+                  Vincent Schut and
+                  Elliott Sales de Andrade and
+                  Ryan Abernathey and
+                  Charles Noyes and
+                  sbalmer and
+                  pyup.io bot and
+                  Tommy Tran and
+                  Stephan Saalfeld and
+                  Justin Swaney and
+                  Josh Moore and
+                  Joe Jevnik and
+                  Jerome Kelleher and
+                  Jan Funke and
+                  George Sakkis and
+                  Chris Barnes and
+                  Anderson Banihirwe},
+  title        = {zarr-developers/zarr-python: v2.4.0},
+  month        = apr,
+  year         = 2020,
+  publisher    = {Zenodo},
+  version      = {v2.4.0},
+  doi          = {10.5281/zenodo.3773450},
+  url          = {https://doi.org/10.5281/zenodo.3773450}
+}
+@software{GRIB:2024,
+  title = {WMO No. 306 FM 92 GRIB (edition 2)},
+  author = {{World Meteorological Organization}},
+  publisher = {World Meteorological Organization},
+  url = {https://codes.wmo.int/grib2},
+  year = {2024},
+}
+@misc{Jupyter:2024,
+  title = {Jupyter Interactive Notebook},	
+  publisher = {GitHub},
+  author = {{Jupyter Team}},
+  url = {https://github.com/jupyter/notebook},
+  year = {2024},
+}
+@Article{BRIER_1950, 
+	title={Verification of Forecasts Expressed in Terms of Probability}, 
+	volume={78}, 
+	ISSN={1520-0493}, 
+	url={http://dx.doi.org/10.1175/1520-0493(1950)078<0001:vofeit>2.0.co;2}, 
+	DOI={10.1175/1520-0493(1950)078<0001:vofeit>2.0.co;2}, 
+	number={1}, 
+	journal={Monthly Weather Review}, 
+	publisher={American Meteorological Society}, 
+	author={Brier, Glenn W.}, 
+	year={1950}, 
+	month=jan, 
+	pages={1–3} 
+}
+@article{gilbert:1884,
+  title={Finley's tornado predictions},
+  author={Gilbert, Grove Karl},
+  journal={American Meteorological Journal},
+  volume={1},
+  number={5},
+  pages={166--172},
+  year={1884},
+  publisher={American Periodicals Series III}
+}
+@article{Peirce:1884,
+	author = {C. S. Peirce},
+	title = {The Numerical Measure of the Success of Predictions},
+	journal = {Science},
+	volume = {ns-4},
+	number = {93},
+	pages = {453-454},
+	year = {1884},
+	doi = {10.1126/science.ns-4.93.453.b},
+	URL = {https://www.science.org/doi/abs/10.1126/science.ns-4.93.453.b},
+	eprint = {https://www.science.org/doi/pdf/10.1126/science.ns-4.93.453.b}
+}
+@article{Ferro:2011,
+  author = "C. A. T. Ferro and David B. Stephenson",
+  title = "Extremal Dependence Indices: Improved Verification Measures for Deterministic Forecasts of Rare Binary Events",
+  journal = "Weather and Forecasting",
+  year = "2011",
+  publisher = "American Meteorological Society",
+  address = "Boston MA, USA",
+  volume = "26",
+  number = "5",
+  doi = "10.1175/WAF-D-10-05030.1",
+  pages=      "699 - 713",
+  url = "https://journals.ametsoc.org/view/journals/wefo/26/5/waf-d-10-05030_1.xml"
+}
+@article {Roberts:2008,
+  author = "Nigel M. Roberts and Humphrey W. Lean",
+  title = "Scale-Selective Verification of Rainfall Accumulations from High-Resolution Forecasts of Convective Events",
+  journal = "Monthly Weather Review",
+  year = "2008",
+  publisher = "American Meteorological Society",
+  address = "Boston MA, USA",
+  volume = "136",
+  number = "1",
+  doi = "10.1175/2007MWR2123.1",
+  pages=      "78 - 97",
+  url = "https://journals.ametsoc.org/view/journals/mwre/136/1/2007mwr2123.1.xml"
+}
+
