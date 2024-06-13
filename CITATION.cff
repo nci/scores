@@ -1,6 +1,5 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"
 authors:
   - name: Tennessee Leeuwenburg
     orcid: "https://orcid.org/0009-0008-2024-1967"
@@ -21,6 +20,8 @@ authors:
     orcid: "https://orcid.org/0009-0007-0796-4127"
   - name: Aidan Griffiths
   - name: John Sharples  
+  
+title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"  
 
 preferred-citation:
   type: article
