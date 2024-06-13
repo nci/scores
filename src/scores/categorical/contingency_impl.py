@@ -18,6 +18,8 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 Users can supply their own event operators to the top-level module functions.
 """
 
+# pylint: disable=too-many-lines
+
 import operator
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -367,7 +369,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the probability of false detection
 
         .. math::
-            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} +
+            \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 0.
@@ -390,7 +393,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the success ratio
 
         .. math::
-            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
@@ -413,7 +417,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the threat score
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -438,7 +443,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the critical success index
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -462,7 +468,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the Peirce Skill Score
 
         .. math::
-            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + 
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + 
+            \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -492,7 +500,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the true skill statistic
 
         .. math::
-            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} +
+            \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -516,7 +526,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing Hanssen and Kuipers' Discriminant
 
         .. math::
-            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} +
+            \\text{true negatives}}
 
         where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
 
@@ -655,7 +667,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the F1 score
 
         .. math::
-            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) + \\text{false positives} + \\text{false negatives}}
+            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - "True positives" is the same as "hits".
@@ -683,12 +696,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{ETS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positives} _\\text{random}}
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - 
+            \\text{true positives} _\\text{random}}
 
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + 
+            \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
@@ -722,12 +737,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{GSS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positivies} _\\text{random}}
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - 
+            \\text{true positivies} _\\text{random}}
 
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + 
+            \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
