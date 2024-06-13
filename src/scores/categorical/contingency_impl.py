@@ -1188,7 +1188,7 @@ class BinaryContingencyManager(BasicContingencyManager):
 class EventOperator(ABC):
     """
     Abstract Base Class (ABC) for event operators which can be used in deriving contingency
-    tables. ABCs are not use directly but instead define the requirements for other classes
+    tables. ABCs are not used directly but instead define the requirements for other classes
     and may be used for type checking.
     """
 
