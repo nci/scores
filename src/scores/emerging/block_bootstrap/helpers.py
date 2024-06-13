@@ -10,13 +10,10 @@ import xarray as xr
 from typing import TypeVar, Tuple
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
-def partial_linear_order_by_ref(
-    xs: list[T],
-    xs_ref: list[T]
-) -> Tuple[list[T], list[T]]:
+def partial_linear_order_by_ref(xs: list[T], xs_ref: list[T]) -> Tuple[list[T], list[T]]:
     """
     Sorts elements in ``xs`` in the order that they appear in the ``xs_ref``.
 
@@ -50,14 +47,11 @@ def partial_linear_order_by_ref(
     if len(xs) <= 1:
         return xs
 
-    xs_sorted = [ x for x in xs_ref if x in xs ]
-    is_linord = all([
-        xs_sorted[i] == x
-        for i, x in enumerate(xs_ref[0:len(xs_sorted)])
-    ])
+    xs_sorted = [x for x in xs_ref if x in xs]
+    is_linord = all([xs_sorted[i] == x for i, x in enumerate(xs_ref[0 : len(xs_sorted)])])
 
     if not is_linord:
-        xs_gaps = list(set(xs_ref[0:len(xs_sorted)]) - set(xs_sorted))
+        xs_gaps = list(set(xs_ref[0 : len(xs_sorted)]) - set(xs_sorted))
 
         raise ValueError(
             f"Sorted list {xs_sorted} is not linearly ordered in comparision to"
@@ -83,8 +77,6 @@ def reorder_dims(
         dims_ord.extend(dims_unord_sorted)
     else:
         if len(dims_unord) > 0:
-            raise ValueError(
-                f"`auto_order_missing = False` unable to align unspecified dimensions: {dims_unord}"
-            )
+            raise ValueError(f"`auto_order_missing = False` unable to align unspecified dimensions: {dims_unord}")
 
     return arr.transpose(*tuple(dims_ord))

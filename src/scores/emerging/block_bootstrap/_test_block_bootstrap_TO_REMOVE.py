@@ -14,7 +14,6 @@ from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
 def _test_numpy_blk_bootstrap_single_iter():
-
     # generate test data
     axis_len = [13, 10, 8, 7]
     block_sizes = [4, 3, 2, 3]
@@ -51,7 +50,7 @@ def _test_numpy_blk_bootstrap_single_iter():
 
 
 def _test_order_dims():
-    arr_test = np.random.rand(10,10,12,7,5)
+    arr_test = np.random.rand(10, 10, 12, 7, 5)
     da = xr.DataArray(
         data=arr_test,
         dims=["x", "y", "time", "lead_time", "height"],
