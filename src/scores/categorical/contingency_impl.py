@@ -37,10 +37,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     a detailed walkthrough showing the use of this class in practice.
 
     A BasicContingencyManager object provides the scoring functions which are calculated
-    from a contingency table. It can be efficiently and repeatedly queried for a wide
-    variety of scores.
+    from a contingency table. A BasicContingencyManager can be efficiently and repeatedly
+    queried for a wide variety of scores.
 
-    A :py:class:`BasicContingencyManager` is produced when a BinaryContingencyManager is
+    A BasicContingencyManager is produced when a :py:class:`BinaryContingencyManager` is
     transformed. It is also possible to create a BasicContingencyManager from event counts or
     a contingency table, although this not a common user requirement.
 
@@ -1025,6 +1025,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use in practice.
+
     A BinaryContingencyManager holds the underlying binary forecast and observed event data,
     from which it builds a contingency table and provides scoring functionality based on that table.
 
@@ -1036,9 +1039,6 @@ class BinaryContingencyManager(BasicContingencyManager):
         - "Transforming" the data in various ways, such as dimensional reduction
         - Producing contingency tables
         - Calculating scores and metrics based on contingency tables
-
-    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
-    a detailed walkthrough showing the use in practice.
 
     The full data comprises several n-dimensional binary arrays which can be considered maps of:
         - True positives (hit)
