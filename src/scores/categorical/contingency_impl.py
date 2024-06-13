@@ -33,25 +33,25 @@ DEFAULT_PRECISION = 8
 
 class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     """
-    A BasicContingencyManager provides the actual scoring functions which calculate
-    the scores and metrics of interest. It can be efficiently queried for a wide
-    variety of scores on the same contingency table.
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use of this class in practice.
 
-    A basic contingency table is built only from the event counts, losing the connection
-    to the actual event tables in their full dimensionality. The event count data is much 
-    smaller than the full event tables, particularly when considering very large data sets 
-    like Numerical Weather Prediction (NWP) data, which could be terabytes to petabytes in 
-    size.    
+    A BasicContingencyManager object provides the scoring functions which are calculated
+    from a contingency table. It can be efficiently and repeatedly queried for a wide
+    variety of scores.
 
-    A :py:class:`BasicContingencyManager` is produced when a BinaryContingencyManager is 
-    transformed. It is also possible to create a BasicContingencyManager from event counts or 
-    a  contingency table, although this not a common user requirement.
+    A :py:class:`BasicContingencyManager` is produced when a BinaryContingencyManager is
+    transformed. It is also possible to create a BasicContingencyManager from event counts or
+    a contingency table, although this not a common user requirement.
 
-    By contrast, A :py:class:`BinaryContingencyManager` retains the full event data, which provides 
+    A contingency table is built only from event counts, losing the connection
+    to the actual event tables in their full dimensionality. The event count data is much
+    smaller than the full event tables, particularly when considering very large data sets
+    like Numerical Weather Prediction (NWP) data, which could be terabytes to petabytes in
+    size.
+
+    By contrast, A :py:class:`BinaryContingencyManager` retains the full event data, which provides
     some more flexbility but may reduce efficiency.
-
-    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for 
-    a detailed walkthrough showing the use in practice.
     """
 
     def __init__(self, counts: dict):
@@ -1025,10 +1025,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
-    A BinaryContingencyManager holds the underlying binary forecast and observed event data, 
+    A BinaryContingencyManager holds the underlying binary forecast and observed event data,
     from which it builds a contingency table and provides scoring functionality based on that table.
-    
-    A BinaryContingencyManager is typically created by an :py:class:`EventOperator`, such as a 
+
+    A BinaryContingencyManager is typically created by an :py:class:`EventOperator`, such as a
     :py:class:`ThresholdOperator`, but can also be created directly from binary data if the user
     wishes.
 
@@ -1037,7 +1037,7 @@ class BinaryContingencyManager(BasicContingencyManager):
         - Producing contingency tables
         - Calculating scores and metrics based on contingency tables
 
-    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for 
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
     a detailed walkthrough showing the use in practice.
 
     The full data comprises several n-dimensional binary arrays which can be considered maps of:
@@ -1053,7 +1053,7 @@ class BinaryContingencyManager(BasicContingencyManager):
 
     As such, the per-pixel information is useful as well as the overall ratios involved.
 
-    BinaryContingencyManager inherits from (uses) the :py:class:`BasicContingencyManager` class to 
+    BinaryContingencyManager inherits from (uses) the :py:class:`BasicContingencyManager` class to
     provide score calculations on the final contingency table. Documentation for the available scores
     is found in the :py:class:`BasicContingencyManager` API entry but the calls can be made directly
     against instances of BinaryContingencyManager where performance or transformation are not a concern.
