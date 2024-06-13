@@ -93,13 +93,63 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def get_counts(self) -> dict:
         """
-        Return the contingency table counts (tp, fp, tn, fn)
+
+        Returns:
+            dict: A dictionary of the contingency table counts. Values are xr.DataArray instances.
+            The keys are:
+
+            - tp_count for true positive count
+            - tn_count for true negative count,
+            - fp_count for false positive count
+            - fn_count for false negative count
+            - total_count for the total number of events.
+
+        Here is an example of what may be returned:
+
+        .. code-block :: python
+
+            {'tp_count': <xarray.DataArray ()> Size: 8B array(5.),
+             'tn_count': <xarray.DataArray ()> Size: 8B array(11.),
+             'fp_count': <xarray.DataArray ()> Size: 8B array(1.),
+             'fn_count': <xarray.DataArray ()> Size: 8B array(1.),
+             'total_count': <xarray.DataArray ()> Size: 8B array(18.)}
+
         """
         return self.counts
 
     def get_table(self) -> xr.DataArray:
         """
-        Return the contingency table as an xarray object
+        Return:
+            xr.DataArray: The contingency table as an xarray object. Contains
+            a coordinate dimension called 'contingency'. Valid coordinates
+            for this dimenstion are:
+
+            - tp_count for true positive count
+            - tn_count for true negative count
+            - fp_count for false positive count
+            - fn_count for false negative count
+            - total_count for the total number of events.
+
+        Here is an example of what may be returned:
+
+        .. code-block :: python
+
+            array([ 5., 11.,  1.,  1., 18.])
+
+            Coordinates:
+
+                contingency
+                (contingency)
+                <U11
+                'tp_count' ... 'total_count'
+
+            Indexes:
+
+                contingency
+                PandasIndex
+
+            Attributes: (0)
+
         """
         return self.xr_table
 
@@ -1137,9 +1187,9 @@ class BinaryContingencyManager(BasicContingencyManager):
 
 class EventOperator(ABC):
     """
-    Base class for event operators which can be used in deriving contingency
-    tables. This will be expanded as additional use cases are incorporated
-    beyond the ThresholdEventOperator.
+    Abstract Base Class (ABC) for event operators which can be used in deriving contingency
+    tables. ABCs are not use directly but instead define the requirements for other classes
+    and may be used for type checking.
     """
 
     @abstractmethod
@@ -1163,10 +1213,15 @@ class EventOperator(ABC):
 
 class ThresholdEventOperator(EventOperator):
     """
-    Given a forecast and and an observation, consider an event defined by
-    particular variables meeting a threshold condition (e.g. rainfall above 1mm).
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use in practice.
 
-    This class abstracts that concept for any event definition.
+    A ThresholdEventOperator is used to produce a :py:class:`BinaryContingencyManager` from
+    forecast and observed data. It considers an event to be defined when the forecast and
+    observed variables meet a particular threshold condition (e.g. rainfall above 1mm).
+
+    The class may be used for any variable, for any threshold, and for any comparison
+    operator (e.g. greater-than, less-than, greater-than-or-equal-to, ... )
     """
 
     def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001, default_op_fn=operator.ge):
