@@ -1,8 +1,12 @@
 # pylint: disable=all
 
+import pprint
+
 import numpy as np
+import xarray as xr
 
 from scores.emerging.block_bootstrap.axis_info import AxisInfo, make_axis_info
+from scores.emerging.block_bootstrap.helpers import partial_linear_order_by_ref, reorder_dims
 from scores.emerging.block_bootstrap.block_bootstrap import (
     construct_block_bootstrap_array,
 )
@@ -10,7 +14,6 @@ from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
 def _test_numpy_blk_bootstrap_single_iter():
-    import pprint  # pylint: disable=import-outside-toplevel
 
     # generate test data
     axis_len = [13, 10, 8, 7]
@@ -47,5 +50,30 @@ def _test_numpy_blk_bootstrap_single_iter():
     pprint.pp(res)
 
 
+def _test_order_dims():
+    arr_test = np.random.rand(10,10,12,7,5)
+    da = xr.DataArray(
+        data=arr_test,
+        dims=["x", "y", "time", "lead_time", "height"],
+    )
+
+    print("\n--- partial order ---")
+    da_ord = reorder_dims(da, ["y", "height", "x"])
+    print(f"shape_in: {da.shape}, shape_out: {da_ord.shape}")
+    print(f"dims_in: {da.dims}, dims_out: {da_ord.dims}")
+    try:
+        reorder_dims(da, ["y", "height", "x"], False)
+    except ValueError as e:
+        print(f"\n--- no auto ordering for unspecified dims ---")
+        print(f"Caught expected value error: {e}")
+
+    try:
+        reorder_dims(da, ["x", "height", "alpha", "y"])
+    except ValueError as e:
+        print(f"\n--- gap in ordering, could not find alpha ---")
+        print(f"Caught expected value error: {e}")
+
+
 if __name__ == "__main__":
+    _test_order_dims()
     _test_numpy_blk_bootstrap_single_iter()
