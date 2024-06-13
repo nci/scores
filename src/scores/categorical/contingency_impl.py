@@ -1038,25 +1038,25 @@ class BinaryContingencyManager(BasicContingencyManager):
     """
 
     def __init__(
-        self, forecast_events: FlexibleArrayType, observed_events: FlexibleArrayType
+        self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType
     ):  # pylint: disable=super-init-not-called
-        self.forecast_events = forecast_events
-        self.observed_events = observed_events
+        self.fcst_events = fcst_events
+        self.obs_events = obs_events
 
-        self.tp = (self.forecast_events == 1) & (self.observed_events == 1)  # true positives
-        self.tn = (self.forecast_events == 0) & (self.observed_events == 0)  # true negatives
-        self.fp = (self.forecast_events == 1) & (self.observed_events == 0)  # false positives
-        self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
+        self.tp = (self.fcst_events == 1) & (self.obs_events == 1)  # true positives
+        self.tn = (self.fcst_events == 0) & (self.obs_events == 0)  # true negatives
+        self.fp = (self.fcst_events == 1) & (self.obs_events == 0)  # false positives
+        self.fn = (self.fcst_events == 0) & (self.obs_events == 1)  # false negatives
 
         # Bring back NaNs where there is either a forecast or observed event nan
-        self.tp = self.tp.where(~np.isnan(forecast_events))
-        self.tp = self.tp.where(~np.isnan(observed_events))
-        self.tn = self.tn.where(~np.isnan(forecast_events))
-        self.tn = self.tn.where(~np.isnan(observed_events))
-        self.fp = self.fp.where(~np.isnan(forecast_events))
-        self.fp = self.fp.where(~np.isnan(observed_events))
-        self.fn = self.fn.where(~np.isnan(forecast_events))
-        self.fn = self.fn.where(~np.isnan(observed_events))
+        self.tp = self.tp.where(~np.isnan(fcst_events))
+        self.tp = self.tp.where(~np.isnan(obs_events))
+        self.tn = self.tn.where(~np.isnan(fcst_events))
+        self.tn = self.tn.where(~np.isnan(obs_events))
+        self.fp = self.fp.where(~np.isnan(fcst_events))
+        self.fp = self.fp.where(~np.isnan(obs_events))
+        self.fn = self.fn.where(~np.isnan(fcst_events))
+        self.fn = self.fn.where(~np.isnan(obs_events))
 
         # Variables for count-based metrics
         self.counts = self._get_counts()
@@ -1085,8 +1085,8 @@ class BinaryContingencyManager(BasicContingencyManager):
         """
 
         to_reduce = scores.utils.gather_dimensions(
-            self.forecast_events.dims,
-            self.observed_events.dims,
+            self.fcst_events.dims,
+            self.obs_events.dims,
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
@@ -1111,9 +1111,7 @@ class EventOperator(ABC):
     """
 
     @abstractmethod
-    def make_event_tables(
-        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
-    ):
+    def make_event_tables(self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None):
         """
         This method should be over-ridden to return forecast and observed event tables
         """
@@ -1142,9 +1140,7 @@ class ThresholdEventOperator(EventOperator):
         self.default_event_threshold = default_event_threshold
         self.default_op_fn = default_op_fn
 
-    def make_event_tables(
-        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
-    ):
+    def make_event_tables(self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None):
         """
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
@@ -1160,14 +1156,14 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(fcst, event_threshold)
-        observed_events = op_fn(obs, event_threshold)
+        fcst_events = op_fn(fcst, event_threshold)
+        obs_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(fcst))
-        observed_events = observed_events.where(~np.isnan(obs))
+        fcst_events = fcst_events.where(~np.isnan(fcst))
+        obs_events = obs_events.where(~np.isnan(obs))
 
-        return (forecast_events, observed_events)
+        return (fcst_events, obs_events)
 
     def make_contingency_manager(
         self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
@@ -1187,12 +1183,12 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(fcst, event_threshold)
-        observed_events = op_fn(obs, event_threshold)
+        fcst_events = op_fn(fcst, event_threshold)
+        obs_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(fcst))
-        observed_events = observed_events.where(~np.isnan(obs))
+        fcst_events = fcst_events.where(~np.isnan(fcst))
+        obs_events = obs_events.where(~np.isnan(obs))
 
-        table = BinaryContingencyManager(forecast_events, observed_events)
+        table = BinaryContingencyManager(fcst_events, obs_events)
         return table
