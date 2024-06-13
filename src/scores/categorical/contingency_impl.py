@@ -1093,7 +1093,7 @@ class BinaryContingencyManager(BasicContingencyManager):
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
     ) -> BasicContingencyManager:
         """
-        Compute the contingency table, preserving or reducing the specified dimensions
+        Compute the contingency table, preserving or reducing the specified dimensions.
 
         Args:
             - reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
