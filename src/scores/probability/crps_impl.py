@@ -176,18 +176,22 @@ def crps_cdf(
 
     Given:
         - a predictive CDF `fcst` indexed at thresholds by variable x
-        - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
+        - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if \
+         :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
         - a `threshold_weight` array indexed by variable x
 
     The threshold-weighted CRPS is given by:
-        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
+        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times 
+        (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
         - The usual CRPS is the threshold-weighted CRPS with :math:`\\text{threshold_weight}(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
+        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) - 
+        \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
     
     and an under-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
+        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - 
+        \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
