@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"
+authors:
+  - name: Tennessee Leeuwenburg
+    orcid: "https://orcid.org/0009-0008-2024-1967"
+  - name: Nicholas Loveday
+    orcid: "https://orcid.org/0009-0000-5796-7069"
+  - name: Elizabeth E. Ebert
+  - name: Harrison Cook
+    orcid: "https://orcid.org/0009-0009-3207-4876"
+  - name: Mohammadreza Khanarmuei
+    orcid: "https://orcid.org/0000-0002-5017-9622"
+  - name: Robert J. Taggart
+    orcid: "https://orcid.org/0000-0002-0067-5687"
+  - name: Nikeeth Ramanathan
+    orcid: "https://orcid.org/0009-0002-7406-7438"
+  - name: Maree Carroll
+    orcid: "https://orcid.org/0009-0008-6830-8251"
+  - name: Stephanie Chong
+    orcid: "https://orcid.org/0009-0007-0796-4127"
+  - name: Aidan Griffiths
+  - name: John Sharples  
+
+preferred-citation:
+  type: article
+  doi: "10.48550/arXiv.2406.07817"
+  journal: "arXiv"
+  title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"
+  authors:
+    - name: Tennessee Leeuwenburg
+      orcid: "https://orcid.org/0009-0008-2024-1967"
+    - name: Nicholas Loveday
+      orcid: "https://orcid.org/0009-0000-5796-7069"
+    - name: Elizabeth E. Ebert
+    - name: Harrison Cook
+      orcid: "https://orcid.org/0009-0009-3207-4876"
+    - name: Mohammadreza Khanarmuei
+      orcid: "https://orcid.org/0000-0002-5017-9622"
+    - name: Robert J. Taggart
+      orcid: "https://orcid.org/0000-0002-0067-5687"
+    - name: Nikeeth Ramanathan
+      orcid: "https://orcid.org/0009-0002-7406-7438"
+    - name: Maree Carroll
+      orcid: "https://orcid.org/0009-0008-6830-8251"
+    - name: Stephanie Chong
+      orcid: "https://orcid.org/0009-0007-0796-4127"
+    - name: Aidan Griffiths
+    - name: John Sharples  
+  year: 2024
