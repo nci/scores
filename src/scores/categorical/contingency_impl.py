@@ -1112,7 +1112,7 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         This method should be over-ridden to return forecast and observed event tables
@@ -1121,7 +1121,7 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         This method should be over-ridden to return a contingency table.
@@ -1143,7 +1143,7 @@ class ThresholdEventOperator(EventOperator):
         self.default_op_fn = default_op_fn
 
     def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         Using this function requires a careful understanding of the structure of the data
@@ -1160,17 +1160,17 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(forecast, event_threshold)
-        observed_events = op_fn(observed, event_threshold)
+        forecast_events = op_fn(fcst, event_threshold)
+        observed_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))
-        observed_events = observed_events.where(~np.isnan(observed))
+        forecast_events = forecast_events.where(~np.isnan(fcst))
+        observed_events = observed_events.where(~np.isnan(obs))
 
         return (forecast_events, observed_events)
 
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ) -> BinaryContingencyManager:
         """
         Using this function requires a careful understanding of the structure of the data
@@ -1187,12 +1187,12 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(forecast, event_threshold)
-        observed_events = op_fn(observed, event_threshold)
+        forecast_events = op_fn(fcst, event_threshold)
+        observed_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))
-        observed_events = observed_events.where(~np.isnan(observed))
+        forecast_events = forecast_events.where(~np.isnan(fcst))
+        observed_events = observed_events.where(~np.isnan(obs))
 
         table = BinaryContingencyManager(forecast_events, observed_events)
         return table
