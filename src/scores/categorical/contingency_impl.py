@@ -18,6 +18,8 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 Users can supply their own event operators to the top-level module functions.
 """
 
+# pylint: disable=too-many-lines
+
 import operator
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -1041,10 +1043,10 @@ class BinaryContingencyManager(BasicContingencyManager):
         - Calculating scores and metrics based on contingency tables
 
     The full data comprises several n-dimensional binary arrays which can be considered maps of:
-        - True positives (hit)
-        - False positives (false alarm)
-        - True negatives (correct negative)
-        - False negatives (miss)
+        - True positives (hits)
+        - False positives (false alarms)
+        - True negatives (correct negatives)
+        - False negatives (misses)
 
     These masks, in addition to supporting score calculations, can be accessed and used for:
 
@@ -1099,7 +1101,7 @@ class BinaryContingencyManager(BasicContingencyManager):
 
         Returns:
             scores.categorical.BasicContingencyManager: A `scores` class which supports efficient
-            calculation of contingency metrics
+            calculation of contingency metrics.
         """
         cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
         return BasicContingencyManager(cd)
