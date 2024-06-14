@@ -137,7 +137,7 @@
   -
     [API](api.md#scores.probability.adjust_fcst_for_crps)
   - 
-    [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
+    &mdash;
   - 
     &mdash;
 * -  
