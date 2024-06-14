@@ -123,39 +123,27 @@
 * - Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs)
   -    
   - 
-  -
-* -  
-    - CRPS for CDFs
-  -
-    [API](api.md#scores.probability.crps_cdf)
   - 
-    [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
-  - 
-    [Matheson and Winkler (1976)](https://doi.org/10.1287/mnsc.22.10.1087); [Gneiting and Ranjan (2011)](https://doi.org/10.1198/jbes.2010.08110)
 * -  
     - Adjust Forecast for CRPS
-  -
-    [API](api.md#scores.probability.adjust_fcst_for_crps)
-  - 
-    &mdash;
-  - 
-    &mdash;
-* -  
-    - CRPS step threshold weights
-  -
-    [API](api.md#scores.crps_step_threshold_weight)
-  - 
-    &mdash;
-  - 
-    &mdash;
+  - [API](api.md#scores.probability.adjust_fcst_for_crps)
+  - &mdash;
+  - &mdash;
 * -  
     - CRPS CDF Brier Decomposition
-  -
-    [API](api.md#scores.probability.crps_cdf_brier_decomposition)
-  - 
-    [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
-  - 
-    &mdash;    
+  - [API](api.md#scores.probability.crps_cdf_brier_decomposition)
+  - [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
+  - &mdash;        
+* -  
+    - CRPS for CDFs
+  - [API](api.md#scores.probability.crps_cdf)
+  - [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
+  - [Matheson and Winkler (1976)](https://doi.org/10.1287/mnsc.22.10.1087); [Gneiting and Ranjan (2011)](https://doi.org/10.1198/jbes.2010.08110)
+* -  
+    - CRPS Step Threshold Weights
+  - [API](api.md#scores.probability.crps_step_threshold_weight)
+  - &mdash;
+  - &mdash;
 * - Continuous Ranked Probability Score (CRPS) for Ensembles
   - [API](api.md#scores.probability.crps_for_ensemble)   
   - [Tutorial](project:./tutorials/CRPS_for_Ensembles.md)
