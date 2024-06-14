@@ -1,0 +1,73 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- given-names: Tennessee 
+  family-names: Leeuwenburg
+  orcid: "https://orcid.org/0009-0008-2024-1967"
+- given-names: Nicholas 
+  family-names: Loveday
+  orcid: "https://orcid.org/0009-0000-5796-7069"
+- given-names: Elizabeth E. 
+  family-names: Ebert
+- given-names: Harrison 
+  family-names: Cook
+  orcid: "https://orcid.org/0009-0009-3207-4876"
+- given-names: Mohammadreza 
+  family-names: Khanarmuei
+  orcid: "https://orcid.org/0000-0002-5017-9622"
+- given-names: Robert J. 
+  family-names: Taggart
+  orcid: "https://orcid.org/0000-0002-0067-5687"
+- given-names: Nikeeth 
+  family-names: Ramanathan
+  orcid: "https://orcid.org/0009-0002-7406-7438"
+- given-names: Maree 
+  family-names: Carroll
+  orcid: "https://orcid.org/0009-0008-6830-8251"
+- given-names: Stephanie 
+  family-names: Chong
+  orcid: "https://orcid.org/0009-0007-0796-4127"
+- given-names: Aidan 
+  family-names: Griffiths
+- given-names: John 
+  family-names: Sharples  
+
+title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"  
+
+preferred-citation:
+  type: article
+  doi: "10.48550/arXiv.2406.07817"
+  journal: "arXiv"
+  title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"
+  authors:
+  - given-names: Tennessee 
+    family-names: Leeuwenburg
+    orcid: "https://orcid.org/0009-0008-2024-1967"
+  - given-names: Nicholas 
+    family-names: Loveday
+    orcid: "https://orcid.org/0009-0000-5796-7069"
+  - given-names: Elizabeth E. 
+    family-names: Ebert
+  - given-names: Harrison 
+    family-names: Cook
+    orcid: "https://orcid.org/0009-0009-3207-4876"
+  - given-names: Mohammadreza 
+    family-names: Khanarmuei
+    orcid: "https://orcid.org/0000-0002-5017-9622"
+  - given-names: Robert J. 
+    family-names: Taggart
+    orcid: "https://orcid.org/0000-0002-0067-5687"
+  - given-names: Nikeeth 
+    family-names: Ramanathan
+    orcid: "https://orcid.org/0009-0002-7406-7438"
+  - given-names: Maree 
+    family-names: Carroll
+    orcid: "https://orcid.org/0009-0008-6830-8251"
+  - given-names: Stephanie 
+    family-names: Chong
+    orcid: "https://orcid.org/0009-0007-0796-4127"
+  - given-names: Aidan 
+    family-names: Griffiths
+  - given-names: John 
+    family-names: Sharples  
+  year: 2024

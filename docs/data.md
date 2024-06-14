@@ -2,9 +2,9 @@
 
 Overview of Some Relevant Data Sources
 
-This section suggests how to obtain some 'getting started' weather and climate data for examining the use of the scores and metrics contained in this package. Data referred to here is available under various licenses, and the onus is on the user to understand the conditions of those licenses. The tutorials and walkthroughs in the 'tutorials' directory contain more information and explore the data in more depth.
+This section suggests how to obtain sample data for 'getting started' with weather and climate information. Data referred to here is available under various licenses, and the onus is on the user to understand the conditions of those licenses. The tutorials and walkthroughs in the 'tutorials' directory contain more information and explore the data in more depth.
 
-This page will be improved to provide more specific instructions on downloading and preparing the data in accordance with the scores roadmap. For the moment, it notes a few key datasets which have global coverage and are easily accessible.
+This page will be improved to provide more specific instructions on downloading and preparing the data. For the moment, it notes a few key datasets which have global coverage and are easily accessible.
 
 ## Gridded global numerical weather prediction data
 Global weather prediction models are used to generate medium range forecasts and provide the initial and boundary conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
