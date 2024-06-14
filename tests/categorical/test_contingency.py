@@ -157,12 +157,12 @@ def test_categorical_table():
     fcst_events2, obs_events2 = match.make_event_tables(
         simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt
     )
-    xr.testing.assert_equal(fcst_events, table.forecast_events)
-    xr.testing.assert_equal(fcst_events2, table.forecast_events)
-    xr.testing.assert_equal(obs_events, table.observed_events)
-    xr.testing.assert_equal(obs_events2, table.observed_events)
-    xr.testing.assert_equal(table.forecast_events, table2.forecast_events)
-    xr.testing.assert_equal(table.observed_events, table2.observed_events)
+    xr.testing.assert_equal(fcst_events, table.fcst_events)
+    xr.testing.assert_equal(fcst_events2, table.fcst_events)
+    xr.testing.assert_equal(obs_events, table.obs_events)
+    xr.testing.assert_equal(obs_events2, table.obs_events)
+    xr.testing.assert_equal(table.fcst_events, table2.fcst_events)
+    xr.testing.assert_equal(table.obs_events, table2.obs_events)
 
     # Confirm values in the contingency table are correct
     assert counts["tp_count"] == 9
@@ -364,11 +364,11 @@ def test_dask_if_available_categorical():
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
-    assert isinstance(table.forecast_events.data, dask.array.Array)
+    assert isinstance(table.fcst_events.data, dask.array.Array)
     assert isinstance(table.tp.data, dask.array.Array)
 
     # That can be computed to hold numpy data types
-    computed = table.forecast_events.compute()
+    computed = table.fcst_events.compute()
     assert isinstance(computed.data, np.ndarray)
 
     # And that transformed tables are built out of computed things

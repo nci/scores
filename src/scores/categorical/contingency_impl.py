@@ -18,6 +18,8 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 Users can supply their own event operators to the top-level module functions.
 """
 
+# pylint: disable=too-many-lines
+
 import operator
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -33,14 +35,25 @@ DEFAULT_PRECISION = 8
 
 class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     """
-    A BasicContingencyManager is produced when a BinaryContingencyManager is transformed.
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use of this class in practice.
 
-    A basic contingency table is built only from the event counts, losing the connection
-    to the actual event tables in their full dimensionality.
+    A BasicContingencyManager object provides the scoring functions which are calculated
+    from a contingency table. A BasicContingencyManager can be efficiently and repeatedly
+    queried for a wide variety of scores.
 
-    The event count data is much smaller than the full event tables, particularly when
-    considering very large data sets like Numerical Weather Prediction (NWP) data, which
-    could be terabytes to petabytes in size.
+    A BasicContingencyManager is produced when a :py:class:`BinaryContingencyManager` is
+    transformed. It is also possible to create a BasicContingencyManager from event counts or
+    a contingency table, although this not a common user requirement.
+
+    A contingency table is built only from event counts, losing the connection
+    to the actual event tables in their full dimensionality. The event count data is much
+    smaller than the full event tables, particularly when considering very large data sets
+    like Numerical Weather Prediction (NWP) data, which could be terabytes to petabytes in
+    size.
+
+    By contrast, A :py:class:`BinaryContingencyManager` retains the full event data, which provides
+    some more flexbility but may reduce efficiency.
     """
 
     def __init__(self, counts: dict):
@@ -80,13 +93,63 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def get_counts(self) -> dict:
         """
-        Return the contingency table counts (tp, fp, tn, fn)
+
+        Returns:
+            dict: A dictionary of the contingency table counts. Values are xr.DataArray instances.
+            The keys are:
+
+            - tp_count for true positive count
+            - tn_count for true negative count,
+            - fp_count for false positive count
+            - fn_count for false negative count
+            - total_count for the total number of events.
+
+        Here is an example of what may be returned:
+
+        .. code-block :: python
+
+            {'tp_count': <xarray.DataArray ()> Size: 8B array(5.),
+             'tn_count': <xarray.DataArray ()> Size: 8B array(11.),
+             'fp_count': <xarray.DataArray ()> Size: 8B array(1.),
+             'fn_count': <xarray.DataArray ()> Size: 8B array(1.),
+             'total_count': <xarray.DataArray ()> Size: 8B array(18.)}
+
         """
         return self.counts
 
     def get_table(self) -> xr.DataArray:
         """
-        Return the contingency table as an xarray object
+        Returns:
+            xr.DataArray: The contingency table as an xarray object. Contains
+            a coordinate dimension called 'contingency'. Valid coordinates
+            for this dimenstion are:
+
+            - tp_count for true positive count
+            - tn_count for true negative count
+            - fp_count for false positive count
+            - fn_count for false negative count
+            - total_count for the total number of events.
+
+        Here is an example of what may be returned:
+
+        .. code-block :: python
+
+            array([ 5., 11.,  1.,  1., 18.])
+
+            Coordinates:
+
+                contingency
+                (contingency)
+                <U11
+                'tp_count' ... 'total_count'
+
+            Indexes:
+
+                contingency
+                PandasIndex
+
+            Attributes: (0)
+
         """
         return self.xr_table
 
@@ -367,7 +430,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the probability of false detection
 
         .. math::
-            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} +
+            \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 0.
@@ -390,7 +454,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the success ratio
 
         .. math::
-            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
@@ -413,7 +478,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the threat score
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -438,7 +504,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the critical success index
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -462,7 +529,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the Peirce Skill Score
 
         .. math::
-            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + 
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + 
+            \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -492,7 +561,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the true skill statistic
 
         .. math::
-            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} +
+            \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -516,7 +587,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing Hanssen and Kuipers' Discriminant
 
         .. math::
-            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} +
+            \\text{true negatives}}
 
         where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
 
@@ -655,7 +728,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the F1 score
 
         .. math::
-            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) + \\text{false positives} + \\text{false negatives}}
+            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - "True positives" is the same as "hits".
@@ -683,12 +757,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{ETS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positives} _\\text{random}}
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - 
+            \\text{true positives} _\\text{random}}
 
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + 
+            \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
@@ -722,12 +798,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{GSS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positivies} _\\text{random}}
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - 
+            \\text{true positivies} _\\text{random}}
 
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + 
+            \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
@@ -1014,49 +1092,60 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use in practice.
 
-    At each location, the value will either be:
+    A BinaryContingencyManager holds the underlying binary forecast and observed event data,
+    from which it builds a contingency table and provides scoring functionality based on that table.
 
-    - A true positive (hit)
-    - A false positive (false alarm)
-    - A true negative (correct negative)
-    - A false negative (miss)
+    A BinaryContingencyManager is typically created by an :py:class:`EventOperator`, such as a
+    :py:class:`ThresholdOperator`, but can also be created directly from binary data if the user
+    wishes.
 
+    Supported operations include:
+        - "Transforming" the data in various ways, such as dimensional reduction
+        - Producing contingency tables
+        - Calculating scores and metrics based on contingency tables
 
-    It will be common to want to operate on masks of these values,
-    such as:
+    The full data comprises several n-dimensional binary arrays which can be considered maps of:
+        - True positives (hits)
+        - False positives (false alarms)
+        - True negatives (correct negatives)
+        - False negatives (misses)
+
+    These masks, in addition to supporting score calculations, can be accessed and used for:
 
     - Plotting these attributes on a map
-    - Calculating the total number of these attributes
-    - Calculating various ratios of these attributes, potentially masked by geographical area (e.g. accuracy in a region)
+    - Masking these values by a geographical region prior to score calculation
 
-    As such, the per-pixel information is useful as well as the overall
-    ratios involved.
+    As such, the per-pixel information is useful as well as the overall ratios involved.
 
-    BinaryContingencyManager utilises the BasicContingencyManager class to provide
-    most functionality.
+    BinaryContingencyManager inherits from (uses) the :py:class:`BasicContingencyManager` class to
+    provide score calculations on the final contingency table. Documentation for the available scores
+    is found in the :py:class:`BasicContingencyManager` API entry but the calls can be made directly
+    against instances of BinaryContingencyManager where performance or transformation are not a concern.
     """
 
     def __init__(
-        self, forecast_events: FlexibleArrayType, observed_events: FlexibleArrayType
+        self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType
     ):  # pylint: disable=super-init-not-called
-        self.forecast_events = forecast_events
-        self.observed_events = observed_events
+        self.fcst_events = fcst_events
+        self.obs_events = obs_events
 
-        self.tp = (self.forecast_events == 1) & (self.observed_events == 1)  # true positives
-        self.tn = (self.forecast_events == 0) & (self.observed_events == 0)  # true negatives
-        self.fp = (self.forecast_events == 1) & (self.observed_events == 0)  # false positives
-        self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
+        self.tp = (self.fcst_events == 1) & (self.obs_events == 1)  # true positives
+        self.tn = (self.fcst_events == 0) & (self.obs_events == 0)  # true negatives
+        self.fp = (self.fcst_events == 1) & (self.obs_events == 0)  # false positives
+        self.fn = (self.fcst_events == 0) & (self.obs_events == 1)  # false negatives
 
         # Bring back NaNs where there is either a forecast or observed event nan
-        self.tp = self.tp.where(~np.isnan(forecast_events))
-        self.tp = self.tp.where(~np.isnan(observed_events))
-        self.tn = self.tn.where(~np.isnan(forecast_events))
-        self.tn = self.tn.where(~np.isnan(observed_events))
-        self.fp = self.fp.where(~np.isnan(forecast_events))
-        self.fp = self.fp.where(~np.isnan(observed_events))
-        self.fn = self.fn.where(~np.isnan(forecast_events))
-        self.fn = self.fn.where(~np.isnan(observed_events))
+        self.tp = self.tp.where(~np.isnan(fcst_events))
+        self.tp = self.tp.where(~np.isnan(obs_events))
+        self.tn = self.tn.where(~np.isnan(fcst_events))
+        self.tn = self.tn.where(~np.isnan(obs_events))
+        self.fp = self.fp.where(~np.isnan(fcst_events))
+        self.fp = self.fp.where(~np.isnan(obs_events))
+        self.fn = self.fn.where(~np.isnan(fcst_events))
+        self.fn = self.fn.where(~np.isnan(obs_events))
 
         # Variables for count-based metrics
         self.counts = self._get_counts()
@@ -1069,7 +1158,15 @@ class BinaryContingencyManager(BasicContingencyManager):
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
     ) -> BasicContingencyManager:
         """
-        Calculate and compute the contingency table according to the specified dimensions
+        Compute the contingency table, preserving or reducing the specified dimensions.
+
+        Args:
+            - reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+            - preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+
+        Returns:
+            scores.categorical.BasicContingencyManager: A `scores` class which supports efficient
+            calculation of contingency metrics.
         """
         cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
         return BasicContingencyManager(cd)
@@ -1085,8 +1182,8 @@ class BinaryContingencyManager(BasicContingencyManager):
         """
 
         to_reduce = scores.utils.gather_dimensions(
-            self.forecast_events.dims,
-            self.observed_events.dims,
+            self.fcst_events.dims,
+            self.obs_events.dims,
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
@@ -1105,15 +1202,13 @@ class BinaryContingencyManager(BasicContingencyManager):
 
 class EventOperator(ABC):
     """
-    Base class for event operators which can be used in deriving contingency
-    tables. This will be expanded as additional use cases are incorporated
-    beyond the ThresholdEventOperator.
+    Abstract Base Class (ABC) for event operators which can be used in deriving contingency
+    tables. ABCs are not used directly but instead define the requirements for other classes
+    and may be used for type checking.
     """
 
     @abstractmethod
-    def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
-    ):
+    def make_event_tables(self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None):
         """
         This method should be over-ridden to return forecast and observed event tables
         """
@@ -1121,7 +1216,7 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ):
         """
         This method should be over-ridden to return a contingency table.
@@ -1131,10 +1226,15 @@ class EventOperator(ABC):
 
 class ThresholdEventOperator(EventOperator):
     """
-    Given a forecast and and an observation, consider an event defined by
-    particular variables meeting a threshold condition (e.g. rainfall above 1mm).
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use in practice.
 
-    This class abstracts that concept for any event definition.
+    A ThresholdEventOperator is used to produce a :py:class:`BinaryContingencyManager` from
+    forecast and observed data. It considers an event to be defined when the forecast and
+    observed variables meet a particular threshold condition (e.g. rainfall above 1mm).
+
+    The class may be used for any variable, for any threshold, and for any comparison
+    operator (e.g. greater-than, less-than, greater-than-or-equal-to, ... )
     """
 
     def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001, default_op_fn=operator.ge):
@@ -1142,9 +1242,7 @@ class ThresholdEventOperator(EventOperator):
         self.default_event_threshold = default_event_threshold
         self.default_op_fn = default_op_fn
 
-    def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
-    ):
+    def make_event_tables(self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None):
         """
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
@@ -1160,17 +1258,17 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(forecast, event_threshold)
-        observed_events = op_fn(observed, event_threshold)
+        fcst_events = op_fn(fcst, event_threshold)
+        obs_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))
-        observed_events = observed_events.where(~np.isnan(observed))
+        fcst_events = fcst_events.where(~np.isnan(fcst))
+        obs_events = obs_events.where(~np.isnan(obs))
 
-        return (forecast_events, observed_events)
+        return (fcst_events, obs_events)
 
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
     ) -> BinaryContingencyManager:
         """
         Using this function requires a careful understanding of the structure of the data
@@ -1187,12 +1285,12 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(forecast, event_threshold)
-        observed_events = op_fn(observed, event_threshold)
+        fcst_events = op_fn(fcst, event_threshold)
+        obs_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))
-        observed_events = observed_events.where(~np.isnan(observed))
+        fcst_events = fcst_events.where(~np.isnan(fcst))
+        obs_events = obs_events.where(~np.isnan(obs))
 
-        table = BinaryContingencyManager(forecast_events, observed_events)
+        table = BinaryContingencyManager(fcst_events, obs_events)
         return table
