@@ -22,7 +22,6 @@ from scores.continuous.consistent_impl import (
     consistent_quantile_score,
 )
 
-
 DA_FCST = xr.DataArray(
     data=[[3.0, 1.0, nan, 3.0], [-4.0, 0.0, 1.0, 3.0]],
     dims=["date", "station"],
