@@ -29,6 +29,7 @@
 ```{eval-rst}
 .. autofunction:: scores.probability.crps_cdf
 .. autofunction:: scores.probability.adjust_fcst_for_crps
+.. autofunction:: scores.probability.crps_step_threshold_weight
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 .. autofunction:: scores.probability.crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
