@@ -141,6 +141,14 @@
   - 
     &mdash;
 * -  
+    - CRPS step threshold weights
+  -
+    [API](api.md#scores.crps_step_threshold_weight)
+  - 
+    &mdash;
+  - 
+    &mdash;
+* -  
     - CRPS CDF Brier Decomposition
   -
     [API](api.md#scores.probability.crps_cdf_brier_decomposition)
