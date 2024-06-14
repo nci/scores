@@ -14,16 +14,16 @@
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
   - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
 * - Consistent Expectile Score
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.consistent_expectile_score)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Consistent_Scores.html)
+  - [API](api.md#scores.continuous.consistent_expectile_score)
+  - [Tutorial](project:./tutorials/Consistent_Scores.html)
   - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r101388), [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 * - Consistent Huber Score
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.consistent_huber_score)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Consistent_Scores.html)
+  - [API](api.md#scores.continuous.consistent_huber_score)
+  - [Tutorial](project:./tutorials/Consistent_Scores.html)
   - [Taggart (2022a)](https://doi.org/10.1002/qj.4206), [Taggart (2022b)](https://doi.org/10.1214/21-EJS1957)
 * - Consistent Quantile Score
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.continuous.consistent_quantile_score)
-  - [Tutorial](https://scores.readthedocs.io/en/latest/tutorials/Consistent_Scores.html)
+  - [API](api.md#cores.continuous.consistent_quantile_score)
+  - [Tutorial](project:./tutorials/Consistent_Scores.html)
   - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r101388), [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 * - Flip-Flop Index
   - 
