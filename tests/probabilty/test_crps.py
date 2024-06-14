@@ -104,30 +104,6 @@ def test_crps_cdf_exact_dask():
     assert list(result2.data_vars) == ["total"]
 
 
-@pytest.mark.parametrize(
-    ("weight_upper", "expected"),
-    [
-        (True, crps_test_data.EXP_STEP_WEIGHT_UPPER),
-        (False, crps_test_data.EXP_STEP_WEIGHT_LOWER),
-    ],
-)
-def test_crps_stepweight2(
-    weight_upper,
-    expected,
-):
-    """Tests `crps_step_threshold_weight` with a variety of inputs."""
-
-    result = crps_step_threshold_weight(
-        crps_test_data.DA_STEP_WEIGHT,
-        "x",
-        threshold_values=[1, 2, 3, 4, 5, 6],
-        steppoints_in_thresholds=True,
-        steppoint_precision=0.2,
-        weight_upper=weight_upper,
-    )
-    xr.testing.assert_allclose(result, expected)
-
-
 def test_crps_cdf_trapz():
     """Tests `crps_cdf_trapz`. Uses dense interpolation to get an approximate (to 4 dec pl) result."""
     result = crps_cdf_trapz(
