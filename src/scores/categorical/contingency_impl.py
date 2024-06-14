@@ -119,7 +119,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def get_table(self) -> xr.DataArray:
         """
-        Return:
+        Returns:
             xr.DataArray: The contingency table as an xarray object. Contains
             a coordinate dimension called 'contingency'. Valid coordinates
             for this dimenstion are:
