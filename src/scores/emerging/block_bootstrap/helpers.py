@@ -130,7 +130,7 @@ def reorder_all_arr_dims(
     arrs: list[xr.DataArray],
     dims: list[str],
     auto_order_missing: bool = True,
-):
+) -> list[xr.DataArray]:
     """
     Reorders the dimensions of all input arrays (``arrs``), with respect to
     a reference list of dimensions (``dims``), so that they are compatible.

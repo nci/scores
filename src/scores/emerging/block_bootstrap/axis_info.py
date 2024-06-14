@@ -15,22 +15,23 @@ class AxisInfo:
     Structure to hold axis information
     """
 
-    axis_length_in: int
-    axis_block_size: int
-    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
+    length_in: int
+    block_size: int
+    dim_name: str  # unique identifier
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
+    bootstrap: bool = True
 
     # derived members:
-    axis_length_out: int = field(init=False)
-    axis_num_blocks: int = field(init=False)
-    axis_block_size_partial: int = field(init=False)
+    length_out: int = field(init=False)
+    num_blocks: int = field(init=False)
+    block_size_partial: int = field(init=False)
 
     def __post_init__(self):
         """
         Adjust the axis length, block size and number of blocks based
         on the method used to fit blocks in the axis.
         """
-
-        (l, b) = (self.axis_length_in, self.axis_block_size)
+        (l, b) = (self.length_in, self.block_size)
 
         assert b <= l
 
@@ -40,11 +41,11 @@ class AxisInfo:
         if (n, r) == (0, 0):
             raise ValueError("Empty block")
         if r == 0:
-            self.axis_num_blocks = n
-            self.axis_length_out = l
-            self.axis_block_size_partial = 0
+            self.num_blocks = n
+            self.length_out = l
+            self.block_size_partial = 0
         else:
-            # key=method, value=(axis_length_out, axis_num_blocks, axis_block_size_partial)
+            # key=method, value=(length_out, num_blocks, block_size_partial)
             fit_blocks_params = {
                 FitBlocksMethod.PARTIAL: (l, n + 1, r),
                 FitBlocksMethod.SHRINK_TO_FIT: (n * b, n, 0),
@@ -52,12 +53,12 @@ class AxisInfo:
             }
             try:
                 (
-                    self.axis_length_out,
-                    self.axis_num_blocks,
-                    self.axis_block_size_partial,
-                ) = fit_blocks_params[self.axis_fit_blocks_method]
+                    self.length_out,
+                    self.num_blocks,
+                    self.block_size_partial,
+                ) = fit_blocks_params[self.fit_blocks_method]
             except KeyError as e:
-                raise NotImplementedError(f"Unsupported method: {self.axis_fit_blocks_method}") from e
+                raise NotImplementedError(f"Unsupported method: {self.fit_blocks_method}") from e
 
         self._validate()
 
@@ -65,13 +66,13 @@ class AxisInfo:
         """
         TODO: Add more validation checks here
         """
-        assert self.axis_length_out > 0 and self.axis_block_size < self.axis_length_out
+        assert self.length_out > 0 and self.block_size < self.length_out
 
 
 def make_axis_info(
     arr: npt.NDArray,
     block_sizes: list[int],
-    axis_fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
 ) -> list[AxisInfo]:
     """
     Returns list of AxisInfo (outer-most axis -> inner-most axis), given a numpy
@@ -80,6 +81,6 @@ def make_axis_info(
     assert len(arr.shape) == len(block_sizes)
 
     return [
-        AxisInfo(axis_length_in=l, axis_block_size=b, axis_fit_blocks_method=axis_fit_blocks_method)
+        AxisInfo(length_in=l, block_size=b, fit_blocks_method=fit_blocks_method)
         for l, b in zip(np.shape(arr), block_sizes)
     ]

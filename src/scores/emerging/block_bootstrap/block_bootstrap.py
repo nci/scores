@@ -22,7 +22,110 @@ from scores.emerging.block_bootstrap.axis_info import AxisInfo, make_axis_info
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
-def sample_axis_block_indices(
+# TODO: A lot of the same variables are common to many of the functions, causing a lot of
+# repetition there should probably be two classes (namespaces) to hold state:
+# 1. atomic computation: using numpy/numba to read/write the actual block sample
+# 2. public interface: for handling xaray inputs and wider options as well as parallelization
+#    options.
+
+def block_bootstrap(
+    arrs: list[xr.DataArray],
+    bootstrap_dims: list[str],
+    block_sizes: list[int],
+    iterations: int,
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
+    cyclic: bool = True,
+    auto_order_missing: bool = True,
+) -> list[xr.DataArray]:
+
+    # validate inputs
+    if iterations <= 0:
+        ValueError("`iterations` must be greater than 0.")
+
+    if len(block_sizes) == len(bootstrap_dims):
+        ValueError("`block_sizes` must be the same size as `bootstrap_dims`.")
+
+
+    raise NotImplementedError("`block_bootstrap` is currently a stub.")
+
+    # reorder dimensions to align across all arrays
+    arrs_reordered = reorder_all_arr_dims(arrs, bootstrap_dims, auto_order_missing)
+
+    # TODO:
+    # - collect all array dims
+    # - make axis info for each dimension
+    # - add dimension name for axis info to make it uniquely identifiable
+    # - create axis block indices for dimension `[ (axis_info, axis_block_sample_indices) ]`
+    # - if dimension does not exist in bootstrap_dims, set bootstrap = False when creating index,
+    #   so that parts of the algorithm can use it.
+
+    arrs_bootstrapped = []
+
+    for arr in arrs:
+        # TODO:
+        # - get axis subset for array
+        # - perform ufunc on `_construct_block_bootstrap_array` with core dims as bootstrap_dims
+        # - expand to `iterations`
+        # - append to result list.
+        pass
+
+    return arrs_bootstrapped
+
+
+def _construct_block_bootstrap_array(
+    input_arr: npt.NDArray,
+    block_sizes: list[int],
+    cyclic: bool = True,
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
+) -> npt.NDArray:
+    """
+    takes a numpy array and performs block resampling for 1 iteration,
+
+    note that the output array size is not guarenteed to be the same shape,
+    depending on FitBlocksMethod
+    """
+    assert len(block_sizes) == len(input_arr.shape)
+
+    # construct axis info based on block sizes and input array
+    ax_info = make_axis_info(input_arr, block_sizes, fit_blocks_method)
+
+    # get sample block indices for each axis
+    ax_block_indices = _sample_axis_block_indices(ax_info, cyclic)
+
+    # re-fetch block-sizes (since internal functions may update this, e.g. based on dask chunks)
+    ax_blk_sizes = [axi.block_size for axi in ax_info]
+    ax_num_blks = [axi.num_blocks for axi in ax_info]
+    ax_len_out = [axi.length_out for axi in ax_info]
+
+    # construct output array, based on axis info
+    output_arr = np.empty(ax_len_out)
+
+    # dummy array for block index looping
+    dummy_block_idx_arr = np.empty(ax_num_blks)
+    num_blocks_iter = np.nditer(dummy_block_idx_arr, flags=["multi_index"], op_flags=["readonly"])
+
+    with num_blocks_iter:
+        for _ in num_blocks_iter:
+            # increment multi-index by block size intervals
+            output_idx = tuple(
+                slice(i * b, min((i + 1) * b, axi.length_out))
+                for i, b, axi in zip(num_blocks_iter.multi_index, ax_blk_sizes, ax_info)
+            )
+            # get input block sample from `ax_block_indices`
+            block_sample = _sample_block_values(
+                input_arr,
+                ax_info,
+                num_blocks_iter.multi_index,
+                ax_block_indices,
+                fit_blocks_method,
+            )
+            # write block sample to output array
+            output_arr[output_idx] = block_sample
+
+    return (output_arr, ax_block_indices)
+
+
+def _sample_block_indices(
     ax_info: list[AxisInfo],
     cyclic: bool = True,
 ) -> list[npt.NDArray]:
@@ -54,25 +157,29 @@ def sample_axis_block_indices(
         return np.arange(start=idx_, stop=idx_ + block_size_)
 
     for axi in ax_info:
-        (l, b, n) = (axi.axis_length_in, axi.axis_block_size, axi.axis_num_blocks)
+        (l, b, n) = (axi.length_in, axi.block_size, axi.num_blocks)
         cyc_fn = functools.partial(_cyclic_expand, block_size_=b, length_=l)
         lin_fn = functools.partial(_linear_expand, block_size_=b)
 
-        if cyclic:
-            # sample from 0 -> l - 1, since wrap around is allowed
-            start_idx = rng.integers(low=0, high=l - 1, size=n)
-            block_idx = np.apply_along_axis(lambda x: np.array(list(cyc_fn(x))), 0, start_idx).T
+        if axi.bootstrap:
+            if cyclic:
+                # sample from 0 -> l - 1, since wrap around is allowed
+                start_idx = rng.integers(low=0, high=l - 1, size=n)
+                block_idx = np.apply_along_axis(lambda x: np.array(list(cyc_fn(x))), 0, start_idx).T
+            else:
+                # sample from 0 -> l - b, to avoid overflow
+                start_idx = rng.integers(low=0, high=l - b, size=n)
+                block_idx = np.apply_along_axis(lin_fn, 0, start_idx).T
         else:
-            # sample from 0 -> l - b, to avoid overflow
-            start_idx = rng.integers(low=0, high=l - b, size=n)
-            block_idx = np.apply_along_axis(lin_fn, 0, start_idx).T
+            # no bootstrapping for this axis => append entire axis domain
+            block_idx = np.array([_linear_expand(0, l)])
 
         ax_block_indices.append(block_idx)
 
     return ax_block_indices
 
 
-def sample_block_values(
+def _sample_block_values(
     input_arr: npt.NDArray,
     ax_info: list[AxisInfo],
     ax_idx: list[int],
@@ -92,7 +199,7 @@ def sample_block_values(
             values from.
         ax_block_indices: pre-sampled list of N * B array of indices,
             where, N = number of blocks for axis, B = block size for axis.
-        axis_fit_blocks_method: method to use to fit block samples,
+        fit_blocks_method: method to use to fit block samples,
             see: :class:`FitBlocksMethod`
 
     suppose
@@ -140,7 +247,7 @@ def sample_block_values(
     if fit_blocks_method == FitBlocksMethod.PARTIAL:
         bootstrap_ax_idx = []
         for b, i, axi in zip(ax_block_indices, ax_idx, ax_info):
-            (n, bp) = (axi.axis_num_blocks, axi.axis_block_size_partial)
+            (n, bp) = (axi.num_blocks, axi.block_size_partial)
             if i == (n - 1) and bp > 0:
                 bootstrap_ax_idx.append(b[i][0:bp])
             else:
@@ -160,56 +267,3 @@ def sample_block_values(
             x[...] = input_arr[bootstrap_idx]
 
     return block_sample
-
-
-def construct_block_bootstrap_array(
-    input_arr: npt.NDArray,
-    block_sizes: list[int],
-    cyclic: bool = True,
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
-) -> npt.NDArray:
-    """
-    takes a numpy array and performs block resampling for 1 iteration,
-
-    note that the output array size is not guarenteed to be the same shape,
-    depending on FitBlocksMethod
-    """
-    assert len(block_sizes) == len(input_arr.shape)
-
-    # construct axis info based on block sizes and input array
-    ax_info = make_axis_info(input_arr, block_sizes, fit_blocks_method)
-
-    # get sample block indices for each axis
-    ax_block_indices = sample_axis_block_indices(ax_info, cyclic)
-
-    # re-fetch block-sizes (since internal functions may update this, e.g. based on dask chunks)
-    ax_blk_sizes = [axi.axis_block_size for axi in ax_info]
-    ax_num_blks = [axi.axis_num_blocks for axi in ax_info]
-    ax_len_out = [axi.axis_length_out for axi in ax_info]
-
-    # construct output array, based on axis info
-    output_arr = np.empty(ax_len_out)
-
-    # dummy array for block index looping
-    dummy_block_idx_arr = np.empty(ax_num_blks)
-    num_blocks_iter = np.nditer(dummy_block_idx_arr, flags=["multi_index"], op_flags=["readonly"])
-
-    with num_blocks_iter:
-        for _ in num_blocks_iter:
-            # increment multi-index by block size intervals
-            output_idx = tuple(
-                slice(i * b, min((i + 1) * b, axi.axis_length_out))
-                for i, b, axi in zip(num_blocks_iter.multi_index, ax_blk_sizes, ax_info)
-            )
-            # get input block sample from `ax_block_indices`
-            block_sample = sample_block_values(
-                input_arr,
-                ax_info,
-                num_blocks_iter.multi_index,
-                ax_block_indices,
-                fit_blocks_method,
-            )
-            # write block sample to output array
-            output_arr[output_idx] = block_sample
-
-    return (output_arr, ax_block_indices)
