@@ -65,7 +65,7 @@ To install the mathematical functions ONLY (no tutorial notebooks, no developer 
 
 ## Finding, Downloading and Working With Data
 
-`scores` can be used with a broad variety of data sources. See the [Data Sources](https://scores.readthedocs.io/en/stable/data.html) page and this [tutorial](https://scores.readthedocs.io/en/stable/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
+All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). [Some metrics](https://scores.readthedocs.io/en/stable/included.html#pandas) work with [pandas](https://pandas.pydata.org/). As such, `scores` works with any data source for which xarray or pandas can be used. See the [Data Sources](https://scores.readthedocs.io/en/stable/data.html) page and [this tutorial](https://scores.readthedocs.io/en/stable/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
 
 ## Acknowledging This Work
 
