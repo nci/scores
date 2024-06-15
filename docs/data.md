@@ -2,7 +2,7 @@
 
 ## Introduction
 
-All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). Some metrics work with [pandas](https://pandas.pydata.org/). 
+All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). [Some metrics](included.md#pandas) work with [pandas](https://pandas.pydata.org/). 
 
 As such, `scores` works with any data source for which xarray or pandas can be used.
 
