@@ -10,41 +10,7 @@ Users will need to supply the dataset(s) they wish to work with, as `scores` doe
 
 Data referred to on this page is available under various licenses, and the onus is on the user to understand the conditions of those licenses.
 
-For addtional information about downloading and preparing sample data, see [this tutorial](project:./tutorials/First_Data_Fetching.md).
-
-## Weather and Climate Data
-
-### Datasets
-
-#### Gridded Global Numerical Weather Prediction Data
-
-Global numerical weather prediction (NWP) models are used to generate medium range forecasts and provide the initial and boundary conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
-
-The Bureau of Meteorology provides global model data from the ACCESS NWP system. See [https://doi.org/10.25914/608a993391647](https://doi.org/10.25914/608a993391647) for more information.
-
-Global model data is also available from the National Oceanic and Atmospheric Administration (NOAA) Global Forecast System (GFS). See [https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) for more information.
-
-#### Point-Based Data
-
-Point-based observations are shared routinely between countries for the purposes of weather modelling.
-
-The NOAA Integrated Surface Database (ISD) provides hourly point-based (aka in-situ) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
-
-#### Gridded Model Reanalysis Data
-
-Reanalysis datsets typically span years if not decades. 
-
-The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5). ERA5 is also incluced in [WeatherBench 2](https://sites.research.google/weatherbench/).
-
-#### Gridded Radar (Observation) Data
-
-Radar data varies according to region and is not a globally standardised data set. Information on Australian based radars can be found at [https://www.openradar.io/](https://www.openradar.io/).
-
-### Software for Acessing Data
-
-#### CliMetLab
-
-The European Centre for Medium-Range Weather Forecasts (ECMWF) has developed the CliMetLab Python package to simplify access to a large range of climatological and meteorological datasets. See [https://climetlab.readthedocs.io/](https://climetlab.readthedocs.io/).
+For additional information about downloading and preparing sample data, see [this tutorial](project:./tutorials/First_Data_Fetching.md).
 
 ## Working with Different File Formats
 
@@ -54,6 +20,41 @@ To use `scores` with [GRIB](https://codes.wmo.int/grib2) data, install [cfgrib](
 
 ### Working with NetCDF Data
 
-To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https://doi.org/10.11578/dc.20180330.1) data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). The h5netcdf library is included in the "tutorial" and "all" `scores` installation options. Opening NetCDF data is demonstrated in [this tutorial](project:./tutorials/First_Data_Fetching.md). 
+To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https://doi.org/10.11578/dc.20180330.1) data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). The h5netcdf library is included in the `scores` ["all"](installation.md#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](installation.md#tutorial-dependencies) installation options. Opening NetCDF data is demonstrated in [this tutorial](project:./tutorials/First_Data_Fetching.md). 
 
+## Weather and Climate Data
 
+This section provides a brief overview of some commonly used weather and climate datasets, and a software package for accessing meteorological and climatological data.
+
+### Datasets
+
+#### Gridded Global Numerical Weather Prediction Data
+
+Global numerical weather prediction (NWP) models are used to generate medium range forecasts and provide the initial and boundary conditions for higher-resolution regional models. Their global coverage makes them a good starting point for demonstrating the application of scoring methods in any region of interest.
+
+Archived datasets are available for:
+
+- Bureau of Meteorology's Australian Parallel Suite version 3 (APS3) Australian Community Climate and Earth-System Simulator (ACCESS), see [https://doi.org/10.25914/608a993391647](https://doi.org/10.25914/608a993391647).
+- National Oceanic and Atmospheric Administration (NOAA) Global Forecast System (GFS), see [https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast).
+
+#### Point-Based Data
+
+Point-based observations are shared routinely between countries for the purposes of weather modelling.
+
+The NOAA Integrated Surface Database (ISD) provides hourly point-based (aka in-situ) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
+
+#### Gridded Model Reanalysis Data
+
+Reanalysis datasets typically span years if not decades. 
+
+The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5). ERA5 is also included in [WeatherBench 2](https://sites.research.google/weatherbench/).
+
+#### Gridded Radar (Observation) Data
+
+Radar data varies according to region and is not a globally standardised data set. Information on Australian based radars can be found at [https://www.openradar.io/](https://www.openradar.io/).
+
+### Software for Accessing Data
+
+#### CliMetLab
+
+The European Centre for Medium-Range Weather Forecasts (ECMWF) has developed the CliMetLab Python package to simplify access to a large range of climatological and meteorological datasets. See [https://climetlab.readthedocs.io/](https://climetlab.readthedocs.io/).
