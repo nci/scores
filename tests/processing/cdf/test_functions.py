@@ -42,7 +42,7 @@ def test_round_values(array, rounding_precision, expected):
 
 def test_propagate_nan_error():
     """Test propagating throws the right exceptions"""
-    faulty_array = xr.Dataset({"lertitude": [1, 2, np.NaN, 4], "longitude": [20, 21, 22, 23, 24]})
+    faulty_array = xr.Dataset({"lertitude": [1, 2, np.nan, 4], "longitude": [20, 21, 22, 23, 24]})
     with pytest.raises(ValueError):
         propagate_nan(faulty_array, "latitude")
 
@@ -62,7 +62,7 @@ def test_propagate_nan(dim, expected):
 
 def test_observed_cdf_errors():
     """Test `osbserved_cdf_errors` with a variety of inputs."""
-    obs = xr.DataArray.from_dict({"dims": "temp", "data": [np.NaN, np.NaN, np.NaN, np.NaN]})
+    obs = xr.DataArray.from_dict({"dims": "temp", "data": [np.nan, np.nan, np.nan, np.nan]})
     threshold_dim = "irrelevant for test"
     threshold_values = None
     badprecision = -1
