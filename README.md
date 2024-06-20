@@ -1,5 +1,7 @@
 [![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql)
 
+[![codecov](https://codecov.io/gh/tennlee/scores/graph/badge.svg?token=P5QNGZX1AF)](https://codecov.io/gh/tennlee/scores)
+
 # Scores: Verification and Evaluation for Forecasts and Models
 
 > 
