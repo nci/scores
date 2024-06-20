@@ -1,4 +1,4 @@
-[![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql) [![codecov](https://codecov.io/gh/tennlee/scores/graph/badge.svg?token=P5QNGZX1AF)](https://codecov.io/gh/tennlee/scores)
+[![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql) [![codecov](https://codecov.io/gh/tennlee/scores/graph/badge.svg?token=P5QNGZX1AF)](https://codecov.io/gh/tennlee/scores) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FTutorial_Gallery.ipynb)
 
 # Scores: Verification and Evaluation for Forecasts and Models
 
