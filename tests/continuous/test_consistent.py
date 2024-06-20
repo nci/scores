@@ -49,6 +49,7 @@ EXP_EXPECTILE_SCORE2 = xr.DataArray(
     dims=["station"],
     coords=dict(station=[100, 101, 102]),
 )
+EXP_EXPECTILE_SCORE3 = xr.DataArray((ALPHA * 4.0 + ALPHA * 100 + (1 - ALPHA) * 4) / 4)
 
 TUNING_PARAM = 2.0
 
@@ -80,6 +81,8 @@ EXP_QUANTILE_SCORE2 = xr.DataArray(
     coords=dict(date=["1", "2"]),
 )
 
+EXP_QUANTILE_SCORE3 = xr.DataArray((ALPHA * 2.0 + ALPHA * 10 + (1 - ALPHA) * 2) / 4)
+
 
 def squared_loss(x):
     """squared loss function"""
@@ -103,6 +106,7 @@ def simple_linear(x):
         (["date", "station"], None, WEIGHTS, 2 * EXP_EXPECTILE_SCORE1),
         (["station"], None, None, EXP_EXPECTILE_SCORE2),
         (None, ["date"], None, EXP_EXPECTILE_SCORE2),
+        (None, None, None, EXP_EXPECTILE_SCORE3),
     ],
 )
 def test_consistent_expectile_score(preserve_dims, reduce_dims, weights, expected):
@@ -201,6 +205,7 @@ def test_huber_score_with_dask():
         (["date", "station"], None, WEIGHTS, 2 * EXP_QUANTILE_SCORE1),
         (["date"], None, None, EXP_QUANTILE_SCORE2),
         (None, ["station"], None, EXP_QUANTILE_SCORE2),
+        (None, None, None, EXP_QUANTILE_SCORE3),
     ],
 )
 def test_consistent_quantile_score(preserve_dims, reduce_dims, weights, expected):
