@@ -154,7 +154,7 @@ def consistent_huber_score(
             https://doi.org/10.1002/qj.4206
         -   Taggart, R. (2022). "Point forecasting and forecast evaluation with
             generalized Huber loss", Electron. J. Statist. 16(1): 201-231.
-            DOI: 10.1214/21-EJS1957
+            https://doi.org/10.1214/21-ejs1957
     """
     check_huber_param(huber_param)
     if preserve_dims or reduce_dims:
@@ -228,7 +228,6 @@ def consistent_quantile_score(
             - :math:`g` is a nondecreasing function of a single variable
             - :math:`S(x,y)` is the score.
 
-        Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
 
     References:
         -   Gneiting, T. (2011). "Making and evaluating point forecasts",
