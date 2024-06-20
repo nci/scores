@@ -6,9 +6,10 @@ Helper functions for `block_bootstrap`
     These may move to more generic utility functions in the future
 """
 
-import xarray as xr
-from typing import TypeVar, Tuple
+import functools
+from typing import Tuple, TypeVar
 
+import xarray as xr
 
 T = TypeVar("T")
 
@@ -55,7 +56,7 @@ def partial_linear_order_by_ref(xs: list[T], xs_ref: list[T]) -> Tuple[list[T], 
     """
     # empty lists and lists with 1 element are ordered
     if len(xs) <= 1:
-        return xs
+        return (xs, [])
 
     unique_or_error(xs_ref)
 
@@ -111,6 +112,8 @@ def reorder_dims(
         ValueError: if ``arr`` dimensions cannot be ordered due to missing
             dimensions in ``dims``
     """
+    # fail early - not strictly necessary, since `partial_linear_order_by_ref` covers it
+    unique_or_error(dims)
 
     # partially ordered = (ordered dims, `arr.dims` not present in `dims`)
     (dims_ord, dims_unord) = partial_linear_order_by_ref(arr.dims, dims)
@@ -130,7 +133,7 @@ def reorder_all_arr_dims(
     arrs: list[xr.DataArray],
     dims: list[str],
     auto_order_missing: bool = True,
-) -> list[xr.DataArray]:
+) -> Tuple[list[xr.DataArray], list[str]]:
     """
     Reorders the dimensions of all input arrays (``arrs``), with respect to
     a reference list of dimensions (``dims``), so that they are compatible.
@@ -147,8 +150,13 @@ def reorder_all_arr_dims(
 
     Returns:
 
-        list of data arrays (same order as input); each array has its
-        dimensions ordered according to ``dims``.
+        Tuple containing:
+
+            1. list of data arrays (same order as input); each array has its
+               dimensions ordered according to ``dims``.
+
+            2. list of dimensions after re-ordering. (note this will only be
+               different to ``dims``, if ``auto_order_missing = True``.)
 
     Raises:
 
@@ -169,7 +177,35 @@ def reorder_all_arr_dims(
         For definition of partially linearly ordered in this context,
         see: :py:func:`partial_linear_order_by_ref`.
     """
-    pass
+    # fail early - not strictly necessary, since `partial_linear_order_by_ref` covers it
+    unique_or_error(dims)
+
+    one_array_has_all_dims = any([len(set(dims) - set(arr.dims)) == 0 for arr in arrs])
+
+    if not one_array_has_all_dims:
+        raise ValueError(f"At least one array needs to have all specified ``dims``: {dims}")
+
+    all_arr_dims = dims
+
+    # if auto_order_missing is specified, then it is not necessary that ``dims`` contains all
+    # dimensions present in every array, as the missing dimensions will be ordered alphabetically
+    # similar to `reorder_dims`
+    if auto_order_missing:
+        all_arr_dims_unord: list[str] = list(
+            functools.reduce(
+                lambda acc, x: set(x.dims).union(acc),
+                arrs,
+                set(),
+            )
+        )
+
+        (dims_ord, dims_unord) = partial_linear_order_by_ref(all_arr_dims_unord, dims)
+
+        dims_ord.extend(sorted(dims_unord))
+
+        all_arr_dims = dims_ord
+
+    return ([reorder_dims(arr, dims, auto_order_missing) for arr in arrs], all_arr_dims)
 
 
 def check_block_sizes(
@@ -183,7 +219,7 @@ def check_block_sizes(
     A block size is valid if its associated dimension in ``dims`` has a
     cardinality equal to or greater than the block size.
 
-    i.e. ``len(arr.dim) >= block_size of dim``, for every array in ``arr``.
+    i.e. ``len(arr.dim) >= block_size of dim``, for every array in ``arrs``.
     """
     pass
 

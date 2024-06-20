@@ -17,16 +17,22 @@ import functools
 
 import numpy as np
 import numpy.typing as npt
+import xarray as xr
 
-from scores.emerging.block_bootstrap.axis_info import AxisInfo, make_axis_info
+from scores.emerging.block_bootstrap.axis_info import (
+    AxisInfo,
+    make_axis_info,
+    make_axis_info_collection,
+)
+from scores.emerging.block_bootstrap.helpers import reorder_all_arr_dims
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
-
 
 # TODO: A lot of the same variables are common to many of the functions, causing a lot of
 # repetition there should probably be two classes (namespaces) to hold state:
 # 1. atomic computation: using numpy/numba to read/write the actual block sample
 # 2. public interface: for handling xaray inputs and wider options as well as parallelization
 #    options.
+
 
 def block_bootstrap(
     arrs: list[xr.DataArray],
@@ -37,27 +43,28 @@ def block_bootstrap(
     cyclic: bool = True,
     auto_order_missing: bool = True,
 ) -> list[xr.DataArray]:
-
     # validate inputs
     if iterations <= 0:
         ValueError("`iterations` must be greater than 0.")
 
-    if len(block_sizes) == len(bootstrap_dims):
+    if len(block_sizes) != len(bootstrap_dims):
         ValueError("`block_sizes` must be the same size as `bootstrap_dims`.")
-
 
     raise NotImplementedError("`block_bootstrap` is currently a stub.")
 
     # reorder dimensions to align across all arrays
-    arrs_reordered = reorder_all_arr_dims(arrs, bootstrap_dims, auto_order_missing)
+    (arrs_reordered, all_arr_dims_ord) = reorder_all_arr_dims(
+        arrs,
+        bootstrap_dims,
+        auto_order_missing,
+    )
 
-    # TODO:
-    # - collect all array dims
-    # - make axis info for each dimension
-    # - add dimension name for axis info to make it uniquely identifiable
-    # - create axis block indices for dimension `[ (axis_info, axis_block_sample_indices) ]`
-    # - if dimension does not exist in bootstrap_dims, set bootstrap = False when creating index,
-    #   so that parts of the algorithm can use it.
+    axi_collection = make_axis_info_collection(
+        arrs,
+        bootstrap_dims=bootstrap_dims,
+        block_sizes=block_sizes,
+        fit_blocks_method=fit_blocks_method,
+    )
 
     arrs_bootstrapped = []
 
@@ -90,7 +97,7 @@ def _construct_block_bootstrap_array(
     ax_info = make_axis_info(input_arr, block_sizes, fit_blocks_method)
 
     # get sample block indices for each axis
-    ax_block_indices = _sample_axis_block_indices(ax_info, cyclic)
+    ax_block_indices = _sample_block_indices(ax_info, cyclic)
 
     # re-fetch block-sizes (since internal functions may update this, e.g. based on dask chunks)
     ax_blk_sizes = [axi.block_size for axi in ax_info]

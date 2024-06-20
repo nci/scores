@@ -6,9 +6,12 @@ import numpy as np
 import xarray as xr
 
 from scores.emerging.block_bootstrap.axis_info import AxisInfo, make_axis_info
-from scores.emerging.block_bootstrap.helpers import partial_linear_order_by_ref, reorder_dims
 from scores.emerging.block_bootstrap.block_bootstrap import (
-    construct_block_bootstrap_array,
+    _construct_block_bootstrap_array,
+)
+from scores.emerging.block_bootstrap.helpers import (
+    partial_linear_order_by_ref,
+    reorder_dims,
 )
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
@@ -32,7 +35,7 @@ def _test_numpy_blk_bootstrap_single_iter():
     pprint.pp(res)
 
     print("\nBOOTSTRAPPING...")
-    (output_arr, block_sample_idx) = construct_block_bootstrap_array(
+    (output_arr, block_sample_idx) = _construct_block_bootstrap_array(
         input_arr,
         block_sizes,
         cyclic=True,

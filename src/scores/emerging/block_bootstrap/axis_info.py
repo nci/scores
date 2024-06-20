@@ -5,11 +5,44 @@ from dataclasses import dataclass, field
 
 import numpy as np
 import numpy.typing as npt
+import xarray as xr
 
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
 @dataclass
+class AxisInfoCollection:
+    """
+    Collection of labelled AxisInfo object.
+    """
+
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
+    data: dict[str, AxisInfo] = field(init=False)
+
+    def __post_init__(self):
+        self.data = {}
+
+    def get(self, dim_name: str) -> AxisInfo:
+        return self.data[dim_name]
+
+    def insert(self, dim_name: str, axis_info: AxisInfo):
+        if dim_name in self.data:
+            # check that the info present is consistent
+            if self.data[dim_name] != axis_info:
+                raise ValueError(
+                    f"Inconsistent dimension size for {dim_name} between inserted and existing"
+                    f" dimension of the same name in collection:\n"
+                    f"Existing axis info in collection: {self.data[dim_name]}\n"
+                    f"Axis info being inserted: {axis_info}"
+                )
+            # already exists => no action needed
+            return
+
+        assert axis_info.fit_blocks_method == self.fit_blocks_method
+        self.data[dim_name] = axis_info
+
+
+@dataclass(eq=True)
 class AxisInfo:
     """
     Structure to hold axis information
@@ -17,7 +50,6 @@ class AxisInfo:
 
     length_in: int
     block_size: int
-    dim_name: str  # unique identifier
     fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
     bootstrap: bool = True
 
@@ -67,6 +99,32 @@ class AxisInfo:
         TODO: Add more validation checks here
         """
         assert self.length_out > 0 and self.block_size < self.length_out
+
+
+def make_axis_info_collection(
+    arrs: list[xr.DataArray],
+    bootstrap_dims: list[str],
+    block_sizes: list[int],
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
+) -> AxisInfoCollection:
+    axi_collection = AxisInfoCollection(fit_blocks_method=fit_blocks_method)
+    lookup_block_sizes = {d: b for (d, b) in zip(bootstrap_dims, block_sizes)}
+
+    for arr in arrs:
+        for dim_name, axis_length in zip(arr.dims, np.shape(arr)):
+            block_size = lookup_block_sizes.get(dim_name, axis_length)  # default to axis_length
+            bootstrap = True if dim_name in bootstrap_dims else False
+
+            axi = AxisInfo(
+                length_in=axis_length,
+                block_size=block_size,
+                fit_blocks_method=fit_blocks_method,
+                bootstrap=bootstrap,
+            )
+
+            axi_collection.insert(dim_name, axi)
+
+    return axi_collection
 
 
 def make_axis_info(
