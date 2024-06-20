@@ -35,7 +35,7 @@ To submit a pull request, please use the following workflow:
 3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
 4. when ready, submit a pull request to the develop branch of `scores`.
 
-**Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
+Some developers like to prefix their branch names with a few digits to help disambiguate them. This is up to the developer and any approach to naming is welcome. If you have any questions about the development process, please feel free to email scores@bom.gov.au and someone from the development team will respond to your query.
 
 ### Submitting a Pull Request for a Feature, Improvement or Correction
 
