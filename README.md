@@ -1,3 +1,5 @@
+[![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql)
+
 # Scores: Verification and Evaluation for Forecasts and Models
 
 > 
