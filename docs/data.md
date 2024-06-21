@@ -63,7 +63,7 @@ The European Centre for Medium-Range Weather Forecasts (ECMWF) has developed the
 
 #### WeatherBench 2
 
-WeatherBench 2 provides a framework for evaluating and comparing a range of machine learning (ML) and physics-based weather forecasting models. It includes ground-truth and baseline datasets (including ERA5), and code for evaluating models. The [website](https://sites.research.google/weatherbench/) includes scorecards measuring the skill of ML and physics-based models. For more information see [https://sites.research.google/weatherbench/](https://sites.research.google/weatherbench/) and [https://github.com/google-research/weatherbench2](https://github.com/google-research/weatherbench2).
+WeatherBench 2 provides a framework for evaluating and comparing a range of machine learning (ML) and physics-based weather forecasting models. It includes ground-truth and baseline [datasets](https://weatherbench2.readthedocs.io/en/latest/data-guide.html) (including ERA5), and code for evaluating models. The [website](https://sites.research.google/weatherbench/) includes scorecards measuring the skill of ML and physics-based models. For more information see [https://sites.research.google/weatherbench/](https://sites.research.google/weatherbench/) and [https://github.com/google-research/weatherbench2](https://github.com/google-research/weatherbench2).
 
 
 
