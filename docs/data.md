@@ -20,11 +20,11 @@ To use `scores` with [GRIB](https://codes.wmo.int/grib2) data, install [cfgrib](
 
 ### Working with NetCDF Data
 
-To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https://doi.org/10.11578/dc.20180330.1) data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). The h5netcdf library is included in the `scores` ["all"](installation.md#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](installation.md#tutorial-dependencies) installation options. Opening NetCDF data is demonstrated in [this tutorial](project:./tutorials/First_Data_Fetching.md). 
+To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https://github.com/HDFGroup/hdf5) data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). The h5netcdf library is included in the `scores` ["all"](installation.md#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](installation.md#tutorial-dependencies) installation options. Opening NetCDF data is demonstrated in [this tutorial](project:./tutorials/First_Data_Fetching.md). 
 
 ## Weather and Climate Data
 
-This section provides a brief overview of some commonly used weather and climate datasets, and a software package for accessing meteorological and climatological data.
+This section provides a brief overview of some commonly used weather and climate datasets, and software packages for accessing meteorological and climatological data. All datasets and software packages listed below are available free of charge.
 
 ### Datasets
 
@@ -41,20 +41,29 @@ Archived datasets are available for:
 
 Point-based observations are shared routinely between countries for the purposes of weather modelling.
 
-The NOAA Integrated Surface Database (ISD) provides hourly point-based (aka in-situ) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
+The NOAA Integrated Surface Database (ISD) provides hourly point-based (*in-situ*) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
 
 #### Gridded Model Reanalysis Data
 
-Reanalysis datasets typically span years if not decades. 
+Reanalysis datasets provide a reliable and detailed reconstruction of past weather and climate conditions, spanning years if not decades.
 
 The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5). ERA5 is also included in [WeatherBench 2](https://sites.research.google/weatherbench/).
 
 #### Gridded Radar (Observation) Data
 
-Radar data varies according to region and is not a globally standardised data set. Information on Australian based radars can be found at [https://www.openradar.io/](https://www.openradar.io/).
+Radar data provides remotely sensed precipitation estimates at high spatial and temporal resolution. Radar data varies according to region and is not a globally standardised dataset. 
+
+Information on Australian radar data can be found at [https://www.openradar.io/](https://www.openradar.io/).
 
 ### Software for Accessing Data
 
 #### CliMetLab
 
 The European Centre for Medium-Range Weather Forecasts (ECMWF) has developed the CliMetLab Python package to simplify access to a large range of climatological and meteorological datasets. See [https://climetlab.readthedocs.io/](https://climetlab.readthedocs.io/).
+
+#### WeatherBench 2
+
+WeatherBench 2 provides a framework for evaluating and comparing a range of machine learning (ML) and physics-based weather forecasting models. It includes ground-truth and baseline datasets (including ERA5), and code for evaluating models. The [website](https://sites.research.google/weatherbench/) includes scorecards measuring the skill of ML and physics-based models. For more information see [https://sites.research.google/weatherbench/](https://sites.research.google/weatherbench/) and [https://github.com/google-research/weatherbench2](https://github.com/google-research/weatherbench2).
+
+
+
