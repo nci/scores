@@ -38,4 +38,7 @@ jobs:
         pytest --nbmake tutorials/
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.3.0
+      with:
+        flag-name: run-${{ join(matrix.*, '-') }}
+        parallel: true
   
