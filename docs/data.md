@@ -24,7 +24,7 @@ To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https:
 
 ## Weather and Climate Data
 
-This section provides a brief overview of some commonly used weather and climate datasets, and software packages for accessing meteorological and climatological data. All datasets and software packages listed below are available free of charge.
+This section provides a brief overview of some commonly used weather and climate datasets, and software packages for accessing such data. All datasets and software packages listed below are available free of charge.
 
 ### Datasets
 
