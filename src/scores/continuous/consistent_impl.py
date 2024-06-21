@@ -79,12 +79,12 @@ def consistent_expectile_score(
         Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
 
     References:
-        -   Gneiting, T. (2011). "Making and evaluating point forecasts",
-            J. Amer. Statist. Assoc.,
+        -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
+            American Statistical Association, 106(494), 746–762. 
             https://doi.org/10.1198/jasa.2011.r10138
-        -   Taggart, R. (2021). "Evaluation of point forecasts for extreme events
-            using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-            https://doi.org/10.1002/qj.4206
+        -   Taggart, R. (2021). Evaluation of point forecasts for extreme events using 
+            consistent scoring functions. Quarterly Journal of the Royal Meteorological 
+            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
 
     """
     check_alpha(alpha)
@@ -149,11 +149,11 @@ def consistent_huber_score(
        ValueError: if `huber_param <= 0`.
 
     References:
-        -   Taggart, R. (2021). "Evaluation of point forecasts for extreme events
-            using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-            https://doi.org/10.1002/qj.4206
-        -   Taggart, R. (2022). "Point forecasting and forecast evaluation with
-            generalized Huber loss", Electron. J. Statist. 16(1): 201-231.
+        -   Taggart, R. (2021). Evaluation of point forecasts for extreme events using
+            consistent scoring functions. Quarterly Journal of the Royal Meteorological
+            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
+        -   Taggart, R. J. (2022). Point forecasting and forecast evaluation with
+            generalized Huber loss. Electronic Journal of Statistics, 16(1).
             https://doi.org/10.1214/21-ejs1957
     """
     check_huber_param(huber_param)
@@ -230,12 +230,12 @@ def consistent_quantile_score(
 
 
     References:
-        -   Gneiting, T. (2011). "Making and evaluating point forecasts",
-            J. Amer. Statist. Assoc.,
+        -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
+            American Statistical Association, 106(494), 746–762. 
             https://doi.org/10.1198/jasa.2011.r10138
-        -   Taggart, R. (2021). "Evaluation of point forecasts for extreme events
-            using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-            https://doi.org/10.1002/qj.4206
+        -   Taggart, R. (2021). Evaluation of point forecasts for extreme events using 
+            consistent scoring functions. Quarterly Journal of the Royal Meteorological 
+            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
     check_alpha(alpha)
     if preserve_dims or reduce_dims:
