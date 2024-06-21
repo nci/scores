@@ -187,22 +187,13 @@ def reorder_all_arr_dims(
 
     all_arr_dims = dims
 
-    # if auto_order_missing is specified, then it is not necessary that ``dims`` contains all
-    # dimensions present in every array, as the missing dimensions will be ordered alphabetically
-    # similar to `reorder_dims`
+    # if auto_order_missing is True, then it is not necessary that ``dims`` contains all dimensions
+    # present in every array; the missing dimensions will then be ordered alphabetically similar
+    # to `reorder_dims`, except that now it should be based on a union of all dims in all arrays:
     if auto_order_missing:
-        all_arr_dims_unord: list[str] = list(
-            functools.reduce(
-                lambda acc, x: set(x.dims).union(acc),
-                arrs,
-                set(),
-            )
-        )
-
+        all_arr_dims_unord: list[str] = list(functools.reduce(lambda acc, x: set(x.dims).union(acc), arrs, set()))
         (dims_ord, dims_unord) = partial_linear_order_by_ref(all_arr_dims_unord, dims)
-
         dims_ord.extend(sorted(dims_unord))
-
         all_arr_dims = dims_ord
 
     return ([reorder_dims(arr, dims, auto_order_missing) for arr in arrs], all_arr_dims)

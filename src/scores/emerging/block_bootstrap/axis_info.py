@@ -10,38 +10,6 @@ import xarray as xr
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
-@dataclass
-class AxisInfoCollection:
-    """
-    Collection of labelled AxisInfo object.
-    """
-
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
-    data: dict[str, AxisInfo] = field(init=False)
-
-    def __post_init__(self):
-        self.data = {}
-
-    def get(self, dim_name: str) -> AxisInfo:
-        return self.data[dim_name]
-
-    def insert(self, dim_name: str, axis_info: AxisInfo):
-        if dim_name in self.data:
-            # check that the info present is consistent
-            if self.data[dim_name] != axis_info:
-                raise ValueError(
-                    f"Inconsistent dimension size for {dim_name} between inserted and existing"
-                    f" dimension of the same name in collection:\n"
-                    f"Existing axis info in collection: {self.data[dim_name]}\n"
-                    f"Axis info being inserted: {axis_info}"
-                )
-            # already exists => no action needed
-            return
-
-        assert axis_info.fit_blocks_method == self.fit_blocks_method
-        self.data[dim_name] = axis_info
-
-
 @dataclass(eq=True)
 class AxisInfo:
     """
@@ -63,10 +31,9 @@ class AxisInfo:
         Adjust the axis length, block size and number of blocks based
         on the method used to fit blocks in the axis.
         """
+        self._validate_init()
+
         (l, b) = (self.length_in, self.block_size)
-
-        assert b <= l
-
         n = l // b  # multiple
         r = l - (n * b)  # remainder
 
@@ -92,13 +59,63 @@ class AxisInfo:
             except KeyError as e:
                 raise NotImplementedError(f"Unsupported method: {self.fit_blocks_method}") from e
 
-        self._validate()
+        self._validate_post_init()
 
-    def _validate(self):
+    def _validate_init(self):
         """
         TODO: Add more validation checks here
         """
-        assert self.length_out > 0 and self.block_size < self.length_out
+        assert self.length_in > 0 and self.block_size <= self.length_in
+
+    def _validate_post_init(self):
+        """
+        TODO: Add more validation checks here
+        """
+        assert self.length_out > 0 and self.block_size <= self.length_out
+
+
+@dataclass
+class AxisInfoCollection:
+    """
+    Collection of labelled AxisInfo object.
+    """
+
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
+    dims_order: list[str] = field(init=False)
+    data: dict[str, AxisInfo] = field(init=False)
+
+    def __post_init__(self):
+        self.data = {}
+        self.dims_order = []
+
+    def get(self, dim_name: str) -> AxisInfo:
+        return self.data[dim_name]
+
+    def iter(self):
+        for d in self.dims_order:
+            yield self.data[d]
+
+    def insert(self, dim_name: str, axis_info: AxisInfo):
+        if dim_name in self.data:
+            # check that the info present is consistent
+            if self.data[dim_name] != axis_info:
+                raise ValueError(
+                    f"Inconsistent dimension size for {dim_name} between inserted and existing"
+                    f" dimension of the same name in collection:\n"
+                    f"Existing axis info in collection: {self.data[dim_name]}\n"
+                    f"Axis info being inserted: {axis_info}"
+                )
+            # already exists => early return without updating.
+            return
+
+        # The whole collection should have the same `fit_blocks_method`.
+        # This should be always be equal if the collection is created through
+        # `make_axis_info_collection()`, but may not be if created using arbitrary methods.
+        assert axis_info.fit_blocks_method == self.fit_blocks_method
+
+        # implicit: if we've reached this point, dim_name is not in self.data
+        self.data[dim_name] = axis_info
+        self.dims_order.append(dim_name)
 
 
 def make_axis_info_collection(

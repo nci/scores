@@ -41,8 +41,125 @@ def block_bootstrap(
     iterations: int,
     fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
     cyclic: bool = True,
-    auto_order_missing: bool = True,
+    auto_order_unspecified_dims: bool = True,
 ) -> list[xr.DataArray]:
+    """
+    Performs block bootstrapping on a list of input arrays.
+
+    Block bootstrapping is a resampling method used to account for dependency
+    relationships between data points prior to performing statistical tests.
+    This is done by shuffling a data array randomly (with replacement), in a way
+    that keeps dependency relationships intact.
+
+    In order to do so, the user specifies a set of dimensions in the input
+    array, ``bootstrap_dims``, and ``block_sizes`` representing the size of
+    the dependent data points along any given dimension. A rule of thumb is
+    to set ``b = sqrt(n)`` for each dimension, where ``n`` is the dimension
+    size and ``b`` is the block size. This is just a guideline, and it is the
+    user's responsiblity to derive an appropriate block size for representing
+    dependency.
+
+    The bootstrapping process can be repeated for several iterations until all
+    the blocks are "well represented".
+
+    For example, if our data array is 2 dimensional with "time" (length=12)
+    and "x" (size=100) as dependent dimensions. Then, specifying
+    ``block_sizes=[6,10]`` will slice the domain into 20, 6 by 10 rectangles.
+    Instead of resampling each point, the algorithm will instead sample and
+    reconstruct the array from the 20 sliced blocks (with replacement), until
+    the output size conforms (based on ``fit_blocks_method``).
+
+    For data that are naturally cyclic (or "circular" as used in some
+    literature) in nature, ``cyclic`` can be set to ``True`` to allow the block
+    sampler to wrap around. This is common, for example, in day cycles where the
+    hour 24 is also the hour 0. For example, the distance (in the measurable
+    sense) from hour 24 to hour 4 is 4. If our block size is 6 hours, then the
+    hour 24 and hour 4 can fall in the same block. ``cylic = True`` allows this
+    to happen, whereas with ``cyclic = False`` the distance is 20 and they can't
+    co-exist in a block.
+
+    By default ``fit_blocks_method`` is set to ``PARTIAL`` which is done so
+    that the output array shapes conform to the input array shapes. This is
+    done to resolve cases where the specified ``block_sizes`` are not factors of
+    the dimension sizes of the input arrays. It may be that partial blocks may
+    negatively affect results for a statistical experiment. In which case, there
+    are other methods that may be applicable (see: :class:`FitBlocksMethod`).
+
+    .. note::
+
+        A natural implication of using block bootstrapping is that dependency
+        constrains of the input datum have to be in the form of a N-dimensional
+        (cyclic) hyperrectangle. For complex and non-linear dependency
+        relationships, the domain would have to be broken up into smaller
+        chunks where a hyperrectangle is a sufficient representation of
+        dependence.
+
+    .. note::
+
+        While the sampling process is random per iteration, it is consistent
+        across all arrays for any one iteration. i.e. if ``arrs = [a1, a2, a3]``
+        then the indices sampled for common dimensions in ``a1``, ``a2`` and
+        ``a3`` are the same for a given iteration.
+
+        In other words, the block sampling only happens once per iteration, for
+        all dimensions, and is cached and applied across all arrays.
+
+    .. important::
+
+        The ordering of ``bootstrap_dims`` is important, as the input array
+        dimensions will be re-arranged to match this order so that all the
+        arrays are sampled the same way. The first element in ``bootstrap_dims``
+        should be the outermost dimension and the last should be the innermost.
+
+    Args:
+
+        arrs: list of arrays to be bootstrapped.
+
+        bootstrap_dims: specifies which dimensions should be used for
+            bootstrapping. As mentioned above, the input arrays will be re-
+            arranged from outermost to innermost dimension as per the order in
+            this list.
+
+        block_sizes: list of integers representing the size (in each axis) of
+            a N-dimensional hyperrectangle where any point in this space has an
+            observable or expected dependency to the central point.
+
+        iterations: number of times to perform block bootstrapping.
+
+        fit_blocks_method: how to fit blocks if the dimension size is not
+            a multiple of the block size. see: :class:`FitBlocksMethod`
+
+        cyclic: whether or not the block sampler is allowed to wrap around if
+            the sampled block index exceeds the dimension size. If ``True``,
+            the sampled block can start anywhere in $$[0, l - 1]$$ and will wrap
+            around, e.g. if $$i + b >= l$$, where $$l$$ is the dimension size,
+            $$i$$ is the first index in the block, and $$b$$ is the block size.
+            Otherwise (``False``), the block can start anywhere in $$[0, l - b]$$.
+
+        auto_order_unspecified_dims: whether or not to automatically order
+            the dimensions in the input array, if they are not specified in
+            ``bootstrap_dims``. Note that setting this to ``False`` will throw
+            an exception if a dimension in an array is not explicitly specified
+            in ``bootstrap_dims``. Setting it to ``True`` will arrange and
+            append the non-bootstrap dimensions alphebetically so that they have
+            consistent ordering across the input arrays.
+
+    Returns:
+
+        list of arrays that have been bootstrapped, each with an extra
+        ``iteration`` dimension representing the iteration index.
+
+    .. note::
+
+        - currently all dimensions are used for the sampling process.
+        - only dimensions specified in ``bootstrap_dims`` be sampled with
+          replacement.
+        - dimensions that are not bootstrapped will use their entire index
+          (equivilent to block size = axis length, and without shuffling).
+        - if we end up using ``dask``, this design could be improved to utilize
+          the underlying chunking strategy of non-bootstrapped dims.
+
+    """
     # validate inputs
     if iterations <= 0:
         ValueError("`iterations` must be greater than 0.")
@@ -56,7 +173,7 @@ def block_bootstrap(
     (arrs_reordered, all_arr_dims_ord) = reorder_all_arr_dims(
         arrs,
         bootstrap_dims,
-        auto_order_missing,
+        auto_order_unspecified_dims,
     )
 
     axi_collection = make_axis_info_collection(
@@ -66,15 +183,18 @@ def block_bootstrap(
         fit_blocks_method=fit_blocks_method,
     )
 
+    # pre-generate samples for each axis
+    ax_block_indices = _sample_block_indices(list(axi_collection.iter()), cyclic)
+    ax_block_mapping = {d: ax_block_indices[i] for i, d in enumerate(axi_collection.dims_order)}
     arrs_bootstrapped = []
 
-    for arr in arrs:
+    for arr in arrs_reordered:
+        ax_block_indices_for_arr = [ax_block_mapping[d] for d in arr.dims]
+        pass
         # TODO:
-        # - get axis subset for array
         # - perform ufunc on `_construct_block_bootstrap_array` with core dims as bootstrap_dims
         # - expand to `iterations`
         # - append to result list.
-        pass
 
     return arrs_bootstrapped
 
