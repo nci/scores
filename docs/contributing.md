@@ -35,13 +35,17 @@ To submit a pull request, please use the following workflow:
 3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
 4. when ready, submit a pull request to the develop branch of `scores`.
 
-**Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
+Some developers like to prefix their branch names with a short numerical identifier to help disambiguate them. This is up to the developer and any approach to branch naming is welcome. 
+
+If you have any questions about the development process, there are two options. Feel free to either raise your question in the [discussions area](https://github.com/nci/scores/discussions) or email scores@bom.gov.au .
 
 ### Submitting a Pull Request for a Feature, Improvement or Correction
 
 Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
 
 All pull requests will undergo a code review. When required, pull requests will also undergo a science review. Some examples of when a science review may be required include pull requests that propose changes to existing metrics and proposals for new or updated tutorials. More information about the code review and science review process is provided in the [Review Processes](#review-processes) section below.
+
+Once the review process has been completed, the package maintainer may first merge the pull request into the branch "228-documentation-testing-branch" so that rendering of the documentation on the readthedocs site can be tested. This is usually the final step before a pull request is merged into the develop branch.
 
 The `scores` package maintainer may make changes to the code during the pull process or afterwards, such as resolving last-minute conflicts or making any required technical tweaks.
 
@@ -65,6 +69,8 @@ Each pull request should include:
 Please also read the [pull request checklist](https://github.com/nci/scores/blob/develop/.github/pull_request_template.md).
   
 All pull requests for new metrics, statistical techniques or tools will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within `scores`. More information about the code review and science review process is provided in the [Review Processes](#review-processes) section below.
+
+Once the review process has been completed, the package maintainer may first merge the pull request into the branch "228-documentation-testing-branch" so that rendering of the documentation on the readthedocs site can be tested. This is usually the final step before a pull request is merged into the develop branch.
 
 ## Setting up for Development
 
