@@ -75,7 +75,7 @@ Labelled, n-dimensional data is widely used in many scientific fields. The Earth
 
 The purpose of `scores` is (a) to mathematically verify and validate models and predictions and (b) to foster research into new scores and metrics. 
 
-`scores` handles dimensionality and weighting (e.g. latitude weighting) more effectively than commonly-used data science packages. While there are existing open source Python packages for verifying labelled n-dimensional data (see "Related Software Packages" further below), none of these packages offer all of the key benefits of `scores`.
+`scores` handles dimensionality and weighting (e.g. latitude weighting) more effectively than commonly-used data science packages. While there are existing open source Python verification packages for labelled n-dimensional data (see "Related Software Packages" further below), none of these packages offer all of the key benefits of `scores`.
 
 ## Key Benefits of `scores`
 
