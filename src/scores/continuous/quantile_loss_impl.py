@@ -1,7 +1,7 @@
 """
 Implementation of quantile loss (score)
 """
-from typing import Optional, Sequence
+from typing import Optional
 
 import xarray as xr
 
