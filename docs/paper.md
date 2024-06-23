@@ -57,7 +57,7 @@ bibliography: paper.bib
 
 # Summary
 
-`scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models which use labelled n-dimensional data. It primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities. `scores` also has wide potential application in any situation where labelled n-dimensional (multidimensional) data is used, including in machine learning. 
+`scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities. `scores` supports labelled n-dimensional (multi-dimensional) data and can potentially be used in other applicable fields, including machine learning. 
 
 `scores` not only includes common scores (e.g. Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
 
@@ -93,7 +93,7 @@ In order to meet the needs of researchers and other users, `scores` provides the
 
 - A companion Jupyter Notebook [@Jupyter:2024] tutorial for each metric and statistical test that demonstrates its use in practice.
 - Novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
-- Commonly-used scores are also provided so that `scores` can be used as a standalone package, and also to meet frequent user requests for their inclusion.
+- Commonly-used scores are also included, meeting user requests to use `scores` as a standalone package.
 - All scores and statistical techniques have undergone a thorough scientific and software review.
 - An area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores.  
 
