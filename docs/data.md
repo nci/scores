@@ -47,7 +47,7 @@ The NOAA Integrated Surface Database (ISD) provides hourly point-based (*in-situ
 
 Reanalysis datasets provide a reliable and detailed reconstruction of past weather and climate conditions, spanning years if not decades.
 
-The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5). ERA5 is also included in [WeatherBench 2](https://sites.research.google/weatherbench/), see their [documentation](https://weatherbench2.readthedocs.io/en/latest/data-guide.html#era5).
+The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5). ERA5 is also included in [WeatherBench 2](https://sites.research.google/weatherbench/), see [this section](https://weatherbench2.readthedocs.io/en/latest/data-guide.html#era5) of their documentation.
 
 #### Gridded Radar (Observation) Data
 
