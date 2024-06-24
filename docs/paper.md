@@ -59,7 +59,7 @@ bibliography: paper.bib
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It supports labelled n-dimensional (multidimensional) data, which is used in many scientific fields and in machine learning. At present, `scores` primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities.
 
-`scores` not only includes common scores (e.g. Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
+`scores` not only includes common scores (e.g., Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g., FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g., threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
@@ -75,7 +75,7 @@ Labelled, n-dimensional data is widely used in many scientific fields. The Earth
 
 The purpose of `scores` is (a) to mathematically verify and validate models and predictions and (b) to foster research into new scores and metrics. 
 
-`scores` handles dimensionality and weighting (e.g. latitude weighting) more effectively than commonly-used data science packages. While there are existing open source Python verification packages for labelled n-dimensional data (see "Related Software Packages" further below), none of these packages offer all of the key benefits of `scores`.
+`scores` handles dimensionality and weighting (e.g., latitude weighting) more effectively than commonly-used data science packages. While there are existing open source Python verification packages for labelled n-dimensional data (see "Related Software Packages" further below), none of these packages offer all of the key benefits of `scores`.
 
 ## Key Benefits of `scores`
 
@@ -84,15 +84,15 @@ In order to meet the needs of researchers and other users, `scores` provides the
 ### Data Handling
 
 - Works with labelled, n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly used for:
-  - gridded Earth system data (e.g. numerical weather prediction models)
-  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
+  - gridded Earth system data (e.g., numerical weather prediction models)
+  - tabular, point, latitude/longitude or site-based data (e.g., forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
 - Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data sources among others.
 
 ### Usability
 
 - A companion Jupyter Notebook [@Jupyter:2024] tutorial for each metric and statistical test that demonstrates its use in practice.
-- Novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
+- Novel scores not commonly found elsewhere (e.g., FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
 - Commonly-used scores are also included, meeting user requests to use `scores` as a standalone package.
 - All scores and statistical techniques have undergone a thorough scientific and software review.
 - An area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores.  
