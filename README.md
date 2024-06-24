@@ -1,4 +1,4 @@
-# Scores: Verification and Evaluation for Forecasts and Models
+# scores: Verification and Evaluation for Forecasts and Models
 
 [![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql) [![Coverage Status](https://coveralls.io/repos/github/nci/scores/badge.svg)](https://coveralls.io/github/nci/scores) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FTutorial_Gallery.ipynb)
 
