@@ -12,6 +12,7 @@
 :maxdepth: 2
 
 self
+key_benefits
 installation
 included
 api
