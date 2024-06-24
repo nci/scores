@@ -50,56 +50,60 @@ affiliations:
    index: 3
 
 
-date: 12 June 2024
+date: 22 June 2024
 bibliography: paper.bib 
 
 ---
 
 # Summary
 
-`scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities. In addition to supporting the Earth system science communities, it also has wide potential application in machine learning and other domains such as economics.
+`scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It supports labelled n-dimensional (multidimensional) data, which is used in many scientific fields and in machine learning. At present, `scores` primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities.
 
-`scores` not only includes common scores (e.g. Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g. FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g. threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
+`scores` not only includes common scores (e.g., Mean Absolute Error), it also includes novel scores not commonly found elsewhere (e.g., FIxed Risk Multicategorical (FIRM) score, Flip-Flop Index), complex scores (e.g., threshold-weighted continuous ranked probability score), and statistical tests (such as the Diebold Mariano test). It also contains isotonic regression which is becoming an increasingly important tool in forecast verification and can be used to generate stable reliability diagrams. Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). At the time of writing, `scores` includes over 50 metrics, statistical techniques and data processing tools.
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
-`scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It has expanding support for `pandas`.  
+`scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It has expanding support for `pandas`.
 
-The software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
+The `scores` software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
 \pagebreak
 
 # Statement of Need
 
-The purpose of this software is (a) to mathematically verify and validate models and predictions and (b) to foster research into new scores and metrics. 
+Labelled, n-dimensional data is widely used in many scientific fields. The Earth system science community makes heavy use of physics-based and machine learning models, both to process observations (such as identifying land use from satellite data) and to make predictions about the future (such as forecasting the weather). These models, predictions and forecasts undergo verification and evaluation to assess their correctness. 
+
+The purpose of `scores` is (a) to mathematically verify and validate models and predictions and (b) to foster research into new scores and metrics. 
+
+`scores` handles dimensionality and weighting (e.g., latitude weighting) more effectively than commonly-used data science packages. While there are existing open source Python verification packages for labelled n-dimensional data (see "Related Software Packages" further below), none of these packages offer all of the key benefits of `scores`.
 
 ## Key Benefits of `scores`
 
 In order to meet the needs of researchers and other users, `scores` provides the following key benefits.
 
-**Data Handling**
+### Data Handling
 
-- Works with n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly used for:
-  - gridded Earth system data (e.g. numerical weather prediction models)
-  - tabular, point, latitude/longitude or site-based data (e.g. forecasts for specific locations).
+- Works with labelled, n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly used for:
+  - gridded Earth system data (e.g., numerical weather prediction models)
+  - tabular, point, latitude/longitude or site-based data (e.g., forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
 - Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data sources among others.
 
-**Usability**
+### Usability
 
 - A companion Jupyter Notebook [@Jupyter:2024] tutorial for each metric and statistical test that demonstrates its use in practice.
-- Novel scores not commonly found elsewhere (e.g. FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
+- Novel scores not commonly found elsewhere (e.g., FIRM [@Taggart:2022a], Flip-Flop Index [@Griffiths:2019; @griffiths2021circular]).
+- Commonly-used scores are also included, meeting user requests to use `scores` as a standalone package.
 - All scores and statistical techniques have undergone a thorough scientific and software review.
 - An area specifically to hold emerging scores which are still undergoing research and development. This provides a clear mechanism for people to share, access and collaborate on new scores, and be able to easily re-use versioned implementations of those scores.  
 
-**Compatability**
+### Compatibility
 
 - Highly modular - provides its own implementations, avoids extensive dependencies and offers a consistent API.
 - Easy to integrate and use in a wide variety of environments. It has been used on workstations, servers and in high performance computing (supercomputing) environments. 
 - Maintains 100% automated test coverage.
 - Uses Dask [@Dask:2016] for scaling and performance.
 - Expanding support for `pandas` [@pandas:2024; @McKinney:2010].
-
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
@@ -115,7 +119,7 @@ Table: A **curated selection** of the metrics, tools and statistical tests curre
 |
 | **Probability**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score [@BRIER_1950], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see @Gneiting:2011), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	  
 |
-| **Categorical**         |Scores for evaluating forecasts of categories.                 |Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, Symmetric Extremal Dependence Index [@Ferro:2011], FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].        	  
+| **Categorical**         |Scores (including contingency table metrics) for evaluating forecasts of categories.                 |Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, Symmetric Extremal Dependence Index [@Ferro:2011], FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].        	  
 |
 | **Spatial**           |Scores that take into account spatial structure.                   |Fractions Skill Score [@Roberts:2008].  
 |
@@ -125,7 +129,9 @@ Table: A **curated selection** of the metrics, tools and statistical tests curre
 
 ## Use in Academic Work
 
-In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive, which became operational in 2022. For a description of Jive see @loveday2024jive. The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022d; @Taggart:2022b; @Taggart:2022c]. `scores` has arisen from the Jive verification system and was created to modularise the Jive verification functions and make them available as an open source package. `scores` also includes additional metrics that Jive does not contain.
+In 2015, the Australian Bureau of Meteorology began developing a new verification system called Jive, which became operational in 2022. For a description of Jive see @loveday2024jive. The Jive verification metrics have been used to support several publications [@Griffiths:2017; @Foley:2020; @Taggart:2022d; @Taggart:2022b; @Taggart:2022c]. 
+
+`scores` has arisen from the Jive verification system and provides Jive verification functions as a modular, open source package. `scores` also includes additional metrics that Jive does not contain.
 
 `scores` has been used to explore user-focused approaches to evaluating probabilistic and categorical forecasts [@Loveday2024ts]. 
 
@@ -141,7 +147,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `Verif` [@nipen2023verif] is a command line tool for generating verification plots whereas `scores` provides a Python API for generating numerical scores. 
 
-`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for short-term ensemble prediction systems, and includes a significant verification submodule with many useful verification scores. `PySteps` does not provide a standalone verification API. 
+`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for producing short-term ensemble predictions, focusing on probabilistic nowcasting of radar precipitation fields. It includes a significant verification submodule with many useful verification scores. `PySteps` does not provide a standalone verification API. 
 
 `PyForecastTools` [@Morley:2020] is a Python package for model and forecast verification which supports `dmarray` rather than `xarray` data structures and does not include Jupyter Notebook tutorials.
 
