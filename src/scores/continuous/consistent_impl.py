@@ -15,10 +15,10 @@ from scores.utils import gather_dimensions
 def consistent_expectile_score(
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    *,  # Force keywords arguments to be keyword-only
     alpha: float,
     phi: Callable[[xr.DataArray], xr.DataArray],
     phi_prime: Callable[[xr.DataArray], xr.DataArray],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
@@ -104,10 +104,10 @@ def consistent_expectile_score(
 def consistent_huber_score(
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    *,  # Force keywords arguments to be keyword-only
     huber_param: float,
     phi: Callable[[xr.DataArray], xr.DataArray],
     phi_prime: Callable[[xr.DataArray], xr.DataArray],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
@@ -171,9 +171,9 @@ def consistent_huber_score(
 def consistent_quantile_score(
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    *,  # Force keywords arguments to be keyword-only
     alpha: float,
     g: Callable[[xr.DataArray], xr.DataArray],
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
