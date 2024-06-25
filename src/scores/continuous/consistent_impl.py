@@ -24,9 +24,28 @@ def consistent_expectile_score(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    Returns the score using a scoring function that is consistent for the
+    Calculates the score using a scoring function that is consistent for the
     alpha-expectile functional, based on a supplied convex function phi.
     See Geniting (2011), or Equation (10) from Taggart (2021).
+
+    .. math::
+
+        S(x, y) =
+        \\begin{cases}
+        (1 - \\alpha)(\\phi(y) - \\phi(x) - \\phi'(x)(y-x)), & y < x \\\\
+        \\alpha(\\phi(y) - \\phi(x) - \\phi'(x)(y-x)), & x \\leq y
+        \\end{cases}
+
+    where
+
+        - :math:`x` is the forecast
+        - :math:`y` is the observation
+        - :math:`\\alpha` is the expectile level
+        - :math:`\\phi` is a convex function of a single variable
+        - :math:`\\phi'` is the subderivative of :math:`\\phi`
+        - :math:`S(x,y)` is the score.
+
+    Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
 
     Args:
         fcst: array of forecast values.
@@ -59,24 +78,7 @@ def consistent_expectile_score(
         ValueError: if `alpha` is not strictly between 0 and 1.
 
     Note:
-        .. math::
-
-            S(x, y) =
-            \\begin{cases}
-            (1 - \\alpha)(\\phi(y) - \\phi(x) - \\phi'(x)(y-x)), & y < x \\\\
-            \\alpha(\\phi(y) - \\phi(x) - \\phi'(x)(y-x)), & x \\leq y
-            \\end{cases}
-
-        where
-
-            - :math:`x` is the forecast
-            - :math:`y` is the observation
-            - :math:`\\alpha` is the expectile level
-            - :math:`\\phi` is a convex function of a single variable
-            - :math:`\\phi'` is the subderivative of :math:`\\phi`
-            - :math:`S(x,y)` is the score.
-
-        Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
+        The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
     References:
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
@@ -89,8 +91,7 @@ def consistent_expectile_score(
     """
     check_alpha(alpha)
 
-    if preserve_dims or reduce_dims:
-        reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     score_overfcst = (1 - alpha) * (phi(obs) - phi(fcst) - phi_prime(fcst) * (obs - fcst))
     score_underfcst = alpha * (phi(obs) - phi(fcst) - phi_prime(fcst) * (obs - fcst))
@@ -113,9 +114,23 @@ def consistent_huber_score(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    Score that is consistent for the Huber mean functional with tuning parameter `tuning_param`,
-    based on convex function phi. See Taggart (2022), or Equation (11) from Taggart (2021).
-    See Taggart (2021), end of Section 3.4, for the standard formula.
+    Calculates the score that is consistent for the Huber mean functional with tuning
+    parameter `tuning_param`, based on convex function phi. See Taggart (2022), or
+    Equation (11) from Taggart (2021). See Taggart (2021), end of Section 3.4, for the
+    standard formula.
+
+    .. math::
+        S(x,y) = \\frac{1}{2}(\\phi y-\\phi(\\kappa_v (x-y) + y) + \\kappa_v (x-y)\\phi'(x))
+
+    Where:
+        - :math:`\\kappa_v(x) = \\mathrm{max}(-v, \\mathrm{min}(x, v)))` is the "capping function"
+        - :math:`v` is the Huber parameter
+        - :math:`x` is the forecast
+        - :math:`y` is the observation
+        - :math:`\\phi` is a convex function of a single variable
+        - :math:`\\phi'` is the subderivative of :math:`\\phi`
+        - :math:`S(x,y)` is the score.
+
 
     Args:
         fcst: array of forecast values.
@@ -148,8 +163,11 @@ def consistent_huber_score(
     Raises:
        ValueError: if `huber_param <= 0`.
 
+    Note:
+        The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
+
     References:
-        -   Taggart, R. (2021). Evaluation of point forecasts for extreme events using
+        -   Taggart, R. (202). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
         -   Taggart, R. J. (2022). Point forecasting and forecast evaluation with
@@ -157,8 +175,7 @@ def consistent_huber_score(
             https://doi.org/10.1214/21-ejs1957
     """
     check_huber_param(huber_param)
-    if preserve_dims or reduce_dims:
-        reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     kappa = (fcst - obs).clip(min=-huber_param, max=huber_param)
     result = 0.5 * (phi(obs) - phi(kappa + obs) + kappa * phi_prime(fcst))
@@ -179,8 +196,25 @@ def consistent_quantile_score(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    Score that is consistent for the alpha-quantile functional, based on nondecreasing function g.
-    See Gneiting (2011), or Equation (8) from Taggart (2022).
+    Calculates the score that is consistent for the alpha-quantile functional, based on 
+    nondecreasing function g. See Gneiting (2011), or Equation (8) from Taggart (2022).
+
+    .. math::
+
+        S(x, y) =
+        \\begin{cases}
+        (1 - \\alpha)(g(x) - g(y)), & y < x \\\\
+        \\alpha(g(y) - g(x)), & x \\leq y
+        \\end{cases}
+
+    where
+
+        - :math:`x` is the forecast
+        - :math:`y` is the observation
+        - :math:`\\alpha` is the quantile level
+        - :math:`g` is a nondecreasing function of a single variable
+        - :math:`S(x,y)` is the score.
+
 
     Args:
         fcst: array of forecast values.
@@ -212,21 +246,7 @@ def consistent_quantile_score(
         ValueError: if `alpha` is not strictly between 0 and 1.
 
     Note:
-        .. math::
-
-            S(x, y) =
-            \\begin{cases}
-            (1 - \\alpha)(g(x) - g(y)), & y < x \\\\
-            \\alpha(g(y) - g(x)), & x \\leq y
-            \\end{cases}
-
-        where
-
-            - :math:`x` is the forecast
-            - :math:`y` is the observation
-            - :math:`\\alpha` is the quantile level
-            - :math:`g` is a nondecreasing function of a single variable
-            - :math:`S(x,y)` is the score.
+        The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
 
     References:
@@ -238,8 +258,7 @@ def consistent_quantile_score(
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
     check_alpha(alpha)
-    if preserve_dims or reduce_dims:
-        reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     score_overfcst = (1 - alpha) * (g(fcst) - g(obs))
     score_underfcst = -alpha * (g(fcst) - g(obs))
