@@ -11,7 +11,7 @@
 ## Usability
 
 - A companion Jupyter Notebook [tutorial](project:./tutorials/Tutorial_Gallery.md) for each metric and statistical test that demonstrates its use in practice.
-- Novel scores not commonly found elsewhere (e.g., [FIxed Risk Multicategorical (FIRM) score](https://doi.org/10.1002/qj.4266), [Flip-Flop Index](https://doi.org/10.1002/met.1732)).
+- Novel scores not commonly found elsewhere (e.g., FIxed Risk Multicategorical (FIRM) score ([Taggart et al., 2022](https://doi.org/10.1002/qj.4266)), Flip-Flop Index ([Griffiths et al., 2019](https://doi.org/10.1002/met.1732), [2021](https://doi.org/10.1071/ES21010))). 
 - Complex scores (e.g., threshold-weighted continuous ranked probability score (twCRPS))
 - Commonly-used scores are also included, so that `scores` can be used as a standalone package.
 - All scores and statistical techniques have undergone a thorough scientific and software review.
