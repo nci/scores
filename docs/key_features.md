@@ -1,4 +1,4 @@
-# Key Benefits of `scores`
+# Key Features of `scores`
 
 ## Data Handling
 
