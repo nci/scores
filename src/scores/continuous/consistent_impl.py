@@ -171,8 +171,8 @@ def consistent_huber_score(
        ValueError: if `huber_param <= 0`.
 
     References:
-        -   Taggart, R. J. (2022a). Point forecasting and forecast evaluation with
-            generalized Huber loss. Electronic Journal of Statistics, 16(1).
+        -   Taggart, R. J. (2022). Point forecasting and forecast evaluation with
+            generalized Huber loss. Electronic Journal of Statistics, 16(1), 201-231.
             https://doi.org/10.1214/21-ejs1957
         -   Taggart, R. (2022b). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
