@@ -47,6 +47,10 @@ def consistent_expectile_score(
 
     Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
 
+    We strongly recommend that you work through the 
+    [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how 
+    to use the consistent scoring functions.
+
     Args:
         fcst: array of forecast values.
         obs: array of corresponding observation values.
@@ -131,6 +135,9 @@ def consistent_huber_score(
         - :math:`\\phi'` is the subderivative of :math:`\\phi`
         - :math:`S(x,y)` is the score.
 
+    We strongly recommend that you work through the
+    [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how
+    to use the consistent scoring functions.
 
     Args:
         fcst: array of forecast values.
@@ -215,6 +222,9 @@ def consistent_quantile_score(
         - :math:`g` is a nondecreasing function of a single variable
         - :math:`S(x,y)` is the score.
 
+    We strongly recommend that you work through the 
+    [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how 
+    to use the consistent scoring functions.
 
     Args:
         fcst: array of forecast values.
