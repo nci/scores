@@ -46,7 +46,7 @@ def consistent_expectile_score(
 
     Note that if :math:`\\phi` is differentiable then :math:`\\phi'` is its derivative.
 
-    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
+    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty`.
 
     We strongly recommend that you work through the tutorial 
     https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
@@ -133,7 +133,7 @@ def consistent_huber_score(
         - :math:`\\phi'` is the subderivative of :math:`\\phi`
         - :math:`S(x,y)` is the score.
 
-    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
+    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty`.
 
     We strongly recommend that you work through the tutorial
     https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you
@@ -218,7 +218,7 @@ def consistent_quantile_score(
         - :math:`g` is a nondecreasing function of a single variable
         - :math:`S(x,y)` is the score.
 
-    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
+    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty`.
 
     We strongly recommend that you work through the tutorial 
     https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
