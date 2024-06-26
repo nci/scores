@@ -45,7 +45,9 @@ def consistent_expectile_score(
         - :math:`\\phi'` is the subderivative of :math:`\\phi`
         - :math:`S(x,y)` is the score.
 
-    Note that if :math:`\\phi` is differentiable then `\\phi'` is its derivative.
+    Note that if :math:`\\phi` is differentiable then :math:`\\phi'` is its derivative.
+
+    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
     We strongly recommend that you work through the 
     [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how 
@@ -80,9 +82,6 @@ def consistent_expectile_score(
 
     Raises:
         ValueError: if `alpha` is not strictly between 0 and 1.
-
-    Note:
-        The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
     References:
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
@@ -124,16 +123,18 @@ def consistent_huber_score(
     standard formula.
 
     .. math::
-        S(x,y) = \\frac{1}{2}(\\phi y-\\phi(\\kappa_v (x-y) + y) + \\kappa_v (x-y)\\phi'(x))
+        S(x,y) = \\frac{1}{2}(\\phi(y)-\\phi(\\kappa_v (x-y) + y) + \\kappa_v (x-y)\\phi'(x))
 
     Where:
-        - :math:`\\kappa_v(x) = \\mathrm{max}(-v, \\mathrm{min}(x, v)))` is the "capping function"
+        - :math:`\\kappa_v(x) = \\mathrm{max}(-v, \\mathrm{min}(x, v))` is the "capping function"
         - :math:`v` is the Huber parameter
         - :math:`x` is the forecast
         - :math:`y` is the observation
         - :math:`\\phi` is a convex function of a single variable
         - :math:`\\phi'` is the subderivative of :math:`\\phi`
         - :math:`S(x,y)` is the score.
+
+    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
     We strongly recommend that you work through the
     [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how
@@ -169,9 +170,6 @@ def consistent_huber_score(
 
     Raises:
        ValueError: if `huber_param <= 0`.
-
-    Note:
-        The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
     References:
         -   Taggart, R. J. (2022a). Point forecasting and forecast evaluation with
@@ -222,6 +220,8 @@ def consistent_quantile_score(
         - :math:`g` is a nondecreasing function of a single variable
         - :math:`S(x,y)` is the score.
 
+    The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
+
     We strongly recommend that you work through the 
     [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how 
     to use the consistent scoring functions.
@@ -254,10 +254,6 @@ def consistent_quantile_score(
 
     Raises:
         ValueError: if `alpha` is not strictly between 0 and 1.
-
-    Note:
-        The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
-
 
     References:
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
