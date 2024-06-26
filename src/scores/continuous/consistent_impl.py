@@ -37,7 +37,6 @@ def consistent_expectile_score(
         \\end{cases}
 
     where
-
         - :math:`x` is the forecast
         - :math:`y` is the observation
         - :math:`\\alpha` is the expectile level
@@ -125,7 +124,7 @@ def consistent_huber_score(
     .. math::
         S(x,y) = \\frac{1}{2}(\\phi(y)-\\phi(\\kappa_v (x-y) + y) + \\kappa_v (x-y)\\phi'(x))
 
-    Where:
+    where
         - :math:`\\kappa_v(x) = \\mathrm{max}(-v, \\mathrm{min}(x, v))` is the "capping function"
         - :math:`v` is the Huber parameter
         - :math:`x` is the forecast
@@ -213,7 +212,6 @@ def consistent_quantile_score(
         \\end{cases}
 
     where
-
         - :math:`x` is the forecast
         - :math:`y` is the observation
         - :math:`\\alpha` is the quantile level
