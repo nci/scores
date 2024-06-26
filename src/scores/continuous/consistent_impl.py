@@ -50,7 +50,7 @@ def consistent_expectile_score(
 
     We strongly recommend that you work through the tutorial 
     https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
-    understand how to use the consistent scoring functions in scores.
+    understand how to use the consistent scoring functions in `scores`.
 
     Args:
         fcst: array of forecast values.
@@ -137,7 +137,7 @@ def consistent_huber_score(
 
     We strongly recommend that you work through the tutorial
     https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you
-    understand how to use the consistent scoring functions in scores.
+    understand how to use the consistent scoring functions in `scores`.
 
     Args:
         fcst: array of forecast values.
@@ -222,8 +222,7 @@ def consistent_quantile_score(
 
     We strongly recommend that you work through the tutorial 
     https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
-    understand how to use the consistent scoring functions in scores.
-
+    understand how to use the consistent scoring functions in `scores`.
     Args:
         fcst: array of forecast values.
         obs: array of corresponding observation values.
