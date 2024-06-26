@@ -49,9 +49,9 @@ def consistent_expectile_score(
 
     The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
-    We strongly recommend that you work through the 
-    [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how 
-    to use the consistent scoring functions.
+    We strongly recommend that you work through the tutorial 
+    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
+    understand how to use the consistent scoring functions in scores.
 
     Args:
         fcst: array of forecast values.
@@ -136,9 +136,9 @@ def consistent_huber_score(
 
     The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
-    We strongly recommend that you work through the
-    [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how
-    to use the consistent scoring functions.
+    We strongly recommend that you work through the tutorial
+    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you
+    understand how to use the consistent scoring functions in scores.
 
     Args:
         fcst: array of forecast values.
@@ -222,9 +222,9 @@ def consistent_quantile_score(
 
     The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
-    We strongly recommend that you work through the 
-    [tutorial](project:./tutorials/Consistent_Scores.md) to help you understand how 
-    to use the consistent scoring functions.
+    We strongly recommend that you work through the tutorial 
+    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
+    understand how to use the consistent scoring functions in scores.
 
     Args:
         fcst: array of forecast values.
