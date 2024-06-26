@@ -350,7 +350,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         Identical to hit rate, probability of detection (POD), sensitivity and recall.
 
-        What proportion of the observed events where correctly forecast?
+        The proportion of the observed events that were correctly forecast.
 
         Returns:
             xr.DataArray: An xarray object containing the true positive rate
