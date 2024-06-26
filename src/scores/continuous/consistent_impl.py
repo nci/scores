@@ -26,7 +26,7 @@ def consistent_expectile_score(
     """
     Calculates the score using a scoring function that is consistent for the
     alpha-expectile functional, based on a supplied convex function phi.
-    See Geniting (2011), or Equation (10) from Taggart (2021).
+    See Geniting (2011), or Equation (10) from Taggart (2022).
 
     .. math::
 
@@ -88,7 +88,7 @@ def consistent_expectile_score(
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
             American Statistical Association, 106(494), 746–762. 
             https://doi.org/10.1198/jasa.2011.r10138
-        -   Taggart, R. (2021). Evaluation of point forecasts for extreme events using 
+        -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using 
             consistent scoring functions. Quarterly Journal of the Royal Meteorological 
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
 
@@ -119,8 +119,8 @@ def consistent_huber_score(
 ) -> xr.DataArray:
     """
     Calculates the score that is consistent for the Huber mean functional with tuning
-    parameter `tuning_param`, based on convex function phi. See Taggart (2022), or
-    Equation (11) from Taggart (2021). See Taggart (2021), end of Section 3.4, for the
+    parameter `tuning_param`, based on convex function phi. See Taggart (2022a), or
+    Equation (11) from Taggart (2022b). See Taggart (2022b), end of Section 3.4, for the
     standard formula.
 
     .. math::
@@ -174,12 +174,12 @@ def consistent_huber_score(
         The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty `.
 
     References:
-        -   Taggart, R. (202). Evaluation of point forecasts for extreme events using
-            consistent scoring functions. Quarterly Journal of the Royal Meteorological
-            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
-        -   Taggart, R. J. (2022). Point forecasting and forecast evaluation with
+        -   Taggart, R. J. (2022a). Point forecasting and forecast evaluation with
             generalized Huber loss. Electronic Journal of Statistics, 16(1).
             https://doi.org/10.1214/21-ejs1957
+        -   Taggart, R. (2022b). Evaluation of point forecasts for extreme events using
+            consistent scoring functions. Quarterly Journal of the Royal Meteorological
+            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
     check_huber_param(huber_param)
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
@@ -263,7 +263,7 @@ def consistent_quantile_score(
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
             American Statistical Association, 106(494), 746–762. 
             https://doi.org/10.1198/jasa.2011.r10138
-        -   Taggart, R. (2021). Evaluation of point forecasts for extreme events using 
+        -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using 
             consistent scoring functions. Quarterly Journal of the Royal Meteorological 
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
