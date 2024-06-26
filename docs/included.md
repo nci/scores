@@ -16,7 +16,7 @@
 * - Consistent Expectile Score
   - [API](api.md#scores.continuous.consistent_expectile_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)
-  - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r101388); [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+  - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r10138); [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 * - Consistent Huber Score
   - [API](api.md#scores.continuous.consistent_huber_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)
@@ -24,7 +24,7 @@
 * - Consistent Quantile Score
   - [API](api.md#scores.continuous.consistent_quantile_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)
-  - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r101388); [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+  - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r10138); [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 * - Flip-Flop Index
   - 
   - 
