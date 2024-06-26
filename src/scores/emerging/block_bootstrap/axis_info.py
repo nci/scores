@@ -18,13 +18,30 @@ class AxisInfo:
 
     length_in: int
     block_size: int
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
-    bootstrap: bool = True
+    fit_blocks_method: FitBlocksMethod
+    bootstrap: bool
 
     # derived members:
     length_out: int = field(init=False)
     num_blocks: int = field(init=False)
     block_size_partial: int = field(init=False)
+
+    @staticmethod
+    def make_from_array(
+        arr: npt.NDArray,
+        block_sizes: list[int],
+        fit_blocks_method: FitBlocksMethod,
+    ) -> list[AxisInfo]:
+        """
+        Returns list of AxisInfo (outer-most axis -> inner-most axis), given a numpy
+        ndarray as input
+        """
+        assert len(arr.shape) == len(block_sizes)
+
+        return [
+            AxisInfo(length_in=l, block_size=b, fit_blocks_method=fit_blocks_method)
+            for l, b in zip(np.shape(arr), block_sizes)
+        ]
 
     def __post_init__(self):
         """
@@ -80,9 +97,35 @@ class AxisInfoCollection:
     Collection of labelled AxisInfo object.
     """
 
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL
+    fit_blocks_method: FitBlocksMethod
     dims_order: list[str] = field(init=False)
     data: dict[str, AxisInfo] = field(init=False)
+
+    @staticmethod
+    def make_from_arrays(
+        arrs: list[xr.DataArray],
+        bootstrap_dims: list[str],
+        block_sizes: list[int],
+        fit_blocks_method: FitBlocksMethod,
+    ) -> AxisInfoCollection:
+        axi_collection = AxisInfoCollection(fit_blocks_method=fit_blocks_method)
+        lookup_block_sizes = {d: b for (d, b) in zip(bootstrap_dims, block_sizes)}
+
+        for arr in arrs:
+            for dim_name, axis_length in zip(arr.dims, np.shape(arr)):
+                block_size = lookup_block_sizes.get(dim_name, axis_length)  # default to axis_length
+                bootstrap = True if dim_name in bootstrap_dims else False
+
+                axi = AxisInfo(
+                    length_in=axis_length,
+                    block_size=block_size,
+                    fit_blocks_method=fit_blocks_method,
+                    bootstrap=bootstrap,
+                )
+
+                axi_collection.insert(dim_name, axi)
+
+        return axi_collection
 
     def __post_init__(self):
         self.data = {}
@@ -94,6 +137,10 @@ class AxisInfoCollection:
     def iter(self):
         for d in self.dims_order:
             yield self.data[d]
+
+    def items(self):
+        for d in self.dims_order:
+            yield (d, self.data[d])
 
     def insert(self, dim_name: str, axis_info: AxisInfo):
         if dim_name in self.data:
@@ -116,46 +163,3 @@ class AxisInfoCollection:
         # implicit: if we've reached this point, dim_name is not in self.data
         self.data[dim_name] = axis_info
         self.dims_order.append(dim_name)
-
-
-def make_axis_info_collection(
-    arrs: list[xr.DataArray],
-    bootstrap_dims: list[str],
-    block_sizes: list[int],
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
-) -> AxisInfoCollection:
-    axi_collection = AxisInfoCollection(fit_blocks_method=fit_blocks_method)
-    lookup_block_sizes = {d: b for (d, b) in zip(bootstrap_dims, block_sizes)}
-
-    for arr in arrs:
-        for dim_name, axis_length in zip(arr.dims, np.shape(arr)):
-            block_size = lookup_block_sizes.get(dim_name, axis_length)  # default to axis_length
-            bootstrap = True if dim_name in bootstrap_dims else False
-
-            axi = AxisInfo(
-                length_in=axis_length,
-                block_size=block_size,
-                fit_blocks_method=fit_blocks_method,
-                bootstrap=bootstrap,
-            )
-
-            axi_collection.insert(dim_name, axi)
-
-    return axi_collection
-
-
-def make_axis_info(
-    arr: npt.NDArray,
-    block_sizes: list[int],
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
-) -> list[AxisInfo]:
-    """
-    Returns list of AxisInfo (outer-most axis -> inner-most axis), given a numpy
-    ndarray as input
-    """
-    assert len(arr.shape) == len(block_sizes)
-
-    return [
-        AxisInfo(length_in=l, block_size=b, fit_blocks_method=fit_blocks_method)
-        for l, b in zip(np.shape(arr), block_sizes)
-    ]

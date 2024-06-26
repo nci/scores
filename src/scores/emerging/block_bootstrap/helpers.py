@@ -7,9 +7,12 @@ Helper functions for `block_bootstrap`
 """
 
 import functools
+import xarray as xr
+
 from typing import Tuple, TypeVar
 
-import xarray as xr
+from scores.emerging.block_bootstrap.methods import OrderMissingDimsMethod
+
 
 T = TypeVar("T")
 
@@ -84,6 +87,7 @@ def reorder_dims(
     arr: xr.DataArray,
     dims: list[str],
     auto_order_missing: bool = True,
+    order_method: OrderMissingDimsMethod = OrderMissingDimsMethod.ALPHABETICAL_PREPEND,
 ) -> xr.DataArray:
     """
     Reorders the dimensions of all arrays, with respect to a reference list
@@ -102,6 +106,7 @@ def reorder_dims(
             order.
         auto_order_missing: optionally order dimensinons in ``arrs`` that
             are not present in ``dims`` alphabetically.
+        order_method: currently only supports `ALPHABETICAL_PREPEND`.
 
     Returns:
 
@@ -112,6 +117,9 @@ def reorder_dims(
         ValueError: if ``arr`` dimensions cannot be ordered due to missing
             dimensions in ``dims``
     """
+    # currently only supports alphabetical prepend
+    assert order_method == OrderMissingDimsMethod.ALPHABETICAL_PREPEND
+
     # fail early - not strictly necessary, since `partial_linear_order_by_ref` covers it
     unique_or_error(dims)
 
@@ -121,7 +129,8 @@ def reorder_dims(
     # sort dims_unord alphebetically to resolve ordering between missing dimensions
     if auto_order_missing:
         dims_unord_sorted = sorted(dims_unord)
-        dims_ord.extend(dims_unord_sorted)
+        # prepend
+        dims_ord = dims_unord_sorted + dims_ord
     else:
         if len(dims_unord) > 0:
             raise ValueError(f"`auto_order_missing = False` unable to align unspecified dimensions: {dims_unord}")
@@ -133,6 +142,7 @@ def reorder_all_arr_dims(
     arrs: list[xr.DataArray],
     dims: list[str],
     auto_order_missing: bool = True,
+    order_method: OrderMissingDimsMethod = OrderMissingDimsMethod.ALPHABETICAL_PREPEND,
 ) -> Tuple[list[xr.DataArray], list[str]]:
     """
     Reorders the dimensions of all input arrays (``arrs``), with respect to
@@ -147,6 +157,7 @@ def reorder_all_arr_dims(
             order.
         auto_order_missing: optionally order dimensinons in ``arrs`` that
             are not present in ``dims`` alphabetically.
+        order_method: currently only supports `ALPHABETICAL_PREPEND`.
 
     Returns:
 
@@ -177,6 +188,9 @@ def reorder_all_arr_dims(
         For definition of partially linearly ordered in this context,
         see: :py:func:`partial_linear_order_by_ref`.
     """
+    # currently only supports alphabetical prepend
+    assert order_method == OrderMissingDimsMethod.ALPHABETICAL_PREPEND
+
     # fail early - not strictly necessary, since `partial_linear_order_by_ref` covers it
     unique_or_error(dims)
 
@@ -196,23 +210,10 @@ def reorder_all_arr_dims(
         dims_ord.extend(sorted(dims_unord))
         all_arr_dims = dims_ord
 
-    return ([reorder_dims(arr, dims, auto_order_missing) for arr in arrs], all_arr_dims)
-
-
-def check_block_sizes(
-    arrs: list[xr.DataArray],
-    block_sizes: list[int],
-    dims: list[int],
-):
-    """
-    Checks that block sizes are valid.
-
-    A block size is valid if its associated dimension in ``dims`` has a
-    cardinality equal to or greater than the block size.
-
-    i.e. ``len(arr.dim) >= block_size of dim``, for every array in ``arrs``.
-    """
-    pass
+    return (
+        [reorder_dims(arr, dims, auto_order_missing, order_method) for arr in arrs],
+        all_arr_dims,
+    )
 
 
 def dask_chunk_iterations(

@@ -26,3 +26,28 @@ class FitBlocksMethod(Enum):
     SHRINK_TO_FIT = 1
     #: expands axis tlength o fit whole blocks
     EXPAND_TO_FIT = 2
+
+
+class OrderMissingDimsMethod(Enum):
+    """
+    Whether to prepend or append missing dimensions. Missing dimensions by
+    default are sorted alphebetically.
+
+    .. note::
+
+        Currently by default only `ALPHABETICAL_PREPEND` is used in
+        block-bootstrapping. This is because xarray's `apply_ufunc` method
+        requires core dimensions to be at the end. Currently, the bootstrapping
+        methods use `numpy`, so the core dimensions are essentially bootstrap
+        dimensions as they will be not be broadcast, and will be re-sampled
+        instead.
+    """
+
+    #: prepend missing dims alphebetically (default)
+    ALPHABETICAL_PREPEND = 0
+    #: append missing dims alphebetically
+    ALPHABETICAL_APPEND = 1
+    #: prepend missing dims without sorting
+    ALPHABETICAL_APPEND = 2
+    #: append missing dims without sorting
+    ALPHABETICAL_APPEND = 3
