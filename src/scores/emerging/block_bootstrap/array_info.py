@@ -1,12 +1,10 @@
-from scores.emerging.block_bootstrap import (
-    AxisInfo,
-    AxisInfoCollection,
-)
+from dataclasses import dataclass
 
-from scores.emerging.block_bootstrap.helpers import (
-    FitBlocksMethod,
-    reorder_all_arr_dims,
-)
+import xarray as xr
+
+from scores.emerging.block_bootstrap.axis_info import AxisInfo, AxisInfoCollection
+from scores.emerging.block_bootstrap.helpers import reorder_all_arr_dims
+from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 
 @dataclass
@@ -17,30 +15,30 @@ class ArrayInfo:
     bootstrap_dims: list[str]
 
     @property
-    def block_sizes() -> list[int]:
+    def block_sizes(self) -> list[int]:
         """
         list of block sizes for all unique dimensions
         """
-        return [x.block_size for x in axis_info]
+        return [x.block_size for x in self.axis_info]
 
     @property
-    def num_blocks() -> list[int]:
+    def num_blocks(self) -> list[int]:
         """
         list of number of blocks for all unique dimensions
         """
-        return [x.num_blocks for x in axis_info]
+        return [x.num_blocks for x in self.axis_info]
 
     @property
-    def output_axis_lengths() -> list[int]:
+    def output_axis_lengths(self) -> list[int]:
         """
         list of desired output axis lengths for all unique dimensions
         """
-        return [x.length_out for x in axis_info]
+        return [x.length_out for x in self.axis_info]
 
     @staticmethod
     def make_from_axis_collection(
         dims: list[str],
-        axi_collection: AxisCollection,
+        axi_collection: AxisInfoCollection,
     ):
         """
         Args:
@@ -48,7 +46,7 @@ class ArrayInfo:
             axi_collection: Ordered collection containing axis information
                 for all arrays, which this array must a subset of.
         """
-        assert len(set(bootstrap_dims) - set(axi_collection.dims_order)) == 0
+        assert len(set(dims) - set(axi_collection.dims_order)) == 0
 
         axis_info = []
         bootstrap_dims = []
@@ -69,7 +67,7 @@ class ArrayInfoCollection:
     #: Ordered list of array information for each array
     array_info: list[ArrayInfo]
     #: Arrays with dimensions ordered according `make_from_arrays`
-    arrays_ordered: list[xr.DataArray]
+    data_arrays: list[xr.DataArray]
 
     @property
     def fit_blocks_method(self) -> FitBlocksMethod:
@@ -114,5 +112,5 @@ class ArrayInfoCollection:
         return ArrayInfoCollection(
             axis_info_collection=axi_collection,
             array_info=arr_info,
-            arrays_reordered=arrs_reordered,
+            data_arrays=arrs_reordered,
         )

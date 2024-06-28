@@ -1,12 +1,15 @@
 """
 Module containing block sampling methods
 """
-import numpy as np
-import numpy.typing as npt
+import functools
 from dataclasses import dataclass, field
 
-from scores.emerging.block_bootstrap.array_info import ArrayInfoCollection, AxisInfo
+import numpy as np
+import numpy.typing as npt
 
+from scores.emerging.block_bootstrap.array_info import ArrayInfo, ArrayInfoCollection
+from scores.emerging.block_bootstrap.axis_info import AxisInfo
+from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
 AxisBlockIndices = np.ndarray[int]
 BootstrapIndicesMapping = dict[str, AxisBlockIndices]
@@ -28,8 +31,8 @@ class BlockSampler:
         in the array collection.
         """
         self.bootstrap_idx_map = {
-            dim_name: generate_sample_indices(axis_info, self.cyclic)
-            for dim_name, axis_info in array_info_collection.axis_info_collection.items()
+            dim_name: self.generate_sample_indices(axis_info)
+            for dim_name, axis_info in self.array_info_collection.axis_info_collection.items()
         }
 
     def sample_blocks_unchecked(self, arrs) -> list[np.ndarray]:
@@ -77,7 +80,7 @@ class BlockSampler:
                     )
 
                     # map output indices to sampled block
-                    output_arr[idx_out] = sampled_block
+                    arr_out[idx_out] = sampled_block
 
             arrs_bootstrapped.append(arr_out)
             # ---
@@ -85,6 +88,7 @@ class BlockSampler:
         return arrs_bootstrapped
 
     def generate_sample_block_values(
+        self,
         input_arr: npt.NDArray,
         arr_info: ArrayInfo,
         ax_idx: MultiIndex,
@@ -145,9 +149,9 @@ class BlockSampler:
         bootstrap_indices = [self.bootstrap_idx_map[dim] for dim in arr_info.bootstrap_dims]
 
         # trim final blocks if partial blocks are allowed
-        if self.fit_blocks_method == FitBlocksMethod.PARTIAL:
+        if self.array_info_collection.fit_blocks_method == FitBlocksMethod.PARTIAL:
             bootstrap_ax_idx = []
-            for b, i, axi in zip(bootstrap_indices, ax_idx, ax_info):
+            for b, i, axi in zip(bootstrap_indices, ax_idx, arr_info.axis_info):
                 (n, bp) = (axi.num_blocks, axi.block_size_partial)
                 if i == (n - 1) and bp > 0:
                     bootstrap_ax_idx.append(b[i][0:bp])
@@ -158,16 +162,12 @@ class BlockSampler:
             bootstrap_ax_idx = [b[i] for b, i in zip(bootstrap_indices, ax_idx)]
 
         # --- iterate and map individual elements in block ---
-        #
-        # dummy array for multi-index looping
-        # note: this may use more memory, but will be faster than using
-        # a native for loop. Can be improved using `numba` in the future.
-        dummy_it = np.empty([len(i) for i in bootstrap_ax_idx])
+        block_sample = np.empty([len(i) for i in bootstrap_ax_idx])
 
         # retrieve block values from input array and write it to block sample
-        with np.nditer(dummy_it, flags=["multi_index"], op_flags=["writeonly"]) as it:
+        with np.nditer(block_sample, flags=["multi_index"], op_flags=["writeonly"]) as it:
             for x in it:
-                bootstrap_idx = tuple(b[i] for b, i in zip(bootstrap_ax_idx, block_size_it.multi_index))
+                bootstrap_idx = tuple(b[i] for b, i in zip(bootstrap_ax_idx, it.multi_index))
                 x[...] = input_arr[bootstrap_idx]
         # ---
 
@@ -202,11 +202,11 @@ class BlockSampler:
         def _linear_expand(idx_, block_size_):
             return np.arange(start=idx_, stop=idx_ + block_size_)
 
-        (l, b, n) = (axi.length_in, axi.block_size, axi.num_blocks)
+        (l, b, n) = (axis_info.length_in, axis_info.block_size, axis_info.num_blocks)
         cyc_fn = functools.partial(_cyclic_expand, block_size_=b, length_=l)
         lin_fn = functools.partial(_linear_expand, block_size_=b)
 
-        if axi.bootstrap:
+        if axis_info.bootstrap:
             if self.cyclic:
                 # sample from 0 -> l - 1, since wrap around is allowed
                 start_idx = rng.integers(low=0, high=l - 1, size=n)

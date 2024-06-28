@@ -5,14 +5,9 @@ import pprint
 import numpy as np
 import xarray as xr
 
-from scores.emerging.block_bootstrap.axis_info import (
-    AxisInfo,
-    make_axis_info,
-    make_axis_info_collection,
-)
-from scores.emerging.block_bootstrap.block_bootstrap import (
-    _construct_block_bootstrap_array,
-)
+from scores.emerging.block_bootstrap.array_info import ArrayInfo, ArrayInfoCollection
+from scores.emerging.block_bootstrap.axis_info import AxisInfo, AxisInfoCollection
+from scores.emerging.block_bootstrap.block_sampler import BlockSampler
 from scores.emerging.block_bootstrap.helpers import (
     partial_linear_order_by_ref,
     reorder_all_arr_dims,
@@ -27,34 +22,49 @@ def _test_numpy_blk_bootstrap_single_iter():
     axis_len = [13, 10, 8, 7]
     block_sizes = [4, 3, 2, 3]
     method = FitBlocksMethod.PARTIAL
+    cyclic = True
     rng = np.random.default_rng(seed=42)
     # random dataset with integers so its easy to visualize
     input_arr = rng.integers(low=0, high=10, size=axis_len)
+    da = xr.DataArray(input_arr)
 
-    print("\n--- axis info ---")
-    axis_info = make_axis_info(input_arr, block_sizes, method)
-    pprint.pp(axis_info)
+    print("\n--- array info ---")
+    array_info_cln = ArrayInfoCollection.make_from_arrays(
+        arrs=[da],
+        bootstrap_dims=da.dims[::-1],  # reverse dimensions for fun
+        block_sizes=block_sizes[::-1],
+        fit_blocks_method=method,
+    )
+    pprint.pp(array_info_cln.array_info)
 
     print("\n--- input array ---")
     pprint.pp(input_arr.shape)
     res = np.histogram(input_arr, bins=5)
     pprint.pp(res)
 
-    (output_arr, block_sample_idx) = _construct_block_bootstrap_array(
-        input_arr,
-        block_sizes,
-        cyclic=True,
-        fit_blocks_method=method,
-    )
+    print("\n--- reordered input array ---")
+    input_arr_ord = array_info_cln.data_arrays[0].values
+    pprint.pp(input_arr_ord.shape)
+    res = np.histogram(input_arr, bins=5)
+    pprint.pp(res)
 
     print("\n--- sample axis block indices ---")
-    pprint.pp(block_sample_idx)
+    block_sampler = BlockSampler(
+        array_info_collection=array_info_cln,
+        cyclic=cyclic,
+    )
+    output_arr = block_sampler.sample_blocks_unchecked([input_arr_ord])[0]
+    pprint.pp(block_sampler.bootstrap_idx_map)
 
     print("\n--- output array ---")
     pprint.pp(output_arr.shape)
     # print(output_arr)
     res = np.histogram(output_arr, bins=5)
     pprint.pp(res)
+
+    # print("\nBOOTSTRAPPING (single iteration, multiple arrays, same dimensions)...")
+
+    # print("\nBOOTSTRAPPING (single iteration, multiple arrays, differing/partial dimensions)...")
 
 
 def _test_make_axis_info_collection():
@@ -181,7 +191,7 @@ def _test_reorder_dims():
 
 
 if __name__ == "__main__":
-    _test_reorder_dims()
-    _test_reorder_all_dims()
-    _test_make_axis_info_collection()
+    # _test_reorder_dims()
+    # _test_reorder_all_dims()
+    # _test_make_axis_info_collection()
     _test_numpy_blk_bootstrap_single_iter()

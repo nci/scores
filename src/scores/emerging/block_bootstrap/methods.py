@@ -48,6 +48,6 @@ class OrderMissingDimsMethod(Enum):
     #: append missing dims alphebetically
     ALPHABETICAL_APPEND = 1
     #: prepend missing dims without sorting
-    ALPHABETICAL_APPEND = 2
+    UNSORTED_PREPEND = 2
     #: append missing dims without sorting
-    ALPHABETICAL_APPEND = 3
+    UNSORTED_APPEND = 3

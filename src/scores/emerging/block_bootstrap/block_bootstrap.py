@@ -6,9 +6,6 @@ Sample implementation of block bootstrapping.
     currently only does a single bootstrap iteration on a single numpy array.
 
 TODO:
-    - support for xarray
-    - support for multiple array inputs of with different subset of axes
-    - expand dims with multiple bootstrap iterations
     - support for dask & chunking
     - match api call with ``xbootstrap`` for ease of transition for existing code that relies on it
 """
@@ -27,21 +24,17 @@ from scores.emerging.block_bootstrap.axis_info import (
 from scores.emerging.block_bootstrap.helpers import reorder_all_arr_dims
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
-# TODO: A lot of the same variables are common to many of the functions, causing a lot of
-# repetition there should probably be two classes (namespaces) to hold state:
-# 1. atomic computation: using numpy/numba to read/write the actual block sample
-# 2. public interface: for handling xaray inputs and wider options as well as parallelization
-#    options.
-
 
 def block_bootstrap(
     arrs: list[xr.DataArray],
     bootstrap_dims: list[str],
     block_sizes: list[int],
     iterations: int,
-    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
     cyclic: bool = True,
+    fit_blocks_method: FitBlocksMethod = FitBlocksMethod.PARTIAL,
     auto_order_unspecified_dims: bool = True,
+    use_dask: bool = False,
+    num_iteration_chunks: int = -1,
 ) -> list[xr.DataArray]:
     """
     Performs block bootstrapping on a list of input arrays.
@@ -126,15 +119,16 @@ def block_bootstrap(
 
         iterations: number of times to perform block bootstrapping.
 
+        cyclic: whether or not the block sampler is allowed to wrap around if
+            the sampled block index exceeds the dimension size. If ``True``, the
+            sampled block can start anywhere in :math:`[0, l - 1]` and will wrap
+            around, e.g. when math:`i + b >= l`, where :math:`l` is the dimension
+            size, :math:`i` is the first index in the block, and :math:`b` is the
+            block size. Otherwise (``False``), the block can start anywhere
+            in :math:`[0, l - b]`.
+
         fit_blocks_method: how to fit blocks if the dimension size is not
             a multiple of the block size. see: :class:`FitBlocksMethod`
-
-        cyclic: whether or not the block sampler is allowed to wrap around if
-            the sampled block index exceeds the dimension size. If ``True``,
-            the sampled block can start anywhere in $$[0, l - 1]$$ and will wrap
-            around, e.g. if $$i + b >= l$$, where $$l$$ is the dimension size,
-            $$i$$ is the first index in the block, and $$b$$ is the block size.
-            Otherwise (``False``), the block can start anywhere in $$[0, l - b]$$.
 
         auto_order_unspecified_dims: whether or not to automatically order
             the dimensions in the input array, if they are not specified in
@@ -143,6 +137,26 @@ def block_bootstrap(
             in ``bootstrap_dims``. Setting it to ``True`` will arrange and
             append the non-bootstrap dimensions alphebetically so that they have
             consistent ordering across the input arrays.
+
+        use_dask: whether or not to use dask in the computations.
+
+            - If ``dask`` is installed, and ``use_dask=True``, then defaults to
+              ``parallelized`` option in ``xarray.apply_unfunc()``.
+            - If ``dask`` is installed, and ``use_dask=False``, then attempts to
+              do a ``.load()`` on the input arrays before bootstrapping.
+            - If ``dask`` is not installed, then ``use_dask`` must be set to
+              ``False`` (default); noting that the input arrays cannot be dask
+              arrays if dask isn't installed.
+
+        num_iteration_chunks: whether to break up iterations into chunks in order
+            perform them in parallel.
+
+            - set to -1 (default) to automatically determine how to chunk
+              up iterations (based on setting chunk-sizes of operations per
+              iteration to be no more than 200MB, where possible)
+            - set to 1 to disable chunking: same as for loop performed in one process.
+            - set to >1 to divide the iterations into chunks.
+            - all other values are invalid.
 
     Returns:
 
@@ -185,10 +199,10 @@ def block_bootstrap(
     # TODO: for parallel operations, iter_arr should be chunked appropriately,
     # unless the underlying data-arrays themselves are dask arrays, in which
     # case parallelization happens through broadcast chunks.
-    iter_arr = xr.DataArray(range(iterations), dims="iterations")
+    iter_arr = xr.DataArray(range(iterations), dims="iteration")
 
-    def _block_sample_ufunc_wrapper(iter_arr_, *arrs_, block_sampler_):
-        return np.array([block_sampler_.sample_blocks_unchecked(list(arrs_)) for _ in iter_arr_])
+    def _block_sample_ufunc_wrapper(iter_, *arrs_, block_sampler_):
+        return np.array([block_sampler_.sample_blocks_unchecked(list(arrs_)) for _ in iter_])
 
     # ---
 

@@ -31,7 +31,7 @@ class AxisInfo:
         arr: npt.NDArray,
         block_sizes: list[int],
         fit_blocks_method: FitBlocksMethod,
-    ) -> list[AxisInfo]:
+    ):
         """
         Returns list of AxisInfo (outer-most axis -> inner-most axis), given a numpy
         ndarray as input
@@ -107,7 +107,7 @@ class AxisInfoCollection:
         bootstrap_dims: list[str],
         block_sizes: list[int],
         fit_blocks_method: FitBlocksMethod,
-    ) -> AxisInfoCollection:
+    ):
         axi_collection = AxisInfoCollection(fit_blocks_method=fit_blocks_method)
         lookup_block_sizes = {d: b for (d, b) in zip(bootstrap_dims, block_sizes)}
 
