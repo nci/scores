@@ -147,7 +147,7 @@ There are multiple open source verification packages in a range of languages. Be
 
 `Verif` [@nipen2023verif] is a command line tool for generating verification plots whereas `scores` provides a Python API for generating numerical scores. 
 
-`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for producing short-term ensemble predictions, focusing on probabilistic nowcasting of radar precipitation fields. It includes a significant verification submodule with many useful verification scores. `PySteps` does not provide a standalone verification API. 
+`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for producing short-term ensemble predictions, focusing on probabilistic nowcasting of radar precipitation fields. It includes a significant verification submodule with many useful verification scores. `Pysteps` does not provide a standalone verification API. 
 
 `PyForecastTools` [@Morley:2020] is a Python package for model and forecast verification which supports `dmarray` rather than `xarray` data structures and does not include Jupyter Notebook tutorials.
 
