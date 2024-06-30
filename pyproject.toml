@@ -20,7 +20,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "xarray ~= 2024",
+    "xarray ~= 2024.1",
     "pandas ~= 2.2",
     "scipy ~= 1.1",
     "bottleneck ~= 1.3",
