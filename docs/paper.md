@@ -1,5 +1,5 @@
 ---
-title: 'scores: A Python package for verifying and evaluating models and predictions which use labelled n-dimensional data'
+title: 'scores: A Python package for verifying and evaluating models and predictions with xarray'
 tags:
   - Python
   - verification
