@@ -79,7 +79,7 @@ The purpose of `scores` is (a) to mathematically verify and validate models and 
 
 ## Key Benefits of `scores`
 
-In order to meet the needs of researchers and other users, `scores` provides the following key benefits.
+In order to meet user needs, `scores` provides the following key benefits.
 
 ### Data Handling
 
