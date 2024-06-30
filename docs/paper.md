@@ -1,5 +1,5 @@
 ---
-title: 'scores: A Python package for verifying and evaluating models and predictions with xarray and pandas'
+title: 'scores: A Python package for verifying and evaluating models and predictions with xarray'
 tags:
   - Python
   - verification
@@ -63,7 +63,7 @@ bibliography: paper.bib
 
 All of the scores and statistical techniques in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
-`scores` primarily supports `xarray` datatypes for Earth system data, allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. It has expanding support for `pandas`.
+`scores` supports `xarray` datatypes, allowing it to work with Earth system data in a range of formats including NetCDF4, HDF5, Zarr and GRIB among others. `scores` uses Dask for scaling and performance. Support for `pandas` is being introduced.
 
 The `scores` software repository can be found at [https://github.com/nci/scores/](https://github.com/nci/scores/).
 
@@ -79,7 +79,7 @@ The purpose of `scores` is (a) to mathematically verify and validate models and 
 
 ## Key Benefits of `scores`
 
-In order to meet the needs of researchers and other users, `scores` provides the following key benefits.
+To meet the needs of researchers and other users, `scores` provides the following key benefits.
 
 ### Data Handling
 
@@ -87,7 +87,7 @@ In order to meet the needs of researchers and other users, `scores` provides the
   - gridded Earth system data (e.g., numerical weather prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g., forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
-- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data sources among others.
+- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data formats among others.
 
 ### Usability
 
@@ -103,7 +103,7 @@ In order to meet the needs of researchers and other users, `scores` provides the
 - Easy to integrate and use in a wide variety of environments. It has been used on workstations, servers and in high performance computing (supercomputing) environments. 
 - Maintains 100% automated test coverage.
 - Uses Dask [@Dask:2016] for scaling and performance.
-- Expanding support for `pandas` [@pandas:2024; @McKinney:2010].
+- Support for `pandas` [@pandas:2024; @McKinney:2010] is being introduced.
 
 ## Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
@@ -139,15 +139,15 @@ In 2015, the Australian Bureau of Meteorology began developing a new verificatio
 
 There are multiple open source verification packages in a range of languages. Below is a comparison of `scores` to other open source Python verification packages. None of these include all of the metrics implemented in `scores` (and vice versa).
  
-`xskillscore` [@xskillscore] provides many but not all of the same functions as `scores` and does not have direct support for pandas. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics. 
-
+`xskillscore` [@xskillscore] provides many but not all of the same functions as `scores`. The Jupyter Notebook tutorials in `scores` cover a wider array of metrics.
+  
 `climpred` [@Brady:2021] uses `xskillscore` combined with data handling functionality, and is focused on ensemble forecasts for climate and weather. `climpred` makes some design choices related to data structure (specifically associated with climate modelling) which may not generalise effectively to broader use cases. Releasing `scores` separately allows the differing design philosophies to be considered by the community.
 
 `METplus` [@Brown:2021] is a substantial verification system used by weather and climate model developers. `METplus` includes a database and a visualisation system, with Python and shell script wrappers to use the `MET` package for the calculation of scores. `MET` is implemented in C++ rather than Python. `METplus` is used as a system rather than providing a modular Python API.
 
 `Verif` [@nipen2023verif] is a command line tool for generating verification plots whereas `scores` provides a Python API for generating numerical scores. 
 
-`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for producing short-term ensemble predictions, focusing on probabilistic nowcasting of radar precipitation fields. It includes a significant verification submodule with many useful verification scores. `PySteps` does not provide a standalone verification API. 
+`Pysteps` [@gmd-12-4185-2019; @Imhoff:2023] is a package for producing short-term ensemble predictions, focusing on probabilistic nowcasting of radar precipitation fields. It includes a significant verification submodule with many useful verification scores. `Pysteps` does not provide a standalone verification API. 
 
 `PyForecastTools` [@Morley:2020] is a Python package for model and forecast verification which supports `dmarray` rather than `xarray` data structures and does not include Jupyter Notebook tutorials.
 
