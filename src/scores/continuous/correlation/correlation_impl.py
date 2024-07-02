@@ -46,6 +46,12 @@ def pearsonr(
             forecast and observed dimensions must match precisely.
     Returns:
         xr.DataArray: An xarray object with Pearson's correlation coefficient values
+
+    Note:
+        This function isn't set up to take weights.
+
+    Reference:
+        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
