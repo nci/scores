@@ -1,6 +1,6 @@
 # Detailed Installation Guide
 
-This page describes the most common installation options for `scores`. Expert users of pip and conda will note that there are more variations possible.
+This page describes the most common installation options for `scores`. Expert users of pip and conda will note that there are more variations possible. A section at the end describes how to work effectively in a Jupyter Notebook environment.
 
 ## Setting up a Virtual Environment
 
@@ -91,5 +91,16 @@ Installs:
 ```bash
 pip install -e .[maintainer]
 ```
+
+## Working with Jupyter Notebooks
+
+Working with Jupyter Notebooks requires a Jupyter Notebook or Jupyter Lab server which provides the web user interface, as well as a 'kernel' environment where code execution occures. `scores` bundles the Jupyter Lab server with the "all" and "tutorial" installation types. If using the bundled Jupyter environment, no extra work is needed to use `scores`.
+
+Some users for various reasons will want to separate these concerns. This can be achieved by creating a `scores` virtual environment using one of the approaches outlined above, and then registering this environment as a new kernel inside a Jupyter environment that they manage. A sample command to register a new kernel is:
+
+`python -m ipykernel install --user --name=my-python3-kernel`
+
+https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html provides additional technical details regarding further options for the registration of kernels.
+
 
 
