@@ -92,15 +92,20 @@ Installs:
 pip install -e .[maintainer]
 ```
 
-## Working with Jupyter Notebooks
+## Jupyter Notebooks - Advanced Installation Options
 
-Working with Jupyter Notebooks requires a Jupyter Notebook or Jupyter Lab server which provides the web user interface, as well as a 'kernel' environment where code execution occures. `scores` bundles the Jupyter Lab server with the "all" and "tutorial" installation types. If using the bundled Jupyter environment, no extra work is needed to use `scores`.
+The `scores` ["all"](#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](#tutorial-dependencies) installation options include the JupyterLab software, which can be used (among other things) to run the tutorials. 
 
-Some users for various reasons will want to separate these concerns. This can be achieved by creating a `scores` virtual environment using one of the approaches outlined above, and then registering this environment as a new kernel inside a Jupyter environment that they manage. A sample command to register a new kernel is:
+Some users may wish to separate the Jupyter environment and the `scores` execution environment. One way to achieve this is by creating a new `scores` virtual environment (using one of the [above options](#setting-up-a-virtual-environment)) and registering it as a new kernel within the Jupyter environment. You can then run the tutorials and/or execute `scores` code within the kernel. Registering the kernel can be done as follows:
 
-`python -m ipykernel install --user --name=my-python3-kernel`
+1. Determine the "prefix" of the Jupyter environment. 
+2. Choose a name to use for a new kernel.
+3. Activate the `scores` virtual environment which will be used as the kernel.
+4. Execute the registration command.
 
-https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html provides additional technical details regarding further options for the registration of kernels.
+A sample command to register a new kernel is:
 
+`python -m ipykernel install --user --prefix=<path-to-server-environment> --name=<pick-any-name-here>`
 
+[https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html](https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html) provides additional technical details regarding the registration of kernels.
 
