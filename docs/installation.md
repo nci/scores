@@ -1,6 +1,6 @@
 # Detailed Installation Guide
 
-This page describes the most common installation options for `scores`. Expert users of pip and conda will note that there are more variations possible.
+This page describes the most common installation options for `scores`. Expert users of pip and conda will note that there are more variations possible. A section at the end describes how to work effectively in a Jupyter Notebook environment.
 
 ## Setting up a Virtual Environment
 
@@ -92,4 +92,20 @@ Installs:
 pip install -e .[maintainer]
 ```
 
+## Jupyter Notebooks - Advanced Installation Options
+
+The `scores` ["all"](#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](#tutorial-dependencies) installation options include the JupyterLab software, which can be used (among other things) to run the tutorials. 
+
+Some users may wish to separate the Jupyter environment and the `scores` execution environment. One way to achieve this is by creating a new `scores` virtual environment (using one of the [above options](#setting-up-a-virtual-environment)) and registering it as a new kernel within the Jupyter environment. You can then run the tutorials and/or execute `scores` code within the kernel. Registering the kernel can be done as follows:
+
+1. Determine the "prefix" of the Jupyter environment. 
+2. Choose a name to use for a new kernel.
+3. Activate the `scores` virtual environment which will be used as the kernel.
+4. Execute the registration command.
+
+A sample command to register a new kernel is:
+
+`python -m ipykernel install --user --prefix=<path-to-server-environment> --name=<pick-any-name-here>`
+
+[https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html](https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html) provides additional technical details regarding the registration of kernels.
 
