@@ -20,7 +20,7 @@
 .. autofunction:: scores.continuous.murphy_thetas
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
-.. autofunction:: scores.continuous.pearsonr
+.. autofunction:: scores.continuous.correlation.pearsonr
 .. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
