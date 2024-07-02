@@ -94,7 +94,7 @@
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Pearson's Correlation Coefficient
-  - [API](api.md#scores.continuous.correlation)
+  - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
 * - Pinball Loss, *see Quantile Loss*
