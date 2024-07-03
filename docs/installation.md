@@ -6,7 +6,7 @@ This page describes:
 
 - [Setting up a virtual environment](#setting-up-a-virtual-environment).
 - The most common [installation options](#installation-options) for `scores`. (Expert users of pip and conda will note that more variations are possible).
-- An [advanced option for installing Jupyter Notebook](#jupyter-notebook-advanced-installation-option), for users who wish to separate the Jupyter environment and the `scores` execution environment.
+- An [advanced installation option for Jupyter Notebook](#jupyter-notebook-advanced-installation-option), for users who wish to separate the Jupyter environment and the `scores` execution environment.
 
 ## Setting up a Virtual Environment
 
