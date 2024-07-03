@@ -76,7 +76,7 @@ Use this for running tutorials using `scores`, but when you don't need or want d
 
 Installs:
 * Mathematical API functions and libraries
-* Jupyter Lab, Plotly, and libraries for reading data, so that the tutorial notebooks can be run
+* JupyterLab, Plotly, and libraries for reading data, so that the tutorial notebooks can be run
 
 #### From a Local Git Repository
 
