@@ -75,5 +75,5 @@ If you use `scores` for a published work, we would appreciate you citing our arX
 
 Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., 
 Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). *scores: A Python package for verifying and 
-evaluating models and predictions with xarray and pandas*. arXiv. [https://doi.org/10.48550/arXiv.2406.07817](https://doi.org/10.48550/arXiv.2406.07817)
+evaluating models and predictions with xarray*. arXiv. [https://doi.org/10.48550/arXiv.2406.07817](https://doi.org/10.48550/arXiv.2406.07817)
 
