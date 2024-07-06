@@ -33,7 +33,7 @@ bleach==6.1.0
     # via nbconvert
 bottleneck==1.3.8
     # via scores (pyproject.toml)
-certifi==2024.2.2
+certifi==2024.7.4
     # via
     #   httpcore
     #   httpx
