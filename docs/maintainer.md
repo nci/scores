@@ -39,6 +39,24 @@ Information relevant for package maintenance
 5. Run hatch publish
 6. Uninstall the test scores, re-install the now-updated package, do a little testing
 
+## This section covers how to format release notes
+
+```
+# Release Notes
+
+## X.Y.Z (Month Day, Year) e.g. "0.9.3 (July 7, 2024)"
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of."
+
+### Features
+### Breaking Changes
+### Deprecations
+### Bug Fixes
+### Documentation
+### Internal Changes
+
+For each entry: "Brief description. See [PR #XYX](add link) by [@username](add link)."
+```
 
 ## This section covers how to build the documentation locally 
 (Readthedocs should update automatically from a GitHub Action)
