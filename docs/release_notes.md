@@ -1,6 +1,6 @@
-# Release Notes
+# Release Notes (What's New)
 
-## Upcoming Release
+## 0.9.3 (Upcoming Release)
 
 For the full details of all changes in this release, see the GitHub commit history. Below are the changes we think users may wish to be aware of.
 
