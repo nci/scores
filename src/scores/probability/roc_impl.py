@@ -25,11 +25,11 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
 ) -> xr.Dataset:
     """
     Calculates data required for plotting a Receiver (Relative) Operating Characteristic (ROC)
-      curve, including the area under the curve (AUC). The ROC curve is used as a way to measure
-      the discrimination ability of a particular forecast.
+    curve, including the area under the curve (AUC). The ROC curve is used as a way to measure
+    the discrimination ability of a particular forecast.
 
-      The AUC is the probability that the forecast probability of a random event is higher
-        than the forecast probability of a random non-event.
+    The AUC is the probability that the forecast probability of a random event is higher
+    than the forecast probability of a random non-event.
 
     Args:
         fcst: An array of probabilistic forecasts for a binary event in the range [0, 1].
