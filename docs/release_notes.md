@@ -2,7 +2,7 @@
 
 ## Upcoming Release
 
-For the full details of all changes in this release, see the GitHub commit history. Below is a listing of the changes we think users may wish to be aware of.
+For the full details of all changes in this release, see the GitHub commit history. Below are the changes we think users may wish to be aware of.
 
 ### Breaking Changes
 
