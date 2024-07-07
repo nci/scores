@@ -11,7 +11,7 @@ For the full details of all changes in this release, see the GitHub commit histo
 ### Documentation
 
 - Added "Dimension Handling" tutorial, which describes reducing and preserving dimensions. See [PR #589](https://github.com/nci/scores/pull/589) by [@nicholasloveday](https://github.com/nicholasloveday).
-- Updated "Detailed Installation Guide" with additional information on installing kernels in a Jupyter enviornment. See [PR #587](https://github.com/nci/scores/pull/586) by [@tennlee](https://github.com/tennlee) and [PR #578](https://github.com/nci/scores/pull/587) by [@Steph-Chong](https://github.com/Steph-Chong).
+- Updated "Detailed Installation Guide" with additional information on installing kernels in a Jupyter environment. See [PR #586](https://github.com/nci/scores/pull/586) by [@tennlee](https://github.com/tennlee) and [PR #587](https://github.com/nci/scores/pull/587) by [@Steph-Chong](https://github.com/Steph-Chong).
 
 ### Internal Changes
 
