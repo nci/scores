@@ -42,7 +42,7 @@ Information relevant for package maintenance
 ## This section covers how to format release notes
 
 ```
-# Release Notes
+# Release Notes (What's New)
 
 ## X.Y.Z (Month Day, Year) e.g. "0.9.3 (July 7, 2024)"
 
