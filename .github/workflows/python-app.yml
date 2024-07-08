@@ -43,6 +43,8 @@ jobs:
         parallel: true
   finish:
     needs: build
+    runs-on: ubuntu-latest
+    if: $
     steps:
     - name: Indicate Coveralls Parallel Finished
       uses: coverallsapp/github-action@v2.3.0
