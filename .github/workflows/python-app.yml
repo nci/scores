@@ -44,7 +44,7 @@ jobs:
   finish:
     needs: build
     steps:
-      - name: Indicate Coveralls Parallel Finished
-        uses: coverallsapp/github-action@v2.3.0
-        with: parallel-finished: true
+    - name: Indicate Coveralls Parallel Finished
+      uses: coverallsapp/github-action@v2.3.0
+      with: parallel-finished: true
   
