@@ -32,13 +32,13 @@ authors:
 - given-names: John 
   family-names: Sharples  
 
-title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"  
+title: "scores: A Python package for verifying and evaluating models and predictions with xarray"  
 
 preferred-citation:
   type: article
   doi: "10.48550/arXiv.2406.07817"
   journal: "arXiv"
-  title: "scores: A Python package for verifying and evaluating models and predictions with xarray and pandas"
+  title: "scores: A Python package for verifying and evaluating models and predictions with xarray"
   authors:
   - given-names: Tennessee 
     family-names: Leeuwenburg
