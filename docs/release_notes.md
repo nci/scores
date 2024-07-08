@@ -15,5 +15,5 @@ For the full details of all changes in this release, see the GitHub commit histo
 
 ### Internal Changes
 
-- Introduce pinned versions for dependencies on main. See [PR #580](https://github.com/nci/scores/pull/580)  by [@tennlee](https://github.com/tennlee).
+- Introduced pinned versions for dependencies on main. See [PR #580](https://github.com/nci/scores/pull/580)  by [@tennlee](https://github.com/tennlee).
 
