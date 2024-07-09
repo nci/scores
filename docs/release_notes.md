@@ -1,8 +1,8 @@
 # Release Notes (What's New)
 
-## Version 0.9.3 (Upcoming Release)
+## Version 0.9.3 (July 9, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.2...develop). Below are the changes we think users may wish to be aware of.
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.2...0.9.3). Below are the changes we think users may wish to be aware of.
 
 ### Breaking Changes
 
