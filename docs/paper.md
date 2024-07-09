@@ -87,7 +87,7 @@ To meet the needs of researchers and other users, `scores` provides the followin
   - gridded Earth system data (e.g., numerical weather prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g., forecasts for specific locations).
 - Handles missing data, masking of data and weighting of results.
-- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2020] and GRIB [@GRIB:2024] data formats among others.
+- Supports `xarray` [@Hoyer:2017] datatypes, and works with NetCDF4 [@NetCDF:2024], HDF5 [@HDF5:2020], Zarr [@zarr:2024] and GRIB [@GRIB:2024] data formats among others.
 
 ### Usability
 
@@ -117,7 +117,7 @@ Table: A **curated selection** of the metrics, tools and statistical tests curre
 |--------------|-----------------|-----------------------------------------------------|
 | **Continuous**        	|Scores for evaluating single-valued continuous forecasts.                  	|Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Additive Bias, Multiplicative Bias, Pearson's Correlation Coefficient, Flip-Flop Index [@Griffiths:2019; @griffiths2021circular], Quantile Loss, Murphy Score [@Ehm:2016].              	  
 |
-| **Probability**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score [@BRIER_1950], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see @Gneiting:2011), CRPS for ensembles [@Gneiting_2007; @Ferro_2013], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	  
+| **Probability**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score [@BRIER_1950], Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs) (including threshold-weighting, see @Gneiting:2011), CRPS for ensembles [@Gneiting_2007; @Ferro_2014], Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams) [@dimitriadis2021stable].              	  
 |
 | **Categorical**         |Scores (including contingency table metrics) for evaluating forecasts of categories.                 |Probability of Detection (POD), Probability of False Detection (POFD), False Alarm Ratio (FAR), Success Ratio, Accuracy, Peirce's Skill Score [@Peirce:1884], Critical Success Index (CSI), Gilbert Skill Score [@gilbert:1884], Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 Score, Symmetric Extremal Dependence Index [@Ferro:2011], FIxed Risk Multicategorical (FIRM) Score [@Taggart:2022a].        	  
 |
