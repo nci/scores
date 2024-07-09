@@ -41,4 +41,12 @@ jobs:
       with:
         flag-name: run-${{ join(matrix.*, '-') }}
         parallel: true
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Indicate Coveralls Parallel Finished
+      uses: coverallsapp/github-action@v2.3.0
+      with: 
+        parallel-finished: true
   
