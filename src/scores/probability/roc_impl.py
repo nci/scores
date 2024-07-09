@@ -25,11 +25,11 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
 ) -> xr.Dataset:
     """
     Calculates data required for plotting a Receiver (Relative) Operating Characteristic (ROC)
-      curve including the AUC. The ROC curve is used as a way to measure the discrimination
-      ability of a particular forecast.
+    curve, including the area under the curve (AUC). The ROC curve is used as a way to measure
+    the discrimination ability of a particular forecast.
 
-      The AUC is the probability that the forecast probability of a random event is higher
-        than the forecast probability of a random non-event.
+    The AUC is the probability that the forecast probability of a random event is higher
+    than the forecast probability of a random non-event.
 
     Args:
         fcst: An array of probabilistic forecasts for a binary event in the range [0, 1].
@@ -66,6 +66,14 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         `POD` and `POFD` have dimensions `dims` + 'threshold', while `AUC` has
         dimensions `dims`.
 
+    Raises:
+        ValueError: if `fcst` contains values outside of the range [0, 1]
+        ValueError: if `obs` contains non-nan values not in the set {0, 1}
+        ValueError: if 'threshold' is a dimension in `fcst`.
+        ValueError: if values in `thresholds` are not monotonic increasing or are outside
+          the range [0, 1]
+
+
     Notes:
         The probabilistic `fcst` is converted to a deterministic forecast
         for each threshold in `thresholds`. If a value in `fcst` is greater
@@ -78,12 +86,6 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
 
-    Raises:
-        ValueError: if `fcst` contains values outside of the range [0, 1]
-        ValueError: if `obs` contains non-nan values not in the set {0, 1}
-        ValueError: if 'threshold' is a dimension in `fcst`.
-        ValueError: if values in `thresholds` are not monotonic increasing or are outside
-          the range [0, 1]
     """
     if check_args:
         if fcst.max().item() > 1 or fcst.min().item() < 0:
