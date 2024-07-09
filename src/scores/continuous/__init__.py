@@ -2,6 +2,7 @@
 Import the functions from the implementations into the public API
 """
 
+import scores.continuous.correlation  # noqa: F401
 from scores.continuous.consistent_impl import (
     consistent_expectile_score,
     consistent_huber_score,
@@ -15,7 +16,6 @@ from scores.continuous.murphy_impl import murphy_score, murphy_thetas
 from scores.continuous.quantile_loss_impl import quantile_score
 from scores.continuous.standard_impl import (
     additive_bias,
-    correlation,
     mae,
     mean_error,
     mse,

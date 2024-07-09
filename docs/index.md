@@ -21,4 +21,5 @@ data
 tutorials/Tutorial_Gallery
 related_works
 maintainer
+release_notes
 ```

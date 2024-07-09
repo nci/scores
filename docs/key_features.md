@@ -25,4 +25,4 @@
 - Easy to integrate and use in a wide variety of environments. It has been used on workstations, servers and in high performance computing (supercomputing) environments. 
 - Maintains 100% automated test coverage.
 - Uses [Dask](http://dask.pydata.org) for scaling and performance.
-- Expanding support for [pandas](https://pandas.pydata.org/).
+- [Some metrics](included.md#pandas) work with [pandas](https://pandas.pydata.org/) and we aim to expand this capability. 
