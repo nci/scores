@@ -10,7 +10,7 @@ This is a good moment to acknowledge and thank the contributors that helped us r
 
 Please consider a citation of our paper if you use our code. The citation is:
 
-Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. Journal of Open Source Software, VolXX(IssueXX), XXX-XXX. https://doi.org/xxxx
+Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. *Journal of Open Source Software, 9*(99), 6889. https://doi.org/10.21105/joss.06889
 
 For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.3...1.0.0). Below are the changes we think users may wish to be aware of.
 
