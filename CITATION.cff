@@ -30,11 +30,6 @@ authors:
   given-names: Aidan
 - family-names: Sharples
   given-names: John
-contact:
-- family-names: Leeuwenburg
-  given-names: Tennessee
-  orcid: "https://orcid.org/0009-0008-2024-1967"
-doi: 10.5281/zenodo.12697242
 message: If you use this software, please cite our article in the
   Journal of Open Source Software.
 preferred-citation:
