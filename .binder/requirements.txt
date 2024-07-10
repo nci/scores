@@ -381,7 +381,7 @@ xarray==2024.3.0
     # via
     #   rioxarray
     #   scores (pyproject.toml)
-zipp==3.18.1
+zipp==3.19.1
     # via
     #   importlib-metadata
     #   importlib-resources
