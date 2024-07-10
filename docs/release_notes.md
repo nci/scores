@@ -1,5 +1,35 @@
 # Release Notes (What's New)
 
+## Version 1.0.0 (July 10, 2024)
+
+We are happy to have reached the point of releasing “Version 1.0.0” of `scores`. While we look forward to many version increments to come, version 1.0.0 represents a milestone. It signifies a stabilisation of the API, and marks a turning point from the initial construction period. We have also published a [paper](https://doi.org/10.21105/joss.06889) in the Journal of Open Source Software (see citation further below).
+
+From this point forward, `scores` will be following the [Semantic Versioning Specification](https://semver.org/) (SemVer) in its release management. 
+
+This is a good moment to acknowledge and thank the contributors that helped us reach this point. They are: Tennessee Leeuwenburg, Nicholas Loveday, Elizabeth E. Ebert, Harrison Cook, Mohammadreza Khanarmuei, Robert J. Taggart, Nikeeth Ramanathan, Maree Carroll, Stephanie Chong, Aidan Griffiths and John Sharples.
+
+Please consider a citation of our paper if you use our code. The citation is:
+
+Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. *Journal of Open Source Software, 9*(99), 6889. https://doi.org/10.21105/joss.06889
+
+BibTeX:
+```
+@article{Leeuwenburg_scores_A_Python_2024,
+author = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
+doi = {10.21105/joss.06889},
+journal = {Journal of Open Source Software},
+month = jul,
+number = {99},
+pages = {6889},
+title = {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
+url = {https://joss.theoj.org/papers/10.21105/joss.06889},
+volume = {9},
+year = {2024}
+}
+```
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.3...1.0.0). 
+
 ## Version 0.9.3 (July 9, 2024)
 
 For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.2...0.9.3). Below are the changes we think users may wish to be aware of.
