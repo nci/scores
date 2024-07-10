@@ -2,7 +2,7 @@
 
 ## Version 1.0.0 (July 10, 2024)
 
-We are happy to have reached the point of releasing “Version 1.0.0” of `scores`. While we look forward to many version increments to come, version 1.0.0 represents a milestone. It signifies a stabilisation of the API, and marks a turning point from the initial construction period. We have also published a paper in the Journal of Open Source Software (see citation further below).
+We are happy to have reached the point of releasing “Version 1.0.0” of `scores`. While we look forward to many version increments to come, version 1.0.0 represents a milestone. It signifies a stabilisation of the API, and marks a turning point from the initial construction period. We have also published a [paper](https://doi.org/10.21105/joss.06889) in the Journal of Open Source Software (see citation further below).
 
 From this point forward, `scores` will be following the Semantic Versioning Specification (SemVer) in its release management. 
 
