@@ -71,9 +71,22 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 
 ## Acknowledging This Work
 
-If you use `scores` for a published work, we would appreciate you citing our arXiv preprint:
+If you use `scores` for a published work, we would appreciate you citing our paper:
 
-Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., 
-Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). *scores: A Python package for verifying and 
-evaluating models and predictions with xarray*. arXiv. [https://doi.org/10.48550/arXiv.2406.07817](https://doi.org/10.48550/arXiv.2406.07817)
+Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. *Journal of Open Source Software, 9*(99), 6889. [https://doi.org/10.21105/joss.06889](https://doi.org/10.21105/joss.06889)
 
+BibTeX:
+```
+@article{Leeuwenburg_scores_A_Python_2024,
+author = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
+doi = {10.21105/joss.06889},
+journal = {Journal of Open Source Software},
+month = jul,
+number = {99},
+pages = {6889},
+title = {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
+url = {https://joss.theoj.org/papers/10.21105/joss.06889},
+volume = {9},
+year = {2024}
+}
+```
