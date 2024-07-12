@@ -25,9 +25,13 @@ from scores.continuous.threshold_weighted_impl import (
 )
 
 DA_FCST = xr.DataArray(
-    data=[[3.0, 1.0, nan], [-4.0, 0.0, 1.0]],
-    dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102]),
+    data=[[[3.0, 1.0, nan, 2], [3.0, 1.0, nan, 2]], [[-4.0, 0.0, 1.0, 2], [-4.0, 0.0, 1.0, 2]]],
+    dims=["date", "lead_day", "station"],
+    coords=dict(
+        date=["1", "2"],
+        lead_day=[1, 1],
+        station=[100, 101, 102, 0],
+    ),
 )
 
 DA_OBS = xr.DataArray(
