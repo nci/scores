@@ -8,7 +8,7 @@ import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.continuous import mse, quantile_score, mae
+from scores.continuous import mae, mse, quantile_score
 from scores.continuous.threshold_weighted_impl import (
     SCORING_FUNCS,
     _auxiliary_funcs,
