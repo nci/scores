@@ -2,6 +2,7 @@
 Tests for scores.continuous.threshold_weighted_impl
 """
 
+import dask
 import numpy as np
 import pytest
 import xarray as xr
@@ -694,3 +695,37 @@ def test_threshold_weighted_quantile_score():
         DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75, reduce_dims=["date", "station"]
     )
     xr.testing.assert_allclose(result2, expected)
+
+
+def test_threshold_weighted_squared_error_dask():
+    """Tests that `threshold_weighted_squared_error` returns as expected."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    result = threshold_weighted_squared_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf))
+    expected = mse(DA_FCST1, DA_OBS1)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, expected)
+
+
+def test_threshold_weighted_absolute_error_dask():
+    """Tests that `threshold_weighted_absolute_error` returns as expected."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    result = threshold_weighted_absolute_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf))
+    expected = quantile_score(DA_FCST1, DA_OBS1, 0.5) * 2
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, expected)
+
+
+def test_threshold_weighted_quantile_score():
+    """Tests that `threshold_weighted_quantile_score` returns as expected."""
+    result = threshold_weighted_quantile_score(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), 0.75)
+    expected = quantile_score(DA_FCST1, DA_OBS1, 0.75)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, expected)
