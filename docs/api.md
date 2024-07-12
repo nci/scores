@@ -26,7 +26,10 @@
 .. autofunction:: scores.continuous.consistent_expectile_score
 .. autofunction:: scores.continuous.consistent_quantile_score
 .. autofunction:: scores.continuous.consistent_huber_score
-```
+.. autofunction:: scores.continuous.threshold_weighted_score
+.. autofunction:: scores.continuous.threshold_weighted_quantile_score
+.. autofunction:: scores.continuous.threshold_weighted_absolute_error
+.. autofunction:: scores.continuous.threshold_weighted_squared_error
 
 ## scores.probability
 ```{eval-rst}
