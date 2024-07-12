@@ -255,7 +255,6 @@ def _auxiliary_funcs(
     """
 
     if interval_where_positive is None:  # rectangular weight
-
         a, b = interval_where_one
 
         if isinstance(a, (float, int)):
