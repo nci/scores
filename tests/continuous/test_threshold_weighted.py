@@ -166,6 +166,12 @@ DA_INF = xr.DataArray(
     dims=["station"],
     coords=dict(station=[100, 101, 102, 103, 104]),
 )
+# Calculated using the Jive MSHL function
+EXP_MSHL = xr.DataArray(
+    data=[[nan, 1.8, nan, 33.0, 36.4], [0.0, 9.8, 1.8, 3.401, 12.33]],
+    dims=["date", "station"],
+    coords=dict(date=["1", "2"], station=[100, 101, 102, 103, 104]),
+)
 
 
 @pytest.mark.parametrize(
@@ -449,14 +455,8 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
             "quantile_score",
             quantile_score(DA_FCST1, DA_OBS1, 0.3, preserve_dims=["date", "station"]),
         ),
-        # (
-        #     "scaled_huber_loss",
-        #     mshl(td.DA_FCST1, td.DA_OBS1, 0.4, dims=["date", "station"]),                # TODO
-        # ),
-        # (
-        #     "huber_loss",
-        #     mshl(td.DA_FCST1, td.DA_OBS1, 0.4, dims=["date", "station"]) * 0.4,
-        # ),
+        ("scaled_huber_loss", EXP_MSHL),
+        ("huber_loss", EXP_MSHL * 0.4),
     ],
 )
 def test_threshold_weighted_score1(scoring_func, expected):
@@ -635,11 +635,43 @@ def test_threshold_weighted_score5(scoring_func):
     xr.testing.assert_allclose(score1 + score2, score)
 
 
+@pytest.mark.parametrize("scoring_func", SCORING_FUNCS)
+def test_threshold_weighted_score6(scoring_func):
+    """
+    Tests that `threshold_weighted_score` gives results as expected when the `reduce_dims`
+    arg is used.
+    """
+    score1 = threshold_weighted_score(
+        DA_FCST1,
+        DA_OBS1,
+        scoring_func,
+        (DA_ENDPT2, DA_INF),
+        interval_where_positive=(DA_ENDPT1, DA_INF),
+        alpha=0.2,
+        huber_param=1.2,
+        preserve_dims=["date", "station"],
+    )
+    score2 = threshold_weighted_score(
+        DA_FCST1,
+        DA_OBS1,
+        scoring_func,
+        (DA_ENDPT2, DA_INF),
+        interval_where_positive=(DA_ENDPT1, DA_INF),
+        alpha=0.2,
+        huber_param=1.2,
+        reduce_dims=["date", "station"],
+    )
+    xr.testing.assert_allclose(np.mean(score1), score2)
+
+
 def test_threshold_weighted_squared_error():
     """Tests that `threshold_weighted_squared_error` returns as expected."""
     result = threshold_weighted_squared_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf))
     expected = mse(DA_FCST1, DA_OBS1)
     xr.testing.assert_allclose(result, expected)
+    # Also check reduce_dims arg works as expected
+    result2 = threshold_weighted_squared_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf), reduce_dims=["date", "station"])
+    xr.testing.assert_allclose(result2, expected)
 
 
 def test_threshold_weighted_absolute_error():
@@ -647,6 +679,9 @@ def test_threshold_weighted_absolute_error():
     result = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf))
     expected = quantile_score(DA_FCST1, DA_OBS1, 0.5) * 2
     xr.testing.assert_allclose(result, expected)
+    # Also check reduce_dims arg works
+    result2 = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf), reduce_dims=["date", "station"])
+    xr.testing.assert_allclose(result2, expected)
 
 
 def test_threshold_weighted_quantile_score():
@@ -654,3 +689,8 @@ def test_threshold_weighted_quantile_score():
     result = threshold_weighted_quantile_score(DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75)
     expected = quantile_score(DA_FCST1, DA_OBS1, 0.75)
     xr.testing.assert_allclose(result, expected)
+    # Also check reduce_dims arg works
+    result2 = threshold_weighted_quantile_score(
+        DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75, reduce_dims=["date", "station"]
+    )
+    xr.testing.assert_allclose(result2, expected)
