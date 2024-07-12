@@ -1,3 +1,4 @@
+# pylint: disable=use-dict-literal
 """
 Tests for scores.continuous.threshold_weighted_impl
 """
