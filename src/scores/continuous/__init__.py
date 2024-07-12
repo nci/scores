@@ -22,13 +22,13 @@ from scores.continuous.standard_impl import (
     multiplicative_bias,
     rmse,
 )
-from scores.processing.isoreg_impl import isotonic_fit
-from scores.continuous.threshold_weighted_scores import (
-    threshold_weighted_score,
-    threshold_weighted_quantile_score,
+from scores.continuous.threshold_weighted_impl import (
     threshold_weighted_absolute_error,
+    threshold_weighted_quantile_score,
+    threshold_weighted_score,
     threshold_weighted_squared_error,
 )
+from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
     "flip_flop_index",
@@ -36,7 +36,7 @@ __all__ = [
     "murphy_score",
     "murphy_thetas",
     "quantile_score",
-    "correlation",
+    "pearsonr",
     "mae",
     "mse",
     "rmse",

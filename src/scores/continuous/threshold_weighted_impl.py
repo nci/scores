@@ -4,12 +4,10 @@ See Taggart (2022) https://doi.org/10.1002/qj.4206
 """
 
 import functools
-from typing import Callable, Literal, Optional, Sequence, Tuple, Union
+from typing import Callable, Literal, Optional, Tuple, Union
 
 import numpy as np
 import xarray as xr
-
-from scores.typing import FlexibleDimensionTypes
 
 from scores.continuous.consistent_impl import (
     check_alpha,
@@ -18,6 +16,7 @@ from scores.continuous.consistent_impl import (
     consistent_huber_score,
     consistent_quantile_score,
 )
+from scores.typing import FlexibleDimensionTypes
 
 HUBER_FUNCS = ["huber_loss", "scaled_huber_loss"]
 ALPHA_FUNCS = ["quantile_score", "expectile_score"]
