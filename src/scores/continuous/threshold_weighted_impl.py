@@ -58,7 +58,7 @@ def threshold_weighted_score(
     region specified by the corresponding weight.
 
     The function `threshold_weighted_score` supports threshold weighting for the following
-    scoring functions :math:`S(x, y)`, where :math:`x` is the forecast and :math:`y` the observation:
+    scoring functions:
 
         - squared error (see `mse`): :math:`S(x, y) = (x - y)^2`
         - absolute error: :math:`S(x, y) = |x - y|`
@@ -69,6 +69,15 @@ def threshold_weighted_score(
         - Huber loss: :math:`S(X, y) = \\frac\\{1\\}\\{2\\}(x-y)^2` if :math:`|x - y| \\leq a` and
           :math:`S(X, y) = a|x-y| - a^2/2` if :math:`|x - y| > a`
         - Scaled Huber loss: Huber loss scaled by a factor of :math:`1/a`
+
+    Where
+
+        - :math:`S(x, y)` is the score,
+        - :math:`x` is the forecast,
+        - :math:`y` the observation,
+        - :math:`\\alpha` is the quantile level in the case of the `quantile_score` and
+            the expectile level in the case of the `expectile_square`,
+        - :math:`a` is the Huber parameter.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
 
