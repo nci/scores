@@ -120,7 +120,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
     pofd = pofd.transpose(*final_preserve_dims)
 
     auc = -1 * xr.apply_ufunc(
-        np.trapz,
+        np.trapezoid,
         pod,
         pofd,
         input_core_dims=[pod.dims, pofd.dims],  # type: ignore
