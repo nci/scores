@@ -8,7 +8,7 @@ import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.continuous import mse, quantile_score
+from scores.continuous import mse, quantile_score, mae
 from scores.continuous.threshold_weighted_impl import (
     SCORING_FUNCS,
     _auxiliary_funcs,
@@ -164,6 +164,11 @@ DA_ENDPT2 = xr.DataArray(
 
 DA_INF = xr.DataArray(
     data=[np.inf, np.inf, np.inf, np.inf, np.inf],
+    dims=["station"],
+    coords=dict(station=[100, 101, 102, 103, 104]),
+)
+WEIGHTS = xr.DataArray(
+    data=[1, 2, np.nan, 4, 0],
     dims=["station"],
     coords=dict(station=[100, 101, 102, 103, 104]),
 )
@@ -678,7 +683,7 @@ def test_threshold_weighted_squared_error():
 def test_threshold_weighted_absolute_error():
     """Tests that `threshold_weighted_absolute_error` returns as expected."""
     result = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf))
-    expected = quantile_score(DA_FCST1, DA_OBS1, 0.5) * 2
+    expected = mae(DA_FCST1, DA_OBS1)
     xr.testing.assert_allclose(result, expected)
     # Also check reduce_dims arg works
     result2 = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf), reduce_dims=["date", "station"])
@@ -701,8 +706,8 @@ def test_threshold_weighted_squared_error_dask():
     """Tests that `threshold_weighted_squared_error` returns as expected."""
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    result = threshold_weighted_squared_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf))
-    expected = mse(DA_FCST1, DA_OBS1)
+    result = threshold_weighted_squared_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
+    expected = mse(DA_FCST1, DA_OBS1, weights=WEIGHTS)
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
@@ -713,8 +718,8 @@ def test_threshold_weighted_absolute_error_dask():
     """Tests that `threshold_weighted_absolute_error` returns as expected."""
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    result = threshold_weighted_absolute_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf))
-    expected = quantile_score(DA_FCST1, DA_OBS1, 0.5) * 2
+    result = threshold_weighted_absolute_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
+    expected = mae(DA_FCST1, DA_OBS1, weights=WEIGHTS)
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
@@ -723,8 +728,10 @@ def test_threshold_weighted_absolute_error_dask():
 
 def test_threshold_weighted_quantile_score():
     """Tests that `threshold_weighted_quantile_score` returns as expected."""
-    result = threshold_weighted_quantile_score(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), 0.75)
-    expected = quantile_score(DA_FCST1, DA_OBS1, 0.75)
+    result = threshold_weighted_quantile_score(
+        DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), 0.75, weights=WEIGHTS
+    )
+    expected = quantile_score(DA_FCST1, DA_OBS1, 0.75, weights=WEIGHTS)
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
