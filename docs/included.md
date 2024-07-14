@@ -117,19 +117,19 @@
   - [API](api.md#scores.continuous.rmse)
   - [Tutorial](project:./tutorials/Root_Mean_Squared_Error.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
-* - Threshold weighted score
+* - Threshold Weighted Score
   - [API](api.md#scores.continuous.threshold_weighted_score)
   - &mdash;
   - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
-  * - Threshold weighted squared error
+  * - Threshold Weighted Squared Error
   - [API](api.md#scores.continuous.threshold_weighted_squared_error)
   - &mdash;
   - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
-  * - Threshold weighted absolute error
+  * - Threshold Weighted Absolute Error
   - [API](api.md#scores.continuous.threshold_weighted_absolute_error)
   - &mdash;
   - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
-  * - Threshold weighted quantile score
+  * - Threshold Weighted Quantile Score
   - [API](api.md#scores.continuous.threshold_quantile_score)
   - &mdash;
   - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
