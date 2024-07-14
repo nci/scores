@@ -36,7 +36,7 @@ __all__ = [
     "murphy_score",
     "murphy_thetas",
     "quantile_score",
-    "pearsonr",
+    "correlation",
     "mae",
     "mse",
     "rmse",
