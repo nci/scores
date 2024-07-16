@@ -96,8 +96,9 @@ def threshold_weighted_score(
           except when the endpoints are infinite.
 
     Users who prefer more complex weighting systems should use one of the functions
-    `scores.continuous.consistent_quantile_score`, `scores.continuous.consistent_expectile_score`,
-    or `scores.continuous.huber_score`.
+    :py:func:`scores.continuous.consistent_quantile_score`,
+    :py:func:`scores.continuous.consistent_expectile_score`,
+    or :py:func:`scores.continuous.huber_score`.
 
     Args:
         fcst: array of forecast values.
@@ -333,7 +334,7 @@ def _g_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray
         array of function values for the function g_j.
 
     Note:
-        Requires a < b. This is tested in `_auxiliary_funcs`.
+        Requires a < b. This is tested in :py:func:`_auxiliary_funcs`.
     """
     # results correspond to each case in the first row of Table B1, Taggart (2022).
     result1 = 0
@@ -361,7 +362,7 @@ def _phi_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArr
         array of function values for the function phi_j.
 
     Note:
-        Requires a < b. This is tested in `_auxiliary_funcs`.
+        Requires a < b. This is tested in :py:func:`_auxiliary_funcs`.
     """
     # results correspond to each case in the second row of Table B1, Taggart (2022).
     result1 = 0
@@ -398,7 +399,7 @@ def _g_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType
         array of function values for the function g_j.
 
     Note:
-        Requires a < b < c < d. This is tested in `_auxiliary_funcs`.
+        Requires a < b < c < d. This is tested in :py:func:`_auxiliary_funcs`.
     """
     # results correspond to each case in the third row of Table B1, Taggart (2022).
     result0 = 0
@@ -476,10 +477,10 @@ def threshold_weighted_squared_error(
     Returns the scores computed using a threshold weighted scoring
     function derived from the squared error function.
 
-    This is a convenience function for `threshold_weighted_score`
+    This is a convenience function for :py:func:`threshold_weighted_score`
     with the option `scoring_func="squared_error"`. The weight is
     1 on the specified interval and 0 elsewhere. For more flexible weighting schemes,
-    see `scores.continuous.threshold_weighted_score` and `scores.continuous.consistent_expectile_score`.
+    see :py:func:`scores.continuous.threshold_weighted_score` and :py:func:`scores.continuous.consistent_expectile_score`.
 
     Args:
         fcst: array of forecast values.
@@ -538,10 +539,11 @@ def threshold_weighted_absolute_error(
     Returns the scores computed using a threshold weighted scoring
     function derived from the absolute error function.
 
-    This is a convenience function for `threshold_weighted_score`
+    This is a convenience function for :py:func:`threshold_weighted_score`
     with the option `scoring_func="absolute_error"`. The weight is
     1 on the specified interval and 0 elsewhere. For more flexible weighting schemes,
-    see `scores.continuous.threshold_weighted_score` and `scores.continuous.consistent_absolute_error`.
+    see :py:func:`scores.continuous.threshold_weighted_score` and
+    :py:func:`scores.continuous.consistent_absolute_error`.
 
     Args:
         fcst: array of forecast values.
@@ -601,10 +603,11 @@ def threshold_weighted_quantile_score(
     Returns the scores computed using a threshold weighted scoring
     function derived from the standard `quantile_score`.
 
-    This is a convenience function for `threshold_weighted_score`
+    This is a convenience function for :py:func:`threshold_weighted_score`
     with the option `scoring_func="quantile_score"`. The weight is
     1 on the specified interval and 0 elsewhere. For more flexible weighting schemes,
-    see `scores.continuous.threshold_weighted_score` and `scores.continuous.consistent_quantile_score`.
+    see :py:func:`scores.continuous.threshold_weighted_score` and
+    :py:func:`scores.continuous.consistent_quantile_score`.
 
     Args:
         fcst: array of forecast values.
