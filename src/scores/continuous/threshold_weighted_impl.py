@@ -66,8 +66,8 @@ def threshold_weighted_score(
           if :math:`x \\geq y` and :math:`S(x, y) = \\alpha(y - x)` if :math:`x < y`
         - expectile score: :math:`S(x, y) = (1 - \\alpha)(x - y)^2`
           if :math:`x \\geq y` and :math:`S(x, y) = \\alpha(y - x)^2` if :math:`x < y`
-        - Huber loss: :math:`S(X, y) = \\frac\\{1\\}\\{2\\}(x-y)^2` if :math:`|x - y| \\leq a` and
-          :math:`S(X, y) = a|x-y| - a^2/2` if :math:`|x - y| > a`
+        - Huber loss: :math:`S(x, y) = \\frac\\{1\\}\\{2\\}(x-y)^2` if :math:`|x - y| \\leq a` and
+          :math:`S(x, y) = a|x-y| - a^2/2` if :math:`|x - y| > a`
         - Scaled Huber loss: Huber loss scaled by a factor of :math:`1/a`
 
     Where
