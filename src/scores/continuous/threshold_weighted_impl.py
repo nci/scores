@@ -156,9 +156,9 @@ def threshold_weighted_score(
           huber_loss = scaled_huber_loss * huber_parameter.
 
     References:
-        Taggart, R. (2022). "Evaluation of point forecasts for extreme events
-        using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-        https://doi.org/10.1002/qj.4206
+        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+        consistent scoring functions. Quarterly Journal of the Royal Meteorological
+        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
 
     """
     _check_tws_args(scoring_func, alpha, huber_param, interval_where_one, interval_where_positive)
@@ -511,9 +511,9 @@ def threshold_weighted_squared_error(
         ValueError: if `interval_where_one` is not increasing.
 
     References:
-        Taggart, R. (2022). "Evaluation of point forecasts for extreme events
-        using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-        https://doi.org/10.1002/qj.4206
+        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+        consistent scoring functions. Quarterly Journal of the Royal Meteorological
+        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
     return threshold_weighted_score(
         fcst,
@@ -573,9 +573,9 @@ def threshold_weighted_absolute_error(
         ValueError: if `interval_where_one` is not increasing.
 
     References:
-        Taggart, R. (2022). "Evaluation of point forecasts for extreme events
-        using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-        https://doi.org/10.1002/qj.4206
+        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+        consistent scoring functions. Quarterly Journal of the Royal Meteorological
+        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
     return threshold_weighted_score(
         fcst,
@@ -638,9 +638,9 @@ def threshold_weighted_quantile_score(
         ValueError: if `alpha` is not in the open interval (0,1).
 
     References:
-        Taggart, R. (2022). "Evaluation of point forecasts for extreme events
-        using consistent scoring functions", Q. J. Royal Meteorol. Soc.,
-        https://doi.org/10.1002/qj.4206
+        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+        consistent scoring functions. Quarterly Journal of the Royal Meteorological
+        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
     return threshold_weighted_score(
         fcst,
