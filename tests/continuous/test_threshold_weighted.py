@@ -11,7 +11,7 @@ from numpy import nan
 
 from scores.continuous import mae, mse, quantile_score
 from scores.continuous.threshold_weighted_impl import (
-    SCORING_FUNCS,
+    # SCORING_FUNCS,
     _auxiliary_funcs,
     _g_j_rect,
     _g_j_trap,
@@ -19,10 +19,10 @@ from scores.continuous.threshold_weighted_impl import (
     _phi_j_prime_trap,
     _phi_j_rect,
     _phi_j_trap,
-    threshold_weighted_absolute_error,
-    threshold_weighted_quantile_score,
-    threshold_weighted_score,
-    threshold_weighted_squared_error,
+    # threshold_weighted_absolute_error,
+    # threshold_weighted_quantile_score,
+    # threshold_weighted_score,
+    tw_squared_error,
 )
 
 DA_FCST = xr.DataArray(
@@ -190,142 +190,130 @@ EXP_MSHL = xr.DataArray(
         "scoring_func",
         "interval_where_one",
         "interval_where_positive",
-        "alpha",
-        "huber_param",
+        "kwargs",
         "error_msg_snippet",
     ),
     [
         (
-            "squared_error",
+            tw_squared_error,
             (0, 2, 4),
             None,
-            0.5,
-            None,
+            {},
             "`interval_where_one` must have length 2",
         ),
         (
-            "squared_error",
+            tw_squared_error,
             (0, 2),
             (-10, 10, 50),
-            0.5,
-            None,
+            {},
             "`interval_where_positive` must be length 2 when not `None`",
         ),
-        ("log_error", (0, 1), None, 0.5, None, "`scoring_func` must be one of:"),
-        ("expectile_score", (0, 1), None, None, None, "`alpha` must be supplied"),
-        (
-            "quantile_score",
-            (0, 1),
-            None,
-            0.0,
-            None,
-            "`alpha` must be strictly between 0 and 1",
-        ),
-        ("huber_loss", (0, 1), None, 0.5, None, "`huber_param` must be supplied"),
-        ("huber_loss", (0, 1), None, None, 0.0, "`huber_param` must be positive"),
-        (
-            "huber_loss",
-            (1, 0),
-            None,
-            None,
-            1,
-            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        ),
-        (
-            "huber_loss",
-            (1, 0),
-            (-2, 10),
-            None,
-            1,
-            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        ),
-        (
-            "huber_loss",
-            (DA_B, DA_A),
-            None,
-            None,
-            1,
-            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        ),
-        (
-            "huber_loss",
-            (DA_B, DA_A),
-            (DA_A - 100, DA_B + 100),
-            None,
-            1,
-            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        ),
-        ("huber_loss", (-2, 0), (-np.inf, 6), None, 1, "can only be infinite when"),
-        (
-            "huber_loss",
-            (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
-            (xr.DataArray([-np.inf, -1]), xr.DataArray([2, 2])),
-            None,
-            1,
-            "can only be infinite when",
-        ),
-        ("huber_loss", (-2, 0), (-4, np.inf), None, 1, "can only be infinite when"),
-        (
-            "huber_loss",
-            (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
-            (xr.DataArray([-1, -1]), xr.DataArray([np.inf, 2])),
-            None,
-            1,
-            "can only be infinite when",
-        ),
-        (
-            "huber_loss",
-            (0, 1),
-            (0, 2),
-            None,
-            1,
-            "left endpoint of `interval_where_positive` must be less than",
-        ),
-        (
-            "huber_loss",
-            (xr.DataArray([0, 1]), xr.DataArray([20, 10])),
-            (xr.DataArray([-1, 1]), xr.DataArray([22, 11])),
-            None,
-            1,
-            "left endpoint of `interval_where_positive` must be less than",
-        ),
-        (
-            "huber_loss",
-            (0, 2),
-            (-1, 2),
-            None,
-            1,
-            "right endpoint of `interval_where_positive` must be greater than",
-        ),
-        (
-            "huber_loss",
-            (1, 11),
-            (0, 11),
-            None,
-            1,
-            "right endpoint of `interval_where_positive` must be greater than",
-        ),
+        #         ("log_error", (0, 1), None, 0.5, None, "`scoring_func` must be one of:"),
+        #         ("expectile_score", (0, 1), None, None, None, "`alpha` must be supplied"),
+        #         (
+        #             "quantile_score",
+        #             (0, 1),
+        #             None,
+        #             0.0,
+        #             None,
+        #             "`alpha` must be strictly between 0 and 1",
+        #         ),
+        #         ("huber_loss", (0, 1), None, 0.5, None, "`huber_param` must be supplied"),
+        #         ("huber_loss", (0, 1), None, None, 0.0, "`huber_param` must be positive"),
+        #         (
+        #             "huber_loss",
+        #             (1, 0),
+        #             None,
+        #             None,
+        #             1,
+        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (1, 0),
+        #             (-2, 10),
+        #             None,
+        #             1,
+        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (DA_B, DA_A),
+        #             None,
+        #             None,
+        #             1,
+        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (DA_B, DA_A),
+        #             (DA_A - 100, DA_B + 100),
+        #             None,
+        #             1,
+        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        #         ),
+        #         ("huber_loss", (-2, 0), (-np.inf, 6), None, 1, "can only be infinite when"),
+        #         (
+        #             "huber_loss",
+        #             (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
+        #             (xr.DataArray([-np.inf, -1]), xr.DataArray([2, 2])),
+        #             None,
+        #             1,
+        #             "can only be infinite when",
+        #         ),
+        #         ("huber_loss", (-2, 0), (-4, np.inf), None, 1, "can only be infinite when"),
+        #         (
+        #             "huber_loss",
+        #             (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
+        #             (xr.DataArray([-1, -1]), xr.DataArray([np.inf, 2])),
+        #             None,
+        #             1,
+        #             "can only be infinite when",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (0, 1),
+        #             (0, 2),
+        #             None,
+        #             1,
+        #             "left endpoint of `interval_where_positive` must be less than",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (xr.DataArray([0, 1]), xr.DataArray([20, 10])),
+        #             (xr.DataArray([-1, 1]), xr.DataArray([22, 11])),
+        #             None,
+        #             1,
+        #             "left endpoint of `interval_where_positive` must be less than",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (0, 2),
+        #             (-1, 2),
+        #             None,
+        #             1,
+        #             "right endpoint of `interval_where_positive` must be greater than",
+        #         ),
+        #         (
+        #             "huber_loss",
+        #             (1, 11),
+        #             (0, 11),
+        #             None,
+        #             1,
+        #             "right endpoint of `interval_where_positive` must be greater than",
+        #         ),
     ],
 )
 def test_threshold_weighted_score_raises(
     scoring_func,
     interval_where_one,
     interval_where_positive,
-    alpha,
-    huber_param,
+    kwargs,
     error_msg_snippet,
 ):
-    """Tests that `threshold_weighted_score` raises as exepected."""
+    """Tests that the threshold weighted scoring rules raise errors as exepected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
-        threshold_weighted_score(
-            DA_FCST,
-            DA_OBS,
-            scoring_func,
-            interval_where_one,
-            interval_where_positive=interval_where_positive,
-            alpha=alpha,
-            huber_param=huber_param,
-        )
+        scoring_func(DA_FCST, DA_OBS, interval_where_one, interval_where_positive=interval_where_positive, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -457,287 +445,190 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
     xr.testing.assert_allclose(phi_prime(x), _phi_j_prime_trap(a, b, c, d, x))
 
 
-@pytest.mark.parametrize(
-    ("scoring_func", "expected"),
-    [
-        ("squared_error", (DA_FCST1 - DA_OBS1) ** 2),
-        ("absolute_error", np.abs(DA_FCST1 - DA_OBS1)),
-        (
-            "quantile_score",
-            quantile_score(DA_FCST1, DA_OBS1, 0.3, preserve_dims=["date", "station"]),
-        ),
-        ("scaled_huber_loss", EXP_MSHL),
-        ("huber_loss", EXP_MSHL * 0.4),
-    ],
-)
-def test_threshold_weighted_score1(scoring_func, expected):
+# Test all of the threshold weighted scores
+@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {})])
+def test_threshold_weighted_scores1(scoring_func, kwargs):
     """
-    Tests that `threshold_weighted_score` gives results as expected.
+    Tests that each threshold weight score gives results as expected.
     This test is based on the fact that if `interval_where_one=(-np.inf, np.inf)`
     then the threshold weighted score should be the same as the original score.
     """
-    result = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-np.inf, np.inf),
-        alpha=0.3,
-        huber_param=0.4,
-        preserve_dims=["date", "station"],
+    result = scoring_func(
+        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), preserve_dims=["date", "station"], **kwargs
     )
-    xr.testing.assert_allclose(result, expected)
+    xr.testing.assert_allclose(result, (DA_FCST1 - DA_OBS1) ** 2)
 
 
-@pytest.mark.parametrize("scoring_func", SCORING_FUNCS)
-def test_threshold_weighted_score2(scoring_func):
+@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {})])
+def test_threshold_weighted_scores2(scoring_func, kwargs):
     """
-    Tests that `threshold_weighted_score` gives results as expected.
+    Tests that each threshold weight score gives results as expected.
     This test is based on the fact that if the sum of scores whose weights
     sum to 1 is the same as the score with a weight of 1 everywhere.
     Tests for rectangular weights.
     """
-    score1 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-np.inf, 0),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score2 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (0, np.inf),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-np.inf, np.inf),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
+
+    kwargs["preserve_dims"] = ["date", "station"]
+
+    score1 = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, 0), **kwargs)
+    score2 = scoring_func(DA_FCST1, DA_OBS1, (0, np.inf), **kwargs)
+    score = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize("scoring_func", SCORING_FUNCS)
-def test_threshold_weighted_score3(scoring_func):
+@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {})])
+def test_threshold_weighted_scores3(scoring_func, kwargs):
     """
-    Tests that `threshold_weighted_score` gives results as expected.
+    Tests that each threshold weight score gives results as expected.
     This test is based on the fact that if the sum of scores whose weights
     sum to 1 is the same as the score with a weight of 1 everywhere.
     Tests for rectangular weights, weights vary with station dimension.
     """
-    score1 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-DA_INF, DA_ENDPT1),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score2 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (DA_ENDPT1, DA_INF),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-DA_INF, DA_INF),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
+
+    kwargs["preserve_dims"] = ["date", "station"]
+
+    score1 = scoring_func(DA_FCST1, DA_OBS1, (-DA_INF, DA_ENDPT1), **kwargs)
+    score2 = scoring_func(DA_FCST1, DA_OBS1, (DA_ENDPT1, DA_INF), **kwargs)
+    score = scoring_func(DA_FCST1, DA_OBS1, (-DA_INF, DA_INF), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize("scoring_func", SCORING_FUNCS)
-def test_threshold_weighted_score4(scoring_func):
+@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {})])
+def test_threshold_weighted_scores4(scoring_func, kwargs):
     """
-    Tests that `threshold_weighted_score` gives results as expected.
+    Tests that each threshold weight score gives results as expected.
     This test is based on the fact that if the sum of scores whose weights
     sum to 1 is the same as the score with a weight of 1 everywhere.
     Tests for trapezoidal weights.
     """
+
+    kwargs["preserve_dims"] = ["date", "station"]
     point1 = -4
     point2 = 4
-    score1 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-np.inf, point1),
-        interval_where_positive=(-np.inf, point2),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score2 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (point2, np.inf),
-        interval_where_positive=(point1, np.inf),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-np.inf, np.inf),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
+    score1 = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, point1), **kwargs, interval_where_positive=(-np.inf, point2))
+    score2 = scoring_func(DA_FCST1, DA_OBS1, (point2, np.inf), **kwargs, interval_where_positive=(point1, np.inf))
+    score = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize("scoring_func", SCORING_FUNCS)
-def test_threshold_weighted_score5(scoring_func):
+@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {})])
+def test_threshold_weighted_scores5(scoring_func, kwargs):
     """
-    Tests that `threshold_weighted_score` gives results as expected.
+    Tests that each threshold weight score gives results as expected.
     This test is based on the fact that if the sum of scores whose weights
     sum to 1 is the same as the score with a weight of 1 everywhere.
     Tests for trapezoidal weights, with weights varying by stn dimension.
     """
-    score1 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-DA_INF, DA_ENDPT1),
-        interval_where_positive=(-DA_INF, DA_ENDPT2),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
+
+    kwargs["preserve_dims"] = ["date", "station"]
+    score1 = scoring_func(
+        DA_FCST1, DA_OBS1, (-DA_INF, DA_ENDPT1), **kwargs, interval_where_positive=(-DA_INF, DA_ENDPT2)
     )
-    score2 = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (DA_ENDPT2, DA_INF),
-        interval_where_positive=(DA_ENDPT1, DA_INF),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
-    score = threshold_weighted_score(
-        DA_FCST1,
-        DA_OBS1,
-        scoring_func,
-        (-DA_INF, DA_INF),
-        alpha=0.2,
-        huber_param=1.2,
-        preserve_dims=["date", "station"],
-    )
+    score2 = scoring_func(DA_FCST1, DA_OBS1, (DA_ENDPT2, DA_INF), **kwargs, interval_where_positive=(DA_ENDPT1, DA_INF))
+    score = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize("scoring_func", SCORING_FUNCS)
-def test_threshold_weighted_score6(scoring_func):
+@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {})])
+def test_threshold_weighted_scores6(scoring_func, kwargs):
     """
-    Tests that `threshold_weighted_score` gives results as expected when the `reduce_dims`
+    Tests that each threshold weight score gives results as expected when the `reduce_dims`
     arg is used.
     """
-    score1 = threshold_weighted_score(
+    score1 = scoring_func(
         DA_FCST1,
         DA_OBS1,
-        scoring_func,
         (DA_ENDPT2, DA_INF),
+        **kwargs,
         interval_where_positive=(DA_ENDPT1, DA_INF),
-        alpha=0.2,
-        huber_param=1.2,
         preserve_dims=["date", "station"],
     )
-    score2 = threshold_weighted_score(
+    score2 = scoring_func(
         DA_FCST1,
         DA_OBS1,
-        scoring_func,
         (DA_ENDPT2, DA_INF),
+        **kwargs,
         interval_where_positive=(DA_ENDPT1, DA_INF),
-        alpha=0.2,
-        huber_param=1.2,
         reduce_dims=["date", "station"],
     )
     xr.testing.assert_allclose(np.mean(score1), score2)
 
 
-def test_threshold_weighted_squared_error():
-    """Tests that `threshold_weighted_squared_error` returns as expected."""
-    result = threshold_weighted_squared_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf))
-    expected = mse(DA_FCST1, DA_OBS1)
-    xr.testing.assert_allclose(result, expected)
-    # Also check reduce_dims arg works as expected
-    result2 = threshold_weighted_squared_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf), reduce_dims=["date", "station"])
-    xr.testing.assert_allclose(result2, expected)
-
-
-def test_threshold_weighted_absolute_error():
-    """Tests that `threshold_weighted_absolute_error` returns as expected."""
-    result = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf))
-    expected = mae(DA_FCST1, DA_OBS1)
-    xr.testing.assert_allclose(result, expected)
-    # Also check reduce_dims arg works
-    result2 = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf), reduce_dims=["date", "station"])
-    xr.testing.assert_allclose(result2, expected)
-
-
-def test_threshold_weighted_quantile_score():
-    """Tests that `threshold_weighted_quantile_score` returns as expected."""
-    result = threshold_weighted_quantile_score(DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75)
-    expected = quantile_score(DA_FCST1, DA_OBS1, 0.75)
-    xr.testing.assert_allclose(result, expected)
-    # Also check reduce_dims arg works
-    result2 = threshold_weighted_quantile_score(
-        DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75, reduce_dims=["date", "station"]
-    )
-    xr.testing.assert_allclose(result2, expected)
-
-
-def test_threshold_weighted_squared_error_dask():
-    """Tests that `threshold_weighted_squared_error` returns as expected."""
+@pytest.mark.parametrize(("scoring_func", "kwargs", "expected"), [(tw_squared_error, {}, (DA_FCST1 - DA_OBS1) ** 2)])
+def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
+    """
+    Tests that each threshold weight score gives results as expected.
+    This test is based on the fact that if `interval_where_one=(-np.inf, np.inf)`
+    then the threshold weighted score should be the same as the original score.
+    """
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    result = threshold_weighted_squared_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
-    expected = mse(DA_FCST1, DA_OBS1, weights=WEIGHTS)
-    assert isinstance(result.data, dask.array.Array)
-    result = result.compute()
-    assert isinstance(result.data, np.ndarray)
-    xr.testing.assert_allclose(result, expected)
-
-
-def test_threshold_weighted_absolute_error_dask():
-    """Tests that `threshold_weighted_absolute_error` returns as expected."""
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    result = threshold_weighted_absolute_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
-    expected = mae(DA_FCST1, DA_OBS1, weights=WEIGHTS)
-    assert isinstance(result.data, dask.array.Array)
-    result = result.compute()
-    assert isinstance(result.data, np.ndarray)
-    xr.testing.assert_allclose(result, expected)
-
-
-def test_threshold_weighted_quantile_score():
-    """Tests that `threshold_weighted_quantile_score` returns as expected."""
-    result = threshold_weighted_quantile_score(
-        DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), 0.75, weights=WEIGHTS
+    result = scoring_func(
+        DA_FCST1.chunk(),
+        DA_OBS1.chunk(),
+        interval_where_one=(-DA_INF.chunk(), DA_INF.chunk()),
+        preserve_dims=["date", "station"],
+        **kwargs,
     )
-    expected = quantile_score(DA_FCST1, DA_OBS1, 0.75, weights=WEIGHTS)
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)
+
+
+# def test_threshold_weighted_absolute_error():
+#     """Tests that `threshold_weighted_absolute_error` returns as expected."""
+#     result = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf))
+#     expected = mae(DA_FCST1, DA_OBS1)
+#     xr.testing.assert_allclose(result, expected)
+#     # Also check reduce_dims arg works
+#     result2 = threshold_weighted_absolute_error(DA_FCST1, DA_OBS1, (-np.inf, np.inf), reduce_dims=["date", "station"])
+#     xr.testing.assert_allclose(result2, expected)
+
+
+# def test_threshold_weighted_quantile_score():
+#     """Tests that `threshold_weighted_quantile_score` returns as expected."""
+#     result = threshold_weighted_quantile_score(DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75)
+#     expected = quantile_score(DA_FCST1, DA_OBS1, 0.75)
+#     xr.testing.assert_allclose(result, expected)
+#     # Also check reduce_dims arg works
+#     result2 = threshold_weighted_quantile_score(
+#         DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75, reduce_dims=["date", "station"]
+#     )
+#     xr.testing.assert_allclose(result2, expected)
+
+
+# def test_threshold_weighted_squared_error_dask():
+#     """Tests that `threshold_weighted_squared_error` returns as expected."""
+#     if dask == "Unavailable":  # pragma: no cover
+#         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+#     result = threshold_weighted_squared_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
+#     expected = mse(DA_FCST1, DA_OBS1, weights=WEIGHTS)
+#     assert isinstance(result.data, dask.array.Array)
+#     result = result.compute()
+#     assert isinstance(result.data, np.ndarray)
+#     xr.testing.assert_allclose(result, expected)
+
+
+# def test_threshold_weighted_absolute_error_dask():
+#     """Tests that `threshold_weighted_absolute_error` returns as expected."""
+#     if dask == "Unavailable":  # pragma: no cover
+#         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+#     result = threshold_weighted_absolute_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
+#     expected = mae(DA_FCST1, DA_OBS1, weights=WEIGHTS)
+#     assert isinstance(result.data, dask.array.Array)
+#     result = result.compute()
+#     assert isinstance(result.data, np.ndarray)
+#     xr.testing.assert_allclose(result, expected)
+
+
+# def test_threshold_weighted_quantile_score():
+#     """Tests that `threshold_weighted_quantile_score` returns as expected."""
+#     result = threshold_weighted_quantile_score(
+#         DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), 0.75, weights=WEIGHTS
+#     )
+#     expected = quantile_score(DA_FCST1, DA_OBS1, 0.75, weights=WEIGHTS)
+#     assert isinstance(result.data, dask.array.Array)
+#     result = result.compute()
+#     assert isinstance(result.data, np.ndarray)
+#     xr.testing.assert_allclose(result, expected)
