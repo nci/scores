@@ -23,7 +23,7 @@ from scores.continuous.standard_impl import (
     rmse,
 )
 from scores.continuous.threshold_weighted_impl import (
-    # threshold_weighted_absolute_error,
+    tw_absolute_error,
     # threshold_weighted_quantile_score,
     # threshold_weighted_score,
     tw_squared_error,
@@ -49,6 +49,6 @@ __all__ = [
     "consistent_quantile_score",
     # "threshold_weighted_score",
     # "threshold_weighted_quantile_score",
-    # "threshold_weighted_absolute_error",
+    "tw_absolute_error",
     "tw_squared_error",
 ]
