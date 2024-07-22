@@ -592,7 +592,7 @@ def tw_expectile_score(
     _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
     # We multiply the output by a factor of two here due to the scaling of phi and phi_prime
-    # Since phi(s)=2s^2 was used in `_auxiliary_funcs`` to be consistent with Taggart (2022)
+    # Since phi(s)=2s^2 was used in `_auxiliary_funcs` to be consistent with Taggart (2022)
     return 0.5 * consistent_expectile_score(
         fcst, obs, alpha, phi, phi_prime, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
@@ -681,7 +681,7 @@ def tw_huber_loss(
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     # We multiply the output by a factor of two here due to the scaling of phi and phi_prime
-    # Since phi(s)=2s^2 was used in `_auxiliary_funcs`` to be consistent with Taggart (2022)
+    # Since phi(s)=2s^2 was used in `_auxiliary_funcs` to be consistent with Taggart (2022)
     return 0.5 * consistent_huber_score(
         fcst,
         obs,

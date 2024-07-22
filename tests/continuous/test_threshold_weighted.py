@@ -297,6 +297,13 @@ EXP_HL = HUBER_PARAM * (
         ),
         (
             tw_huber_loss,
+            (1, 0),
+            (-2, 2),
+            {"huber_param": 1},
+            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        ),
+        (
+            tw_huber_loss,
             (DA_B, DA_A),
             None,
             {"huber_param": 1},
