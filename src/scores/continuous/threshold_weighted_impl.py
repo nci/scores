@@ -22,10 +22,26 @@ AuxFuncType = Callable[[xr.DataArray], xr.DataArray]
 EndpointType = Union[int, float, xr.DataArray]
 
 
-def _check_tws_args(interval_where_one=None, interval_where_positive=None):
+def _check_tws_args(
+    interval_where_one: Tuple[EndpointType, EndpointType],
+    interval_where_positive: Optional[Tuple[EndpointType, EndpointType]],
+):
     """
     Some argument checks for `threshold_weighted_score`.
     Checks for valid interval endpoints are done in `_auxiliary_funcs`.
+
+    Args:
+        interval_where_one: endpoints of the interval where the weights are 1.
+            Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
+            arrays, endpoints can vary with dimension.
+        interval_where_positive: endpoints of the interval where the weights are positive.
+            Must be increasing. Infinite endpoints are only permissible when the corresponding
+            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            arrays, endpoints can vary with dimension.
+
+    Raises:
+        ValueError: if `interval_where_one` is not length 2.
+        ValueError: if `interval_where_one` is not increasing.
     """
     if len(interval_where_one) != 2:
         raise ValueError("`interval_where_one` must have length 2")
@@ -44,6 +60,25 @@ def _auxiliary_funcs(
     Returns the three auxiliary functions g, phi and phi_prime
     which are used to construct quantile, expectile or Huber mean scoring functions.
     See Equations (8), (10) and (11) from Taggart (2022) for the role of g, phi and phi_prime.
+
+    Args:
+        fcst: array of forecast values.
+        obs: array of corresponding observation values.
+        interval_where_one: endpoints of the interval where the weights are 1.
+            Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
+            arrays, endpoints can vary with dimension.
+        interval_where_positive: endpoints of the interval where the weights are positive.
+            Must be increasing. Infinite endpoints are only permissible when the corresponding
+            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            arrays, endpoints can vary with dimension.
+
+    Raises:
+        ValueError: if the left endpoint of `interval_where_one` is not less than
+            the right endpoint.
+        ValueError: if an `interval_where_positive` endpoint is infinite when the
+            `interval_where_one` endpoint is infinite.
+        ValueError: If the right endpoint of `interval_where_positive` is not greater
+            than the right endpoint of `interval_where_one` and neither are infinite.
     """
 
     if interval_where_positive is None:  # rectangular weight
@@ -257,7 +292,17 @@ def _phi_j_prime_trap(
     a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray
 ) -> xr.DataArray:
     """
-    The subderivative of `_phi_j_trap(a, b, c, d, x)` w.r.t. x.
+    Calculates the subderivative of `_phi_j_trap(a, b, c, d, x)` w.r.t. x.
+
+    Args:
+        a: left endpoint of interval where weight > 0.
+        b: left endpoint of the interval where weight = 1.
+        c: right endpoint of the interval where weight = 1.
+        d: right endpoint of interval where weight > 0.
+        x: points where phi_j is to be evaluated.
+
+    Returns:
+        The subderivative of `_phi_j_trap(a, b, c, d, x)` w.r.t. x.
     """
     return 4 * _g_j_trap(a, b, c, d, x)
 
@@ -578,7 +623,6 @@ def tw_expectile_score(
         ValueError: if `interval_where_one` is not length 2.
         ValueError: if `interval_where_one` is not increasing.
         ValueError: if `alpha` is not in the open interval (0,1).
-        ValueError: if `interval_where_one` is not increasing.
         ValueError: if `interval_where_one` and `interval_where_positive` do not
             specify a valid trapezoidal weight.
 
