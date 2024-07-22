@@ -22,9 +22,7 @@ AuxFuncType = Callable[[xr.DataArray], xr.DataArray]
 EndpointType = Union[int, float, xr.DataArray]
 
 
-def _check_tws_args(
-    scoring_func=None, alpha=None, huber_param=None, interval_where_one=None, interval_where_positive=None
-):
+def _check_tws_args(interval_where_one=None, interval_where_positive=None):
     """
     Some argument checks for `threshold_weighted_score`.
     Checks for valid interval endpoints are done in `_auxiliary_funcs`.
@@ -331,7 +329,7 @@ def tw_squared_error(
         consistent scoring functions. Quarterly Journal of the Royal Meteorological
         Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
-    _check_tws_args(alpha=0.5, interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     return consistent_expectile_score(
@@ -413,7 +411,7 @@ def tw_absolute_error(
         consistent scoring functions. Quarterly Journal of the Royal Meteorological
         Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
-    _check_tws_args(alpha=0.5, interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     g, _, _ = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     return 2 * consistent_quantile_score(
@@ -499,7 +497,7 @@ def tw_quantile_score(
     """
 
     check_alpha(alpha)
-    _check_tws_args(alpha=alpha, interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     g, _, _ = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     return consistent_quantile_score(
@@ -585,10 +583,10 @@ def tw_expectile_score(
     """
 
     check_alpha(alpha)
-    _check_tws_args(alpha=alpha, interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
-    return consistent_expectile_score(
+    return 0.5 * consistent_expectile_score(
         fcst, obs, alpha, phi, phi_prime, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
 
@@ -672,7 +670,7 @@ def tw_huber_loss(
     """
 
     check_huber_param(huber_param)
-    _check_tws_args(alpha=None, interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     return 0.5 * consistent_huber_score(

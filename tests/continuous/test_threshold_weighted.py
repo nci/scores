@@ -528,7 +528,7 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
         (
             tw_expectile_score,
             {"alpha": 0.5},
-            mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
+            0.5 * mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
         ),
         (
             tw_huber_loss,
@@ -708,7 +708,7 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
             {"alpha": 0.3},
             quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
         ),
-        (tw_expectile_score, {"alpha": 0.5}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (tw_expectile_score, {"alpha": 0.5}, 0.5 * mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
         (
             tw_huber_loss,
             {"huber_param": HUBER_PARAM},
