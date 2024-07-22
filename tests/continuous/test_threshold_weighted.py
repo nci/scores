@@ -208,16 +208,22 @@ EXP_MSHL = xr.DataArray(
             {},
             "`interval_where_positive` must be length 2 when not `None`",
         ),
+        (
+            tw_quantile_score,
+            (0, 1),
+            None,
+            {"alpha": 0},
+            "`alpha` must be strictly between 0 and 1",
+        ),
+        (
+            tw_quantile_score,
+            (0, 1),
+            None,
+            {"alpha": 1},
+            "`alpha` must be strictly between 0 and 1",
+        ),
         #         ("log_error", (0, 1), None, 0.5, None, "`scoring_func` must be one of:"),
         #         ("expectile_score", (0, 1), None, None, None, "`alpha` must be supplied"),
-        #         (
-        #             "quantile_score",
-        #             (0, 1),
-        #             None,
-        #             0.0,
-        #             None,
-        #             "`alpha` must be strictly between 0 and 1",
-        #         ),
         #         ("huber_loss", (0, 1), None, 0.5, None, "`huber_param` must be supplied"),
         #         ("huber_loss", (0, 1), None, None, 0.0, "`huber_param` must be positive"),
         #         (
@@ -313,7 +319,13 @@ def test_threshold_weighted_score_raises(
 ):
     """Tests that the threshold weighted scoring rules raise errors as exepected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
-        scoring_func(DA_FCST, DA_OBS, interval_where_one, interval_where_positive=interval_where_positive, **kwargs)
+        scoring_func(
+            DA_FCST,
+            DA_OBS,
+            interval_where_one=interval_where_one,
+            interval_where_positive=interval_where_positive,
+            **kwargs,
+        )
 
 
 @pytest.mark.parametrize(
