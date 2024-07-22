@@ -11,7 +11,6 @@ from numpy import nan
 
 from scores.continuous import mae, mse, quantile_score
 from scores.continuous.threshold_weighted_impl import (
-    # SCORING_FUNCS,
     _auxiliary_funcs,
     _g_j_rect,
     _g_j_trap,
@@ -20,8 +19,9 @@ from scores.continuous.threshold_weighted_impl import (
     _phi_j_rect,
     _phi_j_trap,
     tw_absolute_error,
-    tw_quantile_score,
     tw_expectile_score,
+    tw_huber_loss,
+    tw_quantile_score,
     tw_squared_error,
 )
 
@@ -177,11 +177,14 @@ WEIGHTS = xr.DataArray(
     dims=["station"],
     coords=dict(station=[100, 101, 102, 103, 104]),
 )
+HUBER_PARAM = 0.4
 # Calculated using the Jive MSHL function
-EXP_MSHL = xr.DataArray(
-    data=[[nan, 1.8, nan, 33.0, 36.4], [0.0, 9.8, 1.8, 3.401, 12.33]],
-    dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102, 103, 104]),
+EXP_HL = HUBER_PARAM * (
+    xr.DataArray(
+        data=[[nan, 1.8, nan, 33.0, 36.4], [0.0, 9.8, 1.8, 3.401, 12.33]],
+        dims=["date", "station"],
+        coords=dict(date=["1", "2"], station=[100, 101, 102, 103, 104]),
+    )
 )
 
 
@@ -278,91 +281,90 @@ EXP_MSHL = xr.DataArray(
             {"alpha": 1},
             "`alpha` must be strictly between 0 and 1",
         ),
-        #         ("log_error", (0, 1), None, 0.5, None, "`scoring_func` must be one of:"),
-        #         ("huber_loss", (0, 1), None, 0.5, None, "`huber_param` must be supplied"),
-        #         ("huber_loss", (0, 1), None, None, 0.0, "`huber_param` must be positive"),
-        #         (
-        #             "huber_loss",
-        #             (1, 0),
-        #             None,
-        #             None,
-        #             1,
-        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (1, 0),
-        #             (-2, 10),
-        #             None,
-        #             1,
-        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (DA_B, DA_A),
-        #             None,
-        #             None,
-        #             1,
-        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (DA_B, DA_A),
-        #             (DA_A - 100, DA_B + 100),
-        #             None,
-        #             1,
-        #             "left endpoint of `interval_where_one` must be strictly less than right endpoint",
-        #         ),
-        #         ("huber_loss", (-2, 0), (-np.inf, 6), None, 1, "can only be infinite when"),
-        #         (
-        #             "huber_loss",
-        #             (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
-        #             (xr.DataArray([-np.inf, -1]), xr.DataArray([2, 2])),
-        #             None,
-        #             1,
-        #             "can only be infinite when",
-        #         ),
-        #         ("huber_loss", (-2, 0), (-4, np.inf), None, 1, "can only be infinite when"),
-        #         (
-        #             "huber_loss",
-        #             (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
-        #             (xr.DataArray([-1, -1]), xr.DataArray([np.inf, 2])),
-        #             None,
-        #             1,
-        #             "can only be infinite when",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (0, 1),
-        #             (0, 2),
-        #             None,
-        #             1,
-        #             "left endpoint of `interval_where_positive` must be less than",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (xr.DataArray([0, 1]), xr.DataArray([20, 10])),
-        #             (xr.DataArray([-1, 1]), xr.DataArray([22, 11])),
-        #             None,
-        #             1,
-        #             "left endpoint of `interval_where_positive` must be less than",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (0, 2),
-        #             (-1, 2),
-        #             None,
-        #             1,
-        #             "right endpoint of `interval_where_positive` must be greater than",
-        #         ),
-        #         (
-        #             "huber_loss",
-        #             (1, 11),
-        #             (0, 11),
-        #             None,
-        #             1,
-        #             "right endpoint of `interval_where_positive` must be greater than",
-        #         ),
+        (
+            tw_huber_loss,
+            (0, 1),
+            None,
+            {"huber_param": 0},
+            "`huber_param` must be positive",
+        ),
+        (
+            tw_huber_loss,
+            (1, 0),
+            None,
+            {"huber_param": 1},
+            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        ),
+        (
+            tw_huber_loss,
+            (DA_B, DA_A),
+            None,
+            {"huber_param": 1},
+            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        ),
+        (
+            tw_huber_loss,
+            (DA_B, DA_A),
+            None,
+            {"huber_param": 1},
+            "left endpoint of `interval_where_one` must be strictly less than right endpoint",
+        ),
+        (
+            tw_huber_loss,
+            (-2, 0),
+            (-np.inf, 6),
+            {"huber_param": 1},
+            "can only be infinite when",
+        ),
+        (
+            tw_huber_loss,
+            (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
+            (xr.DataArray([-np.inf, -1]), xr.DataArray([2, 2])),
+            {"huber_param": 1},
+            "can only be infinite when",
+        ),
+        (
+            tw_huber_loss,
+            (-2, 0),
+            (-4, np.inf),
+            {"huber_param": 1},
+            "can only be infinite when",
+        ),
+        (
+            tw_huber_loss,
+            (xr.DataArray([0, 0]), xr.DataArray([1, 1])),
+            (xr.DataArray([-1, -1]), xr.DataArray([np.inf, 2])),
+            {"huber_param": 1},
+            "can only be infinite when",
+        ),
+        (
+            tw_huber_loss,
+            (0, 1),
+            (0, 2),
+            {"huber_param": 1},
+            "left endpoint of `interval_where_positive` must be less than",
+        ),
+        (
+            tw_huber_loss,
+            (xr.DataArray([0, 1]), xr.DataArray([20, 10])),
+            (xr.DataArray([-1, 1]), xr.DataArray([22, 11])),
+            {"huber_param": 1},
+            "left endpoint of `interval_where_positive` must be less than",
+        ),
+        (
+            tw_huber_loss,
+            (0, 2),
+            (-1, 2),
+            {"huber_param": 1},
+            "right endpoint of `interval_where_positive` must be greater than",
+        ),
+        (
+            tw_huber_loss,
+            (xr.DataArray([0, 0]), xr.DataArray([2, 2])),
+            (xr.DataArray([-1, -1]), xr.DataArray([2, 2])),
+            {"huber_param": 1},
+            "right endpoint of `interval_where_positive` must be greater than",
+        ),
     ],
 )
 def test_threshold_weighted_score_raises(
@@ -528,6 +530,11 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
             {"alpha": 0.5},
             mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
         ),
+        (
+            tw_huber_loss,
+            {"huber_param": HUBER_PARAM},
+            EXP_HL,
+        ),
     ],
 )
 def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
@@ -549,6 +556,7 @@ def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
         (tw_absolute_error, {}),
         (tw_quantile_score, {"alpha": 0.3}),
         (tw_expectile_score, {"alpha": 0.3}),
+        (tw_huber_loss, {"huber_param": HUBER_PARAM}),
     ],
 )
 def test_threshold_weighted_scores2(scoring_func, kwargs):
@@ -573,6 +581,7 @@ def test_threshold_weighted_scores2(scoring_func, kwargs):
         (tw_absolute_error, {}),
         (tw_quantile_score, {"alpha": 0.3}),
         (tw_expectile_score, {"alpha": 0.3}),
+        (tw_huber_loss, {"huber_param": HUBER_PARAM}),
     ],
 )
 def test_threshold_weighted_scores3(scoring_func, kwargs):
@@ -598,6 +607,7 @@ def test_threshold_weighted_scores3(scoring_func, kwargs):
         (tw_absolute_error, {}),
         (tw_quantile_score, {"alpha": 0.3}),
         (tw_expectile_score, {"alpha": 0.3}),
+        (tw_huber_loss, {"huber_param": HUBER_PARAM}),
     ],
 )
 def test_threshold_weighted_scores4(scoring_func, kwargs):
@@ -628,6 +638,7 @@ def test_threshold_weighted_scores4(scoring_func, kwargs):
         (tw_absolute_error, {}),
         (tw_quantile_score, {"alpha": 0.3}),
         (tw_expectile_score, {"alpha": 0.3}),
+        (tw_huber_loss, {"huber_param": HUBER_PARAM}),
     ],
 )
 def test_threshold_weighted_scores5(scoring_func, kwargs):
@@ -660,6 +671,7 @@ def test_threshold_weighted_scores5(scoring_func, kwargs):
         (tw_absolute_error, {}),
         (tw_quantile_score, {"alpha": 0.3}),
         (tw_expectile_score, {"alpha": 0.3}),
+        (tw_huber_loss, {"huber_param": HUBER_PARAM}),
     ],
 )
 def test_threshold_weighted_scores6(scoring_func, kwargs):
@@ -697,6 +709,11 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
             quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
         ),
         (tw_expectile_score, {"alpha": 0.5}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (
+            tw_huber_loss,
+            {"huber_param": HUBER_PARAM},
+            EXP_HL,
+        ),
     ],
 )
 def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):

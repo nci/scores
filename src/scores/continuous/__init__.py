@@ -24,9 +24,9 @@ from scores.continuous.standard_impl import (
 )
 from scores.continuous.threshold_weighted_impl import (
     tw_absolute_error,
-    tw_quantile_score,
     tw_expectile_score,
-    # threshold_weighted_score,
+    tw_huber_loss,
+    tw_quantile_score,
     tw_squared_error,
 )
 from scores.processing.isoreg_impl import isotonic_fit
@@ -48,8 +48,9 @@ __all__ = [
     "consistent_expectile_score",
     "consistent_huber_score",
     "consistent_quantile_score",
-    "tw_quantile_score",
-    "tw_expectile_score",
     "tw_absolute_error",
+    "tw_expectile_score",
+    "tw_huber_loss",
+    "tw_quantile_score",
     "tw_squared_error",
 ]
