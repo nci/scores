@@ -465,6 +465,7 @@ def tw_absolute_error(
     _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     g, _, _ = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
+    # Note that the absolute error is twice the quantile score when alpha=0.5
     return 2 * consistent_quantile_score(
         fcst, obs, 0.5, g, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
