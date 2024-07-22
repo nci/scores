@@ -167,7 +167,8 @@ def _g_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray
     result2 = x - a
     result3 = b - a
 
-    result = result2.where(x < b, result3).where(x >= a, result1)
+    result = result2.where(x < b, result3)
+    result = result.where(x >= a, result1)
     result = result.where(~np.isnan(x), np.nan)
 
     return result
@@ -198,7 +199,8 @@ def _phi_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArr
     result2 = 2 * (x - a) ** 2
     result3 = 4 * (b - a) * x + 2 * (a**2 - b**2)
 
-    result = result2.where(x < b, result3).where(x >= a, result1)
+    result = result2.where(x < b, result3)
+    result = result.where(x >= a, result1)
     result = result.where(~np.isnan(x), np.nan)
 
     return result
@@ -236,13 +238,11 @@ def _g_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType
     result2 = x - (b + a) / 2
     result3 = -((d - x) ** 2) / (2 * (d - c)) + (d + c - a - b) / 2
     result4 = (d + c - a - b) / 2
-    result = (
-        result1.where(x >= a, result0)
-        .where(x < b, result2)
-        .where(x < c, result3)
-        .where(x < d, result4)
-        .where(~np.isnan(x), np.nan)
-    )
+    result = result1.where(x >= a, result0)
+    result = result.where(x < b, result2)
+    result = result.where(x < c, result3)
+    result = result.where(x < d, result4)
+    result = result.where(~np.isnan(x), np.nan)
     return result
 
 
@@ -278,13 +278,13 @@ def _phi_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointTy
         + 2 * ((b - a) ** 2 + 3 * a * b - (d - c) ** 2 - 3 * c * d) / 3
     )
     result4 = 2 * (d + c - a - b) * x + 2 * ((b - a) ** 2 + 3 * a * b - (d - c) ** 2 - 3 * c * d) / 3
-    result = (
-        result1.where(x >= a, result0)
-        .where(x < b, result2)
-        .where(x < c, result3)
-        .where(x < d, result4)
-        .where(~np.isnan(x), np.nan)
-    )
+
+    result = result1.where(x >= a, result0)
+    result = result.where(x < b, result2)
+    result = result.where(x < c, result3)
+    result = result.where(x < d, result4)
+    result = result.where(~np.isnan(x), np.nan)
+
     return result
 
 
