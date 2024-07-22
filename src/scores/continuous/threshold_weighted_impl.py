@@ -152,8 +152,11 @@ def _phi_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArr
     Returns:
         array of function values for the function phi_j.
 
-    Note:
-        Requires a < b. This is tested in :py:func:`_auxiliary_funcs`.
+    Notes:
+        - Requires a < b. This is tested in :py:func:`_auxiliary_funcs`.
+        - phi is this case is 2x^2 to be consistent with Taggart (2022) and is used to
+            produce a twMSE. This means that a scaling factor is introduced for the
+            threshold weighted expectile and Huber Loss scores.
     """
     # results correspond to each case in the second row of Table B1, Taggart (2022).
     result1 = 0
@@ -225,7 +228,10 @@ def _phi_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointTy
         array of function values for the function phi_j.
 
     Note:
-        Requires a < b < c < d. This is tested in `_auxiliary_funcs`.
+        - Requires a < b < c < d. This is tested in `_auxiliary_funcs`.
+        - phi is this case is 2x^2 to be consistent with Taggart (2022) and is used to
+            produce a twMSE. This means that a scaling factor is introduced for the
+            threshold weighted expectile and Huber Loss scores.
     """
     # results correspond to each case in the fourth row of Table B1, Taggart (2022).
     result0 = 0
@@ -585,7 +591,8 @@ def tw_expectile_score(
     check_alpha(alpha)
     _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
-
+    # We multiply the output by a factor of two here due to the scaling of phi and phi_prime
+    # Since phi(s)=2s^2 was used in `_auxiliary_funcs`` to be consistent with Taggart (2022)
     return 0.5 * consistent_expectile_score(
         fcst, obs, alpha, phi, phi_prime, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
@@ -673,6 +680,8 @@ def tw_huber_loss(
     _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
+    # We multiply the output by a factor of two here due to the scaling of phi and phi_prime
+    # Since phi(s)=2s^2 was used in `_auxiliary_funcs`` to be consistent with Taggart (2022)
     return 0.5 * consistent_huber_score(
         fcst,
         obs,
