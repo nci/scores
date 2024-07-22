@@ -21,7 +21,7 @@ from scores.continuous.threshold_weighted_impl import (
     _phi_j_trap,
     tw_absolute_error,
     tw_quantile_score,
-    # threshold_weighted_score,
+    tw_expectile_score,
     tw_squared_error,
 )
 
@@ -209,6 +209,48 @@ EXP_MSHL = xr.DataArray(
             "`interval_where_positive` must be length 2 when not `None`",
         ),
         (
+            tw_absolute_error,
+            (0, 2, 4),
+            None,
+            {},
+            "`interval_where_one` must have length 2",
+        ),
+        (
+            tw_absolute_error,
+            (0, 2),
+            (-10, 10, 50),
+            {},
+            "`interval_where_positive` must be length 2 when not `None`",
+        ),
+        (
+            tw_quantile_score,
+            (0, 2, 4),
+            None,
+            {"alpha": 0.3},
+            "`interval_where_one` must have length 2",
+        ),
+        (
+            tw_quantile_score,
+            (0, 2),
+            (-10, 10, 50),
+            {"alpha": 0.3},
+            "`interval_where_positive` must be length 2 when not `None`",
+        ),
+        (
+            tw_expectile_score,
+            (0, 2, 4),
+            None,
+            {"alpha": 0.3},
+            "`interval_where_one` must have length 2",
+        ),
+        (
+            tw_expectile_score,
+            (0, 2),
+            (-10, 10, 50),
+            {"alpha": 0.3},
+            "`interval_where_positive` must be length 2 when not `None`",
+        ),
+        (
             tw_quantile_score,
             (0, 1),
             None,
@@ -222,8 +264,21 @@ EXP_MSHL = xr.DataArray(
             {"alpha": 1},
             "`alpha` must be strictly between 0 and 1",
         ),
+        (
+            tw_expectile_score,
+            (0, 1),
+            None,
+            {"alpha": 0},
+            "`alpha` must be strictly between 0 and 1",
+        ),
+        (
+            tw_expectile_score,
+            (0, 1),
+            None,
+            {"alpha": 1},
+            "`alpha` must be strictly between 0 and 1",
+        ),
         #         ("log_error", (0, 1), None, 0.5, None, "`scoring_func` must be one of:"),
-        #         ("expectile_score", (0, 1), None, None, None, "`alpha` must be supplied"),
         #         ("huber_loss", (0, 1), None, 0.5, None, "`huber_param` must be supplied"),
         #         ("huber_loss", (0, 1), None, None, 0.0, "`huber_param` must be positive"),
         #         (
@@ -468,6 +523,11 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
             {"alpha": 0.3},
             quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
         ),
+        (
+            tw_expectile_score,
+            {"alpha": 0.5},
+            mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
+        ),
     ],
 )
 def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
@@ -483,7 +543,13 @@ def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
 
 
 @pytest.mark.parametrize(
-    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+    ("scoring_func", "kwargs"),
+    [
+        (tw_squared_error, {}),
+        (tw_absolute_error, {}),
+        (tw_quantile_score, {"alpha": 0.3}),
+        (tw_expectile_score, {"alpha": 0.3}),
+    ],
 )
 def test_threshold_weighted_scores2(scoring_func, kwargs):
     """
@@ -501,7 +567,13 @@ def test_threshold_weighted_scores2(scoring_func, kwargs):
 
 
 @pytest.mark.parametrize(
-    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+    ("scoring_func", "kwargs"),
+    [
+        (tw_squared_error, {}),
+        (tw_absolute_error, {}),
+        (tw_quantile_score, {"alpha": 0.3}),
+        (tw_expectile_score, {"alpha": 0.3}),
+    ],
 )
 def test_threshold_weighted_scores3(scoring_func, kwargs):
     """
@@ -520,7 +592,13 @@ def test_threshold_weighted_scores3(scoring_func, kwargs):
 
 
 @pytest.mark.parametrize(
-    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+    ("scoring_func", "kwargs"),
+    [
+        (tw_squared_error, {}),
+        (tw_absolute_error, {}),
+        (tw_quantile_score, {"alpha": 0.3}),
+        (tw_expectile_score, {"alpha": 0.3}),
+    ],
 )
 def test_threshold_weighted_scores4(scoring_func, kwargs):
     """
@@ -544,7 +622,13 @@ def test_threshold_weighted_scores4(scoring_func, kwargs):
 
 
 @pytest.mark.parametrize(
-    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+    ("scoring_func", "kwargs"),
+    [
+        (tw_squared_error, {}),
+        (tw_absolute_error, {}),
+        (tw_quantile_score, {"alpha": 0.3}),
+        (tw_expectile_score, {"alpha": 0.3}),
+    ],
 )
 def test_threshold_weighted_scores5(scoring_func, kwargs):
     """
@@ -570,7 +654,13 @@ def test_threshold_weighted_scores5(scoring_func, kwargs):
 
 
 @pytest.mark.parametrize(
-    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+    ("scoring_func", "kwargs"),
+    [
+        (tw_squared_error, {}),
+        (tw_absolute_error, {}),
+        (tw_quantile_score, {"alpha": 0.3}),
+        (tw_expectile_score, {"alpha": 0.3}),
+    ],
 )
 def test_threshold_weighted_scores6(scoring_func, kwargs):
     """
@@ -606,6 +696,7 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
             {"alpha": 0.3},
             quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
         ),
+        (tw_expectile_score, {"alpha": 0.5}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
     ],
 )
 def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
@@ -627,39 +718,3 @@ def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)
-
-
-# def test_threshold_weighted_squared_error_dask():
-#     """Tests that `threshold_weighted_squared_error` returns as expected."""
-#     if dask == "Unavailable":  # pragma: no cover
-#         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-#     result = threshold_weighted_squared_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
-#     expected = mse(DA_FCST1, DA_OBS1, weights=WEIGHTS)
-#     assert isinstance(result.data, dask.array.Array)
-#     result = result.compute()
-#     assert isinstance(result.data, np.ndarray)
-#     xr.testing.assert_allclose(result, expected)
-
-
-# def test_threshold_weighted_absolute_error_dask():
-#     """Tests that `threshold_weighted_absolute_error` returns as expected."""
-#     if dask == "Unavailable":  # pragma: no cover
-#         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-#     result = threshold_weighted_absolute_error(DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), weights=WEIGHTS)
-#     expected = mae(DA_FCST1, DA_OBS1, weights=WEIGHTS)
-#     assert isinstance(result.data, dask.array.Array)
-#     result = result.compute()
-#     assert isinstance(result.data, np.ndarray)
-#     xr.testing.assert_allclose(result, expected)
-
-
-# def test_threshold_weighted_quantile_score():
-#     """Tests that `threshold_weighted_quantile_score` returns as expected."""
-#     result = threshold_weighted_quantile_score(
-#         DA_FCST1.chunk(), DA_OBS1.chunk(), (-np.inf, np.inf), 0.75, weights=WEIGHTS
-#     )
-#     expected = quantile_score(DA_FCST1, DA_OBS1, 0.75, weights=WEIGHTS)
-#     assert isinstance(result.data, dask.array.Array)
-#     result = result.compute()
-#     assert isinstance(result.data, np.ndarray)
-#     xr.testing.assert_allclose(result, expected)

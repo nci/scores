@@ -658,7 +658,7 @@ def tw_quantile_score(
     Args:
         fcst: array of forecast values.
         obs: array of corresponding observation values.
-        alpha: the quantile level.
+        alpha: the quantile level. Must be strictly between 0 and 1.
         interval_where_one: endpoints of the interval where the weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -702,4 +702,87 @@ def tw_quantile_score(
 
     return consistent_quantile_score(
         fcst, obs, alpha, g, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
+    )
+
+
+def tw_expectile_score(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    alpha: float,
+    interval_where_one: Tuple[EndpointType, EndpointType],
+    *,
+    interval_where_positive: Optional[Tuple[EndpointType, EndpointType]] = None,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
+) -> xr.DataArray:
+    """
+    Returns the threshold weighted expectile score.
+
+    For more flexible weighting schemes,
+    see :py:func:`scores.continuous.consistent_expectile_score`.
+
+    Two types of threshold weighting are supported: rectangular and trapezoidal.
+
+        - To specify a rectangular weight, set `interval_where_positive=None` and set
+          `interval_where_one` to be the interval where the weight is 1.
+          For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
+          satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
+          Interval endpoints can be `-numpy.inf` or `numpy.inf`.
+        - To specify a trapezoidal weight, specify `interval_where_positive` and `interval_where_one`
+          using desired endpoints. For example, if `interval_where_positive=(-2, 10)` and
+          `interval_where_one=(2, 4)` then a weight of 1 is applied to decision thresholds
+          satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
+          [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
+          Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
+          is infinite. End points of `interval_where_positive` and `interval_where_one` must differ
+          except when the endpoints are infinite.
+
+    Args:
+        fcst: array of forecast values.
+        obs: array of corresponding observation values.
+        alpha: expectile level. Must be strictly between 0 and 1.
+        interval_where_one: endpoints of the interval where the weights are 1.
+            Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
+            arrays, endpoints can vary with dimension.
+        interval_where_positive: endpoints of the interval where the weights are positive.
+            Must be increasing. Infinite endpoints are only permissible when the corresponding
+            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            arrays, endpoints can vary with dimension.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the threshold_weighted_expectile_score. All other dimensions will be preserved. As a
+            special case, 'all' will allow all dimensions to be reduced. Only one
+            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating
+            the threshold_weighted_expectile_score. All other dimensions will be reduced. As a special case, 'all'
+            will allow all dimensions to be preserved. In this case, the result will be in
+            the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_expectile_score
+            at each point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
+            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        xarray data array of the threshold weighted expectile error
+
+    Raises:
+        ValueError: if `interval_where_one` is not length 2.
+        ValueError: if `interval_where_one` is not increasing.
+        ValueError: if `alpha` is not in the open interval (0,1).
+
+    References:
+        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+        consistent scoring functions. Quarterly Journal of the Royal Meteorological
+        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
+    """
+
+    check_alpha(alpha)
+    _check_tws_args(alpha=alpha, interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
+
+    return consistent_expectile_score(
+        fcst, obs, alpha, phi, phi_prime, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
