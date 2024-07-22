@@ -20,7 +20,7 @@ from scores.continuous.threshold_weighted_impl import (
     _phi_j_rect,
     _phi_j_trap,
     tw_absolute_error,
-    # threshold_weighted_quantile_score,
+    tw_quantile_score,
     # threshold_weighted_score,
     tw_squared_error,
 )
@@ -449,8 +449,13 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
 @pytest.mark.parametrize(
     ("scoring_func", "kwargs", "expected"),
     [
-        (tw_squared_error, {}, mse(DA_FCST1, DA_OBS1, preserve_dims="all")),
-        (tw_absolute_error, {}, mae(DA_FCST1, DA_OBS1, preserve_dims="all")),
+        (tw_squared_error, {}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (tw_absolute_error, {}, mae(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (
+            tw_quantile_score,
+            {"alpha": 0.3},
+            quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
+        ),
     ],
 )
 def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
@@ -465,7 +470,9 @@ def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
     xr.testing.assert_allclose(result, expected)
 
 
-@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {})])
+@pytest.mark.parametrize(
+    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+)
 def test_threshold_weighted_scores2(scoring_func, kwargs):
     """
     Tests that each threshold weight score gives results as expected.
@@ -473,16 +480,17 @@ def test_threshold_weighted_scores2(scoring_func, kwargs):
     sum to 1 is the same as the score with a weight of 1 everywhere.
     Tests for rectangular weights.
     """
-
     kwargs["preserve_dims"] = ["date", "station"]
 
-    score1 = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, 0), **kwargs)
-    score2 = scoring_func(DA_FCST1, DA_OBS1, (0, np.inf), **kwargs)
-    score = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, np.inf), **kwargs)
+    score1 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, 0), **kwargs)
+    score2 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(0, np.inf), **kwargs)
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {})])
+@pytest.mark.parametrize(
+    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+)
 def test_threshold_weighted_scores3(scoring_func, kwargs):
     """
     Tests that each threshold weight score gives results as expected.
@@ -493,13 +501,15 @@ def test_threshold_weighted_scores3(scoring_func, kwargs):
 
     kwargs["preserve_dims"] = ["date", "station"]
 
-    score1 = scoring_func(DA_FCST1, DA_OBS1, (-DA_INF, DA_ENDPT1), **kwargs)
-    score2 = scoring_func(DA_FCST1, DA_OBS1, (DA_ENDPT1, DA_INF), **kwargs)
-    score = scoring_func(DA_FCST1, DA_OBS1, (-DA_INF, DA_INF), **kwargs)
+    score1 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-DA_INF, DA_ENDPT1), **kwargs)
+    score2 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(DA_ENDPT1, DA_INF), **kwargs)
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-DA_INF, DA_INF), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {})])
+@pytest.mark.parametrize(
+    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+)
 def test_threshold_weighted_scores4(scoring_func, kwargs):
     """
     Tests that each threshold weight score gives results as expected.
@@ -511,13 +521,19 @@ def test_threshold_weighted_scores4(scoring_func, kwargs):
     kwargs["preserve_dims"] = ["date", "station"]
     point1 = -4
     point2 = 4
-    score1 = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, point1), **kwargs, interval_where_positive=(-np.inf, point2))
-    score2 = scoring_func(DA_FCST1, DA_OBS1, (point2, np.inf), **kwargs, interval_where_positive=(point1, np.inf))
-    score = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, np.inf), **kwargs)
+    score1 = scoring_func(
+        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, point1), **kwargs, interval_where_positive=(-np.inf, point2)
+    )
+    score2 = scoring_func(
+        DA_FCST1, DA_OBS1, interval_where_one=(point2, np.inf), **kwargs, interval_where_positive=(point1, np.inf)
+    )
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {})])
+@pytest.mark.parametrize(
+    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+)
 def test_threshold_weighted_scores5(scoring_func, kwargs):
     """
     Tests that each threshold weight score gives results as expected.
@@ -528,14 +544,22 @@ def test_threshold_weighted_scores5(scoring_func, kwargs):
 
     kwargs["preserve_dims"] = ["date", "station"]
     score1 = scoring_func(
-        DA_FCST1, DA_OBS1, (-DA_INF, DA_ENDPT1), **kwargs, interval_where_positive=(-DA_INF, DA_ENDPT2)
+        DA_FCST1,
+        DA_OBS1,
+        interval_where_one=(-DA_INF, DA_ENDPT1),
+        **kwargs,
+        interval_where_positive=(-DA_INF, DA_ENDPT2),
     )
-    score2 = scoring_func(DA_FCST1, DA_OBS1, (DA_ENDPT2, DA_INF), **kwargs, interval_where_positive=(DA_ENDPT1, DA_INF))
-    score = scoring_func(DA_FCST1, DA_OBS1, (-np.inf, np.inf), **kwargs)
+    score2 = scoring_func(
+        DA_FCST1, DA_OBS1, interval_where_one=(DA_ENDPT2, DA_INF), **kwargs, interval_where_positive=(DA_ENDPT1, DA_INF)
+    )
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
-@pytest.mark.parametrize(("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {})])
+@pytest.mark.parametrize(
+    ("scoring_func", "kwargs"), [(tw_squared_error, {}), (tw_absolute_error, {}), (tw_quantile_score, {"alpha": 0.3})]
+)
 def test_threshold_weighted_scores6(scoring_func, kwargs):
     """
     Tests that each threshold weight score gives results as expected when the `reduce_dims`
@@ -544,7 +568,7 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
     score1 = scoring_func(
         DA_FCST1,
         DA_OBS1,
-        (DA_ENDPT2, DA_INF),
+        interval_where_one=(DA_ENDPT2, DA_INF),
         **kwargs,
         interval_where_positive=(DA_ENDPT1, DA_INF),
         preserve_dims=["date", "station"],
@@ -552,7 +576,7 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
     score2 = scoring_func(
         DA_FCST1,
         DA_OBS1,
-        (DA_ENDPT2, DA_INF),
+        interval_where_one=(DA_ENDPT2, DA_INF),
         **kwargs,
         interval_where_positive=(DA_ENDPT1, DA_INF),
         reduce_dims=["date", "station"],
@@ -563,8 +587,13 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
 @pytest.mark.parametrize(
     ("scoring_func", "kwargs", "expected"),
     [
-        (tw_squared_error, {}, mse(DA_FCST1, DA_OBS1, preserve_dims="all")),
-        (tw_absolute_error, {}, mae(DA_FCST1, DA_OBS1, preserve_dims="all")),
+        (tw_squared_error, {}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (tw_absolute_error, {}, mae(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (
+            tw_quantile_score,
+            {"alpha": 0.3},
+            quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
+        ),
     ],
 )
 def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
@@ -586,18 +615,6 @@ def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)
-
-
-# def test_threshold_weighted_quantile_score():
-#     """Tests that `threshold_weighted_quantile_score` returns as expected."""
-#     result = threshold_weighted_quantile_score(DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75)
-#     expected = quantile_score(DA_FCST1, DA_OBS1, 0.75)
-#     xr.testing.assert_allclose(result, expected)
-#     # Also check reduce_dims arg works
-#     result2 = threshold_weighted_quantile_score(
-#         DA_FCST1, DA_OBS1, (-np.inf, np.inf), 0.75, reduce_dims=["date", "station"]
-#     )
-#     xr.testing.assert_allclose(result2, expected)
 
 
 # def test_threshold_weighted_squared_error_dask():

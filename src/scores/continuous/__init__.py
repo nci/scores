@@ -24,7 +24,7 @@ from scores.continuous.standard_impl import (
 )
 from scores.continuous.threshold_weighted_impl import (
     tw_absolute_error,
-    # threshold_weighted_quantile_score,
+    tw_quantile_score,
     # threshold_weighted_score,
     tw_squared_error,
 )
@@ -47,7 +47,7 @@ __all__ = [
     "consistent_expectile_score",
     "consistent_huber_score",
     "consistent_quantile_score",
-    # "threshold_weighted_score",
+    "tw_quantile_score",
     # "threshold_weighted_quantile_score",
     "tw_absolute_error",
     "tw_squared_error",
