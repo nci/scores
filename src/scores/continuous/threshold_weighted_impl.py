@@ -324,7 +324,6 @@ def tw_squared_error(
     see :py:func:`scores.continuous.consistent_expectile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-
         - To specify a rectangular weight, set `interval_where_positive=None` and set
           `interval_where_one` to be the interval where the weight is 1.
           For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
@@ -405,7 +404,6 @@ def tw_absolute_error(
     see :py:func:`scores.continuous.consistent_quantile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-
         - To specify a rectangular weight, set `interval_where_positive=None` and set
           `interval_where_one` to be the interval where the weight is 1.
           For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
@@ -489,7 +487,6 @@ def tw_quantile_score(
     see :py:func:`scores.continuous.consistent_quantile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-
         - To specify a rectangular weight, set `interval_where_positive=None` and set
           `interval_where_one` to be the interval where the weight is 1.
           For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
@@ -575,7 +572,6 @@ def tw_expectile_score(
     see :py:func:`scores.continuous.consistent_expectile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-
         - To specify a rectangular weight, set `interval_where_positive=None` and set
           `interval_where_one` to be the interval where the weight is 1.
           For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
@@ -661,7 +657,6 @@ def tw_huber_loss(
     see :py:func:`scores.continuous.consistent_huber_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-
         - To specify a rectangular weight, set `interval_where_positive=None` and set
           `interval_where_one` to be the interval where the weight is 1.
           For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
