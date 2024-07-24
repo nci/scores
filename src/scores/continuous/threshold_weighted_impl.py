@@ -77,8 +77,8 @@ def _auxiliary_funcs(
             the right endpoint.
         ValueError: if an ``interval_where_positive`` endpoint is infinite when the
             ``interval_where_one`` endpoint is infinite.
-        ValueError: If the right endpoint of `interval_where_positive` is not greater
-            than the right endpoint of `interval_where_one` and neither are infinite.
+        ValueError: If the right endpoint of ``interval_where_positive`` is not greater
+            than the right endpoint of ``interval_where_one`` and neither are infinite.
     """
 
     if interval_where_positive is None:  # rectangular weight
@@ -324,7 +324,7 @@ def tw_squared_error(
     see :py:func:`scores.continuous.consistent_expectile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set `interval_where_positive=None` and set
+        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
           ``interval_where_one`` to be the interval where the weight is 1.
           For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
@@ -334,7 +334,7 @@ def tw_squared_error(
           ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
-          Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
+          Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
@@ -346,20 +346,20 @@ def tw_squared_error(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the threshold_weighted_square_error. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
             the threshold_weighted_squared_error. All other dimensions will be reduced. As a special case, 'all'
             will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_squared_error
             at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
@@ -404,7 +404,7 @@ def tw_absolute_error(
     see :py:func:`scores.continuous.consistent_quantile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set `interval_where_positive=None` and set
+        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
           ``interval_where_one`` to be the interval where the weight is 1.
           For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
@@ -414,7 +414,7 @@ def tw_absolute_error(
           ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
-          Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
+          Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
@@ -427,20 +427,20 @@ def tw_absolute_error(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the threshold_weighted_absolute_error. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
             the threshold_weighted_absolute_error. All other dimensions will be reduced. As a special case, 'all'
             will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_absolute_error
             at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
@@ -487,7 +487,7 @@ def tw_quantile_score(
     see :py:func:`scores.continuous.consistent_quantile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set `interval_where_positive=None` and set
+        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
           ``interval_where_one`` to be the interval where the weight is 1.
           For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
@@ -497,7 +497,7 @@ def tw_quantile_score(
           ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
-          Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
+          Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
@@ -510,20 +510,20 @@ def tw_quantile_score(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the threshold_weighted_quantile_score. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
             the threshold_weighted_quantile_score. All other dimensions will be reduced. As a special case, 'all'
             will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_quantile_score
             at each point (i.e. single-value comparison against observed), and the
-            forecast and observed di95mensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
@@ -572,7 +572,7 @@ def tw_expectile_score(
     see :py:func:`scores.continuous.consistent_expectile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set `interval_where_positive=None` and set
+        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
           ``interval_where_one`` to be the interval where the weight is 1.
           For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
@@ -582,7 +582,7 @@ def tw_expectile_score(
           ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
-          Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
+          Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
@@ -595,20 +595,20 @@ def tw_expectile_score(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the threshold_weighted_expectile_score. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
             the threshold_weighted_expectile_score. All other dimensions will be reduced. As a special case, 'all'
             will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_expectile_score
             at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
@@ -657,7 +657,7 @@ def tw_huber_loss(
     see :py:func:`scores.continuous.consistent_huber_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set `interval_where_positive=None` and set
+        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
           ``interval_where_one`` to be the interval where the weight is 1.
           For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
@@ -667,7 +667,7 @@ def tw_huber_loss(
           ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
-          Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
+          Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
@@ -680,20 +680,20 @@ def tw_huber_loss(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the threshold_weighted_expectile_score. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
             the threshold_weighted_expectile_score. All other dimensions will be reduced. As a special case, 'all'
             will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_expectile_score
             at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom)
