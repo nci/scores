@@ -92,8 +92,8 @@ def _auxiliary_funcs(
             raise ValueError("left endpoint of `interval_where_one` must be strictly less than right endpoint")
 
         # safest to work with finite a and b
-        a = a.where(a > -np.inf, float(min(fcst.min(), obs.min(), b.min())) - 1)
-        b = b.where(b < np.inf, float(max(fcst.max(), obs.max(), a.max())) + 1)
+        a = a.where(a > -np.inf, float(min(fcst.min(), obs.min(), b.min())) - 1)  # type: ignore
+        b = b.where(b < np.inf, float(max(fcst.max(), obs.max(), a.max())) + 1)  # type: ignore
 
         g = functools.partial(_g_j_rect, a, b)
         phi = functools.partial(_phi_j_rect, a, b)
@@ -133,10 +133,10 @@ def _auxiliary_funcs(
             )
 
         # safest to work with finite intervals
-        b = b.where(b > -np.inf, min(fcst.min(), obs.min(), c.min()) - 1)
-        a = a.where(a > -np.inf, b.min() - 1)
-        c = c.where(c < np.inf, max(fcst.max(), obs.max(), b.max()) + 1)
-        d = d.where(d < np.inf, c.max() + 1)
+        b = b.where(b > -np.inf, min(fcst.min(), obs.min(), c.min()) - 1)  # type: ignore
+        a = a.where(a > -np.inf, b.min() - 1)  # type: ignore
+        c = c.where(c < np.inf, max(fcst.max(), obs.max(), b.max()) + 1)  # type: ignore
+        d = d.where(d < np.inf, c.max() + 1)  # type: ignore
 
         g = functools.partial(_g_j_trap, a, b, c, d)
         phi = functools.partial(_phi_j_trap, a, b, c, d)
@@ -522,7 +522,7 @@ def tw_quantile_score(
             will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the threshold_weighted_quantile_score
             at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
+            forecast and observed di95mensions must match precisely. Only one of `reduce_dims`
             and `preserve_dims` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
@@ -533,7 +533,7 @@ def tw_quantile_score(
 
     Raises:
         ValueError: if ``interval_where_one`` is not length 2.
-        ValueError: if ``interval_where_one` is not increasing.
+        ValueError: if ``interval_where_one`` is not increasing.
         ValueError: if ``alpha`` is not in the open interval (0,1).
         ValueError: if ``interval_where_one`` is not increasing.
         ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
