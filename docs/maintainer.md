@@ -133,6 +133,12 @@ To check the rendering of tutorials in readthedocs:
 
 Ideally, also check the tutorial renders properly in nbviewer (there is a link at the top of each tutorial page in readthedocs).
 
+### Tips for working with pull requests from forks
+
+It can be convenient as maintainer to have write access to people's forks to push small fixes into a PR during the process. When doing so, it's a good idea to check out the remote branch as follows (after adding the fork as a remote)
+
+`git checkout -b test <name of remote>/test`
+
 
 
 
