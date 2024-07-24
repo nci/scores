@@ -4,7 +4,7 @@ See Taggart (2022) https://doi.org/10.1002/qj.4206
 """
 
 import functools
-from typing import Callable, Literal, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import xarray as xr
@@ -27,8 +27,8 @@ def _check_tws_args(
     interval_where_positive: Optional[Tuple[EndpointType, EndpointType]],
 ):
     """
-    Some argument checks for `threshold_weighted_score`.
-    Checks for valid interval endpoints are done in `_auxiliary_funcs`.
+    Some argument checks for the threshold weighted scores.
+    Checks for valid interval endpoints are done in :py:func`_auxiliary_funcs`.
 
     Args:
         interval_where_one: endpoints of the interval where the weights are 1.
@@ -36,12 +36,12 @@ def _check_tws_args(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
 
     Raises:
-        ValueError: if `interval_where_one` is not length 2.
-        ValueError: if `interval_where_one` is not increasing.
+        ValueError: if ``interval_where_one`` is not length 2.
+        ValueError: if ``interval_where_one`` is not increasing.
     """
     if len(interval_where_one) != 2:
         raise ValueError("`interval_where_one` must have length 2")
@@ -69,14 +69,14 @@ def _auxiliary_funcs(
             arrays, endpoints can vary with dimension.
         interval_where_positive: endpoints of the interval where the weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
-            `interval_where_one` endpoint is infinite. By supplying a tuple of
+            ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
 
     Raises:
-        ValueError: if the left endpoint of `interval_where_one` is not less than
+        ValueError: if the left endpoint of ``interval_where_one`` is not less than
             the right endpoint.
-        ValueError: if an `interval_where_positive` endpoint is infinite when the
-            `interval_where_one` endpoint is infinite.
+        ValueError: if an ``interval_where_positive`` endpoint is infinite when the
+            ``interval_where_one`` endpoint is infinite.
         ValueError: If the right endpoint of `interval_where_positive` is not greater
             than the right endpoint of `interval_where_one` and neither are infinite.
     """
@@ -152,8 +152,8 @@ def _g_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray
     The formula is based on the first row of Table B1 from Taggart (2022).
 
     Args:
-        a: left endpoint of interval where weight = 1. Can be `-np.inf`.
-        b: right endpoint of the interval where weight = 1. Can be `np.inf`.
+        a: left endpoint of interval where weight = 1. Can be ``-np.inf``.
+        b: right endpoint of the interval where weight = 1. Can be ``np.inf``.
         x: points where g_j is to be evaluated.
 
     Returns:
@@ -181,8 +181,8 @@ def _phi_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArr
     The formula is based on the second row of Table B1 from Taggart (2022).
 
     Args:
-        a: left endpoint of interval where weight = 1. Can be `-np.inf`.
-        b: right endpoint of the interval where weight = 1. Can be `np.inf`.
+        a: left endpoint of interval where weight = 1. Can be ``-np.inf``.
+        b: right endpoint of the interval where weight = 1. Can be ``np.inf``.
         x: points where phi_j is to be evaluated.
 
     Returns:
@@ -263,7 +263,7 @@ def _phi_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointTy
         array of function values for the function phi_j.
 
     Note:
-        - Requires a < b < c < d. This is tested in `_auxiliary_funcs`.
+        - Requires a < b < c < d. This is tested in :py:func`_auxiliary_funcs`.
         - phi is this case is 2x^2 to be consistent with Taggart (2022) and is used to
             produce a twMSE. This means that a scaling factor is introduced for the
             threshold weighted expectile and Huber Loss scores.
@@ -292,7 +292,7 @@ def _phi_j_prime_trap(
     a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray
 ) -> xr.DataArray:
     """
-    Calculates the subderivative of `_phi_j_trap(a, b, c, d, x)` w.r.t. x.
+    Calculates the subderivative of :py:func`_phi_j_trap(a, b, c, d, x)` w.r.t. x.
 
     Args:
         a: left endpoint of interval where weight > 0.
@@ -302,7 +302,7 @@ def _phi_j_prime_trap(
         x: points where phi_j is to be evaluated.
 
     Returns:
-        The subderivative of `_phi_j_trap(a, b, c, d, x)` w.r.t. x.
+        The subderivative of :py:func`_phi_j_trap(a, b, c, d, x)` w.r.t. x.
     """
     return 4 * _g_j_trap(a, b, c, d, x)
 
@@ -325,17 +325,17 @@ def tw_squared_error(
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
         - To specify a rectangular weight, set `interval_where_positive=None` and set
-          `interval_where_one` to be the interval where the weight is 1.
-          For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
+          ``interval_where_one`` to be the interval where the weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be `-numpy.inf` or `numpy.inf`.
-        - To specify a trapezoidal weight, specify `interval_where_positive` and `interval_where_one`
-          using desired endpoints. For example, if `interval_where_positive=(-2, 10)` and
-          `interval_where_one=(2, 4)` then a weight of 1 is applied to decision thresholds
+          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+          using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
+          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
-          is infinite. End points of `interval_where_positive` and `interval_where_one` must differ
+          is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
     Args:
@@ -368,10 +368,10 @@ def tw_squared_error(
         xarray data array of the threshold weighted squared error
 
     Raises:
-        ValueError: if `interval_where_one` is not length 2.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `interval_where_one` and `interval_where_positive` do not
+        ValueError: if ``interval_where_one`` is not length 2.
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
     Reference:
@@ -405,17 +405,17 @@ def tw_absolute_error(
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
         - To specify a rectangular weight, set `interval_where_positive=None` and set
-          `interval_where_one` to be the interval where the weight is 1.
-          For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
+          ``interval_where_one`` to be the interval where the weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be `-numpy.inf` or `numpy.inf`.
-        - To specify a trapezoidal weight, specify `interval_where_positive` and `interval_where_one`
-          using desired endpoints. For example, if `interval_where_positive=(-2, 10)` and
-          `interval_where_one=(2, 4)` then a weight of 1 is applied to decision thresholds
+          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+          using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
+          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
-          is infinite. End points of `interval_where_positive` and `interval_where_one` must differ
+          is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
 
@@ -449,10 +449,10 @@ def tw_absolute_error(
         xarray data array of the threshold weighted absolute error
 
     Raises:
-        ValueError: if `interval_where_one` is not length 2.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `interval_where_one` and `interval_where_positive` do not
+        ValueError: if ``interval_where_one`` is not length 2.
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
     References:
@@ -488,17 +488,17 @@ def tw_quantile_score(
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
         - To specify a rectangular weight, set `interval_where_positive=None` and set
-          `interval_where_one` to be the interval where the weight is 1.
-          For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
+          ``interval_where_one`` to be the interval where the weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be `-numpy.inf` or `numpy.inf`.
-        - To specify a trapezoidal weight, specify `interval_where_positive` and `interval_where_one`
-          using desired endpoints. For example, if `interval_where_positive=(-2, 10)` and
-          `interval_where_one=(2, 4)` then a weight of 1 is applied to decision thresholds
+          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+          using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
+          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
-          is infinite. End points of `interval_where_positive` and `interval_where_one` must differ
+          is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
     Args:
@@ -532,11 +532,11 @@ def tw_quantile_score(
         xarray data array of the threshold weighted quantile error
 
     Raises:
-        ValueError: if `interval_where_one` is not length 2.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `alpha` is not in the open interval (0,1).
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `interval_where_one` and `interval_where_positive` do not
+        ValueError: if ``interval_where_one`` is not length 2.
+        ValueError: if ``interval_where_one` is not increasing.
+        ValueError: if ``alpha`` is not in the open interval (0,1).
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
     References:
@@ -573,17 +573,17 @@ def tw_expectile_score(
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
         - To specify a rectangular weight, set `interval_where_positive=None` and set
-          `interval_where_one` to be the interval where the weight is 1.
-          For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
+          ``interval_where_one`` to be the interval where the weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be `-numpy.inf` or `numpy.inf`.
-        - To specify a trapezoidal weight, specify `interval_where_positive` and `interval_where_one`
-          using desired endpoints. For example, if `interval_where_positive=(-2, 10)` and
-          `interval_where_one=(2, 4)` then a weight of 1 is applied to decision thresholds
+          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+          using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
+          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
-          is infinite. End points of `interval_where_positive` and `interval_where_one` must differ
+          is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
     Args:
@@ -617,10 +617,10 @@ def tw_expectile_score(
         xarray data array of the threshold weighted expectile error
 
     Raises:
-        ValueError: if `interval_where_one` is not length 2.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `alpha` is not in the open interval (0,1).
-        ValueError: if `interval_where_one` and `interval_where_positive` do not
+        ValueError: if ``interval_where_one`` is not length 2.
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``alpha`` is not in the open interval (0,1).
+        ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
     References:
@@ -658,17 +658,17 @@ def tw_huber_loss(
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
         - To specify a rectangular weight, set `interval_where_positive=None` and set
-          `interval_where_one` to be the interval where the weight is 1.
-          For example, if  `interval_where_one=(0, 10)` then a weight of 1 is applied to decision thresholds
+          ``interval_where_one`` to be the interval where the weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
           satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be `-numpy.inf` or `numpy.inf`.
-        - To specify a trapezoidal weight, specify `interval_where_positive` and `interval_where_one`
-          using desired endpoints. For example, if `interval_where_positive=(-2, 10)` and
-          `interval_where_one=(2, 4)` then a weight of 1 is applied to decision thresholds
+          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+          using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
+          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
           satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding `interval_where_one` endpoint
-          is infinite. End points of `interval_where_positive` and `interval_where_one` must differ
+          is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
     Args:
@@ -702,12 +702,12 @@ def tw_huber_loss(
         xarray data array of the threshold weighted expectile error
 
     Raises:
-        ValueError: if `interval_where_one` is not length 2.
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `alpha` is not in the open interval (0,1).
-        ValueError: if `huber_param` is not positive
-        ValueError: if `interval_where_one` is not increasing.
-        ValueError: if `interval_where_one` and `interval_where_positive` do not
+        ValueError: if ``interval_where_one`` is not length 2.
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``alpha`` is not in the open interval (0,1).
+        ValueError: if ``huber_param`` is not positive
+        ValueError: if ``interval_where_one`` is not increasing.
+        ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
     References:
