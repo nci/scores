@@ -12,6 +12,12 @@ from scores.categorical import probability_of_detection, probability_of_false_de
 from scores.processing import binary_discretise
 from scores.utils import gather_dimensions
 
+# trapz was deprecated in numpy 2.0, but trapezoid was not backported to
+# earlier versions. As numpy 2.0 contains some API changes, `scores`
+# will try to support both interchangeably for the time being
+if not hasattr(np, "trapezoid"):
+    np.trapezoid = np.trapz  # pragma: no cover # tested manually for old numpy versions
+
 
 def roc_curve_data(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
@@ -120,7 +126,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
     pofd = pofd.transpose(*final_preserve_dims)
 
     auc = -1 * xr.apply_ufunc(
-        np.trapz,
+        np.trapezoid,
         pod,
         pofd,
         input_core_dims=[pod.dims, pofd.dims],  # type: ignore
