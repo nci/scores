@@ -12,6 +12,21 @@ Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores)
 The tutorial gallery is hosted at [as part of the documentation, here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
 Journal article - [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
 
+Documentation is hosted at [scores.readthedocs.io](https://scores.readthedocs.io)  
+Source code is hosted at [github.com/nci/scores](https://github.com/nci/scores)  
+The tutorial gallery is hosted at [as part of the documentation, here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
+Journal article is available at [https://doi.org/10.21105/joss.06889](https://doi.org/10.21105/joss.06889)
+
+Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
+Source code: [github.com/nci/scores](https://github.com/nci/scores)  
+Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
+Journal article: [https://doi.org/10.21105/joss.06889](https://doi.org/10.21105/joss.06889)
+
+Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
+Source code: [github.com/nci/scores](https://github.com/nci/scores)  
+Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
+Journal article: [Leeuwenburg et al. (2024)](https://doi.org/10.21105/joss.06889)
+
 ## Overview
 Here is a **curated selection** of the metrics, tools and statistical tests included in `scores`:
 
