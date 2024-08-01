@@ -131,7 +131,6 @@ To check the rendering of tutorials in readthedocs:
   - Check the entirety of the tutorial (sometimes things will render properly in one section, while not rendering properly in a different section of the same tutorial).
   - If you make any changes to the code cells, re-execute the Notebook in JupyterLab before committing, otherwise some things (e.g. some plots) won't render in readthedocs. Then re-check the tutorial in readthedocs to ensure the tutorial is still rendering properly.
 
-Ideally, also check the tutorial renders properly in nbviewer (there is a link at the top of each tutorial page in readthedocs).
 
 
 
