@@ -31,10 +31,10 @@ def _check_tws_args(
     Checks for valid interval endpoints are done in :py:func`_auxiliary_funcs`.
 
     Args:
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -64,10 +64,10 @@ def _auxiliary_funcs(
     Args:
         fcst: array of forecast values.
         obs: array of corresponding observation values.
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -81,7 +81,7 @@ def _auxiliary_funcs(
             than the right endpoint of ``interval_where_one`` and neither are infinite.
     """
 
-    if interval_where_positive is None:  # rectangular weight
+    if interval_where_positive is None:  # rectangular threshold weight
         a, b = interval_where_one
 
         if isinstance(a, (float, int)):
@@ -99,7 +99,7 @@ def _auxiliary_funcs(
         phi = functools.partial(_phi_j_rect, a, b)
         phi_prime = functools.partial(_phi_j_prime_rect, a, b)
 
-    else:  # trapezoidal weight
+    else:  # trapezoidal threshold weight
         a, d = interval_where_positive
         b, c = interval_where_one
 
@@ -148,12 +148,12 @@ def _auxiliary_funcs(
 def _g_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     Returns values of a nondecreasing function g_j, where g_j is obtained by integrating
-    a rectangular weight function. The weight is 1 on the interval [a, b) and 0 otherwise.
+    a rectangular threshold weight function. The threshold weight is 1 on the interval [a, b) and 0 otherwise.
     The formula is based on the first row of Table B1 from Taggart (2022).
 
     Args:
-        a: left endpoint of interval where weight = 1. Can be ``-np.inf``.
-        b: right endpoint of the interval where weight = 1. Can be ``np.inf``.
+        a: left endpoint of interval where the threshold weight = 1. Can be ``-np.inf``.
+        b: right endpoint of the interval where the threshold weight = 1. Can be ``np.inf``.
         x: points where g_j is to be evaluated.
 
     Returns:
@@ -177,12 +177,13 @@ def _g_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray
 def _phi_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     Returns values of a convex function phi_j, where phi_j is obtained by integrating
-    a rectangular weight function. The weight is 1 on the interval [a, b) and 0 otherwise.
+    a rectangular threshold weight function. The threshold weight is 1 on the interval
+    [a, b) and 0 otherwise.
     The formula is based on the second row of Table B1 from Taggart (2022).
 
     Args:
-        a: left endpoint of interval where weight = 1. Can be ``-np.inf``.
-        b: right endpoint of the interval where weight = 1. Can be ``np.inf``.
+        a: left endpoint of interval where the threshold weight = 1. Can be ``-np.inf``.
+        b: right endpoint of the interval where the threshold weight = 1. Can be ``np.inf``.
         x: points where phi_j is to be evaluated.
 
     Returns:
@@ -216,14 +217,14 @@ def _phi_j_prime_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.D
 def _g_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     Returns values of a nondecreasing function g_j, where g_j is obtained by integrating
-    a trapezoidal weight function. The weight is 1 on the interval (b, c) and 0 outside
+    a trapezoidal threshold weight function. The threshold weight is 1 on the interval (b, c) and 0 outside
     the interval (a,d). The formula is based on the third row of Table B1 from Taggart (2022).
 
     Args:
-        a: left endpoint of interval where weight > 0.
-        b: left endpoint of the interval where weight = 1.
-        c: right endpoint of the interval where weight = 1.
-        d: right endpoint of interval where weight > 0.
+        a: left endpoint of interval where the threshold weight > 0.
+        b: left endpoint of the interval where the threshold weight = 1.
+        c: right endpoint of the interval where the threshold weight = 1.
+        d: right endpoint of interval where the threshold weight > 0.
         x: points where g_j is to be evaluated.
 
     Returns:
@@ -249,14 +250,14 @@ def _g_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType
 def _phi_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     Returns values of a convex function phi_j, where phi_j is obtained by integrating
-    a trapezoidal weight function. The weight is 1 on the interval (b, c) and 0 outside
+    a trapezoidal threshold weight function. The threshold weight is 1 on the interval (b, c) and 0 outside
     the interval (a,d). The formula is based on the fourth row of Table B1 from Taggart (2022).
 
     Args:
-        a: left endpoint of interval where weight > 0.
-        b: left endpoint of the interval where weight = 1.
-        c: right endpoint of the interval where weight = 1.
-        d: right endpoint of interval where weight > 0.
+        a: left endpoint of interval where the threshold weight > 0.
+        b: left endpoint of the interval where the threshold weight = 1.
+        c: right endpoint of the interval where the threshold weight = 1.
+        d: right endpoint of interval where the threshold weight > 0.
         x: points where phi_j is to be evaluated.
 
     Returns:
@@ -295,10 +296,10 @@ def _phi_j_prime_trap(
     Calculates the subderivative of :py:func`_phi_j_trap(a, b, c, d, x)` w.r.t. x.
 
     Args:
-        a: left endpoint of interval where weight > 0.
-        b: left endpoint of the interval where weight = 1.
-        c: right endpoint of the interval where weight = 1.
-        d: right endpoint of interval where weight > 0.
+        a: left endpoint of interval where the threshold weight > 0.
+        b: left endpoint of the interval where the threshold weight = 1.
+        c: right endpoint of the interval where the threshold weight = 1.
+        d: right endpoint of interval where the threshold weight > 0.
         x: points where phi_j is to be evaluated.
 
     Returns:
@@ -320,19 +321,19 @@ def tw_squared_error(
     """
     Returns the the threshold weighted squared error.
 
-    For more flexible weighting schemes,
+    For more flexible threshold weighting schemes,
     see :py:func:`scores.continuous.consistent_expectile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
-          ``interval_where_one`` to be the interval where the weight is 1.
-          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
-          satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
-        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+        - To specify a rectangular threshold weight, set ``interval_where_positive=None`` and set
+          ``interval_where_one`` to be the interval where the threshold weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a threshold weight of 1
+          is applied to decision thresholds satisfying 0 <= threshold < 10, and a threshold weight of 0 is
+          applied otherwise. Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal threshold weight, specify ``interval_where_positive`` and ``interval_where_one``
           using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
-          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
-          satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
+          ``interval_where_one=(2, 4)`` then a threshold weight of 1 is applied to decision thresholds
+          satisfying 2 <= threshold < 4. The threshold weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
@@ -341,10 +342,10 @@ def tw_squared_error(
     Args:
         fcst: array of forecast values.
         obs: array of corresponding observation values.
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -362,7 +363,8 @@ def tw_squared_error(
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom). Note that these weights are different to threshold weighting
+            which is done by decision threshold.
 
     Returns:
         xarray data array of the threshold weighted squared error
@@ -400,32 +402,31 @@ def tw_absolute_error(
     """
     Returns the threshold weighted absolute error.
 
-    For more flexible weighting schemes,
+    For more flexible threshold weighting schemes,
     see :py:func:`scores.continuous.consistent_quantile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
-          ``interval_where_one`` to be the interval where the weight is 1.
-          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
-          satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
-        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+        - To specify a rectangular threshold weight, set ``interval_where_positive=None`` and set
+          ``interval_where_one`` to be the interval where the threshold weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a threshold weight of 1
+          is applied to decision thresholds satisfying 0 <= threshold < 10, and a threshold weight of 0 is
+          applied otherwise. Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal threshold weight, specify ``interval_where_positive`` and ``interval_where_one``
           using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
-          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
-          satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
+          ``interval_where_one=(2, 4)`` then a threshold weight of 1 is applied to decision thresholds
+          satisfying 2 <= threshold < 4. The threshold weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
           except when the endpoints are infinite.
 
-
     Args:
         fcst: array of forecast values.
         obs: array of corresponding observation values.
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -443,7 +444,8 @@ def tw_absolute_error(
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom). Note that these weights are different to threshold weighting
+            which is done by decision threshold.
 
     Returns:
         xarray data array of the threshold weighted absolute error
@@ -483,19 +485,19 @@ def tw_quantile_score(
     """
     Returns the threshold weighted quantile score.
 
-    For more flexible weighting schemes,
+    For more flexible threshold weighting schemes,
     see :py:func:`scores.continuous.consistent_quantile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
-          ``interval_where_one`` to be the interval where the weight is 1.
-          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
-          satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
-        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+        - To specify a rectangular threshold weight, set ``interval_where_positive=None`` and set
+          ``interval_where_one`` to be the interval where the threshold weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a threshold weight of 1
+          is applied to decision thresholds satisfying 0 <= threshold < 10, and a threshold weight of 0 is
+          applied otherwise. Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal threshold weight, specify ``interval_where_positive`` and ``interval_where_one``
           using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
-          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
-          satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
+          ``interval_where_one=(2, 4)`` then a threshold weight of 1 is applied to decision thresholds
+          satisfying 2 <= threshold < 4. The threshold weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
@@ -505,10 +507,10 @@ def tw_quantile_score(
         fcst: array of forecast values.
         obs: array of corresponding observation values.
         alpha: the quantile level. Must be strictly between 0 and 1.
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -526,7 +528,8 @@ def tw_quantile_score(
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom). Note that these weights are different to threshold weighting
+            which is done by decision threshold.
 
     Returns:
         xarray data array of the threshold weighted quantile error
@@ -568,19 +571,19 @@ def tw_expectile_score(
     """
     Returns the threshold weighted expectile score.
 
-    For more flexible weighting schemes,
+    For more flexible threshold weighting schemes,
     see :py:func:`scores.continuous.consistent_expectile_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
-          ``interval_where_one`` to be the interval where the weight is 1.
-          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
-          satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
-        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+        - To specify a rectangular threshold weight, set ``interval_where_positive=None`` and set
+          ``interval_where_one`` to be the interval where the threshold weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a threshold weight of 1
+          is applied to decision thresholds satisfying 0 <= threshold < 10, and a threshold weight of 0 is
+          applied otherwise. Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal threshold weight, specify ``interval_where_positive`` and ``interval_where_one``
           using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
-          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
-          satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
+          ``interval_where_one=(2, 4)`` then a threshold weight of 1 is applied to decision thresholds
+          satisfying 2 <= threshold < 4. The threshold weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
@@ -590,10 +593,10 @@ def tw_expectile_score(
         fcst: array of forecast values.
         obs: array of corresponding observation values.
         alpha: expectile level. Must be strictly between 0 and 1.
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -611,7 +614,8 @@ def tw_expectile_score(
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom). Note that these weights are different to threshold weighting
+            which is done by decision threshold.
 
     Returns:
         xarray data array of the threshold weighted expectile error
@@ -653,19 +657,19 @@ def tw_huber_loss(
     """
     Returns the threshold weighted huber loss.
 
-    For more flexible weighting schemes,
+    For more flexible threshold weighting schemes,
     see :py:func:`scores.continuous.consistent_huber_score`.
 
     Two types of threshold weighting are supported: rectangular and trapezoidal.
-        - To specify a rectangular weight, set ``interval_where_positive=None`` and set
-          ``interval_where_one`` to be the interval where the weight is 1.
-          For example, if  ``interval_where_one=(0, 10)`` then a weight of 1 is applied to decision thresholds
-          satisfying 0 <= threshold < 10, and weight of 0 is applied otherwise.
-          Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
-        - To specify a trapezoidal weight, specify ``interval_where_positive`` and ``interval_where_one``
+        - To specify a rectangular threshold weight, set ``interval_where_positive=None`` and set
+          ``interval_where_one`` to be the interval where the threshold weight is 1.
+          For example, if  ``interval_where_one=(0, 10)`` then a threshold weight of 1
+          is applied to decision thresholds satisfying 0 <= threshold < 10, and a threshold weight of 0 is
+          applied otherwise. Interval endpoints can be ``-numpy.inf`` or ``numpy.inf``.
+        - To specify a trapezoidal threshold weight, specify ``interval_where_positive`` and ``interval_where_one``
           using desired endpoints. For example, if ``interval_where_positive=(-2, 10)`` and
-          ``interval_where_one=(2, 4)`` then a weight of 1 is applied to decision thresholds
-          satisfying 2 <= threshold < 4. The weight increases linearly from 0 to 1 on the interval
+          ``interval_where_one=(2, 4)`` then a threshold weight of 1 is applied to decision thresholds
+          satisfying 2 <= threshold < 4. The threshold weight increases linearly from 0 to 1 on the interval
           [-2, 2) and decreases linearly from 1 to 0 on the interval [4, 10], and is 0 otherwise.
           Interval endpoints can only be infinite if the corresponding ``interval_where_one`` endpoint
           is infinite. End points of ``interval_where_positive`` and ``interval_where_one`` must differ
@@ -675,10 +679,10 @@ def tw_huber_loss(
         fcst: array of forecast values.
         obs: array of corresponding observation values.
         huber_param: the Huber transition parameter.
-        interval_where_one: endpoints of the interval where the weights are 1.
+        interval_where_one: endpoints of the interval where the threshold weights are 1.
             Must be increasing. Infinite endpoints are permissible. By supplying a tuple of
             arrays, endpoints can vary with dimension.
-        interval_where_positive: endpoints of the interval where the weights are positive.
+        interval_where_positive: endpoints of the interval where the threshold weights are positive.
             Must be increasing. Infinite endpoints are only permissible when the corresponding
             ``interval_where_one`` endpoint is infinite. By supplying a tuple of
             arrays, endpoints can vary with dimension.
@@ -696,7 +700,8 @@ def tw_huber_loss(
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom). Note that these weights are different to threshold weighting
+            which is done by decision threshold.
 
     Returns:
         xarray data array of the threshold weighted expectile error
@@ -708,7 +713,7 @@ def tw_huber_loss(
         ValueError: if ``huber_param`` is not positive
         ValueError: if ``interval_where_one`` is not increasing.
         ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
-            specify a valid trapezoidal weight.
+            specify a valid trapezoidal threshold weight.
 
     References:
         Taggart, R. (2022). Evaluation of point forecasts for extreme events using
