@@ -24,6 +24,9 @@ def brier_score(
     Calculates the Brier score for forecast and observed data. For an explanation of the
     Brier score, see https://en.wikipedia.org/wiki/Brier_score.
 
+    .. math::
+        \\text{brier score} = \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
+
     If you want to speed up performance with Dask and are confident of your input data,
     or if you want observations to take values between 0 and 1, set ``check_args`` to ``False``.
 
