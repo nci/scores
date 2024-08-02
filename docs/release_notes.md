@@ -11,7 +11,7 @@ For the full details of all changes in this release, see the [GitHub commit hist
 	- threshold weighted absolute error: `scores.continuous.tw_absolute_error`
 	- threshold weighted quantile score: `scores.continuous.tw_quantile_score`
 	- threshold weighted expectile score: `scores.continuous.tw_expectile_score`
-	- threshold weighted huber loss: `scores.continuous.tw_huber_loss`.  
+	- threshold weighted Huber loss: `scores.continuous.tw_huber_loss`.  
 See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](https://github.com/nicholasloveday).
 
 ### Breaking Changes
