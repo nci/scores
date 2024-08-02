@@ -11,9 +11,9 @@ Information relevant for package maintenance
 5. Perform the merge to main
 6. Build a new environment and perform basic testing on main
 7. Update github with a tagged release
-7. Prepare the package files (see below)
-8. Prepare the PyPI update (should move to a Github Action)
-9. Perform the PyPI update (should move to a Github Action)
+8. Prepare the package files (see below)
+9. Prepare the PyPI update (should move to a Github Action)
+10. Perform the PyPI update (should move to a Github Action)
 
 ### Test the new main branch
 
