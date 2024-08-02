@@ -46,7 +46,7 @@ Information relevant for package maintenance
 
 ## Version X.Y.Z (Month Day, Year) e.g. "Version 0.9.3 (July 7, 2024)"
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of."
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of.
 
 ### Features
 ### Breaking Changes
