@@ -76,3 +76,69 @@ For the full details of all changes in this release, see the [GitHub commit hist
 
 - Introduced pinned versions for dependencies on main. See [PR #580](https://github.com/nci/scores/pull/580)  by [@tennlee](https://github.com/tennlee).
 
+## Version 0.9.2 (June 26, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.1...0.9.2). 
+
+## Version 0.9.1 (June 14, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.0...0.9.1). 
+
+## Version 0.9.0 (June 12, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.6...0.9.0). 
+
+## Version 0.8.6 (June 11, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.5...0.8.6). 
+
+## Version 0.8.5 (June 9, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.4...0.8.5). 
+
+## Version 0.8.4 (June 3, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.3...0.8.4). 
+
+## Version 0.8.3 (June 2, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.2...0.8.3). 
+
+## Version 0.8.2 (May 21, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.1...0.8.2). 
+
+## Version 0.8.1 (May 16, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8...0.8.1). 
+
+## Version 0.8 (May 14, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.7...0.8). 
+
+## Version 0.7 (May 8, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.6...0.7). 
+
+## Version 0.6 (April 6, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.5...v0.6). 
+
+Note: version 0.6 was initially tagged as "v0.6" and released on 6th April 2024. On 7th April 2024, an identical version was released with the tag "0.6" (i.e. with the "v" ommitted from the tag).
+
+## Version 0.5 (April 6, 2024)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.4...v0.5). 
+
+## Version 0.4 (September 15, 2023)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.0.2...v0.4). 
+
+## Version 0.0.2 (June 9, 2023)
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/commits/v0.0.2/). 
+
+## Version 0.0.1 (January 16, 2023)
+
+Version 0.0.1 was released on PyPI as a placeholder, while very early development and package design was being undertaken.
+
