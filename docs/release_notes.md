@@ -22,6 +22,7 @@ See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](http
 
 ### Documentation
 
+- Added "Threshold Weighted Scores" tutorial. See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](https://github.com/nicholasloveday).
 - Removed nbviewer link from documentation. See [PR #615](https://github.com/nci/scores/pull/615) by [@tennlee](https://github.com/tennlee).
 
 ### Internal Changes
