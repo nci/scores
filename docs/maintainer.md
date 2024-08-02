@@ -132,6 +132,12 @@ To check the rendering of tutorials in readthedocs:
   - If you make any changes to the code cells, re-execute the Notebook in JupyterLab before committing, otherwise some things (e.g. some plots) won't render in readthedocs. Then re-check the tutorial in readthedocs to ensure the tutorial is still rendering properly.
 
 
+### Tips for working with pull requests from forks
+
+It can be convenient as maintainer to have write access to people's forks to push small fixes into a PR during the process. When doing so, it's a good idea to check out the remote branch as follows (after adding the fork as a remote)
+
+`git checkout -b test <name of remote>/test`
+
 
 
 

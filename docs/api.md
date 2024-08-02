@@ -26,6 +26,11 @@
 .. autofunction:: scores.continuous.consistent_expectile_score
 .. autofunction:: scores.continuous.consistent_quantile_score
 .. autofunction:: scores.continuous.consistent_huber_score
+.. autofunction:: scores.continuous.tw_quantile_score
+.. autofunction:: scores.continuous.tw_absolute_error
+.. autofunction:: scores.continuous.tw_squared_error
+.. autofunction:: scores.continuous.tw_huber_loss
+.. autofunction:: scores.continuous.tw_expectile_score
 ```
 
 ## scores.probability
