@@ -1,5 +1,33 @@
 # Release Notes (What's New)
 
+## Version 1.1.0 (Upcoming Release) 
+
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/1.0.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+- Added five new threshold weighted scores 
+	- threshold weighted squared error: ` scores.continuous.tw_squared_error`
+	- threshold weighted absolute error: `scores.continuous.tw_absolute_error`
+	- threshold weighted quantile score: `scores.continuous.tw_quantile_score`
+	- threshold weighted expectile score: `scores.continuous.tw_expectile_score`
+	- threshold weighted huber loss: `scores.continuous.tw_huber_loss`.  
+See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](https://github.com/nicholasloveday).
+
+### Breaking Changes
+
+### Deprecations
+
+### Bug Fixes
+
+### Documentation
+
+- Removed nbviewer link from documentation. See [PR #615](https://github.com/nci/scores/pull/615) by [@tennlee](https://github.com/tennlee).
+
+### Internal Changes
+
+- Modified trapezoidal call to work with either NumPy 1 or 2. See [PR #610](https://github.com/nci/scores/pull/610) by [@tennlee](https://github.com/tennlee).
+
 ## Version 1.0.0 (July 10, 2024)
 
 We are happy to have reached the point of releasing “Version 1.0.0” of `scores`. While we look forward to many version increments to come, version 1.0.0 represents a milestone. It signifies a stabilisation of the API, and marks a turning point from the initial construction period. We have also published a [paper](https://doi.org/10.21105/joss.06889) in the Journal of Open Source Software (see citation further below).
