@@ -25,13 +25,13 @@ from scores.continuous.consistent_impl import (
 DA_FCST = xr.DataArray(
     data=[[3.0, 1.0, nan, 3.0], [-4.0, 0.0, 1.0, 3.0]],
     dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102, 104]),
+    coords={"date": ["1", "2"], "station": [100, 101, 102, 104]},
 )
 
 DA_OBS = xr.DataArray(
     data=[[nan, 3.0, 5.0], [-4.0, 10.0, -1.0], [3.0, 2.0, -0.2]],
     dims=["date", "station"],
-    coords=dict(date=["1", "2", "3"], station=[100, 101, 102]),
+    coords={"date": ["1", "2", "3"], "station": [100, 101, 102]},
 )
 
 WEIGHTS = DA_FCST * 0 + 2
@@ -41,13 +41,13 @@ ALPHA = 0.3
 EXP_EXPECTILE_SCORE1 = xr.DataArray(
     data=[[nan, ALPHA * 4.0, nan], [0.0, ALPHA * 100, (1 - ALPHA) * 4]],
     dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102]),
+    coords={"date": ["1", "2"], "station": [100, 101, 102]},
 )
 
 EXP_EXPECTILE_SCORE2 = xr.DataArray(
     data=[0.0, ALPHA * (4 + 100) / 2, (1 - ALPHA) * 4],
     dims=["station"],
-    coords=dict(station=[100, 101, 102]),
+    coords={"station": [100, 101, 102]},
 )
 EXP_EXPECTILE_SCORE3 = xr.DataArray((ALPHA * 4.0 + ALPHA * 100 + (1 - ALPHA) * 4) / 4)
 
@@ -56,13 +56,13 @@ TUNING_PARAM = 2.0
 EXP_HUBER_SCORE1 = xr.DataArray(
     data=[[nan, 2.0, nan], [0.0, 18.0, 2.0]],
     dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102]),
+    coords={"date": ["1", "2"], "station": [100, 101, 102]},
 )
 
 EXP_HUBER_SCORE2 = xr.DataArray(
     data=[2.0, 20 / 3],
     dims=["date"],
-    coords=dict(date=["1", "2"]),
+    coords={"date": ["1", "2"]},
 )
 
 EXP_HUBER_SCORE3 = xr.DataArray(
@@ -72,13 +72,13 @@ EXP_HUBER_SCORE3 = xr.DataArray(
 EXP_QUANTILE_SCORE1 = xr.DataArray(
     data=[[nan, ALPHA * 2.0, nan], [0.0, ALPHA * 10, (1 - ALPHA) * 2]],
     dims=["date", "station"],
-    coords=dict(date=["1", "2"], station=[100, 101, 102]),
+    coords={"date": ["1", "2"], "station": [100, 101, 102]},
 )
 
 EXP_QUANTILE_SCORE2 = xr.DataArray(
     data=[ALPHA * 2.0, (ALPHA * 10 + (1 - ALPHA) * 2) / 3],
     dims=["date"],
-    coords=dict(date=["1", "2"]),
+    coords={"date": ["1", "2"]},
 )
 
 EXP_QUANTILE_SCORE3 = xr.DataArray((ALPHA * 2.0 + ALPHA * 10 + (1 - ALPHA) * 2) / 4)

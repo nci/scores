@@ -142,7 +142,7 @@ def test_str_view():
     _stringrep = str(table)
 
 
-def test_categorical_table():
+def test_categorical_table():  # pylint: disable=too-many-statements
     """
     Test the basic calculations of the contingency table
     """

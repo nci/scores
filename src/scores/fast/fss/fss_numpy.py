@@ -2,6 +2,8 @@
 Backend for computing Fractions Skill Score (FSS) using numpy
 """
 
+# pylint: disable=R0801
+
 from dataclasses import dataclass
 
 import numpy as np
