@@ -37,7 +37,7 @@ def murphy_score(  # pylint: disable=R0914
     Select ``functional="quantile"`` and ``alpha=0.5`` for the median functional.
     Select ``functional="expectile"`` and ``alpha=0.5`` for the mean (i.e., expectation) functional.
 
-    Consider using ``murphy_thetas`` to generate thetas. If utilising dask, you may want
+    Consider using :py:func:`murphy_thetas` to generate thetas. If utilising dask, you may want
     to store ``thetas`` as a netCDF on disk and pass it in as an xarray object. Otherwise,
     very large objects may be created when ``fcst``, ``obs`` and ``thetas`` are broadcast
     together.
@@ -192,12 +192,12 @@ def murphy_thetas(
     Args:
         forecasts: Forecast values, one array per source.
         obs: Observed values.
-        functional: The type of elementary scoring function, one of {QUANTILE},
-            {HUBER}, or {EXPECTILE}.
-        huber_a: Huber transition parameter, used for {HUBER} functional only.
+        functional: The type of elementary scoring function, one of "quantile",
+            "huber", or "expectile".
+        huber_a: Huber transition parameter, used for "huber" functional only.
             Must be strictly greater than 0.
-        left_limit_delta: Approximation of the left hand limit, used for {HUBER}
-            and {EXPECTILE} functionals. Must be greater than or equal to 0.
+        left_limit_delta: Approximation of the left hand limit, used for "huber"
+            and "expectile" functionals. Must be greater than or equal to 0.
             None will be treated as 0. Ideally, left_limit_delta should be
             small relative to the fcst and obs precision, and not greater than
             that precision.
@@ -206,18 +206,21 @@ def murphy_thetas(
         List[float]: theta thresholds to be used to compute murphy scores.
 
     Raises:
-        ValueError: If `functional` is not one of the expected functions.
-        ValueError: If `huber_a` is not strictly greater than 0.
-        ValueError: If `left_limit_delta` is not greater than or equal to 0.
+        ValueError: If ``functional`` is not one of the expected functions.
+        ValueError: If ``huber_a`` is not strictly greater than 0.
+        ValueError: If ``left_limit_delta`` is not greater than or equal to 0.
 
     Notes:
-        For theta values at which evaluate elementary scores, see
+        For theta values at which to evaluate elementary scores, see
 
-        - Corollary 2 (p.521) of Ehm et. al. (2016) "Of Quantiles and Expectiles", J. Royal Stat. Soc. B,
-          78(3): 505–562. https://www.jstor.org/stable/24775351.
-        - Corollary 5.6 of Taggart (2022) "Point forecasting and forecast evaluation with
-          generalized Huber loss", Electron. J. Statist. 16(1): 201-231.
-          DOI: 10.1214/21-EJS1957
+        - Corollary 2 (p.521) of Ehm, W., Gneiting, T., Jordan, A., & Krüger, F. (2016).
+          Of quantiles and expectiles: Consistent scoring functions, Choquet
+          representations and forecast rankings.
+          *Journal of the Royal Statistical Society Series B: Statistical Methodology*,
+          78(3), 505–562. https://doi.org/10.1111/rssb.12154
+        - Corollary 5.6 of Taggart, R. J. (2022). Point forecasting and forecast evaluation
+          with generalized Huber loss. *Electronic Journal of Statistics*, 16(1), 201-231.
+          https://doi.org/10.1214/21-EJS1957
 
     """
     _check_murphy_inputs(functional=functional, huber_a=huber_a, left_limit_delta=left_limit_delta)
