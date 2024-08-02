@@ -98,6 +98,12 @@ For each entry: "Brief description. See [PR #ABC](add link) by [@username](add l
 
 ## This section covers checking the documentation renders properly in readthedocs
 
+### Tips for working with pull requests from forks
+
+It can be convenient as maintainer to have write access to people's forks to push small fixes into a PR during the process. When doing so, it's a good idea to check out the remote branch as follows (after adding the fork as a remote)
+
+`git checkout -b test <name of remote>/test`
+
 ### What documentation needs checking in readthedocs
 
 Each time an existing function is modified or a new function is added to `scores`, the rendering in readthedocs for any modified or newly created documentation must be checked. 
@@ -130,14 +136,5 @@ To check the rendering of tutorials in readthedocs:
   - Compare the tutorial in readthedocs against a version running in JupyterLab (as not everything renders in GitHub).
   - Check the entirety of the tutorial (sometimes things will render properly in one section, while not rendering properly in a different section of the same tutorial).
   - If you make any changes to the code cells, re-execute the Notebook in JupyterLab before committing, otherwise some things (e.g. some plots) won't render in readthedocs. Then re-check the tutorial in readthedocs to ensure the tutorial is still rendering properly.
-
-
-### Tips for working with pull requests from forks
-
-It can be convenient as maintainer to have write access to people's forks to push small fixes into a PR during the process. When doing so, it's a good idea to check out the remote branch as follows (after adding the fork as a remote)
-
-`git checkout -b test <name of remote>/test`
-
-
 
 
