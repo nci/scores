@@ -655,7 +655,7 @@ def tw_huber_loss(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    Returns the threshold weighted huber loss.
+    Returns the threshold weighted Huber loss.
 
     For more flexible threshold weighting schemes,
     see :py:func:`scores.continuous.consistent_huber_score`.
