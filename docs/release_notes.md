@@ -27,7 +27,7 @@ See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](http
 
 ### Internal Changes
 
-- Modified trapezoidal call to work with either NumPy 1 or 2. See [PR #610](https://github.com/nci/scores/pull/610) by [@tennlee](https://github.com/tennlee).
+- Modified `numpy.trapezoid` call to work with either NumPy 1 or 2. See [PR #610](https://github.com/nci/scores/pull/610) by [@tennlee](https://github.com/tennlee).
 
 ## Version 1.0.0 (July 10, 2024)
 
