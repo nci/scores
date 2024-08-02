@@ -11,9 +11,9 @@ Information relevant for package maintenance
 5. Perform the merge to main
 6. Build a new environment and perform basic testing on main
 7. Update github with a tagged release
-7. Prepare the package files (see below)
-8. Prepare the PyPI update (should move to a Github Action)
-9. Perform the PyPI update (should move to a Github Action)
+8. Prepare the package files (see below)
+9. Prepare the PyPI update (should move to a Github Action)
+10. Perform the PyPI update (should move to a Github Action)
 
 ### Test the new main branch
 
@@ -46,7 +46,7 @@ Information relevant for package maintenance
 
 ## Version X.Y.Z (Month Day, Year) e.g. "Version 0.9.3 (July 7, 2024)"
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of."
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of.
 
 ### Features
 ### Breaking Changes
