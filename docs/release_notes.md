@@ -2,32 +2,30 @@
 
 ## Version 1.1.0 (Upcoming Release) 
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/1.0.0...develop). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.0.0...develop). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
-- Added five new threshold weighted scores 
+- Added five new scores 
 	- threshold weighted squared error: ` scores.continuous.tw_squared_error`
 	- threshold weighted absolute error: `scores.continuous.tw_absolute_error`
 	- threshold weighted quantile score: `scores.continuous.tw_quantile_score`
 	- threshold weighted expectile score: `scores.continuous.tw_expectile_score`
 	- threshold weighted Huber loss: `scores.continuous.tw_huber_loss`.  
-See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](https://github.com/nicholasloveday).
-
-### Breaking Changes
-
-### Deprecations
-
-### Bug Fixes
+See [PR #609](https://github.com/nci/scores/pull/609).
 
 ### Documentation
 
-- Added "Threshold Weighted Scores" tutorial. See [PR #609](https://github.com/nci/scores/pull/609) by [@nicholasloveday](https://github.com/nicholasloveday).
-- Removed nbviewer link from documentation. See [PR #615](https://github.com/nci/scores/pull/615) by [@tennlee](https://github.com/tennlee).
+- Added "Threshold Weighted Scores" tutorial. See [PR #609](https://github.com/nci/scores/pull/609).
+- Removed nbviewer link from documentation. See [PR #615](https://github.com/nci/scores/pull/615).
 
 ### Internal Changes
 
-- Modified `numpy.trapezoid` call to work with either NumPy 1 or 2. See [PR #610](https://github.com/nci/scores/pull/610) by [@tennlee](https://github.com/tennlee).
+- Modified `numpy.trapezoid` call to work with either NumPy 1 or 2. See [PR #610](https://github.com/nci/scores/pull/610).
+
+### Contributors to this Release
+
+Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)). 
 
 ## Version 1.0.0 (July 10, 2024)
 
@@ -57,86 +55,90 @@ year = {2024}
 }
 ```
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.3...1.0.0). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.3...1.0.0). 
 
 ## Version 0.9.3 (July 9, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.2...0.9.3). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.2...0.9.3). Below are the changes we think users may wish to be aware of.
 
 ### Breaking Changes
 
-- Renamed and relocated function `scores.continuous.correlation` to `scores.continuous.correlation.pearsonr`. See [PR #583](https://github.com/nci/scores/pull/583) by [@nicholasloveday](https://github.com/nicholasloveday). 
+- Renamed and relocated function `scores.continuous.correlation` to `scores.continuous.correlation.pearsonr`. See [PR #583](https://github.com/nci/scores/pull/583).
 
 ### Documentation
 
-- Added "Dimension Handling" tutorial, which describes reducing and preserving dimensions. See [PR #589](https://github.com/nci/scores/pull/589) by [@nicholasloveday](https://github.com/nicholasloveday).
-- Updated "Detailed Installation Guide" with information on installing kernels in a Jupyter environment. See [PR #586](https://github.com/nci/scores/pull/586) by [@tennlee](https://github.com/tennlee) and [PR #587](https://github.com/nci/scores/pull/587) by [@Steph-Chong](https://github.com/Steph-Chong).
+- Added "Dimension Handling" tutorial, which describes reducing and preserving dimensions. See [PR #589](https://github.com/nci/scores/pull/589).
+- Updated "Detailed Installation Guide" with information on installing kernels in a Jupyter environment. See [PR #586](https://github.com/nci/scores/pull/586) by [@tennlee](https://github.com/tennlee) and [PR #587](https://github.com/nci/scores/pull/587).
 
 ### Internal Changes
 
-- Introduced pinned versions for dependencies on main. See [PR #580](https://github.com/nci/scores/pull/580)  by [@tennlee](https://github.com/tennlee).
+- Introduced pinned versions for dependencies on main. See [PR #580](https://github.com/nci/scores/pull/580).
+
+### Contributors to this Release
+
+Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
 
 ## Version 0.9.2 (June 26, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.1...0.9.2). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.1...0.9.2). 
 
 ## Version 0.9.1 (June 14, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.9.0...0.9.1). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.0...0.9.1). 
 
 ## Version 0.9.0 (June 12, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.6...0.9.0). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.6...0.9.0). 
 
 ## Version 0.8.6 (June 11, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.5...0.8.6). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.5...0.8.6). 
 
 ## Version 0.8.5 (June 9, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.4...0.8.5). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.4...0.8.5). 
 
 ## Version 0.8.4 (June 3, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.3...0.8.4). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.3...0.8.4). 
 
 ## Version 0.8.3 (June 2, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.2...0.8.3). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.2...0.8.3). 
 
 ## Version 0.8.2 (May 21, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8.1...0.8.2). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.1...0.8.2). 
 
 ## Version 0.8.1 (May 16, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.8...0.8.1). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8...0.8.1). 
 
 ## Version 0.8 (May 14, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/0.7...0.8). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.7...0.8). 
 
 ## Version 0.7 (May 8, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.6...0.7). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.6...0.7). 
 
 ## Version 0.6 (April 6, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.5...v0.6). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.5...v0.6). 
 
 Note: version 0.6 was initially tagged as "v0.6" and released on 6th April 2024. On 7th April 2024, an identical version was released with the tag "0.6" (i.e. with the "v" ommitted from the tag).
 
 ## Version 0.5 (April 6, 2024)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.4...v0.5). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.4...v0.5). 
 
 ## Version 0.4 (September 15, 2023)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/v0.0.2...v0.4). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.0.2...v0.4). 
 
 ## Version 0.0.2 (June 9, 2023)
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/commits/v0.0.2/). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/commits/v0.0.2/). 
 
 ## Version 0.0.1 (January 16, 2023)
 
