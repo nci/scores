@@ -74,7 +74,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ### Documentation
 
 - Added "Dimension Handling" tutorial, which describes reducing and preserving dimensions. See [PR #589](https://github.com/nci/scores/pull/589).
-- Updated "Detailed Installation Guide" with information on installing kernels in a Jupyter environment. See [PR #586](https://github.com/nci/scores/pull/586) by [@tennlee](https://github.com/tennlee) and [PR #587](https://github.com/nci/scores/pull/587).
+- Updated "Detailed Installation Guide" with information on installing kernels in a Jupyter environment. See [PR #586](https://github.com/nci/scores/pull/586) and [PR #587](https://github.com/nci/scores/pull/587).
 
 ### Internal Changes
 
