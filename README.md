@@ -1,6 +1,6 @@
 # scores: Verification and Evaluation for Forecasts and Models
 
-[![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql) [![Coverage Status](https://coveralls.io/repos/github/nci/scores/badge.svg)](https://coveralls.io/github/nci/scores) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FTutorial_Gallery.ipynb) [![PyPI Version](https://img.shields.io/pypi/v/scores)](https://pypi.org/project/scores/) [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scores)](https://anaconda.org/conda-forge/scores)
+[![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql) [![Coverage Status](https://coveralls.io/repos/github/nci/scores/badge.svg)](https://coveralls.io/github/nci/scores) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FTutorial_Gallery.ipynb) [![PyPI Version](https://img.shields.io/pypi/v/scores.svg)](https://pypi.org/project/scores/) [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scores.svg)](https://anaconda.org/conda-forge/scores)
 
 > 
 > **A list of over 50 metrics, statistical techniques and data processing tools contained in `scores` is [available here](https://scores.readthedocs.io/en/stable/included.html).**
