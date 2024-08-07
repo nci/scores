@@ -74,7 +74,7 @@ pip install scores
 ```bash
 conda install conda-forge::scores
 ```
-(Note: at present, only the *minimal* installation option is available from conda. In time, we intend to add more installation options to conda.)
+(Note: at present, only the "minimal" installation option is available from conda. In time, we intend to add more installation options to conda.)
 
 ### 3. "Tutorial" Dependencies
 Use this for running tutorials using `scores`, but when you don't need or want developer tools.
