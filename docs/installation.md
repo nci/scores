@@ -27,7 +27,6 @@ Here is a command to create and activate a new virtual environment with *conda*
 ```py
 conda create -p <path_to_enviroment> python=3
 conda activate <path_to_environment>
-
 ```
 
 ## Installation Options
@@ -70,6 +69,12 @@ Installs:
 ```bash
 pip install scores
 ```
+#### With conda
+
+```bash
+conda install conda-forge::scores
+```
+(Note: at present, only the *minimal* installation option is available from conda. In time, we intend to add more installation options to conda.)
 
 ### 3. "Tutorial" Dependencies
 Use this for running tutorials using `scores`, but when you don't need or want developer tools.
