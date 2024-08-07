@@ -54,7 +54,7 @@ suppress_warnings = ["myst.xref_missing"]
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
 nbsphinx_prolog = r"""
-{% set docname = '' + env.doc2path(env.docname, base=False) %}
+{% set docname = '' + env.doc2path(env.docname, base=False)|string() %}
 
 .. raw:: html
 
@@ -73,7 +73,7 @@ nbsphinx_prolog = r"""
 
 # This is processed by Jinja2 and inserted after each notebook
 nbsphinx_epilog = r"""
-{% set docname = 'doc/' + env.doc2path(env.docname, base=None) %}
+{% set docname = 'doc/' + env.doc2path(env.docname, base=None)|string() %}
 .. raw:: latex
 
     \nbsphinxstopnotebook{\scriptsize\noindent\strut
