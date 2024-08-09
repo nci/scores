@@ -1,13 +1,13 @@
 # Release Notes (What's New)
 
-## Version 1.1.0 (Upcoming Release) 
+## Version 1.1.0 (August 9, 2024) 
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.0.0...1.1.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
 - `scores` is now available on [conda-forge](https://anaconda.org/conda-forge/scores).
-- Added five new scores 
+- Added five new metrics 
 	- threshold weighted squared error: ` scores.continuous.tw_squared_error`
 	- threshold weighted absolute error: `scores.continuous.tw_absolute_error`
 	- threshold weighted quantile score: `scores.continuous.tw_quantile_score`
