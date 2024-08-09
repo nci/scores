@@ -25,8 +25,8 @@ source <path_to_environment>/bin/activate
 
 Here is a command to create and activate a new virtual environment with *conda*
 ```py
-conda create -p <path_to_enviroment> python=3
-conda activate <path_to_environment>
+conda create --name <my-env>
+conda activate <my-env>
 ```
 
 ## Installation Options
