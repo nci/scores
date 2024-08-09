@@ -51,7 +51,7 @@
         {
             "affiliation": "Bureau of Meteorology",
             "name": "Sharples, John"
-        },                      
+        }                      
     ],
    
     "license": "Apache-2.0",
@@ -67,5 +67,5 @@
         }
     ],
 
-    "keywords": ["verification", "statistics", "modelling", "geoscience", "earth system science"],
+    "keywords": ["verification", "statistics", "modelling", "geoscience", "earth system science"]
 }
