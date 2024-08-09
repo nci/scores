@@ -1,5 +1,23 @@
 # Release Notes (What's New)
 
+## Version 1.2.0 (Upcoming Release) 
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.1.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+### Breaking Changes
+
+### Deprecations
+
+### Bug Fixes
+
+### Documentation
+
+### Internal Changes
+
+### Contributors to this Release
+
 ## Version 1.1.0 (August 9, 2024) 
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.0.0...1.1.0). Below are the changes we think users may wish to be aware of.
