@@ -40,14 +40,14 @@ All interactions in discussions, issues, emails and code (e.g., pull requests, c
 
 The [installation guide](https://scores.readthedocs.io/en/stable/installation.html) describes four different use cases for installing, using and working with this package.
 
-**Most users currently want the *all* installation option.** This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial notebooks and development libraries.
+**Most users currently want the *all* installation option.** This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial dependencies and development libraries.
 
 From a local checkout of the Git repository
 
 ```bash
 pip install -e .[all]
 ```
-To install the mathematical functions ONLY (no tutorial notebooks, no developer libraries), use the *minimal* installation option. *minimal* is a stable version with limited dependencies. This can be installed from the [Python Package Index (PyPI)](https://pypi.org/project/scores/) or with [conda](https://anaconda.org/conda-forge/scores).
+To install the mathematical functions ONLY (no tutorial dependencies, no developer libraries), use the *minimal* installation option. *minimal* is a stable version with limited dependencies. This can be installed from the [Python Package Index (PyPI)](https://pypi.org/project/scores/) or with [conda](https://anaconda.org/conda-forge/scores).
 
 ```bash
 # PyPI
