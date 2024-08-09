@@ -5,7 +5,7 @@
 This page describes:
 
 - Setting up a virtual environment.
-- The most common installation options for `scores`. (Expert users of pip and conda will note that more variations are possible).
+- The most common installation options for `scores`. (Expert users of pip and conda will note that more variations are possible.)
 - An advanced installation option for Jupyter Notebook, for users who wish to separate the Jupyter environment and the `scores` execution environment.
 
 ## Setting up a Virtual Environment
@@ -23,37 +23,39 @@ python -m venv <path_to_environment>
 source <path_to_environment>/bin/activate
 ```
 
-Here is a command to create and activate a new virtual environment with *conda*
+Here is a command to create and activate a new virtual environment with *conda*:
 ```py
-conda create -p <path_to_enviroment> python=3
-conda activate <path_to_environment>
-
+conda create --name <my-env>
+conda activate <my-env>
 ```
 
 ## Installation Options
 
-Most users will want the "all" installation option. There are also more specialised options for those who need them.  
+There are multiple installation options. Most users currently want the "all" installation option. 
 
 The 4 supported installation options are:
 
-- all: contains mathematical functions, tutorials and development libraries. Excludes maintainer requirements.
-- minimal: ONLY contains mathematical functions (so has limited dependencies).
-- tutorial: ONLY contains mathematical functions and tutorials.
-- maintainer: ONLY contains tools for building the documentation and building for PyPI.
+- all: contains mathematical functions, tutorial dependencies and development libraries. 
+- minimal: ONLY contains mathematical functions (so has limited dependencies). 
+- tutorial: ONLY contains mathematical functions and tutorial dependencies. 
+- maintainer: contains tools for building the documentation and building releases. 
+
+Each of the above installation options are available on PyPI. "Minimal" is also available on conda-forge. (In time, we intend to add more installation options to conda-forge.)
 
 ### 1. "All" Dependencies (excludes some maintainer-only packages)
 
 Use this for `scores` development and general use.
 
 Installs:
-* Mathematical API code and libraries
-* Everything needed to run the tutorial notebooks
-* Testing, static analysis and other developer libraries
-* Does **not** install tools for making packages and releasing new versions
+* Mathematical API code and libraries.
+* Everything needed to run the tutorial notebooks.
+* Testing, static analysis and other developer libraries.
+* Does **not** install tools for making packages and releasing new versions.
 
-#### From a Local Checkout of the Git Repository
+#### With pip
 
 ```bash
+# From a local checkout of the Git repository
 pip install -e .[all]
 ```
 
@@ -61,26 +63,34 @@ pip install -e .[all]
 Use this to install the `scores` code into another package or system.
 
 Installs:
-* Mathematical API functions and libraries
+* Mathematical API functions and libraries.
 * Only the required core dependencies. Nothing extra - no tutorials, no developer requirements.
-* (Note for high-performance users - dask is not included by default in the minimal install, but will be used if installed into the environment)
+* (Note for high-performance users - dask is not included by default in the minimal install, but will be used if installed into the environment.)
 
 #### From PyPI
 
 ```bash
 pip install scores
 ```
+#### With conda
+
+```bash
+conda install conda-forge::scores
+```
+
+(Note: at present, only the "minimal" installation option is available from conda. In time, we intend to add more installation options to conda.)
 
 ### 3. "Tutorial" Dependencies
 Use this for running tutorials using `scores`, but when you don't need or want developer tools.
 
 Installs:
-* Mathematical API functions and libraries
-* JupyterLab, Plotly, and libraries for reading data, so that the tutorial notebooks can be run
+* Mathematical API functions and libraries.
+* JupyterLab, Plotly, and libraries for reading data, so that the tutorial notebooks can be run.
 
-#### From a Local Git Repository
+#### With pip 
 
 ```bash
+# From a local checkout of the Git repository
 pip install .[tutorial]
 ```
 
@@ -88,13 +98,14 @@ pip install .[tutorial]
 Use this to build the docs, create packages and prepare new versions for release.
 
 Installs:
-* Mathematical API functions and libraries
-* Dependencies for building new versions of the `scores` package
-* Dependencies for building the documentation as HTML
+* Mathematical API functions and libraries.
+* Dependencies for building new versions of the `scores` package.
+* Dependencies for building the documentation as HTML.
 
-#### From a Local Git Repository
+#### With pip
 
 ```bash
+# From a local checkout of the Git repository
 pip install -e .[maintainer]
 ```
 

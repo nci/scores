@@ -11,9 +11,9 @@ Information relevant for package maintenance
 5. Perform the merge to main
 6. Build a new environment and perform basic testing on main
 7. Update github with a tagged release
-7. Prepare the package files (see below)
-8. Prepare the PyPI update (should move to a Github Action)
-9. Perform the PyPI update (should move to a Github Action)
+8. Prepare the package files (see below)
+9. Prepare the PyPI update (should move to a Github Action)
+10. Perform the PyPI update (should move to a Github Action)
 
 ### Test the new main branch
 
@@ -46,7 +46,7 @@ Information relevant for package maintenance
 
 ## Version X.Y.Z (Month Day, Year) e.g. "Version 0.9.3 (July 7, 2024)"
 
-For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of."
+For the full details of all changes in this release, see the [GitHub commit history](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of.
 
 ### Features
 ### Breaking Changes
@@ -98,6 +98,12 @@ For each entry: "Brief description. See [PR #ABC](add link) by [@username](add l
 
 ## This section covers checking the documentation renders properly in readthedocs
 
+### Tips for working with pull requests from forks
+
+It can be convenient as maintainer to have write access to people's forks to push small fixes into a PR during the process. When doing so, it's a good idea to check out the remote branch as follows (after adding the fork as a remote)
+
+`git checkout -b test <name of remote>/test`
+
 ### What documentation needs checking in readthedocs
 
 Each time an existing function is modified or a new function is added to `scores`, the rendering in readthedocs for any modified or newly created documentation must be checked. 
@@ -130,9 +136,5 @@ To check the rendering of tutorials in readthedocs:
   - Compare the tutorial in readthedocs against a version running in JupyterLab (as not everything renders in GitHub).
   - Check the entirety of the tutorial (sometimes things will render properly in one section, while not rendering properly in a different section of the same tutorial).
   - If you make any changes to the code cells, re-execute the Notebook in JupyterLab before committing, otherwise some things (e.g. some plots) won't render in readthedocs. Then re-check the tutorial in readthedocs to ensure the tutorial is still rendering properly.
-
-Ideally, also check the tutorial renders properly in nbviewer (there is a link at the top of each tutorial page in readthedocs).
-
-
 
 

@@ -9,7 +9,7 @@ from scores import __version__
 
 project = "scores"
 copyright = "Licensed under Apache 2.0 - https://www.apache.org/licenses/LICENSE-2.0"
-release = "1.0.0"
+release = "1.1.0"
 
 version = __version__
 
@@ -54,7 +54,7 @@ suppress_warnings = ["myst.xref_missing"]
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
 nbsphinx_prolog = r"""
-{% set docname = '' + env.doc2path(env.docname, base=False) %}
+{% set docname = '' + env.doc2path(env.docname, base=False)|string() %}
 
 .. raw:: html
 
@@ -62,21 +62,6 @@ nbsphinx_prolog = r"""
       Interactive online version:
       <span style="white-space: nowrap;"><a href="https://mybinder.org/v2/gh/nci/scores/main?labpath={{ docname|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>.</span>
       <a href="{{ env.docname.split('/')|last|e + '.ipynb' }}" class="reference download internal" download>Download notebook</a>.
-      <script>
-        if (document.location.host) {
-          let nbviewer_link = document.createElement('a');
-          nbviewer_link.setAttribute('href',
-            'https://nbviewer.org/url' +
-            (window.location.protocol == 'https:' ? 's/' : '/') +
-            window.location.host +
-            window.location.pathname.slice(0, -4) +
-            'ipynb');
-          nbviewer_link.innerHTML = 'Or view it on <em>nbviewer</em>';
-          nbviewer_link.classList.add('reference');
-          nbviewer_link.classList.add('external');
-          document.currentScript.replaceWith(nbviewer_link, '.');
-        }
-      </script>
     </div>
 
 .. raw:: latex
@@ -88,7 +73,7 @@ nbsphinx_prolog = r"""
 
 # This is processed by Jinja2 and inserted after each notebook
 nbsphinx_epilog = r"""
-{% set docname = 'doc/' + env.doc2path(env.docname, base=None) %}
+{% set docname = 'doc/' + env.doc2path(env.docname, base=None)|string() %}
 .. raw:: latex
 
     \nbsphinxstopnotebook{\scriptsize\noindent\strut

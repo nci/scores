@@ -117,6 +117,26 @@
   - [API](api.md#scores.continuous.rmse)
   - [Tutorial](project:./tutorials/Root_Mean_Squared_Error.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+* - Threshold Weighted Absolute Error
+  - [API](api.md#scores.continuous.tw_absolute_error)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Expectile Score
+  - [API](api.md#scores.continuous.tw_expectile_score)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Huber Loss
+  - [API](api.md#scores.continuous.tw_huber_loss)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Quantile Score
+  - [API](api.md#scores.continuous.tw_quantile_score)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Squared Error
+  - [API](api.md#scores.continuous.tw_squared_error)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 ```
 
 ## Probability
