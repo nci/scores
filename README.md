@@ -42,19 +42,18 @@ The [installation guide](https://scores.readthedocs.io/en/stable/installation.ht
 
 **Most users currently want the *all* installation option.** This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial dependencies and development libraries.
 
-From a local checkout of the Git repository
-
 ```bash
+# From a local checkout of the Git repository
 pip install -e .[all]
 ```
 To install the mathematical functions ONLY (no tutorial dependencies, no developer libraries), use the default *minimal* installation option. *minimal* is a stable version with limited dependencies. This can be installed from the [Python Package Index (PyPI)](https://pypi.org/project/scores/) or with [conda](https://anaconda.org/conda-forge/scores).
 
 ```bash
-# PyPI
+# From PyPI
 pip install scores
 ```
 ```bash
-# or conda
+# From conda-forge
 conda install conda-forge::scores
 ```
 (Note: at present, only the *minimal* installation option is available from conda. In time, we intend to add more installation options to conda.)
