@@ -60,7 +60,7 @@ conda install conda-forge::scores
 
 ## Using `scores`
 
-Here is a short example of the use of scores:
+Here is a short example of the use of `scores`:
 
 ```py
 > import scores
