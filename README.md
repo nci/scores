@@ -25,28 +25,40 @@ Here is a **curated selection** of the metrics, tools and statistical tests incl
 | **[Processing Tools](https://scores.readthedocs.io/en/stable/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation.              	|
 
 
-`scores` not only includes common scores (e.g. MAE, RMSE), it includes novel scores not commonly found elsewhere (e.g. FIRM, Flip-Flop Index), complex scores (e.g. threshold weighted CRPS), and statistical tests (such as the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
+`scores` not only includes common scores (e.g., MAE, RMSE), it includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (such as the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
 `scores` primarily supports xarray datatypes for Earth system data allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. Some metrics work with pandas and we aim to expand this capability. 
 
 All of the scores and metrics in this package have undergone a thorough scientific review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
 ## Contributing
-To find out more about contributing, see our [Contributing Guide](https://scores.readthedocs.io/en/stable/contributing.html).
+To find out more about contributing, see our [contributing guide](https://scores.readthedocs.io/en/stable/contributing.html).
 
-All interactions in discussions, issues, emails and code (e.g. pull requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40,000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
+All interactions in discussions, issues, emails and code (e.g., pull requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40,000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
-## Using This Package
+## Installation
 
 The [installation guide](https://scores.readthedocs.io/en/stable/installation.html) describes four different use cases for installing, using and working with this package.
 
-Most users currently want the *all* installation option. This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial notebooks and development libraries.
-
-From a Local Checkout of the Git Repository
+**Most users currently want the *all* installation option.** This includes the mathematical functions (scores, metrics, statistical tests etc.), the tutorial dependencies and development libraries.
 
 ```bash
-> pip install -e .[all]
+# From a local checkout of the Git repository
+pip install -e .[all]
 ```
+**To install the mathematical functions ONLY** (no tutorial dependencies, no developer libraries), use the default *minimal* installation option. *minimal* is a stable version with limited dependencies. This can be installed from the [Python Package Index (PyPI)](https://pypi.org/project/scores/) or with [conda](https://anaconda.org/conda-forge/scores).
+
+```bash
+# From PyPI
+pip install scores
+```
+```bash
+# From conda-forge
+conda install conda-forge::scores
+```
+(Note: at present, only the *minimal* installation option is available from conda. In time, we intend to add more installation options to conda.)
+
+## Using `scores`
 
 Here is a short example of the use of scores:
 
@@ -59,16 +71,11 @@ Here is a short example of the use of scores:
 <xarray.DataArray ()>
 array(2.)
 ```
-
-To install the mathematical functions ONLY (no tutorial notebooks, no developer libraries), use the *minimal* installation option. *minimal* is a stable version with limited dependencies and can be installed from the Python Package Index.
-
-```bash
-> pip install scores
-```
+[Jupyter Notebook tutorials](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html) are provided for each metric and statistical test in `scores`, as well as for some of the key features of `scores` (e.g., [dimension handling](https://scores.readthedocs.io/en/stable/tutorials/Dimension_Handling.html) and [weighting results](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html)). 
 
 ## Finding, Downloading and Working With Data
 
-All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). [Some metrics](https://scores.readthedocs.io/en/stable/included.html#pandas) work with [pandas](https://pandas.pydata.org/). As such, `scores` works with any data source for which xarray or pandas can be used. See the [Data Sources](https://scores.readthedocs.io/en/stable/data.html) page and [this tutorial](https://scores.readthedocs.io/en/stable/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
+All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). [Some metrics](https://scores.readthedocs.io/en/stable/included.html#pandas) work with [pandas](https://pandas.pydata.org/). As such, `scores` works with any data source for which xarray or pandas can be used. See the [data sources](https://scores.readthedocs.io/en/stable/data.html) page and [this tutorial](https://scores.readthedocs.io/en/stable/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
 
 ## Acknowledging This Work
 
