@@ -23,7 +23,7 @@ python -m venv <path_to_environment>
 source <path_to_environment>/bin/activate
 ```
 
-Here is a command to create and activate a new virtual environment with *conda*
+Here is a command to create and activate a new virtual environment with *conda*:
 ```py
 conda create --name <my-env>
 conda activate <my-env>
