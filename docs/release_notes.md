@@ -2,10 +2,11 @@
 
 ## Version 1.1.0 (Upcoming Release) 
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.0.0...develop). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.0.0...1.1.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
+- `scores` is now available on [conda-forge](https://anaconda.org/conda-forge/scores).
 - Added five new scores 
 	- threshold weighted squared error: ` scores.continuous.tw_squared_error`
 	- threshold weighted absolute error: `scores.continuous.tw_absolute_error`
@@ -13,12 +14,6 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- threshold weighted expectile score: `scores.continuous.tw_expectile_score`
 	- threshold weighted Huber loss: `scores.continuous.tw_huber_loss`.  
 See [PR #609](https://github.com/nci/scores/pull/609).
-
-### Breaking Changes
-
-### Deprecations
-
-### Bug Fixes
 
 ### Documentation
 
