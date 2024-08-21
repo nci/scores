@@ -661,6 +661,33 @@ DS_BIAS2 = xr.Dataset({"a": DA2_BIAS, "b": DA1_BIAS})
 EXP_DS_BIAS1 = xr.Dataset({"a": EXP_BIAS1, "b": -EXP_BIAS1})
 EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
 
+## for additive_bias_percentage
+EXP_PBIAS1 = xr.DataArray(
+    np.array([-50,  -100., (0.5/3+0.5/3)/(-0.5/3)*100]),
+    dims=("space"),
+    coords=[       
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_PBIAS2 = xr.DataArray(
+    np.array([100.,   np.inf,(0.5/3+0.5/3)/(-0.5/3)*100]),
+    dims=("space"),
+    coords=[       
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PBIAS3 = xr.DataArray(
+    np.array([ -50., -100.,  -75. ]),
+    dims=("space"),
+    coords=[       
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PBIAS4 = xr.DataArray(np.array(-13/15.5*100))
+
+EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
@@ -745,3 +772,45 @@ def test_multiplicative_bias_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS6)
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", None, EXP_PBIAS1),
+        # Check divide by zero returns a np.inf
+        (DA2_BIAS, DA1_BIAS, None, "space", None, EXP_PBIAS2),
+        # Check weighting works
+        (DA1_BIAS, DA3_BIAS, None, "space", BIAS_WEIGHTS, EXP_PBIAS3),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_PBIAS1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, None, EXP_PBIAS4),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_PBIAS1),
+    ],
+)
+
+def test_additive_bias_percentage(fcst, obs, reduce_dims, preserve_dims, weights, expected):
+    """
+    Tests continuous.additive_bias_percentage
+    """
+    result = scores.continuous.additive_bias_percentage(
+        fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
+    )
+    #xr.testing.assert_equal(result, expected)
+    xr.testing.assert_allclose(result, expected,rtol=1e-10, atol=1e-10)
+
+
+def test_additive_bias_percentage_dask():
+    """
+    Tests that continuous.additive_bias_percentage works with Dask
+    """
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    weights = BIAS_WEIGHTS.chunk()
+    result = scores.continuous.additive_bias_percentage(fcst, obs, preserve_dims="space", weights=weights)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_PBIAS3)

@@ -341,3 +341,57 @@ def multiplicative_bias(
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return multi_bias
+
+
+def additive_bias_percentage(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
+    """
+    Calculates the percentage bias which is ratio of additive_bias and mean obs
+
+    It is defined as
+
+    .. math::
+        \\text{Additive bias percentage} =\\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
+        \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
+
+
+    See "pbias" section at https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html for more information
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the percentage additive bias. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the additive bias percentage. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        An xarray object with the percentage additive bias of a forecast.
+
+    """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+    fcst = scores.functions.apply_weights(fcst, weights=weights)
+    obs = scores.functions.apply_weights(obs, weights=weights)
+
+    # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
+    # same points
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
+    error = fcst - obs
+
+    pbias = 100*error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    return pbias
