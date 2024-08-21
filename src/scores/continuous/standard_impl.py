@@ -352,7 +352,7 @@ def additive_bias_percentage(
     weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
-    Calculates the percentage bias which is ratio of additive_bias and mean obs
+    Calculates the percentage bias which is ratio of additive_bias and mean obs.
 
     It is defined as
 

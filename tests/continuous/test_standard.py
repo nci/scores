@@ -663,31 +663,32 @@ EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
 
 ## for additive_bias_percentage
 EXP_PBIAS1 = xr.DataArray(
-    np.array([-50,  -100., (0.5/3+0.5/3)/(-0.5/3)*100]),
+    np.array([-50, -100.0, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
     dims=("space"),
-    coords=[       
+    coords=[
         ("space", ["w", "x", "y"]),
     ],
 )
 EXP_PBIAS2 = xr.DataArray(
-    np.array([100.,   np.inf,(0.5/3+0.5/3)/(-0.5/3)*100]),
+    np.array([100.0, np.inf, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
     dims=("space"),
-    coords=[       
+    coords=[
         ("space", ["w", "x", "y"]),
     ],
 )
 
 EXP_PBIAS3 = xr.DataArray(
-    np.array([ -50., -100.,  -75. ]),
+    np.array([-50.0, -100.0, -75.0]),
     dims=("space"),
-    coords=[       
+    coords=[
         ("space", ["w", "x", "y"]),
     ],
 )
 
-EXP_PBIAS4 = xr.DataArray(np.array(-13/15.5*100))
+EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
 
 EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
+
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
@@ -773,6 +774,7 @@ def test_multiplicative_bias_dask():
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS6)
 
+
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
     [
@@ -790,7 +792,6 @@ def test_multiplicative_bias_dask():
         (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_PBIAS1),
     ],
 )
-
 def test_additive_bias_percentage(fcst, obs, reduce_dims, preserve_dims, weights, expected):
     """
     Tests continuous.additive_bias_percentage
@@ -798,8 +799,8 @@ def test_additive_bias_percentage(fcst, obs, reduce_dims, preserve_dims, weights
     result = scores.continuous.additive_bias_percentage(
         fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
-    #xr.testing.assert_equal(result, expected)
-    xr.testing.assert_allclose(result, expected,rtol=1e-10, atol=1e-10)
+    # xr.testing.assert_equal(result, expected)
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
 
 
 def test_additive_bias_percentage_dask():
