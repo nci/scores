@@ -393,5 +393,5 @@ def additive_bias_percentage(
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     error = fcst - obs
 
-    pbias = 100*error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return pbias
