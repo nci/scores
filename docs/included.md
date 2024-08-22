@@ -13,6 +13,10 @@
   - [API](api.md#scores.continuous.additive_bias)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
   - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
+* - Additive Bias percentage
+  - [API](api.md#scores.continuous.additive_bias_percentage)
+  - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
+  - [https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html)  
 * - Consistent Expectile Score
   - [API](api.md#scores.continuous.consistent_expectile_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)
