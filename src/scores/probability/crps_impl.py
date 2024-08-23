@@ -856,6 +856,7 @@ def crps_for_ensemble(
 
     # calculate forecast spread contribution
     fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
+    import pdb; pdb.set_trace()
 
     fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     ens_count = fcst.count(ensemble_member_dim)
@@ -920,12 +921,12 @@ def tail_twcrps_for_ensemble(
     """
     if tail == "upper":
 
-        def vfunc(x):
+        def _vfunc(x):
             return np.maximum(x, threshold)
 
     elif tail == "lower":
 
-        def vfunc(x):
+        def _vfunc(x):
             return np.minimum(x, threshold)
 
     else:
@@ -935,7 +936,7 @@ def tail_twcrps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim,
-        vfunc,
+        _vfunc,
         method=method,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
