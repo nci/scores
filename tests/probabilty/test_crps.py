@@ -18,6 +18,7 @@ from scores.probability import (
     crps_cdf,
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
+    twcrps_for_ensemble,
     tail_twcrps_for_ensemble,
 )
 from scores.probability.crps_impl import (
@@ -682,3 +683,47 @@ def test_tail_twcrps_for_ensemble_raises():
             method="ecdf",
             tail="middle",
         )
+
+
+def v_func1(x):
+    """For testing twcrps_for_ensembles. The equivalent of a tail weight for thresholds 1 and higher"""
+    return np.maximum(x, 1)
+
+
+def v_func2(x):
+    """For testing twcrps_for_ensembles. The equivalent of the unweighted CRPS"""
+    return x
+
+
+def v_func3(x):
+    """For testing twcrps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension"""
+    return np.maximum(x, crps_test_data.DA_T_TWCRPSENS)
+
+
+@pytest.mark.parametrize(
+    ("method", "v_func", "preserve_dims", "reduce_dims", "weights", "expected"),
+    [
+        ("ecdf", v_func1, "all", None, None, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF),
+        ("fair", v_func1, "all", None, None, crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR),
+        # test that it equals the standard CRPS when the tail contains all threshold
+        ("ecdf", v_func2, "all", None, None, crps_test_data.EXP_CRPSENS_ECDF),
+        # # test that both the weights and reduce dims args work
+        ("ecdf", v_func2, None, "stn", crps_test_data.DA_WT_CRPSENS, crps_test_data.EXP_CRPSENS_WT),
+        # # test that it works when threshold vary across a dimension
+        ("ecdf", v_func3, "all", None, None, crps_test_data.EXP_VAR_THRES_CRPSENS),
+    ],
+)
+def test_tail_twcrps_for_ensemble(method, v_func, preserve_dims, reduce_dims, weights, expected):
+    """Tests twcrps_for_ensembles"""
+
+    result = twcrps_for_ensemble(
+        fcst=crps_test_data.DA_FCST_CRPSENS,
+        obs=crps_test_data.DA_OBS_CRPSENS,
+        ensemble_member_dim="ens_member",
+        v_func=v_func,
+        method=method,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights,
+    )
+    xr.testing.assert_allclose(result, expected)
