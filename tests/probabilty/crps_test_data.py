@@ -616,12 +616,12 @@ LOWER_TAIL_FIRST_TERM = xr.DataArray(
     data=[1 / 4, 2 / 4, 1 / 3, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
 )
 LOWER_TAIL_SPREAD_ECDF = xr.DataArray(
-    data=[(3+1+1+1) / 32, (2+6+2+2) / 32, (2+1+1) / 18, np.nan, 0],
+    data=[(3 + 1 + 1 + 1) / 32, (2 + 6 + 2 + 2) / 32, (2 + 1 + 1) / 18, np.nan, 0],
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104, 105]},
 )
 LOWER_TAIL_SPREAD_FAIR = xr.DataArray(
-    data=[(3+1+1+1) / 24, (2+6+2+2) / 24, (2+1+1) / 12, np.nan, np.nan],
+    data=[(3 + 1 + 1 + 1) / 24, (2 + 6 + 2 + 2) / 24, (2 + 1 + 1) / 12, np.nan, np.nan],
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104, 105]},
 )

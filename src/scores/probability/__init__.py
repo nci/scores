@@ -11,7 +11,7 @@ from scores.probability.crps_impl import (
     crps_for_ensemble,
     crps_step_threshold_weight,
     twcrps_for_ensemble,
-    tail_twcrps_for_ensemble
+    tail_twcrps_for_ensemble,
 )
 from scores.probability.roc_impl import roc_curve_data
 from scores.processing.isoreg_impl import isotonic_fit
@@ -28,5 +28,5 @@ __all__ = [
     "isotonic_fit",
     "crps_step_threshold_weight",
     "twcrps_for_ensemble",
-    "tail_twcrps_for_ensemble"
+    "tail_twcrps_for_ensemble",
 ]
