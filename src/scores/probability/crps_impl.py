@@ -5,7 +5,7 @@ the probability module to be part of the probability API.
 """
 
 from collections.abc import Iterable
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -872,3 +872,73 @@ def crps_for_ensemble(
     result = scores.functions.apply_weights(result, weights=weights).mean(dim=dims_for_mean)  # type: ignore
 
     return result  # type: ignore
+
+
+def twcrps_for_ensemble(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    ensemble_member_dim: str,
+    v_func: callable[xr.DataArray],  
+    *,  # Force keywords arguments to be keyword-only
+    method: Literal["ecdf", "fair"] = "ecdf",
+    reduce_dims: Optional[Sequence[str]] = None,
+    preserve_dims: Optional[Sequence[str]] = None,
+    weights: Optional[xr.DataArray] = None,
+) -> xr.DataArray:
+    """
+    twCRPS with custom chaing func ``v_func``
+    """
+
+    fcst = v_func(fcst)
+    obs = v_func(obs)
+    result = crps_for_ensemble(
+        fcst,
+        obs,
+        ensemble_member_dim,
+        method=method,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+    return result
+
+
+def tail_twcrps_for_ensemble(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    ensemble_member_dim: str,
+    threshold: Union[xr.DataArray, float],  
+    *,  # Force keywords arguments to be keyword-only
+    tail: Literal["upper", "lower"] = "upper",
+    method: Literal["ecdf", "fair"] = "ecdf",
+    reduce_dims: Optional[Sequence[str]] = None,
+    preserve_dims: Optional[Sequence[str]] = None,
+    weights: Optional[xr.DataArray] = None,
+) -> xr.DataArray:
+    """
+    twCRPS but for an upper or lower tail above or below the `threshold` arg.
+    """
+    if tail == "upper":
+
+        def vfunc(x):
+            return np.maximum(x, threshold)
+
+    elif tail == "lower":
+
+        def vfunc(x):
+            return np.minimum(x, threshold)
+
+    else:
+        raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
+
+    result = twcrps_for_ensemble(
+        fcst,
+        obs,
+        ensemble_member_dim,
+        vfunc,
+        method=method,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+    return result
