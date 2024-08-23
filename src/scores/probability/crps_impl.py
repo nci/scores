@@ -5,7 +5,7 @@ the probability module to be part of the probability API.
 """
 
 from collections.abc import Iterable
-from typing import Literal, Optional, Sequence, Union, Callable
+from typing import Callable, Literal, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
