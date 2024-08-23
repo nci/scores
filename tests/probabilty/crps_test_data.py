@@ -572,7 +572,7 @@ DA_FCST_CRPSENS = xr.DataArray(
 )
 DA_OBS_CRPSENS = xr.DataArray(data=[2.0, 3, 1, np.nan, 4], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 DA_WT_CRPSENS = xr.DataArray(data=[1, 2, 1, 0, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
-
+DA_T_TWCRPSENS = xr.DataArray(data=[np.nan, 1, 10, 1, -2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 # first and second (spread) terms from crps for ensembles, "ecdf" and "fair" methods
 FIRST_TERM = xr.DataArray(
     data=[10 / 4, 8 / 4, 4 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
@@ -609,3 +609,32 @@ UPPER_TAIL_SPREAD_FAIR = xr.DataArray(
 )
 EXP_UPPER_TAIL_CRPSENS_ECDF = UPPER_TAIL_FIRST_TERM - UPPER_TAIL_SPREAD_ECDF
 EXP_UPPER_TAIL_CRPSENS_FAIR = UPPER_TAIL_FIRST_TERM - UPPER_TAIL_SPREAD_FAIR
+
+
+# exp test data for twCRPS with lower tail for thresholds <=1
+LOWER_TAIL_FIRST_TERM = xr.DataArray(
+    data=[1 / 4, 2 / 4, 1 / 3, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+LOWER_TAIL_SPREAD_ECDF = xr.DataArray(
+    data=[(3+1+1+1) / 32, (2+6+2+2) / 32, (2+1+1) / 18, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+LOWER_TAIL_SPREAD_FAIR = xr.DataArray(
+    data=[(3+1+1+1) / 24, (2+6+2+2) / 24, (2+1+1) / 12, np.nan, np.nan],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_LOWER_TAIL_CRPSENS_ECDF = LOWER_TAIL_FIRST_TERM - LOWER_TAIL_SPREAD_ECDF
+EXP_LOWER_TAIL_CRPSENS_FAIR = LOWER_TAIL_FIRST_TERM - LOWER_TAIL_SPREAD_FAIR
+
+# exp test data for twCRP with the upper tail varying across a dimension
+VAR_THRES_FIRST_TERM = xr.DataArray(
+    data=[np.nan, 6 / 4, 0, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+VAR_THRES_SPREAD_ECDF = xr.DataArray(
+    data=[np.nan, (4 + 4 + 4 + 8) / 32, 0, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_VAR_THRES_CRPSENS = VAR_THRES_FIRST_TERM - VAR_THRES_SPREAD_ECDF

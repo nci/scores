@@ -920,7 +920,6 @@ def tail_twcrps_for_ensemble(
     twCRPS but for an upper or lower tail above or below the `threshold` arg.
     """
     if tail == "upper":
-
         def _vfunc(x):
             return np.maximum(x, threshold)
 

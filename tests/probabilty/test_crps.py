@@ -640,15 +640,32 @@ def test_crps_for_ensemble_dask():
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
 
-
-def test_tail_twcrps_for_ensemble():
+@pytest.mark.parametrize(
+    ("method", "tail", "threshold", "preserve_dims", "reduce_dims", "weights", "expected"),
+    [
+        ("ecdf", "upper", 1, "all", None, None, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF),
+        ("fair", "upper", 1, "all", None, None, crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR),
+        ("ecdf", "lower", 1, "all", None, None, crps_test_data.EXP_LOWER_TAIL_CRPSENS_ECDF),
+        ("fair", "lower", 1, "all", None, None, crps_test_data.EXP_LOWER_TAIL_CRPSENS_FAIR),
+        # test that it equals the standard CRPS when the tail contains all threshold
+        ("ecdf", "lower", np.inf, "all", None, None, crps_test_data.EXP_CRPSENS_ECDF), 
+        # test that both the weights and reduce dims args work
+        ("ecdf", "lower", np.inf, None, "stn", crps_test_data.DA_WT_CRPSENS, crps_test_data.EXP_CRPSENS_WT),
+        # test that passing an xarray object for the threshold arg works
+        ("ecdf", "upper", crps_test_data.DA_T_TWCRPSENS, "all", None, None, crps_test_data.EXP_VAR_THRES_CRPSENS),
+    ],
+)
+def test_tail_twcrps_for_ensemble(method, tail, threshold, preserve_dims, reduce_dims, weights, expected):
+    """Tests tail_twcrps_for_ensembles"""
     result = tail_twcrps_for_ensemble(
         fcst=crps_test_data.DA_FCST_CRPSENS,
         obs=crps_test_data.DA_OBS_CRPSENS,
         ensemble_member_dim="ens_member",
-        threshold=1,
-        method="ecdf",
-        tail="upper",
-        preserve_dims="all",
+        threshold=threshold,
+        method=method,
+        tail=tail,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights
     )
-    xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF)
+    xr.testing.assert_allclose(result, expected)
