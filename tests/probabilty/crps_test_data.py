@@ -594,17 +594,18 @@ EXP_CRPSENS_FAIR = FIRST_TERM - SPREAD_FAIR
 EXP_CRPSENS_WT = (EXP_CRPSENS_ECDF * DA_WT_CRPSENS).mean("stn")
 
 # exp test data for twCRPS with upper tail for thresholds >=1
-FIRST_TERM = xr.DataArray(
-    data=[9 / 4, 6 / 4, 4 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+UPPER_TAIL_FIRST_TERM = xr.DataArray(
+    data=[9 / 4, 6 / 4, 3 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
 )
-SPREAD_ECDF = xr.DataArray(
-    data=[(14 + 8 + 8 + 14) / 32, (6 + 10 + 6 + 10) / 32, (5 + 4 + 7) / 18, np.nan, 0],
+UPPER_TAIL_SPREAD_ECDF = xr.DataArray(
+    data=[(11 + 7 + 7 + 13) / 32, (4 + 4 + 4 + 8) / 32, (3 + 3 + 6) / 18, np.nan, 0],
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104, 105]},
 )
-# SPREAD_FAIR = xr.DataArray(
-#     data=[(14 + 8 + 8 + 14) / 24, (6 + 10 + 6 + 10) / 24, (5 + 4 + 7) / 12, np.nan, np.nan],
-#     dims=["stn"],
-#     coords={"stn": [101, 102, 103, 104, 105]},
-# )
-
+UPPER_TAIL_SPREAD_FAIR = xr.DataArray(
+    data=[(11 + 7 + 7 + 13) / 24, (4 + 4 + 4 + 8) / 24, (3 + 3 + 6) / 12, np.nan, np.nan],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF = UPPER_TAIL_FIRST_TERM - UPPER_TAIL_SPREAD_ECDF
+EXP_UPPER_TAIL_CRPSENS_FAIR = UPPER_TAIL_FIRST_TERM - UPPER_TAIL_SPREAD_FAIR

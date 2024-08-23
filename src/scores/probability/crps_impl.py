@@ -5,7 +5,7 @@ the probability module to be part of the probability API.
 """
 
 from collections.abc import Iterable
-from typing import Literal, Optional, Sequence, Union
+from typing import Literal, Optional, Sequence, Union, Callable
 
 import numpy as np
 import pandas as pd
@@ -856,9 +856,9 @@ def crps_for_ensemble(
 
     # calculate forecast spread contribution
     fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
-    import pdb; pdb.set_trace()
 
     fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
+
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
@@ -879,7 +879,7 @@ def twcrps_for_ensemble(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     ensemble_member_dim: str,
-    v_func: callable[xr.DataArray],  
+    v_func: Callable[[Union[xr.DataArray, float]], xr.DataArray],
     *,  # Force keywords arguments to be keyword-only
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
@@ -908,7 +908,7 @@ def tail_twcrps_for_ensemble(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     ensemble_member_dim: str,
-    threshold: Union[xr.DataArray, float],  
+    threshold: Union[xr.DataArray, float],
     *,  # Force keywords arguments to be keyword-only
     tail: Literal["upper", "lower"] = "upper",
     method: Literal["ecdf", "fair"] = "ecdf",

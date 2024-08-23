@@ -18,6 +18,7 @@ from scores.probability import (
     crps_cdf,
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
+    tail_twcrps_for_ensemble,
 )
 from scores.probability.crps_impl import (
     crps_cdf_exact,
@@ -638,3 +639,16 @@ def test_crps_for_ensemble_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
+
+
+def test_tail_twcrps_for_ensemble():
+    result = tail_twcrps_for_ensemble(
+        fcst=crps_test_data.DA_FCST_CRPSENS,
+        obs=crps_test_data.DA_OBS_CRPSENS,
+        ensemble_member_dim="ens_member",
+        threshold=1,
+        method="ecdf",
+        tail="upper",
+        preserve_dims="all",
+    )
+    xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF)
