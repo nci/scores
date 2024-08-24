@@ -80,7 +80,7 @@ def test_pod_dask():
     result = probability_of_detection(fcst_mix.chunk(), obs1.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    assert isinstance(result.data, np.ndarray)
+    assert isinstance(result.data, np.ndarray | np.generic)
     xr.testing.assert_equal(result, expected_pod3)
 
 
@@ -134,7 +134,7 @@ def test_pofd_dask():
     result = probability_of_false_detection(fcst_mix.chunk(), obs0.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    assert isinstance(result.data, np.ndarray)
+    assert isinstance(result.data, np.ndarray | np.generic)
     xr.testing.assert_equal(result, expected_pofd3)
 
 

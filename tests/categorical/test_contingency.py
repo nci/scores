@@ -373,7 +373,7 @@ def test_dask_if_available_categorical():
 
     # And that transformed tables are built out of computed things
     simple_counts = table.transform().get_counts()
-    assert isinstance(simple_counts["tp_count"].data, np.ndarray)
+    assert isinstance(simple_counts["tp_count"].data, np.ndarray | np.generic)
 
     # And that transformed things get the same numbers
     assert table.false_alarm_rate() == table.transform().false_alarm_rate()
