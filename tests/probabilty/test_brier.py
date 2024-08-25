@@ -89,7 +89,7 @@ def test_brier_score_dask():
     result = brier_score(FCST1.chunk(), OBS1.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    assert isinstance(result.data, np.ndarray | np.generic)
+    assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, xr.DataArray(0.1))
 
 

@@ -414,7 +414,7 @@ def test_flip_flop_index_is_dask_compatible():
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     xr.testing.assert_allclose(result, ntd.EXP_FFI_SUB_CASE0)
-    assert isinstance(result.data, np.ndarray | np.generic)
+    assert isinstance(result.data, (np.ndarray, np.generic))
 
 
 def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
