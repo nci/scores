@@ -778,7 +778,7 @@ def crps_for_ensemble(
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights: Optional[xr.DataArray] = None,
+    weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """Calculates the CRPS probabilistic metric given ensemble input.
 
@@ -877,15 +877,15 @@ def crps_for_ensemble(
 
 
 def twcrps_for_ensemble(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     ensemble_member_dim: str,
-    v_func: Callable[[Union[xr.DataArray, float]], xr.DataArray],
+    v_func: Callable[[Union[XarrayLike, float]], XarrayLike],
     *,  # Force keywords arguments to be keyword-only
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights: Optional[xr.DataArray] = None,
+    weights: Optional[XarrayLike] = None,
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given ensemble
@@ -908,20 +908,22 @@ def twcrps_for_ensemble(
 
 
 def tail_twcrps_for_ensemble(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     ensemble_member_dim: str,
-    threshold: Union[xr.DataArray, float],
+    threshold: Union[XarrayLike, float],
     *,  # Force keywords arguments to be keyword-only
     tail: Literal["upper", "lower"] = "upper",
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
-    weights: Optional[xr.DataArray] = None,
-) -> xr.DataArray:
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
     """
     twCRPS but for an upper or lower tail above or below the `threshold` arg.
     """
+    if tail not in ["upper", "lower"]:
+        raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
     if tail == "upper":
 
         def _vfunc(x):
@@ -931,9 +933,6 @@ def tail_twcrps_for_ensemble(
 
         def _vfunc(x):
             return np.minimum(x, threshold)
-
-    else:
-        raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
 
     result = twcrps_for_ensemble(
         fcst,
