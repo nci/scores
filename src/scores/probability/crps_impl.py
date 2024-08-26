@@ -952,8 +952,8 @@ def twcrps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import twcrps_for_ensemble
-        >>> fcst = xr.DataArray(np.random.rand(10, 5), dims=['threshold', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['threshold'])
+        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
+        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
         >>> twcrps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
     """
@@ -985,7 +985,53 @@ def tail_twcrps_for_ensemble(
     weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
-    twCRPS but for an upper or lower tail above or below the `threshold` arg.
+    Calculates the threshold weighted continuous ranked probability score (twCRPS)
+    weighted for a tail of the distribution from ensemble input.
+
+    A weight of 1 is assigned for values of the tail and a weight of 0 otherwise.
+    The threshold value of the tail is specified by the `threshold` argument. For
+    more flexible weighting options, see the :py:func:`twcrps_for_ensemble` function.
+
+    Args:
+        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        obs: Observation data.
+        ensemble_member_dim: the dimension that specifies the ensemble member or the sample
+            from the predictive distribution.
+        threshold: the threshold value for the tail. It can either be a float for a single threshold
+          or an xarray object if the threshold varies across dimensions (e.g., climatological values).
+        tail: the tail of the distribution to weight. Either "upper" or "lower".
+        method: Either "ecdf" or "fair".
+        reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+        preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+        weights: Weights for calculating a weighted mean of individual scores.
+
+    Returns:
+        xarray object of twCRPS values.
+
+    Raises:
+        ValueError: when `tail` is not one of "upper" or "lower".
+        ValueError: when method is not one of "ecdf" or "fair".
+
+    References:
+        Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+        events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
+
+    See also:
+        :py:func:`scores.probability.twcrps_for_ensemble`
+        :py:func:`scores.probability.crps_cdf`
+
+    Examples:
+        Calculate the twCRPS for an ensemble of that assigns a weight of 1 to thresholds above
+        0.5 and a weight of 0 to thresholds below 0.5.
+
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.probability import tail_twcrps_for_ensemble
+        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
+        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> tail_twcrps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+
     """
     if tail not in ["upper", "lower"]:
         raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
