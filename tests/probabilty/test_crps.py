@@ -787,6 +787,47 @@ def test_tail_twcrps_for_ensemble(fcst, obs, method, tail, threshold, preserve_d
     xr.testing.assert_allclose(result, expected)
 
 
+def test_tail_twcrps_for_ensemble_dask():
+    """Tests `tail_twcrps_for_ensemble` works with dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    # Check that it works with xr.Datarrays
+    result = tail_twcrps_for_ensemble(
+        fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        threshold=1,
+        method="ecdf",
+        tail="upper",
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
+
+    # Check that it works with xr.Datasets
+    result_ds = tail_twcrps_for_ensemble(
+        fcst=crps_test_data.DS_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DS_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        threshold=1,
+        method="ecdf",
+        tail="upper",
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+    )
+    assert isinstance(result_ds["a"].data, dask.array.Array)
+    result_ds = result_ds.compute()
+    assert isinstance(result_ds["a"].data, np.ndarray)
+    xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
+
+
 def test_tail_twcrps_for_ensemble_raises():
     with pytest.raises(ValueError, match="'middle' is not one of 'upper' or 'lower'"):
         result = tail_twcrps_for_ensemble(
@@ -902,7 +943,7 @@ def v_func4(x):
         ),
     ],
 )
-def test_tail_twcrps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, expected):
+def test_twcrps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, expected):
     """Tests twcrps_for_ensembles"""
 
     result = twcrps_for_ensemble(
@@ -916,3 +957,37 @@ def test_tail_twcrps_for_ensemble(fcst, obs, method, v_func, preserve_dims, redu
         weights=weights,
     )
     xr.testing.assert_allclose(result, expected)
+
+
+def test_twcrps_for_ensemble_dask():
+    """Tests `twcrps_for_ensemble` works with dask."""
+    result = twcrps_for_ensemble(
+        fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        v_func=v_func1,
+        method="ecdf",
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
+
+    # Check that it works with xr.Datasets
+    result_ds = twcrps_for_ensemble(
+        fcst=crps_test_data.DS_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DS_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        v_func=v_func1,
+        method="ecdf",
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+    )
+    assert isinstance(result_ds["a"].data, dask.array.Array)
+    result_ds = result_ds.compute()
+    assert isinstance(result_ds["a"].data, np.ndarray)
+    xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
