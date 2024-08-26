@@ -219,7 +219,15 @@
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
-  - &mdash;  
+  - &mdash;
+* - Tail Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tail_twcrps_for_ensemble)   
+  - &mdash;
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
+* - Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.twcrps_for_ensemble)   
+  - &mdash;
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
 ```
 
 ## Categorical

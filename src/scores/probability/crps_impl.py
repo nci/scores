@@ -895,7 +895,7 @@ def twcrps_for_ensemble(
     The twCRPS is calculated by the formula
     .. math::
         \\text{CRPS}(F, y) = \\mathbb{E}_F \\left| v(X) - v(y) \\right|
-        - \\frac{1}{2} \\mathbb{E}_F \\left| v(X) - v(X') \\right|
+        - \\frac{1}{2} \\mathbb{E}_F \\left| v(X) - v(X') \\right|,
 
     where :math:`X` and :math:`X'` are independent samples of the predictive distribution :math:`F`,
     :math:`y` is the observation, and :math:`v` is a 'chaining function'.
@@ -990,7 +990,8 @@ def tail_twcrps_for_ensemble(
 
     A weight of 1 is assigned for values of the tail and a weight of 0 otherwise.
     The threshold value of the tail is specified by the `threshold` argument. For
-    more flexible weighting options, see the :py:func:`twcrps_for_ensemble` function.
+    more flexible weighting options and the relevant equations, see the
+    :py:func:`twcrps_for_ensemble` function.
 
     Args:
         fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
