@@ -636,6 +636,21 @@ def test_crps_for_ensemble_ds():
     xr.testing.assert_allclose(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT_DS)
 
 
+def test_crps_for_ensemble_broadcast():
+    """
+    Tests `crps_for_ensemble` returns as expected when the forecast has an extra
+    dimension compared to the observation.
+    """
+    result_ecdf = crps_for_ensemble(
+        crps_test_data.DA_FCST_CRPSENS_LT,
+        crps_test_data.DA_OBS_CRPSENS,
+        "ens_member",
+        method="ecdf",
+        preserve_dims="all",
+    )
+    xr.testing.assert_allclose(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF_BC)
+
+
 def test_crps_for_ensemble_raises():
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
@@ -665,6 +680,7 @@ def test_crps_for_ensemble_dask():
 @pytest.mark.parametrize(
     ("fcst", "obs", "method", "tail", "threshold", "preserve_dims", "reduce_dims", "weights", "expected"),
     [
+        # Test ECDF upper
         (
             crps_test_data.DA_FCST_CRPSENS,
             crps_test_data.DA_OBS_CRPSENS,
@@ -676,6 +692,19 @@ def test_crps_for_ensemble_dask():
             None,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
+        # Test broadcasting
+        (
+            crps_test_data.DA_FCST_CRPSENS_LT,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            "upper",
+            1,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_BC,
+        ),
+        # Test fair lower
         (
             crps_test_data.DA_FCST_CRPSENS,
             crps_test_data.DA_OBS_CRPSENS,
@@ -687,6 +716,7 @@ def test_crps_for_ensemble_dask():
             None,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR_DA,
         ),
+        # Test ECDF lower
         (
             crps_test_data.DA_FCST_CRPSENS,
             crps_test_data.DA_OBS_CRPSENS,
@@ -698,6 +728,7 @@ def test_crps_for_ensemble_dask():
             None,
             crps_test_data.EXP_LOWER_TAIL_CRPSENS_ECDF_DA,
         ),
+        # Test fair lower
         (
             crps_test_data.DA_FCST_CRPSENS,
             crps_test_data.DA_OBS_CRPSENS,
@@ -873,6 +904,17 @@ def v_func4(x):
             None,
             None,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
+        ),
+        # test broadcast
+        (
+            crps_test_data.DA_FCST_CRPSENS_LT,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            v_func1,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_BC,
         ),
         # test fair
         (

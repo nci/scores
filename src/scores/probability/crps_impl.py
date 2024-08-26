@@ -861,7 +861,6 @@ def crps_for_ensemble(
     fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
 
     fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
-
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
