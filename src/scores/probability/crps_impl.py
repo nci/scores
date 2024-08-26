@@ -21,6 +21,7 @@ from scores.processing.cdf import (
     observed_cdf,
     propagate_nan,
 )
+from scores.typing import XarrayLike
 
 
 # pylint: disable=too-many-arguments
@@ -770,15 +771,15 @@ def crps_step_threshold_weight(
 
 
 def crps_for_ensemble(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     ensemble_member_dim: str,
     *,  # Force keywords arguments to be keyword-only
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[xr.DataArray] = None,
-) -> xr.DataArray:
+) -> XarrayLike:
     """Calculates the CRPS probabilistic metric given ensemble input.
 
     Calculates the continuous ranked probability score (CRPS) given an ensemble of forecasts.
@@ -887,7 +888,9 @@ def twcrps_for_ensemble(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    twCRPS with custom chaing func ``v_func``
+    Calculates the threshold weighted continuous ranked probability score (twCRPS) given ensemble
+    input using a chaing function ``vfunc``. An ensemble of forecasts can also be thought of as a random sample from the predictive
+    distribution.
     """
 
     fcst = v_func(fcst)

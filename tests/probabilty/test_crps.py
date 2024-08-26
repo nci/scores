@@ -616,6 +616,28 @@ def test_crps_for_ensemble():
     xr.testing.assert_allclose(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT)
 
 
+def test_crps_for_ensemble_ds():
+    """Tests `crps_for_ensemble` returns as expected with a DataSet for the input"""
+    fcst = xr.Dataset({"a": crps_test_data.DA_FCST_CRPSENS, "b": crps_test_data.DA_FCST_CRPSENS})
+    obs = xr.Dataset({"a": crps_test_data.DA_OBS_CRPSENS, "b": crps_test_data.DA_OBS_CRPSENS})
+    exp_ecdf = xr.Dataset({"a": crps_test_data.EXP_CRPSENS_ECDF, "b": crps_test_data.EXP_CRPSENS_ECDF})
+    exp_fair = xr.Dataset({"a": crps_test_data.EXP_CRPSENS_FAIR, "b": crps_test_data.EXP_CRPSENS_FAIR})
+    exp_weighted_mean = xr.Dataset({"a": crps_test_data.EXP_CRPSENS_WT, "b": crps_test_data.EXP_CRPSENS_WT})
+
+    result_ecdf = crps_for_ensemble(fcst, obs, "ens_member", method="ecdf", preserve_dims="all")
+    result_fair = crps_for_ensemble(fcst, obs, "ens_member", method="fair", preserve_dims="all")
+    result_weighted_mean = crps_for_ensemble(
+        fcst,
+        obs,
+        "ens_member",
+        method="ecdf",
+        weights=crps_test_data.DA_WT_CRPSENS,
+    )
+    xr.testing.assert_allclose(result_ecdf, exp_ecdf)
+    xr.testing.assert_allclose(result_fair, exp_fair)
+    xr.testing.assert_allclose(result_weighted_mean, exp_weighted_mean)
+
+
 def test_crps_for_ensemble_raises():
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
