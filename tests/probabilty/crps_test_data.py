@@ -570,7 +570,9 @@ DA_FCST_CRPSENS = xr.DataArray(
     dims=["stn", "ens_member"],
     coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
 )
-DA_OBS_CRPSENS = xr.DataArray(data=[2.0, 3, 1, np.nan, 4], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_OBS_CRPSENS = xr.DataArray(
+    data=[2.0, 3, 1, np.nan, 4, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105, 106]}
+)
 DA_WT_CRPSENS = xr.DataArray(data=[1, 2, 1, 0, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 DA_T_TWCRPSENS = xr.DataArray(data=[np.nan, 1, 10, 1, -2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 

@@ -1051,7 +1051,7 @@ def tail_twcrps_for_ensemble(
         def _vfunc(x):
             return np.maximum(x, threshold)
 
-    elif tail == "lower":
+    else:
 
         def _vfunc(x):
             return np.minimum(x, threshold)
