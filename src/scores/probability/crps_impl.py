@@ -902,12 +902,12 @@ def twcrps_for_ensemble(
     where :math:`X` and :math:`X'` are independent samples of the predictive distribution :math:`F`,
     :math:`y` is the observation, and :math:`v` is a 'chaining function'.
 
-    The chaining function :math:`v` is the antiderivative of the weight function :math:`w`, which is a
-    continous, non-negative function that assigns a weight to each threshold value. For example, if we
-    wanted to assign a weight of 1 to thresholds above threshold :math:`t` and a weight of 0 to
-    thresholds below :math:`t`, our weight function would be :math:`w(x) = \\mathbb{1}{(x > t)}`,
+    The chaining function :math:`v` is the antiderivative of the threshold weight function :math:`w`,
+    which is a non-negative function that assigns a weight to each threshold value. For example, if we
+    wanted to assign a threshold weight of 1 to thresholds above threshold :math:`t` and a threshold
+    weight of 0 to thresholds below :math:`t`, our threshold weight function would be :math:`w(x) = \\mathbb{1}{(x > t)}`,
     where :math:`\\mathbb{1}` is the indicator function which returns a value of 1 if the condition
-    is true and 0 otherwise. The chaining function would then be :math:`v(x) = \\text{max}(x, t)`.
+    is true and 0 otherwise. A chaining function would then be :math:`v(x) = \\text{max}(x, t)`.
 
     The ensemble representation of the emperical twCRPS is
 
@@ -918,6 +918,14 @@ def twcrps_for_ensemble(
 
     where :math:`M` is the number of ensemble members.
 
+    While the ensemble represtation of the fair twCRPS is
+
+
+    .. math::
+        \\text{twCRPS}(F_{\\text{ens}}, y; v) = \\frac{1}{M} \\sum_{m=1}^{M} \\left| v(x_m) - v(y) \\right| -
+        \\frac{1}{2M(M - 1)} \\sum_{m=1}^{M} \\sum_{j=1}^{M} \\left| v(x_m) - v(x_j) \\right|.
+
+
     Args:
         fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
         obs: Observation data.
@@ -927,7 +935,9 @@ def twcrps_for_ensemble(
         method: Either "ecdf" or "fair".
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        weights: Weights for calculating a weighted mean of individual scores.
+        weights: Weights for calculating a weighted mean of individual scores. Note that
+            these weights are different to threshold weighting which is done by decision
+            threshold.
 
     Returns:
         xarray object of twCRPS values.
@@ -994,8 +1004,8 @@ def tail_twcrps_for_ensemble(
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
     weighted for a tail of the distribution from ensemble input.
 
-    A weight of 1 is assigned for values of the tail and a weight of 0 otherwise.
-    The threshold value of where the tail begoms is specified by the ``threshold`` argument.
+    A threhsold weight of 1 is assigned for values of the tail and a threshold weight of 0 otherwise.
+    The threshold value of where the tail begins is specified by the ``threshold`` argument.
     The ``tail`` argument specifies whether the tail is the upper or lower tail.
     For more flexible weighting options and the relevant equations, see the
     :py:func:`twcrps_for_ensemble` function.
@@ -1012,7 +1022,9 @@ def tail_twcrps_for_ensemble(
         method: Either "ecdf" or "fair".
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        weights: Weights for calculating a weighted mean of individual scores.
+        weights: Weights for calculating a weighted mean of individual scores. Note that
+            these weights are different to threshold weighting which is done by decision
+            threshold.
 
     Returns:
         xarray object of twCRPS values that has been weighted based on the tail.
@@ -1032,8 +1044,8 @@ def tail_twcrps_for_ensemble(
         :py:func:`scores.probability.crps_cdf`
 
     Examples:
-        Calculate the twCRPS for an ensemble of that assigns a weight of 1 to thresholds above
-        0.5 and a weight of 0 to thresholds below 0.5.
+        Calculate the twCRPS for an ensemble of that assigns a threshold weight of 1
+        to thresholds above 0.5 and a threshold weight of 0 to thresholds below 0.5.
 
         >>> import numpy as np
         >>> import xarray as xr
