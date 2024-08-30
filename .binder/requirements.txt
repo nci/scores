@@ -155,7 +155,7 @@ jupyter-server==2.13.0
     #   notebook-shim
 jupyter-server-terminals==0.5.3
     # via jupyter-server
-jupyterlab==4.1.5
+jupyterlab==4.2.5
     # via scores (pyproject.toml)
 jupyterlab-pygments==0.3.0
     # via nbconvert
