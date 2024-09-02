@@ -101,5 +101,5 @@ def test_correlation_dask():
     result = pearsonr(DA3_CORR.chunk(), DA2_CORR.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    assert isinstance(result.data, np.ndarray)
+    assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
