@@ -343,7 +343,7 @@ def multiplicative_bias(
     return multi_bias
 
 
-def additive_bias_percentage(
+def pbias(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
@@ -352,14 +352,20 @@ def additive_bias_percentage(
     weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
-    Calculates the percentage bias which is ratio of additive_bias and mean obs.
+    Calculates the percent bias, which is the ratio of the additive bias to the mean observed value, multiplied by 100.
 
+    Percent bias is used for evaluating and comparing forecast accuracy across stations or dataset with varying magnitudes.
+    By expressing the error as a percentage of the observed value, it allows for standardized comparisons, enabling assessment
+    of forecast performance regardless of the absolute scale of values. Like multiplicative_bias, Percent bias will return a np.inf
+    where the mean of `obs` across the dims to be reduced is 0.
     It is defined as
 
     .. math::
-        \\text{Additive bias percentage} =\\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
-        \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
+        \\text{Percent bias} = 100 * \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
 
+    where:
+        - :math:`x_i` = the values of x in a sample (i.e. forecast values)
+        - :math:`y_i` = the values of y in a sample (i.e. observed values)
 
     See "pbias" section at https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html for more information
 
@@ -379,7 +385,25 @@ def additive_bias_percentage(
             by population, custom)
 
     Returns:
-        An xarray object with the percentage additive bias of a forecast.
+        An xarray object with the percent bias of a forecast.
+
+    References:
+        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
+        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
+            http://dx.doi.org/10.1016/j.jhydrol.2014.06.035
+        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+            Environmental Modelling and Software, 22(7), 1034-1052.
+            https://doi.org/10.1016/j.envsoft.2006.06.008
+        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
+
+
+
 
     """
     reduce_dims = scores.utils.gather_dimensions(
@@ -388,10 +412,10 @@ def additive_bias_percentage(
     fcst = scores.functions.apply_weights(fcst, weights=weights)
     obs = scores.functions.apply_weights(obs, weights=weights)
 
-    # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
+    # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     error = fcst - obs
 
-    pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
-    return pbias
+    _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    return _pbias

@@ -16,11 +16,11 @@ from scores.continuous.murphy_impl import murphy_score, murphy_thetas
 from scores.continuous.quantile_loss_impl import quantile_score
 from scores.continuous.standard_impl import (
     additive_bias,
-    additive_bias_percentage,
     mae,
     mean_error,
     mse,
     multiplicative_bias,
+    pbias,
     rmse,
 )
 from scores.continuous.threshold_weighted_impl import (
@@ -45,7 +45,7 @@ __all__ = [
     "additive_bias",
     "mean_error",
     "multiplicative_bias",
-    "additive_bias_percentage",
+    "pbias",
     "isotonic_fit",
     "consistent_expectile_score",
     "consistent_huber_score",

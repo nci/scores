@@ -661,7 +661,7 @@ DS_BIAS2 = xr.Dataset({"a": DA2_BIAS, "b": DA1_BIAS})
 EXP_DS_BIAS1 = xr.Dataset({"a": EXP_BIAS1, "b": -EXP_BIAS1})
 EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
 
-## for additive_bias_percentage
+## for pbias
 EXP_PBIAS1 = xr.DataArray(
     np.array([-50, -100.0, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
     dims=("space"),
@@ -792,25 +792,23 @@ def test_multiplicative_bias_dask():
         (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_PBIAS1),
     ],
 )
-def test_additive_bias_percentage(fcst, obs, reduce_dims, preserve_dims, weights, expected):
+def test_pbias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
     """
-    Tests continuous.additive_bias_percentage
+    Tests continuous.pbias
     """
-    result = scores.continuous.additive_bias_percentage(
-        fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
-    )
+    result = scores.continuous.pbias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
     # xr.testing.assert_equal(result, expected)
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
 
 
-def test_additive_bias_percentage_dask():
+def test_pbias_dask():
     """
-    Tests that continuous.additive_bias_percentage works with Dask
+    Tests that continuous.pbias works with Dask
     """
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
-    result = scores.continuous.additive_bias_percentage(fcst, obs, preserve_dims="space", weights=weights)
+    result = scores.continuous.pbias(fcst, obs, preserve_dims="space", weights=weights)
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
