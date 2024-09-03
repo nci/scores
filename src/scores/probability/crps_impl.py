@@ -826,8 +826,8 @@ def crps_for_ensemble(
 
     See also:
         :py:func:`scores.probability.crps_cdf`
-        :py:func:`twcrps_for_ensemble`
-        :py:func:`tail_twcrps_for_ensemble`
+        :py:func:`scores.probability.twcrps_for_ensemble`
+        :py:func:`scores.probability.tail_twcrps_for_ensemble`
 
     References:
         - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \
@@ -858,8 +858,7 @@ def crps_for_ensemble(
     ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
 
     # calculate forecast spread contribution
-    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
-
+    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignoreßß
     fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
@@ -881,7 +880,7 @@ def twcrps_for_ensemble(
     fcst: XarrayLike,
     obs: XarrayLike,
     ensemble_member_dim: str,
-    v_func: Callable[[XarrayLike], XarrayLike],
+    chaining_func: Callable[[XarrayLike], XarrayLike],
     *,  # Force keywords arguments to be keyword-only
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
@@ -890,8 +889,8 @@ def twcrps_for_ensemble(
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
-    ensemble input using a chaing function ``vfunc``. An ensemble of forecasts can also
-    be thought of as a random sample from the predictive distribution.
+    ensemble input using a chaining function ``chaining_func`` (see below). An ensemble of 
+    forecasts can also be thought of as a random sample from the predictive distribution.
 
     The twCRPS is calculated by the formula
 
@@ -909,7 +908,16 @@ def twcrps_for_ensemble(
     where :math:`\\mathbb{1}` is the indicator function which returns a value of 1 if the condition
     is true and 0 otherwise. A chaining function would then be :math:`v(x) = \\text{max}(x, t)`.
 
-    The ensemble representation of the emperical twCRPS is
+    There are currently two methods available for calculating the twCRPS: "ecdf" and "fair". 
+        - If `method="ecdf"` then the twCRPS value returned is \
+            the exact twCRPS value for the emprical cumulation distribution function \
+            constructed using the ensemble values.
+        - If `method="fair"` then the twCRPS value returned \
+            is the approximated twCRPS where the ensemble values can be interpreted as a \
+            random sample from the underlying predictive distribution. See  https://doi.org/10.1002/qj.2270 \
+            for more details on the fair CRPS which are relevant for the fair twCRPS.
+
+    The ensemble representation of the empirical twCRPS is
 
 
     .. math::
@@ -931,7 +939,7 @@ def twcrps_for_ensemble(
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
-        v_func: the chaining function.
+        chaining_func: the chaining function.
         method: Either "ecdf" or "fair".
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
@@ -943,7 +951,7 @@ def twcrps_for_ensemble(
         xarray object of twCRPS values.
 
     Raises:
-        ValueError: when method is not one of "ecdf" or "fair".
+        ValueError: when ``method`` is not one of "ecdf" or "fair".
 
     Notes:
         Chaining functions can be created to vary the weights across given dimensions
@@ -954,15 +962,15 @@ def twcrps_for_ensemble(
         events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
         Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
 
-    See also:
+    See also:ß
         :py:func:`scores.probability.crps_for_ensemble`
-        :py:func:`tail_twcrps_for_ensemble`
+        :py:func:`scores.probability.tail_twcrps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
 
 
     Examples:
-        Calculate the twCRPS for an ensemble of forecasts where the chaining function is the
-        return is derive from a weight function that assigns a weight of 1 to thresholds above
+        Calculate the twCRPS for an ensemble of forecasts where the chaining function is 
+        derived from a weight function that assigns a weight of 1 to thresholds above
         0.5 and a weight of 0 to thresholds below 0.5.
 
         >>> import numpy as np
@@ -974,8 +982,8 @@ def twcrps_for_ensemble(
 
     """
 
-    fcst = v_func(fcst)
-    obs = v_func(obs)
+    fcst = chaining_func(fcst)
+    obs = chaining_func(obs)
     result = crps_for_ensemble(
         fcst,
         obs,
@@ -1004,11 +1012,13 @@ def tail_twcrps_for_ensemble(
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
     weighted for a tail of the distribution from ensemble input.
 
-    A threhsold weight of 1 is assigned for values of the tail and a threshold weight of 0 otherwise.
+    A threshold weight of 1 is assigned for values of the tail and a threshold weight of 0 otherwise.
     The threshold value of where the tail begins is specified by the ``threshold`` argument.
     The ``tail`` argument specifies whether the tail is the upper or lower tail.
+    For example, if we only care about values above 40 degrees C, we can set ``threshold=40`` and ``tail="upper"``.
+
     For more flexible weighting options and the relevant equations, see the
-    :py:func:`twcrps_for_ensemble` function.
+    :py:func:`scores.probability.twcrps_for_ensemble` function.
 
     Args:
         fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
@@ -1030,8 +1040,8 @@ def tail_twcrps_for_ensemble(
         xarray object of twCRPS values that has been weighted based on the tail.
 
     Raises:
-        ValueError: when `tail` is not one of "upper" or "lower".
-        ValueError: when method is not one of "ecdf" or "fair".
+        ValueError: when ``tail`` is not one of "upper" or "lower".
+        ValueError: when ``method`` is not one of "ecdf" or "fair".
 
     References:
         Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
@@ -1044,7 +1054,7 @@ def tail_twcrps_for_ensemble(
         :py:func:`scores.probability.crps_cdf`
 
     Examples:
-        Calculate the twCRPS for an ensemble of that assigns a threshold weight of 1
+        Calculate the twCRPS for an ensemble where we assign a threshold weight of 1
         to thresholds above 0.5 and a threshold weight of 0 to thresholds below 0.5.
 
         >>> import numpy as np
