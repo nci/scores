@@ -1014,8 +1014,10 @@ def tail_tw_crps_for_ensemble(
 
     A threshold weight of 1 is assigned for values of the tail and a threshold weight of 0 otherwise.
     The threshold value of where the tail begins is specified by the ``threshold`` argument.
+    The tail does not include the threshold value itself.
     The ``tail`` argument specifies whether the tail is the upper or lower tail.
     For example, if we only care about values above 40 degrees C, we can set ``threshold=40`` and ``tail="upper"``.
+
 
     For more flexible weighting options and the relevant equations, see the
     :py:func:`scores.probability.tw_crps_for_ensemble` function.
