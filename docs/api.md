@@ -40,8 +40,8 @@
 .. autofunction:: scores.probability.crps_step_threshold_weight
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 .. autofunction:: scores.probability.crps_for_ensemble
-.. autofunction:: scores.probability.twcrps_for_ensemble
-.. autofunction:: scores.probability.tail_twcrps_for_ensemble
+.. autofunction:: scores.probability.tw_crps_for_ensemble
+.. autofunction:: scores.probability.tail_tw_crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data

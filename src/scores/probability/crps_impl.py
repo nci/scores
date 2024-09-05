@@ -826,8 +826,8 @@ def crps_for_ensemble(
 
     See also:
         :py:func:`scores.probability.crps_cdf`
-        :py:func:`scores.probability.twcrps_for_ensemble`
-        :py:func:`scores.probability.tail_twcrps_for_ensemble`
+        :py:func:`scores.probability.tw_crps_for_ensemble`
+        :py:func:`scores.probability.tail_tw_crps_for_ensemble`
 
     References:
         - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \
@@ -876,7 +876,7 @@ def crps_for_ensemble(
     return result  # type: ignore
 
 
-def twcrps_for_ensemble(
+def tw_crps_for_ensemble(
     fcst: XarrayLike,
     obs: XarrayLike,
     ensemble_member_dim: str,
@@ -964,7 +964,7 @@ def twcrps_for_ensemble(
 
     See also:ß
         :py:func:`scores.probability.crps_for_ensemble`
-        :py:func:`scores.probability.tail_twcrps_for_ensemble`
+        :py:func:`scores.probability.tail_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
 
 
@@ -975,10 +975,10 @@ def twcrps_for_ensemble(
 
         >>> import numpy as np
         >>> import xarray as xr
-        >>> from scores.probability import twcrps_for_ensemble
+        >>> from scores.probability import tw_crps_for_ensemble
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
-        >>> twcrps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
+        >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
     """
 
@@ -996,7 +996,7 @@ def twcrps_for_ensemble(
     return result
 
 
-def tail_twcrps_for_ensemble(
+def tail_tw_crps_for_ensemble(
     fcst: XarrayLike,
     obs: XarrayLike,
     ensemble_member_dim: str,
@@ -1018,7 +1018,7 @@ def tail_twcrps_for_ensemble(
     For example, if we only care about values above 40 degrees C, we can set ``threshold=40`` and ``tail="upper"``.
 
     For more flexible weighting options and the relevant equations, see the
-    :py:func:`scores.probability.twcrps_for_ensemble` function.
+    :py:func:`scores.probability.tw_crps_for_ensemble` function.
 
     Args:
         fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
@@ -1049,7 +1049,7 @@ def tail_twcrps_for_ensemble(
         Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
 
     See also:
-        :py:func:`scores.probability.twcrps_for_ensemble`
+        :py:func:`scores.probability.tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
 
@@ -1059,10 +1059,10 @@ def tail_twcrps_for_ensemble(
 
         >>> import numpy as np
         >>> import xarray as xr
-        >>> from scores.probability import tail_twcrps_for_ensemble
+        >>> from scores.probability import tail_tw_crps_for_ensemble
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
-        >>> tail_twcrps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
 
     """
     if tail not in ["upper", "lower"]:
@@ -1077,7 +1077,7 @@ def tail_twcrps_for_ensemble(
         def _vfunc(x):
             return np.minimum(x, threshold)
 
-    result = twcrps_for_ensemble(
+    result = tw_crps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim,

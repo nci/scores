@@ -10,8 +10,8 @@ from scores.probability.crps_impl import (
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
     crps_step_threshold_weight,
-    tail_twcrps_for_ensemble,
-    twcrps_for_ensemble,
+    tail_tw_crps_for_ensemble,
+    tw_crps_for_ensemble,
 )
 from scores.probability.roc_impl import roc_curve_data
 from scores.processing.isoreg_impl import isotonic_fit
@@ -27,6 +27,6 @@ __all__ = [
     "roc_curve_data",
     "isotonic_fit",
     "crps_step_threshold_weight",
-    "twcrps_for_ensemble",
-    "tail_twcrps_for_ensemble",
+    "tw_crps_for_ensemble",
+    "tail_tw_crps_for_ensemble",
 ]

@@ -18,8 +18,8 @@ from scores.probability import (
     crps_cdf,
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
-    tail_twcrps_for_ensemble,
-    twcrps_for_ensemble,
+    tail_tw_crps_for_ensemble,
+    tw_crps_for_ensemble,
 )
 from scores.probability.crps_impl import (
     crps_cdf_exact,
@@ -802,9 +802,9 @@ def test_crps_for_ensemble_dask():
         ),
     ],
 )
-def test_tail_twcrps_for_ensemble(fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, expected):
-    """Tests tail_twcrps_for_ensembles"""
-    result = tail_twcrps_for_ensemble(
+def test_tail_tw_crps_for_ensemble(fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, expected):
+    """Tests tail_tw_crps_for_ensembles"""
+    result = tail_tw_crps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim="ens_member",
@@ -818,14 +818,14 @@ def test_tail_twcrps_for_ensemble(fcst, obs, method, tail, threshold, preserve_d
     xr.testing.assert_allclose(result, expected)
 
 
-def test_tail_twcrps_for_ensemble_dask():
-    """Tests `tail_twcrps_for_ensemble` works with dask."""
+def test_tail_tw_crps_for_ensemble_dask():
+    """Tests `tail_tw_crps_for_ensemble` works with dask."""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     # Check that it works with xr.Datarrays
-    result = tail_twcrps_for_ensemble(
+    result = tail_tw_crps_for_ensemble(
         fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
         ensemble_member_dim="ens_member",
@@ -842,7 +842,7 @@ def test_tail_twcrps_for_ensemble_dask():
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
 
     # Check that it works with xr.Datasets
-    result_ds = tail_twcrps_for_ensemble(
+    result_ds = tail_tw_crps_for_ensemble(
         fcst=crps_test_data.DS_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DS_OBS_CRPSENS.chunk(),
         ensemble_member_dim="ens_member",
@@ -859,9 +859,9 @@ def test_tail_twcrps_for_ensemble_dask():
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
 
 
-def test_tail_twcrps_for_ensemble_raises():
+def test_tail_tw_crps_for_ensemble_raises():
     with pytest.raises(ValueError, match="'middle' is not one of 'upper' or 'lower'"):
-        result = tail_twcrps_for_ensemble(
+        result = tail_tw_crps_for_ensemble(
             fcst=crps_test_data.DA_FCST_CRPSENS,
             obs=crps_test_data.DA_OBS_CRPSENS,
             ensemble_member_dim="ens_member",
@@ -872,22 +872,22 @@ def test_tail_twcrps_for_ensemble_raises():
 
 
 def v_func1(x):
-    """For testing twcrps_for_ensembles. The equivalent of a tail weight for thresholds 1 and higher"""
+    """For testing tw_crps_for_ensembles. The equivalent of a tail weight for thresholds 1 and higher"""
     return np.maximum(x, 1)
 
 
 def v_func2(x):
-    """For testing twcrps_for_ensembles. The equivalent of the unweighted CRPS"""
+    """For testing tw_crps_for_ensembles. The equivalent of the unweighted CRPS"""
     return x
 
 
 def v_func3(x):
-    """For testing twcrps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension"""
+    """For testing tw_crps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension"""
     return np.maximum(x, crps_test_data.DA_T_TWCRPSENS)
 
 
 def v_func4(x):
-    """For testing twcrps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset"""
+    """For testing tw_crps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset"""
     return np.maximum(x, crps_test_data.DS_T_TWCRPSENS)
 
 
@@ -985,10 +985,10 @@ def v_func4(x):
         ),
     ],
 )
-def test_twcrps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, expected):
-    """Tests twcrps_for_ensembles"""
+def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, expected):
+    """Tests tw_crps_for_ensembles"""
 
-    result = twcrps_for_ensemble(
+    result = tw_crps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim="ens_member",
@@ -1001,9 +1001,9 @@ def test_twcrps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_di
     xr.testing.assert_allclose(result, expected)
 
 
-def test_twcrps_for_ensemble_dask():
-    """Tests `twcrps_for_ensemble` works with dask."""
-    result = twcrps_for_ensemble(
+def test_tw_crps_for_ensemble_dask():
+    """Tests `tw_crps_for_ensemble` works with dask."""
+    result = tw_crps_for_ensemble(
         fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
         ensemble_member_dim="ens_member",
@@ -1019,7 +1019,7 @@ def test_twcrps_for_ensemble_dask():
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
 
     # Check that it works with xr.Datasets
-    result_ds = twcrps_for_ensemble(
+    result_ds = tw_crps_for_ensemble(
         fcst=crps_test_data.DS_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DS_OBS_CRPSENS.chunk(),
         ensemble_member_dim="ens_member",
