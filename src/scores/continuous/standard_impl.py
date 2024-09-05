@@ -354,11 +354,10 @@ def pbias(
     """
     Calculates the percent bias, which is the ratio of the additive bias to the mean observed value, multiplied by 100.
 
-    Percent bias is used for evaluating and comparing forecast accuracy across stations or dataset with varying magnitudes.
-    By expressing the error as a percentage of the observed value, it allows for standardized comparisons, enabling assessment
-    of forecast performance regardless of the absolute scale of values. Like multiplicative_bias, Percent bias will return a np.inf
-    where the mean of `obs` across the dims to be reduced is 0.
-    It is defined as
+    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying magnitudes.
+    By expressing the error as a percentage of the observed value, it allows for standardised comparisons, enabling assessment
+    of forecast performance regardless of the absolute scale of values. Like :py:func:`scores.continuous.multiplicative_bias`,
+    ``pbias`` will return a np.inf where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
 
     .. math::
         \\text{Percent bias} = 100 * \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
@@ -373,9 +372,9 @@ def pbias(
         fcst: Forecast or predicted variables.
         obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating the percentage additive bias. All other dimensions will be preserved.
+            calculating the percent bias. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the additive bias percentage. All other dimensions will be reduced. As a
+            calculating the percent bias. All other dimensions will be reduced. As a
             special case, 'all' will allow all dimensions to be preserved. In
             this case, the result will be in the same shape/dimensionality
             as the forecast, and the errors will be the error at each
