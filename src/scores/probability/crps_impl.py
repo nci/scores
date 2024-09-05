@@ -798,7 +798,7 @@ def crps_for_ensemble(
 
     The value of the constant K in this formula depends on the method:
         - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
-            the exact CRPS value for the emprical cumulation distribution function \
+            the exact CRPS value for the emprical cumulative distribution function \
             constructed using the ensemble values.
         - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned \
             is the approximated CRPS where the ensemble values can be interpreted as a \
@@ -858,7 +858,7 @@ def crps_for_ensemble(
     ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
 
     # calculate forecast spread contribution
-    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignoreßß
+    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
     fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
@@ -910,7 +910,7 @@ def tw_crps_for_ensemble(
 
     There are currently two methods available for calculating the twCRPS: "ecdf" and "fair". 
         - If `method="ecdf"` then the twCRPS value returned is \
-            the exact twCRPS value for the emprical cumulation distribution function \
+            the exact twCRPS value for the emprical cumulative distribution function \
             constructed using the ensemble values.
         - If `method="fair"` then the twCRPS value returned \
             is the approximated twCRPS where the ensemble values can be interpreted as a \
@@ -940,7 +940,7 @@ def tw_crps_for_ensemble(
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
         chaining_func: the chaining function.
-        method: Either "ecdf" or "fair".
+        method: Either "ecdf" for the emperical twCRPS or "fair" for the Fair twCRPS.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
         weights: Weights for calculating a weighted mean of individual scores. Note that
@@ -962,7 +962,7 @@ def tw_crps_for_ensemble(
         events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
         Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
 
-    See also:ß
+    See also:
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
@@ -1029,7 +1029,8 @@ def tail_tw_crps_for_ensemble(
             for a single threshold or an xarray object if the threshold varies across
             dimensions (e.g., climatological values).
         tail: the tail of the distribution to weight. Either "upper" or "lower".
-        method: Either "ecdf" or "fair".
+        method: Either "ecdf" or "fair". See :py:func:`scores.probability.tw_crps_for_ensemble`
+            for more details.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
         weights: Weights for calculating a weighted mean of individual scores. Note that
