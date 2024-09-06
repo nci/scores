@@ -11,7 +11,7 @@
 ## Usability
 
 - A companion Jupyter Notebook [tutorial](project:./tutorials/Tutorial_Gallery.md) for each metric and statistical test that demonstrates its use in practice.
-- [Over 50 metrics, statistical techniques and data processing tools](included.md), including:
+- [Over 60 metrics, statistical techniques and data processing tools](included.md), including:
   - commonly-used metrics (e.g., mean absolute error (MAE), root mean squared error (RMSE))
   - novel scores not commonly found elsewhere (e.g., FIxed Risk Multicategorical (FIRM) score ([Taggart et al., 2022](https://doi.org/10.1002/qj.4266)), Flip-Flop Index ([Griffiths et al., 2019](https://doi.org/10.1002/met.1732), [2021](https://doi.org/10.1071/ES21010)))
   - complex scores (e.g., threshold-weighted continuous ranked probability score (twCRPS))
