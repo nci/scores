@@ -360,7 +360,7 @@ def pbias(
     ``pbias`` will return a ``np.inf`` where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
 
     .. math::
-        \\text{Percent bias} = 100 * \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
+        \\text{Percent bias} = 100 \\cdot \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
 
     where:
         - :math:`x_i` = the values of x in a sample (i.e. forecast values)
