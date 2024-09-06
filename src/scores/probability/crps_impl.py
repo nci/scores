@@ -798,7 +798,7 @@ def crps_for_ensemble(
 
     The value of the constant K in this formula depends on the method:
         - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
-            the exact CRPS value for the emprical cumulative distribution function \
+            the exact CRPS value for the empirical cumulative distribution function \
             constructed using the ensemble values.
         - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned \
             is the approximated CRPS where the ensemble values can be interpreted as a \
@@ -910,7 +910,7 @@ def tw_crps_for_ensemble(
 
     There are currently two methods available for calculating the twCRPS: "ecdf" and "fair". 
         - If `method="ecdf"` then the twCRPS value returned is \
-            the exact twCRPS value for the emprical cumulative distribution function \
+            the exact twCRPS value for the empirical cumulative distribution function \
             constructed using the ensemble values.
         - If `method="fair"` then the twCRPS value returned \
             is the approximated twCRPS where the ensemble values can be interpreted as a \
@@ -940,7 +940,7 @@ def tw_crps_for_ensemble(
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
         chaining_func: the chaining function.
-        method: Either "ecdf" for the emperical twCRPS or "fair" for the Fair twCRPS.
+        method: Either "ecdf" for the empirical twCRPS or "fair" for the Fair twCRPS.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
         weights: Weights for calculating a weighted mean of individual scores. Note that
