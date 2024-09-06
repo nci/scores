@@ -1,5 +1,7 @@
-# NOTE: although this file is provided it is recommended to use `pip`
-# as the package manager as `scores is not hosted on any conda repositories.
+# NOTE: Although scores is available on conda, this uses pip in order
+# to install the `all` variant, as conda only has the `minimal` variant.
+# This file is for use by contributors who likely want the `all` variant
+# dependencies in an environment.
 name: scores
 channels:
   - defaults
