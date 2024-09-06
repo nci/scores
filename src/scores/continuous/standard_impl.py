@@ -392,7 +392,7 @@ def pbias(
             Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
         -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
             Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
-            http://dx.doi.org/10.1016/j.jhydrol.2014.06.035
+            http://doi.org/10.1016/j.jhydrol.2014.06.035
         -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
             A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
             Environmental Modelling and Software, 22(7), 1034-1052.
