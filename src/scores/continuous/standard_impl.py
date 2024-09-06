@@ -357,7 +357,7 @@ def pbias(
     Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying magnitudes.
     By expressing the error as a percentage of the observed value, it allows for standardised comparisons, enabling assessment
     of forecast performance regardless of the absolute scale of values. Like :py:func:`scores.continuous.multiplicative_bias`,
-    ``pbias`` will return a np.inf where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
+    ``pbias`` will return a ``np.inf`` where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
 
     .. math::
         \\text{Percent bias} = 100 * \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
