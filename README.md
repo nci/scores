@@ -14,7 +14,7 @@ Journal article: [*scores: A Python package for verifying and evaluating models 
 
 ## Overview
 
-Below is a **curated selection** of the metrics, tools and statistical tests included in `scores`. [Click here for the full list]((https://scores.readthedocs.io/en/stable/included.html).
+Below is a **curated selection** of the metrics, tools and statistical tests included in `scores`. [Click here for the full list](https://scores.readthedocs.io/en/stable/included.html).
 
 |                       	| **Description** 	| **Selection of Included Functions** 	|
 |-----------------------	|-----------------	|--------------	|
