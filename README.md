@@ -13,7 +13,8 @@ Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutor
 Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
 
 ## Overview
-Here is a **curated selection** of the metrics, tools and statistical tests included in `scores`:
+
+Below is a **curated selection** of the metrics, tools and statistical tests included in `scores`. [Click here](https://scores.readthedocs.io/en/stable/included.html) for the full list.
 
 |                       	| **Description** 	| **Selection of Included Functions** 	|
 |-----------------------	|-----------------	|--------------	|
