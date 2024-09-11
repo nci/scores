@@ -39,7 +39,7 @@ Information relevant for package maintenance
 5. Run hatch publish
 6. Uninstall the test scores, re-install the now-updated package, do a little testing
 
-## This section covers how to format release notes
+## This section covers how to format and prepare release notes
 
 ```
 # Release Notes (What's New)
@@ -62,6 +62,15 @@ For Contributors to this Release: "Name ([@handle](https://github.com/handle))"
 
 When there are new contributors: "\* indicates that this release contains their first contribution to `scores`."
 ```
+
+**While a version is under development:**
+1. Change the date to "(Upcoming Release)"
+2. In the full changelog URL, change "X.Y.Z" to "develop", i.e. "(https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...develop)"
+
+**Immediately before making a release:**
+1. Change “(Upcoming Release)” to the date of the release (and correctly format the date)
+2. In the full changelog URL, change “develop” to the correct version number, i.e (https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z)
+3. Delete any unused headers
 
 ## This section covers asking new contributors to add their details to .zenodo.json
 
