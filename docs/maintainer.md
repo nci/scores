@@ -39,6 +39,12 @@ Information relevant for package maintenance
 5. Run hatch publish
 6. Uninstall the test scores, re-install the now-updated package, do a little testing
 
+### Confirm Zenodo correctness
+
+1. Confirm license
+2. Confirm authors
+3. Scan everything else
+
 ## This section covers how to format and prepare release notes
 
 ```
