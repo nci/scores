@@ -13,23 +13,24 @@ Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutor
 Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
 
 ## Overview
-Here is a **curated selection** of the metrics, tools and statistical tests included in `scores`:
+
+Below is a **curated selection** of the metrics, tools and statistical tests included in `scores`. ([Click here for the full list](https://scores.readthedocs.io/en/stable/included.html).)
 
 |                       	| **Description** 	| **Selection of Included Functions** 	|
 |-----------------------	|-----------------	|--------------	|
-| **[Continuous](https://scores.readthedocs.io/en/stable/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts.                  	|Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Additive Bias, Multiplicative Bias, Pearson's Correlation Coefficient, Flip-Flop Index, Quantile Loss, Murphy Score, families of consistent scoring functions for quantiles and expectiles, Threshold Weighted Squared Error, Threshold Weighted Quantile Score, Threshold Weighted Absolute Error, Threshold Weighted Expectile Score, Threshold Weighted Huber Loss.             	|
-| **[Probability](https://scores.readthedocs.io/en/stable/included.html#probability)**       	|Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                 	|Brier Score, Continuous Ranked Probability Score (CRPS) for Cumulative Density Function (CDF), Threshold weighted CRPS for CDF, CRPS for ensembles, Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams).              	|
-| **[Categorical](https://scores.readthedocs.io/en/stable/included.html#categorical)**       	|Scores (including contingency table metrics) for evaluating forecasts of categories.                	|Probability of Detection (POD), False Alarm Ratio (FAR), Probability of False Detection (POFD), Success Ratio, Accuracy, Peirce's Skill Score, Critical Success Index (CSI), Gilbert Skill Score, Heidke Skill Score, Odds Ratio, Odds Ratio Skill Score, F1 score, Symmetric Extremal Dependence Index, FIxed Risk Multicategorical (FIRM) Score.               	|
+| **[Continuous](https://scores.readthedocs.io/en/stable/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts.                  	|MAE, MSE, RMSE, Additive Bias, Multiplicative Bias, Pearson's Correlation Coefficient, Flip-Flop Index, Quantile Loss, Murphy Score, and threshold weighted scores for expectiles, quantiles and Huber Loss.             	|
+| **[Probability](https://scores.readthedocs.io/en/stable/included.html#probability)**        |Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                   |Brier Score, Continuous Ranked Probability Score (CRPS) for Cumulative Density Functions (CDF) and ensembles (including threshold weighted versions), Receiver Operating Characteristic (ROC), Isotonic Regression (reliability diagrams).               |
+| **[Categorical](https://scores.readthedocs.io/en/stable/included.html#categorical)**       	|Scores for evaluating forecasts of categories.                	|17 binary contingency table (confusion matrix) metrics and the FIxed Risk Multicategorical (FIRM) Score.               	|
 | **[Spatial](https://scores.readthedocs.io/en/stable/included.html#spatial)** 	|Scores that take into account spatial structure.                 	|Fractions Skill Score.              	|
 | **[Statistical Tests](https://scores.readthedocs.io/en/stable/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	|Diebold Mariano.              	|
 | **[Processing Tools](https://scores.readthedocs.io/en/stable/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation.              	|
 
 
-`scores` not only includes common scores (e.g., MAE, RMSE), it includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (such as the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
+`scores` not only includes common scores (e.g., MAE, RMSE), it includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (e.g., the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
-`scores` primarily supports xarray datatypes for Earth system data allowing it to work with NetCDF4, HDF5, Zarr and GRIB data sources among others. `scores` uses Dask for scaling and performance. Some metrics work with pandas and we aim to expand this capability. 
+`scores` primarily supports xarray datatypes for Earth system data allowing it to work with NetCDF4, HDF5, Zarr and GRIB data formats among others. `scores` uses Dask for scaling and performance. Some metrics work with pandas and we aim to expand this capability. 
 
-All of the scores and metrics in this package have undergone a thorough scientific review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
+All of the scores and metrics in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
 ## Contributing
 To find out more about contributing, see our [contributing guide](https://scores.readthedocs.io/en/stable/contributing.html).
