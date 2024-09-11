@@ -22,7 +22,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 - Added information about percent bias to the "Additive Bias and Multiplicative Bias" tutorial. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #656](https://github.com/nci/scores/pull/656). 
 - Updated documentation to say there are now over 60 metrics, statistical techniques and data processing tools contained in `scores`. See [PR #659](https://github.com/nci/scores/pull/659).
-- Updated instructions for installing a conda-based virtual environment in the "Contributing Guide". See [PR #654](https://github.com/nci/scores/pull/654). 
+- In  the "Contributing Guide", updated instructions for installing a conda-based virtual environment. See [PR #654](https://github.com/nci/scores/pull/654). 
+
+
 
 ### Internal Changes
 
