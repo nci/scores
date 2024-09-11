@@ -90,6 +90,20 @@ In .zenodo.json, please add your details at the bottom of the “creators” sec
 3. “name”. Format: surname, given name(s).
 ```
 
+## This section gives guidance for maintaining compatibility with old versions of Python and packages
+
+tldr; about 3 years old is OK, longer if painless
+
+https://scientific-python.org/specs/spec-0000/ provides a guide for the scientific Python ecosystem - we should aspire to be at least that compatible with older versions. It describes an approach including outlining when particular packages move out of support.
+
+We have not tested compatibility against all possible package versions which are included in this spec. Conversely, in some cases, it has been fairly straightforward to support packages older than this. 
+
+There is no formal "support" agreement for `scores`. In the context of `scores` package management, maintaining compability means being willing to make reasonable efforts to resolve any issues raised on the issue tracker. If a specific issue arises that would make it impractical to support a version within the compatibility window, then a response will be discussed and agreed on at the time on the basis of practicality.
+
+There is currently no specific testing for older versions of libraries, only older versions of Python (which may or may not intake an older library version). A full matrix test of Python and package versioning would be prohibitively complex, and there would also be no guarantee that pinned older versions wouldn't result in an insecure build (even if only in a test runner). 
+
+The development branch versioning is unpinned, and so any issues arising from newly-released packages should quickly be encountered and then resolved before the next `scores` release. Releases of `scores` use "~=" versioning, which gives flexibility within a range of versions (see https://packaging.python.org/en/latest/specifications/version-specifiers/#id5).
+
 ## This section covers how to build the documentation locally 
 (Readthedocs should update automatically from a GitHub Action)
 
