@@ -2,7 +2,7 @@
 
 ## Data Handling
 
-- Works with labelled, n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the dimensionality, data size and data structures commonly used for:
+- Works with labelled, n-dimensional data (e.g., geospatial, vertical and temporal dimensions) for both point-based and gridded data. `scores` can effectively handle the [dimensionality](project:./tutorials/Dimension_Handling.md), data size and data structures commonly used for:
   - gridded Earth system data (e.g., numerical weather prediction models)
   - tabular, point, latitude/longitude or site-based data (e.g., forecasts for specific locations).
 - Handles missing data, masking of data and [weighting of results](project:./tutorials/Weighting_Results.md) (e.g. by area, by latitude, by population).
