@@ -51,9 +51,13 @@
         {
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Sharples, John"
-        }                      
-    ],
-   
+        },
+        {
+            "orcid": "https://orcid.org/0000-0002-5545-1736",
+            "affiliation": "CSIRO, Australia",
+            "name": "Shrestha, Durga"
+        }                     
+    ],    
     "license": "Apache-2.0",
 
     "title": "scores: A Python package for verifying and evaluating models and predictions with xarray",
