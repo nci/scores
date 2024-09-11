@@ -4,7 +4,13 @@ Information relevant for package maintenance
 
 ## This section covers the process for making a release from the develop branch
 
-1. Run through the notebooks manually
+### Immediately before making a release, update the release notes
+1. Change “(Upcoming Release)” to the date of the release (and correctly format the date)
+2. In the full changelog URL, change “develop” to the correct version number, i.e (https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z)
+3. Delete any unused headers
+
+### On the pre-release branch
+1. Run through some of the notebooks manually
 2. Run the unit tests
 3. Prepare the merge request in github (do not do a rebase merge to main -- do a regular merge commit)
 4. Check readthedocs rebuilds correctly, including manually checking the version number looks right
@@ -73,11 +79,6 @@ When there are new contributors: "\* indicates that this release contains their 
 1. Change the date to "(Upcoming Release)"
 2. In the full changelog URL, change "X.Y.Z" to "develop", i.e. "(https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...develop)"
 
-**Immediately before making a release:**
-1. Change “(Upcoming Release)” to the date of the release (and correctly format the date)
-2. In the full changelog URL, change “develop” to the correct version number, i.e (https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z)
-3. Delete any unused headers
-
 ## This section covers asking new contributors to add their details to .zenodo.json
 
 ```
@@ -100,7 +101,7 @@ In .zenodo.json, please add your details at the bottom of the “creators” sec
 
 tldr; about 3 years old is OK, longer if painless
 
-https://scientific-python.org/specs/spec-0000/ provides a guide for the scientific Python ecosystem - we should aspire to be at least that compatible with older versions. It describes an approach including outlining when particular packages move out of support.
+[https://scientific-python.org/specs/spec-0000/](https://scientific-python.org/specs/spec-0000/) provides a guide for the scientific Python ecosystem - we should aspire to be at least that compatible with older versions. It describes an approach including outlining when particular packages move out of support.
 
 We have not tested compatibility against all possible package versions which are included in this spec. Conversely, in some cases, it has been fairly straightforward to support packages older than this. 
 
@@ -108,7 +109,7 @@ There is no formal "support" agreement for `scores`. In the context of `scores` 
 
 There is currently no specific testing for older versions of libraries, only older versions of Python (which may or may not intake an older library version). A full matrix test of Python and package versioning would be prohibitively complex, and there would also be no guarantee that pinned older versions wouldn't result in an insecure build (even if only in a test runner). 
 
-The development branch versioning is unpinned, and so any issues arising from newly-released packages should quickly be encountered and then resolved before the next `scores` release. Releases of `scores` use "~=" versioning, which gives flexibility within a range of versions (see https://packaging.python.org/en/latest/specifications/version-specifiers/#id5).
+The development branch versioning is unpinned, and so any issues arising from newly-released packages should quickly be encountered and then resolved before the next `scores` release. Releases of `scores` use "~=" versioning, which gives flexibility within a range of versions (see [https://packaging.python.org/en/latest/specifications/version-specifiers/#id5](https://packaging.python.org/en/latest/specifications/version-specifiers/#id5)).
 
 ## This section covers how to build the documentation locally 
 (Readthedocs should update automatically from a GitHub Action)
