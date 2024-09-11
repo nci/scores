@@ -78,7 +78,7 @@ array(2.)
 
 All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). [Some metrics](https://scores.readthedocs.io/en/stable/included.html#pandas) work with [pandas](https://pandas.pydata.org/). As such, `scores` works with any data source for which xarray or pandas can be used. See the [data sources](https://scores.readthedocs.io/en/stable/data.html) page and [this tutorial](https://scores.readthedocs.io/en/stable/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
 
-## Acknowledging This Work
+## Acknowledging or Citing `scores`
 
 If you use `scores` for a published work, we would appreciate you citing our [paper](https://doi.org/10.21105/joss.06889):
 
