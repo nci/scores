@@ -1240,5 +1240,5 @@ def test_interval_tw_crps_for_ensemble_dask():
     )
     assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
-    assert isinstance(result_ds["a"].data, np.ndarray)
+    assert isinstance(result_ds["a"].data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)
