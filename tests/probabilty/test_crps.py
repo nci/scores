@@ -18,6 +18,7 @@ from scores.probability import (
     crps_cdf,
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
+    interval_tw_crps_for_ensemble,
     tail_tw_crps_for_ensemble,
     tw_crps_for_ensemble,
 )
@@ -776,7 +777,7 @@ def test_crps_for_ensemble_dask():
             None,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DA,
         ),
-        # test that passing in xr.DataSets with an xr.Dataset for the threshold arg works
+        # test that passing in xr.Datasets with an xr.Dataset for the threshold arg works
         (
             crps_test_data.DS_FCST_CRPSENS,
             crps_test_data.DS_OBS_CRPSENS,
@@ -788,7 +789,7 @@ def test_crps_for_ensemble_dask():
             None,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
-        # test that passing in xr.DataSets with an xr.DataArray for the threshold arg works
+        # test that passing in xr.Datasets with an xr.DataArray for the threshold arg works
         (
             crps_test_data.DS_FCST_CRPSENS,
             crps_test_data.DS_OBS_CRPSENS,
@@ -1033,3 +1034,211 @@ def test_tw_crps_for_ensemble_dask():
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "method",
+        "lower_threshold",
+        "upper_threshold",
+        "preserve_dims",
+        "reduce_dims",
+        "weights",
+        "expected",
+    ),
+    [
+        # Test interval
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            2,
+            5,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA,
+        ),
+        # test that it equals the standard CRPS when the interval contains all threshold with ecdf
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            -np.inf,
+            np.inf,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_CRPSENS_ECDF,
+        ),
+        # test that it equals the standard CRPS when the interval contains all threshold with fair
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "fair",
+            -np.inf,
+            np.inf,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_CRPSENS_FAIR,
+        ),
+        # Test broadcast
+        (
+            crps_test_data.DA_FCST_CRPSENS_LT,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            -np.inf,
+            np.inf,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_CRPSENS_ECDF_BC,
+        ),
+        # Test with weights and reduce dims
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            -np.inf,
+            np.inf,
+            None,
+            "stn",
+            crps_test_data.DA_WT_CRPSENS,
+            crps_test_data.EXP_CRPSENS_WT,
+        ),
+        # test that passing an xarray object for the threshold args works
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            crps_test_data.DA_LI_TWCRPSENS,
+            crps_test_data.DA_UI_TWCRPSENS,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_VAR_INTERVAL_CRPSENS_ECDF_DA,
+        ),
+        # Test that a float for lower_threshold and an xr.DataArray for upper_threshold works
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            2,
+            crps_test_data.DA_UI_CONS_TWCRPSENS,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA,
+        ),
+        # Test that an xr.DataArray for lower_threshold and a float for upper_threshold works
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            crps_test_data.DA_LI_CONS_TWCRPSENS,
+            5,
+            "all",
+            None,
+            None,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA,
+        ),
+        # test that passing in xr.Datasets for fcst, obs and weights works
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "ecdf",
+            -np.inf,
+            np.inf,
+            None,
+            None,
+            crps_test_data.DS_WT_CRPSENS,
+            crps_test_data.EXP_CRPSENS_WT_DS,
+        ),
+    ],
+)
+def test_interval_tw_crps_for_ensemble(
+    fcst, obs, method, lower_threshold, upper_threshold, preserve_dims, reduce_dims, weights, expected
+):
+    """Tests interval_tw_crps_for_ensembles"""
+    result = interval_tw_crps_for_ensemble(
+        fcst,
+        obs,
+        ensemble_member_dim="ens_member",
+        lower_threshold=lower_threshold,
+        upper_threshold=upper_threshold,
+        method=method,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights,
+    )
+
+    xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("lower_threshold", "upper_threshold"),
+    [
+        (1, 1),
+        (2, 1),
+        (xr.DataArray(data=[1, np.nan]), xr.DataArray(data=[1, np.nan])),
+        (xr.DataArray(data=[2, np.nan]), xr.DataArray(data=[1, np.nan])),
+        (1, xr.DataArray(data=[1, np.nan])),
+        (xr.DataArray(data=[1, np.nan]), 1),
+    ],
+)
+def test_interval_tw_crps_for_ensemble_raises(lower_threshold, upper_threshold):
+    """Tests if interval_tw_crps_for_ensemble raises an error when lower_threshold >= upper_threshold"""
+    with pytest.raises(ValueError) as excinfo:
+        interval_tw_crps_for_ensemble(
+            fcst=crps_test_data.DA_FCST_CRPSENS,
+            obs=crps_test_data.DA_OBS_CRPSENS,
+            ensemble_member_dim="ens_member",
+            lower_threshold=lower_threshold,
+            upper_threshold=upper_threshold,
+            method="ecdf",
+        )
+    assert "`lower_threshold` must be less than `upper_threshold`" in str(excinfo.value)
+
+
+def test_interval_tw_crps_for_ensemble_dask():
+    """Tests `interval_tw_crps_for_ensemble` works with dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    # Check that it works with xr.Datarrays
+    result = interval_tw_crps_for_ensemble(
+        fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        lower_threshold=2,
+        upper_threshold=5,
+        method="ecdf",
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA)
+
+    # Check that it works with xr.Datasets
+    result_ds = interval_tw_crps_for_ensemble(
+        fcst=crps_test_data.DS_FCST_CRPSENS.chunk(),
+        obs=crps_test_data.DS_OBS_CRPSENS.chunk(),
+        ensemble_member_dim="ens_member",
+        lower_threshold=-np.inf,
+        upper_threshold=np.inf,
+        method="ecdf",
+        preserve_dims=None,
+        reduce_dims=None,
+        weights=crps_test_data.DS_WT_CRPSENS.chunk(),
+    )
+    assert isinstance(result_ds["a"].data, dask.array.Array)
+    result_ds = result_ds.compute()
+    assert isinstance(result_ds["a"].data, np.ndarray)
+    xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)

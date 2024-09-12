@@ -10,6 +10,7 @@ from scores.probability.crps_impl import (
     crps_cdf_brier_decomposition,
     crps_for_ensemble,
     crps_step_threshold_weight,
+    interval_tw_crps_for_ensemble,
     tail_tw_crps_for_ensemble,
     tw_crps_for_ensemble,
 )
@@ -29,4 +30,5 @@ __all__ = [
     "crps_step_threshold_weight",
     "tw_crps_for_ensemble",
     "tail_tw_crps_for_ensemble",
+    "interval_tw_crps_for_ensemble",
 ]
