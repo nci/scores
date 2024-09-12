@@ -6,6 +6,12 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
+- Added three new metrics:
+	- Percent bias (PBIAS): `scores.continuous.pbias`. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #655](https://github.com/nci/scores/pull/655).
+	- Threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tw_crps_for_ensemble`. See [PR #644](https://github.com/nci/scores/pull/644).
+	- Tail threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tail_tw_crps_for_ensemble`. See [PR #644](https://github.com/nci/scores/pull/644).
+- Adapted the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) to allow it to take a sequence of mulitdimensional arrays (xr.DataArray) of thresholds. This allows the FIRM score to be used with categorical thresholds that vary across the domain. See [PR #661](https://github.com/nci/scores/pull/661).
+
 ### Breaking Changes
 
 ### Deprecations
@@ -14,9 +20,21 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
+- Added information about percent bias to the "Additive Bias and Multiplicative Bias" tutorial. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #656](https://github.com/nci/scores/pull/656). 
+- Updated documentation to say there are now over 60 metrics, statistical techniques and data processing tools contained in `scores`. See [PR #659](https://github.com/nci/scores/pull/659).
+- In  the "Contributing Guide", updated instructions for installing a conda-based virtual environment. See [PR #654](https://github.com/nci/scores/pull/654). 
+
+
+
 ### Internal Changes
 
+- Modified automated tests to work with NumPy 2.1. Incorporated a union type of `array` and `generic` in assert statements for Dask operations. See [PR #643](https://github.com/nci/scores/pull/643).
+
 ### Contributors to this Release
+
+Durga Shrestha* ([@durgals](https://github.com/durgals)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)). 
+
+\* indicates that this release contains their first contribution to `scores`.
 
 ## Version 1.1.0 (August 9, 2024) 
 
