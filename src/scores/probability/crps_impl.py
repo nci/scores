@@ -1180,7 +1180,6 @@ def interval_tw_crps_for_ensemble(
         raise ValueError("`lower_threshold` must be less than `upper_threshold`")
 
     def _vfunc(x, lower_threshold=lower_threshold, upper_threshold=upper_threshold):
-
         return np.minimum(np.maximum(x, lower_threshold), upper_threshold)
 
     result = tw_crps_for_ensemble(
