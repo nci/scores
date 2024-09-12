@@ -10,7 +10,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Percent bias (PBIAS): `scores.continuous.pbias`. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #655](https://github.com/nci/scores/pull/655).
 	- Threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tw_crps_for_ensemble`. See [PR #644](https://github.com/nci/scores/pull/644).
 	- Tail threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tail_tw_crps_for_ensemble`. See [PR #644](https://github.com/nci/scores/pull/644).
-- Adapted the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) to allow it to take a sequence of mulitdimensional arrays (xr.DataArray) of thresholds. This allows the FIRM score to be used with categorical thresholds that vary across the domain. See [PR #661](https://github.com/nci/scores/pull/661).
+- The FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) can now take a sequence of mulitdimensional arrays (xr.DataArray) of thresholds. This allows the FIRM score to be used with categorical thresholds that vary across the domain. See [PR #661](https://github.com/nci/scores/pull/661).
 
 ### Breaking Changes
 
