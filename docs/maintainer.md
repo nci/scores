@@ -47,6 +47,7 @@ Information relevant for package maintenance
 
 ### Confirm Zenodo correctness
 
+Link to Zenodo archive: [https://doi.org/10.5281/zenodo.12697241](https://doi.org/10.5281/zenodo.12697241)
 1. Confirm license
 2. Confirm authors
 3. Scan everything else
