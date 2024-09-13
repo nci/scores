@@ -810,7 +810,7 @@ def crps_for_ensemble(
             unbiased estimate for the second expectation.
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -937,7 +937,7 @@ def tw_crps_for_ensemble(
 
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -1026,7 +1026,7 @@ def tail_tw_crps_for_ensemble(
     :py:func:`scores.probability.tw_crps_for_ensemble` function.
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -1076,19 +1076,19 @@ def tail_tw_crps_for_ensemble(
         raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
     if tail == "upper":
 
-        def _vfunc(x, threshold=threshold):
+        def _chainingfunc(x, threshold=threshold):
             return np.maximum(x, threshold)
 
     else:
 
-        def _vfunc(x, threshold=threshold):
+        def _chainingfunc(x, threshold=threshold):
             return np.minimum(x, threshold)
 
     result = tw_crps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim,
-        _vfunc,
+        _chainingfunc,
         chainging_func_kwargs={"threshold": threshold},
         method=method,
         reduce_dims=reduce_dims,
@@ -1125,7 +1125,7 @@ def interval_tw_crps_for_ensemble(
     :py:func:`scores.probability.tw_crps_for_ensemble` function.
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -1179,14 +1179,14 @@ def interval_tw_crps_for_ensemble(
     elif lower_threshold >= upper_threshold:
         raise ValueError("`lower_threshold` must be less than `upper_threshold`")
 
-    def _vfunc(x, lower_threshold=lower_threshold, upper_threshold=upper_threshold):
+    def _chaining_func(x, lower_threshold=lower_threshold, upper_threshold=upper_threshold):
         return np.minimum(np.maximum(x, lower_threshold), upper_threshold)
 
     result = tw_crps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim,
-        _vfunc,
+        _chaining_func,
         chainging_func_kwargs={"lower_threshold": lower_threshold, "upper_threshold": upper_threshold},
         method=method,
         reduce_dims=reduce_dims,
