@@ -2,7 +2,7 @@
 
 ## Version 1.2.0 (September 13, 2024) 
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.1.0...1.1.2). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.1.0...1.2.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
