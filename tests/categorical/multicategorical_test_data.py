@@ -1,6 +1,7 @@
 """
 Test data for testing scores.categorical.multicategorical functions
 """
+
 import numpy as np
 import xarray as xr
 
@@ -35,6 +36,14 @@ DA_OBS_SC2 = xr.DataArray(
     dims=["i"],
     coords={
         "i": [1, 2, 3, 4, 5, 6],
+    },
+)
+DA_THRESHOLD_SC = xr.DataArray(
+    data=[[5, 5], [-200, np.nan]],
+    dims=["j", "k"],
+    coords={
+        "j": [100001, 10000],  # coords in different order to forecast
+        "k": [10, 11],
     },
 )
 
@@ -222,6 +231,41 @@ EXP_SC_CASE5 = xr.Dataset(
     }
 )
 
+EXP_SC_TOTAL_CASE6 = xr.DataArray(
+    data=[[[np.nan, np.nan], [0.7, np.nan]], [[0.0, np.nan], [0, np.nan]]],
+    dims=["i", "j", "k"],
+    coords={
+        "i": [1, 2],
+        "j": [10000, 100001],
+        "k": [10, 11],
+    },
+)
+EXP_SC_UNDER_CASE6 = xr.DataArray(
+    data=[[[np.nan, np.nan], [0.7, np.nan]], [[0.0, np.nan], [0, np.nan]]],
+    dims=["i", "j", "k"],
+    coords={
+        "i": [1, 2],
+        "j": [10000, 100001],
+        "k": [10, 11],
+    },
+)
+EXP_SC_OVER_CASE6 = xr.DataArray(
+    data=[[[np.nan, np.nan], [0, np.nan]], [[0.0, np.nan], [0, np.nan]]],
+    dims=["i", "j", "k"],
+    coords={
+        "i": [1, 2],
+        "j": [10000, 100001],
+        "k": [10, 11],
+    },
+)
+EXP_SC_CASE6 = xr.Dataset(
+    {
+        "firm_score": EXP_SC_TOTAL_CASE6,
+        "underforecast_penalty": EXP_SC_UNDER_CASE6,
+        "overforecast_penalty": EXP_SC_OVER_CASE6,
+    }
+)
+
 DA_FCST_FIRM = xr.DataArray(
     data=[
         [[np.nan, 7, 4], [-100, 0, 1], [0, -100, 1]],
@@ -242,6 +286,32 @@ DA_OBS_FIRM = xr.DataArray(
         "k": [10, 11],
     },
 )
+
+DA_THRESHOLD_FIRM = [
+    xr.DataArray(
+        data=[0, 0, 0],
+        dims=["j"],
+        coords={"j": [10000, 100001, 900000]},
+    ),
+    xr.DataArray(
+        data=[5, 5, 5],
+        dims=["j"],
+        coords={"j": [10000, 100001, 900000]},
+    ),
+]
+
+DA_THRESHOLD_FIRM2 = [
+    xr.DataArray(
+        data=[0, 5, 0],
+        dims=["j"],
+        coords={"j": [10000, 100001, 900000]},
+    ),
+    xr.DataArray(
+        data=[5, 0, 5],
+        dims=["j"],
+        coords={"j": [10000, 100001, 900000]},
+    ),
+]
 
 LIST_WEIGHTS_FIRM0 = [
     xr.DataArray(

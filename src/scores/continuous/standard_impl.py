@@ -341,3 +341,80 @@ def multiplicative_bias(
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return multi_bias
+
+
+def pbias(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
+    """
+    Calculates the percent bias, which is the ratio of the additive bias to the mean observed value, multiplied by 100.
+
+    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying magnitudes.
+    By expressing the error as a percentage of the observed value, it allows for standardised comparisons, enabling assessment
+    of forecast performance regardless of the absolute scale of values. Like :py:func:`scores.continuous.multiplicative_bias`,
+    ``pbias`` will return a ``np.inf`` where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
+
+    .. math::
+        \\text{Percent bias} = 100 \\cdot \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
+
+    where:
+        - :math:`x_i` = the values of x in a sample (i.e. forecast values)
+        - :math:`y_i` = the values of y in a sample (i.e. observed values)
+
+    See "pbias" section at https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html for more information
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the percent bias. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the percent bias. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+
+    Returns:
+        An xarray object with the percent bias of a forecast.
+
+    References:
+        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
+        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
+            https://doi.org/10.1016/j.jhydrol.2014.06.035
+        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+            Environmental Modelling and Software, 22(7), 1034-1052.
+            https://doi.org/10.1016/j.envsoft.2006.06.008
+        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
+
+
+
+
+    """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+    fcst = scores.functions.apply_weights(fcst, weights=weights)
+    obs = scores.functions.apply_weights(obs, weights=weights)
+
+    # Need to broadcast and match NaNs so that the mean error and obs mean are for the
+    # same points
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
+    error = fcst - obs
+
+    _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    return _pbias

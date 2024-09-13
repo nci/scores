@@ -22,6 +22,7 @@
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
 .. autofunction:: scores.continuous.correlation.pearsonr
 .. autofunction:: scores.continuous.multiplicative_bias
+.. autofunction:: scores.continuous.pbias
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
 .. autofunction:: scores.continuous.consistent_quantile_score
@@ -40,6 +41,8 @@
 .. autofunction:: scores.probability.crps_step_threshold_weight
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 .. autofunction:: scores.probability.crps_for_ensemble
+.. autofunction:: scores.probability.tw_crps_for_ensemble
+.. autofunction:: scores.probability.tail_tw_crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data

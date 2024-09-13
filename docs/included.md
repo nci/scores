@@ -97,6 +97,10 @@
   - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
+* - Percent Bias (PBIAS)
+  - [API](api.md#scores.continuous.pbias)
+  - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
+  - [Percent Bias (CRAN hydroGOF)](https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html); [Sorooshian et al. (1993)](https://doi.org/10.1029/92WR02617); [Alfieri et al. (2014)](https://doi.org/10.1016/j.jhydrol.2014.06.035); [Dawson et al. (2007)](https://doi.org/10.1016/j.envsoft.2006.06.008); [Moriasi et al. (2007)](https://doi.org/10.13031/2013.23153)
 * - Pinball Loss, *see Quantile Loss*
   - &mdash;
   - &mdash;
@@ -219,7 +223,15 @@
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
-  - &mdash;  
+  - &mdash;
+* - Tail Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
+  - &mdash;
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
+* - Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tw_crps_for_ensemble)   
+  - &mdash;
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
 ```
 
 ## Categorical
