@@ -1,8 +1,8 @@
 # Release Notes (What's New)
 
-## Version 1.2.0 (Upcoming Release) 
+## Version 1.2.0 (September 13, 2024) 
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.1.0...develop). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.1.0...1.1.2). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
@@ -12,19 +12,11 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Tail threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tail_tw_crps_for_ensemble`. See [PR #644](https://github.com/nci/scores/pull/644).
 - The FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) can now take a sequence of mulitdimensional arrays (xr.DataArray) of thresholds. This allows the FIRM score to be used with categorical thresholds that vary across the domain. See [PR #661](https://github.com/nci/scores/pull/661).
 
-### Breaking Changes
-
-### Deprecations
-
-### Bug Fixes
-
 ### Documentation
 
 - Added information about percent bias to the "Additive Bias and Multiplicative Bias" tutorial. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #656](https://github.com/nci/scores/pull/656). 
 - Updated documentation to say there are now over 60 metrics, statistical techniques and data processing tools contained in `scores`. See [PR #659](https://github.com/nci/scores/pull/659).
 - In  the "Contributing Guide", updated instructions for installing a conda-based virtual environment. See [PR #654](https://github.com/nci/scores/pull/654). 
-
-
 
 ### Internal Changes
 
