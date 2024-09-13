@@ -963,7 +963,8 @@ def tw_crps_for_ensemble(
     References:
         Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
         events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
+        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. Open access
+        PDF available at https://arxiv.org/pdf/2202.12732
 
     See also:
         :py:func:`scores.probability.crps_for_ensemble`
@@ -1052,7 +1053,8 @@ def tail_tw_crps_for_ensemble(
     References:
         Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
         events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
+        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. Open access
+        PDF available at https://arxiv.org/pdf/2202.12732
 
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
@@ -1153,7 +1155,8 @@ def interval_tw_crps_for_ensemble(
     References:
         Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
         events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
+        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. Open access
+        PDF available at https://arxiv.org/pdf/2202.12732
 
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
