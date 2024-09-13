@@ -20,11 +20,11 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "xarray",
-    "pandas",
-    "scipy",
-    "bottleneck",
-    "scikit-learn",
+    "xarray ~= 2024.1",
+    "pandas ~= 2.0",
+    "scipy ~= 1.1",
+    "bottleneck ~= 1.3",
+    "scikit-learn ~= 1.4",
 ]
 
 [project.optional-dependencies]
