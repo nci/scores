@@ -860,7 +860,7 @@ def crps_for_ensemble(
             fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
         return fcst_spread_term
 
-    if "dask" in sys.modules:
+    if "dask" in sys.modules and not (fcst.chunks or obs.chunks):
         _calc_fcst_spread_term = dask.delayed(_calc_fcst_spread_term)
 
     if method not in ["ecdf", "fair"]:
@@ -885,7 +885,7 @@ def crps_for_ensemble(
         fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     else:
         fcst_spread_term = _calc_fcst_spread_term(fcst, ensemble_member_dim)
-        if "dask" in sys.modules:
+        if "dask" in sys.modules and not (fcst.chunks or obs.chunks):
             fcst_spread_term = dask.compute(fcst_spread_term)[0]
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":

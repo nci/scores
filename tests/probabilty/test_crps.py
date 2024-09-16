@@ -722,18 +722,30 @@ def test_crps_for_ensemble_raises():
     assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
 
 
-def test_crps_for_ensemble_dask():
+@pytest.mark.parametrize(
+    ("fcst", "obs", "vectorised"),
+    [
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk(), True),
+        (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk(), True),
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS, True),
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk(), False),
+        (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk(), False),
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS, False),
+    ],
+)
+def test_crps_for_ensemble_dask(fcst, obs, vectorised):
     """Tests `crps_for_ensemble` works with dask."""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = crps_for_ensemble(
-        fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
-        obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
+        fcst=fcst,
+        obs=obs,
         ensemble_member_dim="ens_member",
         method="ecdf",
         preserve_dims="all",
+        vectorise_fcst_spread_calc=vectorised,
     )
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
