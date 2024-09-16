@@ -11,11 +11,11 @@ try:
     import dask
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+import sys
+
 import numpy as np
 import pandas as pd
 import xarray as xr
-
-import sys
 
 import scores.utils
 from scores.probability.checks import coords_increasing
