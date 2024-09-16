@@ -961,10 +961,13 @@ def tw_crps_for_ensemble(
         such as varying the weights by climatological values.
 
     References:
-        Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
-        events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. Open access
-        PDF available at https://arxiv.org/pdf/2202.12732
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
+            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
+            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+            110(8). https://doi.org/10.18637/jss.v110.i08
+
 
     See also:
         :py:func:`scores.probability.crps_for_ensemble`
@@ -1051,10 +1054,12 @@ def tail_tw_crps_for_ensemble(
         ValueError: when ``method`` is not one of "ecdf" or "fair".
 
     References:
-        Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
-        events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. Open access
-        PDF available at https://arxiv.org/pdf/2202.12732
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
+            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
+            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+            110(8). https://doi.org/10.18637/jss.v110.i08
 
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
@@ -1153,11 +1158,12 @@ def interval_tw_crps_for_ensemble(
         ValueError: when ``method`` is not one of "ecdf" or "fair".
 
     References:
-        Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
-        events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. Open access
-        PDF available at https://arxiv.org/pdf/2202.12732
-
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
+            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
+            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+            110(8). https://doi.org/10.18637/jss.v110.i08
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
