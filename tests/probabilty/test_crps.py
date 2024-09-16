@@ -11,6 +11,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 
 import sys
 from unittest import mock
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -30,7 +31,6 @@ from scores.probability.crps_impl import (
     crps_step_threshold_weight,
 )
 from tests.probabilty import crps_test_data
-import sys
 
 
 @pytest.mark.parametrize(
@@ -701,6 +701,8 @@ def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, preserve_dims,
 
 def test_crps_for_ensemble_dask_unavailable(monkeypatch):
     """Tests that `crps_for_ensemble` works when dask is unavailable."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     monkeypatch.delitem(sys.modules, "dask", raising=False)
     result = crps_for_ensemble(
         crps_test_data.DA_FCST_CRPSENS,
