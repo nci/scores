@@ -7,9 +7,15 @@ the probability module to be part of the probability API.
 from collections.abc import Iterable
 from typing import Any, Callable, Literal, Optional, Sequence, Union
 
+try:
+    import dask
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+import sys
 
 import scores.utils
 from scores.probability.checks import coords_increasing
@@ -846,6 +852,17 @@ def crps_for_ensemble(
             Score with Limited Information and Applications to Ensemble Weather Forecasts", \
             Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
     """
+
+    def _calc_fcst_spread_term(fcst, ensemble_member_dim):
+        """Calculate the forecast spread term with a loop."""
+        fcst_spread_term = 0
+        for i in range(fcst.sizes[ensemble_member_dim]):
+            fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
+        return fcst_spread_term
+
+    if "dask" in sys.modules:
+        _calc_fcst_spread_term = dask.delayed(_calc_fcst_spread_term)
+
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
@@ -867,9 +884,9 @@ def crps_for_ensemble(
         fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
         fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     else:
-        fcst_spread_term = 0
-        for i in range(fcst.sizes[ensemble_member_dim]):
-            fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
+        fcst_spread_term = _calc_fcst_spread_term(fcst, ensemble_member_dim)
+        if "dask" in sys.modules:
+            fcst_spread_term = dask.compute(fcst_spread_term)[0]
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
