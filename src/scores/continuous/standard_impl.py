@@ -2,7 +2,7 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -435,13 +435,20 @@ def kge(
     Calculate the Kling-Gupta Efficiency (KGE) between observed and simulated (or forecast) values.
 
     KGE is a performance metric that decomposes the error into three components:
-    correlation, bias, and variability.
+    correlation, variability, and bias.
     It is computed as:
 
     .. math::
-        \\text{KGE} = 1 - \\sqrt{\\left[s_\rho \\cdot (\\rho - 1)\\right]^2 + \\left[s_\\alpha \\cdot (\\alpha - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
+        \\text{KGE} = 1 - \\sqrt{\\left[s_\\rho \\cdot (\\rho - 1)\\right]^2 +
+        \\left[s_\\alpha \\cdot (\\alpha - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
+
+    .. math::
         \\rho = \\frac{\\text{cov}(x, y)}{\\sigma_x \\sigma_y}
+
+    .. math::
         \\alpha = \\frac{\\sigma_x}{\\sigma_y}
+
+    .. math::
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
     where:
@@ -449,12 +456,10 @@ def kge(
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:'y' are forecast and observed values, respectively
-        - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively # pylint: disable=line-too-long
-        - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively # pylint: disable=line-too-long
-        - :math:`s_\\rho`, :math:'s_\\alpha and :math:`s_\\beta` are the scaling factors for
-            for the correlation coefficient :math:`\\rho`
-            for the variability term :math:`\\alpha`
-            for the bias term :math:`\\beta`
+        - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
+        - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
+        - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
+            the variability term :math:`\\alpha` and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.
@@ -469,36 +474,31 @@ def kge(
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
         scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
-            defined by: scaling_factors = [s_rho, s_alpha, s_beta] to apply to the correlation (rho),
-            variability (alpha), and bias (beta) terms respectively. Defaults to (1.0, 1.0, 1.0). (see
-            equation 10 in Gupta et al. (2009) for definitions of s_rho, s_alpha and s_beta)
-        return_components: If True, the function also returns the individual terms contributing to the KGE score:
-        - `rho`: Pearson correlation coefficient between forecasts and observations.
-        - `alpha`: Variability ratio (forecast/observation standard deviation).
-        - `beta`: Bias ratio between forecast and observation mean.
-            Default is False.
+            Defined by: scaling_factors = [s_rho, s_alpha, s_beta] to apply to the correlation (rho),
+            variability (alpha), and bias (beta) terms respectively. Defaults to (1.0, 1.0, 1.0). (*See
+            equation 10 in Gupta et al. (2009) for definitions of s_rho, s_alpha and s_beta*)
+        return_components (default False): If True, the function also returns the individual terms contributing to the KGE score:
+
+            - `rho`: Pearson correlation coefficient between forecasts and observations.
+            - `alpha`: Variability ratio (forecast/observation standard deviation).
+            - `beta`: Bias ratio between forecast and observation mean.
 
     Returns:
-        kge_s: The Kling-Gupta Efficiency (KGE) score as an xarray DataArray
-        If `return_components` is True, the function returns xarray DataSet kge_s with the following variables:
+        The Kling-Gupta Efficiency (KGE) score as an xarray DataArray.
+
+        If `return_components` is True, the function returns `xarray.Dataset` kge_s with the following variables:
+
         - `kge`: The KGE score.
         - `rho`: The Pearson correlation coefficient.
         - `alpha`: The variability ratio.
         - `beta`: The bias term.
 
-    Notes
-    - Stats are calculated only from values for which both observations and
-      simulations are not null values.
-    - This function isn't set up to take weights.
-    - Currently this function is working only on xarray data array
-    - preserve_dims: 'all' returns NaN like pearson correlation as std dev is zero for a single point
-
-    Examples
-    --------
-    >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
-    >>> kge_s = kge(forecasts, obs,reduce_dims="time")  # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
-    >>> kge_s = kge(forecasts, obs, return_components=True) # kge_s is dataset of all three components and kge value itself
-    >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0))
+    Notes:
+        - Stats are calculated only from values for which both observations and
+          simulations are not null values.
+        - This function isn't set up to take weights.
+        - Currently this function is working only on xarray data array
+        - preserve_dims: 'all' returns NaN like pearson correlation as std dev is zero for a single point
 
     References:
         -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
@@ -507,6 +507,16 @@ def kge(
         -   Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
             Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences, 23(10), 4323-4331.
             https://doi.org/10.5194/hess-23-4323-2019.
+
+
+    Examples:
+        >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
+        >>> kge_s = kge(forecasts, obs,reduce_dims="time")  # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
+        >>> kge_s = kge(forecasts, obs, return_components=True) # kge_s is dataset of all three components and kge value itself
+        >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0))
+
+
+
     """
 
     # Type checks as xrray.corr can only handle xr.DataArray
