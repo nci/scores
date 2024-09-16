@@ -780,6 +780,7 @@ def crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
+    vectorise_fcst_spread_calc: bool = True,
 ) -> XarrayLike:
     """Calculates the CRPS probabilistic metric given ensemble input.
 
@@ -818,6 +819,11 @@ def crps_for_ensemble(
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
         weights: Weights for calculating a weighted mean of individual scores.
+        vectorise_fcst_spread_calc: If True, the forecast spread term is calculated using 
+            vectorised operations. If False, the forecast spread term is calculated using
+            a loop. The vectorised operations are faster but use more memory. If you
+            run into memory issues and you have a large number of ensemble members,
+            consider setting this to False.
 
     Returns:
         xarray object of (weighted mean) CRPS values.
@@ -855,12 +861,15 @@ def crps_for_ensemble(
         preserve_dims=preserve_dims,
         score_specific_fcst_dims=ensemble_member_dim,
     )
-
-    ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
-
-    # calculate forecast spread contribution
-    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
-    fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
+    if vectorise_fcst_spread_calc:
+        ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
+        # calculate forecast spread contribution
+        fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
+        fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
+    else:
+        fcst_spread_term = 0
+        for i in range(fcst.sizes[ensemble_member_dim]):
+            fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
@@ -888,6 +897,7 @@ def tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
+    vectorise_fcst_spread_calc: bool = True,
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
@@ -949,6 +959,11 @@ def tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
+        vectorise_fcst_spread_calc: If True, the forecast spread term is calculated using 
+            vectorised operations. If False, the forecast spread term is calculated using
+            a loop. The vectorised operations are faster but use more memory. If you
+            run into memory issues and you have a large number of ensemble members,
+            consider setting this to False.
 
     Returns:
         xarray object of twCRPS values.
@@ -995,6 +1010,7 @@ def tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
+        vectorise_fcst_spread_calc=vectorise_fcst_spread_calc,
     )
     return result
 
@@ -1010,6 +1026,7 @@ def tail_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
+    vectorise_fcst_spread_calc: bool = True,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
@@ -1040,6 +1057,11 @@ def tail_tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
+        vectorise_fcst_spread_calc: If True, the forecast spread term is calculated using
+            vectorised operations. If False, the forecast spread term is calculated using
+            a loop. The vectorised operations are faster but use more memory. If you
+            run into memory issues and you have a large number of ensemble members,
+            consider setting this to False.
 
     Returns:
         xarray object of twCRPS values that has been weighted based on the tail.
@@ -1092,5 +1114,6 @@ def tail_tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
+        vectorise_fcst_spread_calc=vectorise_fcst_spread_calc,
     )
     return result
