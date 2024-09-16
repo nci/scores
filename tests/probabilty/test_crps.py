@@ -9,6 +9,8 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
+import sys
+from unittest import mock
 import numpy as np
 import pytest
 import xarray as xr
@@ -28,6 +30,7 @@ from scores.probability.crps_impl import (
     crps_step_threshold_weight,
 )
 from tests.probabilty import crps_test_data
+import sys
 
 
 @pytest.mark.parametrize(
@@ -694,6 +697,20 @@ def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, preserve_dims,
         preserve_dims=preserve_dims,
     )
     xr.testing.assert_allclose(result, expected)
+
+
+def test_crps_for_ensemble_dask_unavailable(monkeypatch):
+    """Tests that `crps_for_ensemble` works when dask is unavailable."""
+    monkeypatch.delitem(sys.modules, "dask", raising=False)
+    result = crps_for_ensemble(
+        crps_test_data.DA_FCST_CRPSENS,
+        crps_test_data.DA_OBS_CRPSENS,
+        "ens_member",
+        method="ecdf",
+        preserve_dims="all",
+        vectorise_fcst_spread_calc=False,
+    )
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
 
 
 def test_crps_for_ensemble_raises():
