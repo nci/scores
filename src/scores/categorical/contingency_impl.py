@@ -271,9 +271,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         # Note - bias_score calls this method
         cd = self.counts
-        freq_bias = (cd["tp_count"] + cd["fp_count"]) / (
-            cd["tp_count"] + cd["fn_count"]
-        )
+        freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
 
         return freq_bias
 
@@ -302,7 +300,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def hit_rate(self) -> xr.DataArray:
         """
-        Identical to :py:func:`true_positive_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`, 
+        Identical to :py:func:`true_positive_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
         :py:func:`sensitivity` and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -325,7 +323,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def probability_of_detection(self) -> xr.DataArray:
         """
-        Probability of detection (POD) is identical to :py:func:`hit_rate`, :py:func:`true_positive_rate`, 
+        Probability of detection (POD) is identical to :py:func:`hit_rate`, :py:func:`true_positive_rate`,
         :py:func:`sensitivity` and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -352,8 +350,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def true_positive_rate(self) -> xr.DataArray:
         """
-        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`, 
-        :py:func:`sensitivity` and :py:func:`recall`. 
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
         The proportion of the observed events that were correctly forecast.
 
@@ -612,7 +610,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def sensitivity(self) -> xr.DataArray:
         """
-        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`, 
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
         :py:func:`true_positive_rate`, and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -681,7 +679,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def recall(self) -> xr.DataArray:
         """
-        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`, 
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
         :py:func:`true_positive_rate`, and :py:func:`sensitivity`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -786,14 +784,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
                 Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
         """
         cd = self.counts
-        hits_random = (
-            (cd["tp_count"] + cd["fn_count"])
-            * (cd["tp_count"] + cd["fp_count"])
-            / cd["total_count"]
-        )
-        ets = (cd["tp_count"] - hits_random) / (
-            cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random
-        )
+        hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
+        ets = (cd["tp_count"] - hits_random) / (cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random)
 
         return ets
 
@@ -880,9 +872,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"])
             + ((cd["tn_count"] + cd["fn_count"]) * (cd["tn_count"] + cd["fp_count"]))
         )
-        hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (
-            cd["total_count"] - exp_correct
-        )
+        hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
         return hss
 
     def cohens_kappa(self) -> xr.DataArray:
@@ -972,11 +962,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
               Weather and Forecasting, 15(2), pp.221-232. \
               https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
         """
-        odds_r = (
-            self.probability_of_detection() / (1 - self.probability_of_detection())
-        ) / (
-            self.probability_of_false_detection()
-            / (1 - self.probability_of_false_detection())
+        odds_r = (self.probability_of_detection() / (1 - self.probability_of_detection())) / (
+            self.probability_of_false_detection() / (1 - self.probability_of_false_detection())
         )
         return odds_r
 
