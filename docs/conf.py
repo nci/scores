@@ -28,7 +28,10 @@ source_suffix = [".rst", ".md"]
 
 templates_path = ["_templates"]
 exclude_patterns = [
-    "**/.ipynb_checkpoints",
+    "**/.ipynb_checkpoints",  # Still built, just means it's not in a navbar / TOC
+    "tutorials/README.md",  # Still built, just means it's not in a navbar / TOC
+    "coding_practices.md",  # Still built, just means it's not in a navbar / TOC
+    "SECURITY.md",  # Still built, just means it's not in a navbar / TOC
 ]
 
 # -- Options for HTML output -------------------------------------------------
