@@ -524,7 +524,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def peirce_skill_score(self) -> xr.DataArray:
         """
-        Identical to Hanssen and Kuipers discriminant and the true skill statistic.
+        Identical to :py:func:`hanssen_and_kuipers_discriminant` and :py:func:`true_skill_statistic`.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
@@ -556,7 +556,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def true_skill_statistic(self) -> xr.DataArray:
         """
-        Identical to Peirce's skill score and to Hanssen and Kuipers discriminant.
+        Identical to :py:func:`peirce_skill_score` and :py:func:`hanssen_and_kuipers_discriminant`.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
@@ -582,7 +582,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def hanssen_and_kuipers_discriminant(self) -> xr.DataArray:
         """
-        Identical to Peirce's skill score and to the true skill statistic.
+        Identical to :py:func:`peirce_skill_score` and :py:func:`true_skill_statistic`.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
