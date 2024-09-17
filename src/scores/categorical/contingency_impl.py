@@ -583,7 +583,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     def hanssen_and_kuipers_discriminant(self) -> xr.DataArray:
         """
         Identical to :py:func:`peirce_skill_score` and :py:func:`true_skill_statistic`.
-        
+
         How well did the forecast separate the "yes" events from the "no" events?
 
         Returns:
