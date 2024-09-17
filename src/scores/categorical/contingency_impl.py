@@ -635,7 +635,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def specificity(self) -> xr.DataArray:
         """
-        Identical to true negative rate.
+        Identical to :py:func:`true_negative_rate`.
 
         The probability that an observed non-event will be correctly predicted.
 
@@ -658,7 +658,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def true_negative_rate(self) -> xr.DataArray:
         """
-        Identical to specificity.
+        Identical to :py:func:`specificity`.
 
         The probability that an observed non-event will be correctly predicted.
 
@@ -750,7 +750,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def equitable_threat_score(self) -> xr.DataArray:
         """
-        Identical to the Gilbert Skill Score.
+        Identical to :py:func:`gilberts_skill_score`.
 
         Calculates the Equitable threat score.
 
@@ -791,7 +791,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def gilberts_skill_score(self) -> xr.DataArray:
         """
-        Identical to the equitable threat scores
+        Identical to :py:func:`equitable_threat_score`.
 
         Calculates the Gilbert skill score.
 
@@ -828,7 +828,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def heidke_skill_score(self) -> xr.DataArray:
         """
-        Identical to Cohen's Kappa
+        Identical to :py:func:`cohens_kappa`.
 
         Calculates the Heidke skill score.
 
@@ -877,7 +877,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def cohens_kappa(self) -> xr.DataArray:
         """
-        Identical to the Heidke skill score.
+        Identical to :py:func:`heidke_skill_score`.
 
         Calculates Cohen's kappa.
 
@@ -969,7 +969,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def odds_ratio_skill_score(self) -> xr.DataArray:
         """
-        Identical to Yule's Q.
+        Identical to :py:func:`yules_q`.
 
         Calculates the odds ratio skill score.
 
@@ -1010,7 +1010,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def yules_q(self) -> xr.DataArray:
         """
-        Identical to the odds ratio skill score.
+        Identical to :py:func:`odds_ratio_skill_score`.
 
         Calculates the Yule's Q.
 
