@@ -155,7 +155,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def accuracy(self) -> xr.DataArray:
         """
-        Identical to fraction correct.
+        Identical to :py:func:`fraction_correct`.
 
         Accuracy calculates the proportion of forecasts which are correct.
 
@@ -228,7 +228,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def fraction_correct(self) -> xr.DataArray:
         """
-        Identical to accuracy.
+        Identical to :py:func:`accuracy`.
 
         Fraction correct calculates the proportion of forecasts which are correct.
 
@@ -250,7 +250,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def frequency_bias(self) -> xr.DataArray:
         """
-        Identical to bias scores.
+        Identical to :py:func:`bias_score`.
 
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
@@ -277,7 +277,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def bias_score(self) -> xr.DataArray:
         """
-        Identical to frequence bias.
+        Identical to :py:func:`frequency_bias`.
 
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
@@ -300,7 +300,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def hit_rate(self) -> xr.DataArray:
         """
-        Identical to true positive rate, probability of detection (POD), sensitivity and recall.
+        Identical to :py:func:`true_positive_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -322,7 +323,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def probability_of_detection(self) -> xr.DataArray:
         """
-        Probability of detection (POD) is identical to hit rate, true positive rate, sensitivity and recall.
+        Probability of detection (POD) is identical to :py:func:`hit_rate`, :py:func:`true_positive_rate`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -348,7 +350,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def true_positive_rate(self) -> xr.DataArray:
         """
-        Identical to hit rate, probability of detection (POD), sensitivity and recall.
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
         The proportion of the observed events that were correctly forecast.
 
@@ -395,7 +398,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def false_alarm_rate(self) -> xr.DataArray:
         """
-        Identical to probability of false detection.
+        Identical to :py:func:`probability_of_false_detection <BasicContingencyManager.probability_of_false_detection>`.
 
         What fraction of the non-events were incorrectly predicted?
 
@@ -422,7 +425,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def probability_of_false_detection(self) -> xr.DataArray:
         """
-        Probability of false detection (POFD) is identical to the false alarm rate.
+        Identical to :py:func:`false_alarm_rate`.
 
         What fraction of the non-events were incorrectly predicted?
 
@@ -446,7 +449,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def success_ratio(self) -> xr.DataArray:
         """
-        Identical to precision.
+        Identical to :py:func:`precision`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -472,7 +475,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def threat_score(self) -> xr.DataArray:
         """
-        Identical to critical success index.
+        Identical to :py:func:`critical_success_index`.
 
         Returns:
             xr.DataArray: An xarray object containing the threat score
@@ -498,7 +501,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def critical_success_index(self) -> xr.DataArray:
         """
-        Identical to threat score.
+        Identical to :py:func:`threat_score`.
 
         Returns:
             xr.DataArray: An xarray object containing the critical success index
@@ -607,7 +610,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def sensitivity(self) -> xr.DataArray:
         """
-        Identical to hit rate, probability of detection (POD), true positive rate and recall.
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`true_positive_rate`, and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -675,7 +679,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def recall(self) -> xr.DataArray:
         """
-        Identical to hit rate, probability of detection (POD), true positive rate and sensitivity.
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`true_positive_rate`, and :py:func:`sensitivity`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -698,7 +703,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def precision(self) -> xr.DataArray:
         """
-        Identical to the Success Ratio.
+        Identical to :py:func:`success_ratio`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -1208,7 +1213,14 @@ class EventOperator(ABC):
     """
 
     @abstractmethod
-    def make_event_tables(self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None):
+    def make_event_tables(
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
+    ):
         """
         This method should be over-ridden to return forecast and observed event tables
         """
@@ -1216,7 +1228,12 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_contingency_manager(
-        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
     ):
         """
         This method should be over-ridden to return a contingency table.
@@ -1237,12 +1254,25 @@ class ThresholdEventOperator(EventOperator):
     operator (e.g. greater-than, less-than, greater-than-or-equal-to, ... )
     """
 
-    def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001, default_op_fn=operator.ge):
+    def __init__(
+        self,
+        *,
+        precision=DEFAULT_PRECISION,
+        default_event_threshold=0.001,
+        default_op_fn=operator.ge,
+    ):
         self.precision = precision
         self.default_event_threshold = default_event_threshold
         self.default_op_fn = default_op_fn
 
-    def make_event_tables(self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None):
+    def make_event_tables(
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
+    ):
         """
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
@@ -1268,7 +1298,12 @@ class ThresholdEventOperator(EventOperator):
         return (fcst_events, obs_events)
 
     def make_contingency_manager(
-        self, fcst: FlexibleArrayType, obs: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
     ) -> BinaryContingencyManager:
         """
         Using this function requires a careful understanding of the structure of the data
