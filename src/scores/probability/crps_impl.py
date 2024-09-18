@@ -862,13 +862,13 @@ def crps_for_ensemble(
     if "dask" not in sys.modules and parallelise_fcst_spread_calc == True:
         raise ValueError("`parallelise_fcst_spread_calc` can only be true if dask is installed")
 
+    if vectorise_fcst_spread_calc == True and parallelise_fcst_spread_calc == True:
+        raise ValueError("`parallelise_fcst_spread_calc` can only be true if `vectorise_fcst_spread_calc` is false")
+
     if (fcst.chunks or obs.chunks) and parallelise_fcst_spread_calc == True:
         raise ValueError(
             "`parallelise_fcst_spread_calc` can only be true if `fcst` and `obs` are not chunked xarray objects"
         )
-
-    if vectorise_fcst_spread_calc == True and parallelise_fcst_spread_calc == True:
-        raise ValueError("`parallelise_fcst_spread_calc` can only be true if `vectorise_fcst_spread_calc` is false")
 
     def _calc_fcst_spread_term(fcst, ensemble_member_dim):
         """Calculate the forecast spread term with a loop."""

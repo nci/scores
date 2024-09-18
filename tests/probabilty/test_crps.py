@@ -600,7 +600,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "weight", "vectorised", "preserve_dims", "expected"),
+    ("fcst", "obs", "method", "weight", "vectorised", "parallelise", "preserve_dims", "expected"),
     [
         (
             crps_test_data.DA_FCST_CRPSENS,
@@ -608,6 +608,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             None,
             True,
+            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
@@ -617,6 +618,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "fair",
             None,
             True,
+            False,
             "all",
             crps_test_data.EXP_CRPSENS_FAIR,
         ),
@@ -626,6 +628,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             crps_test_data.DA_WT_CRPSENS,
             True,
+            False,
             None,
             crps_test_data.EXP_CRPSENS_WT,
         ),
@@ -635,6 +638,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             None,
             True,
+            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF_DS,
         ),
@@ -644,6 +648,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "fair",
             None,
             True,
+            False,
             "all",
             crps_test_data.EXP_CRPSENS_FAIR_DS,
         ),
@@ -653,6 +658,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             crps_test_data.DS_WT_CRPSENS,
             True,
+            False,
             None,
             crps_test_data.EXP_CRPSENS_WT_DS,
         ),
@@ -662,6 +668,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             None,
             True,
+            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF_BC,
         ),
@@ -671,6 +678,17 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             None,
             False,
+            False,
+            "all",
+            crps_test_data.EXP_CRPSENS_ECDF,
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            None,
+            False,
+            True,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
@@ -680,12 +698,13 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             "ecdf",
             None,
             False,
+            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF_DS,
         ),
     ],
 )
-def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, preserve_dims, expected):
+def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, parallelise, preserve_dims, expected):
     """Tests `crps_for_ensemble` returns as expected."""
     result = crps_for_ensemble(
         fcst,
@@ -694,6 +713,7 @@ def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, preserve_dims,
         method=method,
         weights=weight,
         vectorise_fcst_spread_calc=vectorised,
+        parallelise_fcst_spread_calc=parallelise,
         preserve_dims=preserve_dims,
     )
     xr.testing.assert_allclose(result, expected)
@@ -741,6 +761,14 @@ def test_crps_for_ensemble_dask_unavailable(monkeypatch):
             False,
             True,
             "can only be true if `fcst` and `obs` are not chunked xarray objects",
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS.chunk(),
+            None,
+            True,
+            True,
+            "can only be true if `vectorise_fcst_spread_calc` is false",
         ),
     ],
 )
