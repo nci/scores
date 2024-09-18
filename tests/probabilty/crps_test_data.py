@@ -589,6 +589,10 @@ DA_OBS_CRPSENS = xr.DataArray(
 )
 DA_WT_CRPSENS = xr.DataArray(data=[1, 2, 1, 0, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 DA_T_TWCRPSENS = xr.DataArray(data=[np.nan, 1, 10, 1, -2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_LI_TWCRPSENS = xr.DataArray(data=[np.nan, 2, 2, 100, -200], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_UI_TWCRPSENS = xr.DataArray(data=[np.nan, 5, 5, 200, -100], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_LI_CONS_TWCRPSENS = xr.DataArray(data=[2, 2, 2, 2, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_UI_CONS_TWCRPSENS = xr.DataArray(data=[5, 5, 5, 5, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 
 DS_FCST_CRPSENS = xr.Dataset({"a": DA_FCST_CRPSENS, "b": DA_FCST_CRPSENS})
 DS_OBS_CRPSENS = xr.Dataset({"a": DA_OBS_CRPSENS, "b": DA_OBS_CRPSENS})
@@ -698,3 +702,18 @@ VAR_THRES_SPREAD_ECDF_DA = xr.DataArray(
 )
 EXP_VAR_THRES_CRPSENS_DA = VAR_THRES_FIRST_TERM_DA - VAR_THRES_SPREAD_ECDF_DA
 EXP_VAR_THRES_CRPSENS_DS = xr.Dataset({"a": EXP_VAR_THRES_CRPSENS_DA, "b": EXP_VAR_THRES_CRPSENS_DA})
+
+# exp test data for interval twCRPS
+INTERVAL_FIRST_TERM_DA = xr.DataArray(
+    data=[6 / 4, 4 / 4, 2 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+INTERVAL_SPREAD_ECDF_DA = xr.DataArray(
+    data=[(6 + 4 + 4 + 6) / 32, (2 + 2 + 2 + 6) / 32, (2 + 2 + 4) / 18, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_INTERVAL_CRPSENS_ECDF_DA = INTERVAL_FIRST_TERM_DA - INTERVAL_SPREAD_ECDF_DA
+
+EXP_VAR_INTERVAL_CRPSENS_ECDF_DA = EXP_INTERVAL_CRPSENS_ECDF_DA * xr.DataArray(
+    data=[np.nan, 1, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)

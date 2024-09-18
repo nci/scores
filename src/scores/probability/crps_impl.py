@@ -810,7 +810,7 @@ def crps_for_ensemble(
             unbiased estimate for the second expectation.
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -937,7 +937,7 @@ def tw_crps_for_ensemble(
 
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -961,13 +961,18 @@ def tw_crps_for_ensemble(
         such as varying the weights by climatological values.
 
     References:
-        Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
-        events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
+            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
+            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
+
 
     See also:
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
+        :py:func:`scores.probability.interval_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
 
 
@@ -1025,7 +1030,7 @@ def tail_tw_crps_for_ensemble(
     :py:func:`scores.probability.tw_crps_for_ensemble` function.
 
     Args:
-        fcst: Forecast data. Must have a dimension `ensemble_member_dim`.
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
         obs: Observation data.
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
@@ -1049,12 +1054,16 @@ def tail_tw_crps_for_ensemble(
         ValueError: when ``method`` is not one of "ecdf" or "fair".
 
     References:
-        Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
-        events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
-        Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
+            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
+            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
 
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
+        :py:func:`scores.probability.interval_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
 
@@ -1074,20 +1083,119 @@ def tail_tw_crps_for_ensemble(
         raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
     if tail == "upper":
 
-        def _vfunc(x, threshold=threshold):
+        def _chainingfunc(x, threshold=threshold):
             return np.maximum(x, threshold)
 
     else:
 
-        def _vfunc(x, threshold=threshold):
+        def _chainingfunc(x, threshold=threshold):
             return np.minimum(x, threshold)
 
     result = tw_crps_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim,
-        _vfunc,
+        _chainingfunc,
         chainging_func_kwargs={"threshold": threshold},
+        method=method,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+    return result
+
+
+def interval_tw_crps_for_ensemble(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    ensemble_member_dim: str,
+    lower_threshold: Union[xr.DataArray, float],
+    upper_threshold: Union[xr.DataArray, float],
+    *,  # Force keywords arguments to be keyword-only
+    method: Literal["ecdf", "fair"] = "ecdf",
+    reduce_dims: Optional[Sequence[str]] = None,
+    preserve_dims: Optional[Sequence[str]] = None,
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
+    """
+    Calculates the threshold weighted continuous ranked probability score (twCRPS) for ensemble forecasts
+    where the threshold weight is 1 on a specified interval and 0 otherwise.
+
+    The threshold values that define the bounds of the interval are given by the
+    ``lower_threshold`` and ``upper_threshold`` arguments.
+    For example, if we only want to foucs on the temperatures between -10 and -20 degrees C
+    where aircraft icing is most likely, we can set ``lower_threshold=-20`` and ``upper_threshold=-10``.
+
+
+    For more flexible weighting options and the relevant equations, see the
+    :py:func:`scores.probability.tw_crps_for_ensemble` function.
+
+    Args:
+        fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
+        obs: Observation data.
+        ensemble_member_dim: the dimension that specifies the ensemble member or the sample
+            from the predictive distribution.
+        lower_threshold: the threshold value for where the interval begins. It can either be a float
+            for a single threshold or an xarray object if the threshold varies across
+            dimensions (e.g., climatological values).
+        upper_threshold: the threshold value for where the interval ends. It can either be a float
+            for a single threshold or an xarray object if the threshold varies across
+            dimensions (e.g., climatological values).
+        method: Either "ecdf" or "fair". See :py:func:`scores.probability.tw_crps_for_ensemble`
+            for more details.
+        reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+        preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+        weights: Weights for calculating a weighted mean of individual scores. Note that
+            these weights are different to threshold weighting which is done by decision
+            threshold.
+
+    Returns:
+        xarray object of twCRPS values where the threshold weighting is based on an interval.
+
+    Raises:
+        ValueError: when ``lower_threshold`` is not less than ``upper_threshold``.
+        ValueError: when ``method`` is not one of "ecdf" or "fair".
+
+    References:
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
+            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
+            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
+    See also:
+        :py:func:`scores.probability.tw_crps_for_ensemble`
+        :py:func:`scores.probability.tail_tw_crps_for_ensemble`
+        :py:func:`scores.probability.crps_for_ensemble`
+        :py:func:`scores.probability.crps_cdf`
+
+    Examples:
+        Calculate the twCRPS for an ensemble where we assign a threshold weight of 1
+        to thresholds between -20 and -10 and a threshold weight of 0 to thresholds outside
+        that interval.
+
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.probability import interval_tw_crps_for_ensemble
+        >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
+        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+        >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+    """
+    if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
+        if (lower_threshold >= upper_threshold).any().values.item():
+            raise ValueError("`lower_threshold` must be less than `upper_threshold`")
+    elif lower_threshold >= upper_threshold:
+        raise ValueError("`lower_threshold` must be less than `upper_threshold`")
+
+    def _chaining_func(x, lower_threshold=lower_threshold, upper_threshold=upper_threshold):
+        return np.minimum(np.maximum(x, lower_threshold), upper_threshold)
+
+    result = tw_crps_for_ensemble(
+        fcst,
+        obs,
+        ensemble_member_dim,
+        _chaining_func,
+        chainging_func_kwargs={"lower_threshold": lower_threshold, "upper_threshold": upper_threshold},
         method=method,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,

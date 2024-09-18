@@ -184,6 +184,10 @@
   - [API](api.md#scores.probability.crps_for_ensemble)   
   - [Tutorial](project:./tutorials/CRPS_for_Ensembles.md)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
+* - Interval Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.interval_tw_crps_for_ensemble)   
+  - &mdash;
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08) 
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -227,11 +231,11 @@
 * - Tail Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
   - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
   - &mdash;
-  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
 * - Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
   - [API](api.md#scores.probability.tw_crps_for_ensemble)   
   - &mdash;
-  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
 ```
 
 ## Categorical

@@ -43,6 +43,7 @@
 .. autofunction:: scores.probability.crps_for_ensemble
 .. autofunction:: scores.probability.tw_crps_for_ensemble
 .. autofunction:: scores.probability.tail_tw_crps_for_ensemble
+.. autofunction:: scores.probability.interval_tw_crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data
