@@ -787,6 +787,7 @@ def crps_for_ensemble(
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
     vectorise_fcst_spread_calc: bool = True,
+    parallelise_fcst_spread_calc: bool = False,
 ) -> XarrayLike:
     """Calculates the CRPS probabilistic metric given ensemble input.
 
@@ -830,12 +831,18 @@ def crps_for_ensemble(
             a loop. The vectorised operations are faster but use more memory. If you
             run into memory issues and you have a large number of ensemble members,
             consider setting this to False.
+        parallelise_fcst_spread_calc: If True, the forecast spread term is calculated using
+            parallelised operations with dask. This option can only be used if
+            ``vectorise_fcst_spread_calc=False`` and dask is installed in the environment.
 
     Returns:
         xarray object of (weighted mean) CRPS values.
 
     Raises:
         ValueError: when method is not one of "ecdf" or "fair".
+        ValueError: when `vectorise_fcst_spread_calc` is True and dask is not installed.
+        ValueError: when `vectorise_fcst_spread_calc` and `parallelise_fcst_spread_calc` are both True.
+        ValueError: when `fcst` and `obs` are chunked xarray objects and `vectorise_fcst_spread_calc` is True.
 
     See also:
         :py:func:`scores.probability.crps_cdf`
@@ -852,6 +859,16 @@ def crps_for_ensemble(
             Score with Limited Information and Applications to Ensemble Weather Forecasts", \
             Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
     """
+    if "dask" not in sys.modules and parallelise_fcst_spread_calc == True:
+        raise ValueError("`parallelise_fcst_spread_calc` can only be true if dask is installed")
+
+    if (fcst.chunks or obs.chunks) and parallelise_fcst_spread_calc == True:
+        raise ValueError(
+            "`parallelise_fcst_spread_calc` can only be true if `fcst` and `obs` are not chunked xarray objects"
+        )
+
+    if vectorise_fcst_spread_calc == True and parallelise_fcst_spread_calc == True:
+        raise ValueError("`parallelise_fcst_spread_calc` can only be true if `vectorise_fcst_spread_calc` is false")
 
     def _calc_fcst_spread_term(fcst, ensemble_member_dim):
         """Calculate the forecast spread term with a loop."""
@@ -860,7 +877,7 @@ def crps_for_ensemble(
             fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
         return fcst_spread_term
 
-    if "dask" in sys.modules and not (fcst.chunks or obs.chunks):
+    if parallelise_fcst_spread_calc:
         _calc_fcst_spread_term = dask.delayed(_calc_fcst_spread_term)
 
     if method not in ["ecdf", "fair"]:
@@ -885,7 +902,7 @@ def crps_for_ensemble(
         fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     else:
         fcst_spread_term = _calc_fcst_spread_term(fcst, ensemble_member_dim)
-        if "dask" in sys.modules and not (fcst.chunks or obs.chunks):
+        if parallelise_fcst_spread_calc:
             fcst_spread_term = dask.compute(fcst_spread_term)[0]
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
@@ -915,6 +932,7 @@ def tw_crps_for_ensemble(
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
     vectorise_fcst_spread_calc: bool = True,
+    parallelise_fcst_spread_calc: bool = False,
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
@@ -981,12 +999,18 @@ def tw_crps_for_ensemble(
             a loop. The vectorised operations are faster but use more memory. If you
             run into memory issues and you have a large number of ensemble members,
             consider setting this to False.
+        parallelise_fcst_spread_calc: If True, the forecast spread term is calculated using
+            parallelised operations with dask. This option can only be used if
+            ``vectorise_fcst_spread_calc=False`` and dask is installed in the environment.
 
     Returns:
         xarray object of twCRPS values.
 
     Raises:
         ValueError: when ``method`` is not one of "ecdf" or "fair".
+        ValueError: when `vectorise_fcst_spread_calc` is True and dask is not installed.
+        ValueError: when `vectorise_fcst_spread_calc` and `parallelise_fcst_spread_calc` are both True.
+        ValueError: when `fcst` and `obs` are chunked xarray objects and `vectorise_fcst_spread_calc` is True.
 
     Notes:
         Chaining functions can be created to vary the weights across given dimensions
@@ -1028,6 +1052,7 @@ def tw_crps_for_ensemble(
         preserve_dims=preserve_dims,
         weights=weights,
         vectorise_fcst_spread_calc=vectorise_fcst_spread_calc,
+        parallelise_fcst_spread_calc=parallelise_fcst_spread_calc,
     )
     return result
 
@@ -1044,6 +1069,7 @@ def tail_tw_crps_for_ensemble(
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
     vectorise_fcst_spread_calc: bool = True,
+    parallelise_fcst_spread_calc: bool = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
@@ -1079,6 +1105,9 @@ def tail_tw_crps_for_ensemble(
             a loop. The vectorised operations are faster but use more memory. If you
             run into memory issues and you have a large number of ensemble members,
             consider setting this to False.
+        parallelise_fcst_spread_calc: If True, the forecast spread term is calculated using
+            parallelised operations with dask. This option can only be used if
+            ``vectorise_fcst_spread_calc=False`` and dask is installed in the environment.
 
     Returns:
         xarray object of twCRPS values that has been weighted based on the tail.
@@ -1086,6 +1115,9 @@ def tail_tw_crps_for_ensemble(
     Raises:
         ValueError: when ``tail`` is not one of "upper" or "lower".
         ValueError: when ``method`` is not one of "ecdf" or "fair".
+        ValueError: when `vectorise_fcst_spread_calc` is True and dask is not installed.
+        ValueError: when `vectorise_fcst_spread_calc` and `parallelise_fcst_spread_calc` are both True.
+        ValueError: when `fcst` and `obs` are chunked xarray objects and `vectorise_fcst_spread_calc` is True.
 
     References:
         Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
@@ -1132,5 +1164,6 @@ def tail_tw_crps_for_ensemble(
         preserve_dims=preserve_dims,
         weights=weights,
         vectorise_fcst_spread_calc=vectorise_fcst_spread_calc,
+        parallelise_fcst_spread_calc=parallelise_fcst_spread_calc,
     )
     return result

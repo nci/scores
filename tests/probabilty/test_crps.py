@@ -700,7 +700,7 @@ def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, preserve_dims,
 
 
 def test_crps_for_ensemble_dask_unavailable(monkeypatch):
-    """Tests that `crps_for_ensemble` works when dask is unavailable."""
+    """Tests that `crps_for_ensemble` still works when dask is unavailable."""
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     monkeypatch.delitem(sys.modules, "dask", raising=False)
@@ -715,11 +715,68 @@ def test_crps_for_ensemble_dask_unavailable(monkeypatch):
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
 
 
-def test_crps_for_ensemble_raises():
+@pytest.mark.parametrize(
+    ("fcst", "obs", "method", "vectorised", "parallelised", "exp"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "unfair",
+            None,
+            None,
+            "`method` must be one of 'ecdf' or 'fair'",
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS.chunk(),
+            crps_test_data.DA_OBS_CRPSENS,
+            None,
+            False,
+            True,
+            "can only be true if `fcst` and `obs` are not chunked xarray objects",
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS.chunk(),
+            None,
+            False,
+            True,
+            "can only be true if `fcst` and `obs` are not chunked xarray objects",
+        ),
+    ],
+)
+def test_crps_for_ensemble_raises(fcst, obs, method, vectorised, parallelised, exp):
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
-        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", method="unfair")
-    assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
+        crps_for_ensemble(
+            fcst,
+            obs,
+            "ens_member",
+            method=method,
+            vectorise_fcst_spread_calc=vectorised,
+            parallelise_fcst_spread_calc=parallelised,
+        )
+    assert exp in str(excinfo.value)
+
+
+def test_crps_for_ensemble_raises_dask(monkeypatch):
+    """
+    Tests that `crps_for_ensemble` raises an error when dask is unavailable and
+    parallelise_fcst_spread_calc is True.
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    monkeypatch.delitem(sys.modules, "dask", raising=False)
+    with pytest.raises(ValueError) as excinfo:
+        result = crps_for_ensemble(
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ens_member",
+            method="ecdf",
+            preserve_dims="all",
+            vectorise_fcst_spread_calc=False,
+            parallelise_fcst_spread_calc=True,
+        )
+    assert "`parallelise_fcst_spread_calc` can only be true if dask is installed" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
