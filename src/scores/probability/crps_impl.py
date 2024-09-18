@@ -966,7 +966,7 @@ def tw_crps_for_ensemble(
             Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
             When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8). https://doi.org/10.18637/jss.v110.i08
+            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
 
 
     See also:
@@ -1059,7 +1059,7 @@ def tail_tw_crps_for_ensemble(
             Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
             When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8). https://doi.org/10.18637/jss.v110.i08
+            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
 
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
@@ -1118,10 +1118,9 @@ def interval_tw_crps_for_ensemble(
     weights: Optional[XarrayLike] = None,
 ) -> XarrayLike:
     """
-    Calculates the threshold weighted continuous ranked probability score (twCRPS)
-    weighted for an interval across the distribution from ensemble input.
+    Calculates the threshold weighted continuous ranked probability score (twCRPS) for ensemble forecasts
+    where the threshold weight is 1 on a specified interval and 0 otherwise.
 
-    A threshold weight of 1 is assigned for values within the interval and a threshold weight of 0 otherwise.
     The threshold values that define the bounds of the interval are given by the
     ``lower_threshold`` and ``upper_threshold`` arguments.
     For example, if we only want to foucs on the temperatures between -10 and -20 degrees C
@@ -1151,7 +1150,7 @@ def interval_tw_crps_for_ensemble(
             threshold.
 
     Returns:
-        xarray object of twCRPS values that has been weighted based on an interval.
+        xarray object of twCRPS values where the threshold weighting is based on an interval.
 
     Raises:
         ValueError: when ``lower_threshold`` is not less than ``upper_threshold``.
@@ -1163,7 +1162,7 @@ def interval_tw_crps_for_ensemble(
             Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
             When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8). https://doi.org/10.18637/jss.v110.i08
+            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
@@ -1178,8 +1177,8 @@ def interval_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import interval_tw_crps_for_ensemble
-        >>> fcst = xr.DataArray(np.random.uniform(-40, 10, size=(10, 10)), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.uniform(-40, 10, size=10), dims=['time'])
+        >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
+        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
