@@ -56,7 +56,7 @@
 * - Kling–Gupta efficiency (KGE)
   - [API](api.md#scores.continuous.kge)
   - [Tutorial](project:./tutorials/Kling–Gupta_efficiency.md)
-  - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben er al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)    
+  - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)    
 * - Mean Absolute Error (MAE)
   - [API](api.md#scores.continuous.mae)
   - [Tutorial](project:./tutorials/Mean_Absolute_Error.md)
