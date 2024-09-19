@@ -931,5 +931,5 @@ def test_kge_dask():
     result = scores.continuous.kge(fcst, obs)
     assert isinstance(result.data, dask.array.Array)  # type: ignore
     result = result.compute()  # type: ignore
-    assert isinstance(result.data, np.ndarray)
+    assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
