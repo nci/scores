@@ -455,7 +455,7 @@ def kge(
         - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
-        - :math:`x` and :math:'y' are forecast and observed values, respectively
+        - :math:`x` and :math:`y` are forecast and observed values, respectively
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
         - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
@@ -486,7 +486,7 @@ def kge(
     Returns:
         The Kling-Gupta Efficiency (KGE) score as an xarray DataArray.
 
-        If `return_components` is True, the function returns `xarray.Dataset` kge_s with the following variables:
+        If ``return_components`` is True, the function returns ``xarray.Dataset`` kge_s with the following variables:
 
         - `kge`: The KGE score.
         - `rho`: The Pearson correlation coefficient.
@@ -494,7 +494,7 @@ def kge(
         - `beta`: The bias term.
 
     Notes:
-        - Stats are calculated only from values for which both observations and
+        - Statistics are calculated only from values for which both observations and
           simulations are not null values.
         - This function isn't set up to take weights.
         - Currently this function is working only on xarray data array
