@@ -53,7 +53,7 @@
   - [API](api.md#scores.continuous.isotonic_fit)
   - [Tutorial](project:./tutorials/Isotonic_Regression_And_Reliability_Diagrams.md)
   - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761) 
-* - Kling–Gupta efficiency (KGE)
+* - Kling–Gupta Efficiency (KGE)
   - [API](api.md#scores.continuous.kge)
   - [Tutorial](project:./tutorials/Kling–Gupta_efficiency.md)
   - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)    
