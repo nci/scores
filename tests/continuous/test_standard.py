@@ -918,7 +918,6 @@ def test_kge(fcst, obs, reduce_dims, preserve_dims, return_components, scaling_f
         return_components=return_components,
         scaling_factors=scaling_factors,
     )
-    # xr.testing.assert_equal(result, expected)
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
 
 
