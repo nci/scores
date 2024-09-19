@@ -689,6 +689,80 @@ EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
 
 EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
 
+## for KGE
+DA1_KGE = xr.DataArray(
+    np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+DA2_KGE = xr.DataArray(
+    np.array([[2, 4, 6], [6, 5, 6], [3, 4, 5], [3, np.nan, 3]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+DA3_KGE = xr.DataArray(
+    np.array([[1, 2, 3], [3, 2.5, 3], [1.5, 2, 2.5], [1.5, np.nan, 1.5]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+DA4_KGE = xr.DataArray(
+    np.array([[1, 3, 7], [2, 2, 8], [3, 1, 7]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+DA5_KGE = xr.DataArray(
+    np.array([1, 2, 3]),
+    dims=("space"),
+    coords=[("space", ["x", "y", "z"])],
+)
+
+## Expected KGE values
+EXP_KGE_KEEP_SPACE_DIM = xr.DataArray(
+    np.array([0.2928932188134524, -1.2103875562418747, -0.44811448882050064, np.nan]),
+    dims=("space"),
+    coords=[("space", ["w", "x", "y", "z"])],
+)
+EXP_KGE_REDUCE_ALL = xr.DataArray(0.2928932188134524)
+
+EXP_KGE_rho_returns_components = xr.DataArray(1.0)
+EXP_KGE_alpha_returns_components = xr.DataArray(0.5)
+EXP_KGE_beta_returns_components = xr.DataArray(0.5)
+
+EXP_KGE_returns_components = xr.Dataset(
+    {
+        "kge": EXP_KGE_REDUCE_ALL,
+        "rho": EXP_KGE_rho_returns_components,
+        "alpha": EXP_KGE_alpha_returns_components,
+        "beta": EXP_KGE_beta_returns_components,
+    }
+)
+
+
+EXP_KGE_Scaling_Factors = xr.DataArray(
+    1 - np.sqrt((0.5 * (1 - 1)) ** 2 + (1.0 * (0.5 - 1)) ** 2 + (2 * (0.5 - 1)) ** 2)
+)
+
+
+EXP_KGE_DIFF_SIZE = xr.DataArray(
+    np.array([1.0, -1.0, -1.8791915368841288]),
+    dims=("time"),
+    coords=[("time", [1, 2, 3])],
+)
+
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
@@ -813,3 +887,48 @@ def test_pbias_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PBIAS3)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "return_components", "scaling_factors", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_KGE, DA2_KGE, None, "space", False, None, EXP_KGE_KEEP_SPACE_DIM),
+        # Check preserve dim arg
+        (DA1_KGE, DA2_KGE, "time", None, False, None, EXP_KGE_KEEP_SPACE_DIM),
+        # Check reduce all
+        (DA3_KGE, DA2_KGE, None, None, False, None, EXP_KGE_REDUCE_ALL),
+        # returning components
+        (DA3_KGE, DA2_KGE, None, None, True, None, EXP_KGE_returns_components),
+        # Check scaling_factors
+        (DA3_KGE, DA2_KGE, None, None, False, [0.5, 1.0, 2.0], EXP_KGE_Scaling_Factors),
+        # Check different size arrays as input
+        (DA4_KGE, DA5_KGE, "space", None, False, None, EXP_KGE_DIFF_SIZE),
+    ],
+)
+def test_kge(fcst, obs, reduce_dims, preserve_dims, return_components, scaling_factors, expected):
+    """
+    Tests continuous.kge
+    """
+    result = scores.continuous.kge(
+        fcst,
+        obs,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        return_components=return_components,
+        scaling_factors=scaling_factors,
+    )
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+def test_kge_dask():
+    """
+    Tests that continuous.kge works with Dask
+    """
+    fcst = DA3_KGE.chunk()
+    obs = DA2_KGE.chunk()
+    result = scores.continuous.kge(fcst, obs)
+    assert isinstance(result.data, dask.array.Array)  # type: ignore
+    result = result.compute()  # type: ignore
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
