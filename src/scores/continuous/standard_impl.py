@@ -497,7 +497,7 @@ def kge(
         - Statistics are calculated only from values for which both observations and
           simulations are not null values.
         - This function isn't set up to take weights.
-        - Currently this function is working only on xarray data array
+        - Currently this function is working only on xarray data array.
         - preserve_dims: 'all' returns NaN like pearson correlation as std dev is zero for a single point
 
     References:
