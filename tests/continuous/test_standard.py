@@ -763,6 +763,17 @@ EXP_KGE_DIFF_SIZE = xr.DataArray(
     coords=[("time", [1, 2, 3])],
 )
 
+## Parametrized test for kge function to check various incorrect types and sizes
+Incorrect_Input_KGE = [1, 2, 3]
+Incorrect_SFactors_Type_KGE = "incorrect_type"
+Incorrect_SFactors_List_KGE = [1, 2]
+Incorrect_SFactors_Numpy_KGE = np.array([1, 2, 3, 4])
+
+EXP_KGE_message1 = "kge: fcst must be an xarray.DataArray"
+EXP_KGE_message2 = "kge: obs must be an xarray.DataArray"
+EXP_KGE_message3 = "kge: scaling_factors must be a list of floats or a numpy array"
+EXP_KGE_message4 = "kge: scaling_factors must contain exactly 3 elements"
+
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
@@ -932,3 +943,26 @@ def test_kge_dask():
     result = result.compute()  # type: ignore
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
+
+
+@pytest.mark.parametrize(
+    "fcst, obs, scaling_factors, expected_exception, expected_message",
+    [
+        # Test case for fcst with incorrect type (list instead of xr.DataArray)
+        (Incorrect_Input_KGE, DA2_KGE, None, TypeError, EXP_KGE_message1),
+        # Test case for obs with incorrect type (list instead of xr.DataArray)
+        (DA1_KGE, Incorrect_Input_KGE, None, TypeError, EXP_KGE_message2),
+        # Test case for scaling_factors with incorrect type (string instead of list or np.ndarray)
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, TypeError, EXP_KGE_message3),
+        # Test case for scaling_factors with incorrect number of elements (list with 2 elements)
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, ValueError, EXP_KGE_message4),
+        # Test case for scaling_factors with incorrect number of elements (numpy array with 4 elements)
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, ValueError, EXP_KGE_message4),
+    ],
+)
+def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_message):
+    """
+    Test continuous.kge raises error with an incorrect type and sizes
+    """
+    with pytest.raises(expected_exception, match=expected_message):
+        scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)  # type: ignore

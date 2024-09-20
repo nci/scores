@@ -443,16 +443,13 @@ def kge(
         \\left[s_\\alpha \\cdot (\\alpha - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
 
     .. math::
-        \\rho = \\frac{\\text{cov}(x, y)}{\\sigma_x \\sigma_y}
-
-    .. math::
         \\alpha = \\frac{\\sigma_x}{\\sigma_y}
 
     .. math::
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
     where:
-        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values
+        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as defined in 'scores.continuous.correlation.pearsonr'
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
@@ -469,19 +466,13 @@ def kge(
         preserve_dims: Optionally specify which dimensions to preserve when
             calculating the KGE. All other dimensions will be reduced. As a
             special case, 'all' will allow all dimensions to be preserved. In
-            this case, the result will be in the same shape/dimensionality
-            as the forecast, and the errors will be the error at each
-            point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely.
+            this case, the result will be all NaN with the same shape/dimensionality
+            as the forecast because the standard deviation is zero for a single point.
         scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
-            Defined by: scaling_factors = [s_rho, s_alpha, s_beta] to apply to the correlation (rho),
-            variability (alpha), and bias (beta) terms respectively. Defaults to (1.0, 1.0, 1.0). (*See
-            equation 10 in Gupta et al. (2009) for definitions of s_rho, s_alpha and s_beta*)
-        return_components (default False): If True, the function also returns the individual terms contributing to the KGE score:
-
-            - `rho`: Pearson correlation coefficient between forecasts and observations.
-            - `alpha`: Variability ratio (forecast/observation standard deviation).
-            - `beta`: Bias ratio between forecast and observation mean.
+            Defined by: scaling_factors = :math: '[s\\_rho, s_\\alpha, s_\\beta]' to apply to the correlation term :math:`\\rho`,
+            the variability term :math:`\\alpha` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0). (*See
+            equation 10 in Gupta et al. (2009) for definitions of them*)
+        return_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
 
     Returns:
         The Kling-Gupta Efficiency (KGE) score as an xarray DataArray.
@@ -497,8 +488,10 @@ def kge(
         - Statistics are calculated only from values for which both observations and
           simulations are not null values.
         - This function isn't set up to take weights.
-        - Currently this function is working only on xarray data array
-        - preserve_dims: 'all' returns NaN like pearson correlation as std dev is zero for a single point
+        - Currently this function is working only on xr.DataArray
+        - When preserve_dims is set to 'all', the function returns NaN,
+          similar to the Pearson correlation coefficient calculation for a single data point
+          because the standard deviation is zero for a single point
 
     References:
         -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
@@ -513,7 +506,7 @@ def kge(
         >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
         >>> kge_s = kge(forecasts, obs,reduce_dims="time")  # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
         >>> kge_s = kge(forecasts, obs, return_components=True) # kge_s is dataset of all three components and kge value itself
-        >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0))
+        >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0)) # with scaling factors
 
 
 
@@ -524,11 +517,16 @@ def kge(
         raise TypeError("kge: fcst must be an xarray.DataArray")
     if not isinstance(obs, xr.DataArray):
         raise TypeError("kge: obs must be an xarray.DataArray")
-    if scaling_factors is not None and not isinstance(scaling_factors, (list, np.ndarray)):
-        raise TypeError("kge: scaling_factors must be a list of floats or a numpy array")
-
-    if scaling_factors is None:
+    if scaling_factors is not None:
+        if isinstance(scaling_factors, (list, np.ndarray)):
+            # Check if the input has exactly 3 elements
+            if len(scaling_factors) != 3:
+                raise ValueError("kge: scaling_factors must contain exactly 3 elements")
+        else:
+            raise TypeError("kge: scaling_factors must be a list of floats or a numpy array")
+    else:
         scaling_factors = [1.0, 1.0, 1.0]
+
     s_rho, s_alpha, s_beta = scaling_factors
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
