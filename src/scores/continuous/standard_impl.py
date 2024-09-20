@@ -476,7 +476,7 @@ def kge(
         scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
             Defined by: scaling_factors = [s_rho, s_alpha, s_beta] to apply to the correlation (rho),
             variability (alpha), and bias (beta) terms respectively. Defaults to (1.0, 1.0, 1.0). (*See
-            equation 10 in Gupta et al. (2009) for definitions of s_rho, s_alpha and s_beta*)
+            equation 10 in Gupta et al. (2009) for definitions of s_rho, s_alpha and s_beta*).
         return_components (default False): If True, the function also returns the individual terms contributing to the KGE score:
 
             - `rho`: Pearson correlation coefficient between forecasts and observations.
