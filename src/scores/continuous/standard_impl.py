@@ -469,7 +469,7 @@ def kge(
             this case, the result will be all NaN with the same shape/dimensionality
             as the forecast because the standard deviation is zero for a single point.
         scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
-            Defined by: scaling_factors = :math: '[s\\_rho, s_\\alpha, s_\\beta]' to apply to the correlation term :math:`\\rho`,
+            Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_\\alpha`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
             the variability term :math:`\\alpha` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0). (*See
             equation 10 in Gupta et al. (2009) for definitions of them*)
         return_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
