@@ -471,7 +471,7 @@ def kge(
         scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
             Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_\\alpha`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
             the variability term :math:`\\alpha` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0). (*See
-            equation 10 in Gupta et al. (2009) for definitions of them*)
+            equation 10 in Gupta et al. (2009) for definitions of them*).
         return_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
 
     Returns:
@@ -488,10 +488,10 @@ def kge(
         - Statistics are calculated only from values for which both observations and
           simulations are not null values.
         - This function isn't set up to take weights.
-        - Currently this function is working only on xr.DataArray
+        - Currently this function is working only on xr.DataArray.
         - When preserve_dims is set to 'all', the function returns NaN,
           similar to the Pearson correlation coefficient calculation for a single data point
-          because the standard deviation is zero for a single point
+          because the standard deviation is zero for a single point.
 
     References:
         -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
