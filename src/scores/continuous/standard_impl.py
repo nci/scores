@@ -449,7 +449,7 @@ def kge(
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
     where:
-        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as defined in ``scores.continuous.correlation.pearsonr``
+        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as defined in :py:func:`scores.continuous.correlation.pearsonr`
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
