@@ -45,6 +45,10 @@
     [Tutorial](project:./tutorials/Flip_Flop_Index.md)
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
+* - Interval Score
+  - [API](api.md#scores.continuous.interval_score)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
+  - [Gneiting and Raftery (2007) - Corollary 5.2](https://doi.org/10.1198/016214506000001437)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -105,6 +109,10 @@
   - &mdash;
   - &mdash;
   - &mdash;
+* - Quantile Interval Score
+  - [API](api.md#scores.continuous.quantile_interval_score)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
+  - [Gneiting and Raftery (2007) - Corollary 5.2](https://doi.org/10.1198/016214506000001437)
 * - Quantile Loss (Quantile Score, Pinball Loss)
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
