@@ -1182,7 +1182,7 @@ def interval_tw_crps_for_ensemble(
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
-        if (lower_threshold >= upper_threshold).any().values.item():
+        if (lower_threshold >= upper_threshold).any().values.item():  # type: ignore  # mypy is wrong, I think
             raise ValueError("`lower_threshold` must be less than `upper_threshold`")
     elif lower_threshold >= upper_threshold:
         raise ValueError("`lower_threshold` must be less than `upper_threshold`")
