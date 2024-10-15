@@ -9,9 +9,6 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
-import sys
-from unittest import mock
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -600,15 +597,13 @@ def test_crps_cdf_brier_decomposition(dims, expected):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "weight", "vectorised", "parallelise", "preserve_dims", "expected"),
+    ("fcst", "obs", "method", "weight", "preserve_dims", "expected"),
     [
         (
             crps_test_data.DA_FCST_CRPSENS,
             crps_test_data.DA_OBS_CRPSENS,
             "ecdf",
             None,
-            True,
-            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
@@ -617,8 +612,6 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             crps_test_data.DA_OBS_CRPSENS,
             "fair",
             None,
-            True,
-            False,
             "all",
             crps_test_data.EXP_CRPSENS_FAIR,
         ),
@@ -627,8 +620,6 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             crps_test_data.DA_OBS_CRPSENS,
             "ecdf",
             crps_test_data.DA_WT_CRPSENS,
-            True,
-            False,
             None,
             crps_test_data.EXP_CRPSENS_WT,
         ),
@@ -637,8 +628,6 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             crps_test_data.DS_OBS_CRPSENS,
             "ecdf",
             None,
-            True,
-            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF_DS,
         ),
@@ -647,8 +636,6 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             crps_test_data.DS_OBS_CRPSENS,
             "fair",
             None,
-            True,
-            False,
             "all",
             crps_test_data.EXP_CRPSENS_FAIR_DS,
         ),
@@ -657,8 +644,6 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             crps_test_data.DS_OBS_CRPSENS,
             "ecdf",
             crps_test_data.DS_WT_CRPSENS,
-            True,
-            False,
             None,
             crps_test_data.EXP_CRPSENS_WT_DS,
         ),
@@ -667,44 +652,12 @@ def test_crps_cdf_brier_decomposition(dims, expected):
             crps_test_data.DA_OBS_CRPSENS,
             "ecdf",
             None,
-            True,
-            False,
             "all",
             crps_test_data.EXP_CRPSENS_ECDF_BC,
         ),
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            None,
-            False,
-            False,
-            "all",
-            crps_test_data.EXP_CRPSENS_ECDF,
-        ),
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            None,
-            False,
-            True,
-            "all",
-            crps_test_data.EXP_CRPSENS_ECDF,
-        ),
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            None,
-            False,
-            False,
-            "all",
-            crps_test_data.EXP_CRPSENS_ECDF_DS,
-        ),
     ],
 )
-def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, parallelise, preserve_dims, expected):
+def test_crps_for_ensemble(fcst, obs, method, weight, preserve_dims, expected):
     """Tests `crps_for_ensemble` returns as expected."""
     result = crps_for_ensemble(
         fcst,
@@ -712,113 +665,32 @@ def test_crps_for_ensemble(fcst, obs, method, weight, vectorised, parallelise, p
         "ens_member",
         method=method,
         weights=weight,
-        vectorise_fcst_spread_calc=vectorised,
-        parallelise_fcst_spread_calc=parallelise,
         preserve_dims=preserve_dims,
     )
     xr.testing.assert_allclose(result, expected)
 
 
-def test_crps_for_ensemble_dask_unavailable(monkeypatch):
-    """Tests that `crps_for_ensemble` still works when dask is unavailable."""
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    monkeypatch.delitem(sys.modules, "dask", raising=False)
-    result = crps_for_ensemble(
-        crps_test_data.DA_FCST_CRPSENS,
-        crps_test_data.DA_OBS_CRPSENS,
-        "ens_member",
-        method="ecdf",
-        preserve_dims="all",
-        vectorise_fcst_spread_calc=False,
-    )
-    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
-
-
-@pytest.mark.parametrize(
-    ("fcst", "obs", "method", "vectorised", "parallelised", "exp"),
-    [
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "unfair",
-            None,
-            None,
-            "`method` must be one of 'ecdf' or 'fair'",
-        ),
-        (
-            crps_test_data.DA_FCST_CRPSENS.chunk(),
-            crps_test_data.DA_OBS_CRPSENS,
-            None,
-            False,
-            True,
-            "can only be true if `fcst` and `obs` are not chunked xarray objects",
-        ),
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS.chunk(),
-            None,
-            False,
-            True,
-            "can only be true if `fcst` and `obs` are not chunked xarray objects",
-        ),
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS.chunk(),
-            None,
-            True,
-            True,
-            "can only be true if `vectorise_fcst_spread_calc` is false",
-        ),
-    ],
-)
-def test_crps_for_ensemble_raises(fcst, obs, method, vectorised, parallelised, exp):
+def test_crps_for_ensemble_raises():
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
         crps_for_ensemble(
-            fcst,
-            obs,
-            "ens_member",
-            method=method,
-            vectorise_fcst_spread_calc=vectorised,
-            parallelise_fcst_spread_calc=parallelised,
-        )
-    assert exp in str(excinfo.value)
-
-
-def test_crps_for_ensemble_raises_dask(monkeypatch):
-    """
-    Tests that `crps_for_ensemble` raises an error when dask is unavailable and
-    parallelise_fcst_spread_calc is True.
-    """
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    monkeypatch.delitem(sys.modules, "dask", raising=False)
-    with pytest.raises(ValueError) as excinfo:
-        result = crps_for_ensemble(
             crps_test_data.DA_FCST_CRPSENS,
             crps_test_data.DA_OBS_CRPSENS,
             "ens_member",
-            method="ecdf",
-            preserve_dims="all",
-            vectorise_fcst_spread_calc=False,
-            parallelise_fcst_spread_calc=True,
+            method="unfair",
         )
-    assert "`parallelise_fcst_spread_calc` can only be true if dask is installed" in str(excinfo.value)
+    assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "vectorised"),
+    ("fcst", "obs"),
     [
-        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk(), True),
-        (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk(), True),
-        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS, True),
-        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk(), False),
-        (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk(), False),
-        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS, False),
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk()),
+        (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk()),
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS),
     ],
 )
-def test_crps_for_ensemble_dask(fcst, obs, vectorised):
+def test_crps_for_ensemble_dask(fcst, obs):
     """Tests `crps_for_ensemble` works with dask."""
 
     if dask == "Unavailable":  # pragma: no cover
@@ -830,7 +702,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
         ensemble_member_dim="ens_member",
         method="ecdf",
         preserve_dims="all",
-        vectorise_fcst_spread_calc=vectorised,
     )
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
@@ -839,7 +710,7 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "tail", "threshold", "preserve_dims", "reduce_dims", "weights", "vectorised", "expected"),
+    ("fcst", "obs", "method", "tail", "threshold", "preserve_dims", "reduce_dims", "weights", "expected"),
     [
         # Test ECDF upper
         (
@@ -851,7 +722,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
         # Test broadcasting
@@ -864,7 +734,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_BC,
         ),
         # Test fair lower
@@ -877,7 +746,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR_DA,
         ),
         # Test ECDF lower
@@ -890,7 +758,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_LOWER_TAIL_CRPSENS_ECDF_DA,
         ),
         # Test fair lower
@@ -903,7 +770,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_LOWER_TAIL_CRPSENS_FAIR_DA,
         ),
         # test that it equals the standard CRPS when the tail contains all threshold
@@ -916,7 +782,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
         # test that both the weights and reduce dims args work
@@ -929,7 +794,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             None,
             "stn",
             crps_test_data.DA_WT_CRPSENS,
-            True,
             crps_test_data.EXP_CRPSENS_WT,
         ),
         # test that passing an xarray object for the threshold arg works
@@ -942,7 +806,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DA,
         ),
         # test that passing in xr.DataSets with an xr.Dataset for the threshold arg works
@@ -955,7 +818,6 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
         # test that passing in xr.DataSets with an xr.DataArray for the threshold arg works
@@ -968,27 +830,11 @@ def test_crps_for_ensemble_dask(fcst, obs, vectorised):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
-        ),
-        # Test without vectorised calculation
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            "upper",
-            1,
-            "all",
-            None,
-            None,
-            False,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
     ],
 )
-def test_tail_tw_crps_for_ensemble(
-    fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, vectorised, expected
-):
+def test_tail_tw_crps_for_ensemble(fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, expected):
     """Tests tail_tw_crps_for_ensembles"""
     result = tail_tw_crps_for_ensemble(
         fcst,
@@ -1000,7 +846,6 @@ def test_tail_tw_crps_for_ensemble(
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
-        vectorise_fcst_spread_calc=vectorised,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -1079,7 +924,7 @@ def v_func4(x):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "vectorised", "expected"),
+    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "expected"),
     [
         # test ecdf
         (
@@ -1090,7 +935,6 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
         # test broadcast
@@ -1102,7 +946,6 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_BC,
         ),
         # test fair
@@ -1114,7 +957,6 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR_DA,
         ),
         # test that it equals the standard CRPS when the tail contains all threshold
@@ -1126,7 +968,6 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
         # # test that both the weights and reduce dims args work
@@ -1138,7 +979,6 @@ def v_func4(x):
             None,
             "stn",
             crps_test_data.DA_WT_CRPSENS,
-            True,
             crps_test_data.EXP_CRPSENS_WT,
         ),
         # test that it works when threshold vary across a dimension
@@ -1150,7 +990,6 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DA,
         ),
         # test that it works when threshold vary across a dimension with xr.Datasets
@@ -1162,7 +1001,6 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
         # test that it works when threshold vary across a dimension with xr.Dataset, except
@@ -1175,24 +1013,11 @@ def v_func4(x):
             "all",
             None,
             None,
-            True,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
-        ),
-        # test ecdf with vectorised false
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            v_func1,
-            "all",
-            None,
-            None,
-            False,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
     ],
 )
-def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, vectorised, expected):
+def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, expected):
     """Tests tw_crps_for_ensembles"""
 
     result = tw_crps_for_ensemble(
@@ -1204,7 +1029,6 @@ def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_d
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
-        vectorise_fcst_spread_calc=vectorised,
     )
     xr.testing.assert_allclose(result, expected)
 
