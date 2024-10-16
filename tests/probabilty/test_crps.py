@@ -597,77 +597,109 @@ def test_crps_cdf_brier_decomposition(dims, expected):
     xr.testing.assert_allclose(result, expected)
 
 
-def test_crps_for_ensemble():
+@pytest.mark.parametrize(
+    ("fcst", "obs", "method", "weight", "preserve_dims", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            None,
+            "all",
+            crps_test_data.EXP_CRPSENS_ECDF,
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "fair",
+            None,
+            "all",
+            crps_test_data.EXP_CRPSENS_FAIR,
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            crps_test_data.DA_WT_CRPSENS,
+            None,
+            crps_test_data.EXP_CRPSENS_WT,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "ecdf",
+            None,
+            "all",
+            crps_test_data.EXP_CRPSENS_ECDF_DS,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "fair",
+            None,
+            "all",
+            crps_test_data.EXP_CRPSENS_FAIR_DS,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "ecdf",
+            crps_test_data.DS_WT_CRPSENS,
+            None,
+            crps_test_data.EXP_CRPSENS_WT_DS,
+        ),
+        (
+            crps_test_data.DA_FCST_CRPSENS_LT,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            None,
+            "all",
+            crps_test_data.EXP_CRPSENS_ECDF_BC,
+        ),
+    ],
+)
+def test_crps_for_ensemble(fcst, obs, method, weight, preserve_dims, expected):
     """Tests `crps_for_ensemble` returns as expected."""
-    result_ecdf = crps_for_ensemble(
-        crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS, "ens_member", method="ecdf", preserve_dims="all"
-    )
-    result_fair = crps_for_ensemble(
-        crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS, "ens_member", method="fair", preserve_dims="all"
-    )
-    result_weighted_mean = crps_for_ensemble(
-        crps_test_data.DA_FCST_CRPSENS,
-        crps_test_data.DA_OBS_CRPSENS,
+    result = crps_for_ensemble(
+        fcst,
+        obs,
         "ens_member",
-        method="ecdf",
-        weights=crps_test_data.DA_WT_CRPSENS,
+        method=method,
+        weights=weight,
+        preserve_dims=preserve_dims,
     )
-    xr.testing.assert_allclose(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF)
-    xr.testing.assert_allclose(result_fair, crps_test_data.EXP_CRPSENS_FAIR)
-    xr.testing.assert_allclose(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT)
-
-
-def test_crps_for_ensemble_ds():
-    """Tests `crps_for_ensemble` returns as expected with a DataSet for the input"""
-    result_ecdf = crps_for_ensemble(
-        crps_test_data.DS_FCST_CRPSENS, crps_test_data.DS_OBS_CRPSENS, "ens_member", method="ecdf", preserve_dims="all"
-    )
-    result_fair = crps_for_ensemble(
-        crps_test_data.DS_FCST_CRPSENS, crps_test_data.DS_OBS_CRPSENS, "ens_member", method="fair", preserve_dims="all"
-    )
-    result_weighted_mean = crps_for_ensemble(
-        crps_test_data.DS_FCST_CRPSENS,
-        crps_test_data.DS_OBS_CRPSENS,
-        "ens_member",
-        method="ecdf",
-        weights=crps_test_data.DS_WT_CRPSENS,
-    )
-    xr.testing.assert_allclose(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF_DS)
-    xr.testing.assert_allclose(result_fair, crps_test_data.EXP_CRPSENS_FAIR_DS)
-    xr.testing.assert_allclose(result_weighted_mean, crps_test_data.EXP_CRPSENS_WT_DS)
-
-
-def test_crps_for_ensemble_broadcast():
-    """
-    Tests `crps_for_ensemble` returns as expected when the forecast has an extra
-    dimension compared to the observation.
-    """
-    result_ecdf = crps_for_ensemble(
-        crps_test_data.DA_FCST_CRPSENS_LT,
-        crps_test_data.DA_OBS_CRPSENS,
-        "ens_member",
-        method="ecdf",
-        preserve_dims="all",
-    )
-    xr.testing.assert_allclose(result_ecdf, crps_test_data.EXP_CRPSENS_ECDF_BC)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_crps_for_ensemble_raises():
     """Tests `crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError) as excinfo:
-        crps_for_ensemble(xr.DataArray(data=[1]), xr.DataArray(data=[1]), "ens_member", method="unfair")
+        crps_for_ensemble(
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ens_member",
+            method="unfair",
+        )
     assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
 
 
-def test_crps_for_ensemble_dask():
+@pytest.mark.parametrize(
+    ("fcst", "obs"),
+    [
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk()),
+        (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk()),
+        (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS),
+    ],
+)
+def test_crps_for_ensemble_dask(fcst, obs):
     """Tests `crps_for_ensemble` works with dask."""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = crps_for_ensemble(
-        fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
-        obs=crps_test_data.DA_OBS_CRPSENS.chunk(),
+        fcst=fcst,
+        obs=obs,
         ensemble_member_dim="ens_member",
         method="ecdf",
         preserve_dims="all",

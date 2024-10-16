@@ -13,7 +13,6 @@ import xarray as xr
 
 import scores.utils
 from scores.probability.checks import coords_increasing
-from scores.processing import broadcast_and_match_nan
 from scores.processing.cdf import (
     add_thresholds,
     cdf_envelope,
@@ -855,12 +854,11 @@ def crps_for_ensemble(
         preserve_dims=preserve_dims,
         score_specific_fcst_dims=ensemble_member_dim,
     )
+    # Calculate forecast spread term
+    fcst_spread_term = 0
+    for i in range(fcst.sizes[ensemble_member_dim]):
+        fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
 
-    ensemble_member_dim1 = scores.utils.tmp_coord_name(fcst)
-
-    # calculate forecast spread contribution
-    fcst_copy = fcst.rename({ensemble_member_dim: ensemble_member_dim1})  # type: ignore
-    fcst_spread_term = abs(fcst - fcst_copy).sum(dim=[ensemble_member_dim, ensemble_member_dim1])  # type: ignore
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
