@@ -896,7 +896,7 @@ def tw_crps_for_ensemble(
 
 
     .. math::
-        \\text{CRPS}(F, y) = \\mathbb{E}_F \\left| v(X) - v(y) \\right| - \\frac{1}{2} \\mathbb{E}_F \\left| v(X) - v(X') \\right|,
+        \\text{twCRPS}(F, y) = \\mathbb{E}_F \\left| v(X) - v(y) \\right| - \\frac{1}{2} \\mathbb{E}_F \\left| v(X) - v(X') \\right|,
 
     where :math:`X` and :math:`X'` are independent samples of the predictive distribution :math:`F`,
     :math:`y` is the observation, and :math:`v` is a 'chaining function'.

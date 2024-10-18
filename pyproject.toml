@@ -49,7 +49,9 @@ tutorial = [
     "rasterio",
     "rioxarray",
     "plotly",
-    "dask"
+    "dask",
+    "gcsfs",
+    "zarr"
 ]
 maintainer = ["build",
               "hatch",
