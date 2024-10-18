@@ -614,13 +614,31 @@ SPREAD_FAIR = xr.DataArray(
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104, 105]},
 )
+UNDER_TERM = xr.DataArray(
+    data=[2 / 4, 7 / 4, 1 / 3, np.nan, 2],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+OVER_TERM = xr.DataArray(
+    data=[8 / 4, 1 / 4, 3 / 3, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
 
 # expected results
 EXP_CRPSENS_ECDF = FIRST_TERM - SPREAD_ECDF
+EXP_CRPSENS_ECDF_DECOMPOSITION = xr.concat([EXP_CRPSENS_ECDF, UNDER_TERM, OVER_TERM, SPREAD_ECDF], dim="component")
+EXP_CRPSENS_ECDF_DECOMPOSITION = EXP_CRPSENS_ECDF_DECOMPOSITION.assign_coords(
+    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+)
+
 EXP_CRPSENS_FAIR = FIRST_TERM - SPREAD_FAIR
 EXP_CRPSENS_WT = (EXP_CRPSENS_ECDF * DA_WT_CRPSENS).mean("stn")
 
 EXP_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_CRPSENS_ECDF, "b": EXP_CRPSENS_ECDF})
+EXP_CRPSENS_ECDF_DECOMPOSITION_DS = xr.Dataset(
+    {"a": EXP_CRPSENS_ECDF_DECOMPOSITION, "b": EXP_CRPSENS_ECDF_DECOMPOSITION}
+)
 EXP_CRPSENS_FAIR_DS = xr.Dataset({"a": EXP_CRPSENS_FAIR, "b": EXP_CRPSENS_FAIR})
 EXP_CRPSENS_WT_DS = xr.Dataset({"a": EXP_CRPSENS_WT, "b": EXP_CRPSENS_WT})
 
