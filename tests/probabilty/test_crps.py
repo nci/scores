@@ -737,7 +737,18 @@ def test_crps_for_ensemble_dask(fcst, obs):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "tail", "threshold", "preserve_dims", "reduce_dims", "weights", "expected"),
+    (
+        "fcst",
+        "obs",
+        "method",
+        "tail",
+        "threshold",
+        "preserve_dims",
+        "reduce_dims",
+        "weights",
+        "decomposition",
+        "expected",
+    ),
     [
         # Test ECDF upper
         (
@@ -749,6 +760,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
         # Test broadcasting
@@ -761,6 +773,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_BC,
         ),
         # Test fair lower
@@ -773,6 +786,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR_DA,
         ),
         # Test ECDF lower
@@ -785,6 +799,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_LOWER_TAIL_CRPSENS_ECDF_DA,
         ),
         # Test fair lower
@@ -797,6 +812,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_LOWER_TAIL_CRPSENS_FAIR_DA,
         ),
         # test that it equals the standard CRPS when the tail contains all threshold
@@ -809,6 +825,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
         # test that both the weights and reduce dims args work
@@ -821,6 +838,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             None,
             "stn",
             crps_test_data.DA_WT_CRPSENS,
+            False,
             crps_test_data.EXP_CRPSENS_WT,
         ),
         # test that passing an xarray object for the threshold arg works
@@ -833,6 +851,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DA,
         ),
         # test that passing in xr.Datasets with an xr.Dataset for the threshold arg works
@@ -845,6 +864,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
         # test that passing in xr.Datasets with an xr.DataArray for the threshold arg works
@@ -857,11 +877,40 @@ def test_crps_for_ensemble_dask(fcst, obs):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
+        ),
+        # Test decomposition with DataArrays
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            "upper",
+            1,
+            "all",
+            None,
+            None,
+            True,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        # Test decomposition with Datasets
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "ecdf",
+            "upper",
+            1,
+            "all",
+            None,
+            None,
+            True,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
         ),
     ],
 )
-def test_tail_tw_crps_for_ensemble(fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, expected):
+def test_tail_tw_crps_for_ensemble(
+    fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, decomposition, expected
+):
     """Tests tail_tw_crps_for_ensembles"""
     result = tail_tw_crps_for_ensemble(
         fcst,
@@ -873,6 +922,7 @@ def test_tail_tw_crps_for_ensemble(fcst, obs, method, tail, threshold, preserve_
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
+        decomposition=decomposition,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -951,7 +1001,7 @@ def v_func4(x):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "expected"),
+    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "decomposition", "expected"),
     [
         # test ecdf
         (
@@ -962,6 +1012,7 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
         ),
         # test broadcast
@@ -973,6 +1024,7 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_BC,
         ),
         # test fair
@@ -984,6 +1036,7 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_UPPER_TAIL_CRPSENS_FAIR_DA,
         ),
         # test that it equals the standard CRPS when the tail contains all threshold
@@ -995,6 +1048,7 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
         # # test that both the weights and reduce dims args work
@@ -1006,6 +1060,7 @@ def v_func4(x):
             None,
             "stn",
             crps_test_data.DA_WT_CRPSENS,
+            False,
             crps_test_data.EXP_CRPSENS_WT,
         ),
         # test that it works when threshold vary across a dimension
@@ -1017,6 +1072,7 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DA,
         ),
         # test that it works when threshold vary across a dimension with xr.Datasets
@@ -1028,6 +1084,7 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
         # test that it works when threshold vary across a dimension with xr.Dataset, except
@@ -1040,11 +1097,36 @@ def v_func4(x):
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
+        ),
+        # Test decomposition with DataArrays
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            v_func1,
+            "all",
+            None,
+            None,
+            True,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        # Test decomposition with Datasets
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "ecdf",
+            v_func1,
+            "all",
+            None,
+            None,
+            True,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
         ),
     ],
 )
-def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, expected):
+def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, decomposition, expected):
     """Tests tw_crps_for_ensembles"""
 
     result = tw_crps_for_ensemble(
@@ -1056,6 +1138,7 @@ def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_d
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
+        decomposition=decomposition,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -1104,6 +1187,7 @@ def test_tw_crps_for_ensemble_dask():
         "preserve_dims",
         "reduce_dims",
         "weights",
+        "decomposition",
         "expected",
     ),
     [
@@ -1117,6 +1201,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA,
         ),
         # test that it equals the standard CRPS when the interval contains all threshold with ecdf
@@ -1129,6 +1214,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_CRPSENS_ECDF,
         ),
         # test that it equals the standard CRPS when the interval contains all threshold with fair
@@ -1141,6 +1227,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_CRPSENS_FAIR,
         ),
         # Test broadcast
@@ -1153,6 +1240,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_CRPSENS_ECDF_BC,
         ),
         # Test with weights and reduce dims
@@ -1165,6 +1253,7 @@ def test_tw_crps_for_ensemble_dask():
             None,
             "stn",
             crps_test_data.DA_WT_CRPSENS,
+            False,
             crps_test_data.EXP_CRPSENS_WT,
         ),
         # test that passing an xarray object for the threshold args works
@@ -1177,6 +1266,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_VAR_INTERVAL_CRPSENS_ECDF_DA,
         ),
         # Test that a float for lower_threshold and an xr.DataArray for upper_threshold works
@@ -1189,6 +1279,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA,
         ),
         # Test that an xr.DataArray for lower_threshold and a float for upper_threshold works
@@ -1201,6 +1292,7 @@ def test_tw_crps_for_ensemble_dask():
             "all",
             None,
             None,
+            False,
             crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA,
         ),
         # test that passing in xr.Datasets for fcst, obs and weights works
@@ -1213,12 +1305,39 @@ def test_tw_crps_for_ensemble_dask():
             None,
             None,
             crps_test_data.DS_WT_CRPSENS,
+            False,
             crps_test_data.EXP_CRPSENS_WT_DS,
+        ),
+        # Test decomposition with DataArrays
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            "ecdf",
+            2,
+            5,
+            "all",
+            None,
+            None,
+            True,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        # Test decomposition with Datasets
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            "ecdf",
+            2,
+            5,
+            "all",
+            None,
+            None,
+            True,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS,
         ),
     ],
 )
 def test_interval_tw_crps_for_ensemble(
-    fcst, obs, method, lower_threshold, upper_threshold, preserve_dims, reduce_dims, weights, expected
+    fcst, obs, method, lower_threshold, upper_threshold, preserve_dims, reduce_dims, weights, decomposition, expected
 ):
     """Tests interval_tw_crps_for_ensembles"""
     result = interval_tw_crps_for_ensemble(
@@ -1231,6 +1350,7 @@ def test_interval_tw_crps_for_ensemble(
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
+        decomposition=decomposition,
     )
 
     xr.testing.assert_allclose(result, expected)

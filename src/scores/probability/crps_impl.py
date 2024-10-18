@@ -818,7 +818,7 @@ def crps_for_ensemble(
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
         weights: Weights for calculating a weighted mean of individual scores.
-        decomposition: If True, returns the CRPS decomposition with underforecast and overforecast
+        decomposition: If True, returns the CRPS with underforecast and overforecast
             penalties, as well as the forecast spread term.
 
     Returns:
@@ -898,6 +898,7 @@ def tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
+    decomposition: bool = False,
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
@@ -959,6 +960,8 @@ def tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
+        decomposition: If True, returns the twCRPS with underforecast and overforecast
+            penalties, as well as the forecast spread term.
 
     Returns:
         xarray object of twCRPS values.
@@ -1010,6 +1013,7 @@ def tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
+        decomposition=decomposition,
     )
     return result
 
@@ -1025,6 +1029,7 @@ def tail_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
+    decomposition: bool = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
@@ -1055,6 +1060,8 @@ def tail_tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
+        decomposition: If True, returns the twCRPS with underforecast and overforecast
+            penalties, as well as the forecast spread term.
 
     Returns:
         xarray object of twCRPS values that has been weighted based on the tail.
@@ -1111,6 +1118,7 @@ def tail_tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
+        decomposition=decomposition,
     )
     return result
 
@@ -1126,6 +1134,7 @@ def interval_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
+    decomposition: bool = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) for ensemble forecasts
@@ -1158,6 +1167,8 @@ def interval_tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
+        decomposition: If True, returns the twCRPS with underforecast and overforecast
+            penalties, as well as the forecast spread term.
 
     Returns:
         xarray object of twCRPS values where the threshold weighting is based on an interval.
@@ -1210,5 +1221,6 @@ def interval_tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
+        decomposition=decomposition,
     )
     return result

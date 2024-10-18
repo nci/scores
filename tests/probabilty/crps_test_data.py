@@ -672,10 +672,25 @@ UPPER_TAIL_SPREAD_FAIR_DA = xr.DataArray(
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104, 105]},
 )
+UPPER_TAIL_UNDER_DA = xr.DataArray(
+    data=[1 / 4, 5 / 4, 0, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+OVER_TAIL_UNDER_DA = xr.DataArray(
+    data=[8 / 4, 1 / 4, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
 EXP_UPPER_TAIL_CRPSENS_ECDF_DA = UPPER_TAIL_FIRST_TERM_DA - UPPER_TAIL_SPREAD_ECDF_DA
 EXP_UPPER_TAIL_CRPSENS_FAIR_DA = UPPER_TAIL_FIRST_TERM_DA - UPPER_TAIL_SPREAD_FAIR_DA
 EXP_UPPER_TAIL_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DA})
-
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = xr.concat(
+    [EXP_UPPER_TAIL_CRPSENS_ECDF_DA, UPPER_TAIL_UNDER_DA, OVER_TAIL_UNDER_DA, UPPER_TAIL_SPREAD_ECDF_DA],
+    dim="component",
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA.assign_coords(
+    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
+    {"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA}
+)
 # exp test data for twCRPS with upper tail for thresholds >=1 with broadcasting
 UPPER_TAIL_FIRST_TERM_BC = xr.DataArray(
     data=[[9 / 4, 6 / 4, 3 / 3, np.nan, 2], [0, np.nan, np.nan, np.nan, np.nan]],
@@ -732,6 +747,19 @@ INTERVAL_SPREAD_ECDF_DA = xr.DataArray(
 )
 EXP_INTERVAL_CRPSENS_ECDF_DA = INTERVAL_FIRST_TERM_DA - INTERVAL_SPREAD_ECDF_DA
 
+INTERVAL_UNDER_DA = xr.DataArray(data=[0, 3 / 4, 0, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+INTERVAL_OVER_DA = xr.DataArray(
+    data=[6 / 4, 1 / 4, 2 / 3, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = xr.concat(
+    [EXP_INTERVAL_CRPSENS_ECDF_DA, INTERVAL_UNDER_DA, INTERVAL_OVER_DA, INTERVAL_SPREAD_ECDF_DA], dim="component"
+)
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA.assign_coords(
+    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+)
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
+    {"a": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA}
+)
 EXP_VAR_INTERVAL_CRPSENS_ECDF_DA = EXP_INTERVAL_CRPSENS_ECDF_DA * xr.DataArray(
     data=[np.nan, 1, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
 )
