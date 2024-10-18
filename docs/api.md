@@ -33,6 +33,8 @@
 .. autofunction:: scores.continuous.tw_squared_error
 .. autofunction:: scores.continuous.tw_huber_loss
 .. autofunction:: scores.continuous.tw_expectile_score
+.. autofunction:: scores.continuous.quantile_interval_score
+.. autofunction:: scores.continuous.interval_score
 ```
 
 ## scores.probability
