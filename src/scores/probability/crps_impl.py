@@ -873,7 +873,7 @@ def crps_for_ensemble(
     result = fcst_obs_term - fcst_spread_term
 
     if decomposition:
-        mask = ~np.isnan(fcst) * ~np.isnan(obs)  # create mask so that we can preserve NaNs
+        mask = np.logical_and(~np.isnan(fcst), ~np.isnan(obs))  # create mask so that we can preserve NaNs
         under_penalty = (obs - fcst).where(fcst < obs, 0).where(mask).mean(dim=ensemble_member_dim)
         over_penalty = (fcst - obs).where(fcst > obs, 0).where(mask).mean(dim=ensemble_member_dim)
         # Match NaNs between spread terms and other terms
