@@ -818,9 +818,9 @@ def crps_for_ensemble(
         CRPS(x_i, x_j, y) = O(x_i, y) + U(x_i, y) - S(x_i, x_j)
 
     where
-        - :math:`O(x_i, y) = \\frac{\\sum_{i=1}^{M} (|x_i - y| \\mathbb{1}{\\{x_i > y\\}})}{M}` which is the \
+        - :math:`O(x_i, y) = \\frac{\\sum_{i=1}^{M} ((x_i - y) \\mathbb{1}{\\{x_i > y\\}})}{M}` which is the \
             overforecast penalty.
-        - :math:`U(x_i, y) = \\frac{\\sum_{i=1}^{M} (|y - x_i| \\mathbb{1}{\\{x_i < y\\}})}{M}` which is the \
+        - :math:`U(x_i, y) = \\frac{\\sum_{i=1}^{M} ((y - x_i) \\mathbb{1}{\\{x_i < y\\}})}{M}` which is the \
             underforecast penalty.
         - :math:`S(x_i, x_j) = \\frac{\\sum_{i=1}^{M}\\sum_{j=1}^{M}(|x_i - x_j|)}{2K}` which is the forecast spread term.
 
