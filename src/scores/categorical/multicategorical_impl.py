@@ -3,7 +3,7 @@ This module contains methods which may be used for scoring multicategorical fore
 """
 
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 
 import numpy as np
 import xarray as xr
@@ -244,3 +244,47 @@ def _single_category_score(
     )
     score = score.transpose(*fcst.dims)
     return score
+
+
+def _risk_matrix_score(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    decision_weights: xr.DataArray,
+    severity_dim: str,
+    prob_threshold_dim: str,
+    threshold_assignment: Optional[str] = "lower",
+):
+    """
+    Calculates the risk matrix score MS of Taggart and Wilke (2024).
+
+    Args:
+        fcst: an array of forecast probabilities for the observation lying in each severity
+            category. Must have a dimension `severity_dim`.
+        obs: an array of binary observations with a value of 1 if the observation was in the
+            severity category and 0 otherwise. Must have a dimension `severity_dim`.
+        decision_weights: an array of non=negative weights to apply to each matrix decision
+            threshold, indexed by coordinates in `severity_dim` and `prob_threshold_dim`.
+        threshold_assignment: Either "upper" or "loewer". Specifies whether the probability
+            intervals defining the certainty categories for the decision thresholds in
+            `decision_weights` are left or right closed. That is, whether the probability
+            decision threshold is included in the upper (left closed) or lower (right closed)
+            certainty category. Defaults to "lower".
+    """
+    da_thresholds = decision_weights[prob_threshold_dim]
+
+    mask = (~np.isnan(fcst)) & (~np.isnan(obs))
+
+    if threshold_assignment == "lower":
+        fcst_abv_threshold = fcst >= da_thresholds
+    else:
+        fcst_abv_threshold = fcst > da_thresholds
+
+    # penalties for over-forecasts
+    over = da_thresholds.where((obs == 0) & fcst_abv_threshold, 0).where(mask)
+    # penalties for under-forecasts
+    under = (1 - da_thresholds).where((obs == 1) & ~fcst_abv_threshold, 0).where(mask)
+
+    result = (over + under) * decision_weights
+    result = result.sum([prob_threshold_dim, severity_dim], skipna=False)
+
+    return result

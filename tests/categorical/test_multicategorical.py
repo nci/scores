@@ -13,7 +13,7 @@ import pytest
 import xarray as xr
 
 from scores.categorical import firm
-from scores.categorical.multicategorical_impl import _single_category_score
+from scores.categorical.multicategorical_impl import _single_category_score, _risk_matrix_score
 from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
 
@@ -509,3 +509,31 @@ def test_firm_raises(
             preserve_dims=preserve_dims,
             threshold_assignment=threshold_assignment,
         )
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "decision_weights", "severity_dim", "prob_threshold_dim", "threshold_assignment", "expected"),
+    [
+        # test "lower" (0.4 prob threshold), plus nan behaviour
+        (mtd.DA_RMS_FCST, mtd.DA_RMS_OBS, mtd.DA_RMS_WT0, "sev", "prob", "lower", mtd.EXP_RMS_CASE0),
+        # test "upper" (0.4 prob threshold)
+        (mtd.DA_RMS_FCST, mtd.DA_RMS_OBS, mtd.DA_RMS_WT0, "sev", "prob", "upper", mtd.EXP_RMS_CASE1),
+        # Sydney example from paper, weights 1, variety of possible obs
+        (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1, mtd.DA_RMS_WT1, "sev", "prob", "lower", mtd.EXP_RMS_CASE2),
+        # Sydney example from paper, escalation weights, variety of possible obs
+        (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1, mtd.DA_RMS_WT2, "sev", "prob", "lower", mtd.EXP_RMS_CASE3),
+    ],
+)
+def test__risk_matrix_score(
+    fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment, expected
+):
+    """Tests _risk_matrix_score"""
+    calculated = _risk_matrix_score(
+        fcst,
+        obs,
+        decision_weights,
+        severity_dim,
+        prob_threshold_dim,
+        threshold_assignment=threshold_assignment,
+    ).transpose(*expected.dims)
+    xr.testing.assert_allclose(calculated, expected)
