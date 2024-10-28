@@ -1,7 +1,7 @@
 """
 Implementation of quantile loss (score)
 """
-from typing import Optional, Sequence
+from typing import Optional
 
 import xarray as xr
 
@@ -61,7 +61,6 @@ def quantile_score(
            (1-\\alpha) x & x > 0\\end{cases}
 
         where:
-
             - :math:`\\alpha` is the targeted quantile.
             - :math:`x` is the difference, fcst - obs
 

@@ -1,0 +1,75 @@
+{
+    "creators": [
+        {
+            "orcid": "https://orcid.org/0009-0008-2024-1967",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Leeuwenburg, Tennessee"
+        },
+        {
+            "orcid": "https://orcid.org/0009-0000-5796-7069",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Loveday, Nicholas"
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Ebert, Elizabeth E."
+        },
+        {
+            "orcid": "https://orcid.org/0009-0009-3207-4876",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Cook, Harrison"
+        },
+        {
+            "orcid": "https://orcid.org/0000-0002-5017-9622",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Khanarmuei, Mohammadreza"
+        },
+        {
+            "orcid": "https://orcid.org/0000-0002-0067-5687",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Taggart, Robert J."
+        },
+        {
+            "orcid": "https://orcid.org/0009-0002-7406-7438",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Ramanathan, Nikeeth"
+        },
+        {
+            "orcid": "https://orcid.org/0009-0008-6830-8251",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Carroll, Maree"
+        },
+        {
+            "orcid": "https://orcid.org/0009-0007-0796-4127",
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Chong, Stephanie"
+        },
+        {
+            "affiliation": "Work undertaken while at the Bureau of Meteorology, Australia",
+            "name": "Griffiths, Aidan"
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Sharples, John"
+        },
+        {
+            "orcid": "https://orcid.org/0000-0002-5545-1736",
+            "affiliation": "CSIRO, Australia",
+            "name": "Shrestha, Durga"
+        }                     
+    ],    
+    "license": "Apache-2.0",
+
+    "title": "scores: A Python package for verifying and evaluating models and predictions with xarray",
+
+    "related_identifiers": [
+        {
+            "scheme": "doi",
+            "identifier": "10.21105/joss.06889",
+            "relation": "isDocumentedBy",
+            "resource_type": "publication-article"
+        }
+    ],
+
+    "keywords": ["verification", "statistics", "modelling", "geoscience", "earth system science"]
+}

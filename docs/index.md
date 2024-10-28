@@ -12,12 +12,14 @@
 :maxdepth: 2
 
 self
+key_features
 installation
 included
 api
 contributing
 data
-maintainer
-tutorials/Explanation
+tutorials/Tutorial_Gallery
 related_works
+maintainer
+release_notes
 ```

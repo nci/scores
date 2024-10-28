@@ -71,6 +71,15 @@ exact_matches = xr.DataArray(
     dims=["height", "lat", "lon"],
 )
 
+finleys_table = {
+    "tp_count": xr.DataArray(28),
+    "fp_count": xr.DataArray(72),
+    "fn_count": xr.DataArray(23),
+    "tn_count": xr.DataArray(2680),
+    "total_count": xr.DataArray(2803),
+}
+
+
 # This truth table shows where the forecast and obs match within 0.2
 somewhat_near_matches = xr.DataArray(
     [
@@ -133,7 +142,7 @@ def test_str_view():
     _stringrep = str(table)
 
 
-def test_categorical_table():
+def test_categorical_table():  # pylint: disable=too-many-statements
     """
     Test the basic calculations of the contingency table
     """
@@ -148,12 +157,12 @@ def test_categorical_table():
     fcst_events2, obs_events2 = match.make_event_tables(
         simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt
     )
-    xr.testing.assert_equal(fcst_events, table.forecast_events)
-    xr.testing.assert_equal(fcst_events2, table.forecast_events)
-    xr.testing.assert_equal(obs_events, table.observed_events)
-    xr.testing.assert_equal(obs_events2, table.observed_events)
-    xr.testing.assert_equal(table.forecast_events, table2.forecast_events)
-    xr.testing.assert_equal(table.observed_events, table2.observed_events)
+    xr.testing.assert_equal(fcst_events, table.fcst_events)
+    xr.testing.assert_equal(fcst_events2, table.fcst_events)
+    xr.testing.assert_equal(obs_events, table.obs_events)
+    xr.testing.assert_equal(obs_events2, table.obs_events)
+    xr.testing.assert_equal(table.fcst_events, table2.fcst_events)
+    xr.testing.assert_equal(table.obs_events, table2.obs_events)
 
     # Confirm values in the contingency table are correct
     assert counts["tp_count"] == 9
@@ -170,10 +179,12 @@ def test_categorical_table():
     assert actual_table.sel(contingency="total_count") == 18
 
     # Confirm calculations of metrics are correct
+    assert table.base_rate() == (9 + 1) / 18
+    assert table.forecast_rate() == (9 + 2) / 18
     assert table.accuracy() == (9 + 6) / 18
     assert table.probability_of_detection() == 9 / (9 + 1)
     assert table.false_alarm_rate() == 2 / (2 + 6)
-    assert table.threat_score() == 9 / (9 + 2 + 6)
+    assert table.threat_score() == 9 / (9 + 2 + 1)
     assert table.frequency_bias() == (9 + 2) / (9 + 1)
     assert table.hit_rate() == 9 / (9 + 1)
     assert table.probability_of_false_detection() == 2 / (6 + 2)
@@ -185,6 +196,9 @@ def test_categorical_table():
     assert table.heidke_skill_score() == (9 + 6 - (83 / 9)) / (18 - (83 / 9))
     assert table.odds_ratio() == (9 / (9 + 1)) / (1 - (9 / (9 + 1))) / ((2 / (6 + 2)) / (1 - (2 / (6 + 2))))
     assert table.odds_ratio_skill_score() == (9 * 6 - 1 * 2) / (9 * 6 + 1 * 2)
+    assert table.symmetric_extremal_dependence_index() == (np.log(0.25) - np.log(0.9) + np.log(0.1) - np.log(0.75)) / (
+        np.log(0.25) + np.log(0.9) + np.log(0.1) + np.log(0.75)
+    )
 
     # These methods are redirects to each other
     assert table.critical_success_index() == table.threat_score()
@@ -200,9 +214,11 @@ def test_categorical_table():
     assert table.gilberts_skill_score() == table.equitable_threat_score()
     assert table.cohens_kappa() == table.heidke_skill_score()
     assert table.yules_q() == table.odds_ratio_skill_score()
+    assert table.accuracy() == table.fraction_correct()
+    assert table.specificity() == table.true_negative_rate()
 
     peirce_component_a = 9 / (9 + 1)
-    peirce_component_b = 1 / (1 + 6)
+    peirce_component_b = 2 / (2 + 6)
     peirce_expected = peirce_component_a - peirce_component_b
     assert table.peirce_skill_score() == peirce_expected
 
@@ -214,18 +230,47 @@ def test_dimension_broadcasting():
     should be compared to the observation, and the final accuracy should have an
     accuracy score at each time.
 
-    The actual calculated accuracy at each time is not tested here, this test is about
-    dimension handling not score calculation maths.
+    In this example, the same forecast values are repeated for each of 5 lead times
+    A single observations array is provided
+    Broadcasting rules mean the accuracy should be calculated at each lead time,
+    comparing the observations against each lead time
     """
 
     base_forecasts = [simple_forecast + i * 0.5 for i in range(5)]
     complex_forecast = xr.concat(base_forecasts, dim="time")
+    complex_obs = xr.concat([simple_obs, simple_obs + 1], dim="source")
     match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
+
+    # Check dimension broadcasting for forecasts
     table = match.make_contingency_manager(complex_forecast, simple_obs)
     withtime = table.transform(preserve_dims="time")
     accuracy = withtime.accuracy()
     assert accuracy.dims == ("time",)
     assert len(accuracy.time) == 5
+
+    assert accuracy[0] == (9 + 6) / 18
+    assert accuracy[1] == (10 + 4) / 18
+    assert accuracy[2] == (10 + 1) / 18
+    assert accuracy[3] == (10 + 0) / 18
+    assert accuracy[4] == (10 + 0) / 18
+
+    # Check dimension broadcasting against observations
+    table = match.make_contingency_manager(simple_forecast, complex_obs)
+    withsource = table.transform(preserve_dims="source")
+    accuracy = withsource.accuracy()
+    assert accuracy.dims == ("source",)
+    assert len(accuracy.source) == 2
+
+    # Check dimension broadcasting against forecasts and observations together
+    table = match.make_contingency_manager(complex_forecast, complex_obs)
+    preserved = table.transform(preserve_dims=["time", "source"])
+    accuracy_time_source = preserved.accuracy()
+    assert accuracy_time_source.dims == ("time", "source")
+    assert len(accuracy_time_source.time) == 5
+    assert len(accuracy_time_source.source) == 2
+
+    # The first "source" should match the previous calculations
+    xr.testing.assert_allclose(accuracy_time_source.sel(source=0), withtime.accuracy())
 
 
 def test_nan_handling():
@@ -319,16 +364,39 @@ def test_dask_if_available_categorical():
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
-    assert isinstance(table.forecast_events.data, dask.array.Array)
+    assert isinstance(table.fcst_events.data, dask.array.Array)
     assert isinstance(table.tp.data, dask.array.Array)
 
     # That can be computed to hold numpy data types
-    computed = table.forecast_events.compute()
+    computed = table.fcst_events.compute()
     assert isinstance(computed.data, np.ndarray)
 
     # And that transformed tables are built out of computed things
     simple_counts = table.transform().get_counts()
-    assert isinstance(simple_counts["tp_count"].data, np.ndarray)
+    assert isinstance(simple_counts["tp_count"].data, (np.ndarray, np.generic))
 
     # And that transformed things get the same numbers
     assert table.false_alarm_rate() == table.transform().false_alarm_rate()
+
+
+def test_examples_with_finley():
+    """
+    Test some of the complex scores with the Finley tornado example
+    """
+
+    table = finleys_table
+    cm = scores.categorical.BasicContingencyManager(table)
+    heidke = cm.heidke_skill_score()
+    gilbert = cm.gilberts_skill_score()
+
+    # Note - the reference in the verification site has 0.36 for the expected
+    # result, but presumably this is rounded to two decimal places
+    # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
+    heidke_expected = xr.DataArray(0.355325)
+    xr.testing.assert_allclose(heidke, heidke_expected)
+
+    # Note - the reference in the verification site has 0.22 for the expected
+    # result, but presumably this is rounded to two decimal places
+    # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
+    gilbert_expected = xr.DataArray(0.216046)
+    xr.testing.assert_allclose(gilbert_expected, gilbert)

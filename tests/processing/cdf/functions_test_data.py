@@ -34,17 +34,13 @@ DA_ADD_THRESHOLDS = xr.DataArray(
 EXP_ADD_THRESHOLDS1 = xr.DataArray(
     data=[[[0.2, 0.4, 1, 1, 1], [0, 0, 0.6, 0.8, 1]]],
     dims=["date", "station", "x"],
-    coords=dict(
-        station=[1001, 1002], date=["2020-01-01"], x=[0, 0.2, 0.5, 0.75, 1]
-    ),  # pylint: disable=use-dict-literal
+    coords={"station": [1001, 1002], "date": ["2020-01-01"], "x": [0, 0.2, 0.5, 0.75, 1]},
 )
 
 EXP_ADD_THRESHOLDS2 = xr.DataArray(
     data=[[[0.2, 0.4, 1, np.nan, 1], [0, 0, 0.6, np.nan, 1]]],
     dims=["date", "station", "x"],
-    coords=dict(
-        station=[1001, 1002], date=["2020-01-01"], x=[0, 0.2, 0.5, 0.75, 1]
-    ),  # pylint: disable=use-dict-literal
+    coords={"station": [1001, 1002], "date": ["2020-01-01"], "x": [0, 0.2, 0.5, 0.75, 1]},
 )
 
 DA_DECREASING_CDFS1 = xr.DataArray(

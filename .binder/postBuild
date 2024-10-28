@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e  # don't allow errors to fail silently
-pip install -e ./  # install scores
+pip install -e .[tutorial]  # install scores
 
 # wget https://dapds00.nci.org.au/thredds/fileServer/wr45/ops_aps3/access-g/1/20221120/0000/fc/sfc/temp_scrn.nc
 # mv temp_scrn.nc tutorials/forecast_grid.nc

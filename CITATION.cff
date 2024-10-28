@@ -1,0 +1,82 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Leeuwenburg
+  given-names: Tennessee
+  orcid: "https://orcid.org/0009-0008-2024-1967"
+- family-names: Loveday
+  given-names: Nicholas
+  orcid: "https://orcid.org/0009-0000-5796-7069"
+- family-names: Ebert
+  given-names: Elizabeth E.
+- family-names: Cook
+  given-names: Harrison
+  orcid: "https://orcid.org/0009-0009-3207-4876"
+- family-names: Khanarmuei
+  given-names: Mohammadreza
+  orcid: "https://orcid.org/0000-0002-5017-9622"
+- family-names: Taggart
+  given-names: Robert J.
+  orcid: "https://orcid.org/0000-0002-0067-5687"
+- family-names: Ramanathan
+  given-names: Nikeeth
+  orcid: "https://orcid.org/0009-0002-7406-7438"
+- family-names: Carroll
+  given-names: Maree
+  orcid: "https://orcid.org/0009-0008-6830-8251"
+- family-names: Chong
+  given-names: Stephanie
+  orcid: "https://orcid.org/0009-0007-0796-4127"
+- family-names: Griffiths
+  given-names: Aidan
+- family-names: Sharples
+  given-names: John
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+title: "scores: A Python package for verifying and evaluating models and
+  predictions with xarray"  
+preferred-citation:
+  authors:
+  - family-names: Leeuwenburg
+    given-names: Tennessee
+    orcid: "https://orcid.org/0009-0008-2024-1967"
+  - family-names: Loveday
+    given-names: Nicholas
+    orcid: "https://orcid.org/0009-0000-5796-7069"
+  - family-names: Ebert
+    given-names: Elizabeth E.
+  - family-names: Cook
+    given-names: Harrison
+    orcid: "https://orcid.org/0009-0009-3207-4876"
+  - family-names: Khanarmuei
+    given-names: Mohammadreza
+    orcid: "https://orcid.org/0000-0002-5017-9622"
+  - family-names: Taggart
+    given-names: Robert J.
+    orcid: "https://orcid.org/0000-0002-0067-5687"
+  - family-names: Ramanathan
+    given-names: Nikeeth
+    orcid: "https://orcid.org/0009-0002-7406-7438"
+  - family-names: Carroll
+    given-names: Maree
+    orcid: "https://orcid.org/0009-0008-6830-8251"
+  - family-names: Chong
+    given-names: Stephanie
+    orcid: "https://orcid.org/0009-0007-0796-4127"
+  - family-names: Griffiths
+    given-names: Aidan
+  - family-names: Sharples
+    given-names: John
+  date-published: 2024-07-09
+  doi: 10.21105/joss.06889
+  issn: 2475-9066
+  issue: 99
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 6889
+  title: "scores: A Python package for verifying and evaluating models
+    and predictions with xarray"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.06889"
+  volume: 9
+

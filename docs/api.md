@@ -7,7 +7,6 @@
    :backlinks: none
 ```
 
-
 ## scores.continuous
 ```{eval-rst}
 .. automodule:: scores.continuous
@@ -21,17 +20,29 @@
 .. autofunction:: scores.continuous.murphy_thetas
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
-.. autofunction:: scores.continuous.correlation
+.. autofunction:: scores.continuous.correlation.pearsonr
 .. autofunction:: scores.continuous.multiplicative_bias
+.. autofunction:: scores.continuous.pbias
 .. autofunction:: scores.continuous.isotonic_fit
+.. autofunction:: scores.continuous.consistent_expectile_score
+.. autofunction:: scores.continuous.consistent_quantile_score
+.. autofunction:: scores.continuous.consistent_huber_score
+.. autofunction:: scores.continuous.tw_quantile_score
+.. autofunction:: scores.continuous.tw_absolute_error
+.. autofunction:: scores.continuous.tw_squared_error
+.. autofunction:: scores.continuous.tw_huber_loss
+.. autofunction:: scores.continuous.tw_expectile_score
 ```
 
 ## scores.probability
 ```{eval-rst}
 .. autofunction:: scores.probability.crps_cdf
 .. autofunction:: scores.probability.adjust_fcst_for_crps
+.. autofunction:: scores.probability.crps_step_threshold_weight
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 .. autofunction:: scores.probability.crps_for_ensemble
+.. autofunction:: scores.probability.tw_crps_for_ensemble
+.. autofunction:: scores.probability.tail_tw_crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data
@@ -54,6 +65,21 @@
     :members:
 ```
 
+## scores.spatial
+```{eval-rst}
+.. autoclass:: scores.fast.fss.typing.FssComputeMethod
+    :members:
+    :member-order: bysource
+.. autofunction:: scores.spatial.fss_2d
+.. autofunction:: scores.spatial.fss_2d_binary
+.. autofunction:: scores.spatial.fss_2d_single_field
+```
+
+## scores.stats
+```{eval-rst}
+.. autofunction:: scores.stats.statistical_tests.diebold_mariano
+```
+
 ## scores.processing
 ```{eval-rst}
 .. autofunction:: scores.processing.isotonic_fit
@@ -72,14 +98,10 @@
 .. autofunction:: scores.processing.cdf.cdf_envelope
 ```
 
-## scores.stats
-```{eval-rst}
-.. autofunction:: scores.stats.statistical_tests.diebold_mariano
-```
-
 ## scores.pandas
 ```{eval-rst}
 .. autofunction:: scores.pandas.continuous.mse
 .. autofunction:: scores.pandas.continuous.rmse
 .. autofunction:: scores.pandas.continuous.mae
 ```
+

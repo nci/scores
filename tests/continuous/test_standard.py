@@ -582,97 +582,6 @@ def test_rmse_angular():
     xr.testing.assert_equal(result, expected)
 
 
-DA1_CORR = xr.DataArray(
-    np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["w", "x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-
-DA2_CORR = xr.DataArray(
-    np.array([[2, 4, 6], [6, 5, 6], [3, 4, 5], [3, np.nan, 3]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["w", "x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-
-DA3_CORR = xr.DataArray(
-    np.array([[1, 2, 3], [3, 2.5, 3], [1.5, 2, 2.5], [1.5, np.nan, 1.5]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["w", "x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-DA4_CORR = xr.DataArray(
-    np.array([[1, 3, 7], [2, 2, 8], [3, 1, 7]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-DA5_CORR = xr.DataArray(
-    np.array([1, 2, 3]),
-    dims=("space"),
-    coords=[("space", ["x", "y", "z"])],
-)
-
-EXP_CORR_KEEP_SPACE_DIM = xr.DataArray(
-    np.array([1.0, -1.0, 0.0, np.nan]),
-    dims=("space"),
-    coords=[("space", ["w", "x", "y", "z"])],
-)
-
-EXP_CORR_REDUCE_ALL = xr.DataArray(1.0)
-
-EXP_CORR_DIFF_SIZE = xr.DataArray(
-    np.array([1.0, -1.0, 0.0]),
-    dims=("time"),
-    coords=[("time", [1, 2, 3])],
-)
-
-
-@pytest.mark.parametrize(
-    ("da1", "da2", "reduce_dims", "preserve_dims", "expected"),
-    [
-        # Check reduce dim arg
-        (DA1_CORR, DA2_CORR, None, "space", EXP_CORR_KEEP_SPACE_DIM),
-        # Check preserve dim arg
-        (DA1_CORR, DA2_CORR, "time", None, EXP_CORR_KEEP_SPACE_DIM),
-        # Check reduce all
-        (DA3_CORR, DA2_CORR, None, None, EXP_CORR_REDUCE_ALL),
-        # Check different size arrays as input
-        (DA4_CORR, DA5_CORR, "space", None, EXP_CORR_DIFF_SIZE),
-    ],
-)
-def test_correlation(da1, da2, reduce_dims, preserve_dims, expected):
-    """
-    Tests continuous.correlation
-    """
-    result = scores.continuous.correlation(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-    xr.testing.assert_allclose(result, expected)
-
-
-def test_correlation_dask():
-    """
-    Tests continuous.correlation works with Dask
-    """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-
-    result = scores.continuous.correlation(DA3_CORR.chunk(), DA2_CORR.chunk())
-    assert isinstance(result.data, dask.array.Array)
-    result = result.compute()
-    assert isinstance(result.data, np.ndarray)
-    xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
-
-
 DA1_BIAS = xr.DataArray(
     np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
     dims=("space", "time"),
@@ -751,6 +660,34 @@ DS_BIAS1 = xr.Dataset({"a": DA1_BIAS, "b": DA2_BIAS})
 DS_BIAS2 = xr.Dataset({"a": DA2_BIAS, "b": DA1_BIAS})
 EXP_DS_BIAS1 = xr.Dataset({"a": EXP_BIAS1, "b": -EXP_BIAS1})
 EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
+
+## for pbias
+EXP_PBIAS1 = xr.DataArray(
+    np.array([-50, -100.0, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_PBIAS2 = xr.DataArray(
+    np.array([100.0, np.inf, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PBIAS3 = xr.DataArray(
+    np.array([-50.0, -100.0, -75.0]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
+
+EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
 
 
 @pytest.mark.parametrize(
@@ -836,3 +773,43 @@ def test_multiplicative_bias_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS6)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", None, EXP_PBIAS1),
+        # Check divide by zero returns a np.inf
+        (DA2_BIAS, DA1_BIAS, None, "space", None, EXP_PBIAS2),
+        # Check weighting works
+        (DA1_BIAS, DA3_BIAS, None, "space", BIAS_WEIGHTS, EXP_PBIAS3),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_PBIAS1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, None, EXP_PBIAS4),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_PBIAS1),
+    ],
+)
+def test_pbias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
+    """
+    Tests continuous.pbias
+    """
+    result = scores.continuous.pbias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
+    # xr.testing.assert_equal(result, expected)
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+def test_pbias_dask():
+    """
+    Tests that continuous.pbias works with Dask
+    """
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    weights = BIAS_WEIGHTS.chunk()
+    result = scores.continuous.pbias(fcst, obs, preserve_dims="space", weights=weights)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_PBIAS3)

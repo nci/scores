@@ -14,11 +14,16 @@ def mse(
 ) -> PandasType:
     """Calculates the mean squared error from forecast and observed data.
 
-    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_squared_error)
+    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_squared_error
+
+    .. math ::
+        \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
 
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the base metric, `scores.continuous.mse`.
+    Notes:
+        Dimensional reduction is not supported for pandas and the user should
+        convert their data to xarray to formulate the call to the base metric,
+        `scores.continuous.mse`.
 
     Args:
         fcst: Forecast or predicted variables in pandas.
@@ -30,8 +35,8 @@ def mse(
             degrees rather than radians.
 
     Returns:
-        An object containing
-            a single floating point number representing the mean squared
+        pandas.Series:
+            An object containing a single floating point number representing the mean squared
             error for the supplied data. All dimensions will be reduced.
 
     """
@@ -46,10 +51,14 @@ def rmse(
 ) -> PandasType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
 
-    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+    A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the base metric, `scores.continuous.rmse`.
+    .. math ::
+        \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2}
+
+    Notes:
+        Dimensional reduction is not supported for pandas and users wishing this extra functionality
+        should convert their data to xarray to formulate the call to `scores.continuous.rmse`.
 
     Args:
         fcst: Forecast or predicted variables in pandas.
@@ -61,8 +70,8 @@ def rmse(
             degrees rather than radians.
 
     Returns:
-        An object containing
-            a single floating point number representing the root mean squared
+        pandas.Series:
+            An object containing a single floating point number representing the root mean squared
             error for the supplied data. All dimensions will be reduced.
 
     """
@@ -77,11 +86,14 @@ def mae(
 ) -> PandasType:
     """Calculates the mean absolute error from forecast and observed data.
 
-    A detailed explanation is on [Wikipedia](https://en.wikipedia.org/wiki/Mean_absolute_error)
+    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
 
+    .. math ::
+        \\frac{1}{n} \\sum_{i=1}^n | \\text{forecast}_i - \\text{observed}_i |
 
-    Dimensional reduction is not supported for pandas and the user should
-    convert their data to xarray to formulate the call to the base metric, `scores.continuous.mae`.
+    Notes:
+        Dimensional reduction is not supported for pandas and the user should
+        convert their data to xarray to formulate the call to `scores.continuous.mae`.
 
     Args:
         fcst: Forecast or predicted variables in pandas.
@@ -93,9 +105,8 @@ def mae(
             degrees rather than radians.
 
     Returns:
-        An object containing
-            a single floating point number representing the mean absolute
-            error for the supplied data. All dimensions will be reduced.
+        pandas.Series: An object containing a single floating point number representing
+        the mean absolute error for the supplied data. All dimensions will be reduced.
 
     """
     return __continuous.mae(fcst, obs, is_angular=is_angular)  # type: ignore  # mypy is wrong, I think

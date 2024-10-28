@@ -12,6 +12,12 @@ from scores.categorical import probability_of_detection, probability_of_false_de
 from scores.processing import binary_discretise
 from scores.utils import gather_dimensions
 
+# trapz was deprecated in numpy 2.0, but trapezoid was not backported to
+# earlier versions. As numpy 2.0 contains some API changes, `scores`
+# will try to support both interchangeably for the time being
+if not hasattr(np, "trapezoid"):
+    np.trapezoid = np.trapz  # pragma: no cover # tested manually for old numpy versions
+
 
 def roc_curve_data(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
@@ -25,11 +31,11 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
 ) -> xr.Dataset:
     """
     Calculates data required for plotting a Receiver (Relative) Operating Characteristic (ROC)
-      curve including the AUC. The ROC curve is used as a way to measure the discrimination
-      ability of a particular forecast.
+    curve, including the area under the curve (AUC). The ROC curve is used as a way to measure
+    the discrimination ability of a particular forecast.
 
-      The AUC is the probability that the forecast probability of a random event is higher
-        than the forecast probability of a random non-event.
+    The AUC is the probability that the forecast probability of a random event is higher
+    than the forecast probability of a random non-event.
 
     Args:
         fcst: An array of probabilistic forecasts for a binary event in the range [0, 1].
@@ -66,6 +72,14 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         `POD` and `POFD` have dimensions `dims` + 'threshold', while `AUC` has
         dimensions `dims`.
 
+    Raises:
+        ValueError: if `fcst` contains values outside of the range [0, 1]
+        ValueError: if `obs` contains non-nan values not in the set {0, 1}
+        ValueError: if 'threshold' is a dimension in `fcst`.
+        ValueError: if values in `thresholds` are not monotonic increasing or are outside
+          the range [0, 1]
+
+
     Notes:
         The probabilistic `fcst` is converted to a deterministic forecast
         for each threshold in `thresholds`. If a value in `fcst` is greater
@@ -78,12 +92,6 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
 
-    Raises:
-        ValueError: if `fcst` contains values outside of the range [0, 1]
-        ValueError: if `obs` contains non-nan values not in the set {0, 1}
-        ValueError: if 'threshold' is a dimension in `fcst`.
-        ValueError: if values in `thresholds` are not monotonic increasing or are outside
-          the range [0, 1]
     """
     if check_args:
         if fcst.max().item() > 1 or fcst.min().item() < 0:
@@ -118,7 +126,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
     pofd = pofd.transpose(*final_preserve_dims)
 
     auc = -1 * xr.apply_ufunc(
-        np.trapz,
+        np.trapezoid,
         pod,
         pofd,
         input_core_dims=[pod.dims, pofd.dims],  # type: ignore
