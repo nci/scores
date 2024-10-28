@@ -13,7 +13,7 @@ import pytest
 import xarray as xr
 
 from scores.categorical import firm
-from scores.categorical.multicategorical_impl import _single_category_score, _risk_matrix_score
+from scores.categorical.multicategorical_impl import _single_category_score, risk_matrix_score, _risk_matrix_score
 from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
 
@@ -522,6 +522,8 @@ def test_firm_raises(
         (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1, mtd.DA_RMS_WT1, "sev", "prob", "lower", mtd.EXP_RMS_CASE2),
         # Sydney example from paper, escalation weights, variety of possible obs
         (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1, mtd.DA_RMS_WT2, "sev", "prob", "lower", mtd.EXP_RMS_CASE3),
+        # Sydney example from paper, escalation weights, sev coords transposed in weight matrix
+        (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1, mtd.DA_RMS_WT2A, "sev", "prob", "lower", mtd.EXP_RMS_CASE3),
     ],
 )
 def test__risk_matrix_score(
@@ -537,3 +539,292 @@ def test__risk_matrix_score(
         threshold_assignment=threshold_assignment,
     ).transpose(*expected.dims)
     xr.testing.assert_allclose(calculated, expected)
+
+
+@pytest.mark.parametrize(
+    ("weights", "preserve_dims", "expected"),
+    [
+        # Sydney example from paper, escalation weights, no mean score
+        (None, "all", mtd.EXP_RMS_CASE3A),
+        # Sydney example from paper, escalation weights, unweighted mean score
+        (None, ["forecaster"], mtd.EXP_RMS_CASE3B),
+        # Sydney example from paper, escalation weights, weighted mean score
+        (mtd.DA_RMS_WEIGHTS_SYD, ["forecaster"], mtd.EXP_RMS_CASE3C),
+    ],
+)
+def test_risk_matrix_score(weights, preserve_dims, expected):
+    """Tests risk_matrix_score weighted means"""
+    calculated = risk_matrix_score(
+        mtd.DA_RMS_FCST1,
+        mtd.DA_RMS_OBS1,
+        mtd.DA_RMS_WT2A,
+        "sev",
+        "prob",
+        threshold_assignment="lower",
+        weights=weights,
+        preserve_dims=preserve_dims,
+    ).transpose(*expected.dims)
+    xr.testing.assert_allclose(calculated, expected)
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "decision_weights",
+        "severity_dim",
+        "prob_threshold_dim",
+        "threshold_assignment",
+        "weights",
+        "error_msg_snippet",
+    ),
+    [
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "severity_cat",
+            "prob",
+            "upper",
+            None,
+            "`severity_dim` must be a dimension of `fcst`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS.rename({"sev": "severity"}),
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`severity_dim` must be a dimension of `obs`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0.rename({"sev": "severity"}),
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`severity_dim` must be a dimension of `decision_weights`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "upper",
+            mtd.DA_RMS_WEIGHTS.rename({"obs_case": "sev"}),
+            "`severity_dim` must not be a dimension of `weights`",
+        ),
+        (
+            mtd.DA_RMS_FCST.rename({"day": "prob"}),
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`prob_threshold_dim` must not be a dimension of `fcst`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS.rename({"day": "prob"}),
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`prob_threshold_dim` must not be a dimension of `obs`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "probability",
+            "upper",
+            None,
+            "`prob_threshold_dim` must be a dimension of `decision_weights`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "upper",
+            mtd.DA_RMS_WEIGHTS.rename({"obs_case": "prob"}),
+            "`prob_threshold_dim` must not be a dimension of `weights`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT3,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`decision_weights` must have exactly 2 dimensions: `severity_dim` and `prob_threshold_dim`",
+        ),
+        (  # some forecast values greater than 1
+            100 * mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT2,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "values in `fcst` must lie in the closed interval ",
+        ),
+        (  # some forecast values negative
+            -mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT2,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "values in `fcst` must lie in the closed interval ",
+        ),
+        (  # obs values are 0, 2, or nan
+            mtd.DA_RMS_FCST,
+            2 * mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT2,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "values in `obs` can only be 0, 1 or nan",
+        ),
+        (  # obs values are 1.5, 0.5 or nan
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS + 0.5,
+            mtd.DA_RMS_WT2,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "values in `obs` can only be 0, 1 or nan",
+        ),
+        (  # some probability thresholds at least 1
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT4,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`prob_threshold_dim` coordinates must be strictly between 0 and 1",
+        ),
+        (  # some probability thresholds no greater than 0
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT5,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`prob_threshold_dim` coordinates must be strictly between 0 and 1",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT6,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`severity_dim` coordinates do not match in `decision_weights` and `fcst`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS2,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "`severity_dim` coordinates do not match in `decision_weights` and `obs`",
+        ),
+        (
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            "mid",
+            None,
+            """ `threshold_assignment` must be either \"upper\" or \"lower\" """,
+        ),
+    ],
+)
+def test_risk_matrix_score_raises(
+    fcst,
+    obs,
+    decision_weights,
+    severity_dim,
+    prob_threshold_dim,
+    threshold_assignment,
+    weights,
+    error_msg_snippet,
+):
+    """
+    Tests that the risk_matrix_score raises the correct errors
+    """
+    with pytest.raises(ValueError, match=error_msg_snippet):
+        risk_matrix_score(
+            fcst,
+            obs,
+            decision_weights,
+            severity_dim,
+            prob_threshold_dim,
+            threshold_assignment=threshold_assignment,
+            weights=weights,
+            reduce_dims=None,
+            preserve_dims=None,
+        )
+
+
+@pytest.mark.parametrize(
+    (
+        "reduce_dims",
+        "preserve_dims",
+        "error_msg_snippet",
+    ),
+    [
+        (
+            ["sev", "stn"],
+            None,
+            "You are requesting to reduce a dimension which does not appear in your data",
+        ),
+        (
+            None,
+            ["sev", "stn"],
+            "You are requesting to preserve a dimension which does not appear in your data",
+        ),
+    ],
+)
+def test_risk_matrix_score_raises2(
+    reduce_dims,
+    preserve_dims,
+    error_msg_snippet,
+):
+    """
+    Tests that the risk_matrix_score raises the correct errors when `gather_dimensions` is called
+    and involves the severity or prob threshold dims.
+    """
+    with pytest.raises(ValueError, match=error_msg_snippet):
+        risk_matrix_score(
+            mtd.DA_RMS_FCST,
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT0,
+            "sev",
+            "prob",
+            threshold_assignment="lower",
+            weights=None,
+            reduce_dims=reduce_dims,
+            preserve_dims=preserve_dims,
+        )

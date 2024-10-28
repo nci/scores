@@ -246,6 +246,131 @@ def _single_category_score(
     return score
 
 
+def risk_matrix_score(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    decision_weights: xr.DataArray,
+    severity_dim: str,
+    prob_threshold_dim: str,
+    threshold_assignment: Optional[str] = "lower",
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
+):
+    """
+    Calculates the risk matrix score MS of Taggart and Wilke (2024).
+
+    Args:
+        fcst: an array of forecast probabilities for the observation lying in each severity
+            category. Must have a dimension `severity_dim`.
+        obs: an array of binary observations with a value of 1 if the observation was in the
+            severity category and 0 otherwise. Must have a dimension `severity_dim`.
+        decision_weights: an array of non-negative weights to apply to each matrix decision
+            threshold, indexed by coordinates in `severity_dim` and `prob_threshold_dim`.
+        severity_dim: the dimension specifying severity cateogories.
+        prob_threshold_dim: the dimension in `decision_weights` specifying probability thresholds.
+        threshold_assignment: Either "upper" or "lower". Specifies whether the probability
+            intervals defining the certainty categories, with endpoints given by the
+            decision thresholds in `decision_weights`, are left or right closed. That is,
+            whether the probability decision threshold is included in the upper (left closed)
+            or lower (right closed) certainty category. Defaults to "lower".
+        reduce_dims: Optionally specify which dimensions to reduce when calculating the
+            mean risk matrix score, where the mean is taken over all forecast cases.
+            All other dimensions will be preserved. As a special case, 'all' will allow
+            all dimensions to be reduced. Only one of `reduce_dims` and `preserve_dims`
+            can be supplied. The default behaviour if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating the
+            mean risk matrix score, where the mean is taken over all forecast cases.
+            All other dimensions will be reduced. As a special case, 'all' will allow
+            all dimensions to be preserved, apart from `severity_dim` and `prob_threshold_dim`.
+            Only one of `reduce_dims` and `preserve_dims` can be supplied. The default
+            behaviour if neither are supplied is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom) of scores across all forecast cases.
+
+    Returns:
+        An xarray data array of risk matrix scores, averaged according to specified weights
+        across appropriate dimensions.
+
+    Raises:
+        ValueError: if `severity_dim` is not a dimension of `fcst`, `obs` or `decision_weights`.
+        ValueError: if `severity_dim` is a dimension of `weights`.
+        ValueError: if `prob_threshold_dim` is not a dimension of `decision_weights`.
+        ValueError: if `prob_threshold_dim` is not a dimension of `decision_weights`.
+        ValueError: if `decision_weights` does not have exactly 2 dimenions.
+        ValueError: if `fcst` values are negative or greater than 1.
+        ValueError: if `obs` values are other than 0, 1 or nan.
+        ValueError: if `prob_threshold_dim` coordinates are not strictly between 0 and 1.
+        ValueError: if `severity_dim` coordinates differ for any of `fcst`, `obs` or `decision_weights`.
+        ValueError: if `threshold_assignment` is not "upper" or lower".
+
+    """
+    _check_risk_matrix_score_inputs(
+        fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment, weights
+    )
+    # get fcst and obs dims without `severity_dim`
+    # this is because `severity_dim` is reduced when scoring individual forecast cases
+    fcst_dims0 = [x for x in fcst.dims if x is not severity_dim]
+    obs_dims0 = [x for x in obs.dims if x is not severity_dim]
+    weights_dims = None
+    if weights is not None:
+        weights_dims = weights.dims
+
+    reduce_dims = gather_dimensions(
+        fcst_dims0, obs_dims0, weights_dims=weights_dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+    result = _risk_matrix_score(fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment)
+
+    result = apply_weights(result, weights=weights).mean(dim=reduce_dims)
+
+    return result
+
+
+def _check_risk_matrix_score_inputs(
+    fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment, weights
+):
+    """
+    Checks that the risk matrix score inputs are suitable.
+    """
+    if severity_dim not in fcst.dims:
+        raise ValueError("`severity_dim` must be a dimension of `fcst`")
+    if severity_dim not in obs.dims:
+        raise ValueError("`severity_dim` must be a dimension of `obs`")
+    if severity_dim not in decision_weights.dims:
+        raise ValueError("`severity_dim` must be a dimension of `decision_weights`")
+    if weights is not None and severity_dim in weights.dims:
+        raise ValueError("`severity_dim` must not be a dimension of `weights`")
+    if prob_threshold_dim in fcst.dims:
+        raise ValueError("`prob_threshold_dim` must not be a dimension of `fcst`")
+    if prob_threshold_dim in obs.dims:
+        raise ValueError("`prob_threshold_dim` must not be a dimension of `obs`")
+    if prob_threshold_dim not in decision_weights.dims:
+        raise ValueError("`prob_threshold_dim` must be a dimension of `decision_weights`")
+    if weights is not None and prob_threshold_dim in weights.dims:
+        raise ValueError("`prob_threshold_dim` must not be a dimension of `weights`")
+    if len(decision_weights.dims) != 2:
+        raise ValueError("`decision_weights` must have exactly 2 dimensions: `severity_dim` and `prob_threshold_dim`")
+
+    if (fcst.max() > 1) or (fcst.min() < 0):
+        raise ValueError("values in `fcst` must lie in the closed interval `[0, 1]`")
+
+    disallowed_obs_values = np.unique(obs.where(obs != 1).where(obs != 0).values)
+    disallowed_obs_values = disallowed_obs_values[~np.isnan(disallowed_obs_values)]
+    if len(disallowed_obs_values) > 0:
+        raise ValueError("values in `obs` can only be 0, 1 or nan")
+
+    if (decision_weights[prob_threshold_dim].min() <= 0) or (decision_weights[prob_threshold_dim].max() >= 1):
+        raise ValueError("`prob_threshold_dim` coordinates must be strictly between 0 and 1")
+
+    if not np.array_equal(np.sort(decision_weights[severity_dim].values), np.sort(fcst[severity_dim].values)):
+        raise ValueError("`severity_dim` coordinates do not match in `decision_weights` and `fcst`")
+    if not np.array_equal(np.sort(decision_weights[severity_dim].values), np.sort(obs[severity_dim].values)):
+        raise ValueError("`severity_dim` coordinates do not match in `decision_weights` and `obs`")
+
+    if threshold_assignment not in ["upper", "lower"]:
+        raise ValueError(""" `threshold_assignment` must be either \"upper\" or \"lower\" """)
+
+
 def _risk_matrix_score(
     fcst: xr.DataArray,
     obs: xr.DataArray,
@@ -269,6 +394,10 @@ def _risk_matrix_score(
             `decision_weights` are left or right closed. That is, whether the probability
             decision threshold is included in the upper (left closed) or lower (right closed)
             certainty category. Defaults to "lower".
+
+    Returns:
+        xarray data array of matrix scores for each forecast case, preserving all dimensions
+        in fcst, obs apart from `severity_dim`.
     """
     da_thresholds = decision_weights[prob_threshold_dim]
 
