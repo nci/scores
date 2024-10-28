@@ -884,3 +884,8 @@ DA_RMS_OBS2 = xr.DataArray(
         "sev": [1, 2, 4],
     },
 )
+EXP_DECISION_WEIGHT = xr.DataArray(
+    data=[[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]],
+    dims=["prob", "sev"],
+    coords={"prob": [0.7, 0.4, 0.2, 0.1], "sev": [0, 1, 2]},
+)

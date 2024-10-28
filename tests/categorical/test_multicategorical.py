@@ -13,7 +13,12 @@ import pytest
 import xarray as xr
 
 from scores.categorical import firm
-from scores.categorical.multicategorical_impl import _single_category_score, risk_matrix_score, _risk_matrix_score
+from scores.categorical.multicategorical_impl import (
+    _single_category_score,
+    risk_matrix_score,
+    _risk_matrix_score,
+    risk_matrix_weights_to_array,
+)
 from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
 
@@ -828,3 +833,72 @@ def test_risk_matrix_score_raises2(
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
+
+
+@pytest.mark.parametrize(
+    ("prob_threshold_coords"),
+    [
+        ([0.1, 0.7, 0.4, 0.2]),
+        ([0.4, 0.7, 0.1, 0.2]),
+    ],
+)
+def test_risk_matrix_weights_to_array(prob_threshold_coords):
+    """Tests risk_matrix_weights_to_array"""
+    expected = mtd.EXP_DECISION_WEIGHT
+    calculated = risk_matrix_weights_to_array(
+        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]),
+        "sev",
+        [0, 1, 2],
+        "prob",
+        prob_threshold_coords,
+    ).transpose(*expected.dims)
+    xr.testing.assert_allclose(calculated, expected)
+
+
+@pytest.mark.parametrize(
+    (
+        "weight_matrix",
+        "severity_coords",
+        "prob_threshold_coords",
+        "error_msg_snippet",
+    ),
+    [
+        (
+            np.array([1, 2, 3, 4]),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "`weight_matrix` must be two dimensional",
+        ),
+        (
+            np.array([[1, 2], [3, 4]]),
+            ["a", "b"],
+            [0.1, 0.3, 0.7],
+            "number of `prob_threshold_coords` must equal number of rows of `weight_matrix`",
+        ),
+        (
+            np.array([[1, 2], [3, 4]]),
+            ["a", "b", "c"],
+            [0.1, 0.3],
+            "number of `severity_coords` must equal number of columns of `weight_matrix`",
+        ),
+        (
+            np.array([[1, 2], [3, 4]]),
+            ["a", "b"],
+            [0.1, 1.3],
+            "`prob_threshold_coords` must strictly between 0 and 1",
+        ),
+        (
+            np.array([[1, 2], [3, 4]]),
+            ["a", "b"],
+            [0.0, 0.3],
+            "`prob_threshold_coords` must strictly between 0 and 1",
+        ),
+    ],
+)
+def test_risk_matrix_weights_to_array_raises(weight_matrix, severity_coords, prob_threshold_coords, error_msg_snippet):
+    """
+    Tests that the risk_matrix_score raises the correct errors when `gather_dimensions` is called
+    and involves the severity or prob threshold dims.
+    """
+    with pytest.raises(ValueError, match=error_msg_snippet):
+        risk_matrix_weights_to_array(weight_matrix, "sev", severity_coords, "prob", prob_threshold_coords)

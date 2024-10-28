@@ -256,7 +256,7 @@ def risk_matrix_score(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-):
+) -> xr.DataArray:
     """
     Calculates the risk matrix score MS of Taggart and Wilke (2024).
 
@@ -378,7 +378,7 @@ def _risk_matrix_score(
     severity_dim: str,
     prob_threshold_dim: str,
     threshold_assignment: Optional[str] = "lower",
-):
+) -> xr.DataArray:
     """
     Calculates the risk matrix score MS of Taggart and Wilke (2024).
 
@@ -417,3 +417,160 @@ def _risk_matrix_score(
     result = result.sum([prob_threshold_dim, severity_dim], skipna=False)
 
     return result
+
+
+def risk_matrix_weights_to_array(
+    weight_matrix: np.ndarray,
+    severity_dim: str,
+    severity_coords: Iterable,
+    prob_threshold_dim: str,
+    prob_threshold_coords: Iterable,
+) -> xr.DataArray:
+    """
+    Generates a 2D xarray DataArray of the decision thresholds for the risk matrix score calculation.
+    Assumes that values toward the left in weight_matrix correspond to less severe categories,
+    while values towards the top in weight_matrix correspond to higher probability thresholds.
+
+    Args:
+        weight_matrix: array of weights to place on each rick matrix decision threshold,
+            with rows (ascending) corresponding to (increasing) probability thresholds,
+            and colummns (left to right) corresponding to (increasing) severity categories.
+        severity_dim: name of the severity category dimension.
+        severity_coords: labels for each of the severity categories, in order of increasing
+            severity.
+        prob_threshold_dim: name of the probability threshold dimension.
+        prob_threshold_coords: list of the probability decision thresholds in the risk matrix,
+            stroctly between 0 and 1.
+
+    Returns:
+        xarray data array of risk matrix decision threshold weights, indexed by prob_threshold_dim
+        and severity_dim.
+
+    Raises:
+        ValueError: if `weight_matrix` isn't two dimensional.
+        ValueError: if number of rows of `weight_matrix` doesn't equal length of `prob_threshold_coords`.
+        ValueError: if number of columns of `weight_matrix` doesn't equal length of `severity_coords`.
+        ValueError: if `prob_threshold_coords` aren't strictly between 0 and 1.
+
+    """
+    matrix_dims = weight_matrix.shape
+
+    if len(matrix_dims) != 2:
+        raise ValueError("`weight_matrix` must be two dimensional")
+    if matrix_dims[0] != len(prob_threshold_coords):
+        raise ValueError("number of `prob_threshold_coords` must equal number of rows of `weight_matrix`")
+    if matrix_dims[1] != len(severity_coords):
+        raise ValueError("number of `severity_coords` must equal number of columns of `weight_matrix`")
+
+    prob_threshold_coords = np.flip(np.sort(np.array(prob_threshold_coords)))
+
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
+        raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
+
+    weight_matrix = xr.DataArray(
+        data=weight_matrix,
+        dims=[prob_threshold_dim, severity_dim],
+        coords={
+            prob_threshold_dim: prob_threshold_coords,
+            severity_dim: severity_coords,
+        },
+    )
+
+    return weight_matrix
+
+
+def get_weight_matrix(scaling_matrix, assessment_weights):
+    """
+    Args:
+        scaling_matrix: np.array of scaling values.
+        level_weights: list of weights for each level.
+    Returns:
+        np.array of weights
+    """
+    max_level = max(np.max(scaling), len(assessment_weights))
+
+    if len(assessment_weights) < max_level:
+        raise Exception("length of level_weights must be at least the highest value in scaling_matrix")
+
+    scaling_matrix_shape = scaling_matrix.shape
+    n_sev = scaling_matrix_shape[1] - 1  # number of severity categories for weight matrix
+    n_prob = scaling_matrix_shape[0] - 1  # number of probability thresholds for weight matrix
+
+    # initialise the weight matrix
+    wts = np.zeros((n_prob, n_sev))
+
+    for level in np.arange(1, max_level + 1):
+        lowest_prob_index = max_level + 1
+
+        for column in np.arange(1, n_sev + 1):  # column of the scaling matrix
+            the_column = np.array(scaling[:, column])
+            column_rev = np.flip(the_column)
+
+            # get the position (i.e. probability threshold index) of level crossover for the column
+            # a position of 0 means that there is no crossover for that level
+            prob_index = np.argmax(column_rev >= level)
+            # only modify weight matrix if
+            if prob_index >= lowest_prob_index:
+                prob_index = 0
+            if prob_index > 0:
+                wts[prob_index - 1, column - 1] = wts[prob_index - 1, column - 1] + v[level - 1]
+                lowest_prob_index = prob_index
+
+    wts = np.flip(wts, axis=0)
+
+    return wts
+
+
+# v = [1.0, 1, 1]
+# scaling = np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 0], [0, 0, 0], [1, 0, 0]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
+
+# v = [2.0, 1, 1]
+# scaling = np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 0], [0, 0, 0], [2, 0, 0]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
+
+
+# v = [1.0, 1, 1]
+# scaling = np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 0], [1, 0, 0]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
+
+
+# v = [1.0, 1, 1]
+# scaling = np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 1, 1, 2], [0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 1]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
+
+
+# v = [1.0, 1, 1]
+# scaling = np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 0, 2, 2], [0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 1], [1, 0, 0], [0, 2, 0]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
+
+
+# v = [1.0, 2, 3]
+# scaling = np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 0, 2, 2], [0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 3], [1, 0, 0], [0, 3, 0]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
+
+
+# v = [1.0, 1, 1, 1]
+# scaling = np.array([[0, 1, 2, 3, 4], [0, 1, 2, 2, 4], [0, 0, 2, 2, 3], [0, 0, 0, 0, 0]])
+# expected_wt = np.array([[0, 0, 1, 0], [1, 0, 0, 1], [0, 2, 0, 1]])
+
+# out = get_weight_matrix(scaling, v)
+# assert np.array_equal(out, expected_wt)
