@@ -895,7 +895,7 @@ def crps_for_ensemble(
         under_penalty = (obs - fcst).where(fcst < obs, 0).where(mask).mean(dim=ensemble_member_dim)
         over_penalty = (fcst - obs).where(fcst > obs, 0).where(mask).mean(dim=ensemble_member_dim)
         # Match NaNs between spread terms and other terms
-        fcst_spread_term = fcst_spread_term.where(~np.isnan(fcst_obs_term))
+        fcst_spread_term = fcst_spread_term.where(~np.isnan(fcst_obs_term))  # type: ignore  # mypy is wrong, I think
         result = xr.concat([result, under_penalty, over_penalty, fcst_spread_term], dim="component")
         result = result.assign_coords(component=["total", "underforecast_penalty", "overforecast_penalty", "spread"])
 

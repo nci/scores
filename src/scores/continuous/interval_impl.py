@@ -76,7 +76,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     References:
         Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
         and estimation. Journal of the American Statistical Association, 102(477), 359-378.
-        Corollary 5.2. https://doi.org/10.1037/ppm0000185
+        Corollary 5.2. https://doi.org/10.1198/016214506000001437
 
     Examples:
         Calculate the quantile interval score for forecast intervals with lower and upper
@@ -196,7 +196,7 @@ def interval_score(
     References:
         Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
         and estimation. Journal of the American Statistical Association, 102(477), 359-378.
-        Corollary 5.2. https://doi.org/10.1037/ppm0000185
+        Corollary 5.2. https://doi.org/10.1198/016214506000001437
 
      See also:
         :py:func:`scores.continuous.quantile_interval_score`
