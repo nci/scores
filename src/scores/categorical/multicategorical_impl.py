@@ -438,7 +438,8 @@ def matrix_weights_to_array(
             and colummns (left to right) corresponding to (increasing) severity categories.
         severity_dim: name of the severity category dimension.
         severity_coords: labels for each of the severity categories, in order of increasing
-            severity.
+            severity. Does NOT include the lowest severity category for which no warning would
+            be issued.
         prob_threshold_dim: name of the probability threshold dimension.
         prob_threshold_coords: list of the probability decision thresholds in the risk matrix,
             strictly between 0 and 1.
@@ -505,7 +506,8 @@ def scaling_to_weight_array(
             warning states at or above level k. `len(assessment_weights)` must be at least q.
         severity_dim: name of the severity category dimension.
         severity_coords: labels for each of the severity categories, in order of increasing
-            severity.
+            severity. Does NOT include the lowest severity category for which no warning would
+            be issued.
         prob_threshold_dim: name of the probability threshold dimension.
         prob_threshold_coords: list of the probability decision thresholds in the risk matrix,
             strictly between 0 and 1.
@@ -584,7 +586,7 @@ def _scaling_to_weight_matrix(scaling_matrix, assessment_weights):
     n_sev = scaling_matrix_shape[1] - 1  # number of severity categories for weight matrix
     n_prob = scaling_matrix_shape[0] - 1  # number of probability thresholds for weight matrix
 
-    # initialise the weight matrix wts
+    # initialise weight matrix wts
     wts = np.zeros((n_prob, n_sev))
 
     for level in np.arange(1, max_level + 1):
