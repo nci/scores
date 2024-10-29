@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 import scores.functions
 import scores.utils
@@ -564,3 +565,71 @@ def kge(
             }
         )
     return kge_s  # type: ignore
+
+
+def nse(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> xr.DataArray:
+    """
+    Calculate the Nash-Sutcliffe Efficiency (NSE) between observed and simulated (or forecast) values.
+
+    NSE is a performance metric that measures the predictive skill of forecasted data
+    relative to observed data, with a value of 1 indicating a perfect match, 0 indicating
+    that the forecast is as accurate as the mean of the observed data, and negative values
+    indicating that the observed mean is a better predictor than the model.
+
+    .. math::
+        \\text{NSE} = 1 - \\frac{\\sum_{i=1}^{n} (obs_i - fcst_i)^2}{\\sum_{i=1}^{n} (obs_i - \\bar{obs})^2}
+
+    Args:
+        fcst: Forecast or simulated data as an xarray DataArray.
+        obs: Observed data as an xarray DataArray.
+        reduce_dims: Optionally specify dimensions to reduce when calculating NSE.
+        preserve_dims: Optionally specify dimensions to preserve when calculating NSE.
+        
+    Returns:
+        The NSE score as an xarray DataArray, with NaN values where the denominator is zero or NaN.
+
+    Notes:
+        - This function calculates NSE only for data points where both forecast and observed values are not NaN.
+        - NSE values close to 1 indicate good model performance, while negative values indicate poor model performance.
+    
+    References:
+        - Nash, J.E. and Sutcliffe, J.V., 1970. River flow forecasting through conceptual models part I—A discussion of principles. 
+        Journal of hydrology, 10(3), pp.282-290.
+    """
+    
+    # Type checks for xarray DataArray inputs
+    if not isinstance(fcst, xr.DataArray):
+        raise TypeError("nse: fcst must be an xarray.DataArray")
+    if not isinstance(obs, xr.DataArray):
+        raise TypeError("nse: obs must be an xarray.DataArray")
+
+    if preserve_dims is not None or reduce_dims is not None:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+    fcst = scores.functions.apply_weights(fcst, weights=weights)
+    obs = scores.functions.apply_weights(obs, weights=weights)
+
+    # Need to broadcast and match NaNs so that the mean error and obs mean are for the
+    # same points
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
+
+
+    # Calculate the mean of observed values over specified dimensions
+    obs_mean = obs.mean(dim=reduce_dims)
+
+    # Calculate the numerator and denominator for NSE
+    numerator = ((obs - fcst) ** 2).sum(dim=reduce_dims)
+    denominator = ((obs - obs_mean) ** 2).sum(dim=reduce_dims)
+
+    # Calculate NSE score
+    nse_score = xr.where(denominator > 0, 1 - (numerator / denominator), np.nan)
+
+    return nse_score
