@@ -14,10 +14,12 @@ import xarray as xr
 
 from scores.categorical import firm
 from scores.categorical.multicategorical_impl import (
-    _single_category_score,
-    risk_matrix_score,
     _risk_matrix_score,
-    risk_matrix_weights_to_array,
+    _scaling_to_weight_matrix,
+    _single_category_score,
+    matrix_weights_to_array,
+    risk_matrix_score,
+    scaling_to_weight_array,
 )
 from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
@@ -842,10 +844,10 @@ def test_risk_matrix_score_raises2(
         ([0.4, 0.7, 0.1, 0.2]),
     ],
 )
-def test_risk_matrix_weights_to_array(prob_threshold_coords):
-    """Tests risk_matrix_weights_to_array"""
+def test_matrix_weights_to_array(prob_threshold_coords):
+    """Tests matrix_weights_to_array"""
     expected = mtd.EXP_DECISION_WEIGHT
-    calculated = risk_matrix_weights_to_array(
+    calculated = matrix_weights_to_array(
         np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]),
         "sev",
         [0, 1, 2],
@@ -867,19 +869,19 @@ def test_risk_matrix_weights_to_array(prob_threshold_coords):
             np.array([1, 2, 3, 4]),
             [1, 2, 3],
             [0.1, 0.3, 0.5],
-            "`weight_matrix` must be two dimensional",
+            "`matrix_weights` must be two dimensional",
         ),
         (
             np.array([[1, 2], [3, 4]]),
             ["a", "b"],
             [0.1, 0.3, 0.7],
-            "number of `prob_threshold_coords` must equal number of rows of `weight_matrix`",
+            "number of `prob_threshold_coords` must equal number of rows of `matrix_weights`",
         ),
         (
             np.array([[1, 2], [3, 4]]),
             ["a", "b", "c"],
             [0.1, 0.3],
-            "number of `severity_coords` must equal number of columns of `weight_matrix`",
+            "number of `severity_coords` must equal number of columns of `matrix_weights`",
         ),
         (
             np.array([[1, 2], [3, 4]]),
@@ -895,10 +897,180 @@ def test_risk_matrix_weights_to_array(prob_threshold_coords):
         ),
     ],
 )
-def test_risk_matrix_weights_to_array_raises(weight_matrix, severity_coords, prob_threshold_coords, error_msg_snippet):
+def test_matrix_weights_to_array_raises(weight_matrix, severity_coords, prob_threshold_coords, error_msg_snippet):
     """
-    Tests that the risk_matrix_score raises the correct errors when `gather_dimensions` is called
-    and involves the severity or prob threshold dims.
+    Tests that matrix_weights_to_array raises as expected.
     """
     with pytest.raises(ValueError, match=error_msg_snippet):
-        risk_matrix_weights_to_array(weight_matrix, "sev", severity_coords, "prob", prob_threshold_coords)
+        matrix_weights_to_array(weight_matrix, "sev", severity_coords, "prob", prob_threshold_coords)
+
+
+@pytest.mark.parametrize(
+    ("scaling_matrix", "assessment_weights", "expected"),
+    [
+        (  # LONG-RANGE scaling, equal assessment weights
+            np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]]),
+            [1.0, 1, 1],
+            np.array([[0.0, 0, 0], [0, 0, 0], [1, 0, 0]]),
+        ),
+        (  # LONG-RANGE scaling, unequal assessment weights
+            np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]]),
+            [2.0, 1, 1],
+            np.array([[0, 0, 0], [0, 0, 0], [2.0, 0, 0]]),
+        ),
+        (  # LONG-RANGE scaling, equal assessment weights, column and row length differ
+            np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]]),
+            [1.0, 1, 1],
+            np.array([[0.0, 0, 0], [1, 0, 0]]),
+        ),
+        (
+            np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 1, 1, 2], [0, 0, 0, 0]]),
+            [1.0, 1, 1],
+            np.array([[0.0, 0, 1], [0, 1, 0], [1, 0, 1]]),
+        ),
+        (
+            np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 0, 2, 2], [0, 0, 0, 0]]),
+            [1.0, 1, 1],
+            np.array([[0.0, 0, 1], [1, 0, 0], [0, 2, 0]]),
+        ),
+        (
+            np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 0, 2, 2], [0, 0, 0, 0]]),
+            [1.0, 2, 3],
+            np.array([[0.0, 0, 3], [1, 0, 0], [0, 3, 0]]),
+        ),
+        (  # scaling using 5 warning levels
+            np.array([[0, 1, 2, 3, 4], [0, 1, 2, 2, 4], [0, 0, 2, 2, 3], [0, 0, 0, 0, 0]]),
+            [1.0, 1, 1, 1],
+            np.array([[0.0, 0, 1, 0], [1, 0, 0, 1], [0, 2, 0, 1]]),
+        ),
+    ],
+)
+def test__scaling_to_weight_matrix(scaling_matrix, assessment_weights, expected):
+    """Tests _scaling_to_weight_matrix"""
+    calculated = _scaling_to_weight_matrix(scaling_matrix, assessment_weights)
+    np.testing.assert_array_equal(calculated, expected, strict=True)
+
+
+def test_scaling_to_weight_array():
+    """Tests scaling_to_weight_array"""
+    expected = mtd.DA_RMS_WT2
+    # SHORT-RANGE scaling
+    scaling_matrix = np.array([[0, 2, 3, 3], [0, 1, 2, 3], [0, 1, 1, 2], [0, 0, 0, 0]])
+    calculated = scaling_to_weight_array(
+        scaling_matrix, [1, 2, 3], "sev", [1, 2, 3], "prob", (0.1, 0.4, 0.7)
+    ).transpose(*expected.dims)
+    xr.testing.assert_allclose(calculated, expected)
+
+
+@pytest.mark.parametrize(
+    (
+        "scaling_matrix",
+        "assessment_weights",
+        "severity_coords",
+        "prob_threshold_coords",
+        "error_msg_snippet",
+    ),
+    [
+        (
+            np.array([[[1], [2]], [[3], [4]]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "`scaling_matrix` should be two dimensional",
+        ),
+        (
+            np.array([[0, 3, 4], [0, 2, 1.1], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "`scaling_matrix` should only have have integer entries",
+        ),
+        (
+            np.array([[0, 3, 4], [0, 2, -1], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "`scaling_matrix` should only have non-negative integer values",
+        ),
+        (
+            np.array([[1, 3, 4], [0, 2, 1], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "The first column of `scaling_matrix` should consist of zeros only",
+        ),
+        (
+            np.array([[0, 3, 4], [0, 2, 1], [0, 0, 1]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "The last row of `scaling_matrix` should consist of zeros only",
+        ),
+        (
+            np.array([[0, 3, 2], [0, 2, 2], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "`scaling_matrix` should be non-decreasing along each row",
+        ),
+        (
+            np.array([[0, 1, 3], [0, 2, 2], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3, 0.5],
+            "`scaling_matrix` should be non-increasing along each column",
+        ),
+        (
+            np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2],
+            [0.1, 0.3, 0.5],
+            "Length of `prob_threshold_coords` should be one less than rows of `scaling_matrix`",
+        ),
+        (
+            np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
+            (1, 1, 1),
+            [1, 2, 3],
+            [0.1, 0.3],
+            "Length of `severity_coords` should be one less than columns of `scaling_matrix`",
+        ),
+        (
+            np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
+            (1, 1),
+            [1, 2],
+            [0.1, 0.3],
+            "length of `assessment_weights` must be at least the highest value in `scaling_matrix`",
+        ),
+        (
+            np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
+            (1, 1, 2, 4),
+            [1, 2],
+            [0, 0.3],
+            "`prob_threshold_coords` must strictly between 0 and 1",
+        ),
+        (
+            np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
+            (1, 1, 2, 4),
+            [1, 2],
+            [0.1, 1],
+            "`prob_threshold_coords` must strictly between 0 and 1",
+        ),
+        (
+            np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
+            (1.4, 0, 2),
+            [1, 2],
+            [0.1, 0.3],
+            "values in `assessment_weights` must be positive",
+        ),
+    ],
+)
+def test_scaling_to_weight_array_raises(
+    scaling_matrix, assessment_weights, severity_coords, prob_threshold_coords, error_msg_snippet
+):
+    """
+    Tests that scaling_to_weight_array raises as expected.
+    """
+    with pytest.raises(ValueError, match=error_msg_snippet):
+        scaling_to_weight_array(
+            scaling_matrix, assessment_weights, "sev", severity_coords, "prob", prob_threshold_coords
+        )
