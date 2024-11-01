@@ -14,16 +14,7 @@ import xarray as xr
 
 from scores.probability import brier_score, ensemble_brier_score
 
-FCST1 = xr.DataArray(
-    [[[0.5, 0], [0, 0.5], [1, 0]], [[0.5, 0], [0.5, 0], [0, np.nan]]],
-    dims=["a", "b", "c"],
-    coords={"a": [0, 1], "b": [0, 1, 2], "c": [0, 1]},
-)
-OBS1 = xr.DataArray(
-    [[[1, 0], [0, 0], [np.nan, 0]], [[0, 0], [1, 0], [0, 1]]],
-    dims=["a", "b", "c"],
-    coords={"a": [0, 1], "b": [0, 1, 2], "c": [0, 1]},
-)
+from tests.probabilty import brier_test_data as btd
 
 
 @pytest.mark.parametrize(
@@ -31,32 +22,32 @@ OBS1 = xr.DataArray(
     [
         # Reduce all dims
         (
-            FCST1,
-            OBS1,
+            btd.FCST1,
+            btd.OBS1,
             None,
             None,
             xr.DataArray(0.1),
         ),
         # preserve dim "a"
         (
-            FCST1,
-            OBS1,
+            btd.FCST1,
+            btd.OBS1,
             ["a"],
             None,
             xr.DataArray([0.1, 0.1], dims=["a"], coords={"a": [0, 1]}),
         ),
         # doesn't break with all NaNs
         (
-            FCST1,
-            OBS1 * np.nan,
+            btd.FCST1,
+            btd.OBS1 * np.nan,
             ["a"],
             None,
             xr.DataArray([np.nan, np.nan], dims=["a"], coords={"a": [0, 1]}),
         ),
         # Check it works with DataSets
         (
-            xr.Dataset({"1": FCST1, "2": 0.5 * FCST1}),
-            xr.Dataset({"1": OBS1, "2": OBS1}),
+            xr.Dataset({"1": btd.FCST1, "2": 0.5 * btd.FCST1}),
+            xr.Dataset({"1": btd.OBS1, "2": btd.OBS1}),
             ["a"],
             None,
             xr.Dataset(
@@ -86,7 +77,7 @@ def test_brier_score_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = brier_score(FCST1.chunk(), OBS1.chunk())
+    result = brier_score(btd.FCST1.chunk(), btd.OBS1.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -97,11 +88,11 @@ def test_brier_score_dask():
     ("fcst", "obs", "error_msg_snippet"),
     [
         # Fcst > 1
-        (FCST1 + 0.0000001, OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
+        (btd.FCST1 + 0.0000001, btd.OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
         # Fcst < 0
-        (FCST1 - 0.0000001, OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
+        (btd.FCST1 - 0.0000001, btd.OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
         # Obs = 1/2
-        (FCST1, OBS1 / 2, "`obs` contains values that are not in the set {0, 1, np.nan}"),
+        (btd.FCST1, btd.OBS1 / 2, "`obs` contains values that are not in the set {0, 1, np.nan}"),
     ],
 )
 def test_brier_score_raises(fcst, obs, error_msg_snippet):
@@ -119,9 +110,9 @@ def test_brier_score_raises(fcst, obs, error_msg_snippet):
     ("fcst", "obs", "expected"),
     [
         # FCST doubled
-        (FCST1 * 2, OBS1, xr.DataArray(0.2)),
+        (btd.FCST1 * 2, btd.OBS1, xr.DataArray(0.2)),
         # OBS halved
-        (FCST1, OBS1 / 2, xr.DataArray(0.05)),
+        (btd.FCST1, btd.OBS1 / 2, xr.DataArray(0.05)),
     ],
 )
 def test_brier_doesnt_raise(fcst, obs, expected):
@@ -134,170 +125,6 @@ def test_brier_doesnt_raise(fcst, obs, expected):
     # Check again but with input data as a DataSet
     result = brier_score(xr.Dataset({"x": fcst}), xr.Dataset({"x": obs}), check_args=False)
     xr.testing.assert_equal(result, xr.Dataset({"x": expected}))
-
-
-DA_FCST_ENS = xr.DataArray(
-    data=[[0.0, 4, 3, 7], [0, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
-    dims=["stn", "ens_member"],
-    coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
-)
-DA_FCST_ENS_LT = xr.DataArray(
-    data=[
-        [[0.0, 4, 3, 7], [0, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
-        [[0.0, 0, 0, 0], [0, -1, 2, 4], [np.nan, np.nan, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
-    ],
-    dims=[
-        "lead_time",
-        "stn",
-        "ens_member",
-    ],
-    coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4], "lead_time": [1, 2]},
-)
-DA_OBS_ENS = xr.DataArray(data=[0, 3, 1, np.nan, 4, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105, 106]})
-
-
-EXP_BRIER_ENS_ALL = xr.DataArray(
-    data=[[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1]],
-    dims=["threshold", "stn"],
-    coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
-).T
-EXP_BRIER_ENS_ALL_LT = xr.DataArray(
-    data=[
-        [[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1]],
-        [[0, (2 / 4 - 1) ** 2, 0, np.nan, 1]],
-    ],
-    dims=["lead_time", "threshold", "stn"],
-    coords={"stn": [101, 102, 103, 104, 105], "threshold": [1], "lead_time": [1, 2]},
-)
-i1 = 3
-m1 = 4
-i2 = 2
-m2 = 4
-i3 = 2
-m3 = 3
-FAIR_CORR_ALL = xr.DataArray(
-    data=[
-        [
-            i1 * (m1 - i1) / (m1**2 * (m1 - 1)),
-            i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
-            i3 * (m3 - i3) / (m3**2 * (m3 - 1)),
-            np.nan,
-            0,
-        ]
-    ],
-    dims=["threshold", "stn"],
-    coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
-)
-
-EXP_BRIER_ENS_FAIR_ALL = EXP_BRIER_ENS_ALL - FAIR_CORR_ALL
-EXP_BRIER_ENS_FAIR_ALL_MEAN = EXP_BRIER_ENS_FAIR_ALL.mean("stn")
-
-EXP_BRIER_ENS_ALL_MULTI = xr.DataArray(
-    data=[
-        [0, 0, 0, np.nan, 0],
-        [(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1],
-        [0, 0, 0, np.nan, 0],
-    ],
-    dims=["threshold", "stn"],
-    coords={"stn": [101, 102, 103, 104, 105], "threshold": [-100, 1, 100]},
-).T
-
-i12 = 0
-FAIR_CORR_ALL_LT = xr.DataArray(
-    data=[
-        [
-            [
-                i1 * (m1 - i1) / (m1**2 * (m1 - 1)),
-                i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
-                i3 * (m3 - i3) / (m3**2 * (m3 - 1)),
-                np.nan,
-                0,
-            ],
-            [
-                i12 * (m1 - i12) / (m1**2 * (m1 - 1)),
-                i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
-                0,
-                np.nan,
-                0,
-            ],
-        ]
-    ],
-    dims=["threshold", "lead_time", "stn"],
-    coords={"stn": [101, 102, 103, 104, 105], "threshold": [1], "lead_time": [1, 2]},
-)
-EXP_BRIER_ENS_FAIR_ALL_LT = EXP_BRIER_ENS_ALL_LT - FAIR_CORR_ALL_LT
-EXP_BRIER_ENS_FAIR_ALL_LT = EXP_BRIER_ENS_FAIR_ALL_LT.transpose("lead_time", "stn", "threshold")
-ENS_BRIER_WEIGHTS = xr.DataArray(
-    [2, 1, np.nan, np.nan, np.nan], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
-)
-EXP_BRIER_ENS_WITH_WEIGHTS = xr.DataArray(
-    data=[(2 * (3 / 4) ** 2 + (2 / 4 - 1) ** 2) / 2],
-    dims=["threshold"],
-    coords={"threshold": [1]},
-)
-
-FCST_ENS_DS = xr.Dataset(
-    {
-        "a": xr.DataArray(
-            [[0.0, 4, 3, 7], [0, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
-            dims=["stn", "ens_member"],
-            coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
-        ),
-        "b": xr.DataArray(
-            [[0.0, 0, 0, 0], [0, -1, 2, 4], [np.nan, np.nan, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
-            dims=["stn", "ens_member"],
-            coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
-        ),
-    },
-)
-OBS_ENS_DS = xr.Dataset({"a": DA_OBS_ENS, "b": DA_OBS_ENS})
-
-
-EXP_BRIER_ENS_ALL_DS = xr.Dataset(
-    {
-        "a": xr.DataArray(
-            [[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1]],
-            dims=["threshold", "stn"],
-            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
-        ).T,
-        "b": xr.DataArray(
-            [[0, (2 / 4 - 1) ** 2, 0, np.nan, 1]],
-            dims=["threshold", "stn"],
-            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
-        ).T,
-    },
-)
-FAIR_CORR_ALL_DS = xr.Dataset(
-    {
-        "a": xr.DataArray(
-            [
-                [
-                    i1 * (m1 - i1) / (m1**2 * (m1 - 1)),
-                    i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
-                    i3 * (m3 - i3) / (m3**2 * (m3 - 1)),
-                    np.nan,
-                    0,
-                ]
-            ],
-            dims=["threshold", "stn"],
-            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
-        ).T,
-        "b": xr.DataArray(
-            [
-                [
-                    i12 * (m1 - i12) / (m1**2 * (m1 - 1)),
-                    i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
-                    0,
-                    np.nan,
-                    0,
-                ],
-            ],
-            dims=["threshold", "stn"],
-            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
-        ).T,
-    },
-)
-EXP_BRIER_ENS_FAIR_ALL_DS = EXP_BRIER_ENS_ALL_DS - FAIR_CORR_ALL_DS
 
 
 @pytest.mark.parametrize(
@@ -315,87 +142,87 @@ EXP_BRIER_ENS_FAIR_ALL_DS = EXP_BRIER_ENS_ALL_DS - FAIR_CORR_ALL_DS
     [
         # Fair=False, single threshold, preserve all
         (
-            DA_FCST_ENS,
-            DA_OBS_ENS,
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
             "ens_member",
             1,
             "all",
             None,
             None,
             False,
-            EXP_BRIER_ENS_ALL,
+            btd.EXP_BRIER_ENS_ALL,
         ),
         # Fair=True, single threshold, preserve all
         (
-            DA_FCST_ENS,
-            DA_OBS_ENS,
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
             "ens_member",
             1,
             "all",
             None,
             None,
             True,
-            EXP_BRIER_ENS_FAIR_ALL,
+            btd.EXP_BRIER_ENS_FAIR_ALL,
         ),
         # Test reduce_dim arg
         (
-            DA_FCST_ENS,
-            DA_OBS_ENS,
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
             "ens_member",
             1,
             None,
             "stn",
             None,
             True,
-            EXP_BRIER_ENS_FAIR_ALL_MEAN,
+            btd.EXP_BRIER_ENS_FAIR_ALL_MEAN,
         ),
         # Fair=False, multiple_thresholds, preserve all
         (
-            DA_FCST_ENS,
-            DA_OBS_ENS,
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
             "ens_member",
             [-100, 1, 100],
             "all",
             None,
             None,
             False,
-            EXP_BRIER_ENS_ALL_MULTI,
+            btd.EXP_BRIER_ENS_ALL_MULTI,
         ),
         # Test with broadcast with a lead day dimension with Fair=True
         (
-            DA_FCST_ENS_LT,
-            DA_OBS_ENS,
+            btd.DA_FCST_ENS_LT,
+            btd.DA_OBS_ENS,
             "ens_member",
             1,
             "all",
             None,
             None,
             True,
-            EXP_BRIER_ENS_FAIR_ALL_LT,
+            btd.EXP_BRIER_ENS_FAIR_ALL_LT,
         ),
         # Test with weights
         (
-            DA_FCST_ENS,
-            DA_OBS_ENS,
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
             "ens_member",
             1,
             None,
             "stn",
-            ENS_BRIER_WEIGHTS,
+            btd.ENS_BRIER_WEIGHTS,
             False,
-            EXP_BRIER_ENS_WITH_WEIGHTS,
+            btd.EXP_BRIER_ENS_WITH_WEIGHTS,
         ),
         # Test with Datasets
         (
-            FCST_ENS_DS,
-            OBS_ENS_DS,
+            btd.FCST_ENS_DS,
+            btd.OBS_ENS_DS,
             "ens_member",
             1,
             "all",
             None,
             None,
             True,
-            EXP_BRIER_ENS_FAIR_ALL_DS,
+            btd.EXP_BRIER_ENS_FAIR_ALL_DS,
         ),
     ],
 )
