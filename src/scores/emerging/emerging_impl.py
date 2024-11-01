@@ -28,28 +28,28 @@ def risk_matrix_score(
 
     Args:
         fcst: an array of forecast probabilities for the observation lying in each severity
-            category. Must have a dimension `severity_dim`.
+            category. Must have a dimension ``severity_dim``.
         obs: an array of binary observations with a value of 1 if the observation was in the
-            severity category and 0 otherwise. Must have a dimension `severity_dim`.
+            severity category and 0 otherwise. Must have a dimension ``severity_dim``.
         decision_weights: an array of non-negative weights to apply to each matrix decision
-            threshold, indexed by coordinates in `severity_dim` and `prob_threshold_dim`.
+            threshold, indexed by coordinates in ``severity_dim`` and ``prob_threshold_dim``.
         severity_dim: the dimension specifying severity cateogories.
-        prob_threshold_dim: the dimension in `decision_weights` specifying probability thresholds.
+        prob_threshold_dim: the dimension in ``decision_weights`` specifying probability thresholds.
         threshold_assignment: Either "upper" or "lower". Specifies whether the probability
             intervals defining the certainty categories, with endpoints given by the
-            decision thresholds in `decision_weights`, are left or right closed. That is,
+            decision thresholds in ``decision_weights``, are left or right closed. That is,
             whether the probability decision threshold is included in the upper (left closed)
             or lower (right closed) certainty category. Defaults to "lower".
         reduce_dims: Optionally specify which dimensions to reduce when calculating the
             mean risk matrix score, where the mean is taken over all forecast cases.
             All other dimensions will be preserved. As a special case, 'all' will allow
-            all dimensions to be reduced. Only one of `reduce_dims` and `preserve_dims`
+            all dimensions to be reduced. Only one of ``reduce_dims`` and ``preserve_dims``
             can be supplied. The default behaviour if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating the
             mean risk matrix score, where the mean is taken over all forecast cases.
             All other dimensions will be reduced. As a special case, 'all' will allow
-            all dimensions to be preserved, apart from `severity_dim` and `prob_threshold_dim`.
-            Only one of `reduce_dims` and `preserve_dims` can be supplied. The default
+            all dimensions to be preserved, apart from ``severity_dim`` and ``prob_threshold_dim``.
+            Only one of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default
             behaviour if neither are supplied is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom) of scores across all forecast cases.
@@ -59,16 +59,16 @@ def risk_matrix_score(
         across appropriate dimensions.
 
     Raises:
-        ValueError: if `severity_dim` is not a dimension of `fcst`, `obs` or `decision_weights`.
-        ValueError: if `severity_dim` is a dimension of `weights`.
-        ValueError: if `prob_threshold_dim` is not a dimension of `decision_weights`.
-        ValueError: if `prob_threshold_dim` is not a dimension of `decision_weights`.
-        ValueError: if `decision_weights` does not have exactly 2 dimenions.
-        ValueError: if `fcst` values are negative or greater than 1.
-        ValueError: if `obs` values are other than 0, 1 or nan.
-        ValueError: if `prob_threshold_dim` coordinates are not strictly between 0 and 1.
-        ValueError: if `severity_dim` coordinates differ for any of `fcst`, `obs` or `decision_weights`.
-        ValueError: if `threshold_assignment` is not "upper" or lower".
+        ValueError: if ``severity_dim`` is not a dimension of ``fcst``, ``obs`` or ``decision_weights``.
+        ValueError: if ``severity_dim`` is a dimension of ``weights``.
+        ValueError: if ``prob_threshold_dim`` is not a dimension of ``decision_weights``.
+        ValueError: if ``prob_threshold_dim`` is not a dimension of ``decision_weights``.
+        ValueError: if ``decision_weights`` does not have exactly 2 dimenions.
+        ValueError: if ``fcst` values are negative or greater than 1.
+        ValueError: if ``obs`` values are other than 0, 1 or nan.
+        ValueError: if ``prob_threshold_dim`` coordinates are not strictly between 0 and 1.
+        ValueError: if ``severity_dim`` coordinates differ for any of ``fcst``, ``obs`` or ``decision_weights``.
+        ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
     """
     _check_risk_matrix_score_inputs(
@@ -194,8 +194,8 @@ def matrix_weights_to_array(
 ) -> xr.DataArray:
     """
     Generates a 2-dimensional xr.DataArray of the decision thresholds for the risk matrix
-    score calculation.  Assumes that values toward the left in `matrix_weights` correspond
-    to less severe categories, while values towards the top in `matrix_weights` correspond
+    score calculation.  Assumes that values toward the left in ``matrix_weights`` correspond
+    to less severe categories, while values towards the top in ``matrix_weights`` correspond
     to higher probability thresholds.
 
     Args:
@@ -215,10 +215,10 @@ def matrix_weights_to_array(
         and severity_dim.
 
     Raises:
-        ValueError: if `matrix_weights` isn't two dimensional.
-        ValueError: if number of rows of `matrix_weights` doesn't equal length of `prob_threshold_coords`.
-        ValueError: if number of columns of `matrix_weights` doesn't equal length of `severity_coords`.
-        ValueError: if `prob_threshold_coords` aren't strictly between 0 and 1.
+        ValueError: if ``matrix_weights`` isn't two dimensional.
+        ValueError: if number of rows of ``matrix_weights`` doesn't equal length of ``prob_threshold_coords``.
+        ValueError: if number of columns of ``matrix_weights`` doesn't equal length of ``severity_coords``.
+        ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
     """
     matrix_dims = matrix_weights.shape
 
@@ -258,7 +258,7 @@ def scaling_to_weight_array(
     Given warning scaling matrix, assessment weights and other inputs,
     returns the decision weights for the risk matrix score as an xarray data array.
 
-    Comprehensive checks are made on `scaling_matrix` to ensure it satisfies the properties
+    Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
     of warning scaling in Table 1 of Taggart & Wilke (2004).
 
     Args:
@@ -267,9 +267,9 @@ def scaling_to_weight_array(
             highest certainty category while the right-most column corresponds to most
             severe category.
         assessment_weights: positive weights used for warning assessment. The kth weight
-            (corresponding to `assessment_weights[k-1]`) is proportional to the importance
+            (corresponding to ``assessment_weights[k-1]``) is proportional to the importance
             of accuractely discriminating between warning states below level k and
-            warning states at or above level k. `len(assessment_weights)` must be at least q.
+            warning states at or above level k. ``len(assessment_weights)`` must be at least q.
         severity_dim: name of the severity category dimension.
         severity_coords: labels for each of the severity categories, in order of increasing
             severity. Does NOT include the lowest severity category for which no warning would
@@ -283,16 +283,16 @@ def scaling_to_weight_array(
         and severity_dim.
 
     Raises:
-        ValueError: if `matrix_weights` isn't two dimensional.
-        ValueError: if `scaling_matrix` has entries that are not non-negative integers.
-        ValueError: if the first column or last row of `scaling_matrix` has nonzero entries.
-        ValueError: if `scaling_matrix` decreases along any row (moving left to right).
-        ValueError: if `scaling_matrix` increases along any column (moving top to bottom).
-        ValueError: if number of rows of `matrix_weights` doesn't equal length of `prob_threshold_coords`.
-        ValueError: if number of columns of `matrix_weights` doesn't equal length of `severity_coords`.
-        ValueError: `len(assessment_weights)` is less than the maximum value in `scaling_matrix`.
-        ValueError: if `prob_threshold_coords` aren't strictly between 0 and 1.
-        ValueError: if `assessment_weights` aren't strictly positive.
+        ValueError: if ``matrix_weights`` isn't two dimensional.
+        ValueError: if ``scaling_matrix`` has entries that are not non-negative integers.
+        ValueError: if the first column or last row of ``scaling_matrix`` has nonzero entries.
+        ValueError: if ``scaling_matrix`` decreases along any row (moving left to right).
+        ValueError: if ``scaling_matrix`` increases along any column (moving top to bottom).
+        ValueError: if number of rows of ``matrix_weights`` doesn't equal length of ``prob_threshold_coords``.
+        ValueError: if number of columns of ``matrix_weights`` doesn't equal length of ``severity_coords``.
+        ValueError: ``len(assessment_weights`)`` is less than the maximum value in ``scaling_matrix``.
+        ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
+        ValueError: if ``assessment_weights`` aren't strictly positive.
     """
     scaling_matrix_shape = scaling_matrix.shape
 
