@@ -171,6 +171,16 @@ FAIR_CORR_ALL = xr.DataArray(
 EXP_BRIER_ENS_FAIR_ALL = EXP_BRIER_ENS_ALL - FAIR_CORR_ALL
 EXP_BRIER_ENS_FAIR_ALL_MEAN = EXP_BRIER_ENS_FAIR_ALL.mean("stn")
 
+EXP_BRIER_ENS_ALL_MULTI = xr.DataArray(
+    data=[
+        [0, 0, 0, np.nan, 0],
+        [(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1],
+        [0, 0, 0, np.nan, 0],
+    ],
+    dims=["threshold", "stn"],
+    coords={"stn": [101, 102, 103, 104, 105], "threshold": [-100, 1, 100]},
+).T
+
 
 @pytest.mark.parametrize(
     (
@@ -221,6 +231,18 @@ EXP_BRIER_ENS_FAIR_ALL_MEAN = EXP_BRIER_ENS_FAIR_ALL.mean("stn")
             True,
             EXP_BRIER_ENS_FAIR_ALL_MEAN,
         ),
+        # Fair=False, multiple_thresholds, preserve all
+        (
+            DA_FCST_ENS,
+            DA_OBS_ENS,
+            "ens_member",
+            [-100, 1, 100],
+            "all",
+            None,
+            None,
+            False,
+            EXP_BRIER_ENS_ALL_MULTI,
+        ),
     ],
 )
 def test_ensemble_brier_score(
@@ -237,4 +259,5 @@ def test_ensemble_brier_score(
         weights=weights,
         fair_correction=fair_correction,
     )
+
     xr.testing.assert_equal(result, expected)

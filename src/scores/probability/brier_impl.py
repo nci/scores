@@ -113,7 +113,8 @@ def ensemble_brier_score(
         obs: Observed variables in xarray.
         ensemble_member_dim: The dimension name of the ensemble member.
         thresholds: The threshold(s) to use for the Brier score that define what is
-            considered an event.
+            considered an event. If multiple thresholds are provided, they should
+            be monotonically increasing with no NaNs
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the Brier score. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
@@ -129,6 +130,12 @@ def ensemble_brier_score(
 
     Returns:
         The Brier score for the ensemble forecast.
+
+    Raises:
+        ValueError if values in ``thresholds`` are not monotonically increasing
+        ValueError if fcst contains the dimension 'threshold'
+        ValueError if obs contains the dimension 'threshold'
+        ValueError if weights contains the dimension 'threshold'
 
     References:
         - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
