@@ -84,7 +84,7 @@ def ensemble_brier_score(
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
     the fair Brier score is calculated, which is a modified version of the Brier score that
-    applies a correction based on the number of ensemble members.
+    applies a correction related to the number of ensemble members.
 
     The fair Brier score for ensembles is defined for a single event threshold as:
 
@@ -97,7 +97,9 @@ def ensemble_brier_score(
     - :math:`m` is the total number of ensemble members
     - :math:`y` is the observed event
 
-    When the fair correction is not applied, the Brier score is calculated as:
+    When the fair correction is not applied (i.e., ``fair_correction=False``),
+    the Brier score is calculated as:
+
 
     .. math::
         s_{i,y} = \\left(\\frac{i}{m} - y\\right)^2
@@ -133,9 +135,10 @@ def ensemble_brier_score(
 
     Raises:
         ValueError if values in ``thresholds`` are not monotonically increasing
-        ValueError if fcst contains the dimension 'threshold'
-        ValueError if obs contains the dimension 'threshold'
-        ValueError if weights contains the dimension 'threshold'
+        ValueError if ``fcst`` contains the dimension 'threshold'
+        ValueError if ``obs`` contains the dimension 'threshold'
+        ValueError if ``weights`` contains the dimension 'threshold'
+        ValueError if ``ensemble_member_dim`` is 'threshold'
 
     References:
         - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
@@ -161,6 +164,8 @@ def ensemble_brier_score(
         raise ValueError("The dimension 'threshold' is not allowed in fcst.")
     if "threshold" in obs.dims:
         raise ValueError("The dimension 'threshold' is not allowed in obs.")
+    if ensemble_member_dim == "threshold":
+        raise ValueError("The ensemble_member_dim is not allowed to be 'threshold'.")
 
     weights_dims = None
     if weights is not None:

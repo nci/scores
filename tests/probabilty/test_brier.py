@@ -243,6 +243,9 @@ EXP_BRIER_ENS_ALL_MULTI = xr.DataArray(
             False,
             EXP_BRIER_ENS_ALL_MULTI,
         ),
+        # Test with broadcast with a lead day dimension
+        # Test with weights
+        # Test with Datasets
     ],
 )
 def test_ensemble_brier_score(
