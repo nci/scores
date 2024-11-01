@@ -2,7 +2,7 @@
 This module contains methods related to the Brier score
 """
 
-from typing import Optional
+from typing import Optional, Union
 from collections.abc import Sequence
 
 import xarray as xr
@@ -73,7 +73,7 @@ def ensemble_brier_score(
     fcst: XarrayLike,
     obs: XarrayLike,
     ensemble_member_dim: str,
-    thresholds: Sequence[float],
+    thresholds: Union[float, Sequence[float]],
     *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
@@ -85,11 +85,27 @@ def ensemble_brier_score(
     the fair Brier score is calculated, which is a modified version of the Brier score that
     applies a correction based on the number of ensemble members.
 
+    The fair Brier score for ensembles is defined for a single event threshold as:
+
+
+    .. math::
+        s_{i,y} = \\left(\\frac{i}{m} - y\\right)^2 - \\frac{i(m-i)}{m^2(m-1)}
+
+    Where:
+    - :math:`i` is the number of ensemble members that predict the event
+    - :math:`m` is the total number of ensemble members
+    - :math:`y` is the observed event
+
+    When the fair correction is not applied, the Brier score is calculated as:
+
+    .. math::
+        s_{i,y} = \\left(\\frac{i}{m} - y\\right)^2
+
     Args:
         fcst: Forecast or predicted variables in xarray.
         obs: Observed variables in xarray.
         ensemble_member_dim: The dimension name of the ensemble member.
-        thresholds: The thresholds to use for the Fair Brier score that define what is
+        thresholds: The threshold(s) to use for the Brier score that define what is
             considered an event.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the Brier score. All other dimensions will be preserved.
@@ -107,7 +123,31 @@ def ensemble_brier_score(
     Returns:
         The Brier score for the ensemble forecast.
 
+    Raises:
+        ValueError: if ``fair_correction`` is not a boolean value.
+
+    References:
+        - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
+            Journal of the Royal Meteorological Society, 140(683), 1917–1923.
+            https://doi.org/10.1002/qj.2270
+
+    Examples:
+        Calculate the Brier score for an ensemble forecast for a single threshold:
+
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.probability import ensemble_brier_score
+        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
+        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=0.5)
+
+        Calculate the Brier score for an ensemble forecast for multiple thresholds:
+        >>> thresholds = [0.1, 0.5, 0.9]
+        >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
+
     """
+    if not isinstance(fair_correction, bool):
+        raise ValueError("`fair_correction` must be a boolean value")
     weights_dims = None
     if weights is not None:
         weights_dims = weights.dims
@@ -122,7 +162,7 @@ def ensemble_brier_score(
     )
     thresholds_xr = xr.DataArray(thresholds, dims=["threshold"], coords={"threshold": thresholds})
     member_event_count = (fcst >= thresholds_xr).sum(dim=ensemble_member_dim)
-    total_member_count = len(fcst[ensemble_member_dim])
+    total_member_count = fcst.notnull().sum(dim=ensemble_member_dim)
 
     fair_correction = (member_event_count * (total_member_count - member_event_count)) / (
         total_member_count**2 * (total_member_count - 1)
