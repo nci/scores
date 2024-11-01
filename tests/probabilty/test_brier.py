@@ -227,6 +227,14 @@ FAIR_CORR_ALL_LT = xr.DataArray(
 )
 EXP_BRIER_ENS_FAIR_ALL_LT = EXP_BRIER_ENS_ALL_LT - FAIR_CORR_ALL_LT
 EXP_BRIER_ENS_FAIR_ALL_LT = EXP_BRIER_ENS_FAIR_ALL_LT.transpose("lead_time", "stn", "threshold")
+ENS_BRIER_WEIGHTS = xr.DataArray(
+    [2, 1, np.nan, np.nan, np.nan], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+EXP_BRIER_ENS_WITH_WEIGHTS = xr.DataArray(
+    data=[(2 * (3 / 4) ** 2 + (2 / 4 - 1) ** 2) / 2],
+    dims=["threshold"],
+    coords={"threshold": [1]},
+)
 
 
 @pytest.mark.parametrize(
@@ -303,6 +311,17 @@ EXP_BRIER_ENS_FAIR_ALL_LT = EXP_BRIER_ENS_FAIR_ALL_LT.transpose("lead_time", "st
             EXP_BRIER_ENS_FAIR_ALL_LT,
         ),
         # Test with weights
+        (
+            DA_FCST_ENS,
+            DA_OBS_ENS,
+            "ens_member",
+            1,
+            None,
+            "stn",
+            ENS_BRIER_WEIGHTS,
+            False,
+            EXP_BRIER_ENS_WITH_WEIGHTS,
+        ),
         # Test with Datasets
     ],
 )
