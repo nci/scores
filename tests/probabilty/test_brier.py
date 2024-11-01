@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.probability import brier_score
+from scores.probability import brier_score, ensemble_brier_score
 
 FCST1 = xr.DataArray(
     [[[0.5, 0], [0, 0.5], [1, 0]], [[0.5, 0], [0.5, 0], [0, np.nan]]],
@@ -134,3 +134,107 @@ def test_brier_doesnt_raise(fcst, obs, expected):
     # Check again but with input data as a DataSet
     result = brier_score(xr.Dataset({"x": fcst}), xr.Dataset({"x": obs}), check_args=False)
     xr.testing.assert_equal(result, xr.Dataset({"x": expected}))
+
+
+DA_FCST_ENS = xr.DataArray(
+    data=[[0.0, 4, 3, 7], [0, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
+    dims=["stn", "ens_member"],
+    coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
+)
+DA_OBS_ENS = xr.DataArray(data=[0, 3, 1, np.nan, 4, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105, 106]})
+
+
+EXP_BRIER_ENS_ALL = xr.DataArray(
+    data=[[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1]],
+    dims=["threshold", "stn"],
+    coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
+).T
+i1 = 3
+m1 = 4
+i2 = 2
+m2 = 4
+i3 = 2
+m3 = 3
+FAIR_CORR_ALL = xr.DataArray(
+    data=[
+        [
+            i1 * (m1 - i1) / (m1**2 * (m1 - 1)),
+            i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
+            i3 * (m3 - i3) / (m3**2 * (m3 - 1)),
+            np.nan,
+            0,
+        ]
+    ],
+    dims=["threshold", "stn"],
+    coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
+)
+EXP_BRIER_ENS_FAIR_ALL = EXP_BRIER_ENS_ALL - FAIR_CORR_ALL
+EXP_BRIER_ENS_FAIR_ALL_MEAN = EXP_BRIER_ENS_FAIR_ALL.mean("stn")
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "ensemble_member_dim",
+        "thresholds",
+        "preserve_dims",
+        "reduce_dims",
+        "weights",
+        "fair_correction",
+        "expected",
+    ),
+    [
+        # Fair=False, single threshold, preserve all
+        (
+            DA_FCST_ENS,
+            DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            False,
+            EXP_BRIER_ENS_ALL,
+        ),
+        # Fair=True, single threshold, preserve all
+        (
+            DA_FCST_ENS,
+            DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            True,
+            EXP_BRIER_ENS_FAIR_ALL,
+        ),
+        # Test reduce_dim arg
+        (
+            DA_FCST_ENS,
+            DA_OBS_ENS,
+            "ens_member",
+            1,
+            None,
+            "stn",
+            None,
+            True,
+            EXP_BRIER_ENS_FAIR_ALL_MEAN,
+        ),
+    ],
+)
+def test_ensemble_brier_score(
+    fcst, obs, ensemble_member_dim, thresholds, preserve_dims, reduce_dims, weights, fair_correction, expected
+):
+    """Tests ensemble_brier_score."""
+    result = ensemble_brier_score(
+        fcst,
+        obs,
+        ensemble_member_dim,
+        thresholds,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights,
+        fair_correction=fair_correction,
+    )
+    xr.testing.assert_equal(result, expected)

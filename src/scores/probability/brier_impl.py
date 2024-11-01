@@ -11,6 +11,7 @@ from scores.continuous import mse
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_binary, gather_dimensions
 from scores.functions import apply_weights
+from scores.processing import binary_discretise
 
 
 def brier_score(
@@ -70,8 +71,8 @@ def brier_score(
 
 
 def ensemble_brier_score(
-    fcst: XarrayLike,
-    obs: XarrayLike,
+    fcst: XarrayLike,  # type: ignore
+    obs: XarrayLike,  # type: ignore
     ensemble_member_dim: str,
     thresholds: Union[float, Sequence[float]],
     *,  # Force keywords arguments to be keyword-only
@@ -79,7 +80,7 @@ def ensemble_brier_score(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     fair_correction: bool = True,
-) -> XarrayLike:
+) -> XarrayLike:  # type: ignore
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
     the fair Brier score is calculated, which is a modified version of the Brier score that
@@ -100,6 +101,12 @@ def ensemble_brier_score(
 
     .. math::
         s_{i,y} = \\left(\\frac{i}{m} - y\\right)^2
+
+    If ``fair_correction`` is set to ``True`` and the number of ensemble members is 1, the
+    fair correction will not be applied to avoid division by zero. If you want to
+    set the minimum number ensemble members required to calculate the Brier score,
+    we reccomend preprocessing your data to remove data points with fewer than the
+    minimum number of ensemble members that you want.
 
     Args:
         fcst: Forecast or predicted variables in xarray.
@@ -123,9 +130,6 @@ def ensemble_brier_score(
     Returns:
         The Brier score for the ensemble forecast.
 
-    Raises:
-        ValueError: if ``fair_correction`` is not a boolean value.
-
     References:
         - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
             Journal of the Royal Meteorological Society, 140(683), 1917–1923.
@@ -146,10 +150,15 @@ def ensemble_brier_score(
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
-    if not isinstance(fair_correction, bool):
-        raise ValueError("`fair_correction` must be a boolean value")
+    if "threshold" in fcst.dims:
+        raise ValueError("The dimension 'threshold' is not allowed in fcst.")
+    if "threshold" in obs.dims:
+        raise ValueError("The dimension 'threshold' is not allowed in obs.")
+
     weights_dims = None
     if weights is not None:
+        if "threshold" in weights.dims:
+            raise ValueError("The dimension 'threshold' is not allowed in weights.")
         weights_dims = weights.dims
 
     dims_for_mean = gather_dimensions(
@@ -160,18 +169,26 @@ def ensemble_brier_score(
         preserve_dims=preserve_dims,
         score_specific_fcst_dims=ensemble_member_dim,
     )
+    if not isinstance(thresholds, Sequence):
+        thresholds = [thresholds]
     thresholds_xr = xr.DataArray(thresholds, dims=["threshold"], coords={"threshold": thresholds})
+
+    # calculate i term in equation
     member_event_count = (fcst >= thresholds_xr).sum(dim=ensemble_member_dim)
+    # calculate m term in equation
     total_member_count = fcst.notnull().sum(dim=ensemble_member_dim)
 
-    fair_correction = (member_event_count * (total_member_count - member_event_count)) / (
-        total_member_count**2 * (total_member_count - 1)
-    )
-    result = (member_event_count / total_member_count - obs) ** 2
+    binary_obs = binary_discretise(obs, thresholds, ">=")
+
+    result = (member_event_count / total_member_count - binary_obs) ** 2
     if fair_correction:
+        fair_corr = (member_event_count * (total_member_count - member_event_count)) / (
+            total_member_count**2 * (total_member_count - 1)
+        )
+        fair_correction = fair_corr.fillna(0)
         result -= fair_correction
 
     # apply weights and take means across specified dims
-    result = apply_weights(result, weights=weights).mean(dim=dims_for_mean)  # type: ignore
+    result = apply_weights(result, weights=weights).mean(dim=dims_for_mean)
 
-    return result  # type: ignore
+    return result
