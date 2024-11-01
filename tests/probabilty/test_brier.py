@@ -236,6 +236,69 @@ EXP_BRIER_ENS_WITH_WEIGHTS = xr.DataArray(
     coords={"threshold": [1]},
 )
 
+FCST_ENS_DS = xr.Dataset(
+    {
+        "a": xr.DataArray(
+            [[0.0, 4, 3, 7], [0, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
+            dims=["stn", "ens_member"],
+            coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
+        ),
+        "b": xr.DataArray(
+            [[0.0, 0, 0, 0], [0, -1, 2, 4], [np.nan, np.nan, 4, np.nan], [2, 3, 4, 1], [0, np.nan, np.nan, np.nan]],
+            dims=["stn", "ens_member"],
+            coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
+        ),
+    },
+)
+OBS_ENS_DS = xr.Dataset({"a": DA_OBS_ENS, "b": DA_OBS_ENS})
+
+
+EXP_BRIER_ENS_ALL_DS = xr.Dataset(
+    {
+        "a": xr.DataArray(
+            [[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (2 / 3 - 1) ** 2, np.nan, 1]],
+            dims=["threshold", "stn"],
+            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
+        ).T,
+        "b": xr.DataArray(
+            [[0, (2 / 4 - 1) ** 2, 0, np.nan, 1]],
+            dims=["threshold", "stn"],
+            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
+        ).T,
+    },
+)
+FAIR_CORR_ALL_DS = xr.Dataset(
+    {
+        "a": xr.DataArray(
+            [
+                [
+                    i1 * (m1 - i1) / (m1**2 * (m1 - 1)),
+                    i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
+                    i3 * (m3 - i3) / (m3**2 * (m3 - 1)),
+                    np.nan,
+                    0,
+                ]
+            ],
+            dims=["threshold", "stn"],
+            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
+        ).T,
+        "b": xr.DataArray(
+            [
+                [
+                    i12 * (m1 - i12) / (m1**2 * (m1 - 1)),
+                    i2 * (m2 - i2) / (m2**2 * (m2 - 1)),
+                    0,
+                    np.nan,
+                    0,
+                ],
+            ],
+            dims=["threshold", "stn"],
+            coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
+        ).T,
+    },
+)
+EXP_BRIER_ENS_FAIR_ALL_DS = EXP_BRIER_ENS_ALL_DS - FAIR_CORR_ALL_DS
+
 
 @pytest.mark.parametrize(
     (
@@ -323,6 +386,17 @@ EXP_BRIER_ENS_WITH_WEIGHTS = xr.DataArray(
             EXP_BRIER_ENS_WITH_WEIGHTS,
         ),
         # Test with Datasets
+        (
+            FCST_ENS_DS,
+            OBS_ENS_DS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            True,
+            EXP_BRIER_ENS_FAIR_ALL_DS,
+        ),
     ],
 )
 def test_ensemble_brier_score(
