@@ -5,7 +5,6 @@ Test data for testing scores.emerging functions
 import numpy as np
 import xarray as xr
 
-
 # test data for risk_matrix_score and related functions
 DA_RMS_FCST = xr.DataArray(
     data=[

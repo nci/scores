@@ -10,7 +10,11 @@ To propose a metric for inclusion in this API, please either get in touch throug
 raise a new issue (https://github.com/nci/scores/issues)
 """
 
-from scores.emerging.emerging_impl import risk_matrix_score, matrix_weights_to_array, scaling_to_weight_array
+from scores.emerging.emerging_impl import (
+    matrix_weights_to_array,
+    risk_matrix_score,
+    scaling_to_weight_array,
+)
 
 __all__ = [
     "risk_matrix_score",
