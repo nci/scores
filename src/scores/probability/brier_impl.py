@@ -139,6 +139,7 @@ def ensemble_brier_score(
         ValueError if ``obs`` contains the dimension 'threshold'
         ValueError if ``weights`` contains the dimension 'threshold'
         ValueError if ``ensemble_member_dim`` is 'threshold'
+        ValueError if ``ensemble_member_dim`` is not in ``fcst`` dimensions
 
     References:
         - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
@@ -160,12 +161,14 @@ def ensemble_brier_score(
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
+    if ensemble_member_dim == "threshold":
+        raise ValueError("The ensemble_member_dim is not allowed to be 'threshold'.")
     if "threshold" in fcst.dims:
         raise ValueError("The dimension 'threshold' is not allowed in fcst.")
     if "threshold" in obs.dims:
         raise ValueError("The dimension 'threshold' is not allowed in obs.")
-    if ensemble_member_dim == "threshold":
-        raise ValueError("The ensemble_member_dim is not allowed to be 'threshold'.")
+    if ensemble_member_dim not in fcst.dims:
+        raise ValueError("ensemble_member_dim must be one of the dimensions in fcst.")
 
     weights_dims = None
     if weights is not None:

@@ -241,3 +241,40 @@ def test_ensemble_brier_score(
         fair_correction=fair_correction,
     )
     xr.testing.assert_equal(result, expected)
+
+
+def test_ensemble_brier_score_raises():
+    """
+    Tests that the ensemble_brier_score function raises the correct errors.
+    """
+    fcst = xr.DataArray(np.random.rand(10, 10), dims=["time", "ensemble"])
+    fcst_threshold = xr.DataArray(np.random.rand(10, 10), dims=["threshold", "ensemble"])
+    obs = xr.DataArray(np.random.rand(10), dims=["time"])
+    obs_threshold = xr.DataArray(np.random.rand(10), dims=["threshold"])
+    thresholds = [0.1, 0.5, 0.9]
+    weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
+
+    # Test if ensemble_member_dim is not in fcst.dims
+    with pytest.raises(ValueError, match="ensemble_member_dim must be one of the dimensions in fcst."):
+        ensemble_brier_score(fcst, obs, "number", thresholds)
+
+    # Test if fcst contains the dimension 'threshold'
+    with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in fcst."):
+        ensemble_brier_score(fcst_threshold, obs, "time", thresholds)
+
+    # Test if obs contains the dimension 'threshold'
+    with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in obs."):
+        ensemble_brier_score(fcst, obs_threshold, "ensemble", thresholds)
+
+    # Test if ensemble_member_dim is 'threshold'
+    with pytest.raises(ValueError, match="The ensemble_member_dim is not allowed to be 'threshold'."):
+        ensemble_brier_score(fcst_threshold, obs, "threshold", thresholds)
+
+    # Test if weights contains the dimension 'threshold'
+    with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in weights."):
+        ensemble_brier_score(fcst, obs, "ensemble", thresholds, weights=weights)
+
+
+# TODO
+# Dask test
+# Left/right bounds
