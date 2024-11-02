@@ -26,7 +26,7 @@ Below is a **curated selection** of the metrics, tools and statistical tests inc
 | **[Processing Tools](https://scores.readthedocs.io/en/stable/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation.              	|
 
 
-`scores` not only includes common scores (e.g., MAE, RMSE), it includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (e.g., the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
+`scores` not only includes common scores (e.g., MAE, RMSE), it also includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (e.g., the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
 `scores` primarily supports xarray datatypes for Earth system data allowing it to work with NetCDF4, HDF5, Zarr and GRIB data formats among others. `scores` uses Dask for scaling and performance. Some metrics work with pandas and we aim to expand this capability. 
 
