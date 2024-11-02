@@ -8,9 +8,10 @@ Please work through the following checklists. Delete anything that isn't relevan
 
 ## Docstrings
 - [ ] Docstrings complete and follow Napoleon (google) style
+- [ ] Maths equation added
 - [ ] Reference to paper/webpage is in docstring. The preferred referencing style is APA (7th edition)
 - [ ] Code example added
-- [ ] Maths equation added
+
 
 ## Testing of new xarray-based metrics
 - [ ] 100% unit test coverage
