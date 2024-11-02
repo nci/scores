@@ -4,13 +4,43 @@
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.2.0...develop). Below are the changes we think users may wish to be aware of.
 
+### Introduced Support for Python 3.13 and Dropped Support for Python 3.9
+
+- Introduced support for Python 3.13 and dropped support for Python 3.9. See [PR #710](https://github.com/nci/scores/pull/710).
+
 ### Features
+
+- Added four new metrics:
+	- Quantile Interval Score: `scores.continuous.quantile_interval_score`. See [PR #704](https://github.com/nci/scores/pull/704).
+	- Interval Score: `scores.continuous.interval_score`. See [PR #704](https://github.com/nci/scores/pull/704).
+	- Kling-Gupta Efficiency (KGE): `scores.continuous.kge`. See [PR #679](https://github.com/nci/scores/pull/679) and [PR #700](https://github.com/nci/scores/pull/700). 
+	- Interval threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.interval_tw_crps_for_ensemble`. See [PR #682](https://github.com/nci/scores/pull/682).
+- Added an optional `decomposition` argument to several continuous ranked probability score (CRPS) functions. If supplied, the `decomposition` argument will return the under-forecast and over-forecast components of the score in addition to the overall CRPS value. This applies to the following CRPS functions:
+	- continuous ranked probability score (CRPS) for ensembles: `scores.probability.crps_for_ensemble`
+	- threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tw_crps_for_ensemble`
+	- tail threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tail_tw_crps_for_ensemble`
+	- interval threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.interval_tw_crps_for_ensemble`)  
+	See [PR #708](https://github.com/nci/scores/pull/708).
+	
 ### Breaking Changes
+
 ### Deprecations
+
 ### Bug Fixes
+
 ### Documentation
+
+- Added "Kling–Gupta Efficiency (KGE)" tutorial. See [PR #679](https://github.com/nci/scores/pull/679) and [PR #700](https://github.com/nci/scores/pull/700).
+- Added "Quantile Interval Score and Interval Score" tutorial. See [PR #704](https://github.com/nci/scores/pull/704).
+- Added "Threshold Weighted Continuous Ranked Probability Score (twCRPS) for ensembles" tutorial. See [PR #706](https://github.com/nci/scores/pull/706) and [PR #722](https://github.com/nci/scores/pull/722).
+
 ### Internal Changes
+
+- Sped up (improved the computational efficiency of) the continuous ranked probability score (CRPS) for ensembles. See [PR #694](https://github.com/nci/scores/pull/694).
+
 ### Contributors to this Release
+
+Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Durga Shrestha ([@durgals](https://github.com/durgals)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
 ## Version 1.2.0 (September 13, 2024) 
 
