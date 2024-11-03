@@ -15,7 +15,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Interval Score: `scores.continuous.interval_score`. See [PR #704](https://github.com/nci/scores/pull/704).
 	- Kling-Gupta Efficiency (KGE): `scores.continuous.kge`. See [PR #679](https://github.com/nci/scores/pull/679) and [PR #700](https://github.com/nci/scores/pull/700). 
 	- Interval threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.interval_tw_crps_for_ensemble`. See [PR #682](https://github.com/nci/scores/pull/682).
-- Added an optional `decomposition` argument to several continuous ranked probability score (CRPS) functions. If supplied, the `decomposition` argument will return the under-forecast and over-forecast components of the score in addition to the overall CRPS value. This applies to the following CRPS functions:
+- Added an optional `decomposition` argument to several continuous ranked probability score (CRPS) functions. If supplied, the decomposition argument will return the underforecast penalty, the overforecast penalty and the forecast spread term, in addition to the overall CRPS value. This applies to the following CRPS functions:
 	- continuous ranked probability score (CRPS) for ensembles: `scores.probability.crps_for_ensemble`
 	- threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tw_crps_for_ensemble`
 	- tail threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tail_tw_crps_for_ensemble`
