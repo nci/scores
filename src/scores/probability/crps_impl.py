@@ -194,8 +194,10 @@ def crps_cdf(
         :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - 
         \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
 
-    There are several ways to decompose the CRPS. When `include_components=True`. this 
-    decomposition differs from the :py:func:`scores.probability.crps_for_ensemble decomposition`.
+    To obtain the components of the CRPS score, set ``include_components`` to ``True``.  
+
+    Note that there are several ways to decompose the CRPS and this decomposition differs from
+    the one used in the :py:func:`scores.probability.crps_for_ensemble` function. 
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
@@ -299,8 +301,8 @@ def crps_cdf(
         ValueError: if `threshold_weight` has negative values.
 
     See also:
-        - `scores.probability.crps_cdf_brier_decomposition`
-        - `scores.probability.crps_for_ensemble`
+        - :py:func:`scores.probability.crps_cdf_brier_decomposition`
+        - :py:func:`scores.probability.crps_for_ensemble`
 
     References:
         - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions. \
