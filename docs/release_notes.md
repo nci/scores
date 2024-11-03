@@ -36,7 +36,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Internal Changes
 
-- Sped up (improved the computational efficiency of) the continuous ranked probability score (CRPS) for ensembles. See [PR #694](https://github.com/nci/scores/pull/694).
+- Sped up (improved the computational efficiency of) the continuous ranked probability score (CRPS) for ensembles. This also addresses memory issues when a large number of ensemble members are present. See [PR #694](https://github.com/nci/scores/pull/694).
 
 ### Contributors to this Release
 
