@@ -1,13 +1,19 @@
-# Docstring Spec
+# Introduction
 -----------------
 
-`scores` includes a lot of information in its docstrings. These docstrings are used in rendering the readthedocs API documentation, can be built locally as web pages using `sphinx`, can be seen in notebooks and the command-line using the Python's help functionality, or may be read as source code. The tech stack for all of this is somewhat complex. The docstrings include mathematical formulae, references, general links to further reading, coding information (like type information) as well as explanations for users.
+`scores` includes a lot of information in its docstrings. This is a template docstring which can be used as a basis for documenting new functions.
 
-This document attempts to set out the contents, layout and syntax which should be adopted where possible, including some information on common issues and gotchas. 
+Docstrings are used for the following purposes:
+    - When readthedocs builds the API documentation
+    - Building the API documentation locally as web pages using `sphinx`, 
+    - Using Python's help functionality, either on the command-line or in notebooks
+    - May be read as plain text in the source code. 
 
-The authors are not specification experts, so this spec is not written in a formal spec language.
+The tech stack for all of this is somewhat complex. The docstrings include mathematical formulae, references, general links to further reading, coding information (like type information) as well as explanations for users.
 
-For convenience, this spec begins with a template.
+This document attempts to set out the content, layout and syntax which should be adopted where possible, including some information on common issues and gotchas. 
+
+The authors are not specification experts, so this template is not written in a formally.
 
 # Docstring Template
 --------------------
