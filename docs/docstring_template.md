@@ -1,6 +1,12 @@
 # Docstring Template
 --------------------
 
+Below is a docstring example. It contains a suggested docstring layout, example text and example MathJax.
+
+The layout below will render properly in Read the Docs. Please adjust the example text and MathJax as required.
+
+Note: backticks render differently in docstrings to elsewhere. Should you wish to include text in backticks, please use double backticks - e.g. ``scores.continuous.mean_error``. (If you only use one set of backticks, the text will instead be rendered as italics in Read the Docs). 
+
 ```
 def function_name(*args, *, **kwargs) -> type hint:
 	'''
@@ -37,12 +43,13 @@ def function_name(*args, *, **kwargs) -> type hint:
         ValueError: if there are values in `fcst` and `obs` which are invalid
 
     Notes:
-        Any additional comments or notes should go here.        
+        - This section is optional.
+        - Any additional comments or notes should go here.
 
     References:
         - If possible, a citation to the first (original) paper introducing the score/metric.
         - In addition, if that paper is not open access, please also add an open access reference.
-        - The preferred referencing style for journal articles is [APA (7th edition)](https://apastyle.apa.org/style-grammar-guidelines/references/examples/journal-article-references)
+        - The preferred referencing style for journal articles is [APA (7th edition).](https://apastyle.apa.org/style-grammar-guidelines/references/examples/journal-article-references)
         - Example reference below:
         - Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
           Application of global optimization to the Sacramento Soil Moisture Accounting Model.
@@ -50,7 +57,8 @@ def function_name(*args, *, **kwargs) -> type hint:
         - Optionally, if there is a website(s) that has particularly good information about the metric, please feel free to list it as well.
 
     See also:
-    	If there are closely related functions, add e.g. :py:func:`scores.continuous.rmse` with a note
+    	- This section is optional.
+        - If there are other functions which are directly relevant, you can add e.g. :py:func:`scores.continuous.rmse` with a description.
 
     Examples:
 
