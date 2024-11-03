@@ -9,24 +9,24 @@ Note: backticks render differently in docstrings to elsewhere. Should you wish t
 
 ```
 def function_name(*args, *, **kwargs) -> type hint:
-	'''
-	A short one or two line description of what the function does. 
+    '''
+    A short one or two line description of what the function does. 
 
     Additional information (e.g. a paragraph or two) may be included here following the short description.
 
-	MathJax giving the mathematical formula for the metric. Below is some MathJax to use as a 
-	starting point. Note that double-backslash formatting is required to ensure proper rendering in docstrings.
+    MathJax giving the mathematical formula for the metric. Below is some MathJax to use as a 
+    starting point. Note that double-backslash formatting is required to ensure proper rendering in docstrings.
 
     .. math::
         \\text{mean error} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}	
 
-	Where applicable, say what the range of the score is. For example:
-	Range: 0 to infinity, 0 is perfect. 
+    Where applicable, say what the range of the score is. For example:
+    Range: 0 to infinity, 0 is perfect. 
 
-	Mathjax can also be included inline, like this :math:`\\text{obs_cdf}(x) = 0`
+    Mathjax can also be included inline, like this :math:`\\text{obs_cdf}(x) = 0`
 
-	Args: 
+    Args: 
         fcst: Forecast data. 
         obs: Observation data.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
@@ -36,10 +36,10 @@ def function_name(*args, *, **kwargs) -> type hint:
             by decision threshold.
 
     Returns:
-    	A semantic description of what is returned. Note - type information is automatically included based on type hinting.
+        A semantic description of what is returned. Note - type information is automatically included based on type hinting.
 
     Raises:
-    	A type and description of any special error checking which may result in an exception, e.g.
+        A type and description of any special error checking which may result in an exception, e.g.
         ValueError: if there are values in `fcst` and `obs` which are invalid
 
     Notes:
@@ -57,7 +57,7 @@ def function_name(*args, *, **kwargs) -> type hint:
         - Optionally, if there is a website(s) that has particularly good information about the metric, please feel free to list it as well.
 
     See also:
-    	- This section is optional.
+        - This section is optional.
         - If there are other functions which are directly relevant, you can add e.g. :py:func:`scores.continuous.rmse` with a description.
 
     Examples:
@@ -68,5 +68,5 @@ def function_name(*args, *, **kwargs) -> type hint:
         >>> fcst = xr.DataArray(np.random.uniform(-40, 10, size=(10, 10)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.uniform(-40, 10, size=10), dims=['time'])
 
-	'''
+    '''
 ```
