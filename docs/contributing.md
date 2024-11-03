@@ -58,7 +58,7 @@ Each pull request should include:
  - The implementation of the new metric or score in xarray, ideally with support for pandas and dask.
  - 100% unit test coverage.
  - A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data.
- - API documentation (docstrings) using [Napoleon (google)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) style, making sure to clearly explain the use of the metric. Please see our [docstring template.](docstring_template.md)
+ - API documentation (docstrings) using [Napoleon (google)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) style, making sure to clearly explain the use of the metric. Please see our [docstring template](docstring_template.md).
  - A reference should be added to the API documentation. The preferred referencing style is [APA (7th edition)](https://apastyle.apa.org/style-grammar-guidelines/references/examples).
    - If there is an authoritative reference (e.g. an academic article that defines the metric, or the specific implementation, being used), please cite that reference.
    - When there is an authoritative reference, please cite it even if it cannot be accessed without payment. In these instances, if there is another suitable reference that is open and available without payment, cite that as well.
