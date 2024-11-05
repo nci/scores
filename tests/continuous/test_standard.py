@@ -901,7 +901,7 @@ def test_pbias_dask():
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "reduce_dims", "preserve_dims", "return_components", "scaling_factors", "expected"),
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "include_components", "scaling_factors", "expected"),
     [
         # Check reduce dim arg
         (DA1_KGE, DA2_KGE, None, "space", False, None, EXP_KGE_KEEP_SPACE_DIM),
@@ -917,7 +917,7 @@ def test_pbias_dask():
         (DA4_KGE, DA5_KGE, "space", None, False, None, EXP_KGE_DIFF_SIZE),
     ],
 )
-def test_kge(fcst, obs, reduce_dims, preserve_dims, return_components, scaling_factors, expected):
+def test_kge(fcst, obs, reduce_dims, preserve_dims, include_components, scaling_factors, expected):
     """
     Tests continuous.kge
     """
@@ -926,7 +926,7 @@ def test_kge(fcst, obs, reduce_dims, preserve_dims, return_components, scaling_f
         obs,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
-        return_components=return_components,
+        include_components=include_components,
         scaling_factors=scaling_factors,
     )
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
