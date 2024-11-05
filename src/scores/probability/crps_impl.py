@@ -784,7 +784,7 @@ def crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    include_components: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     """
     Calculates the continuous ranked probability score (CRPS) given an ensemble of forecasts.
@@ -918,7 +918,7 @@ def tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    include_components: bool = False,
+    include_components: Optional[bool] = False,
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
@@ -1050,7 +1050,7 @@ def tail_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    include_components: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
@@ -1156,7 +1156,7 @@ def interval_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    include_components: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) for ensemble forecasts

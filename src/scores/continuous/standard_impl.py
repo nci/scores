@@ -428,7 +428,7 @@ def kge(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     scaling_factors: Optional[Union[list[float], np.ndarray]] = None,
-    include_components: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     # pylint: disable=too-many-locals
     """
