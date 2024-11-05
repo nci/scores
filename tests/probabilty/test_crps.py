@@ -598,7 +598,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "weight", "preserve_dims", "decomposition", "expected"),
+    ("fcst", "obs", "method", "weight", "preserve_dims", "include_components", "expected"),
     [
         (
             crps_test_data.DA_FCST_CRPSENS,
@@ -683,7 +683,7 @@ def test_crps_cdf_brier_decomposition(dims, expected):
         ),
     ],
 )
-def test_crps_for_ensemble(fcst, obs, method, weight, preserve_dims, decomposition, expected):
+def test_crps_for_ensemble(fcst, obs, method, weight, preserve_dims, include_components, expected):
     """Tests `crps_for_ensemble` returns as expected."""
     result = crps_for_ensemble(
         fcst,
@@ -692,7 +692,7 @@ def test_crps_for_ensemble(fcst, obs, method, weight, preserve_dims, decompositi
         method=method,
         weights=weight,
         preserve_dims=preserve_dims,
-        decomposition=decomposition,
+        include_components=include_components,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -746,7 +746,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
         "preserve_dims",
         "reduce_dims",
         "weights",
-        "decomposition",
+        "include_components",
         "expected",
     ),
     [
@@ -909,7 +909,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
     ],
 )
 def test_tail_tw_crps_for_ensemble(
-    fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, decomposition, expected
+    fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, include_components, expected
 ):
     """Tests tail_tw_crps_for_ensembles"""
     result = tail_tw_crps_for_ensemble(
@@ -922,7 +922,7 @@ def test_tail_tw_crps_for_ensemble(
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
-        decomposition=decomposition,
+        include_components=include_components,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -1001,7 +1001,7 @@ def v_func4(x):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "decomposition", "expected"),
+    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "include_components", "expected"),
     [
         # test ecdf
         (
@@ -1126,7 +1126,9 @@ def v_func4(x):
         ),
     ],
 )
-def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, decomposition, expected):
+def test_tw_crps_for_ensemble(
+    fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, include_components, expected
+):
     """Tests tw_crps_for_ensembles"""
 
     result = tw_crps_for_ensemble(
@@ -1138,7 +1140,7 @@ def test_tw_crps_for_ensemble(fcst, obs, method, v_func, preserve_dims, reduce_d
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
-        decomposition=decomposition,
+        include_components=include_components,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -1187,7 +1189,7 @@ def test_tw_crps_for_ensemble_dask():
         "preserve_dims",
         "reduce_dims",
         "weights",
-        "decomposition",
+        "include_components",
         "expected",
     ),
     [
@@ -1337,7 +1339,16 @@ def test_tw_crps_for_ensemble_dask():
     ],
 )
 def test_interval_tw_crps_for_ensemble(
-    fcst, obs, method, lower_threshold, upper_threshold, preserve_dims, reduce_dims, weights, decomposition, expected
+    fcst,
+    obs,
+    method,
+    lower_threshold,
+    upper_threshold,
+    preserve_dims,
+    reduce_dims,
+    weights,
+    include_components,
+    expected,
 ):
     """Tests interval_tw_crps_for_ensembles"""
     result = interval_tw_crps_for_ensemble(
@@ -1350,7 +1361,7 @@ def test_interval_tw_crps_for_ensemble(
         preserve_dims=preserve_dims,
         reduce_dims=reduce_dims,
         weights=weights,
-        decomposition=decomposition,
+        include_components=include_components,
     )
 
     xr.testing.assert_allclose(result, expected)
