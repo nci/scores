@@ -2,6 +2,12 @@
 Contains unit tests for scores.emerging
 """
 
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -72,6 +78,48 @@ def test_risk_matrix_score(weights, preserve_dims, expected):
         preserve_dims=preserve_dims,
     ).transpose(*expected.dims)
     xr.testing.assert_allclose(calculated, expected)
+
+
+def test_risk_matrix_score_datasets():
+    """
+    Tests that risk_matrix_score returns as expected for dataset inputs.
+    """
+    expected = xr.Dataset({"a": mtd.EXP_RMS_CASE3A, "b": mtd.EXP_RMS_CASE3A})
+    calculated = risk_matrix_score(
+        xr.Dataset({"a": mtd.DA_RMS_FCST1, "b": mtd.DA_RMS_FCST1}),
+        xr.Dataset({"a": mtd.DA_RMS_OBS1, "b": mtd.DA_RMS_OBS1}),
+        mtd.DA_RMS_WT2A,
+        "sev",
+        "prob",
+        threshold_assignment="lower",
+        weights=None,
+        preserve_dims="all",
+    ).transpose(*expected.dims)
+    xr.testing.assert_allclose(calculated, expected)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs"),
+    [
+        (mtd.DA_RMS_FCST1.chunk(), mtd.DA_RMS_OBS1.chunk()),
+        (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1.chunk()),
+        (mtd.DA_RMS_FCST1.chunk(), mtd.DA_RMS_OBS1),
+    ],
+)
+def test_risk_matrix_score_dask(fcst, obs):
+    """Tests `risk_matrix_score` works with dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    expected = mtd.EXP_RMS_CASE3A
+    result = risk_matrix_score(
+        fcst, obs, mtd.DA_RMS_WT2A, "sev", "prob", threshold_assignment="lower", weights=None, preserve_dims="all"
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute().transpose(*expected.dims)
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
@@ -196,6 +244,16 @@ def test_risk_matrix_score(weights, preserve_dims, expected):
             None,
             "values in `fcst` must lie in the closed interval ",
         ),
+        (  # some forecast values negative, fcst is a dataset
+            -xr.Dataset({"a": mtd.DA_RMS_FCST, "b": mtd.DA_RMS_FCST}),
+            mtd.DA_RMS_OBS,
+            mtd.DA_RMS_WT2,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "values in `fcst` must lie in the closed interval ",
+        ),
         (  # obs values are 0, 2, or nan
             mtd.DA_RMS_FCST,
             2 * mtd.DA_RMS_OBS,
@@ -209,6 +267,16 @@ def test_risk_matrix_score(weights, preserve_dims, expected):
         (  # obs values are 1.5, 0.5 or nan
             mtd.DA_RMS_FCST,
             mtd.DA_RMS_OBS + 0.5,
+            mtd.DA_RMS_WT2,
+            "sev",
+            "prob",
+            "upper",
+            None,
+            "values in `obs` can only be 0, 1 or nan",
+        ),
+        (  # obs values are 1.5, 0.5 or nan, obs is a dataset
+            mtd.DA_RMS_FCST,
+            xr.Dataset({"a": mtd.DA_RMS_OBS + 0.5, "b": mtd.DA_RMS_OBS}),
             mtd.DA_RMS_WT2,
             "sev",
             "prob",

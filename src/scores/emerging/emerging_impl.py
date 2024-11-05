@@ -2,19 +2,19 @@
 This module contains methods which for emerging scores.
 """
 
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
 import numpy as np
 import xarray as xr
 
 from scores.functions import apply_weights
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
 
 def risk_matrix_score(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     decision_weights: xr.DataArray,
     severity_dim: str,
     prob_threshold_dim: str,
@@ -24,7 +24,35 @@ def risk_matrix_score(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    Calculates the risk matrix score MS of Taggart and Wilke (2024).
+    Calculates the risk matrix score of Taggart & Wilke (2024). 
+    
+    Let :math:`(S_1, \\ldots,S_m)` denote the tuple of nested severity categories,
+    let :math:`(p_1, \\ldots,p_n)`  denote the probability thresholds that delineate the
+    certainty categories, and let :math:`w_{i,j}` denote the weight applied to the
+    decision point associated with severity category :math:`S_i` and probability threshold :math:`p_j`.
+
+    In this implementation of the risk matrix score, a forecast :math:`F` is of the form
+    :math:`F=(f_1,\\ldots,f_m)` where :math:`f_i` denotes the forecast probability that
+    the observation lies in severity category :math:`S_i`.
+    A corresponding observation :math:`y` is given by :math:`y=(y_1,\\ldots,y_m)` where
+    :math:`y_i` is 1 if the observation lies in severity category :math:`S_i` and 0 otherwise. 
+    Then the risk matrix score :math:`\\text{RMS}` is given by the formula
+
+    .. math::
+        \\text{RMS}(F,y) = \\sum_{i=1}^m\\sum_{j=1}^n w_{i,j} \\, s_j(f_i, y_i),
+
+    where
+
+    .. math::
+        s_j(f_i,y_i) = \\begin{cases}
+            p_j & \\text{if } y_i=0\\text{ and } f_i \\geq p_j \\\\
+            1 - p_j & \\text{if } y_i=1\\text{ and } f_i < p_j \\\\
+            0 & \\text{otherwise.}
+        \\end{cases}
+
+    The formula above is for the case where the ``threshold_assignment`` is "lower", with 
+    the adjustments (:math:`f_i > p_j` and :math:`f_i \\leq p_j`) applied when the
+    ``threshold_assignment`` is "upper".
 
     Args:
         fcst: an array of forecast probabilities for the observation lying in each severity
@@ -70,6 +98,36 @@ def risk_matrix_score(
         ValueError: if ``severity_dim`` coordinates differ for any of ``fcst``, ``obs`` or ``decision_weights``.
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
+    References:
+        - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+
+    See also:
+        :py:func:`scores.emerging.matrix_weights_to_array`
+        :py:func:`scores.emerging.scaling_to_weight_array`
+
+    Examples:
+        Calculate the risk matrix score where the risk matrix has three nested severity
+        categories ("MOD+", "SEV+" and "EXT") and three probability thresholds (0.1, 0.3 and 0.5).
+        The the decision weights place greater emaphasis on higher end severity.
+
+        >>> import xarray as xr
+        >>> from scores.emerging import risk_matrix_score
+        >>> decision_weights = xr.DataArray(
+        >>>     data=[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+        >>>     dims=["probability_threshold", "severity"],
+        >>>     coords={'probability_threshold': [0.1, 0.3, 0.5], 'severity': ["MOD+", "SEV+", "EXT"]}
+        >>> )
+        >>> fcst = xr.DataArray(
+        >>>     data=[[0.45, 0.22, 0.05], [0.65, 0.32, 0.09]],
+        >>>     dims=["time", "severity"],
+        >>>     coords={'time': [0, 1], 'severity': ["MOD+", "SEV+", "EXT"]}
+        >>> )
+        >>> obs = xr.DataArray(
+        >>>     data=[[1, 1, 0], [1, 0, 0]],
+        >>>     dims=["time", "severity"],
+        >>>     coords={'time': [0, 1], 'severity': ["MOD+", "SEV+", "EXT"]}
+        >>> )
+        >>> risk_matrix_score(fcst, obs, decision_weights, "severity", "probability_threshold")
     """
     _check_risk_matrix_score_inputs(
         fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment, weights
@@ -117,8 +175,14 @@ def _check_risk_matrix_score_inputs(
     if len(decision_weights.dims) != 2:
         raise ValueError("`decision_weights` must have exactly 2 dimensions: `severity_dim` and `prob_threshold_dim`")
 
+    if isinstance(fcst, xr.Dataset):
+        fcst = fcst.to_array()
+
     if (fcst.max() > 1) or (fcst.min() < 0):
         raise ValueError("values in `fcst` must lie in the closed interval `[0, 1]`")
+
+    if isinstance(obs, xr.Dataset):
+        obs = obs.to_array()
 
     disallowed_obs_values = np.unique(obs.where(obs != 1).where(obs != 0).values)
     disallowed_obs_values = disallowed_obs_values[~np.isnan(disallowed_obs_values)]
@@ -138,8 +202,8 @@ def _check_risk_matrix_score_inputs(
 
 
 def _risk_matrix_score(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     decision_weights: xr.DataArray,
     severity_dim: str,
     prob_threshold_dim: str,
@@ -219,6 +283,24 @@ def matrix_weights_to_array(
         ValueError: if number of rows of ``matrix_weights`` doesn't equal length of ``prob_threshold_coords``.
         ValueError: if number of columns of ``matrix_weights`` doesn't equal length of ``severity_coords``.
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
+
+    References:
+        - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+
+    Examples:
+        Returns risk matrix decision weights, where weights increase with increasing
+        severity category and decrease with increasing probability threshold.
+
+        >>> import numpy as np
+        >>> from scores.emerging import matrix_weights_to_array
+        >>> matrix_weights = np.array([
+        >>>     [1, 2, 3],
+        >>>     [2, 4, 6],
+        >>>     [3, 6, 9],
+        >>> ])
+        >>> matrix_weights_to_array(
+        >>>     matrix_weights, "severity", ["MOD+", "SEV+", "EXT"], "prob_threshold", [0.1, 0.3, 0.5]
+        >>> )
     """
     matrix_dims = matrix_weights.shape
 
@@ -293,6 +375,25 @@ def scaling_to_weight_array(
         ValueError: ``len(assessment_weights`)`` is less than the maximum value in ``scaling_matrix``.
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
         ValueError: if ``assessment_weights`` aren't strictly positive.
+
+    References:
+        - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+
+    Examples:
+        Returns risk matrix decision weights, for the SHORT-RANGE scaling matrix of
+        Taggart & Wilke (2024), with ESCALATION assessment weights.
+
+        >>> import numpy as np
+        >>> from scores.emerging import scaling_to_weight_array
+        >>> scaling = np.array([
+        >>>     [0, 2, 3, 3],
+        >>>     [0, 1, 2, 3],
+        >>>     [0, 1, 1, 2],
+        >>>     [0, 0, 0, 0],
+        >>> ])
+        >>> scaling_to_weight_array(
+        >>>     scaling, [1, 2, 3],  "severity", ["MOD+", "SEV+", "EXT"], "prob_threshold", [0.1, 0.3, 0.5]
+        >>> )
     """
     scaling_matrix_shape = scaling_matrix.shape
 
