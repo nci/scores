@@ -51,10 +51,15 @@ def brier_score(
         ValueError: if ``fcst`` contains non-nan values outside of the range [0, 1]
         ValueError: if ``obs`` contains non-nan values not in the set {0, 1}
 
+<<<<<<< HEAD
     References:
         - Brier, G. W. (1950). Verification of forecasts expressed in terms of probability.
           Monthly Weather Review, 78(1), 1-3. https://doi.org/fp62r6
         - https://en.wikipedia.org/wiki/Brier_score
+=======
+    See Also:
+        - :py:func:`scores.probability.ensemble_brier_score`
+>>>>>>> 64d4dfd (update docs)
     """
     if check_args:
         error_msg = ValueError("`fcst` contains values outside of the range [0, 1]")
@@ -85,7 +90,8 @@ def ensemble_brier_score(
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
     the fair Brier score is calculated, which is a modified version of the Brier score that
-    applies a correction related to the number of ensemble members.
+    applies a correction related to the number of ensemble members and the number of
+    ensemble members that predict the event.
 
     The fair Brier score for ensembles is defined for a single event threshold as:
 
@@ -94,6 +100,7 @@ def ensemble_brier_score(
         s_{i,y} = \\left(\\frac{i}{m} - y\\right)^2 - \\frac{i(m-i)}{m^2(m-1)}
 
     Where:
+
     - :math:`i` is the number of ensemble members that predict the event
     - :math:`m` is the total number of ensemble members
     - :math:`y` is the observed event
@@ -140,12 +147,12 @@ def ensemble_brier_score(
         The Brier score for the ensemble forecast.
 
     Raises:
-        ValueError if values in ``thresholds`` are not monotonically increasing
-        ValueError if ``fcst`` contains the dimension 'threshold'
-        ValueError if ``obs`` contains the dimension 'threshold'
-        ValueError if ``weights`` contains the dimension 'threshold'
-        ValueError if ``ensemble_member_dim`` is 'threshold'
-        ValueError if ``ensemble_member_dim`` is not in ``fcst`` dimensions
+        ValueError: if values in ``thresholds`` are not monotonically increasing.
+        ValueError: if ``fcst`` contains the dimension 'threshold'.
+        ValueError: if ``obs`` contains the dimension 'threshold'.
+        ValueError: if ``weights`` contains the dimension 'threshold'.
+        ValueError: if ``ensemble_member_dim`` is 'threshold'.
+        ValueError: if ``ensemble_member_dim`` is not in ``fcst`` dimensions.
 
     References:
         - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly

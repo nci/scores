@@ -51,6 +51,7 @@
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data
 .. autofunction:: scores.probability.brier_score
+.. autofunction:: scores.probability.ensemble_brier_score
 .. autofunction:: scores.probability.isotonic_fit
 ```
 
