@@ -2,16 +2,16 @@
 This module contains methods related to the Brier score
 """
 
-from typing import Optional, Union
 from collections.abc import Sequence
+from typing import Optional, Union
 
 import xarray as xr
 
 from scores.continuous import mse
-from scores.typing import FlexibleDimensionTypes, XarrayLike
-from scores.utils import check_binary, gather_dimensions
 from scores.functions import apply_weights
 from scores.processing import binary_discretise
+from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import check_binary, gather_dimensions
 
 
 def brier_score(
@@ -74,7 +74,7 @@ def ensemble_brier_score(
     fcst: XarrayLike,  # type: ignore
     obs: XarrayLike,  # type: ignore
     ensemble_member_dim: str,
-    thresholds: Union[float, Sequence[float]],
+    thresholds: Union[float, int, Sequence[float]],
     *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
@@ -184,7 +184,7 @@ def ensemble_brier_score(
         preserve_dims=preserve_dims,
         score_specific_fcst_dims=ensemble_member_dim,
     )
-    if not isinstance(thresholds, Sequence):
+    if isinstance(thresholds, (float, int)):
         thresholds = [thresholds]
     thresholds_xr = xr.DataArray(thresholds, dims=["threshold"], coords={"threshold": thresholds})
 

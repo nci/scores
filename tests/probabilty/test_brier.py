@@ -13,7 +13,6 @@ import pytest
 import xarray as xr
 
 from scores.probability import brier_score, ensemble_brier_score
-
 from tests.probabilty import brier_test_data as btd
 
 
@@ -140,7 +139,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
         "expected",
     ),
     [
-        # Fair=False, single threshold, preserve all
+        # # Fair=False, single threshold, preserve all, threshold is an int
         (
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
@@ -152,12 +151,12 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             False,
             btd.EXP_BRIER_ENS_ALL,
         ),
-        # Fair=True, single threshold, preserve all
+        # Fair=True, single threshold, preserve all, threshold is a float
         (
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
             "ens_member",
-            1,
+            1.0,
             "all",
             None,
             None,
@@ -181,7 +180,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
             "ens_member",
-            [-100, 1, 100],
+            np.array([-100, 1, 100]),
             "all",
             None,
             None,
@@ -275,6 +274,22 @@ def test_ensemble_brier_score_raises():
         ensemble_brier_score(fcst, obs, "ensemble", thresholds, weights=weights)
 
 
-# TODO
-# Dask test
-# Left/right bounds
+def test_ensemble_brier_dask():
+    """Tests that the ensemble Brier score works with dask"""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = ensemble_brier_score(
+        btd.DA_FCST_ENS.chunk(),
+        btd.DA_OBS_ENS.chunk(),
+        "ens_member",
+        1,
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+        fair_correction=False,
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(result, btd.EXP_BRIER_ENS_ALL)
