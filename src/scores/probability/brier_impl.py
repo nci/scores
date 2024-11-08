@@ -3,7 +3,7 @@ This module contains methods related to the Brier score
 """
 
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 import xarray as xr
 
@@ -80,6 +80,7 @@ def ensemble_brier_score(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     fair_correction: bool = True,
+    threshold_mode: Literal[">=", ">"] = ">=",
 ) -> XarrayLike:  # type: ignore
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
@@ -129,6 +130,11 @@ def ensemble_brier_score(
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
             by population, custom).
         fair_correction: Whether or not to apply the fair Brier score correction. Default is True.
+        threshold_mode: The mode to use when determining threshold exceedance. Default is '>='
+            which means that the threshold is exceeded if the forecast is greater than or equal
+            to the threshold. Alternatively, you can provide ``threshold_mode='>'` which means
+            that the threshold is exceeded if the forecast is strictly greater than the threshold.
+
 
     Returns:
         The Brier score for the ensemble forecast.
@@ -146,6 +152,9 @@ def ensemble_brier_score(
             Journal of the Royal Meteorological Society, 140(683), 1917–1923.
             https://doi.org/10.1002/qj.2270
 
+    See Also:
+        - :py:func:`scores.probability.brier_score`
+
     Examples:
         Calculate the Brier score for an ensemble forecast for a single threshold:
 
@@ -161,6 +170,8 @@ def ensemble_brier_score(
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
+    if threshold_mode not in [">=", ">"]:
+        raise ValueError("threshold_mode must be either '>=' or '>'.")
     if ensemble_member_dim == "threshold":
         raise ValueError("The ensemble_member_dim is not allowed to be 'threshold'.")
     if "threshold" in fcst.dims:
@@ -193,7 +204,7 @@ def ensemble_brier_score(
     # calculate m term in equation
     total_member_count = fcst.notnull().sum(dim=ensemble_member_dim)
 
-    binary_obs = binary_discretise(obs, thresholds, ">=")
+    binary_obs = binary_discretise(obs, thresholds, threshold_mode)
 
     result = (member_event_count / total_member_count - binary_obs) ** 2
     if fair_correction:

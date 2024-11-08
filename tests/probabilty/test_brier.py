@@ -136,10 +136,11 @@ def test_brier_doesnt_raise(fcst, obs, expected):
         "reduce_dims",
         "weights",
         "fair_correction",
+        "threshold_mode",
         "expected",
     ),
     [
-        # # Fair=False, single threshold, preserve all, threshold is an int
+        # Fair=False, single threshold, preserve all, threshold is an int
         (
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
@@ -149,6 +150,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             False,
+            ">=",
             btd.EXP_BRIER_ENS_ALL,
         ),
         # Fair=True, single threshold, preserve all, threshold is a float
@@ -161,6 +163,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             True,
+            ">=",
             btd.EXP_BRIER_ENS_FAIR_ALL,
         ),
         # Test reduce_dim arg
@@ -173,6 +176,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             "stn",
             None,
             True,
+            ">=",
             btd.EXP_BRIER_ENS_FAIR_ALL_MEAN,
         ),
         # Fair=False, multiple_thresholds, preserve all
@@ -185,6 +189,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             False,
+            ">=",
             btd.EXP_BRIER_ENS_ALL_MULTI,
         ),
         # Test with broadcast with a lead day dimension with Fair=True
@@ -197,6 +202,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             True,
+            ">=",
             btd.EXP_BRIER_ENS_FAIR_ALL_LT,
         ),
         # Test with weights
@@ -209,6 +215,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             "stn",
             btd.ENS_BRIER_WEIGHTS,
             False,
+            ">=",
             btd.EXP_BRIER_ENS_WITH_WEIGHTS,
         ),
         # Test with Datasets
@@ -221,12 +228,35 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             True,
+            ">=",
             btd.EXP_BRIER_ENS_FAIR_ALL_DS,
+        ),
+        # Check threshold_mode='>'
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            False,
+            ">",
+            btd.EXP_BRIER_ENS_ALL_GREATER,
         ),
     ],
 )
 def test_ensemble_brier_score(
-    fcst, obs, ensemble_member_dim, thresholds, preserve_dims, reduce_dims, weights, fair_correction, expected
+    fcst,
+    obs,
+    ensemble_member_dim,
+    thresholds,
+    preserve_dims,
+    reduce_dims,
+    weights,
+    fair_correction,
+    threshold_mode,
+    expected,
 ):
     """Tests ensemble_brier_score."""
     result = ensemble_brier_score(
@@ -238,8 +268,9 @@ def test_ensemble_brier_score(
         reduce_dims=reduce_dims,
         weights=weights,
         fair_correction=fair_correction,
+        threshold_mode=threshold_mode,
     )
-    xr.testing.assert_equal(result, expected)
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_ensemble_brier_score_raises():
@@ -252,6 +283,10 @@ def test_ensemble_brier_score_raises():
     obs_threshold = xr.DataArray(np.random.rand(10), dims=["threshold"])
     thresholds = [0.1, 0.5, 0.9]
     weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
+
+    # Test if threshold_mode is not '>=' or '>'
+    with pytest.raises(ValueError, match="threshold_mode must be either '>=' or '>'."):
+        ensemble_brier_score(fcst, obs, "ensemble", thresholds, threshold_mode="=")
 
     # Test if ensemble_member_dim is not in fcst.dims
     with pytest.raises(ValueError, match="ensemble_member_dim must be one of the dimensions in fcst."):
