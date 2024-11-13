@@ -187,7 +187,7 @@ def interval_score(
         - underprediction_penalty: the under-prediction penalty contribution of the interval score
         - total: sum of all penalties
 
-        As can bee seen in interval score equation, the lower and upper quantile levels are
+        As can be seen in the interval score equation, the lower and upper quantile levels are
         derived from the interval range: ``lower_qtile_level = (1 - interval_range) / 2``
         and ``upper_qtile_level = (1 + interval_range) / 2``.
 
