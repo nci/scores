@@ -28,7 +28,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     .. math::
         \\text{quantile interval score} = \\underbrace{(q_{u} - q_{l})}_{\\text{interval width penalty}} +
         \\underbrace{\\frac{1}{\\alpha_l} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l})}_{\\text{over-prediction penalty}} +
-        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (q_{u} - y) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
+        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
 
     where
         - :math:`q_u` is the forecast at the upper quantile
@@ -139,12 +139,12 @@ def interval_score(
     """
     Calculates the interval score for interval forecasts.
     This function calls the :py:func:`scores.continuous.quantile_interval_score` function
-    to calculate the interval score for cases where quantile level range is symmetric.
+    to calculate the interval score for cases where the quantile level range is symmetric.
 
     .. math::
         \\text{interval score} = \\underbrace{(q_{u} - q_{l})}_{\\text{interval width penalty}} +
         \\underbrace{\\frac{2}{\\alpha} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l})}_{\\text{over-prediction penalty}} +
-        \\underbrace{\\frac{2}{\\alpha} \\cdot (q_{u} - y) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
+        \\underbrace{\\frac{2}{\\alpha} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
 
     where
         - :math:`q_u` is the forecast at the upper quantile
@@ -204,7 +204,7 @@ def interval_score(
         :py:func:`scores.continuous.quantile_interval_score`
 
     Examples:
-        Calculate the interval score for forecast intervals with interval range of 0.5
+        Calculate the interval score for forecast intervals with an interval range of 0.5
         (i.e., lower and upper quantile levels are 0.25 and 0.75, respectively).
 
         >>> import numpy as np
