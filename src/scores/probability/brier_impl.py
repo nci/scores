@@ -115,7 +115,7 @@ def ensemble_brier_score(
     If ``fair_correction`` is set to ``True`` and the number of ensemble members is 1, the
     fair correction will not be applied to avoid division by zero. If you want to
     set the minimum number ensemble members required to calculate the Brier score,
-    we reccomend preprocessing your data to remove data points with fewer than the
+    we recommend preprocessing your data to remove data points with fewer than the
     minimum number of ensemble members that you want.
 
     Args:
