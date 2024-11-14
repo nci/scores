@@ -29,7 +29,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Added "Quantile Interval Score and Interval Score" tutorial. See [PR #704](https://github.com/nci/scores/pull/704), [PR #736](https://github.com/nci/scores/pull/736) and [PR #738](https://github.com/nci/scores/pull/738).
 - Added "Threshold Weighted Continuous Ranked Probability Score (twCRPS) for ensembles" tutorial. See [PR #706](https://github.com/nci/scores/pull/706) and [PR #722](https://github.com/nci/scores/pull/722).
 - Updated the pull request template. See [PR #719](https://github.com/nci/scores/pull/719).
-- Update the description of the "Binary (Categorical/Contingency/Confusion Matrix) Scores" thumbnail in the tutorial gallery. See [PR #741](https://github.com/nci/scores/pull/741).
+- Updated the description of the "Binary (Categorical/Contingency/Confusion Matrix) Scores" thumbnail in the tutorial gallery. See [PR #741](https://github.com/nci/scores/pull/741).
 
 ### Internal Changes
 
