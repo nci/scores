@@ -1,5 +1,5 @@
 """
-Implementation of quantile interval and interval scores
+Implementation of quantile interval score and interval score
 """
 from typing import Optional
 
@@ -22,51 +22,52 @@ def quantile_interval_score(  # pylint: disable=R0914
     weights: Optional[xr.DataArray] = None,
 ) -> xr.Dataset:
     """
-    Calculates the qauntile interval score for interval forecasts. This score penalizes
+    Calculates the quantile interval score for interval forecasts. This score penalises
     the interval's width and whether the observation value lies outside the interval.
 
     .. math::
-        \\text{quantile interval score} = (q_{u} - q_{l}) +
-        \\frac{1}{\\alpha_l} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l}) +
-        \\frac{1}{1 - \\alpha_u} \\cdot (q_{u} - y) \\cdot \\mathbb{1}(y < q_{u})
+        \\text{quantile interval score} = \\underbrace{(q_{u} - q_{l})}_{\\text{interval width penalty}} +
+        \\underbrace{\\frac{1}{\\alpha_l} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l})}_{\\text{over-prediction penalty}} +
+        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
 
     where
-        - :math:`q_u` is the forecast at upper quantile
-        - :math:`q_l` is the forecast at lower quantile
-        - :math:`\\alpha_u` is upper quantile level
-        - :math:`\\alpha_l` is lower quantile level
+        - :math:`q_u` is the forecast at the upper quantile
+        - :math:`q_l` is the forecast at the lower quantile
+        - :math:`\\alpha_u` is the upper quantile level
+        - :math:`\\alpha_l` is the lower quantile level
         - :math:`y` is the observation
         - :math:`\\mathbb{1}(condition)` is an indicator function that is 1 when the condition is true, and 0 otherwise.
 
     Args:
         fcst_lower_qtile: array of forecast values at the lower quantile.
         fcst_upper_qtile: array of forecast values at the upper quantile.
-        obs: array of observations
-        lower_qtile_level: Quantile level between 0 and 1 (exclusive) for `fcst_lower_qtile`
-        upper_qtile_level: Quantile level between 0 and 1 (exclusive) for `fcst_upper_qtile`
+        obs: array of observations.
+        lower_qtile_level: Quantile level between 0 and 1 (exclusive) for ``fcst_lower_qtile``.
+        upper_qtile_level: Quantile level between 0 and 1 (exclusive) for ``fcst_upper_qtile``.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the quantile interval score. All other dimensions will be preserved.
-            As a special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            As a special case, "all" will allow all dimensions to be reduced. Only one
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
-            quantile interval score. All other dimensions will be reduced. As a special case,
-            'all' will allow all dimensions to be preserved. In this case, the result will be in
+            the quantile interval score. All other dimensions will be reduced. As a special case,
+            "all" will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the quantile
             score at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom) when aggregating the mean score across dimensions. Alternatively,
+            it could be used for masking data.
 
     Returns:
-        A Dataset with the dimensions specified in `dims`.
+        A Dataset with the dimensions specified in ``dims``.
         The dataset will have the following data variables:
 
-        - interval_width_penalty: fcst_upper_qtile - fcst_lower_qtile
-        - overprediction_penalty: ((1/lower_qtile_level)*(fcst_lower_qtile-obs)).clip(min=0)
-        - underprediction_penalty: ((1/upper_qtile_level)*(fcst_upper_qtile-obs)).clip(min=0)
+        - interval_width_penalty: the interval width penalty contribution of the quantile interval score
+        - overprediction_penalty: the over-prediction penalty contribution of the quantile interval score
+        - underprediction_penalty: the under-prediction penalty contribution of the quantile interval score
         - total: sum of all penalties
 
     Raises:
@@ -74,9 +75,8 @@ def quantile_interval_score(  # pylint: disable=R0914
         ValueError: If (fcst_lower_qtile > fcst_upper_qtile).any().
 
     References:
-        Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
-        and estimation. Journal of the American Statistical Association, 102(477), 359-378.
-        Corollary 5.2. https://doi.org/10.1198/016214506000001437
+        Winkler, R. L. (1972). A Decision-Theoretic Approach to Interval Estimation. Journal of the American
+        Statistical Association, 67(337), 187. https://doi.org/10.2307/2284720
 
     Examples:
         Calculate the quantile interval score for forecast intervals with lower and upper
@@ -137,18 +137,18 @@ def interval_score(
 ) -> xr.Dataset:
     """
     Calculates the interval score for interval forecasts.
-    This function calls the `quantile_interval_score` function to calculate the interval score
-    for cases where quantile level range is symmetric.
+    This function calls the :py:func:`scores.continuous.quantile_interval_score` function
+    to calculate the interval score for cases where the quantile level range is symmetric.
 
     .. math::
-        \\text{interval score} = (q_{u} - q_{l}) +
-        \\frac{2}{\\alpha} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l}) +
-        \\frac{2}{\\alpha} \\cdot (q_{u} - y) \\cdot \\mathbb{1}(y < q_{u})
+        \\text{interval score} = \\underbrace{(q_{u} - q_{l})}_{\\text{interval width penalty}} +
+        \\underbrace{\\frac{2}{\\alpha} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l})}_{\\text{over-prediction penalty}} +
+        \\underbrace{\\frac{2}{\\alpha} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
 
     where
-        - :math:`q_u` is the forecast at upper quantile
-        - :math:`q_l` is the forecast at lower quantile
-        - :math:`\\alpha` is confidence level that is equal to :math:`1 - \\text{interval_range}`
+        - :math:`q_u` is the forecast at the upper quantile
+        - :math:`q_l` is the forecast at the lower quantile
+        - :math:`\\alpha` is the confidence level that is equal to :math:`1 - \\text{interval_range}`
         - :math:`y` is the observation
         - :math:`\\mathbb{1}(condition)` is an indicator function that is 1 when the condition is true, and 0 otherwise.
 
@@ -156,38 +156,39 @@ def interval_score(
     Args:
         fcst_lower_qtile: array of forecast values at the lower quantile.
         fcst_upper_qtile: array of forecast values at the upper quantile.
-        obs: array of observations
+        obs: array of observations.
         interval_range: Range (length) of interval (e.g., 0.9 for 90% confidence level, which
             will result in lower quantile of 0.05 and upper quantile of 0.95). Must be strictly
             between 0 and 1.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the interval score. All other dimensions will be preserved.
-            As a special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            As a special case, "all" will allow all dimensions to be reduced. Only one
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve when calculating
-            interval score. All other dimensions will be reduced. As a special case,
-            'all' will allow all dimensions to be preserved. In this case, the result will be in
+            the interval score. All other dimensions will be reduced. As a special case,
+            "all" will allow all dimensions to be preserved. In this case, the result will be in
             the same shape/dimensionality as the forecast, and the errors will be the quantile
             score at each point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely. Only one of `reduce_dims`
-            and `preserve_dims` can be supplied. The default behaviour if neither are supplied
+            forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
+            and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+            by population, custom) when aggregating the mean score across dimensions. Alternatively,
+            it could be used for masking data.
 
     Returns:
-        A Dataset with the dimensions specified in `dims`.
+        A Dataset with the dimensions specified in ``dims``.
         The dataset will have the following data variables:
 
-        - interval_width_penalty: fcst_upper_qtile - fcst_lower_qtile
-        - overprediction_penalty: ((2/lower_qtile_level)*(fcst_lower_qtile-obs)).clip(min=0)
-        - underprediction_penalty: ((1/upper_qtile_level)*(fcst_upper_qtile-obs)).clip(min=0)
+        - interval_width_penalty: the interval width penalty contribution of the interval score
+        - overprediction_penalty: the over-prediction penalty contribution of the interval score
+        - underprediction_penalty: the under-prediction penalty contribution of the interval score
         - total: sum of all penalties
 
-        As can bee seen in interval score equation, the lower and upper quantile levels are
-        derived from the interval range: `lower_qtile_level = (1 - interval_range) / 2`
-        and `upper_qtile_level = 1 + interval_range) / 2`.
+        As can be seen in the interval score equation, the lower and upper quantile levels are
+        derived from the interval range: ``lower_qtile_level = (1 - interval_range) / 2``
+        and ``upper_qtile_level = (1 + interval_range) / 2``.
 
     Raises:
         ValueError: If not 0 < interval_range < 1.
@@ -196,13 +197,13 @@ def interval_score(
     References:
         Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
         and estimation. Journal of the American Statistical Association, 102(477), 359-378.
-        Corollary 5.2. https://doi.org/10.1198/016214506000001437
+        Section 6.2. https://doi.org/10.1198/016214506000001437
 
      See also:
         :py:func:`scores.continuous.quantile_interval_score`
 
     Examples:
-        Calculate the interval score for forecast intervals with interval range of 0.5
+        Calculate the interval score for forecast intervals with an interval range of 0.5
         (i.e., lower and upper quantile levels are 0.25 and 0.75, respectively).
 
         >>> import numpy as np

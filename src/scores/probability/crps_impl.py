@@ -194,8 +194,10 @@ def crps_cdf(
         :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - 
         \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
 
-    There are several ways to decompose the CRPS. When `include_components=True`. this 
-    decomposition differs from the :py:func:`scores.probability.crps_for_ensemble decomposition`.
+    To obtain the components of the CRPS score, set ``include_components`` to ``True``.  
+
+    Note that there are several ways to decompose the CRPS and this decomposition differs from
+    the one used in the :py:func:`scores.probability.crps_for_ensemble` function. 
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
@@ -299,8 +301,8 @@ def crps_cdf(
         ValueError: if `threshold_weight` has negative values.
 
     See also:
-        - `scores.probability.crps_cdf_brier_decomposition`
-        - `scores.probability.crps_for_ensemble`
+        - :py:func:`scores.probability.crps_cdf_brier_decomposition`
+        - :py:func:`scores.probability.crps_for_ensemble`
 
     References:
         - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions. \
@@ -782,7 +784,7 @@ def crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    decomposition: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     """
     Calculates the continuous ranked probability score (CRPS) given an ensemble of forecasts.
@@ -811,7 +813,7 @@ def crps_for_ensemble(
             (possibly unknown) and E denotes the expectation. This choice of K gives an \
             unbiased estimate for the second expectation.
 
-    When the `decomposition` flag is set to `True`, the CRPS components are calculated as
+    When the `include_components` flag is set to `True`, the CRPS components are calculated as
     
 
     .. math::
@@ -836,7 +838,7 @@ def crps_for_ensemble(
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
         weights: Weights for calculating a weighted mean of individual scores.
-        decomposition: If True, returns the CRPS with underforecast and overforecast
+        include_components: If True, returns the CRPS with underforecast and overforecast
             penalties, as well as the forecast spread term (see description above).
 
     Returns:
@@ -890,7 +892,7 @@ def crps_for_ensemble(
     fcst_obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)
     result = fcst_obs_term - fcst_spread_term
 
-    if decomposition:
+    if include_components:
         mask = np.logical_and(~np.isnan(fcst), ~np.isnan(obs))  # create mask so that we can preserve NaNs
         under_penalty = (obs - fcst).where(fcst < obs, 0).where(mask).mean(dim=ensemble_member_dim)
         over_penalty = (fcst - obs).where(fcst > obs, 0).where(mask).mean(dim=ensemble_member_dim)
@@ -916,7 +918,7 @@ def tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    decomposition: bool = False,
+    include_components: Optional[bool] = False,
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
@@ -978,7 +980,7 @@ def tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
-        decomposition: If True, returns the twCRPS with underforecast and overforecast
+        include_components: If True, returns the twCRPS with underforecast and overforecast
             penalties, as well as the forecast spread term. See :py:func:`scores.probability.crps_for_ensemble`
             for more details on the decomposition.
 
@@ -1032,7 +1034,7 @@ def tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
-        decomposition=decomposition,
+        include_components=include_components,
     )
     return result
 
@@ -1048,7 +1050,7 @@ def tail_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    decomposition: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS)
@@ -1079,7 +1081,7 @@ def tail_tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
-        decomposition: If True, returns the twCRPS with underforecast and overforecast
+        include_components: If True, returns the twCRPS with underforecast and overforecast
             penalties, as well as the forecast spread term. See :py:func:`scores.probability.crps_for_ensemble`
             for more details on the decomposition.
 
@@ -1138,7 +1140,7 @@ def tail_tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
-        decomposition=decomposition,
+        include_components=include_components,
     )
     return result
 
@@ -1154,7 +1156,7 @@ def interval_tw_crps_for_ensemble(
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
-    decomposition: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) for ensemble forecasts
@@ -1187,7 +1189,7 @@ def interval_tw_crps_for_ensemble(
         weights: Weights for calculating a weighted mean of individual scores. Note that
             these weights are different to threshold weighting which is done by decision
             threshold.
-        decomposition: If True, returns the twCRPS with underforecast and overforecast
+        include_components: If True, returns the twCRPS with underforecast and overforecast
             penalties, as well as the forecast spread term. See :py:func:`scores.probability.crps_for_ensemble`
             for more details on the decomposition.
 
@@ -1242,6 +1244,6 @@ def interval_tw_crps_for_ensemble(
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
-        decomposition=decomposition,
+        include_components=include_components,
     )
     return result

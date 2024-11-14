@@ -48,7 +48,7 @@
 * - Interval Score
   - [API](api.md#scores.continuous.interval_score)
   - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
-  - [Gneiting and Raftery (2007) - Corollary 5.2](https://doi.org/10.1198/016214506000001437)
+  - [Gneiting and Raftery (2007) - Section 6.2](https://doi.org/10.1198/016214506000001437)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -116,7 +116,7 @@
 * - Quantile Interval Score
   - [API](api.md#scores.continuous.quantile_interval_score)
   - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
-  - [Gneiting and Raftery (2007) - Corollary 5.2](https://doi.org/10.1198/016214506000001437)
+  - [Winkler (1972) ](https://doi.org/10.2307/2284720)
 * - Quantile Loss (Quantile Score, Pinball Loss)
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
@@ -193,13 +193,29 @@
   - &mdash;
   - &mdash;
 * - Continuous Ranked Probability Score (CRPS) for Ensembles
+  -    
+  - 
+  -  
+* - 
+    - CRPS for Ensembles
   - [API](api.md#scores.probability.crps_for_ensemble)   
   - [Tutorial](project:./tutorials/CRPS_for_Ensembles.md)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
-* - Interval Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
+* - 
+    - Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)    
+* - 
+    - Interval-Threshold-Weighted CRPS (twCRPS) for Ensembles
   - [API](api.md#scores.probability.interval_tw_crps_for_ensemble)   
   - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
   - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08) 
+* - 
+    - Tail-Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -240,14 +256,6 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Tail Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
-  - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
-  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
-  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
-* - Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
-  - [API](api.md#scores.probability.tw_crps_for_ensemble)   
-  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
-  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
 ```
 
 ## Categorical

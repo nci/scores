@@ -428,7 +428,7 @@ def kge(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     scaling_factors: Optional[Union[list[float], np.ndarray]] = None,
-    return_components: bool = False,
+    include_components: Optional[bool] = False,
 ) -> XarrayLike:
     # pylint: disable=too-many-locals
     """
@@ -472,12 +472,12 @@ def kge(
             Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_\\alpha`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
             the variability term :math:`\\alpha` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0). (*See
             equation 10 in Gupta et al. (2009) for definitions of them*).
-        return_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
+        include_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
 
     Returns:
         The Kling-Gupta Efficiency (KGE) score as an xarray DataArray.
 
-        If ``return_components`` is True, the function returns ``xarray.Dataset`` kge_s with the following variables:
+        If ``include_components`` is True, the function returns ``xarray.Dataset`` kge_s with the following variables:
 
         - `kge`: The KGE score.
         - `rho`: The Pearson correlation coefficient.
@@ -505,7 +505,7 @@ def kge(
     Examples:
         >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
         >>> kge_s = kge(forecasts, obs,reduce_dims="time")  # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
-        >>> kge_s = kge(forecasts, obs, return_components=True) # kge_s is dataset of all three components and kge value itself
+        >>> kge_s = kge(forecasts, obs, include_components=True) # kge_s is dataset of all three components and kge value itself
         >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0)) # with scaling factors
 
 
@@ -550,7 +550,7 @@ def kge(
     # compute Euclidian distance from the ideal point in the scaled space
     ed_s = np.sqrt((s_rho * (rho - 1)) ** 2 + (s_alpha * (alpha - 1)) ** 2 + (s_beta * (beta - 1)) ** 2)
     kge_s = 1 - ed_s
-    if return_components:
+    if include_components:
         # Create dataset of all components
         kge_s = xr.Dataset(
             {
