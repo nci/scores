@@ -2,7 +2,7 @@
 
 import operator
 from collections.abc import Iterable
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -20,9 +20,17 @@ INEQUALITY_MODES = {
 # This is because we wish to test within a tolerance.
 EQUALITY_MODES = {"==": (operator.le), "!=": (operator.gt)}
 
+OPERATOR_MODE_MESSAGE = (
+    "or the following operators: operator.ge, operator.gt, operator.le, operator.lt, operator.eq, operator.ne"
+)
+
 
 def comparative_discretise(
-    data: XarrayLike, comparison: Union[xr.DataArray, float, int], mode: str, *, abs_tolerance: Optional[float] = None
+    data: XarrayLike,
+    comparison: Union[xr.DataArray, float, int],
+    mode: Union[Callable, str],
+    *,
+    abs_tolerance: Optional[float] = None,
 ) -> XarrayLike:
     """
     Converts the values of `data` to 0 or 1 based on how they relate to the specified
@@ -32,8 +40,22 @@ def comparative_discretise(
         data: The data to convert to discrete values.
         comparison: The values to which to compare `data`.
         mode: Specifies the required relation of `data` to `thresholds`
-            for a value to fall in the 'event' category (i.e. assigned to 1).
+            for a value to fall in the 'event' category (i.e. assigned to 1). The mode
+            can be a string or a Python operator function from the list below.
             Allowed modes are:
+
+            - operator.ge. Where values in `data` greater than or equal to the
+                corresponding threshold are assigned as 1.
+            - operator.gt. Where values in `data` greater than the
+                corresponding threshold are assigned as 1.
+            - operator.le. Where values in `data` less than or equal to the
+                corresponding threshold are assigned as 1.
+            - operator.lt. Where values in `data` less than the
+                corresponding threshold are assigned as 1.
+            - operator.eq values in `data` equal to the corresponding threshold
+                are assigned as 1
+            - operator.ne values in `data` not equal to the corresponding threshold
+              are assigned as 1.
             - '>=' values in `data` greater than or equal to the
             corresponding threshold are assigned as 1.
             - '>' values in `data` greater than the corresponding threshold
@@ -83,10 +105,23 @@ def comparative_discretise(
     elif mode in EQUALITY_MODES:
         operator_func = EQUALITY_MODES[mode]
         discrete_data = operator_func(abs(data - comparison), abs_tolerance).where(notnull_mask)
+    elif mode is operator.eq:
+        # Instead of `operater.eq` we use `operator.le` because we wish to test within a tolerance.
+        discrete_data = operator.le(abs(data - comparison), abs_tolerance).where(notnull_mask)
+    elif mode is operator.ne:
+        # Instead of `operater.ne`, we use `operator.gt` because we wish to test within a tolerance.
+        discrete_data = operator.gt(abs(data - comparison), abs_tolerance).where(notnull_mask)
+    elif mode in [operator.lt, operator.le, operator.gt, operator.ge]:
+        if mode in [operator.lt, operator.ge]:
+            factor = -1
+        else:
+            factor = 1
+        discrete_data = mode(data, comparison + (abs_tolerance * factor)).where(notnull_mask)
     else:
         raise ValueError(
             f"'{mode}' is not a valid mode. Available modes are: "
-            f"{sorted(INEQUALITY_MODES) + sorted(EQUALITY_MODES)}"
+            f"{sorted(INEQUALITY_MODES) + sorted(EQUALITY_MODES)} "
+            "{OPERATOR_MODE_MESSAGE}"
         )
     discrete_data.attrs["discretisation_tolerance"] = abs_tolerance
     discrete_data.attrs["discretisation_mode"] = mode
@@ -97,7 +132,7 @@ def comparative_discretise(
 def binary_discretise(
     data: XarrayLike,
     thresholds: Optional[FlexibleDimensionTypes],
-    mode: str,
+    mode: Union[Callable, str],
     *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,
     autosqueeze: Optional[bool] = False,
@@ -110,9 +145,22 @@ def binary_discretise(
         data: The data to convert to discrete values.
         thresholds: Threshold(s) at which to convert the values of `data` to 0 or 1.
         mode: Specifies the required relation of `data` to `thresholds`
-            for a value to fall in the 'event' category (i.e. assigned to 1).
+            for a value to fall in the 'event' category (i.e. assigned to 1). The mode
+            can be a string or a Python operator function from the list below.
             Allowed modes are:
 
+            - operator.ge. Where values in `data` greater than or equal to the
+                corresponding threshold are assigned as 1.
+            - operator.gt. Where values in `data` greater than the
+                corresponding threshold are assigned as 1.
+            - operator.le. Where values in `data` less than or equal to the
+                corresponding threshold are assigned as 1.
+            - operator.lt. Where values in `data` less than the
+                corresponding threshold are assigned as 1.
+            - operator.eq values in `data` equal to the corresponding threshold
+                are assigned as 1
+            - operator.ne values in `data` not equal to the corresponding threshold
+              are assigned as 1.
             - '>=' values in `data` greater than or equal to the \
             corresponding threshold are assigned as 1.
             - '>' values in `data` greater than the corresponding threshold \
@@ -205,7 +253,7 @@ def proportion_exceeding(
 def binary_discretise_proportion(
     data: XarrayLike,
     thresholds: Iterable,
-    mode: str,
+    mode: Union[Callable, str],
     *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
@@ -224,21 +272,34 @@ def binary_discretise_proportion(
         thresholds: The proportion of values
             equal to or exceeding these thresholds will be calculated.
         mode: Specifies the required relation of `data` to `thresholds`
-            for a value to fall in the 'event' category (i.e. assigned to 1).
+            for a value to fall in the 'event' category (i.e. assigned to 1). The mode
+            can be a string or a Python operator function from the list below.
             Allowed modes are:
 
+            - operator.ge. Where values in `data` greater than or equal to the
+                corresponding threshold are assigned as 1.
+            - operator.gt. Where values in `data` greater than the
+                corresponding threshold are assigned as 1.
+            - operator.le. Where values in `data` less than or equal to the
+                corresponding threshold are assigned as 1.
+            - operator.lt. Where values in `data` less than the
+                corresponding threshold are assigned as 1.
+            - operator.eq values in `data` equal to the corresponding threshold
+                are assigned as 1
+            - operator.ne values in `data` not equal to the corresponding threshold
+                are assigned as 1.
             - '>=' values in `data` greater than or equal to the
-              corresponding threshold are assigned as 1.
+                corresponding threshold are assigned as 1.
             - '>' values in `data` greater than the corresponding threshold
-              are assigned as 1.
+                are assigned as 1.
             - '<=' values in `data` less than or equal to the corresponding
-              threshold are assigned as 1.
+                threshold are assigned as 1.
             - '<' values in `data` less than the corresponding threshold
-              are assigned as 1.
+                are assigned as 1.
             - '==' values in `data` equal to the corresponding threshold
-              are assigned as 1
+                are assigned as 1
             - '!=' values in `data` not equal to the corresponding threshold
-              are assigned as 1.
+                are assigned as 1.
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
         abs_tolerance: If supplied, values in data that are
@@ -257,10 +318,11 @@ def binary_discretise_proportion(
         satisfy the relationship to `thresholds` as specified by `mode`.
 
     Examples:
-
+        >>> import operator
+        >>> import xarray as xr
+        >>> from scores.processing import binary_discretise_proportion
         >>> data = xr.DataArray([0, 0.5, 0.5, 1])
-
-        >>> _binary_discretise_proportion(data, [0, 0.5, 1], '==')
+        >>> binary_discretise_proportion(data, [0, 0.5, 1], operator.eq)
         <xarray.DataArray (threshold: 3)>
         array([ 0.25,  0.5 ,  0.25])
         Coordinates:
@@ -269,7 +331,7 @@ def binary_discretise_proportion(
             discretisation_tolerance: 0
             discretisation_mode: ==
 
-        >>> _binary_discretise_proportion(data, [0, 0.5, 1], '>=')
+        >>> binary_discretise_proportion(data, [0, 0.5, 1], operator.ge)
         <xarray.DataArray (threshold: 3)>
         array([ 1.  ,  0.75,  0.25])
         Coordinates:

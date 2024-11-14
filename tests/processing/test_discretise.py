@@ -1,5 +1,7 @@
 """Tests for scores.processing.discretise"""
 
+import operator
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -120,28 +122,40 @@ from tests.processing import test_data as xtd
         ################################################################
         # 28. mode='>=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), ">=", 1e-8, xtd.EXP_CDIS_GE0),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.ge, 1e-8, xtd.EXP_CDIS_GE0),
         # 29. mode='>=', tolerance=0
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), ">=", None, xtd.EXP_CDIS_GE1),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.ge, None, xtd.EXP_CDIS_GE1),
         # 30. mode='>', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), ">", 1e-8, xtd.EXP_CDIS_GT0),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.gt, 1e-8, xtd.EXP_CDIS_GT0),
         # 31. mode='>', tolerance=0
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), ">", None, xtd.EXP_CDIS_GT1),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.gt, None, xtd.EXP_CDIS_GT1),
         # 32. mode='<=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "<=", 1e-8, xtd.EXP_CDIS_LE0),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.le, 1e-8, xtd.EXP_CDIS_LE0),
         # 33. mode='<=', tolerance=0
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "<=", None, xtd.EXP_CDIS_LE1),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.le, None, xtd.EXP_CDIS_LE1),
         # 34. mode='<', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "<", 1e-8, xtd.EXP_CDIS_LT0),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.lt, 1e-8, xtd.EXP_CDIS_LT0),
         # 35. mode='<', tolerance=0
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "<", None, xtd.EXP_CDIS_LT1),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.lt, None, xtd.EXP_CDIS_LT1),
         # 36. mode='==', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "==", 1e-8, xtd.EXP_CDIS_EQ0),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.eq, 1e-8, xtd.EXP_CDIS_EQ0),
         # 37. mode='==', tolerance=0
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "==", None, xtd.EXP_CDIS_EQ1),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.eq, None, xtd.EXP_CDIS_EQ1),
         # 38. mode='!=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "!=", 1e-8, xtd.EXP_CDIS_NE0),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.ne, 1e-8, xtd.EXP_CDIS_NE0),
         # 39. mode='!=', tolerance=0
         (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), "!=", None, xtd.EXP_CDIS_NE1),
+        (xtd.DATA_5X1_POINT4, xr.DataArray(0.4), operator.ne, None, xtd.EXP_CDIS_NE1),
         ##################################
         # 0-D Integer & float comparison #
         ##################################
@@ -288,28 +302,40 @@ def test_comparative_discretise_raises(data, comparison, mode, abs_tolerance, er
         # SMOKE TESTS FOR ALL MODES: ['<', '>', '>=', '<=', '==', '!=']
         # 2. mode='>=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], ">=", 1e-8, True, xtd.EXP_DIS_GE0),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.ge, 1e-8, True, xtd.EXP_DIS_GE0),
         # 3. mode='>=', tolerance=0
         (xtd.DATA_5X1_POINT4, [0.4], ">=", None, True, xtd.EXP_DIS_GE1),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.ge, None, True, xtd.EXP_DIS_GE1),
         # 4. mode='>', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], ">", 1e-8, True, xtd.EXP_DIS_GT0),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.gt, 1e-8, True, xtd.EXP_DIS_GT0),
         # 5. mode='>', tolerance=0
         (xtd.DATA_5X1_POINT4, [0.4], ">", None, True, xtd.EXP_DIS_GT1),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.gt, None, True, xtd.EXP_DIS_GT1),
         # 6. mode='<=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "<=", 1e-8, True, xtd.EXP_DIS_LE0),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.le, 1e-8, True, xtd.EXP_DIS_LE0),
         # 7. mode='<=', tolerance=0
         (xtd.DATA_5X1_POINT4, [0.4], "<=", None, True, xtd.EXP_DIS_LE1),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.le, None, True, xtd.EXP_DIS_LE1),
         # 8. mode='<', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "<", 1e-8, True, xtd.EXP_DIS_LT0),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.lt, 1e-8, True, xtd.EXP_DIS_LT0),
         # 9. mode='<', tolerance=0
         (xtd.DATA_5X1_POINT4, [0.4], "<", None, True, xtd.EXP_DIS_LT1),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.lt, None, True, xtd.EXP_DIS_LT1),
         # 10. mode='==', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "==", 1e-8, True, xtd.EXP_DIS_EQ0),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.eq, 1e-8, True, xtd.EXP_DIS_EQ0),
         # 11. mode='==', tolerance=0
         (xtd.DATA_5X1_POINT4, [0.4], "==", None, True, xtd.EXP_DIS_EQ1),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.eq, None, True, xtd.EXP_DIS_EQ1),
         # 12. mode='!=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "!=", 1e-8, True, xtd.EXP_DIS_NE0),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.ne, 1e-8, True, xtd.EXP_DIS_NE0),
         # 13. mode='!=', tolerance=0
         (xtd.DATA_5X1_POINT4, [0.4], "!=", None, True, xtd.EXP_DIS_NE1),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.ne, None, True, xtd.EXP_DIS_NE1),
         # Dataset input
         # 14. 1-D data,
         (
@@ -484,15 +510,20 @@ def test_proportion_exceeding(data, thresholds, reduce_dims, preserve_dims, expe
         # SMOKE TESTS FOR OTHER INEQUALITIES ['<', '>', '>=']
         # 4. mode='>', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], ">", None, None, 1e-8, True, xtd.EXP_BDP_4),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.gt, None, None, 1e-8, True, xtd.EXP_BDP_4),
         # 5. mode='<=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "<=", None, None, 1e-8, True, xtd.EXP_BDP_5),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.le, None, None, 1e-8, True, xtd.EXP_BDP_5),
         # 6. mode='<', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "<", None, None, 1e-8, True, xtd.EXP_BDP_6),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.lt, None, None, 1e-8, True, xtd.EXP_BDP_6),
         # SMOKE TESTS FOR EQUALITY MODES
         # 7. mode='==', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "==", None, None, 1e-8, True, xtd.EXP_BDP_7),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.eq, None, None, 1e-8, True, xtd.EXP_BDP_7),
         # 8. mode='!=', tolerance=1e-8
         (xtd.DATA_5X1_POINT4, [0.4], "!=", None, None, 1e-8, True, xtd.EXP_BDP_8),
+        (xtd.DATA_5X1_POINT4, [0.4], operator.ne, None, None, 1e-8, True, xtd.EXP_BDP_8),
         # 9. Dataset input
         (
             xr.Dataset({"zero": xtd.DATA_4X1, "one": xtd.DATA_4X1_NAN}),
