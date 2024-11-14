@@ -6,7 +6,8 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Introduced Support for Python 3.13 and Dropped Support for Python 3.9
 
-- Introduced support for Python 3.13 and dropped support for Python 3.9. See [PR #710](https://github.com/nci/scores/pull/710).
+- In line with other scientific Python packages, `scores` has dropped support for Python 3.9 in this release. 
+  `scores` has added support for Python 3.13. See [PR #710](https://github.com/nci/scores/pull/710).
 
 ### Features
 
