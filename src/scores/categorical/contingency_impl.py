@@ -1277,9 +1277,10 @@ class ThresholdEventOperator(EventOperator):
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
         operator, so this will work on a simple DataArray. To work on a DataSet, a richer
-        understanding is required. It is recommended to work through the Contingency Table
-        tutorial to review more complex use cases, including on multivariate gridded model
-        data, and on station data structures.
+        understanding is required. It is recommended to work through the tutorial at
+        https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html .
+        This tutorial reviews more complex use cases, including multivariate gridded model
+        data, and station data structures.
         """
 
         if not event_threshold:
@@ -1309,9 +1310,10 @@ class ThresholdEventOperator(EventOperator):
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
         operator, so this will work on a simple DataArray. To work on a DataSet, a richer
-        understanding is required. It is recommended to work through the Contingency Table
-        tutorial to review more complex use cases, including on multivariate gridded model
-        data, and on station data structures.
+        understanding is required. It is recommended to work through the tutorial at
+        https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html .
+        This tutorial reviews more complex use cases, including multivariate gridded model
+        data, and station data structures.
         """
 
         if not event_threshold:
