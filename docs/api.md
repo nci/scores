@@ -23,6 +23,7 @@
 .. autofunction:: scores.continuous.correlation.pearsonr
 .. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.pbias
+.. autofunction:: scores.continuous.kge
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
 .. autofunction:: scores.continuous.consistent_quantile_score
@@ -32,6 +33,8 @@
 .. autofunction:: scores.continuous.tw_squared_error
 .. autofunction:: scores.continuous.tw_huber_loss
 .. autofunction:: scores.continuous.tw_expectile_score
+.. autofunction:: scores.continuous.quantile_interval_score
+.. autofunction:: scores.continuous.interval_score
 ```
 
 ## scores.probability
@@ -43,6 +46,7 @@
 .. autofunction:: scores.probability.crps_for_ensemble
 .. autofunction:: scores.probability.tw_crps_for_ensemble
 .. autofunction:: scores.probability.tail_tw_crps_for_ensemble
+.. autofunction:: scores.probability.interval_tw_crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
 .. autofunction:: scores.probability.roc_curve_data

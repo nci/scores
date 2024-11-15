@@ -2,10 +2,16 @@ Please work through the following checklists. Delete anything that isn't relevan
 ## Development for new xarray-based metrics
 - [ ] Works with n-dimensional data and includes `reduce_dims`, `preserve_dims`, and `weights` args.
 - [ ] Typehints added
-- [ ] Docstrings complete and followed Napoleon (google) style
-- [ ] Reference to paper/webpage is in docstring
 - [ ] Add error handling
 - [ ] Imported into the API
+- [ ] Works with both `xr.DataArrays` and `xr.Datasets` if possible
+
+## Docstrings
+- [ ] Docstrings complete and follow Napoleon (google) style
+- [ ] Maths equation added
+- [ ] Reference to paper/webpage is in docstring. The preferred referencing style for journal articles is [APA (7th edition)](https://apastyle.apa.org/style-grammar-guidelines/references/examples/journal-article-references)
+- [ ] Code example added
+
 
 ## Testing of new xarray-based metrics
 - [ ] 100% unit test coverage
@@ -14,7 +20,7 @@ Please work through the following checklists. Delete anything that isn't relevan
 - [ ] Test that broadcasting with xarray works
 - [ ] Test both reduce and preserve dims arguments work
 - [ ] Test that errors are raised as expected
-- [ ] Test that it works with both `xr.Dataarrays` and `xr.Datasets`
+- [ ] Test that it works with both `xr.DataArrays` and `xr.Datasets`
 
 ## Tutorial notebook 
 - [ ] Short introduction to why you would use that metric and what it tells you

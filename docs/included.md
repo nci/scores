@@ -45,6 +45,10 @@
     [Tutorial](project:./tutorials/Flip_Flop_Index.md)
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
+* - Interval Score
+  - [API](api.md#scores.continuous.interval_score)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
+  - [Gneiting and Raftery (2007) - Section 6.2](https://doi.org/10.1198/016214506000001437)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -52,7 +56,11 @@
 * - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - [API](api.md#scores.continuous.isotonic_fit)
   - [Tutorial](project:./tutorials/Isotonic_Regression_And_Reliability_Diagrams.md)
-  - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)   
+  - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761) 
+* - Kling–Gupta Efficiency (KGE)
+  - [API](api.md#scores.continuous.kge)
+  - [Tutorial](project:./tutorials/Kling_Gupta_Efficiency.md)
+  - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)    
 * - Mean Absolute Error (MAE)
   - [API](api.md#scores.continuous.mae)
   - [Tutorial](project:./tutorials/Mean_Absolute_Error.md)
@@ -105,6 +113,10 @@
   - &mdash;
   - &mdash;
   - &mdash;
+* - Quantile Interval Score
+  - [API](api.md#scores.continuous.quantile_interval_score)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
+  - [Winkler (1972) ](https://doi.org/10.2307/2284720)
 * - Quantile Loss (Quantile Score, Pinball Loss)
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
@@ -181,9 +193,29 @@
   - &mdash;
   - &mdash;
 * - Continuous Ranked Probability Score (CRPS) for Ensembles
+  -    
+  - 
+  -  
+* - 
+    - CRPS for Ensembles
   - [API](api.md#scores.probability.crps_for_ensemble)   
   - [Tutorial](project:./tutorials/CRPS_for_Ensembles.md)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
+* - 
+    - Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)    
+* - 
+    - Interval-Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.interval_tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08) 
+* - 
+    - Tail-Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -224,14 +256,6 @@
   - &mdash;
   - &mdash;
   - &mdash;
-* - Tail Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
-  - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
-  - &mdash;
-  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
-* - Threshold Weighted Continuous Ranked Probability Score (twCRPS) for Ensembles
-  - [API](api.md#scores.probability.tw_crps_for_ensemble)   
-  - &mdash;
-  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184) 
 ```
 
 ## Categorical

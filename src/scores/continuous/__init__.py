@@ -12,10 +12,12 @@ from scores.continuous.flip_flop_impl import (
     flip_flop_index,
     flip_flop_index_proportion_exceeding,
 )
+from scores.continuous.interval_impl import interval_score, quantile_interval_score
 from scores.continuous.murphy_impl import murphy_score, murphy_thetas
 from scores.continuous.quantile_loss_impl import quantile_score
 from scores.continuous.standard_impl import (
     additive_bias,
+    kge,
     mae,
     mean_error,
     mse,
@@ -46,6 +48,7 @@ __all__ = [
     "mean_error",
     "multiplicative_bias",
     "pbias",
+    "kge",
     "isotonic_fit",
     "consistent_expectile_score",
     "consistent_huber_score",
@@ -55,4 +58,6 @@ __all__ = [
     "tw_huber_loss",
     "tw_quantile_score",
     "tw_squared_error",
+    "quantile_interval_score",
+    "interval_score",
 ]

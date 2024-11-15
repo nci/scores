@@ -47,6 +47,7 @@ Information relevant for package maintenance
 
 ### Confirm Zenodo correctness
 
+Link to Zenodo archive: [https://doi.org/10.5281/zenodo.12697241](https://doi.org/10.5281/zenodo.12697241)
 1. Confirm license
 2. Confirm authors
 3. Scan everything else
@@ -93,7 +94,7 @@ If so, please open a new pull request. In that pull request please add your deta
 In .zenodo.json, please add your details at the bottom of the “creators” section. The fields you will need to complete are:
 
 1. “orcid”. This is an optional field. If you don’t have an ORCID, but would like one, you can obtain one here: https://info.orcid.org/researchers/ .
-2. “affiliation”. Options include: the name of the institution you are affiliated with, “Independent Researcher” or “Independent Contributor”.
+2. “affiliation”. Options include: the institution you are affiliated with, “Independent Researcher” or “Independent Contributor”.
 3. “name”. Format: surname, given name(s).
 ```
 
