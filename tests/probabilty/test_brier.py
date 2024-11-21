@@ -291,7 +291,7 @@ def test_brier_score_for_ensemble_raises():
         brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, threshold_mode="=")
 
     # Test if ensemble_member_dim is not in fcst.dims
-    with pytest.raises(ValueError, match="ensemble_member_dim must be one of the dimensions in fcst."):
+    with pytest.raises(ValueError, match="`score_specific_fcst_dims` must be a subset of `fcst` dimensions"):
         brier_score_for_ensemble(fcst, obs, "number", thresholds)
 
     # Test if fcst contains the dimension 'threshold'

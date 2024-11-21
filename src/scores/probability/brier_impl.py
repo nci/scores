@@ -186,8 +186,6 @@ def brier_score_for_ensemble(
         raise ValueError("The dimension 'threshold' is not allowed in fcst.")
     if "threshold" in obs.dims:
         raise ValueError("The dimension 'threshold' is not allowed in obs.")
-    if ensemble_member_dim not in fcst.dims:
-        raise ValueError("ensemble_member_dim must be one of the dimensions in fcst.")
 
     weights_dims = None
     if weights is not None:
