@@ -270,7 +270,7 @@ def test_brier_score_for_ensemble(
         reduce_dims=reduce_dims,
         weights=weights,
         fair_correction=fair_correction,
-        threshold_mode=threshold_mode,
+        event_threshold_mode=threshold_mode,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -286,9 +286,9 @@ def test_brier_score_for_ensemble_raises():
     thresholds = [0.1, 0.5, 0.9]
     weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
 
-    # Test if threshold_mode is not '>=' or '>'
-    with pytest.raises(ValueError, match="threshold_mode must be either operator.ge or operator.gt."):
-        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, threshold_mode="=")
+    # Test if event_threshold_mode is not '>=' or '>'
+    with pytest.raises(ValueError, match="event_threshold_mode must be either operator.ge or operator.gt."):
+        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, event_threshold_mode="=")
 
     # Test if ensemble_member_dim is not in fcst.dims
     with pytest.raises(ValueError, match="`score_specific_fcst_dims` must be a subset of `fcst` dimensions"):
