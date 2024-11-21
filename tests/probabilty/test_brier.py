@@ -15,6 +15,8 @@ import xarray as xr
 from scores.probability import brier_score, ensemble_brier_score
 from tests.probabilty import brier_test_data as btd
 
+import operator
+
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "preserve_dims", "reduce_dims", "expected_bs"),
@@ -150,7 +152,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             False,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_ALL,
         ),
         # Fair=True, single threshold, preserve all, threshold is a float
@@ -163,7 +165,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             True,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_FAIR_ALL,
         ),
         # Test reduce_dim arg
@@ -176,7 +178,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             "stn",
             None,
             True,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_FAIR_ALL_MEAN,
         ),
         # Fair=False, multiple_thresholds, preserve all
@@ -189,7 +191,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             False,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_ALL_MULTI,
         ),
         # Test with broadcast with a lead day dimension with Fair=True
@@ -202,7 +204,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             True,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_FAIR_ALL_LT,
         ),
         # Test with weights
@@ -215,7 +217,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             "stn",
             btd.ENS_BRIER_WEIGHTS,
             False,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_WITH_WEIGHTS,
         ),
         # Test with Datasets
@@ -228,7 +230,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             True,
-            ">=",
+            operator.ge,
             btd.EXP_BRIER_ENS_FAIR_ALL_DS,
         ),
         # Check threshold_mode='>'
@@ -241,7 +243,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             None,
             None,
             False,
-            ">",
+            operator.gt,
             btd.EXP_BRIER_ENS_ALL_GREATER,
         ),
     ],
@@ -285,7 +287,7 @@ def test_ensemble_brier_score_raises():
     weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
 
     # Test if threshold_mode is not '>=' or '>'
-    with pytest.raises(ValueError, match="threshold_mode must be either '>=' or '>'."):
+    with pytest.raises(ValueError, match="threshold_mode must be either operator.ge or operator.gt."):
         ensemble_brier_score(fcst, obs, "ensemble", thresholds, threshold_mode="=")
 
     # Test if ensemble_member_dim is not in fcst.dims

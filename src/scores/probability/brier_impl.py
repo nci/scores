@@ -2,6 +2,8 @@
 This module contains methods related to the Brier score
 """
 
+import operator
+
 from collections.abc import Sequence
 from typing import Literal, Optional, Union
 
@@ -85,7 +87,7 @@ def ensemble_brier_score(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     fair_correction: bool = True,
-    threshold_mode: Literal[">=", ">"] = ">=",
+    threshold_mode: Literal[operator.ge, operator.gt] = operator.ge,
 ) -> XarrayLike:  # type: ignore
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
@@ -177,8 +179,8 @@ def ensemble_brier_score(
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
-    if threshold_mode not in [">=", ">"]:
-        raise ValueError("threshold_mode must be either '>=' or '>'.")
+    if threshold_mode not in [operator.ge, operator.gt]:
+        raise ValueError("threshold_mode must be either operator.ge or operator.gt.")
     if ensemble_member_dim == "threshold":
         raise ValueError("The ensemble_member_dim is not allowed to be 'threshold'.")
     if "threshold" in fcst.dims:
