@@ -39,7 +39,7 @@ EXP_BRIER_ENS_ALL = xr.DataArray(
 ).T
 
 EXP_BRIER_ENS_ALL_GREATER = xr.DataArray(
-    data=[[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (1 / 3 - 1) ** 2, np.nan, 1]],
+    data=[[(3 / 4) ** 2, (2 / 4 - 1) ** 2, (1 / 3) ** 2, np.nan, 1]],
     dims=["threshold", "stn"],
     coords={"stn": [101, 102, 103, 104, 105], "threshold": [1]},
 ).T

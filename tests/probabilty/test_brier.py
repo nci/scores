@@ -246,6 +246,32 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             operator.gt,
             btd.EXP_BRIER_ENS_ALL_GREATER,
         ),
+        # Check threshold_mode='<='
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            False,
+            operator.le,
+            btd.EXP_BRIER_ENS_ALL_GREATER,
+        ),
+        # Check threshold_mode='<'
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1.0,
+            "all",
+            None,
+            None,
+            True,
+            operator.lt,
+            btd.EXP_BRIER_ENS_FAIR_ALL,
+        ),
     ],
 )
 def test_brier_score_for_ensemble(
@@ -287,7 +313,9 @@ def test_brier_score_for_ensemble_raises():
     weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
 
     # Test if event_threshold_mode is not '>=' or '>'
-    with pytest.raises(ValueError, match="event_threshold_mode must be either operator.ge or operator.gt."):
+    with pytest.raises(
+        ValueError, match="event_threshold_mode must be one of operator.ge, operator.gt, operator.le, operator.lt"
+    ):
         brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, event_threshold_mode="=")
 
     # Test if ensemble_member_dim is not in fcst.dims
@@ -295,19 +323,19 @@ def test_brier_score_for_ensemble_raises():
         brier_score_for_ensemble(fcst, obs, "number", thresholds)
 
     # Test if fcst contains the dimension 'threshold'
-    with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in fcst."):
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in fcst"):
         brier_score_for_ensemble(fcst_threshold, obs, "time", thresholds)
 
+    # Test if fcst contains the dimension specified by the threshold_dim argument
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in fcst"):
+        brier_score_for_ensemble(fcst, obs, "time", thresholds, threshold_dim="time")
+
     # Test if obs contains the dimension 'threshold'
-    with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in obs."):
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in obs"):
         brier_score_for_ensemble(fcst, obs_threshold, "ensemble", thresholds)
 
-    # Test if ensemble_member_dim is 'threshold'
-    with pytest.raises(ValueError, match="The ensemble_member_dim is not allowed to be 'threshold'."):
-        brier_score_for_ensemble(fcst_threshold, obs, "threshold", thresholds)
-
     # Test if weights contains the dimension 'threshold'
-    with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in weights."):
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in weights"):
         brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, weights=weights)
 
 

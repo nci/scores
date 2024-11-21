@@ -87,6 +87,7 @@ def brier_score_for_ensemble(
     weights: Optional[xr.DataArray] = None,
     fair_correction: bool = True,
     event_threshold_mode: Callable = operator.ge,
+    threshold_dim: str = "threshold",
 ) -> XarrayLike:  # type: ignore
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
@@ -94,7 +95,7 @@ def brier_score_for_ensemble(
     applies a correction related to the number of ensemble members and the number of
     ensemble members that predict the event.
 
-    The fair Brier score for ensembles is defined for a single event threshold as:
+    Given an event defined by ``event_threshold``, the fair Brier score for ensembles is defined as
 
 
     .. math::
@@ -104,7 +105,7 @@ def brier_score_for_ensemble(
 
     - :math:`i` is the number of ensemble members that predict the event
     - :math:`m` is the total number of ensemble members
-    - :math:`y` is the observed event
+    - :math:`y` is the binary observation (0 if the event was not observed or 1 otherwise)
 
     When the fair correction is not applied (i.e., ``fair_correction=False``),
     the Brier score is calculated as:
@@ -121,27 +122,31 @@ def brier_score_for_ensemble(
 
     Args:
         fcst: Forecast or predicted variables in xarray.
-        obs: Observed variables in xarray.
+        obs: Real valued observations variables in xarray.These values are converted to binary
+            values in this function.
         ensemble_member_dim: The dimension name of the ensemble member.
-        event_thresholds: The threshold(s) to use for the Brier score that define what is
-            considered an event. If multiple thresholds are provided, they should
-            be monotonically increasing with no NaNs
+        event_thresholds: The threshold(s) that define what is considered an event. If
+            multiple thresholds are provided, they should be monotonically increasing with no NaNs
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the Brier score. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the Fair Brier score. All other dimensions will be reduced. As a
+            calculating the score. All other dimensions will be reduced. As a
             special case, 'all' will allow all dimensions to be preserved. In
             this case, the result will be in the same shape/dimensionality
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom).
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude)
+            when calculating the mean score across specified dimensions via ``reduce_dims`` or ``preserve_dims``.
         fair_correction: Whether or not to apply the fair Brier score correction. Default is True.
-        event_threshold_mode: The mode to use when determining threshold exceedance. Default is '>='
-            which means that the threshold is exceeded if the forecast is greater than or equal
-            to the threshold. Alternatively, you can provide ``threshold_mode='>'` which means
-            that the threshold is exceeded if the forecast is strictly greater than the threshold.
+        event_threshold_mode: "The mode to use to define an event relative to a supplied threshold.
+            Default is ``operator.ge``, which means that an event occurs (is forecast)
+            if the observation (forecast) is greater than or equal to the threshold." Passing
+            in ``operator.lt`` will give the same results. Alternatively, you can provide
+            ``operator.gt`` which means that an event occurs (is forecast) if the observation (forecast)
+            is strictly greater than the threshold. Using``operator.le`` will give the same results as ``operator.gt``.
+        threshold_dim: The name of the threshold dimension in the output. Default is 'threshold'.
+           It must not exist as a dimension in the forecast or observation data.
 
 
     Returns:
@@ -149,10 +154,9 @@ def brier_score_for_ensemble(
 
     Raises:
         ValueError: if values in ``event_thresholds`` are not monotonically increasing.
-        ValueError: if ``fcst`` contains the dimension 'threshold'.
-        ValueError: if ``obs`` contains the dimension 'threshold'.
-        ValueError: if ``weights`` contains the dimension 'threshold'.
-        ValueError: if ``ensemble_member_dim`` is 'threshold'.
+        ValueError: if ``fcst`` contains the dimension provided in ``threshold_dim``.
+        ValueError: if ``obs`` contains the dimension provided in ``threshold_dim``.
+        ValueError: if ``weights`` contains the provided in ``threshold_dim``.
         ValueError: if ``ensemble_member_dim`` is not in ``fcst`` dimensions.
 
     References:
@@ -178,19 +182,17 @@ def brier_score_for_ensemble(
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
-    if event_threshold_mode not in [operator.ge, operator.gt]:
-        raise ValueError("event_threshold_mode must be either operator.ge or operator.gt.")
-    if ensemble_member_dim == "threshold":
-        raise ValueError("The ensemble_member_dim is not allowed to be 'threshold'.")
-    if "threshold" in fcst.dims:
-        raise ValueError("The dimension 'threshold' is not allowed in fcst.")
-    if "threshold" in obs.dims:
-        raise ValueError("The dimension 'threshold' is not allowed in obs.")
+    if event_threshold_mode not in [operator.ge, operator.gt, operator.le, operator.lt]:
+        raise ValueError("event_threshold_mode must be one of operator.ge, operator.gt, operator.le, operator.lt")
+    if threshold_dim in fcst.dims:
+        raise ValueError("threshold_dim is not allowed to be the same as a dim in fcst")
+    if threshold_dim in obs.dims:
+        raise ValueError("threshold_dim is not allowed to be the same as a dim in obs")
 
     weights_dims = None
     if weights is not None:
-        if "threshold" in weights.dims:
-            raise ValueError("The dimension 'threshold' is not allowed in weights.")
+        if threshold_dim in weights.dims:
+            raise ValueError("threshold_dim is not allowed to be the same as a dim in weights")
         weights_dims = weights.dims
 
     dims_for_mean = gather_dimensions(
@@ -203,10 +205,10 @@ def brier_score_for_ensemble(
     )
     if isinstance(event_thresholds, (float, int)):
         event_thresholds = [event_thresholds]
-    thresholds_xr = xr.DataArray(event_thresholds, dims=["threshold"], coords={"threshold": event_thresholds})
+    thresholds_xr = xr.DataArray(event_thresholds, dims=[threshold_dim], coords={threshold_dim: event_thresholds})
 
     # calculate i term in equation
-    member_event_count = (fcst >= thresholds_xr).sum(dim=ensemble_member_dim)
+    member_event_count = event_threshold_mode(fcst, thresholds_xr).sum(dim=ensemble_member_dim)
     # calculate m term in equation
     total_member_count = fcst.notnull().sum(dim=ensemble_member_dim)
 
