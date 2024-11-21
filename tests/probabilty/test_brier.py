@@ -8,14 +8,14 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
+import operator
+
 import numpy as np
 import pytest
 import xarray as xr
 
-from scores.probability import brier_score, ensemble_brier_score
+from scores.probability import brier_score, brier_score_for_ensemble
 from tests.probabilty import brier_test_data as btd
-
-import operator
 
 
 @pytest.mark.parametrize(
@@ -248,7 +248,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
         ),
     ],
 )
-def test_ensemble_brier_score(
+def test_brier_score_for_ensemble(
     fcst,
     obs,
     ensemble_member_dim,
@@ -260,8 +260,8 @@ def test_ensemble_brier_score(
     threshold_mode,
     expected,
 ):
-    """Tests ensemble_brier_score."""
-    result = ensemble_brier_score(
+    """Tests brier_score_for_ensemble."""
+    result = brier_score_for_ensemble(
         fcst,
         obs,
         ensemble_member_dim,
@@ -275,9 +275,9 @@ def test_ensemble_brier_score(
     xr.testing.assert_allclose(result, expected)
 
 
-def test_ensemble_brier_score_raises():
+def test_brier_score_for_ensemble_raises():
     """
-    Tests that the ensemble_brier_score function raises the correct errors.
+    Tests that the brier_score_for_ensemble function raises the correct errors.
     """
     fcst = xr.DataArray(np.random.rand(10, 10), dims=["time", "ensemble"])
     fcst_threshold = xr.DataArray(np.random.rand(10, 10), dims=["threshold", "ensemble"])
@@ -288,35 +288,35 @@ def test_ensemble_brier_score_raises():
 
     # Test if threshold_mode is not '>=' or '>'
     with pytest.raises(ValueError, match="threshold_mode must be either operator.ge or operator.gt."):
-        ensemble_brier_score(fcst, obs, "ensemble", thresholds, threshold_mode="=")
+        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, threshold_mode="=")
 
     # Test if ensemble_member_dim is not in fcst.dims
     with pytest.raises(ValueError, match="ensemble_member_dim must be one of the dimensions in fcst."):
-        ensemble_brier_score(fcst, obs, "number", thresholds)
+        brier_score_for_ensemble(fcst, obs, "number", thresholds)
 
     # Test if fcst contains the dimension 'threshold'
     with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in fcst."):
-        ensemble_brier_score(fcst_threshold, obs, "time", thresholds)
+        brier_score_for_ensemble(fcst_threshold, obs, "time", thresholds)
 
     # Test if obs contains the dimension 'threshold'
     with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in obs."):
-        ensemble_brier_score(fcst, obs_threshold, "ensemble", thresholds)
+        brier_score_for_ensemble(fcst, obs_threshold, "ensemble", thresholds)
 
     # Test if ensemble_member_dim is 'threshold'
     with pytest.raises(ValueError, match="The ensemble_member_dim is not allowed to be 'threshold'."):
-        ensemble_brier_score(fcst_threshold, obs, "threshold", thresholds)
+        brier_score_for_ensemble(fcst_threshold, obs, "threshold", thresholds)
 
     # Test if weights contains the dimension 'threshold'
     with pytest.raises(ValueError, match="The dimension 'threshold' is not allowed in weights."):
-        ensemble_brier_score(fcst, obs, "ensemble", thresholds, weights=weights)
+        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, weights=weights)
 
 
-def test_ensemble_brier_dask():
-    """Tests that the ensemble Brier score works with dask"""
+def test_brier_score_for_ensemble_dask():
+    """Tests that the brier_score_for_ensemble works with dask"""
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = ensemble_brier_score(
+    result = brier_score_for_ensemble(
         btd.DA_FCST_ENS.chunk(),
         btd.DA_OBS_ENS.chunk(),
         "ens_member",

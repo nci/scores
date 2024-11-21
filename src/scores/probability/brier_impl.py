@@ -3,7 +3,6 @@ This module contains methods related to the Brier score
 """
 
 import operator
-
 from collections.abc import Sequence
 from typing import Literal, Optional, Union
 
@@ -77,7 +76,7 @@ def brier_score(
     return mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
 
 
-def ensemble_brier_score(
+def brier_score_for_ensemble(
     fcst: XarrayLike,  # type: ignore
     obs: XarrayLike,  # type: ignore
     ensemble_member_dim: str,
