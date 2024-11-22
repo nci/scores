@@ -337,7 +337,7 @@ def scaling_to_weight_array(
     prob_threshold_coords: Iterable,
 ) -> xr.DataArray:
     """
-    Given warning scaling matrix, assessment weights and other inputs,
+    Given a warning scaling matrix, assessment weights and other inputs,
     returns the decision weights for the risk matrix score as an xarray data array.
 
     Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
@@ -350,7 +350,7 @@ def scaling_to_weight_array(
             severe category.
         assessment_weights: positive weights used for warning assessment. The kth weight
             (corresponding to ``assessment_weights[k-1]``) is proportional to the importance
-            of accuractely discriminating between warning states below level k and
+            of accurately discriminating between warning states below level k and
             warning states at or above level k. ``len(assessment_weights)`` must be at least q.
         severity_dim: name of the severity category dimension.
         severity_coords: labels for each of the severity categories, in order of increasing
@@ -372,7 +372,7 @@ def scaling_to_weight_array(
         ValueError: if ``scaling_matrix`` increases along any column (moving top to bottom).
         ValueError: if number of rows of ``matrix_weights`` doesn't equal length of ``prob_threshold_coords``.
         ValueError: if number of columns of ``matrix_weights`` doesn't equal length of ``severity_coords``.
-        ValueError: ``len(assessment_weights`)`` is less than the maximum value in ``scaling_matrix``.
+        ValueError: ``len(assessment_weights)`` is less than the maximum value in ``scaling_matrix``.
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
         ValueError: if ``assessment_weights`` aren't strictly positive.
 

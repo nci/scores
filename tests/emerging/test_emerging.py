@@ -55,17 +55,19 @@ def test__risk_matrix_score(
 
 
 @pytest.mark.parametrize(
-    ("weights", "preserve_dims", "expected"),
+    ("weights", "preserve_dims", "reduce_dims", "expected"),
     [
         # Sydney example from paper, escalation weights, no mean score
-        (None, "all", mtd.EXP_RMS_CASE3A),
+        (None, "all", None, mtd.EXP_RMS_CASE3A),
         # Sydney example from paper, escalation weights, unweighted mean score
-        (None, ["forecaster"], mtd.EXP_RMS_CASE3B),
+        (None, ["forecaster"], None, mtd.EXP_RMS_CASE3B),
+        # Sydney example from paper, escalation weights, unweighted mean score
+        (None, None, ["obs_case"], mtd.EXP_RMS_CASE3B),
         # Sydney example from paper, escalation weights, weighted mean score
-        (mtd.DA_RMS_WEIGHTS_SYD, ["forecaster"], mtd.EXP_RMS_CASE3C),
+        (mtd.DA_RMS_WEIGHTS_SYD, ["forecaster"], None, mtd.EXP_RMS_CASE3C),
     ],
 )
-def test_risk_matrix_score(weights, preserve_dims, expected):
+def test_risk_matrix_score(weights, preserve_dims, reduce_dims, expected):
     """Tests risk_matrix_score weighted means"""
     calculated = risk_matrix_score(
         mtd.DA_RMS_FCST1,
@@ -76,6 +78,7 @@ def test_risk_matrix_score(weights, preserve_dims, expected):
         threshold_assignment="lower",
         weights=weights,
         preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
     ).transpose(*expected.dims)
     xr.testing.assert_allclose(calculated, expected)
 
@@ -491,17 +494,17 @@ def test_matrix_weights_to_array_raises(weight_matrix, severity_coords, prob_thr
             [1.0, 1, 1],
             np.array([[0.0, 0, 0], [1, 0, 0]]),
         ),
-        (
+        (  # Sligh variation on MID-RANGE scaling, equal weights
             np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 1, 1, 2], [0, 0, 0, 0]]),
             [1.0, 1, 1],
             np.array([[0.0, 0, 1], [0, 1, 0], [1, 0, 1]]),
         ),
-        (
+        (  # GOLDING scaling (good tester of algorithm steps), equal weights
             np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 0, 2, 2], [0, 0, 0, 0]]),
             [1.0, 1, 1],
             np.array([[0.0, 0, 1], [1, 0, 0], [0, 2, 0]]),
         ),
-        (
+        (  # GOLDING scaling, unequal weights
             np.array([[0, 1, 2, 3], [0, 1, 2, 2], [0, 0, 2, 2], [0, 0, 0, 0]]),
             [1.0, 2, 3],
             np.array([[0.0, 0, 3], [1, 0, 0], [0, 3, 0]]),
