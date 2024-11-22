@@ -21,8 +21,7 @@ def brier_score(
     check_args: bool = True,
 ) -> XarrayLike:
     """
-    Calculates the Brier score for forecast and observed data. For an explanation of the
-    Brier score, see https://en.wikipedia.org/wiki/Brier_score.
+    Calculates the Brier score for forecast and observed data.
 
     .. math::
         \\text{brier score} = \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
@@ -48,6 +47,11 @@ def brier_score(
     Raises:
         ValueError: if ``fcst`` contains non-nan values outside of the range [0, 1]
         ValueError: if ``obs`` contains non-nan values not in the set {0, 1}
+
+    References:
+        - Brier, G. W. (1950). Verification of forecasts expressed in terms of probability.
+          Monthly Weather Review, 78(1), 1-3. https://doi.org/fp62r6
+        - https://en.wikipedia.org/wiki/Brier_score
     """
     if check_args:
         error_msg = ValueError("`fcst` contains values outside of the range [0, 1]")
