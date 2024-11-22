@@ -121,8 +121,9 @@ def brier_score_for_ensemble(
     minimum number of ensemble members that you want.
 
     Args:
-        fcst: Forecast or predicted variables in xarray.
-        obs: Real valued observations variables in xarray.These values are converted to binary
+        fcst: Real valued ensemble forecasts in xarray. These values are converted to the
+            probability of the event occurring in this function.
+        obs: Real valued observations variables in xarray. These values are converted to binary
             values in this function.
         ensemble_member_dim: The dimension name of the ensemble member.
         event_thresholds: The threshold(s) that define what is considered an event. If
@@ -173,12 +174,12 @@ def brier_score_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import ensemble_brier_score
-        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> fcst = 10 * xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
+        >>> obs = 10 * xr.DataArray(np.random.rand(10), dims=['time'])
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=0.5)
 
         Calculate the Brier score for an ensemble forecast for multiple thresholds:
-        >>> thresholds = [0.1, 0.5, 0.9]
+        >>> thresholds = [0.1, 5, 9]
         >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
