@@ -216,8 +216,8 @@
   - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
   - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
   - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
-* - Ensemble Brier Score
-  - [API](api.md#scores.probability.ensemble_brier_score)
+* - Brier Score for ensembles
+  - [API](api.md#scores.probability.brier_score_for_ensemble)
   - [Tutorial](project:./tutorials/Brier_Score.md)
   - [Ferro (2013)](https://doi.org/10.1002/qj.2270)
 * - Isotonic Fit, *see Isotonic Regression*
