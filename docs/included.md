@@ -616,6 +616,39 @@
     [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 ```
 
+## Emerging
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Risk Matrix Score
+  - 
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+* -  
+    - Risk Matrix Score
+  -
+    [API](api.md#scores.emerging.risk_matrix_score)
+  - 
+  - 
+* -  
+    - Risk Matrix Score (Matrix Weights To Array)
+  -
+    [API](api.md#scores.emerging.matrix_weights_to_array)
+  - 
+  - 
+* -  
+    - Risk Matrix Score (Scaling to Weight Array)
+  -
+    [API](api.md#scores.emerging.scaling_to_weight_array)
+  - 
+  - 
+```
+
 ## Statistical Tests
 
 ```{list-table}
