@@ -47,7 +47,7 @@
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
 * - Interval Score
   - [API](api.md#scores.continuous.interval_score)
-  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Score.md)
   - [Gneiting and Raftery (2007) - Section 6.2](https://doi.org/10.1198/016214506000001437)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
@@ -115,7 +115,7 @@
   - &mdash;
 * - Quantile Interval Score
   - [API](api.md#scores.continuous.quantile_interval_score)
-  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Scores.md)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Score.md)
   - [Winkler (1972) ](https://doi.org/10.2307/2284720)
 * - Quantile Loss (Quantile Score, Pinball Loss)
   - [API](api.md#scores.continuous.quantile_score)
