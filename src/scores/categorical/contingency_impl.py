@@ -735,7 +735,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the positive predictive value score
 
         .. math::
-            \\text{positive_predictive_value} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{positive predictive value} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
