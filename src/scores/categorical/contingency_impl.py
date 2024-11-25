@@ -751,7 +751,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def negative_predictive_value(self) -> xr.DataArray:
         """
-        Calculates the negative predictive value (NPV). 
+        Calculates the negative predictive value (NPV).
 
         Of all the times a negative result was predicted, how often was the prediction actually correct?
 
@@ -768,7 +768,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "missed detections".
 
         References:
-           - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values 
+           - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
         """
         cd = self.counts
         npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
