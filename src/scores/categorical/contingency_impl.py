@@ -703,7 +703,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def precision(self) -> xr.DataArray:
         """
-        Identical to :py:func:`success_ratio`.
+        Identical to :py:func:`success_ratio` and :py:func:`positive_predictive_value`
 
         What proportion of the forecast events actually eventuated?
 
@@ -735,7 +735,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the positive predictive value score
 
         .. math::
-            \\text{ppv} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{positive_predictive_value} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
