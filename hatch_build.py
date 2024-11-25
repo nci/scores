@@ -5,7 +5,7 @@ import tomlkit
 import pathlib
 
 
-class PinVersionMetadataHook(MetadataHookInterface):
+class PinVersionsMetadataHook(MetadataHookInterface):
     """
     Update the dependency versions so they are pinned metadata of the wheel artefact produced by a wheel.
 
@@ -25,11 +25,11 @@ class PinVersionMetadataHook(MetadataHookInterface):
                     metadata["dependencies"][index] = pinned_dep
                     change_count += 1
                     break
-        print(f"Updated {change_count} dependencies to pinned versions in hatch's metadata "
-              f"for building wheel artefact metadata.")
+        print(f"Updated {change_count} dependencies in hatch's internal dependency metadata"
+              f" to pinned versions from config.")
 
 
-class PinMetadataBuildHook(BuildHookInterface):
+class PinVersionsBuildHook(BuildHookInterface):
     """
     Update the dependency versions so they are pinned in the pyproject.toml of the sdist artefact produced by a build.
 
@@ -44,6 +44,21 @@ class PinMetadataBuildHook(BuildHookInterface):
     made_changes: bool = False
 
     def initialize(self, version, build_data):
+        # To avoid affecting the wheel METADATA file, we only run this hook's logic when
+        # the build system is building a sdist artefact.
+
+        print()
+        if self.build_config.builder.PLUGIN_NAME != "sdist":
+            print("Building wheel artefact. ")
+            print("This uses hatch's internal dependency metadata.")
+            print()
+            return
+        else:
+            print("Building sdist artefact.")
+            print("This does not use hatch's internal dependency metadata.")
+            print()
+            print("Updating pyproject.toml to contain the correct versions of pinned dependencies.")
+
         # Get the pinned dependencies, this is a list of package specifier strings that are the dependencies to pin.
         pinned_dependencies = self.metadata.hatch.metadata.hook_config["custom"]["config"]["pinned_dependencies"]
 
@@ -59,7 +74,8 @@ class PinMetadataBuildHook(BuildHookInterface):
 
         change_count = 0
 
-        # Overlay the pinned dependencies, replacing dependencies if they already exist.
+        # Update dependencies with pinned versions if they are in the configuration and
+        # only if the un-pinned version is present.
         for pinned_dep in pinned_dependencies:
             pinned_dep_name = pinned_dep.split(" ")[0]
             for dep in dependencies:
@@ -76,9 +92,11 @@ class PinMetadataBuildHook(BuildHookInterface):
             # Write the changes back to the file.
             pyproject_file.write_text(tomlkit.dumps(toml_data))
             print(f"Updated {change_count} dependencies to pinned versions in the pyproject.toml "
-                  f"for building sdist artefact.")
+                  f"which will be incorporated into the final sdist artefact.")
             # Set a flag to restore the original dependencies after the build.
             self.made_changes = True
+        else:
+            print("No dependencies were changed to pinned version.")
 
         # Update the build data with the pinned dependencies so it populates the METADATA file in the wheel artefact.
         build_data["dependencies"] = dependencies
@@ -92,4 +110,8 @@ class PinMetadataBuildHook(BuildHookInterface):
             toml_data = tomlkit.loads(pyproject_file.read_text())
             toml_data["project"]["dependencies"] = self.original_dependencies
             pyproject_file.write_text(tomlkit.dumps(toml_data))
-            print("Restored original dependencies in pyproject.toml file after building.")
+            print()
+            print("Build of sdist artefact completed.")
+            print("Restored original dependencies in pyproject.toml file.")
+            print("This puts the git repo back to its original state.")
+            print()
