@@ -744,11 +744,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             - https://www.cawcr.gov.au/projects/verification/#SR
-            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values 
+            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
 
         """
         return self.success_ratio()
-
 
     def f1_score(self) -> xr.DataArray:
         """
