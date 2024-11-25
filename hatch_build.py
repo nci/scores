@@ -6,7 +6,12 @@ import pathlib
 
 
 class PinVersionMetadataHook(MetadataHookInterface):
-    """Update the dependency versions so they are pinned metadata of the wheel artefact produced by a wheel."""
+    """
+    Update the dependency versions so they are pinned metadata of the wheel artefact produced by a wheel.
+
+    This is invoked by `hatch` when `hatch build` is run as part of constructing the package metadata
+     before it moves on to executing the next appropriate build step, be it sdist or wheels.
+    """
     def update(self, metadata):
         change_count = 0
         # Overlay the pinned dependencies, replacing dependencies if they already exist.
@@ -25,7 +30,14 @@ class PinVersionMetadataHook(MetadataHookInterface):
 
 
 class PinMetadataBuildHook(BuildHookInterface):
-    """Update the dependency versions so they are pinned in the pyproject.toml of the sdist artefact produced by a build."""
+    """
+    Update the dependency versions so they are pinned in the pyproject.toml of the sdist artefact produced by a build.
+
+    When `hatch` performs a build in response to running the `hatch build` build command, its plugin system
+     will call the initialize method of this hook before the build process starts. This allows the hook to
+     update the dependencies in the pyproject.toml file before the build starts. The finalize method is called
+     after the build has completed to restore the original dependencies.
+    """
     PLUGIN_NAME = "pin-during-build"
 
     original_dependencies: list = None
