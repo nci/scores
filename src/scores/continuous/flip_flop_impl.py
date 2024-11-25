@@ -437,7 +437,7 @@ def flip_flop_index_proportion_exceeding(
             sampling_dim: lead_day
 
     See also:
-        `scores.continuous.flip_flop_index`
+        :py:func:`scores.continuous.flip_flop_index`
 
     """
     if preserve_dims is not None and sampling_dim in list(preserve_dims):
