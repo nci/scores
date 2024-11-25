@@ -151,7 +151,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             Attributes: (0)
 
         """
-        return self.xr_table
+        return self.xr_table # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def accuracy(self) -> xr.DataArray:
         """
@@ -176,7 +176,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
-        return ratio
+        return ratio # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def base_rate(self) -> xr.DataArray:
         """
@@ -200,7 +200,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
-        return br
+        return br # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def forecast_rate(self) -> xr.DataArray:
         """
@@ -224,7 +224,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
-        return br
+        return br # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def fraction_correct(self) -> xr.DataArray:
         """
@@ -273,7 +273,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
 
-        return freq_bias
+        return freq_bias # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def bias_score(self) -> xr.DataArray:
         """
