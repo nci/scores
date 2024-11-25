@@ -33,7 +33,7 @@ def _flip_flop_index(
         `data`, except for the `sampling_dim` dimension which is collapsed.
 
     See also:
-        `scores.continuous.flip_flop.flip_flop_index`
+        `scores.continuous.flip_flop_impl.flip_flop_index`
     """
     # check that `sampling_dim` is in `data`.
     check_dims(data, [sampling_dim], mode="superset")
