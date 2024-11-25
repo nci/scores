@@ -2,6 +2,11 @@
 
 Here are some related packages that may be of interest.
 
+- **`scoringrules`**
+	- Open source Python package that provides verification metrics with backends for numpy, jax, pytorch, and tensorflow.
+	- [Software Repository](https://github.com/frazane/scoringrules); [Documentation](https://frazane.github.io/scoringrules/)
+	- Reference: [Zanetta and Allen (2024)](https://frazane.github.io/scoringrules/#citation) 	
+
 - **`xskillscore`**
 	- Open source Python package that provides verification metrics of deterministic (and probabilistic from [`properscoring`](https://github.com/properscoring/properscoring)) forecasts with xarray.
 	- [Software Repository](https://github.com/xarray-contrib/xskillscore); [Documentation](https://xskillscore.readthedocs.io/en/latest/)
