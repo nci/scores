@@ -424,14 +424,6 @@
   - 
     [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
-    - Precision (Success Ratio, Positive Predictive Value)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.precision)
-  - 
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
-* -  
     - Positive Predictive Value (Success Ratio, Precision)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
@@ -439,6 +431,14 @@
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
+* -  
+    - Precision (Success Ratio, Positive Predictive Value)
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.precision)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
 * -  
     - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity, Recall)
   -
