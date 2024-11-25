@@ -1,4 +1,5 @@
 """Tests for murphy metrics and thetas generation code."""
+
 import pathlib
 import re
 from datetime import datetime

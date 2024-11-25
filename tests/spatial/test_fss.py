@@ -1,6 +1,7 @@
 """
 Contains unit tests for scores.probability.fss_impl
 """
+
 import numpy as np
 import pytest
 import xarray as xr

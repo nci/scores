@@ -1,6 +1,7 @@
 """
 Specific type definitions for Fss backend    
 """
+
 from enum import Enum
 from typing import TYPE_CHECKING, Union
 

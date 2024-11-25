@@ -1,6 +1,7 @@
 """
 This module contains unit tests for scores.stats.tests.diebold_mariano_impl
 """
+
 import numpy as np
 import pytest
 import xarray as xr

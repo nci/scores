@@ -2,6 +2,7 @@
 Backend for computing Fractions Skill Score (FSS) using numba
     
 """
+
 from dataclasses import dataclass
 
 from scores.fast.fss.backend import FssBackend
