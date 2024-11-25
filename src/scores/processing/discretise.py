@@ -44,30 +44,31 @@ def comparative_discretise(
             can be a string or a Python operator function from the list below.
             Allowed modes are:
 
-            - operator.ge. Where values in `data` greater than or equal to the
-                corresponding threshold are assigned as 1.
-            - operator.gt. Where values in `data` greater than the
-                corresponding threshold are assigned as 1.
-            - operator.le. Where values in `data` less than or equal to the
-                corresponding threshold are assigned as 1.
-            - operator.lt. Where values in `data` less than the
-                corresponding threshold are assigned as 1.
-            - operator.eq values in `data` equal to the corresponding threshold
-                are assigned as 1
-            - operator.ne values in `data` not equal to the corresponding threshold
-              are assigned as 1.
-            - '>=' values in `data` greater than or equal to the
+            - ``operator.ge``: Where values in `data` greater than or equal to the \
             corresponding threshold are assigned as 1.
-            - '>' values in `data` greater than the corresponding threshold
+            - ``operator.gt``: Where values in `data` greater than the \
+            corresponding threshold are assigned as 1.
+            - ``operator.le``: Where values in `data` less than or equal to the \
+            corresponding threshold are assigned as 1.
+            - ``operator.lt``: Where values in `data` less than the \
+            corresponding threshold are assigned as 1.
+            - ``operator.eq``: values in `data` equal to the corresponding threshold \
             are assigned as 1.
-            - '<=' values in `data` less than or equal to the corresponding
+            - ``operator.ne``: values in `data` not equal to the corresponding \
             threshold are assigned as 1.
-            - '<' values in `data` less than the corresponding threshold
+            - '>=' values in `data` greater than or equal to the \
+            corresponding threshold are assigned as 1.
+            - '>' values in `data` greater than the corresponding threshold \
             are assigned as 1.
-            - '==' values in `data` equal to the corresponding threshold
-            are assigned as 1
-            - '!=' values in `data` not equal to the corresponding threshold
+            - '<=' values in `data` less than or equal to the corresponding \
+            threshold are assigned as 1.
+            - '<' values in `data` less than the corresponding threshold \
             are assigned as 1.
+            - '==' values in `data` equal to the corresponding threshold \
+            are assigned as 1.
+            - '!=' values in `data` not equal to the corresponding threshold \
+            are assigned as 1.
+
         abs_tolerance: If supplied, values in data that are
             within abs_tolerance of a threshold are considered to be equal to
             that threshold. This is generally used to correct for floating
@@ -149,18 +150,18 @@ def binary_discretise(
             can be a string or a Python operator function from the list below.
             Allowed modes are:
 
-            - operator.ge. Where values in `data` greater than or equal to the
-                corresponding threshold are assigned as 1.
-            - operator.gt. Where values in `data` greater than the
-                corresponding threshold are assigned as 1.
-            - operator.le. Where values in `data` less than or equal to the
-                corresponding threshold are assigned as 1.
-            - operator.lt. Where values in `data` less than the
-                corresponding threshold are assigned as 1.
-            - operator.eq values in `data` equal to the corresponding threshold
-                are assigned as 1
-            - operator.ne values in `data` not equal to the corresponding threshold
-              are assigned as 1.
+            - ``operator.ge``: Where values in `data` greater than or equal to the \
+            corresponding threshold are assigned as 1.
+            - ``operator.gt``: Where values in `data` greater than the \
+            corresponding threshold are assigned as 1.
+            - ``operator.le``: Where values in `data` less than or equal to the \
+            corresponding threshold are assigned as 1.
+            - ``operator.lt``: Where values in `data` less than the \
+            corresponding threshold are assigned as 1.
+            - ``operator.eq``: values in `data` equal to the corresponding threshold \
+            are assigned as 1.
+            - ``operator.ne``: values in `data` not equal to the corresponding \
+            threshold are assigned as 1.
             - '>=' values in `data` greater than or equal to the \
             corresponding threshold are assigned as 1.
             - '>' values in `data` greater than the corresponding threshold \
@@ -170,7 +171,7 @@ def binary_discretise(
             - '<' values in `data` less than the corresponding threshold \
             are assigned as 1.
             - '==' values in `data` equal to the corresponding threshold \
-            are assigned as 1
+            are assigned as 1.
             - '!=' values in `data` not equal to the corresponding threshold \
             are assigned as 1.
 
@@ -276,30 +277,31 @@ def binary_discretise_proportion(
             can be a string or a Python operator function from the list below.
             Allowed modes are:
 
-            - operator.ge. Where values in `data` greater than or equal to the
-                corresponding threshold are assigned as 1.
-            - operator.gt. Where values in `data` greater than the
-                corresponding threshold are assigned as 1.
-            - operator.le. Where values in `data` less than or equal to the
-                corresponding threshold are assigned as 1.
-            - operator.lt. Where values in `data` less than the
-                corresponding threshold are assigned as 1.
-            - operator.eq values in `data` equal to the corresponding threshold
-                are assigned as 1
-            - operator.ne values in `data` not equal to the corresponding threshold
-                are assigned as 1.
-            - '>=' values in `data` greater than or equal to the
-                corresponding threshold are assigned as 1.
-            - '>' values in `data` greater than the corresponding threshold
-                are assigned as 1.
-            - '<=' values in `data` less than or equal to the corresponding
-                threshold are assigned as 1.
-            - '<' values in `data` less than the corresponding threshold
-                are assigned as 1.
-            - '==' values in `data` equal to the corresponding threshold
-                are assigned as 1
-            - '!=' values in `data` not equal to the corresponding threshold
-                are assigned as 1.
+            - ``operator.ge``: Where values in `data` greater than or equal to the \
+            corresponding threshold are assigned as 1.
+            - ``operator.gt``: Where values in `data` greater than the \
+            corresponding threshold are assigned as 1.
+            - ``operator.le``: Where values in `data` less than or equal to the \
+            corresponding threshold are assigned as 1.
+            - ``operator.lt``: Where values in `data` less than the \
+            corresponding threshold are assigned as 1.
+            - ``operator.eq``: values in `data` equal to the corresponding threshold \
+            are assigned as 1.
+            - ``operator.ne``: values in `data` not equal to the corresponding \
+            threshold are assigned as 1.
+            - '>=' values in `data` greater than or equal to the \
+            corresponding threshold are assigned as 1.
+            - '>' values in `data` greater than the corresponding threshold \
+            are assigned as 1.
+            - '<=' values in `data` less than or equal to the corresponding \
+            threshold are assigned as 1.
+            - '<' values in `data` less than the corresponding threshold \
+            are assigned as 1.
+            - '==' values in `data` equal to the corresponding threshold \
+            are assigned as 1.
+            - '!=' values in `data` not equal to the corresponding threshold \
+            are assigned as 1.
+
         reduce_dims: Dimensions to reduce.
         preserve_dims: Dimensions to preserve.
         abs_tolerance: If supplied, values in data that are
