@@ -432,7 +432,7 @@
   - 
     [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
-    - Precision (Success Ratio)
+    - Precision (Success Ratio, Positive Predictive Value)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.precision)
   - 
@@ -440,7 +440,7 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
 * -  
-    - Positive Predictive Value (Success Ratio)
+    - Positive Predictive Value (Success Ratio, Precision)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
   - 
@@ -496,7 +496,7 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -  
-    - Success Ratio (Precision)
+    - Success Ratio (Precision, Positive Predictive Value)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.success_ratio)
   - 
