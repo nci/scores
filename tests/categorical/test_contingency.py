@@ -189,6 +189,7 @@ def test_categorical_table():  # pylint: disable=too-many-statements
     assert table.hit_rate() == 9 / (9 + 1)
     assert table.probability_of_false_detection() == 2 / (6 + 2)
     assert table.success_ratio() == 9 / (9 + 2)
+    assert table.negative_predictive_value() == 6 / (6 + 1)
     assert table.specificity() == 6 / (6 + 2)
     assert table.false_alarm_ratio() == 2 / (9 + 2)
     assert table.f1_score() == 18 / (18 + 2 + 1)
