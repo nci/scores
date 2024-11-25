@@ -23,6 +23,7 @@ References:
 .. _GITHUB270: https://github.com/nci/scores/issues/270
 .. _GITHUB353: https://github.com/nci/scores/issues/353
 """
+
 # sphinx docstrings: issue with inconsistent type rerpesentations
 # see: https://github.com/sphinx-doc/sphinx/issues/9813
 from __future__ import annotations  # isort: off

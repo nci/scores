@@ -1,6 +1,7 @@
 """
 Contains functions which transform data or perform calculations
 """
+
 from typing import Optional, overload
 
 import numpy as np
@@ -53,8 +54,7 @@ def create_latitude_weights(latitudes):
 
 # Dataset input types lead to a Dataset return type
 @overload
-def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset:
-    ...
+def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset: ...
 
 
 # DataArray input types lead to a DataArray return type
