@@ -449,7 +449,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def success_ratio(self) -> xr.DataArray:
         """
-        Identical to :py:func:`precision` and :py:func:`positive_predictive_value`
+        Identical to :py:func:`precision` and :py:func:`positive_predictive_value`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -703,7 +703,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def precision(self) -> xr.DataArray:
         """
-        Identical to :py:func:`success_ratio` and :py:func:`positive_predictive_value`
+        Identical to :py:func:`success_ratio` and :py:func:`positive_predictive_value`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -715,8 +715,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False positives" is the same as "false alarms"
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
 
         References:
             - https://www.cawcr.gov.au/projects/verification/#SR
@@ -727,7 +727,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def positive_predictive_value(self) -> xr.DataArray:
         """
-        Identical to :py:func:`success_ratio` and :py:func:`precision`
+        Identical to :py:func:`success_ratio` and :py:func:`precision`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -735,12 +735,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the positive predictive value score
 
         .. math::
-            \\text{positive_predictive_value} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{positive predictive value} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False positives" is the same as "false alarms"
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
 
         References:
             - https://www.cawcr.gov.au/projects/verification/#SR
