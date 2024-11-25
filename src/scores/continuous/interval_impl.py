@@ -1,6 +1,7 @@
 """
 Implementation of quantile interval score and interval score
 """
+
 from typing import Optional
 
 import xarray as xr

@@ -2,7 +2,6 @@
 Containts tests for weighting scores appropriately.
 """
 
-
 # pylint: disable=missing-function-docstring
 import numpy as np
 import xarray as xr

@@ -2,6 +2,7 @@
 This module contains various compound or union types which can be used across the codebase to ensure
 a consistent approach to typing is handled.
 """
+
 from collections.abc import Hashable, Iterable
 from typing import Union
 

@@ -188,9 +188,7 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
     b_values = function_values.shift(**{threshold_dim: 1})  # type: ignore
 
     # integral for x[i-1] <= t <= x[i]
-    piece_integral = (
-        (m_values**2) * (diff_xs**3) / 3 + m_values * b_values * (diff_xs**2) + (b_values**2) * diff_xs
-    )
+    piece_integral = (m_values**2) * (diff_xs**3) / 3 + m_values * b_values * (diff_xs**2) + (b_values**2) * diff_xs
 
     # Need at least one non-NaN piece_integral to return float.
     # Note: need at least two non-NaN function values to get a non-NaN piece_integral.

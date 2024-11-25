@@ -1,6 +1,7 @@
 """
 Convenience module to retrieve compute backend
 """
+
 from scores.fast.fss.fss_numba import FssNumba
 from scores.fast.fss.fss_numpy import FssNumpy
 from scores.fast.fss.typing import FssComputeMethod
