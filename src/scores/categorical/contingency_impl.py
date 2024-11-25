@@ -703,7 +703,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def precision(self) -> xr.DataArray:
         """
-        Identical to :py:func:`success_ratio` and :py:func:`positive_predictive_value`
+        Identical to :py:func:`success_ratio` and :py:func:`positive_predictive_value`.
 
         What proportion of the forecast events actually eventuated?
 
