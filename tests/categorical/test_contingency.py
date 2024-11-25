@@ -210,6 +210,7 @@ def test_categorical_table():  # pylint: disable=too-many-statements
     assert table.peirce_skill_score() == table.true_skill_statistic()
     assert table.hanssen_and_kuipers_discriminant() == table.peirce_skill_score()
     assert table.precision() == table.success_ratio()
+    assert table.positive_predictive_value() == table.success_ratio()
     assert table.recall() == table.probability_of_detection()
     assert table.gilberts_skill_score() == table.equitable_threat_score()
     assert table.cohens_kappa() == table.heidke_skill_score()
