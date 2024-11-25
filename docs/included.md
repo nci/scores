@@ -432,6 +432,14 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
 * -  
+    - Positive Predictive Value (Success Ratio)
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
+* -  
     - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity, Recall)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.probability_of_detection)
