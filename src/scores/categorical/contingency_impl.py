@@ -768,7 +768,6 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "missed detections".
 
         References:
-           - https://www.cawcr.gov.au/projects/verification/#SR
            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values 
         """
         cd = self.counts
