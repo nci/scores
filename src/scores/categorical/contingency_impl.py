@@ -739,7 +739,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
+            - "True positives" is the same as "hits".
             - "False positives" is the same as "false alarms".
 
         References:
