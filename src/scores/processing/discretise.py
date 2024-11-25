@@ -343,7 +343,7 @@ def binary_discretise_proportion(
             discretisation_mode: >=
 
     See also:
-        `scores.processing.binary_discretise`
+        :py:func:`scores.processing.binary_discretise`
 
     """
     # values are 1 when (data {mode} threshold), and 0 when ~(data {mode} threshold).
