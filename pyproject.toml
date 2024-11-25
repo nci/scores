@@ -33,7 +33,7 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "black == 23.3.0",
+    "black == 24.1.0",
     "mypy == 1.3.0",
     "pylint == 3.0.1",
     "bandit == 1.7.8",
