@@ -31,7 +31,8 @@ class PinVersionsMetadataHook(MetadataHookInterface):
 
 class PinVersionsBuildHook(BuildHookInterface):
     """
-    Update the dependency versions so they are pinned in the pyproject.toml of the sdist artefact produced by a build.
+    Temporarily edit the dependencies in the pyproject.toml file to use the desired pinned versions
+     when using `hatch` to build a package for release.
 
     When `hatch` performs a build in response to running the `hatch build` build command, its plugin system
      will call the initialize method of this hook before the build process starts. This allows the hook to
