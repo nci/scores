@@ -432,7 +432,7 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
 * -  
-    - Positive Predictive Value (Success Ratio)
+    - Positive Predictive Value (Success Ratio, Precision)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
   - 
