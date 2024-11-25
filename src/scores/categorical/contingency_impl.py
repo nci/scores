@@ -729,7 +729,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
 
         Identical to :py:func:`success_ratio` and :py:func:`precision`
-        
+
         What proportion of the forecast events actually eventuated?
 
         Returns:
@@ -775,7 +775,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
 
         return npv
-    
+
     def f1_score(self) -> xr.DataArray:
         """
         Calculates the F1 score.
