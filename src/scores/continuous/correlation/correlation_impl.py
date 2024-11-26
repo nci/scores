@@ -3,8 +3,8 @@ This module contains functions to calculate the correlation.
 """
 
 import math
-from typing import Optional
 import warnings
+from typing import Optional
 
 import xarray as xr
 
