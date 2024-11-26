@@ -1,19 +1,20 @@
 """Tools for matching data for verification"""
 
+from typing import overload
+
 import xarray as xr
 
 from scores.typing import XarrayLike
-from typing import overload
 
 
-# # Dataset input types lead to a Dataset return type
-# @overload
-# def broadcast_and_match_nan(*args: xr.Dataset) -> tuple[xr.Dataset, ...]: ...
+# Dataset input types lead to a Dataset return type
+@overload
+def broadcast_and_match_nan(*args: xr.Dataset) -> tuple[xr.Dataset, ...]: ...
 
 
-# # Dataset input types lead to a Dataset return type
-# @overload
-# def broadcast_and_match_nan(*args: xr.DataArray) -> tuple[xr.DataArray, ...]: ...
+# Dataset input types lead to a Dataset return type
+@overload
+def broadcast_and_match_nan(*args: xr.DataArray) -> tuple[xr.DataArray, ...]: ...
 
 
 def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
