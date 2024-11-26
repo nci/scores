@@ -13,6 +13,7 @@ from scores.typing import FlexibleDimensionTypes
 
 display_warning_when_pearsonr_is_NaN = False
 
+
 def pearsonr(
     fcst: xr.DataArray,
     obs: xr.DataArray,
