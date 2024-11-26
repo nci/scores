@@ -26,6 +26,7 @@ from typing import Optional
 
 import numpy as np
 import xarray as xr
+import pandas as pd 
 
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
@@ -152,6 +153,64 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         """
         return self.xr_table  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+
+    def format_table(self, positive_value_name: str = 'Positive', 
+                        negative_value_name: str = 'Negative') -> pd.DataFrame:
+        """Formats a contingency table from a contingency manager into a confusion matrix.
+
+        Args:
+            positive_value_name: A string with the value to be displayed on 
+                the contingency table visual. The default value is 'Positive'.
+            negative_value_name: A string with the value to be displayed on
+                the contingency table visual. The default value is 'Negative'.
+
+        Returns:
+            pandas.DataFrame: A Pandas DataFrame representing the binary contingency table.
+
+        This function retrieves the contingency table, extracts the relevant counts, and constructs
+        a 2x2 confusion matrix represented as a Pandas DataFrame.
+
+        Example:
+            Assuming `self.xr_table` returns an xr.Array:
+
+            .. code-block :: python
+
+                array([ 5., 11.,  1.,  1., 18.])
+
+                Coordinates:
+
+                    contingency
+                    (contingency)
+                    <U11
+                    'tp_count' ... 'total_count'
+
+            This function will return:
+
+            .. code-block :: python
+
+                    Positive  Negative
+            Positive       5.0       1.0
+            Negative       1.0      11.0
+        """
+        
+        table = self.xr_table
+
+        # Reshape into a 2x2 confusion matrix directly via numpy 
+        confusion_matrix = np.array([table[0], table[2], table[3], table[1]]).reshape((2, 2))
+
+        # Create a pandas DataFrame for better presentation
+        df = pd.DataFrame(confusion_matrix, columns=[positive_value_name, negative_value_name], index=[positive_value_name, negative_value_name])
+
+        # Add labels for rows and columns
+        df.index.name = 'Forecast'
+        df.columns.name = 'Observed'
+
+        # Add totals 
+        df['Total'] = df.sum(axis=1)
+        df.loc['Total'] = df.sum(axis=0)
+
+        return df 
+
 
     def accuracy(self) -> xr.DataArray:
         """
