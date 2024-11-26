@@ -12,6 +12,7 @@ class PinVersionsMetadataHook(MetadataHookInterface):
     This is invoked by `hatch` when `hatch build` is run as part of constructing the package metadata
      before it moves on to executing the next appropriate build step, be it sdist or wheels.
     """
+
     def update(self, metadata):
         change_count = 0
         # Overlay the pinned dependencies, replacing dependencies if they already exist.
@@ -25,8 +26,10 @@ class PinVersionsMetadataHook(MetadataHookInterface):
                     metadata["dependencies"][index] = pinned_dep
                     change_count += 1
                     break
-        print(f"Updated {change_count} dependencies in hatch's internal dependency metadata"
-              f" to pinned versions from config.")
+        print(
+            f"Updated {change_count} dependencies in hatch's internal dependency metadata"
+            f" to pinned versions from config."
+        )
 
 
 class PinVersionsBuildHook(BuildHookInterface):
@@ -39,6 +42,7 @@ class PinVersionsBuildHook(BuildHookInterface):
      update the dependencies in the pyproject.toml file before the build starts. The finalize method is called
      after the build has completed to restore the original dependencies.
     """
+
     PLUGIN_NAME = "pin-during-build"
 
     original_dependencies: list = None
@@ -92,8 +96,10 @@ class PinVersionsBuildHook(BuildHookInterface):
         if change_count > 0:
             # Write the changes back to the file.
             pyproject_file.write_text(tomlkit.dumps(toml_data))
-            print(f"Updated {change_count} dependencies to pinned versions in the pyproject.toml "
-                  f"which will be incorporated into the final sdist artefact.")
+            print(
+                f"Updated {change_count} dependencies to pinned versions in the pyproject.toml "
+                f"which will be incorporated into the final sdist artefact."
+            )
             # Set a flag to restore the original dependencies after the build.
             self.made_changes = True
         else:
