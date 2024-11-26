@@ -7,6 +7,7 @@ import operator
 import numpy as np
 import pytest
 import xarray as xr
+import pandas as pd 
 
 import scores
 
@@ -402,3 +403,23 @@ def test_examples_with_finley():
     # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
     gilbert_expected = xr.DataArray(0.216046)
     xr.testing.assert_allclose(gilbert_expected, gilbert)
+
+
+def test_valid_data():
+    """
+    Test the format table method. 
+    """
+
+    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
+    table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
+    expected_df = pd.DataFrame({
+            'Positive': [9, 1, 10],
+            'Negative': [2, 6, 8],
+            'Total': [11, 7, 18]
+    }, index=['Positive', 'Negative', 'Total'])
+    expected_df.index.name = 'Forecast'
+    expected_df.columns.name = 'Observed'
+
+    result_df = table.format_table()
+
+    pd.testing.assert_frame_equal(result_df, expected_df)
