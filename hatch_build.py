@@ -1,4 +1,5 @@
 import pathlib
+from typing import Optional
 
 import tomlkit
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
@@ -45,7 +46,7 @@ class PinVersionsBuildHook(BuildHookInterface):
 
     PLUGIN_NAME = "pin-during-build"
 
-    original_dependencies: list = None
+    original_dependencies: Optional[list] = None
     made_changes: bool = False
 
     def initialize(self, version, build_data):
