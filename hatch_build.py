@@ -1,8 +1,8 @@
-from hatchling.builders.hooks.plugin.interface import BuildHookInterface
-from hatchling.metadata.plugin.interface import MetadataHookInterface
+import pathlib
 
 import tomlkit
-import pathlib
+from hatchling.builders.hooks.plugin.interface import BuildHookInterface
+from hatchling.metadata.plugin.interface import MetadataHookInterface
 
 
 class PinVersionsMetadataHook(MetadataHookInterface):
