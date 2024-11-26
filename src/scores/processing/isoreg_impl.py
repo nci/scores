@@ -17,8 +17,6 @@ from typing import Callable, Literal, Optional, Tuple, Union
 import numpy as np
 import xarray as xr
 from scipy import interpolate
-
-# NOTE: requires updated scipy. Used scipy 1.14.1
 from scipy.optimize import isotonic_regression
 
 

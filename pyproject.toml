@@ -84,9 +84,8 @@ override = true  # This is required to activate the build hook.
 pinned_dependencies = [
     "xarray ~= 2024.1",
     "pandas ~= 2.0",
-    "scipy ~= 1.1",
-    "bottleneck ~= 1.3",
-    "scikit-learn ~= 1.4",
+    "scipy ~= 1.12.0",
+    "bottleneck ~= 1.3"
 ]
 
 [tool.hatch.version]
