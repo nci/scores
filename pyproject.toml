@@ -29,7 +29,7 @@ dev = [
     "pre-commit",
     "black == 24.1.0",
     "mypy == 1.13.0",
-    "pylint == 3.0.1",
+    "pylint == 3.3.1",
     "bandit == 1.7.8",
     "dask",
     "h5netcdf",

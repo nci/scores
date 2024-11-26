@@ -14,7 +14,9 @@ def broadcast_and_match_nan(*args: xr.Dataset) -> tuple[xr.Dataset, ...]: ...
 
 # Dataset input types lead to a Dataset return type
 @overload
-def broadcast_and_match_nan(*args: xr.DataArray) -> tuple[xr.DataArray, ...]: ...
+def broadcast_and_match_nan(
+    *args: xr.DataArray,
+) -> tuple[xr.DataArray, ...]: ...  # pylint: disable=overload-cannot-match
 
 
 def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:

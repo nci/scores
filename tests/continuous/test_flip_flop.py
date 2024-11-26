@@ -365,7 +365,7 @@ def test_encompassing_sector_size_raises(data, dims, skipna):
 )
 def test_flip_flop_index_proportion_exceeding(
     data, sampling_dim, thresholds, is_angular, selections, reduce_dims, preserve_dims, expected
-):
+):  # pylint: disable=too-many-positional-arguments
     """
     Tests that flip_flop_index_proportion_exceeding returns the correct object
     """

@@ -282,7 +282,9 @@ def test_comparative_discretise(data, comparison, mode, abs_tolerance, expected)
         ),
     ],
 )
-def test_comparative_discretise_raises(data, comparison, mode, abs_tolerance, error_class, error_msg_snippet):
+def test_comparative_discretise_raises(
+    data, comparison, mode, abs_tolerance, error_class, error_msg_snippet
+):  # pylint: disable=too-many-positional-arguments
     """
     Tests that .comparitive_discretise raises the correct error
     """
@@ -368,7 +370,9 @@ def test_comparative_discretise_raises(data, comparison, mode, abs_tolerance, er
         (xtd.DATA_5X1_POINT4, 0.4, ">=", 1e-8, False, xtd.EXP_DIS_GE0),
     ],
 )
-def test_binary_discretise(data, thresholds, mode, abs_tolerance, autosqueeze, expected):
+def test_binary_discretise(
+    data, thresholds, mode, abs_tolerance, autosqueeze, expected
+):  # pylint: disable=too-many-positional-arguments
     """
     Tests binary_discretise
     """
@@ -429,7 +433,9 @@ def test_binary_discretise(data, thresholds, mode, abs_tolerance, autosqueeze, e
         ),
     ],
 )
-def test_binary_discretise_raises(data, thresholds, mode, abs_tolerance, autosqueeze, error_class, error_msg_snippet):
+def test_binary_discretise_raises(
+    data, thresholds, mode, abs_tolerance, autosqueeze, error_class, error_msg_snippet
+):  # pylint: disable=too-many-positional-arguments
     """
     Tests that binary_discretise raises the correct error
     """
@@ -550,7 +556,7 @@ def test_proportion_exceeding(data, thresholds, reduce_dims, preserve_dims, expe
 )
 def test_binary_discretise_proportion(
     data, thresholds, mode, reduce_dims, preserve_dims, abs_tolerance, autosqueeze, expected
-):
+):  # pylint: disable=too-many-positional-arguments
     """
     Tests that processing.binary_discretise_proportion returns the correct value.
     """

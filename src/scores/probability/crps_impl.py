@@ -345,6 +345,9 @@ def crps_cdf(
         threshold_weight_fill_method=threshold_weight_fill_method,
     )
 
+    result = None  # Perhaps this should raise an exception if the integration
+                   # method isn't recognised
+
     if integration_method == "exact":
         result = crps_cdf_exact(
             fcst,
@@ -913,7 +916,7 @@ def tw_crps_for_ensemble(
     ensemble_member_dim: str,
     chaining_func: Callable[[XarrayLike], XarrayLike],
     *,  # Force keywords arguments to be keyword-only
-    chainging_func_kwargs: Optional[dict[str, Any]] = {},
+    chainging_func_kwargs: Optional[dict[str, Any]] = None,
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
@@ -1023,6 +1026,9 @@ def tw_crps_for_ensemble(
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
     """
+    if chainging_func_kwargs == None:
+        chainging_func_kwargs = {}
+
     obs = chaining_func(obs, **chainging_func_kwargs)
     fcst = chaining_func(fcst, **chainging_func_kwargs)
 
