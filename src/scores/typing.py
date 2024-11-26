@@ -15,7 +15,7 @@ FlexibleDimensionTypes = Iterable[Hashable]
 
 # Xarraylike data types should be used for all forecast, observed and weights
 # However currently some are specified as DataArray only
-XarrayLike = Union[xarray.core.dataset.DataArray, xarray.core.dataset.Dataset]
+XarrayLike = Union[xarray.DataArray, xarray.Dataset]
 
 # These type hint values *may* be used for various arguments across the
 # scores repository but are not establishing a standard or expectation beyond
