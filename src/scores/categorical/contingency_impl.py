@@ -91,6 +91,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         tablerepr = repr(table)
         final = "\n".join([heading, tablerepr])
         return final
+    
+    def _repr_html(self):
+        return '<td>%s</td><td></td>' % (self.format_table())
 
     def get_counts(self) -> dict:
         """
