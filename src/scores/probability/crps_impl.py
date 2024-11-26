@@ -919,7 +919,7 @@ def tw_crps_for_ensemble(
     ensemble_member_dim: str,
     chaining_func: Callable[[XarrayLike], XarrayLike],
     *,  # Force keywords arguments to be keyword-only
-    chainging_func_kwargs: Optional[dict[str, Any]] = None,
+    chaining_func_kwargs: Optional[dict[str, Any]] = None,
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
@@ -979,7 +979,7 @@ def tw_crps_for_ensemble(
         ensemble_member_dim: the dimension that specifies the ensemble member or the sample
             from the predictive distribution.
         chaining_func: the chaining function.
-        chainging_func_kwargs: keyword arguments for the chaining function.
+        chaining_func_kwargs: keyword arguments for the chaining function.
         method: Either "ecdf" for the empirical twCRPS or "fair" for the Fair twCRPS.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
@@ -1029,11 +1029,10 @@ def tw_crps_for_ensemble(
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
     """
-    if chainging_func_kwargs is None:
-        chainging_func_kwargs = {}
-
-    obs = chaining_func(obs, **chainging_func_kwargs)
-    fcst = chaining_func(fcst, **chainging_func_kwargs)
+    if chaining_func_kwargs is None:
+        chaining_func_kwargs = {}
+    obs = chaining_func(obs, **chaining_func_kwargs)
+    fcst = chaining_func(fcst, **chaining_func_kwargs)
 
     result = crps_for_ensemble(
         fcst,
@@ -1144,7 +1143,7 @@ def tail_tw_crps_for_ensemble(
         obs,
         ensemble_member_dim,
         _chainingfunc,
-        chainging_func_kwargs={"threshold": threshold},
+        chaining_func_kwargs={"threshold": threshold},
         method=method,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
@@ -1248,7 +1247,7 @@ def interval_tw_crps_for_ensemble(
         obs,
         ensemble_member_dim,
         _chaining_func,
-        chainging_func_kwargs={"lower_threshold": lower_threshold, "upper_threshold": upper_threshold},
+        chaining_func_kwargs={"lower_threshold": lower_threshold, "upper_threshold": upper_threshold},
         method=method,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
