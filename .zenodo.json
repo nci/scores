@@ -61,6 +61,10 @@
             "orcid": "https://orcid.org/0009-0002-8569-1439",
             "affiliation": "Independent Contributor, Australia",
             "name": "Bishop, Sam"
+        },
+        {
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Jinghan, Fu"
         }
     ],    
     "license": "Apache-2.0",
