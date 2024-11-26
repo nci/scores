@@ -4,6 +4,8 @@ The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into
 the probability module to be part of the probability API.
 """
 
+# pylint: disable=too-many-lines
+
 from collections.abc import Iterable
 from typing import Any, Callable, Literal, Optional, Sequence, Union
 
@@ -26,6 +28,7 @@ from scores.typing import XarrayLike
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-positional-arguments
 def check_crps_cdf_inputs(
     fcst,
     obs,
@@ -346,7 +349,7 @@ def crps_cdf(
     )
 
     result = None  # Perhaps this should raise an exception if the integration
-                   # method isn't recognised
+    # method isn't recognised
 
     if integration_method == "exact":
         result = crps_cdf_exact(
@@ -1026,7 +1029,7 @@ def tw_crps_for_ensemble(
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
     """
-    if chainging_func_kwargs == None:
+    if chainging_func_kwargs is None:
         chainging_func_kwargs = {}
 
     obs = chaining_func(obs, **chainging_func_kwargs)
