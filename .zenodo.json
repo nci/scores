@@ -56,7 +56,12 @@
             "orcid": "https://orcid.org/0000-0002-5545-1736",
             "affiliation": "CSIRO, Australia",
             "name": "Shrestha, Durga"
-        }                     
+        },
+        {
+            "orcid": "https://orcid.org/0009-0002-8569-1439",
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Bishop, Sam"
+        }
     ],    
     "license": "Apache-2.0",
 
