@@ -17,7 +17,9 @@ from typing import Callable, Literal, Optional, Tuple, Union
 import numpy as np
 import xarray as xr
 from scipy import interpolate
-from sklearn.isotonic import IsotonicRegression
+
+# NOTE: requires updated scipy. Used scipy 1.14.1
+from scipy.optimize import isotonic_regression
 
 
 def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
@@ -503,10 +505,13 @@ def _contiguous_mean_ir(
 ) -> np.ndarray:
     """
     Performs classical (i.e. for mean functional) contiguous quantile IR on tidied data x, y.
-    Uses sklearn implementation rather than supplying the mean solver function to `_contiguous_ir`,
-    as it is about 4 times faster (since it is optimised for mean).
+    Refactored to use scipy instead of scikit learn.
+
+    IMPORTANT NOTE: the y array MUST be sorted in descending order before being passed to the function. This
+    implicitly handled by the _tidy_ir_inputs function before calling this function.
+    To make explicit could include y = np.sort(y)[::-1]
     """
-    return IsotonicRegression().fit_transform(x, y, sample_weight=weight)  # type: ignore
+    return isotonic_regression(y, weights=weight, increasing=True).x  # type: ignore
 
 
 def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
