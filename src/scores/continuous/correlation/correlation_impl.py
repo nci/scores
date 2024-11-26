@@ -2,12 +2,16 @@
 This module contains functions to calculate the correlation.
 """
 
+import math
+import warnings
 from typing import Optional
 
 import xarray as xr
 
 import scores.utils
 from scores.typing import FlexibleDimensionTypes
+
+display_warning_when_pearsonr_is_NaN = False
 
 
 def pearsonr(
@@ -56,5 +60,8 @@ def pearsonr(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
+    ret_val = xr.corr(fcst, obs, reduce_dims)
+    if display_warning_when_pearsonr_is_NaN and math.isnan(ret_val):
+        warnings.warn("Warning! The returned pearson's correlation coefficient is NaN\n")
 
-    return xr.corr(fcst, obs, reduce_dims)
+    return ret_val
