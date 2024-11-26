@@ -7,7 +7,7 @@ import pathlib
 
 class PinVersionsMetadataHook(MetadataHookInterface):
     """
-    Update the dependency versions so they are pinned metadata of the wheel artefact produced by a wheel.
+    Update the dependency metadata that `hatch` uses to set the dependencies of wheel artefacts.
 
     This is invoked by `hatch` when `hatch build` is run as part of constructing the package metadata
      before it moves on to executing the next appropriate build step, be it sdist or wheels.
