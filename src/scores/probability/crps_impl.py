@@ -1036,7 +1036,7 @@ def tw_crps_for_ensemble(
         weights=weights,
         include_components=include_components,
     )
-    return result
+    return result  # type: ignore
 
 
 def tail_tw_crps_for_ensemble(
