@@ -115,7 +115,7 @@ def firm(  # pylint: disable=too-many-arguments
             fcst,
             obs,
             risk_parameter,
-            categorical_threshold,
+            categorical_threshold,  # type: ignore
             discount_distance=discount_distance,
             threshold_assignment=threshold_assignment,
         )
@@ -132,7 +132,7 @@ def firm(  # pylint: disable=too-many-arguments
 
 def _check_firm_inputs(
     obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
-):
+):  # pylint: disable=too-many-positional-arguments
     """
     Checks that the FIRM inputs are suitable
     """

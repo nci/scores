@@ -117,7 +117,7 @@ def observed_cdf(
     if precision > 0:
         obs = round_values(obs, precision)
 
-    thresholds = threshold_values_as_array if threshold_values is not None else []
+    thresholds = threshold_values_as_array if threshold_values is not None else []  # type: ignore
 
     if include_obs_in_thresholds:
         thresholds = np.concatenate((obs.values.flatten(), thresholds))  # type: ignore

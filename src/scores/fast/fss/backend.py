@@ -142,11 +142,11 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         """
         (fcst, obs, diff) = self.compute_fss_decomposed()
         denom = fcst + obs
-        fss: np.float = 0.0
+        fss: np.float = 0.0  # type: ignore
 
         if denom > 0.0:
             fss = 1.0 - diff / denom
 
         fss_clamped = max(min(fss, 1.0), 0.0)
 
-        return fss_clamped
+        return fss_clamped  # type: ignore

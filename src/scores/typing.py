@@ -7,7 +7,7 @@ from collections.abc import Hashable, Iterable
 from typing import Union
 
 import pandas as pd
-import xarray as xr
+import xarray
 
 # Flexible Dimension Types should be used for preserve_dims and reduce_dims in all
 # cases across the repository
@@ -15,7 +15,7 @@ FlexibleDimensionTypes = Iterable[Hashable]
 
 # Xarraylike data types should be used for all forecast, observed and weights
 # However currently some are specified as DataArray only
-XarrayLike = Union[xr.DataArray, xr.Dataset]
+XarrayLike = Union[xarray.DataArray, xarray.Dataset]
 
 # These type hint values *may* be used for various arguments across the
 # scores repository but are not establishing a standard or expectation beyond

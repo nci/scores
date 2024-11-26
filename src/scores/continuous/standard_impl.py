@@ -339,7 +339,7 @@ def multiplicative_bias(
 
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
-    fcst, obs = broadcast_and_match_nan(fcst, obs)
+    fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
     return multi_bias
 
@@ -414,7 +414,7 @@ def pbias(
 
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
-    fcst, obs = broadcast_and_match_nan(fcst, obs)
+    fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     error = fcst - obs
 
     _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)

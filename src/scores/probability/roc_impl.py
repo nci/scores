@@ -17,7 +17,7 @@ from scores.utils import gather_dimensions
 # earlier versions. As numpy 2.0 contains some API changes, `scores`
 # will try to support both interchangeably for the time being
 if not hasattr(np, "trapezoid"):
-    np.trapezoid = np.trapz  # pragma: no cover # tested manually for old numpy versions
+    np.trapezoid = np.trapz  # type: ignore # pragma: no cover  # tested manually
 
 
 def roc_curve_data(  # pylint: disable=too-many-arguments

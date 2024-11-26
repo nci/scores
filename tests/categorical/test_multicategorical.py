@@ -41,6 +41,8 @@ from tests.categorical import multicategorical_test_data as mtd
         (mtd.DA_FCST_SC, mtd.DA_OBS_SC, mtd.DA_THRESHOLD_SC, 0, "lower", mtd.EXP_SC_CASE6),
     ],
 )
+
+# pylint: disable=too-many-positional-arguments
 def test__single_category_score(fcst, obs, categorical_threshold, discount_distance, threshold_assignment, expected):
     """Tests _single_category_score"""
     risk_parameter = 0.7
@@ -257,6 +259,8 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
         ),
     ],
 )
+
+# pylint: disable=too-many-positional-arguments
 def test_firm(
     fcst,
     obs,
@@ -476,6 +480,8 @@ def test_firm_dask():
         ),
     ],
 )
+
+# pylint: disable=too-many-positional-arguments
 def test_firm_raises(
     fcst,
     obs,

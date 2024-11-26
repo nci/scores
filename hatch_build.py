@@ -1,3 +1,9 @@
+"""
+Takes responsibility for adding compatible version pinning to the built packages
+"""
+
+# pylint: skip-file
+
 import pathlib
 from typing import Optional
 
