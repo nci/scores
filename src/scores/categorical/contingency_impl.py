@@ -151,7 +151,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             Attributes: (0)
 
         """
-        return self.xr_table
+        return self.xr_table  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def accuracy(self) -> xr.DataArray:
         """
@@ -176,7 +176,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
-        return ratio
+        return ratio  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def base_rate(self) -> xr.DataArray:
         """
@@ -200,7 +200,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
-        return br
+        return br  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def forecast_rate(self) -> xr.DataArray:
         """
@@ -224,7 +224,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
-        return br
+        return br  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def fraction_correct(self) -> xr.DataArray:
         """
@@ -273,7 +273,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
 
-        return freq_bias
+        return freq_bias  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def bias_score(self) -> xr.DataArray:
         """
@@ -346,7 +346,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
 
-        return pod
+        return pod  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def true_positive_rate(self) -> xr.DataArray:
         """
@@ -394,7 +394,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
 
-        return far
+        return far  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def false_alarm_rate(self) -> xr.DataArray:
         """
@@ -421,7 +421,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
 
-        return far
+        return far  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def probability_of_false_detection(self) -> xr.DataArray:
         """
@@ -471,7 +471,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
 
-        return sr
+        return sr  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def threat_score(self) -> xr.DataArray:
         """
@@ -497,7 +497,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         cd = self.counts
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
-        return ts
+        return ts  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def critical_success_index(self) -> xr.DataArray:
         """
@@ -552,7 +552,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
         component_b = cd["fp_count"] / (cd["fp_count"] + cd["tn_count"])
         skill_score = component_a - component_b
-        return skill_score
+        return skill_score  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def true_skill_statistic(self) -> xr.DataArray:
         """
@@ -654,7 +654,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s
+        return s  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def true_negative_rate(self) -> xr.DataArray:
         """
@@ -770,7 +770,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
-        return f1
+        return f1  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def equitable_threat_score(self) -> xr.DataArray:
         """
@@ -811,7 +811,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
         ets = (cd["tp_count"] - hits_random) / (cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random)
 
-        return ets
+        return ets  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def gilberts_skill_score(self) -> xr.DataArray:
         """
@@ -897,7 +897,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             + ((cd["tn_count"] + cd["fn_count"]) * (cd["tn_count"] + cd["fp_count"]))
         )
         hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
-        return hss
+        return hss  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def cohens_kappa(self) -> xr.DataArray:
         """
@@ -1030,7 +1030,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         orss = (cd["tp_count"] * cd["tn_count"] - cd["fn_count"] * cd["fp_count"]) / (
             cd["tp_count"] * cd["tn_count"] + cd["fn_count"] * cd["fp_count"]
         )
-        return orss
+        return orss  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def yules_q(self) -> xr.DataArray:
         """
@@ -1116,7 +1116,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             + np.log(1 - self.probability_of_detection())
             + np.log(1 - self.probability_of_false_detection())
         )
-        return score
+        return score  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
 
 class BinaryContingencyManager(BasicContingencyManager):

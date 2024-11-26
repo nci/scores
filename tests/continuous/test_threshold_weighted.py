@@ -438,6 +438,7 @@ def test__phi_j_prime_rect():
         ),  # endpoints are arrays
     ],
 )
+# pylint: disable=too-many-positional-arguments
 def test__g_j_trap(a, b, c, d, x, expected):
     """Tests that `_g_j_trap` gives results as expected."""
     result = _g_j_trap(a, b, c, d, x)
@@ -458,6 +459,7 @@ def test__g_j_trap(a, b, c, d, x, expected):
         ),  # endpoints are arrays
     ],
 )
+# pylint: disable=too-many-positional-arguments
 def test__phi_j_trap(a, b, c, d, x, expected):
     """Tests that `_phi_j_trap` gives results as expected."""
     result = _phi_j_trap(a, b, c, d, x)
@@ -505,6 +507,7 @@ def test__auxiliary_funcs1(interval_where_one, a, b):
         ((-1, np.inf), (-3, np.inf), -3, -1, 11, 12),
     ],
 )
+# pylint: disable=too-many-positional-arguments
 def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c, d):
     """
     Tests that `_auxiliary_funcs` gives expected results for "trapezoidal" weights.

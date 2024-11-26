@@ -4,6 +4,8 @@ The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into
 the probability module to be part of the probability API.
 """
 
+# pylint: disable=too-many-lines
+
 from collections.abc import Iterable
 from typing import Any, Callable, Literal, Optional, Sequence, Union
 
@@ -26,6 +28,7 @@ from scores.typing import XarrayLike
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-positional-arguments
 def check_crps_cdf_inputs(
     fcst,
     obs,
@@ -344,6 +347,9 @@ def crps_cdf(
         fcst_fill_method=fcst_fill_method,
         threshold_weight_fill_method=threshold_weight_fill_method,
     )
+
+    result = None  # Perhaps this should raise an exception if the integration
+    # method isn't recognised
 
     if integration_method == "exact":
         result = crps_cdf_exact(
@@ -884,9 +890,9 @@ def crps_for_ensemble(
 
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
-        fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
+        fcst_spread_term = fcst_spread_term / (2 * ens_count**2)  # type: ignore
     if method == "fair":
-        fcst_spread_term = fcst_spread_term / (2 * ens_count * (ens_count - 1))
+        fcst_spread_term = fcst_spread_term / (2 * ens_count * (ens_count - 1))  # type: ignore
 
     # calculate final CRPS for each forecast case
     fcst_obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)
@@ -913,7 +919,7 @@ def tw_crps_for_ensemble(
     ensemble_member_dim: str,
     chaining_func: Callable[[XarrayLike], XarrayLike],
     *,  # Force keywords arguments to be keyword-only
-    chainging_func_kwargs: Optional[dict[str, Any]] = {},
+    chainging_func_kwargs: Optional[dict[str, Any]] = None,
     method: Literal["ecdf", "fair"] = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
@@ -1023,6 +1029,9 @@ def tw_crps_for_ensemble(
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
     """
+    if chainging_func_kwargs is None:
+        chainging_func_kwargs = {}
+
     obs = chaining_func(obs, **chainging_func_kwargs)
     fcst = chaining_func(fcst, **chainging_func_kwargs)
 
@@ -1036,7 +1045,7 @@ def tw_crps_for_ensemble(
         weights=weights,
         include_components=include_components,
     )
-    return result
+    return result  # type: ignore
 
 
 def tail_tw_crps_for_ensemble(
