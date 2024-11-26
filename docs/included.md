@@ -105,6 +105,10 @@
   - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
+* - Spearman's Correlation Coefficient
+  - [API](api.md#scores.continuous.correlation.spearmanr)
+  - [Tutorial](project:./tutorials/Spearmans_Correlation.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient)
 * - Percent Bias (PBIAS)
   - [API](api.md#scores.continuous.pbias)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
