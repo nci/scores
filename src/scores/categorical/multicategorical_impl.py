@@ -115,7 +115,7 @@ def firm(  # pylint: disable=too-many-arguments
             fcst,
             obs,
             risk_parameter,
-            categorical_threshold,
+            categorical_threshold,  # type: ignore
             discount_distance=discount_distance,
             threshold_assignment=threshold_assignment,
         )

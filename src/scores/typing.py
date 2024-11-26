@@ -7,7 +7,7 @@ from collections.abc import Hashable, Iterable
 from typing import Union
 
 import pandas as pd
-import xarray as xr
+import xarray
 
 # Flexible Dimension Types should be used for preserve_dims and reduce_dims in all
 # cases across the repository

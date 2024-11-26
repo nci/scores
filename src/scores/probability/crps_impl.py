@@ -884,9 +884,9 @@ def crps_for_ensemble(
 
     ens_count = fcst.count(ensemble_member_dim)
     if method == "ecdf":
-        fcst_spread_term = fcst_spread_term / (2 * ens_count**2)
+        fcst_spread_term = fcst_spread_term / (2 * ens_count**2)  # type: ignore
     if method == "fair":
-        fcst_spread_term = fcst_spread_term / (2 * ens_count * (ens_count - 1))
+        fcst_spread_term = fcst_spread_term / (2 * ens_count * (ens_count - 1))  # type: ignore
 
     # calculate final CRPS for each forecast case
     fcst_obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)

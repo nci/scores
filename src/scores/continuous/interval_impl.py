@@ -123,7 +123,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     reduce_dims = gather_dimensions(fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
     results = apply_weights(result, weights=weights)
     score = results.mean(dim=reduce_dims)
-    return score
+    return score  # type: ignore
 
 
 def interval_score(
