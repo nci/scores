@@ -9,7 +9,7 @@ authors = [
   { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
 ]
 description = """\
-Scores is a package containing mathematical functions \
+Scores is a Python package containing mathematical functions \
 for the verification, evaluation and optimisation of forecasts, predictions or models.
 """
 readme = "README.md"
