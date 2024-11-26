@@ -189,9 +189,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
             .. code-block :: python
 
-                    Positive  Negative
-            Positive       5.0       1.0
-            Negative       1.0      11.0
+                    Positive  Negative Total 
+            Positive       5       1       6
+            Negative       1      11       12
+            Total          6      12       18
         """
 
         table = self.xr_table
@@ -201,7 +202,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         # Create a pandas DataFrame for better presentation
         df = pd.DataFrame(
-            confusion_matrix,
+            confusion_matrix.astype(int),
             columns=[positive_value_name, negative_value_name],
             index=[positive_value_name, negative_value_name],
         )
