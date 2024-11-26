@@ -11,7 +11,7 @@ import xarray as xr
 import scores.utils
 from scores.typing import FlexibleDimensionTypes
 
-display_warning_when_pearsonr = False
+display_warning_when_pearsonr_is_NaN = False
 
 def pearsonr(
     fcst: xr.DataArray,
@@ -60,7 +60,7 @@ def pearsonr(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     ret_val = xr.corr(fcst, obs, reduce_dims)
-    if display_warning_when_pearsonr and math.isnan(ret_val):
+    if display_warning_when_pearsonr_is_NaN and math.isnan(ret_val):
         warnings.warn("Warning! The returned pearson's correlation coefficient is NaN\n")
 
     return ret_val
