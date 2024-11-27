@@ -74,9 +74,7 @@ array(2.)
 ```
 [Jupyter Notebook tutorials](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html) are provided for each metric and statistical test in `scores`, as well as for some of the key features of `scores` (e.g., [dimension handling](https://scores.readthedocs.io/en/stable/tutorials/Dimension_Handling.html) and [weighting results](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html)). 
 
-Below is a video from a presentation about `scores` given at PyCon AU 2024.
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/jyq2jOqtXe0?si=5iMSOJ5CKJvAjLf0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+To watch a PyCon AU 2024 conference presentation about `scores` [click here](https://youtu.be/jyq2jOqtXe0?si=HYoW1cNiplbb3R0c).
 
 ## Finding, Downloading and Working With Data
 
