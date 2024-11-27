@@ -24,6 +24,10 @@ def risk_matrix_score(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
+    Caution:
+        This is an emerging score that is under development and has not yet been peer-reviewed.
+        It may change at any time.
+
     Calculates the risk matrix score of Taggart & Wilke (2024). 
     
     Let :math:`(S_1, \\ldots,S_m)` denote the tuple of nested severity categories,
@@ -257,6 +261,10 @@ def matrix_weights_to_array(
     prob_threshold_coords: Iterable,
 ) -> xr.DataArray:
     """
+    Caution:
+        This function is part of an emerging score that is under development and has not yet
+        been peer-reviewed. It may change at any time.
+
     Generates a 2-dimensional xr.DataArray of the decision thresholds for the risk matrix
     score calculation.  Assumes that values toward the left in ``matrix_weights`` correspond
     to less severe categories, while values towards the top in ``matrix_weights`` correspond
@@ -306,9 +314,9 @@ def matrix_weights_to_array(
 
     if len(matrix_dims) != 2:
         raise ValueError("`matrix_weights` must be two dimensional")
-    if matrix_dims[0] != len(prob_threshold_coords):
+    if matrix_dims[0] != len(prob_threshold_coords):  # type: ignore
         raise ValueError("number of `prob_threshold_coords` must equal number of rows of `matrix_weights`")
-    if matrix_dims[1] != len(severity_coords):
+    if matrix_dims[1] != len(severity_coords):  # type: ignore
         raise ValueError("number of `severity_coords` must equal number of columns of `matrix_weights`")
 
     if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
@@ -337,6 +345,10 @@ def scaling_to_weight_array(
     prob_threshold_coords: Iterable,
 ) -> xr.DataArray:
     """
+    Caution:
+        This function is part of an emerging score that is under development and has not yet
+        been peer-reviewed. It may change at any time.
+
     Given a warning scaling matrix, assessment weights and other inputs,
     returns the decision weights for the risk matrix score as an xarray data array.
 
@@ -414,11 +426,11 @@ def scaling_to_weight_array(
         raise ValueError("`scaling_matrix` should be non-increasing along each column (moving top to bottom)")
 
     # checks on compatibility between scaling matrix and other inputs
-    if scaling_matrix_shape[0] - 1 != len(prob_threshold_coords):
+    if scaling_matrix_shape[0] - 1 != len(prob_threshold_coords):  # type: ignore
         raise ValueError("Length of `prob_threshold_coords` should be one less than rows of `scaling_matrix`")
-    if scaling_matrix_shape[1] - 1 != len(severity_coords):
+    if scaling_matrix_shape[1] - 1 != len(severity_coords):  # type: ignore
         raise ValueError("Length of `severity_coords` should be one less than columns of `scaling_matrix`")
-    if len(assessment_weights) < np.max(scaling_matrix):
+    if len(assessment_weights) < np.max(scaling_matrix):  # type: ignore
         raise ValueError("length of `assessment_weights` must be at least the highest value in `scaling_matrix`")
 
     # check on other inputs
