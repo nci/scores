@@ -65,7 +65,7 @@ def risk_matrix_score(
             severity category and 0 otherwise. Must have a dimension ``severity_dim``.
         decision_weights: an array of non-negative weights to apply to each matrix decision
             threshold, indexed by coordinates in ``severity_dim`` and ``prob_threshold_dim``.
-        severity_dim: the dimension specifying severity cateogories.
+        severity_dim: the dimension specifying severity categories.
         prob_threshold_dim: the dimension in ``decision_weights`` specifying probability thresholds.
         threshold_assignment: Either "upper" or "lower". Specifies whether the probability
             intervals defining the certainty categories, with endpoints given by the
