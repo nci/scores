@@ -265,8 +265,7 @@ def matrix_weights_to_array(
         This function is part of an emerging score that is under development and has not yet
         been peer-reviewed. It may change at any time.
 
-    Generates a 2-dimensional xr.DataArray of the decision thresholds for the risk matrix
-    score calculation.  Assumes that values toward the left in ``matrix_weights`` correspond
+    Generates a 2-dimensional xr.DataArray of the decision thresholds for the :py:func:`scores.emerging.risk_matrix_score` calculation.  Assumes that values toward the left in ``matrix_weights`` correspond
     to less severe categories, while values towards the top in ``matrix_weights`` correspond
     to higher probability thresholds.
 
