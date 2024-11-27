@@ -82,7 +82,7 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 
 ## Archives of `scores` on Zenodo
 
-Each `scores` release is now archived on Zenodo. [Click here](https://doi.org/10.5281/zenodo.12697241) to see the latest version on Zenodo.
+`scores` is archived on Zenodo. [Click here](https://doi.org/10.5281/zenodo.12697241) to see the latest version on Zenodo.
 
 ## Acknowledging or Citing `scores`
 
