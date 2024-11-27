@@ -74,6 +74,8 @@ array(2.)
 ```
 [Jupyter Notebook tutorials](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html) are provided for each metric and statistical test in `scores`, as well as for some of the key features of `scores` (e.g., [dimension handling](https://scores.readthedocs.io/en/stable/tutorials/Dimension_Handling.html) and [weighting results](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html)). 
 
+To watch a PyCon AU 2024 conference presentation about `scores` [click here](https://youtu.be/jyq2jOqtXe0?si=HYoW1cNiplbb3R0c).
+
 ## Finding, Downloading and Working With Data
 
 All metrics, statistical techniques and data processing tools in `scores` work with [xarray](https://xarray.dev). [Some metrics](https://scores.readthedocs.io/en/stable/included.html#pandas) work with [pandas](https://pandas.pydata.org/). As such, `scores` works with any data source for which xarray or pandas can be used. See the [data sources](https://scores.readthedocs.io/en/stable/data.html) page and [this tutorial](https://scores.readthedocs.io/en/stable/tutorials/First_Data_Fetching.html) for more information on finding, downloading and working with different sources of data.
