@@ -629,6 +629,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         References:
             - https://www.cawcr.gov.au/projects/verification/#POD
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+              & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
 
         """
         return self.probability_of_detection()
@@ -650,7 +654,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         Reference:
-            https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+            - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+              & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
@@ -745,6 +753,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         References:
             - https://www.cawcr.gov.au/projects/verification/#SR
             - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+              & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
 
         """
         return self.success_ratio()
@@ -769,6 +781,10 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
+           - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+             & Dmochowski, R. R. (2021).
+             Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+             and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
         """
         cd = self.counts
         npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])

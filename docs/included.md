@@ -406,7 +406,7 @@
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values)
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -  
     - Odds Ratio
   -
@@ -438,7 +438,7 @@
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -  
     - Precision (Success Ratio, Positive Predictive Value)
   -
@@ -478,7 +478,7 @@
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -  
     - Specificity (True Negative Rate)
   -
@@ -486,7 +486,7 @@
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -  
     - Success Ratio (Precision, Positive Predictive Value)
   -
