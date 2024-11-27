@@ -349,7 +349,7 @@ def scaling_to_weight_array(
         been peer-reviewed. It may change at any time.
 
     Given a warning scaling matrix, assessment weights and other inputs,
-    returns the decision weights for the risk matrix score as an xarray data array.
+    returns the decision weights for the :py:func:`scores.emerging.risk_matrix_score` as an xarray data array.
 
     Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
     of warning scaling in Table 1 of Taggart & Wilke (2004).
