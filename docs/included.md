@@ -400,6 +400,14 @@
   - 
     [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
+    - Negative Predictive Value
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.negative_predictive_value)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values)
+* -  
     - Odds Ratio
   -
     [API](api.md#scores.categorical.BasicContingencyManager.odds_ratio)

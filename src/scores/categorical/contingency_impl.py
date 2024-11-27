@@ -749,6 +749,32 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         return self.success_ratio()
 
+    def negative_predictive_value(self) -> xr.DataArray:
+        """
+        Calculates the negative predictive value (NPV).
+
+        Of all the times a negative result was predicted, how often was the prediction actually correct?
+
+        Returns:
+            xr.DataArray: An xarray object containing the negative predictive value score
+
+        .. math::
+            \\text{negative predictive value} = \\frac{\\text{true negatives}}{\\text{true negatives} +
+            \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True negatives" is the same as "correct rejections".
+            - "False negatives" is the same as "missed detections".
+
+        References:
+           - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
+        """
+        cd = self.counts
+        npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
+
+        return npv
+
     def f1_score(self) -> xr.DataArray:
         """
         Calculates the F1 score.
