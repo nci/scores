@@ -505,7 +505,7 @@ def _contiguous_mean_ir(
     Performs classical (i.e. for mean functional) contiguous quantile IR on tidied data x, y.
     Refactored to use scipy instead of scikit learn.
 
-    IMPORTANT NOTE: the y array MUST be sorted in descending order before being passed to the function. This
+    IMPORTANT NOTE: the y array MUST be sorted in descending order before being passed to the function. This is
     implicitly handled by the _tidy_ir_inputs function before calling this function.
     To make explicit could include y = np.sort(y)[::-1]
     """
