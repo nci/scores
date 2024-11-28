@@ -12,12 +12,12 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.emerging.emerging_impl import (
+from scores.emerging.risk_matrix import (
     _risk_matrix_score,
     _scaling_to_weight_matrix,
     matrix_weights_to_array,
     risk_matrix_score,
-    scaling_to_weight_array,
+    weights_from_warning_scaling,
 )
 
 # mtd is used as the abbreviation in preparation for migration to multicategorical_test_data.py
@@ -522,12 +522,12 @@ def test__scaling_to_weight_matrix(scaling_matrix, assessment_weights, expected)
     np.testing.assert_array_equal(calculated, expected, strict=True)
 
 
-def test_scaling_to_weight_array():
-    """Tests scaling_to_weight_array"""
+def test_weights_from_warning_scaling():
+    """Tests weights_from_warning_scaling"""
     expected = mtd.DA_RMS_WT2
     # SHORT-RANGE scaling
     scaling_matrix = np.array([[0, 2, 3, 3], [0, 1, 2, 3], [0, 1, 1, 2], [0, 0, 0, 0]])
-    calculated = scaling_to_weight_array(
+    calculated = weights_from_warning_scaling(
         scaling_matrix, [1, 2, 3], "sev", [1, 2, 3], "prob", (0.1, 0.4, 0.7)
     ).transpose(*expected.dims)
     xr.testing.assert_allclose(calculated, expected)
@@ -635,13 +635,13 @@ def test_scaling_to_weight_array():
         ),
     ],
 )
-def test_scaling_to_weight_array_raises(
+def test_weights_from_warning_scaling_raises(
     scaling_matrix, assessment_weights, severity_coords, prob_threshold_coords, error_msg_snippet
 ):
     """
-    Tests that scaling_to_weight_array raises as expected.
+    Tests that weights_from_warning_scaling raises as expected.
     """
     with pytest.raises(ValueError, match=error_msg_snippet):
-        scaling_to_weight_array(
+        weights_from_warning_scaling(
             scaling_matrix, assessment_weights, "sev", severity_coords, "prob", prob_threshold_coords
         )

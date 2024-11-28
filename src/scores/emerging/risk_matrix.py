@@ -19,10 +19,11 @@ def risk_matrix_score(
     severity_dim: str,
     prob_threshold_dim: str,
     threshold_assignment: Optional[str] = "lower",
+    *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-) -> xr.DataArray:
+) -> XarrayLike:
     """
     Caution:
         This is an emerging score that is under development and has not yet been peer-reviewed.
@@ -94,9 +95,9 @@ def risk_matrix_score(
         ValueError: if ``severity_dim`` is not a dimension of ``fcst``, ``obs`` or ``decision_weights``.
         ValueError: if ``severity_dim`` is a dimension of ``weights``.
         ValueError: if ``prob_threshold_dim`` is not a dimension of ``decision_weights``.
-        ValueError: if ``prob_threshold_dim`` is not a dimension of ``decision_weights``.
-        ValueError: if ``decision_weights`` does not have exactly 2 dimenions.
-        ValueError: if ``fcst` values are negative or greater than 1.
+        ValueError: if ``prob_threshold_dim`` is a dimension of ``weights``.
+        ValueError: if ``decision_weights`` does not have exactly 2 dimensions.
+        ValueError: if ``fcst`` values are negative or greater than 1.
         ValueError: if ``obs`` values are other than 0, 1 or nan.
         ValueError: if ``prob_threshold_dim`` coordinates are not strictly between 0 and 1.
         ValueError: if ``severity_dim`` coordinates differ for any of ``fcst``, ``obs`` or ``decision_weights``.
@@ -107,12 +108,12 @@ def risk_matrix_score(
 
     See also:
         :py:func:`scores.emerging.matrix_weights_to_array`
-        :py:func:`scores.emerging.scaling_to_weight_array`
+        :py:func:`scores.emerging.weights_from_warning_scaling`
 
     Examples:
         Calculate the risk matrix score where the risk matrix has three nested severity
         categories ("MOD+", "SEV+" and "EXT") and three probability thresholds (0.1, 0.3 and 0.5).
-        The the decision weights place greater emaphasis on higher end severity.
+        The decision weights place greater emphasis on higher end severity.
 
         >>> import xarray as xr
         >>> from scores.emerging import risk_matrix_score
@@ -212,18 +213,18 @@ def _risk_matrix_score(
     severity_dim: str,
     prob_threshold_dim: str,
     threshold_assignment: Optional[str] = "lower",
-) -> xr.DataArray:
+) -> XarrayLike:
     """
-    Calculates the risk matrix score MS of Taggart and Wilke (2024).
+    Calculates the risk matrix score (MS) of Taggart and Wilke (2024).
 
     Args:
         fcst: an array of forecast probabilities for the observation lying in each severity
             category. Must have a dimension `severity_dim`.
         obs: an array of binary observations with a value of 1 if the observation was in the
             severity category and 0 otherwise. Must have a dimension `severity_dim`.
-        decision_weights: an array of non=negative weights to apply to each matrix decision
+        decision_weights: an array of non-negative weights to apply to each matrix decision
             threshold, indexed by coordinates in `severity_dim` and `prob_threshold_dim`.
-        threshold_assignment: Either "upper" or "loewer". Specifies whether the probability
+        threshold_assignment: Either "upper" or "lower". Specifies whether the probability
             intervals defining the certainty categories for the decision thresholds in
             `decision_weights` are left or right closed. That is, whether the probability
             decision threshold is included in the upper (left closed) or lower (right closed)
@@ -265,14 +266,15 @@ def matrix_weights_to_array(
         This function is part of an emerging score that is under development and has not yet
         been peer-reviewed. It may change at any time.
 
-    Generates a 2-dimensional xr.DataArray of the decision thresholds for the :py:func:`scores.emerging.risk_matrix_score` calculation.  Assumes that values toward the left in ``matrix_weights`` correspond
+    Generates a 2-dimensional xr.DataArray of the decision thresholds for the :py:func:`scores.emerging.risk_matrix_score` calculation.
+    Assumes that values toward the left in ``matrix_weights`` correspond
     to less severe categories, while values towards the top in ``matrix_weights`` correspond
     to higher probability thresholds.
 
     Args:
         matrix_weights: array of weights to place on each risk matrix decision threshold,
             with rows (ascending) corresponding to (increasing) probability thresholds,
-            and colummns (left to right) corresponding to (increasing) severity categories.
+            and columns (left to right) corresponding to (increasing) severity categories.
         severity_dim: name of the severity category dimension.
         severity_coords: labels for each of the severity categories, in order of increasing
             severity. Does NOT include the lowest severity category for which no warning would
@@ -335,7 +337,7 @@ def matrix_weights_to_array(
     return weight_matrix
 
 
-def scaling_to_weight_array(
+def weights_from_warning_scaling(
     scaling_matrix: np.ndarray,
     assessment_weights: Iterable,
     severity_dim: str,
@@ -395,14 +397,14 @@ def scaling_to_weight_array(
         Taggart & Wilke (2024), with ESCALATION assessment weights.
 
         >>> import numpy as np
-        >>> from scores.emerging import scaling_to_weight_array
+        >>> from scores.emerging import weights_from_warning_scaling
         >>> scaling = np.array([
         >>>     [0, 2, 3, 3],
         >>>     [0, 1, 2, 3],
         >>>     [0, 1, 1, 2],
         >>>     [0, 0, 0, 0],
         >>> ])
-        >>> scaling_to_weight_array(
+        >>> weights_from_warning_scaling(
         >>>     scaling, [1, 2, 3],  "severity", ["MOD+", "SEV+", "EXT"], "prob_threshold", [0.1, 0.3, 0.5]
         >>> )
     """

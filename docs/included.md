@@ -763,8 +763,8 @@
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
   - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
 * -  
-    - Risk Matrix Score - Scaling to Weight Array
-  - [API](api.md#scores.emerging.scaling_to_weight_array)
+    - Risk Matrix Score - Warning Scaling to Weight Array
+  - [API](api.md#scores.emerging.weights_from_warning_scaling)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
   - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
 ```
