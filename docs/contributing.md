@@ -39,7 +39,7 @@ Prior to developing a pull request, it may be a good idea to create a [GitHub is
 
 To submit a pull request, please use the following workflow: 
 
-1. Ensure you are working on a new feature branch in **your fork** (see [the section above](#creating-your-own-fork-of-`scores`-for-the-first-time)).
+1. Ensure you are working on a new feature branch in **your fork** (see [the section above](#creating-your-own-fork-of-scores-for-the-first-time)).
 2. Keep your feature branch rebased and up-to-date with the develop branch of `scores`.
 3. When ready, submit a pull request to the develop branch of github.com/nci/scores.
 
@@ -118,13 +118,13 @@ To automate linter and fixer checks this project uses `pre-commit` which is set 
 pre-commit install -t pre-commit -t pre-push
 ```
 
-## Pull Request Etiqutte
+## Pull Request Etiquette
 
-In general, the originator of a pull request will be the person who does all the coding work, including responding to feedback from others. Typically, that feedback will be in the form of comments or code suggestions made through the GitHub web user interface.
+In general, the originator of a pull request will be the person who does all the coding work, including responding to feedback from others. Typically, feedback will be provided in the form of comments or code suggestions made through the GitHub web user interface.
 
-Sometimes, it may be pragmatic for the package maintainers to make or request a more complex code change. This typically occurs when a complex 'git' operation is needed to keep a PR up to date, to resolve conflicts, or to make changes where the originator of the PR does not know how to proceed. It can also occur in the final stages of a PR lifecycle if there are small tidyups needed and time is a factor.
+Sometimes, it may be pragmatic for the package maintainers to make or request a more complex code change. This typically occurs when a complex Git operation is needed to keep a pull request (PR) up to date, to resolve conflicts, or to make changes where the originator of the PR does not know how to proceed. It can also occur in the final stages of a PR lifecycle if there are small tidyups needed and time is a factor.
 
-Not every possibility can be accounted for, and the package maintainers will (if needed) push code directly to PR to get something over the line. However, special circumstances aside, the maintainers will first leave a comment on the PR asking how the originator would like to proceed, so that there are no surprises.
+Not every possibility can be accounted for, and the package maintainers will (if needed) push code directly to a PR to get something over the line. However, special circumstances aside, the maintainers will first leave a comment on the PR asking how the originator would like to proceed, so that there are no surprises.
 
 Most of these kinds of code change can also be handled as a PR by the reviewer onto the fork of the originator. This is slightly slower (i.e. does not take effect immediately), but allows for more control by the originator. This is probably most developer's general preference.
 
