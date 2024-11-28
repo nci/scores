@@ -161,7 +161,6 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     )
     fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)  # type: ignore
     y_out = _do_ir(
-        fcst_tidied,
         obs_tidied,
         weight=weight_tidied,
         functional=functional,
@@ -373,7 +372,6 @@ def _tidy_ir_inputs(
 
 
 def _do_ir(  # pylint: disable=too-many-arguments
-    fcst: np.ndarray,
     obs: np.ndarray,
     *,  # Force keywords arguments to be keyword-only
     weight: Optional[np.ndarray] = None,
@@ -385,11 +383,10 @@ def _do_ir(  # pylint: disable=too-many-arguments
     Returns the isotonic regression (IR) fit for specified functional or solver,
     by passing the inputs to the appropriate IR algorithm.
 
-    The inputs `fcst`, `obs` and `weight` are 1D numpy arrays assumed to have been
+    The inputs `obs` and `weight` are 1D numpy arrays assumed to have been
     mutually tidied via `_tidy_ir_inputs`.
 
     Args:
-        fcst: tidied array of forecast values.
         obs: tidied array of observed values.
         weight: tidied array of weights.
         functional: either "mean", "quantile" or None.
@@ -402,7 +399,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
         1D numpy array of values fitted using isotonic regression.
     """
     if functional == "mean":
-        y_out = _contiguous_mean_ir(fcst, obs, weight=weight)
+        y_out = _contiguous_mean_ir(obs, weight=weight)
     elif functional == "quantile":
         y_out = _contiguous_quantile_ir(obs, quantile_level)  # type: ignore
     else:
@@ -499,15 +496,17 @@ def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
 
 
 def _contiguous_mean_ir(
-    x: np.ndarray, y: np.ndarray, *, weight: Optional[np.ndarray] = None  # Force keywords arguments to be keyword-only
+    y: np.ndarray, *, weight: Optional[np.ndarray] = None  # Force keywords arguments to be keyword-only
 ) -> np.ndarray:
     """
-    Performs classical (i.e. for mean functional) contiguous quantile IR on tidied data x, y.
-    Refactored to use scipy instead of scikit learn.
+    Performs classical (i.e. for mean functional) contiguous quantile IR on the tidied data array y.
 
-    IMPORTANT NOTE: the y array MUST be sorted in descending order before being passed to the function. This is
-    implicitly handled by the _tidy_ir_inputs function before calling this function.
-    To make explicit could include y = np.sort(y)[::-1]
+    Uses a SciPy implementation rather than supplying the mean solver function to `_contiguous_ir`,
+    as the SciPy implementation is much faster.
+
+    Important note: The y array must be sorted in descending order before being used.
+    This sorting of the y array is handled by the '_tidy_ir_inputs' function
+    prior to any calls of this function.
     """
     return isotonic_regression(y, weights=weight, increasing=True).x  # type: ignore
 
@@ -556,7 +555,6 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
         fcst_sample, obs_sample, weight_sample = _tidy_ir_inputs(fcst_sample, obs_sample, weight=weight_sample)
 
         ir_results = _do_ir(
-            fcst_sample,
             obs_sample,
             weight=weight_sample,
             functional=functional,
