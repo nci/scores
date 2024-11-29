@@ -103,7 +103,7 @@ def spearmanr(
         This function isn't set up to take weights.
 
     See also:
-    `scores.continuous.correlation.pearsonr`
+    :py:func:`scores.continuous.correlation.pearsonr`
 
     Reference:
         https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
