@@ -40,7 +40,7 @@ Prior to developing a pull request, it may be a good idea to create a [GitHub is
 To submit a pull request, please use the following workflow: 
 
 1. Ensure you are working on a new feature branch in **your fork** (see [the section above](#creating-your-own-fork-of-scores-for-the-first-time)).
-2. Keep your feature branch rebased and up-to-date with the develop branch of `scores`.
+2. Keep your feature branch rebased and up-to-date with the develop branch of `scores`. You can do this by first syncing the develop branch on your fork, and then rebase your feature branch against the develop branch on your fork.
 3. When ready, submit a pull request to the develop branch of github.com/nci/scores.
 
 To help disambiguate branches, some contributors like to prefix their branch names with a short numerical indentifier. This is up to the contributor and any approach to branch naming is welcome. 
