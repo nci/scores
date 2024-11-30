@@ -168,6 +168,10 @@
   - [API](api.md#scores.probability.brier_score)
   - [Tutorial](project:./tutorials/Brier_Score.md)
   - [Brier (1950)](https://doi.org/10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO;2)
+* - Brier Score for ensembles
+  - [API](api.md#scores.probability.brier_score_for_ensemble)
+  - [Tutorial](project:./tutorials/Brier_Score.md)
+  - [Ferro (2013)](https://doi.org/10.1002/qj.2270)
 * - Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs)
   -    
   - 
@@ -216,10 +220,6 @@
   - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
   - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
   - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
-* - Brier Score for ensembles
-  - [API](api.md#scores.probability.brier_score_for_ensemble)
-  - [Tutorial](project:./tutorials/Brier_Score.md)
-  - [Ferro (2013)](https://doi.org/10.1002/qj.2270)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;

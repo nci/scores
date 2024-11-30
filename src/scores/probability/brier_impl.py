@@ -25,42 +25,40 @@ def brier_score(
     check_args: bool = True,
 ) -> XarrayLike:
     """
-        Calculates the Brier score for forecast and observed data.
+    Calculates the Brier score for forecast and observed data.
 
-        .. math::
-            \\text{brier score} = \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
+    .. math::
+        \\text{brier score} = \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
-        If you want to speed up performance with Dask and are confident of your input data,
-        or if you want observations to take values between 0 and 1, set ``check_args`` to ``False``.
+    If you want to speed up performance with Dask and are confident of your input data,
+    or if you want observations to take values between 0 and 1, set ``check_args`` to ``False``.
 
-        Args:
-            fcst: Forecast or predicted variables in xarray.
-            obs: Observed variables in xarray.
-            reduce_dims: Optionally specify which dimensions to reduce when
-                calculating the Brier score. All other dimensions will be preserved.
-            preserve_dims: Optionally specify which dimensions to preserve when
-                calculating the Brier score. All other dimensions will be reduced. As a
-                special case, 'all' will allow all dimensions to be preserved. In
-                this case, the result will be in the same shape/dimensionality
-                as the forecast, and the errors will be the absolute error at each
-                point (i.e. single-value comparison against observed), and the
-                forecast and observed dimensions must match precisely.
-            weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-                by population, custom)
-            check_args: will perform some tests on the data if set to True
-        Raises:
-            ValueError: if ``fcst`` contains non-nan values outside of the range [0, 1]
-            ValueError: if ``obs`` contains non-nan values not in the set {0, 1}
+    Args:
+        fcst: Forecast or predicted variables in xarray.
+        obs: Observed variables in xarray.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the Brier score. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the Brier score. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the absolute error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom).
+        check_args: will perform some tests on the data if set to True.
+    Raises:
+        ValueError: if ``fcst`` contains non-nan values outside of the range [0, 1]
+        ValueError: if ``obs`` contains non-nan values not in the set {0, 1}
 
-    <<<<<<< HEAD
-        References:
-            - Brier, G. W. (1950). Verification of forecasts expressed in terms of probability.
-              Monthly Weather Review, 78(1), 1-3. https://doi.org/fp62r6
-            - https://en.wikipedia.org/wiki/Brier_score
-    =======
-        See Also:
-            - :py:func:`scores.probability.ensemble_brier_score`
-    >>>>>>> 64d4dfd (update docs)
+    References:
+        - Brier, G. W. (1950). Verification of forecasts expressed in terms of probability.
+          Monthly Weather Review, 78(1), 1-3. https://doi.org/fp62r6
+        - https://en.wikipedia.org/wiki/Brier_score
+
+    See Also:
+        - :py:func:`scores.probability.brier_score_for_ensemble`
     """
     if check_args:
         error_msg = ValueError("`fcst` contains values outside of the range [0, 1]")
@@ -116,18 +114,18 @@ def brier_score_for_ensemble(
 
     If ``fair_correction`` is set to ``True`` and the number of ensemble members is 1, the
     fair correction will not be applied to avoid division by zero. If you want to
-    set the minimum number ensemble members required to calculate the Brier score,
+    set the minimum number of ensemble members required to calculate the Brier score,
     we recommend preprocessing your data to remove data points with fewer than the
     minimum number of ensemble members that you want.
 
     Args:
-        fcst: Real valued ensemble forecasts in xarray. These values are converted to the
-            probability of the event occurring in this function.
-        obs: Real valued observations variables in xarray. These values are converted to binary
+        fcst: Real valued ensemble forecasts in xarray. The proportion of ensemble members
+        above a threshold is calculated within this function.
+        obs: Real valued observations in xarray. These values are converted to binary
             values in this function.
         ensemble_member_dim: The dimension name of the ensemble member.
         event_thresholds: The threshold(s) that define what is considered an event. If
-            multiple thresholds are provided, they should be monotonically increasing with no NaNs
+            multiple thresholds are provided, they should be monotonically increasing with no NaNs.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the Brier score. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
@@ -140,12 +138,16 @@ def brier_score_for_ensemble(
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude)
             when calculating the mean score across specified dimensions via ``reduce_dims`` or ``preserve_dims``.
         fair_correction: Whether or not to apply the fair Brier score correction. Default is True.
-        event_threshold_mode: "The mode to use to define an event relative to a supplied threshold.
-            Default is ``operator.ge``, which means that an event occurs (is forecast)
-            if the observation (forecast) is greater than or equal to the threshold." Passing
-            in ``operator.lt`` will give the same results. Alternatively, you can provide
-            ``operator.gt`` which means that an event occurs (is forecast) if the observation (forecast)
-            is strictly greater than the threshold. Using``operator.le`` will give the same results as ``operator.gt``.
+        event_threshold_mode: The mode to use to define an event relative to a supplied threshold.
+            Default is ``operator.ge``, which means that an event occurs
+            if the observation is greater than or equal to the threshold.
+            Similarly, an event will have been considered to be forecast by an ensemble member
+            if the forecast is greater than or equal to the threshold.
+            Passing in ``operator.lt`` will give the same results. Alternatively, you can provide
+            ``operator.gt`` which means that an event occurs if the observation
+            is strictly greater than the threshold. Again, an event for an ensemble member
+            will have been considered to be forecast if the forecast is greater than the threshold.
+            Using``operator.le`` will give the same results as ``operator.gt``.
         threshold_dim: The name of the threshold dimension in the output. Default is 'threshold'.
            It must not exist as a dimension in the forecast or observation data.
 
@@ -157,7 +159,7 @@ def brier_score_for_ensemble(
         ValueError: if values in ``event_thresholds`` are not monotonically increasing.
         ValueError: if ``fcst`` contains the dimension provided in ``threshold_dim``.
         ValueError: if ``obs`` contains the dimension provided in ``threshold_dim``.
-        ValueError: if ``weights`` contains the provided in ``threshold_dim``.
+        ValueError: if ``weights`` contains the dimension provided in ``threshold_dim``.
         ValueError: if ``ensemble_member_dim`` is not in ``fcst`` dimensions.
 
     References:
@@ -173,14 +175,14 @@ def brier_score_for_ensemble(
 
         >>> import numpy as np
         >>> import xarray as xr
-        >>> from scores.probability import ensemble_brier_score
+        >>> from scores.probability import brier_score_for_ensemble
         >>> fcst = 10 * xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = 10 * xr.DataArray(np.random.rand(10), dims=['time'])
-        >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=0.5)
+        >>> brier_score_for_ensemble(fcst, obs, ensemble_member_dim='ensemble', thresholds=0.5)
 
         Calculate the Brier score for an ensemble forecast for multiple thresholds:
         >>> thresholds = [0.1, 5, 9]
-        >>> ensemble_brier_score(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
+        >>> brier_score_for_ensemble(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
     if event_threshold_mode not in [operator.ge, operator.gt, operator.le, operator.lt]:
