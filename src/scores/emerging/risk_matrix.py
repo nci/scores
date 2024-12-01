@@ -18,8 +18,8 @@ def risk_matrix_score(
     decision_weights: xr.DataArray,
     severity_dim: str,
     prob_threshold_dim: str,
-    threshold_assignment: Optional[str] = "lower",
     *,  # Force keywords arguments to be keyword-only
+    threshold_assignment: Optional[str] = "lower",
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
@@ -104,7 +104,8 @@ def risk_matrix_score(
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation.
+            In preparation.
 
     See also:
         :py:func:`scores.emerging.matrix_weights_to_array`
@@ -148,7 +149,9 @@ def risk_matrix_score(
     reduce_dims = gather_dimensions(
         fcst_dims0, obs_dims0, weights_dims=weights_dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    result = _risk_matrix_score(fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment)
+    result = _risk_matrix_score(
+        fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment=threshold_assignment
+    )
 
     result = apply_weights(result, weights=weights).mean(dim=reduce_dims)
 
@@ -212,6 +215,7 @@ def _risk_matrix_score(
     decision_weights: xr.DataArray,
     severity_dim: str,
     prob_threshold_dim: str,
+    *,
     threshold_assignment: Optional[str] = "lower",
 ) -> XarrayLike:
     """
@@ -294,7 +298,8 @@ def matrix_weights_to_array(
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation.
+            In preparation.
 
     Examples:
         Returns risk matrix decision weights, where weights increase with increasing
@@ -390,7 +395,8 @@ def weights_from_warning_scaling(
         ValueError: if ``assessment_weights`` aren't strictly positive.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Consistent evaluation of warnings that are based on risk matrices. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation.
+            In preparation.
 
     Examples:
         Returns risk matrix decision weights, for the SHORT-RANGE scaling matrix of
