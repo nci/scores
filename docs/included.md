@@ -168,7 +168,7 @@
   - [API](api.md#scores.probability.brier_score)
   - [Tutorial](project:./tutorials/Brier_Score.md)
   - [Brier (1950)](https://doi.org/10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO;2)
-* - Brier Score for ensembles
+* - Brier Score for Ensembles
   - [API](api.md#scores.probability.brier_score_for_ensemble)
   - [Tutorial](project:./tutorials/Brier_Score.md)
   - [Ferro (2013)](https://doi.org/10.1002/qj.2270)
