@@ -8,13 +8,15 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
-- Added one new metric:
+- Added two new metrics:
 	- Negative predictive value: `scores.categorical.BasicContingencyManager.negative_predictive_value`. See [PR #759](https://github.com/nci/scores/pull/759).
+	- Positive predictive value: `scores.categorical.BasicContingencyManager.positive_predictive_value`. (Note, `scores.categorical.BasicContingencyManager.positive_predictive_value` is identical to `scores.categorical.BasicContingencyManager.success_ratio` and `scores.categorical.BasicContingencyManager.precision`.) See [PR #761](https://github.com/nci/scores/pull/761), [PR #756](https://github.com/nci/scores/pull/756) and [PR #762](https://github.com/nci/scores/pull/762).
 - Added one new emerging metric and two supporting functions:
 	- Risk matrix score: `scores.emerging.risk_matrix_scores`.
 	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
 	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
 	See [PR #724](https://github.com/nci/scores/pull/724).  
+- Added positive predictive value `scores.categorical.BasicContingencyManager.positive_predictive_value` as an alternative name for success ratio and precision.
 
 ### Bug Fixes
 
@@ -31,6 +33,8 @@ tutorial, to include "positive predictive value" and "negative predictive value"
 - Updated the README:
 	- Added a link to a video of a PyCon AU 2024 conference presentation about `scores`. See [PR #783](https://github.com/nci/scores/pull/783).
 	- Added a link to the archives of `scores` on Zenodo. See [PR #784](https://github.com/nci/scores/pull/784).
+- Added `Scoringrules` to "Related Works". See [PR #746](https://github.com/nci/scores/pull/746), [PR #766](https://github.com/nci/scores/pull/766) and [PR #789](https://github.com/nci/scores/pull/789).
+- Fixed formatting issues in the docstrings for `scores.processing.comparative_discretise`, `scores.processing.binary_discretise` and `scores.processing.binary_discretise_proportion`. See [PR #758](https://github.com/nci/scores/pull/758).
 
 ### Internal Changes
 
@@ -38,7 +42,7 @@ tutorial, to include "positive predictive value" and "negative predictive value"
 
 ### Contributors to this Release
 
-Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
+Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Liam Bluett* ([@lbluett](https://github.com/lbluett)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
 Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).    
 
 \* indicates that this release contains their first contribution to `scores`.
