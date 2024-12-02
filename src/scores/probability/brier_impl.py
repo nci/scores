@@ -112,7 +112,9 @@ def brier_score_for_ensemble(
     .. math::
         s_{i,y} = \\left(\\frac{i}{m} - y\\right)^2
 
-    If ``fair_correction`` is set to ``True`` and the number of ensemble members is 1, the
+    The fair correction will only be applied at coordinates where the number of ensemble members
+    is greater than 1 and ``fair_correction=True``.
+    When the ``fair_correction`` is set to ``True`` and the number of ensemble members is 1, the
     fair correction will not be applied to avoid division by zero. If you want to
     set the minimum number of ensemble members required to calculate the Brier score,
     we recommend preprocessing your data to remove data points with fewer than the
@@ -222,6 +224,10 @@ def brier_score_for_ensemble(
         fair_corr = (member_event_count * (total_member_count - member_event_count)) / (
             total_member_count**2 * (total_member_count - 1)
         )
+        # For coordinates where the ensemble member count is 1, the fair correction will
+        # have a NaN value. In this situation, we set the fair correction to 0 at these coordinates.
+        # This may be important if you have a lagged ensemble where at least one time step
+        # has only a single ensemble member
         fair_correction = fair_corr.fillna(0)
         result -= fair_correction
 
