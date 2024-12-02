@@ -113,5 +113,5 @@
 ```{eval-rst}
 .. autofunction:: scores.emerging.risk_matrix_score
 .. autofunction:: scores.emerging.matrix_weights_to_array
-.. autofunction:: scores.emerging.scaling_to_weight_array
+.. autofunction:: scores.emerging.weights_from_warning_scaling
 ```
