@@ -10,31 +10,13 @@
 Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
 Source code: [github.com/nci/scores](https://github.com/nci/scores)  
 Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
-What's new (15 Nov 2024): [version 1.3.0 release notes](https://scores.readthedocs.io/en/stable/release_notes.html)  
+What's new: [release notes](https://scores.readthedocs.io/en/stable/release_notes.html)  
 Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
 
 Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
 Source code: [github.com/nci/scores](https://github.com/nci/scores)  
 Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
-What's new: [version 1.3.0, 15 Nov 2024](https://scores.readthedocs.io/en/stable/release_notes.html)  
-Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
-
-Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
-Source code: [github.com/nci/scores](https://github.com/nci/scores)  
-Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
-What's new: [15 Nov 2024, version 1.3.0](https://scores.readthedocs.io/en/stable/release_notes.html)  
-Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
-
-Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
-Source code: [github.com/nci/scores](https://github.com/nci/scores)  
-Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
-What's new: [15 Nov 2024, version 1.3.0 release notes](https://scores.readthedocs.io/en/stable/release_notes.html)  
-Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
-
-Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
-Source code: [github.com/nci/scores](https://github.com/nci/scores)  
-Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
-What's new: [version 1.3.0 release notes, 15 Nov 2024](https://scores.readthedocs.io/en/stable/release_notes.html)  
+What's new (15 Nov 2024): [Version 1.3.0 Release Notes](https://scores.readthedocs.io/en/stable/release_notes.html)  
 Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
 
 ## Overview
