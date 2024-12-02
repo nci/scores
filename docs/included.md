@@ -739,4 +739,32 @@
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
 ```
 
+## Emerging
 
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Risk Matrix Score
+  - 
+  - 
+  - 
+* -  
+    - Risk Matrix Score
+  - [API](api.md#scores.emerging.risk_matrix_score)
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+* -  
+    - Risk Matrix Score - Matrix Weights To Array
+  - [API](api.md#scores.emerging.matrix_weights_to_array)
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+* -  
+    - Risk Matrix Score - Warning Scaling to Weight Array
+  - [API](api.md#scores.emerging.weights_from_warning_scaling)
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+```
