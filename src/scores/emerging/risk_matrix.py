@@ -301,7 +301,7 @@ def matrix_weights_to_array(
         - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
 
     Examples:
-        Returns weights for eachh risk matrix decision point, where weights increase with increasing
+        Returns weights for each risk matrix decision point, where weights increase with increasing
         severity category and decrease with increasing probability threshold.
 
         >>> import numpy as np
