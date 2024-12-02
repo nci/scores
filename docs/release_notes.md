@@ -1,5 +1,48 @@
 # Release Notes (What's New)
 
+## Version 2.0.0 (Upcoming Release)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.3.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Breaking Changes
+
+### Features
+
+- Added one new metric:
+	- Negative predictive value: `scores.categorical.BasicContingencyManager.negative_predictive_value`. See [PR #759](https://github.com/nci/scores/pull/759).
+- Added three new emerging metrics:
+	- Risk matrix score: `scores.emerging.risk_matrix_scores`.
+	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
+	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
+	See [PR #724](https://github.com/nci/scores/pull/724).  
+
+### Bug Fixes
+
+### Documentation
+
+- Added "The Risk Matrix Score" tutorial. See [PR #724](https://github.com/nci/scores/pull/724). 
+- Updated the "Binary Categorical Scores and Binary Contingency Tables (Confusion Matrices)" 
+tutorial, to include "positive predictive value" and "negative predictive value" in the list of binary categorical scores included in `scores`. See [PR #759](https://github.com/nci/scores/pull/759).
+- Updated the “Contributing Guide”:
+	- Added a new section: "Creating Your Own Fork of `scores` for the First Time".
+	- Updated the section: "Workflow for Submitting Pull Requests".
+	- Added a new section: "Pull Request Etiquette".  
+	See [PR #787](https://github.com/nci/scores/pull/787).
+- Updated the README:
+	- Added a link to a video of a PyCon AU 2024 conference presentation about `scores`. See [PR #783](https://github.com/nci/scores/pull/783).
+	- Added a link to the archives of `scores` on Zenodo. See [PR #784](https://github.com/nci/scores/pull/784).
+
+### Internal Changes
+
+- Removed scikit-learn as a dependency. `scores` has replaced the one use of scikit-learn with a similar function from SciPy (which was an existing `scores` dependency). See [PR #774](https://github.com/nci/scores/pull/774).
+
+### Contributors to this Release
+
+Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)) A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
+Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).    
+
+\* indicates that this release contains their first contribution to `scores`.
+ 
 ## Version 1.3.0 (November 15, 2024)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.2.0...1.3.0). Below are the changes we think users may wish to be aware of.
