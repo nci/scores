@@ -1,6 +1,4 @@
 """
-Import the functions from the implementations into the public API.
-
 This module is intended to hold code for new metrics that may not yet have a publication
 and may not yet be in their final form, but which still have interest and value to
 the verification community.
