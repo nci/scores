@@ -6,6 +6,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Breaking Changes
 
+- The function `scores.probability.tw_crps_for_ensemble` previously took an optional (mis-spelled) argument `chainging_func_kwargs`. The spelling has been corrected and the argument is now `chaining_func_kwargs`.
+- For developers, the version of the `black` and `mypy` tools have been updated. As such, developers will need to ensure they re-install the `scores` package with `pip install -e .[develop]` to get the correct versions of these tools.
+
 ### Features
 
 - Added two new metrics:
