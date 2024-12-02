@@ -25,8 +25,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import numpy as np
-import xarray as xr
 import pandas as pd
+import xarray as xr
 
 import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
@@ -91,9 +91,6 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         tablerepr = repr(table)
         final = "\n".join([heading, tablerepr])
         return final
-    
-    def _repr_html(self):
-        return '<td>%s</td><td></td>' % (self.format_table())
 
     def get_counts(self) -> dict:
         """
@@ -160,7 +157,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     def format_table(
         self, positive_value_name: str = "Positive", negative_value_name: str = "Negative"
     ) -> pd.DataFrame:
-        """Formats a contingency table from a contingency manager into a confusion matrix.
+        """Formats a contingency table from a 2x2 contingency manager into a confusion matrix.
 
         Args:
             positive_value_name: A string with the value to be displayed on
@@ -172,7 +169,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             pandas.DataFrame: A Pandas DataFrame representing the binary contingency table.
 
         This function retrieves the contingency table, extracts the relevant counts, and constructs
-        a 2x2 confusion matrix represented as a Pandas DataFrame.
+        a 2x2 confusion matrix represented as a Pandas DataFrame. This function does not support
+        HTML rendering of tables where dimensionality has been preserved.
 
         Example:
             Assuming `self.xr_table` returns an xr.Array:
@@ -192,7 +190,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
             .. code-block :: python
 
-                    Positive  Negative Total 
+                    Positive  Negative Total
             Positive       5       1       6
             Negative       1      11       12
             Total          6      12       18
@@ -206,13 +204,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         # Create a pandas DataFrame for better presentation
         df = pd.DataFrame(
             confusion_matrix.astype(int),
-            columns=[positive_value_name, negative_value_name],
-            index=[positive_value_name, negative_value_name],
+            columns=[positive_value_name + " Observed", negative_value_name + " Observed"],
+            index=[positive_value_name + " Forecast", negative_value_name + " Forecast"],
         )
-
-        # Add labels for rows and columns
-        df.index.name = "Forecast"
-        df.columns.name = "Observed"
 
         # Add totals
         df["Total"] = df.sum(axis=1)
