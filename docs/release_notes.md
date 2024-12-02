@@ -10,15 +10,12 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 - Added two new metrics:
 	- Negative predictive value: `scores.categorical.BasicContingencyManager.negative_predictive_value`. See [PR #759](https://github.com/nci/scores/pull/759).
-	- Positive predictive value: `scores.categorical.BasicContingencyManager.positive_predictive_value`. (Note, `scores.categorical.BasicContingencyManager.positive_predictive_value` is identical to `scores.categorical.BasicContingencyManager.success_ratio` and `scores.categorical.BasicContingencyManager.precision`.) See [PR #761](https://github.com/nci/scores/pull/761), [PR #756](https://github.com/nci/scores/pull/756) and [PR #762](https://github.com/nci/scores/pull/762).
-- Added one new emerging metric and two supporting functions:
+	- Positive predictive value: `scores.categorical.BasicContingencyManager.positive_predictive_value`. See [PR #761](https://github.com/nci/scores/pull/761) and [PR #756](https://github.com/nci/scores/pull/756).
+- Also added one new emerging metric and two supporting functions:
 	- Risk matrix score: `scores.emerging.risk_matrix_scores`.
 	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
 	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
 	See [PR #724](https://github.com/nci/scores/pull/724).  
-- Added positive predictive value `scores.categorical.BasicContingencyManager.positive_predictive_value` as an alternative name for success ratio and precision.
-
-### Bug Fixes
 
 ### Documentation
 
@@ -38,11 +35,11 @@ tutorial, to include "positive predictive value" and "negative predictive value"
 
 ### Internal Changes
 
-- Removed scikit-learn as a dependency. `scores` has replaced the one use of scikit-learn with a similar function from SciPy (which was an existing `scores` dependency). See [PR #774](https://github.com/nci/scores/pull/774).
+- Removed scikit-learn as a dependency. `scores` has replaced the use of scikit-learn with a similar function from SciPy (which was an existing `scores` dependency). This change was manually tested and found to be faster. See [PR #774](https://github.com/nci/scores/pull/774).
 
 ### Contributors to this Release
 
-Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Liam Bluett* ([@lbluett](https://github.com/lbluett)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
+Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Liam Bluett* ([@lbluett](https://github.com/lbluett)), Jinghan Fu* ([@JinghanFu](https://github.com/JinghanFu)), Sam Bishop* ([@techdragon](https://github.com/techdragon)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
 Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).    
 
 \* indicates that this release contains their first contribution to `scores`.
