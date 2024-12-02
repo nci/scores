@@ -10,7 +10,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 - Added one new metric:
 	- Negative predictive value: `scores.categorical.BasicContingencyManager.negative_predictive_value`. See [PR #759](https://github.com/nci/scores/pull/759).
-- Added three new emerging metrics:
+- Added one new emerging metric and two supporting functions:
 	- Risk matrix score: `scores.emerging.risk_matrix_scores`.
 	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
 	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
@@ -38,7 +38,7 @@ tutorial, to include "positive predictive value" and "negative predictive value"
 
 ### Contributors to this Release
 
-Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)) A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
+Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
 Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).    
 
 \* indicates that this release contains their first contribution to `scores`.
