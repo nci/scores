@@ -88,7 +88,7 @@ def risk_matrix_score(
             by population, custom) of scores across all forecast cases.
 
     Returns:
-        An xarray data array of risk matrix scores, averaged according to specified weights
+        An xarray object of risk matrix scores, averaged according to specified weights
         across appropriate dimensions.
 
     Raises:
@@ -235,7 +235,7 @@ def _risk_matrix_score(
             certainty category. Defaults to "lower".
 
     Returns:
-        xarray data array of matrix scores for each forecast case, preserving all dimensions
+        xarray object of matrix scores for each forecast case, preserving all dimensions
         in fcst, obs apart from `severity_dim`.
     """
     da_thresholds = decision_weights[prob_threshold_dim]
@@ -359,7 +359,7 @@ def weights_from_warning_scaling(
     returns the decision weights for the :py:func:`scores.emerging.risk_matrix_score` as an xarray data array.
 
     Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
-    of warning scaling in Table 1 of Taggart & Wilke (2004).
+    of warning scaling in Table 1 of Taggart & Wilke (2024).
 
     Args:
         scaling_matrix: a 2-dimensional matrix encoding the warning scaling. Warning levels
