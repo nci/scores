@@ -413,10 +413,9 @@ def test_valid_data():
     match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
     table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     expected_df = pd.DataFrame(
-        {"Positive": [9, 1, 10], "Negative": [2, 6, 8], "Total": [11, 7, 18]}, index=["Positive", "Negative", "Total"]
+        {"Positive Observed": [9, 1, 10], "Negative Observed": [2, 6, 8], "Total": [11, 7, 18]},
+        index=["Positive Forecast", "Negative Forecast", "Total"],
     )
-    expected_df.index.name = "Forecast"
-    expected_df.columns.name = "Observed"
 
     result_df = table.format_table()
 
