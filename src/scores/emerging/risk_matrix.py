@@ -64,8 +64,8 @@ def risk_matrix_score(
             category. Must have a dimension ``severity_dim``.
         obs: an array of binary observations with a value of 1 if the observation was in the
             severity category and 0 otherwise. Must have a dimension ``severity_dim``.
-        decision_weights: an array of non-negative weights to apply to each matrix decision
-            threshold, indexed by coordinates in ``severity_dim`` and ``prob_threshold_dim``.
+        decision_weights: an array of non-negative weights to apply to each risk matrix decision
+            point, indexed by coordinates in ``severity_dim`` and ``prob_threshold_dim``.
         severity_dim: the dimension specifying severity categories.
         prob_threshold_dim: the dimension in ``decision_weights`` specifying probability thresholds.
         threshold_assignment: Either "upper" or "lower". Specifies whether the probability
@@ -104,8 +104,7 @@ def risk_matrix_score(
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation.
-            In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
 
     See also:
         :py:func:`scores.emerging.matrix_weights_to_array`
@@ -226,8 +225,8 @@ def _risk_matrix_score(
             category. Must have a dimension `severity_dim`.
         obs: an array of binary observations with a value of 1 if the observation was in the
             severity category and 0 otherwise. Must have a dimension `severity_dim`.
-        decision_weights: an array of non-negative weights to apply to each matrix decision
-            threshold, indexed by coordinates in `severity_dim` and `prob_threshold_dim`.
+        decision_weights: an array of non-negative weights to apply to each decision
+            point in the risk matrix, indexed by coordinates in `severity_dim` and `prob_threshold_dim`.
         threshold_assignment: Either "upper" or "lower". Specifies whether the probability
             intervals defining the certainty categories for the decision thresholds in
             `decision_weights` are left or right closed. That is, whether the probability
@@ -270,13 +269,14 @@ def matrix_weights_to_array(
         This function is part of an emerging score that is under development and has not yet
         been peer-reviewed. It may change at any time.
 
-    Generates a 2-dimensional xr.DataArray of the decision thresholds for the :py:func:`scores.emerging.risk_matrix_score` calculation.
+    Generates a 2-dimensional xr.DataArray of weights for each decision point, which is used for
+    the :py:func:`scores.emerging.risk_matrix_score` calculation.
     Assumes that values toward the left in ``matrix_weights`` correspond
     to less severe categories, while values towards the top in ``matrix_weights`` correspond
     to higher probability thresholds.
 
     Args:
-        matrix_weights: array of weights to place on each risk matrix decision threshold,
+        matrix_weights: array of weights to place on each risk matrix decision point,
             with rows (ascending) corresponding to (increasing) probability thresholds,
             and columns (left to right) corresponding to (increasing) severity categories.
         severity_dim: name of the severity category dimension.
@@ -288,7 +288,7 @@ def matrix_weights_to_array(
             strictly between 0 and 1.
 
     Returns:
-        xarray data array of risk matrix decision threshold weights, indexed by prob_threshold_dim
+        xarray data array of weights for each risk matrix decision point, indexed by prob_threshold_dim
         and severity_dim.
 
     Raises:
@@ -298,11 +298,10 @@ def matrix_weights_to_array(
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation.
-            In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
 
     Examples:
-        Returns risk matrix decision weights, where weights increase with increasing
+        Returns weights for eachh risk matrix decision point, where weights increase with increasing
         severity category and decrease with increasing probability threshold.
 
         >>> import numpy as np
@@ -356,7 +355,8 @@ def weights_from_warning_scaling(
         been peer-reviewed. It may change at any time.
 
     Given a warning scaling matrix, assessment weights and other inputs,
-    returns the decision weights for the :py:func:`scores.emerging.risk_matrix_score` as an xarray data array.
+    returns the weights for each risk matrix decision point as an xarray data array. The returned
+    data array is designed to be used for the :py:func:`scores.emerging.risk_matrix_score` calculation.
 
     Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
     of warning scaling in Table 1 of Taggart & Wilke (2024).
@@ -379,7 +379,7 @@ def weights_from_warning_scaling(
             strictly between 0 and 1.
 
     Returns:
-        xarray data array of risk matrix decision threshold weights, indexed by prob_threshold_dim
+        xarray data array of weights for each risk matrix decision point, indexed by prob_threshold_dim
         and severity_dim.
 
     Raises:
@@ -395,11 +395,10 @@ def weights_from_warning_scaling(
         ValueError: if ``assessment_weights`` aren't strictly positive.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation.
-            In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
 
     Examples:
-        Returns risk matrix decision weights, for the SHORT-RANGE scaling matrix of
+        Returns weights for each risk matrix decision point, for the SHORT-RANGE scaling matrix of
         Taggart & Wilke (2024), with ESCALATION assessment weights.
 
         >>> import numpy as np
@@ -456,7 +455,7 @@ def weights_from_warning_scaling(
 def _scaling_to_weight_matrix(scaling_matrix, assessment_weights):
     """
     Given a scaling matrix and assessment weights, outputs the weight matrix for the
-    decision thresholds of the corresponding risk matrix.
+    decision points of the corresponding risk matrix.
 
     This is an implementation of the algorithm of Appendix B, Taggart & Wilke (2024).
 
