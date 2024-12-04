@@ -124,7 +124,7 @@ def brier_score_for_ensemble(
         fcst: Real valued ensemble forecasts in xarray. The proportion of ensemble members
         above a threshold is calculated within this function.
         obs: Real valued observations in xarray. These values are converted to binary
-            values in this function.
+            values in this function based on the supplied event thresholds and operators.
         ensemble_member_dim: The dimension name of the ensemble member.
         event_thresholds: The threshold(s) that define what is considered an event. If
             multiple thresholds are provided, they should be monotonically increasing with no NaNs.
