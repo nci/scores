@@ -145,7 +145,8 @@ def brier_score_for_ensemble(
             if the observation is greater than or equal to the threshold.
             Similarly, an event will have been considered to be forecast by an ensemble member
             if the forecast is greater than or equal to the threshold.
-            Passing in ``operator.lt`` will give the same results. Alternatively, you can provide
+            Passing in ``operator.lt`` will give the same results as it is mathematically
+            equivalent in this case. Alternatively, you can provide
             ``operator.gt`` which means that an event occurs if the observation
             is strictly greater than the threshold. Again, an event for an ensemble member
             will have been considered to be forecast if the forecast is greater than the threshold.
