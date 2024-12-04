@@ -84,7 +84,7 @@ def brier_score_for_ensemble(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     fair_correction: bool = True,
-    event_threshold_mode: Callable = operator.ge,
+    event_threshold_operator: Callable = operator.ge,
     threshold_dim: str = "threshold",
 ) -> XarrayLike:  # type: ignore
     """
@@ -140,7 +140,7 @@ def brier_score_for_ensemble(
         weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude)
             when calculating the mean score across specified dimensions via ``reduce_dims`` or ``preserve_dims``.
         fair_correction: Whether or not to apply the fair Brier score correction. Default is True.
-        event_threshold_mode: The mode to use to define an event relative to a supplied threshold.
+        event_threshold_operator: The mode to use to define an event relative to a supplied threshold.
             Default is ``operator.ge``, which means that an event occurs
             if the observation is greater than or equal to the threshold.
             Similarly, an event will have been considered to be forecast by an ensemble member
@@ -187,8 +187,8 @@ def brier_score_for_ensemble(
         >>> brier_score_for_ensemble(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
 
     """
-    if event_threshold_mode not in [operator.ge, operator.gt, operator.le, operator.lt]:
-        raise ValueError("event_threshold_mode must be one of operator.ge, operator.gt, operator.le, operator.lt")
+    if event_threshold_operator not in [operator.ge, operator.gt, operator.le, operator.lt]:
+        raise ValueError("event_threshold_operator must be one of operator.ge, operator.gt, operator.le, operator.lt")
     if threshold_dim in fcst.dims:
         raise ValueError("threshold_dim is not allowed to be the same as a dim in fcst")
     if threshold_dim in obs.dims:
@@ -213,11 +213,11 @@ def brier_score_for_ensemble(
     thresholds_xr = xr.DataArray(event_thresholds, dims=[threshold_dim], coords={threshold_dim: event_thresholds})
 
     # calculate i term in equation
-    member_event_count = event_threshold_mode(fcst, thresholds_xr).sum(dim=ensemble_member_dim)
+    member_event_count = event_threshold_operator(fcst, thresholds_xr).sum(dim=ensemble_member_dim)
     # calculate m term in equation
     total_member_count = fcst.notnull().sum(dim=ensemble_member_dim)
 
-    binary_obs = binary_discretise(obs, event_thresholds, event_threshold_mode)
+    binary_obs = binary_discretise(obs, event_thresholds, event_threshold_operator)
 
     result = (member_event_count / total_member_count - binary_obs) ** 2
     if fair_correction:

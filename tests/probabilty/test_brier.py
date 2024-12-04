@@ -138,7 +138,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
         "reduce_dims",
         "weights",
         "fair_correction",
-        "threshold_mode",
+        "threshold_operator",
         "expected",
     ),
     [
@@ -233,7 +233,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             operator.ge,
             btd.EXP_BRIER_ENS_FAIR_ALL_DS,
         ),
-        # Check threshold_mode='>'
+        # Check threshold_operator=operator.gt
         (
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
@@ -246,7 +246,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             operator.gt,
             btd.EXP_BRIER_ENS_ALL_GREATER,
         ),
-        # Check threshold_mode='<='
+        # Check threshold_operator=operator.le
         (
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
@@ -259,7 +259,7 @@ def test_brier_doesnt_raise(fcst, obs, expected):
             operator.le,
             btd.EXP_BRIER_ENS_ALL_GREATER,
         ),
-        # Check threshold_mode='<'
+        # Check threshold_operator=operator.lt
         (
             btd.DA_FCST_ENS,
             btd.DA_OBS_ENS,
@@ -283,7 +283,7 @@ def test_brier_score_for_ensemble(
     reduce_dims,
     weights,
     fair_correction,
-    threshold_mode,
+    threshold_operator,
     expected,
 ):
     """Tests brier_score_for_ensemble."""
@@ -296,7 +296,7 @@ def test_brier_score_for_ensemble(
         reduce_dims=reduce_dims,
         weights=weights,
         fair_correction=fair_correction,
-        event_threshold_mode=threshold_mode,
+        event_threshold_operator=threshold_operator,
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -312,11 +312,11 @@ def test_brier_score_for_ensemble_raises():
     thresholds = [0.1, 0.5, 0.9]
     weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
 
-    # Test if event_threshold_mode is not '>=' or '>'
+    # Test if event_threshold_operator is not [operator.ge, operator.gt, operator.le, operator.lt"]
     with pytest.raises(
-        ValueError, match="event_threshold_mode must be one of operator.ge, operator.gt, operator.le, operator.lt"
+        ValueError, match="event_threshold_operator must be one of operator.ge, operator.gt, operator.le, operator.lt"
     ):
-        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, event_threshold_mode="=")
+        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, event_threshold_operator="=")
 
     # Test if ensemble_member_dim is not in fcst.dims
     with pytest.raises(ValueError, match="`score_specific_fcst_dims` must be a subset of `fcst` dimensions"):
