@@ -4,7 +4,8 @@ This module contains methods related to the Brier score
 
 import operator
 from collections.abc import Sequence
-from typing import Callable, Optional, Union
+from numbers import Real
+from typing import Callable, Optional
 
 import xarray as xr
 
@@ -78,7 +79,7 @@ def brier_score_for_ensemble(
     fcst: XarrayLike,  # type: ignore
     obs: XarrayLike,  # type: ignore
     ensemble_member_dim: str,
-    event_thresholds: Union[float, int, Sequence[float]],
+    event_thresholds: Real | Sequence[Real],
     *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
@@ -150,7 +151,8 @@ def brier_score_for_ensemble(
             ``operator.gt`` which means that an event occurs if the observation
             is strictly greater than the threshold. Again, an event for an ensemble member
             will have been considered to be forecast if the forecast is greater than the threshold.
-            Using``operator.le`` will give the same results as ``operator.gt``.
+            Using``operator.le`` will give the same results as ``operator.gt`` as it is mathematically
+            equivalent in this case.
         threshold_dim: The name of the threshold dimension in the output. Default is 'threshold'.
            It must not exist as a dimension in the forecast or observation data.
 
