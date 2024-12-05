@@ -3,7 +3,7 @@ Import the functions from the implementations into the public API
 """
 
 from scores.continuous.murphy_impl import murphy_score, murphy_thetas
-from scores.probability.brier_impl import brier_score
+from scores.probability.brier_impl import brier_score, brier_score_for_ensemble
 from scores.probability.crps_impl import (
     adjust_fcst_for_crps,
     crps_cdf,
@@ -21,6 +21,7 @@ __all__ = [
     "murphy_score",
     "murphy_thetas",
     "brier_score",
+    "brier_score_for_ensemble",
     "adjust_fcst_for_crps",
     "crps_cdf",
     "crps_cdf_brier_decomposition",
