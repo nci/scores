@@ -21,6 +21,7 @@ Users can supply their own event operators to the top-level module functions.
 # pylint: disable=too-many-lines
 
 import operator
+import warnings
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -32,6 +33,12 @@ import scores.utils
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
 DEFAULT_PRECISION = 8
+
+HIGH_DIMENSION_HTML_CONTINGENCY_WARNING = """
+Note - you are trying to get a representation of a higher-dimensionality contingency table 
+(e.g. with preserved dimensions). This is currently not supported, so a simpler view is being
+returned. If you would like a 2x2 table rendering, try again with all dimensions reduced.
+"""
 
 
 class BasicContingencyManager:  # pylint: disable=too-many-public-methods
@@ -156,7 +163,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def format_table(
         self, positive_value_name: str = "Positive", negative_value_name: str = "Negative"
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame | xr.DataArray:
         """Formats a contingency table from a 2x2 contingency manager into a confusion matrix.
 
         Args:
@@ -166,7 +173,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
                 the contingency table visual. The default value is 'Negative'.
 
         Returns:
-            pandas.DataFrame: A Pandas DataFrame representing the binary contingency table.
+            pandas.DataFrame: A Pandas DataFrame representing 2x2 binary contingency table if possible.
+            xr.DataArray: An xarray DataArray showing higher-dimension contingency table information otherwise
 
         This function retrieves the contingency table, extracts the relevant counts, and constructs
         a 2x2 confusion matrix represented as a Pandas DataFrame. This function does not support
@@ -199,7 +207,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         table = self.xr_table
 
         # Reshape into a 2x2 confusion matrix directly via numpy
-        confusion_matrix = np.array([table[0], table[2], table[3], table[1]]).reshape((2, 2))
+        if table.shape == (5,):
+            confusion_matrix = np.array([table[0], table[2], table[3], table[1]]).reshape((2, 2))
+        else:
+            warnings.warn(HIGH_DIMENSION_HTML_CONTINGENCY_WARNING)
+            return self.get_table()
 
         # Create a pandas DataFrame for better presentation
         df = pd.DataFrame(
