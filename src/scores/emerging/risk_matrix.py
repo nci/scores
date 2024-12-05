@@ -26,8 +26,8 @@ def risk_matrix_score(
 ) -> XarrayLike:
     """
     Caution:
-        This is an emerging score that is under development and has not yet been peer-reviewed.
-        It may change at any time.
+        This is an implementation of a novel metric that is still undergoing mathematical peer review. 
+        This implementation may change in line with the peer review process.
 
     Calculates the risk matrix score of Taggart & Wilke (2024). 
     
@@ -104,7 +104,8 @@ def risk_matrix_score(
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework
+          with consistent evaluation. In preparation.
 
     See also:
         :py:func:`scores.emerging.matrix_weights_to_array`
@@ -266,8 +267,8 @@ def matrix_weights_to_array(
 ) -> xr.DataArray:
     """
     Caution:
-        This function is part of an emerging score that is under development and has not yet
-        been peer-reviewed. It may change at any time.
+        This function is part of an implementation of a novel metric that is still undergoing 
+        mathematical peer review. This implementation may change in line with the peer review process.
 
     Generates a 2-dimensional xr.DataArray of weights for each decision point, which is used for
     the :py:func:`scores.emerging.risk_matrix_score` calculation.
@@ -298,7 +299,8 @@ def matrix_weights_to_array(
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework 
+          with consistent evaluation. In preparation.
 
     Examples:
         Returns weights for each risk matrix decision point, where weights increase with increasing
@@ -351,8 +353,8 @@ def weights_from_warning_scaling(
 ) -> xr.DataArray:
     """
     Caution:
-        This function is part of an emerging score that is under development and has not yet
-        been peer-reviewed. It may change at any time.
+        This function is part of an implementation of a novel metric that is still undergoing 
+        mathematical peer review. This implementation may change in line with the peer review process.
 
     Given a warning scaling matrix, assessment weights and other inputs,
     returns the weights for each risk matrix decision point as an xarray data array. The returned
@@ -395,7 +397,8 @@ def weights_from_warning_scaling(
         ValueError: if ``assessment_weights`` aren't strictly positive.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework 
+          with consistent evaluation. In preparation.
 
     Examples:
         Returns weights for each risk matrix decision point, for the SHORT-RANGE scaling matrix of

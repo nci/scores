@@ -741,6 +741,10 @@
 
 ## Emerging
 
+```{Caution} 
+  This section of the API contains implementations of novel metrics that are still undergoing mathematical peer review. These implementations may change in line with the peer review process.
+```
+
 ```{list-table}
 :header-rows: 1
 
