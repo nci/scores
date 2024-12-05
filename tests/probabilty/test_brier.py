@@ -8,22 +8,14 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
+import operator
+
 import numpy as np
 import pytest
 import xarray as xr
 
-from scores.probability import brier_score
-
-FCST1 = xr.DataArray(
-    [[[0.5, 0], [0, 0.5], [1, 0]], [[0.5, 0], [0.5, 0], [0, np.nan]]],
-    dims=["a", "b", "c"],
-    coords={"a": [0, 1], "b": [0, 1, 2], "c": [0, 1]},
-)
-OBS1 = xr.DataArray(
-    [[[1, 0], [0, 0], [np.nan, 0]], [[0, 0], [1, 0], [0, 1]]],
-    dims=["a", "b", "c"],
-    coords={"a": [0, 1], "b": [0, 1, 2], "c": [0, 1]},
-)
+from scores.probability import brier_score, brier_score_for_ensemble
+from tests.probabilty import brier_test_data as btd
 
 
 @pytest.mark.parametrize(
@@ -31,32 +23,32 @@ OBS1 = xr.DataArray(
     [
         # Reduce all dims
         (
-            FCST1,
-            OBS1,
+            btd.FCST1,
+            btd.OBS1,
             None,
             None,
             xr.DataArray(0.1),
         ),
         # preserve dim "a"
         (
-            FCST1,
-            OBS1,
+            btd.FCST1,
+            btd.OBS1,
             ["a"],
             None,
             xr.DataArray([0.1, 0.1], dims=["a"], coords={"a": [0, 1]}),
         ),
         # doesn't break with all NaNs
         (
-            FCST1,
-            OBS1 * np.nan,
+            btd.FCST1,
+            btd.OBS1 * np.nan,
             ["a"],
             None,
             xr.DataArray([np.nan, np.nan], dims=["a"], coords={"a": [0, 1]}),
         ),
         # Check it works with DataSets
         (
-            xr.Dataset({"1": FCST1, "2": 0.5 * FCST1}),
-            xr.Dataset({"1": OBS1, "2": OBS1}),
+            xr.Dataset({"1": btd.FCST1, "2": 0.5 * btd.FCST1}),
+            xr.Dataset({"1": btd.OBS1, "2": btd.OBS1}),
             ["a"],
             None,
             xr.Dataset(
@@ -86,7 +78,7 @@ def test_brier_score_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = brier_score(FCST1.chunk(), OBS1.chunk())
+    result = brier_score(btd.FCST1.chunk(), btd.OBS1.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -97,11 +89,11 @@ def test_brier_score_dask():
     ("fcst", "obs", "error_msg_snippet"),
     [
         # Fcst > 1
-        (FCST1 + 0.0000001, OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
+        (btd.FCST1 + 0.0000001, btd.OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
         # Fcst < 0
-        (FCST1 - 0.0000001, OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
+        (btd.FCST1 - 0.0000001, btd.OBS1, r"`fcst` contains values outside of the range \[0, 1\]"),
         # Obs = 1/2
-        (FCST1, OBS1 / 2, "`obs` contains values that are not in the set {0, 1, np.nan}"),
+        (btd.FCST1, btd.OBS1 / 2, "`obs` contains values that are not in the set {0, 1, np.nan}"),
     ],
 )
 def test_brier_score_raises(fcst, obs, error_msg_snippet):
@@ -119,9 +111,9 @@ def test_brier_score_raises(fcst, obs, error_msg_snippet):
     ("fcst", "obs", "expected"),
     [
         # FCST doubled
-        (FCST1 * 2, OBS1, xr.DataArray(0.2)),
+        (btd.FCST1 * 2, btd.OBS1, xr.DataArray(0.2)),
         # OBS halved
-        (FCST1, OBS1 / 2, xr.DataArray(0.05)),
+        (btd.FCST1, btd.OBS1 / 2, xr.DataArray(0.05)),
     ],
 )
 def test_brier_doesnt_raise(fcst, obs, expected):
@@ -134,3 +126,235 @@ def test_brier_doesnt_raise(fcst, obs, expected):
     # Check again but with input data as a DataSet
     result = brier_score(xr.Dataset({"x": fcst}), xr.Dataset({"x": obs}), check_args=False)
     xr.testing.assert_equal(result, xr.Dataset({"x": expected}))
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "ensemble_member_dim",
+        "thresholds",
+        "preserve_dims",
+        "reduce_dims",
+        "weights",
+        "fair_correction",
+        "threshold_operator",
+        "expected",
+    ),
+    [
+        # Fair=False, single threshold, preserve all, threshold is an int
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            False,
+            operator.ge,
+            btd.EXP_BRIER_ENS_ALL,
+        ),
+        # Fair=True, single threshold, preserve all, threshold is a float
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1.0,
+            "all",
+            None,
+            None,
+            True,
+            operator.ge,
+            btd.EXP_BRIER_ENS_FAIR_ALL,
+        ),
+        # Test reduce_dim arg
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            None,
+            "stn",
+            None,
+            True,
+            operator.ge,
+            btd.EXP_BRIER_ENS_FAIR_ALL_MEAN,
+        ),
+        # Fair=False, multiple_thresholds, preserve all
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            np.array([-100, 1, 100]),
+            "all",
+            None,
+            None,
+            False,
+            operator.ge,
+            btd.EXP_BRIER_ENS_ALL_MULTI,
+        ),
+        # Test with broadcast with a lead day dimension with Fair=True
+        (
+            btd.DA_FCST_ENS_LT,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            True,
+            operator.ge,
+            btd.EXP_BRIER_ENS_FAIR_ALL_LT,
+        ),
+        # Test with weights
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            None,
+            "stn",
+            btd.ENS_BRIER_WEIGHTS,
+            False,
+            operator.ge,
+            btd.EXP_BRIER_ENS_WITH_WEIGHTS,
+        ),
+        # Test with Datasets
+        (
+            btd.FCST_ENS_DS,
+            btd.OBS_ENS_DS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            True,
+            operator.ge,
+            btd.EXP_BRIER_ENS_FAIR_ALL_DS,
+        ),
+        # Check threshold_operator=operator.gt
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            False,
+            operator.gt,
+            btd.EXP_BRIER_ENS_ALL_GREATER,
+        ),
+        # Check threshold_operator=operator.le
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1,
+            "all",
+            None,
+            None,
+            False,
+            operator.le,
+            btd.EXP_BRIER_ENS_ALL_GREATER,
+        ),
+        # Check threshold_operator=operator.lt
+        (
+            btd.DA_FCST_ENS,
+            btd.DA_OBS_ENS,
+            "ens_member",
+            1.0,
+            "all",
+            None,
+            None,
+            True,
+            operator.lt,
+            btd.EXP_BRIER_ENS_FAIR_ALL,
+        ),
+    ],
+)
+def test_brier_score_for_ensemble(
+    fcst,
+    obs,
+    ensemble_member_dim,
+    thresholds,
+    preserve_dims,
+    reduce_dims,
+    weights,
+    fair_correction,
+    threshold_operator,
+    expected,
+):
+    """Tests brier_score_for_ensemble."""
+    result = brier_score_for_ensemble(
+        fcst,
+        obs,
+        ensemble_member_dim,
+        thresholds,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights,
+        fair_correction=fair_correction,
+        event_threshold_operator=threshold_operator,
+    )
+    xr.testing.assert_allclose(result, expected)
+
+
+def test_brier_score_for_ensemble_raises():
+    """
+    Tests that the brier_score_for_ensemble function raises the correct errors.
+    """
+    fcst = xr.DataArray(np.random.rand(10, 10), dims=["time", "ensemble"])
+    fcst_threshold = xr.DataArray(np.random.rand(10, 10), dims=["threshold", "ensemble"])
+    obs = xr.DataArray(np.random.rand(10), dims=["time"])
+    obs_threshold = xr.DataArray(np.random.rand(10), dims=["threshold"])
+    thresholds = [0.1, 0.5, 0.9]
+    weights = xr.DataArray(np.random.rand(10), dims=["threshold"])
+
+    # Test if event_threshold_operator is not [operator.ge, operator.gt, operator.le, operator.lt"]
+    with pytest.raises(
+        ValueError, match="event_threshold_operator must be one of operator.ge, operator.gt, operator.le, operator.lt"
+    ):
+        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, event_threshold_operator="=")
+
+    # Test if ensemble_member_dim is not in fcst.dims
+    with pytest.raises(ValueError, match="`score_specific_fcst_dims` must be a subset of `fcst` dimensions"):
+        brier_score_for_ensemble(fcst, obs, "number", thresholds)
+
+    # Test if fcst contains the dimension 'threshold'
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in fcst"):
+        brier_score_for_ensemble(fcst_threshold, obs, "time", thresholds)
+
+    # Test if fcst contains the dimension specified by the threshold_dim argument
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in fcst"):
+        brier_score_for_ensemble(fcst, obs, "time", thresholds, threshold_dim="time")
+
+    # Test if obs contains the dimension 'threshold'
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in obs"):
+        brier_score_for_ensemble(fcst, obs_threshold, "ensemble", thresholds)
+
+    # Test if weights contains the dimension 'threshold'
+    with pytest.raises(ValueError, match="threshold_dim is not allowed to be the same as a dim in weights"):
+        brier_score_for_ensemble(fcst, obs, "ensemble", thresholds, weights=weights)
+
+
+def test_brier_score_for_ensemble_dask():
+    """Tests that the brier_score_for_ensemble works with dask"""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = brier_score_for_ensemble(
+        btd.DA_FCST_ENS.chunk(),
+        btd.DA_OBS_ENS.chunk(),
+        "ens_member",
+        1,
+        preserve_dims="all",
+        reduce_dims=None,
+        weights=None,
+        fair_correction=False,
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(result, btd.EXP_BRIER_ENS_ALL)
