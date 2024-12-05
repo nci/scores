@@ -24,7 +24,7 @@ Below is a **curated selection** of the metrics, tools and statistical tests inc
 | **[Spatial](https://scores.readthedocs.io/en/stable/included.html#spatial)** 	|Scores that take into account spatial structure.                 	|Fractions Skill Score.              	|
 | **[Statistical Tests](https://scores.readthedocs.io/en/stable/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	|Diebold Mariano.              	|
 | **[Processing Tools](https://scores.readthedocs.io/en/stable/included.html#processing-tools-for-preparing-data)**        	|Tools to pre-process data.                 	|Data matching, Discretisation, Cumulative Density Function Manipulation.              	|
-
+| **[Emerging](https://scores.readthedocs.io/en/latest/included.html#emerging)**        	|Emerging scores that are under development and have not yet been peer-reviewed. They may change at any time.                 	|Risk Matrix Score.             	|
 
 `scores` not only includes common scores (e.g., MAE, RMSE), it also includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (e.g., the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
