@@ -19,12 +19,17 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
 	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
 	See [PR #724](https://github.com/nci/scores/pull/724).  
+- A new method called `format_table` was added to the class `BasicContingencyManager` to improve visualisation of 2x2 contingency tables. The tutorial `Binary_Contingency_Scores` was updated to demonstrate the use of this function. See [PR #775](https://github.com/nci/scores/pull/775).
 
 ### Documentation
 
 - Added "The Risk Matrix Score" tutorial. See [PR #724](https://github.com/nci/scores/pull/724). 
 - Updated the "Binary Categorical Scores and Binary Contingency Tables (Confusion Matrices)" 
-tutorial, to include "positive predictive value" and "negative predictive value" in the list of binary categorical scores included in `scores`. See [PR #759](https://github.com/nci/scores/pull/759).
+  tutorial:
+  - include "positive predictive value" in the list of binary categorical scores included 
+  - include "negative predictive value" in the list of binary categorical scores included 
+  - demonstrate the use of the new `format_table` method for visualising 2x2 contingency tables  
+  See [PR #759](https://github.com/nci/scores/pull/759) and [PR #775](https://github.com/nci/scores/pull/775).
 - Updated the “Contributing Guide”:
 	- Added a new section: "Creating Your Own Fork of `scores` for the First Time".
 	- Updated the section: "Workflow for Submitting Pull Requests".
