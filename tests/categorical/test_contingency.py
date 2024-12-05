@@ -405,10 +405,12 @@ def test_examples_with_finley():
     xr.testing.assert_allclose(gilbert_expected, gilbert)
 
 
-def test_valid_data():
+def test_format_data():
     """
     Test the format table method.
     """
+
+    # Simple 2x2 Example
 
     match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
     table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
@@ -418,5 +420,15 @@ def test_valid_data():
     )
 
     result_df = table.format_table()
-
     pd.testing.assert_frame_equal(result_df, expected_df)
+
+    # Higher-dimension handling example
+    table = table.transform(preserve_dims="height")
+    with pytest.warns(UserWarning) as warning_object:
+        format_table = table.format_table()
+
+    assert scores.categorical.contingency_impl.HIGH_DIMENSION_HTML_CONTINGENCY_WARNING in str(
+        warning_object.list[0].message
+    )
+    get_table = table.get_table()
+    xr.testing.assert_equal(format_table, get_table)
