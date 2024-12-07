@@ -6,30 +6,33 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Breaking Changes
 
-- The function `scores.probability.tw_crps_for_ensemble` previously took an optional (mis-spelled) argument `chainging_func_kwargs`. The spelling has been corrected and the argument is now `chaining_func_kwargs`.
-- For developers, the version of the `black` and `mypy` tools have been updated. As such, developers will need to ensure they re-install the `scores` package with `pip install -e .[develop]` to get the correct versions of these tools.
+- The function `scores.probability.tw_crps_for_ensemble` previously took an optional (mis-spelled) argument `chainging_func_kwargs`. The spelling has been corrected and the argument is now `chaining_func_kwargs`. See [PR #780](https://github.com/nci/scores/pull/780) and [PR #772](https://github.com/nci/scores/pull/772).
+- For those who develop on `scores`, you will need to update your installion of the `scores` package with `pip install -e .[all]`, to get updated versions of `black`, `pylint` and `mypy`. See [PR #768](https://github.com/nci/scores/pull/768), [PR #769](https://github.com/nci/scores/pull/769) and [PR #771](https://github.com/nci/scores/pull/771).
 
 ### Features
 
-- Added two new metrics:
+- Added three new metrics:
+	- Brier score for ensembles: `scores.probability.brier_score_for_ensemble`. See [PR #735](https://github.com/nci/scores/pull/735).
 	- Negative predictive value: `scores.categorical.BasicContingencyManager.negative_predictive_value`. See [PR #759](https://github.com/nci/scores/pull/759).
 	- Positive predictive value: `scores.categorical.BasicContingencyManager.positive_predictive_value`. See [PR #761](https://github.com/nci/scores/pull/761) and [PR #756](https://github.com/nci/scores/pull/756).
 - Also added one new emerging metric and two supporting functions:
 	- Risk matrix score: `scores.emerging.risk_matrix_scores`.
 	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
 	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
-	See [PR #724](https://github.com/nci/scores/pull/724).  
+	See [PR #724](https://github.com/nci/scores/pull/724) and [PR #794](https://github.com/nci/scores/pull/794).  
 - A new method called `format_table` was added to the class `BasicContingencyManager` to improve visualisation of 2x2 contingency tables. The tutorial `Binary_Contingency_Scores` was updated to demonstrate the use of this function. See [PR #775](https://github.com/nci/scores/pull/775).
+- The functions `scores.processing.comparative_discretise`, `scores.processing.binary_discretise` and `scores.processing.binary_discretise_proportion` now accept either a string indicating the choice of operator to be used, or an operator from the [Python core library `operator` module](https://docs.python.org/3/library/operator.html). Using one of the operators from the Python core module is recommended, as doing so is more reliable for a variety of reasons. Support for the use of a string may be removed in future. See [PR #740](https://github.com/nci/scores/pull/740) and [PR #758](https://github.com/nci/scores/pull/758).
 
 ### Documentation
 
-- Added "The Risk Matrix Score" tutorial. See [PR #724](https://github.com/nci/scores/pull/724). 
+- Added "The Risk Matrix Score" tutorial. See [PR #724](https://github.com/nci/scores/pull/724) and [PR #794](https://github.com/nci/scores/pull/794). 
+- Updated the "Brier Score" tutorial to include a new section about the Brier score for ensembles. See [PR #735](https://github.com/nci/scores/pull/735).
 - Updated the "Binary Categorical Scores and Binary Contingency Tables (Confusion Matrices)" 
   tutorial:
-  - include "positive predictive value" in the list of binary categorical scores included 
-  - include "negative predictive value" in the list of binary categorical scores included 
-  - demonstrate the use of the new `format_table` method for visualising 2x2 contingency tables  
-  See [PR #759](https://github.com/nci/scores/pull/759) and [PR #775](https://github.com/nci/scores/pull/775).
+  - Included "positive predictive value" in the list of binary categorical scores.
+  - Included "negative predictive value" in the list of binary categorical scores.
+  - Demonstrated the use of the new `format_table` method for visualising 2x2 contingency tables.  
+  See [PR #759](https://github.com/nci/scores/pull/759) and [PR #775](https://github.com/nci/scores/pull/775). 
 - Updated the “Contributing Guide”:
 	- Added a new section: "Creating Your Own Fork of `scores` for the First Time".
 	- Updated the section: "Workflow for Submitting Pull Requests".
@@ -39,11 +42,11 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Added a link to a video of a PyCon AU 2024 conference presentation about `scores`. See [PR #783](https://github.com/nci/scores/pull/783).
 	- Added a link to the archives of `scores` on Zenodo. See [PR #784](https://github.com/nci/scores/pull/784).
 - Added `Scoringrules` to "Related Works". See [PR #746](https://github.com/nci/scores/pull/746), [PR #766](https://github.com/nci/scores/pull/766) and [PR #789](https://github.com/nci/scores/pull/789).
-- Fixed formatting issues in the docstrings for `scores.processing.comparative_discretise`, `scores.processing.binary_discretise` and `scores.processing.binary_discretise_proportion`. See [PR #758](https://github.com/nci/scores/pull/758).
 
 ### Internal Changes
 
 - Removed scikit-learn as a dependency. `scores` has replaced the use of scikit-learn with a similar function from SciPy (which was an existing `scores` dependency). This change was manually tested and found to be faster. See [PR #774](https://github.com/nci/scores/pull/774).
+- Version pinning of dependencies in release files (the wheel and sdist files used by PyPI and conda-forge) is now managed and set by the `hatch_build` script. This allows development versions to be free-floating, while being more specific about dependencies in releases. The previous process also aimed to do this, but was error-prone. A new entry called `pinned_dependencies` was added to pyproject.toml to specify the release dependencies. See [PR #760](https://github.com/nci/scores/pull/760).
 
 ### Contributors to this Release
 
