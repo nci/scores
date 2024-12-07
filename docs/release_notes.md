@@ -7,7 +7,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ### Breaking Changes
 
 - The function `scores.probability.tw_crps_for_ensemble` previously took an optional (mis-spelled) argument `chainging_func_kwargs`. The spelling has been corrected and the argument is now `chaining_func_kwargs`. See [PR #780](https://github.com/nci/scores/pull/780) and [PR #772](https://github.com/nci/scores/pull/772).
-- For those who develop on `scores`, you will need to update your installion of the `scores` package with `pip install -e .[all]`, to get updated versions of `black`, `pylint` and `mypy`. See [PR #768](https://github.com/nci/scores/pull/768), [PR #769](https://github.com/nci/scores/pull/769) and [PR #771](https://github.com/nci/scores/pull/771).
+- For those who develop on `scores`, you will need to update your installation of the `scores` package with `pip install -e .[all]`, to get updated versions of `black`, `pylint` and `mypy`. See [PR #768](https://github.com/nci/scores/pull/768), [PR #769](https://github.com/nci/scores/pull/769) and [PR #771](https://github.com/nci/scores/pull/771).
 
 ### Features
 
