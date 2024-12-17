@@ -132,12 +132,12 @@ def comparative_discretise(
 
 def binary_discretise(
     data: XarrayLike,
-    thresholds: Optional[FlexibleDimensionTypes],
+    thresholds: Real | Sequence[Real],
     mode: Union[Callable, str],
     *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,
     autosqueeze: Optional[bool] = False,
-):
+) -> XarrayLike:
     """
     Converts the values of `data` to 0 or 1 for each threshold in `thresholds`
     according to the operation defined by `mode`.
