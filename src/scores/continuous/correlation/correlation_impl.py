@@ -111,7 +111,7 @@ def spearmanr(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    
+
     # If reduce_dims contains multiple dimensions, handle ranking per dimension
     fcst_ranks = fcst
     obs_ranks = obs
