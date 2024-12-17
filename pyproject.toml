@@ -105,9 +105,6 @@ warn_unused_configs = true
 module = "scipy.*"
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-
 [tool.coverage.paths]
 source = ["/src/"]
 

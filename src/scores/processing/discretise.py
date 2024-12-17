@@ -1,7 +1,8 @@
 """Tools for discretising data for verification"""
 
 import operator
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from numbers import Real
 from typing import Callable, Optional, Union
 
 import numpy as np
@@ -347,7 +348,7 @@ def binary_discretise_proportion(
 
     """
     # values are 1 when (data {mode} threshold), and 0 when ~(data {mode} threshold).
-    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)
+    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)  # type: ignore
 
     # The proportion in each category
     dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
