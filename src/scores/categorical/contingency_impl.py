@@ -862,7 +862,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
 
-        return npv
+        return npv  # type: ignore
 
     def f1_score(self) -> xr.DataArray:
         """

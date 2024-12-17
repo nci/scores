@@ -326,7 +326,7 @@ def matrix_weights_to_array(
     if matrix_dims[1] != len(severity_coords):  # type: ignore
         raise ValueError("number of `severity_coords` must equal number of columns of `matrix_weights`")
 
-    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):  # type: ignore
         raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
 
     prob_threshold_coords = np.flip(np.sort(np.array(prob_threshold_coords)))
@@ -443,9 +443,9 @@ def weights_from_warning_scaling(
         raise ValueError("length of `assessment_weights` must be at least the highest value in `scaling_matrix`")
 
     # check on other inputs
-    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):  # type: ignore
         raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
-    if np.min(assessment_weights) <= 0:
+    if np.min(assessment_weights) <= 0:  # type: ignore
         raise ValueError("values in `assessment_weights` must be positive")
 
     weight_matrix = _scaling_to_weight_matrix(scaling_matrix, assessment_weights)
