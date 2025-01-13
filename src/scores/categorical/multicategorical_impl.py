@@ -3,13 +3,13 @@ This module contains methods which may be used for scoring multicategorical fore
 """
 
 from collections.abc import Sequence
-from typing import Iterable, Optional, Union
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
 
 from scores.functions import apply_weights
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, gather_dimensions
 
 
@@ -244,3 +244,87 @@ def _single_category_score(
     )
     score = score.transpose(*fcst.dims)
     return score
+
+
+def seeps(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    dry_threshold: xr.DataArray,
+    light_precipitation_threshold: xr.DataArray,
+    heavy_precipitation_threshold: xr.DataArray,
+    *,  # Force keywords arguments to be keyword-only
+    mask_clim_extremes: bool = True,
+    min_masked_value: float = 0.1,
+    max_masked_value: float = 0.85,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
+) -> XarrayLike:
+    """
+    Calculates the stable equitable error in probability space (SEEPS) score.
+
+    Args:
+        fcst: An array of real-valued forecasts.
+        obs: An array of real-valued observations.
+        dry_threshold: The climatological probability of the dry category.
+        light_precipitation_threshold: The climatological probability of the light precipitation category.
+        heavy_precipitation_threshold: The climatological probability of the heavy precipitation category.
+        mask_clim_extremes: If True, mask out the climatological extremes.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the FIRM score. All other dimensions will be preserved. As a
+            special case, 'all' will allow all dimensions to be reduced. Only one
+            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve
+            when calculating FIRM. All other dimensions will be reduced.
+            As a special case, 'all' will allow all dimensions to be
+            preserved. In this case, the result will be in the same
+            shape/dimensionality as the forecast, and the errors will be
+            the FIRM score at each point (i.e. single-value comparison
+            against observed), and the forecast and observed dimensions
+            must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
+            supplied. The default behaviour if neither are supplied is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom)
+    """
+
+
+def _seeps_scoring_matrix(
+    dry_threshold: xr.DataArray,
+    heavy_precipitation_threshold: xr.DataArray,
+    mask_clim_extremes: bool = True,
+    min_masked_value: float = 0.1,
+    max_masked_value: float = 0.85,
+):
+    """
+    Calculates SEEPS scoring matrix
+    """
+    # row 1
+    i12 = 1 / (1 - dry_threshold)
+    i13 = (1 / heavy_precipitation_threshold) + (1 / (1 - dry_threshold))
+    iii = i12 * 0  # used in all rows
+    # row 2
+    i21 = 1 / dry_threshold
+    i23 = 1 / heavy_precipitation_threshold
+    # row 3
+    i31 = (1 / dry_threshold) + (1 / (1 - heavy_precipitation_threshold))
+    i32 = 1 / (1 - heavy_precipitation_threshold)
+
+    # combine data along each row
+    f1 = xr.concat([iii, i12, i13], "oi")
+    f1 = f1.assign_coords(oi=[1, 2, 3])
+
+    f2 = xr.concat([i21, iii, i23], "oi")
+    f2 = f2.assign_coords(oi=[1, 2, 3])
+
+    f3 = xr.concat([i31, i32, iii], "oi")
+    f3 = f3.assign_coords(oi=[1, 2, 3])
+
+    seeps_matrix = xr.concat([f1, f2, f3], "fi")
+    seeps_matrix = seeps_matrix.assign_coords(fi=[1, 2, 3])
+    seeps_matrix = seeps_matrix.where(seeps_matrix != np.inf)
+
+    if mask_clim_extremes:
+        seeps_matrix = seeps_matrix.where(dry_threshold <= max_masked_value)
+        seeps_matrix = seeps_matrix.where(dry_threshold >= min_masked_value)
+    return seeps_matrix
