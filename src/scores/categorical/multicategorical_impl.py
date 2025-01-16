@@ -250,8 +250,8 @@ def _single_category_score(
 def seeps(
     fcst: XarrayLike,
     obs: XarrayLike,
-    dry_threshold: xr.DataArray,
-    heavy_precipitation_threshold: xr.DataArray,
+    p1: xr.DataArray,
+    p3: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
     mask_clim_extremes: bool = True,
     min_masked_value: float = 0.1,
@@ -260,24 +260,29 @@ def seeps(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
 ) -> XarrayLike:
-    """
+    r"""
     Calculates the stable equitable error in probability space (SEEPS) score.
 
-    When used to evaluate precipitation forecasts, the SEEPS score calculates 
-    the performance of a forecast across three categories:
-    dry weather, light precipitation, and heavy precipitation. The boundary between
-    the light and heavy category is based on climatological data.
+    When used to evaluate precipitation forecasts, the SEEPS score calculates the
+    performance of a forecast across three categories:
+
+    - Dry weather (e.g., less than 0.2mm),
+    - Light precipitation (the climatological lower two-thirds of rainfall above
+      the dry threshold),
+    - Heavy precipitation (the climatological upper one-third of rainfall above
+      the dry threshold).
 
     The SEEPS penalty matrix is defined as
 
+    
     .. math::
-        \\{s\\} = \frac{1}{2} \\left(
-        \\begin{matrix}
-        0 & \\frac{1}{1-p_1} & \\frac{1}{p_3}+\\frac{1}{1-p_1} \\\\
-        \\frac{1}{p_1} & 0 & \\frac{1}{p_3} \\\\
-        \\frac{1}{p_1}+\\frac{1}{1-p_3} & \\frac{1}{1-p_3} & 0
-        \\end{matrix}
-        \\right)
+        s = \frac{1}{2} \left(
+        \begin{matrix}
+         0 & \frac{1}{1-p_1} & \frac{1}{p_3}+\frac{1}{1-p_1} \\
+        \frac{1}{p_1} & 0 & \frac{1}{p_3} \\
+        \frac{1}{p_1}+\frac{1}{1-p_3} & \frac{1}{1-p_3} & 0
+        \end{matrix}
+        \right)
 
         
     where 
@@ -287,19 +292,24 @@ def seeps(
         - The columns correspond to the observation category (dry, light, heavy).
 
     Note that although :math:`p_2`, does not appear in the penalty matrix, it is defined as
-    :math:`p_2 = 2p_3` which means that the light precipitation category is twice as likely
-    to occur climatologically as the heavy precipitation category.
+    :math:`p_2 = 2p_3` with :math:`p_1 + p_2 + p_3 = 1` which means that the light 
+    precipitation category is twice as likely to occur climatologically as the 
+    heavy precipitation category.
 
-    This score in this implementation is negatively oriented, meaning that lower scores are better. 
+    This implementation of the score is negatively oriented, meaning that lower scores are better. 
     Sometimes in the literature, a SEEPS skill score is used, which is defined as 1 - SEEPS.
+
+    By default, the scores are only calculated for points where :math:`p_1 \\in [0.1, 0.85]` 
+    as per Rodwell et al. (2010). This can be changed by setting ``mask_clim_extremes`` to ``False`` or
+    by changing the ``min_masked_value`` and ``max_masked_value`` parameters.
+
+    For further details on generating the p1 and p3 arrays, see Rodwell et al. (2010).
 
     Args:
         fcst: An array of real-valued forecasts.
         obs: An array of real-valued observations.
-        dry_threshold: The climatological probability of the dry weather category.
-            This is called p1 in the penalty matrix.
-        heavy_precipitation_threshold: The climatological probability of the heavy
-            precipitation category. This is called p3 in the penalty matrix
+        p1: The climatological probability of the dry weather category.
+        p3: The climatological probability of the heavy precipitation category. 
         mask_clim_extremes: If True, mask out the climatological extremes.
         min_masked_value: Points with climatolgical probabilities of dry weather
             less than this value are masked. Defaults to 0.1.
@@ -319,14 +329,13 @@ def seeps(
             against observed), and the forecast and observed dimensions
             must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: Optionally provide an array for weighted averaging (e.g. by area).
     
     References:
         Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010). 
         A new equitable score suitable for verifying precipitation in numerical 
         weather prediction. Quarterly Journal of the Royal Meteorological Society, 
-        136(650), 1344–1363. Portico. https://doi.org/10.1002/qj.656
+        136(650), 1344–1363. https://doi.org/10.1002/qj.656
 
     Examples:
         >>> import numpy as np
@@ -334,9 +343,9 @@ def seeps(
         >>> from scores.categorical import seeps
         >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> dry_threshold = xr.DataArray(np.random.rand(3, 4), dims=['lat', 'lon'])
-        >>> heavy_precipitation_threshold = 0.2 * dry_threshold 
-        >>> seeps(fcst, obs, dry_threshold, heavy_precipitation_threshold)
+        >>> p1 = xr.DataArray(np.random.rand(3, 4), dims=['lat', 'lon'])
+        >>> p3 = (1 - p1) / 3 
+        >>> seeps(fcst, obs, p1, p3)
     """
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     fcst, obs = broadcast_and_match_nan(fcst, obs)
@@ -344,23 +353,23 @@ def seeps(
     # Penalties for index i, j in the penalty matrix. Row i corresponds to the
     # forecast category while row j corresponds to the observation category
     # row 1 of the penalty matrix
-    index_12 = 1 / (1 - dry_threshold)
-    index_13 = (1 / heavy_precipitation_threshold) + (1 / (1 - dry_threshold))
+    index_12 = 1 / (1 - p1)
+    index_13 = (1 / p3) + (1 / (1 - p1))
     # row 2 of the penalty matrix
-    index_21 = 1 / dry_threshold
-    index_23 = 1 / heavy_precipitation_threshold
+    index_21 = 1 / p1
+    index_23 = 1 / p3
     # row 3 of the penalty matrix
-    index_31 = (1 / dry_threshold) + (1 / (1 - heavy_precipitation_threshold))
-    index_32 = 1 / (1 - heavy_precipitation_threshold)
+    index_31 = (1 / p1) + (1 / (1 - p3))
+    index_32 = 1 / (1 - p3)
 
     # Get conditions for each category
-    fcst1_condition = fcst < dry_threshold
-    fcst2_condition = (fcst >= dry_threshold) & (fcst < heavy_precipitation_threshold)
-    fcst3_condition = fcst >= heavy_precipitation_threshold
+    fcst1_condition = fcst < p1
+    fcst2_condition = (fcst >= p1) & (fcst < p3)
+    fcst3_condition = fcst >= p3
 
-    obs1_condition = obs < dry_threshold
-    obs2_condition = (obs >= dry_threshold) & (obs < heavy_precipitation_threshold)
-    obs3_condition = obs >= heavy_precipitation_threshold
+    obs1_condition = obs < p1
+    obs2_condition = (obs >= p1) & (obs < p3)
+    obs3_condition = obs >= p3
 
     # Calculate the penalties
     result = fcst.copy() * 0
@@ -373,12 +382,10 @@ def seeps(
 
     result = result / 2
     # return NaNs
-    result = result.where(
-        ~np.isnan(fcst) & ~np.isnan(obs) & ~np.isnan(dry_threshold) & ~np.isnan(heavy_precipitation_threshold)
-    )
+    result = result.where(~np.isnan(fcst) & ~np.isnan(obs) & ~np.isnan(p1) & ~np.isnan(p3))
 
     if mask_clim_extremes:
-        result = result.where(np.logical_and(dry_threshold <= max_masked_value, dry_threshold >= min_masked_value))
+        result = result.where(np.logical_and(p1 <= max_masked_value, p1 >= min_masked_value))
 
     result = apply_weights(result, weights=weights)
     result = result.mean(dim=reduce_dims)

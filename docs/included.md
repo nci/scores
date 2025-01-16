@@ -559,6 +559,10 @@
   - [API](api.md#scores.categorical.probability_of_false_detection)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+* - Stable Equitable Error in Probability Space (SEEPS)
+  - [API](api.md#scores.categorical.seeps)
+  - [Tutorial](project:./tutorials/SEEPS.md)
+  - [Rodwell et al. (2010)](https://doi.org/10.1002/qj.656)
 * - Threshold Event Operator
   - [API](api.md#scores.categorical.ThresholdEventOperator)
   - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
