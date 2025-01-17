@@ -253,6 +253,8 @@ def seeps(
     p1: xr.DataArray,
     p3: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
+    light_heavy_threshold: xr.DataArray,
+    dry_light_threshold: float = 0.2,
     mask_clim_extremes: bool = True,
     min_masked_value: float = 0.1,
     max_masked_value: float = 0.85,
@@ -310,6 +312,10 @@ def seeps(
         obs: An array of real-valued observations.
         p1: The climatological probability of the dry weather category.
         p3: The climatological probability of the heavy precipitation category. 
+        light_heavy_threshold: An array of the rainfall thresholds that separates 
+            light and heavy precipitation.
+        dry_light_threshold: The threshold that separates dry weather from light precipitation.
+            Defaults to 0.2.
         mask_clim_extremes: If True, mask out the climatological extremes.
         min_masked_value: Points with climatolgical probabilities of dry weather
             less than this value are masked. Defaults to 0.1.
@@ -330,6 +336,13 @@ def seeps(
             must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
         weights: Optionally provide an array for weighted averaging (e.g. by area).
+
+    Returns:
+        An xarray DataArray containing the SEEPS score.
+
+    Raises:
+        ValueError: if any values in `p1` are outside the range [0, 1].
+        ValueError: if any values in `p3` are outside the range [0, 1].
     
     References:
         Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010). 
@@ -345,8 +358,14 @@ def seeps(
         >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> p1 = xr.DataArray(np.random.rand(3, 4), dims=['lat', 'lon'])
         >>> p3 = (1 - p1) / 3 
-        >>> seeps(fcst, obs, p1, p3)
+        >>> light_heavy_threshold = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
+        >>> seeps(fcst, obs, p1, p3, light_heavy_threshold=light_heavy_threshold)
     """
+    if p1.min() < 0 or p1.max() > 1:
+        raise ValueError("`p1` must have values between 0 and 1 inclusive")
+    if p3.min() < 0 or p3.max() > 1:
+        raise ValueError("`p3` must have values between 0 and 1 inclusive")
+
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     fcst, obs = broadcast_and_match_nan(fcst, obs)
 
@@ -363,13 +382,13 @@ def seeps(
     index_32 = 1 / (1 - p3)
 
     # Get conditions for each category
-    fcst1_condition = fcst < p1
-    fcst2_condition = (fcst >= p1) & (fcst < p3)
-    fcst3_condition = fcst >= p3
+    fcst1_condition = fcst < dry_light_threshold
+    fcst2_condition = (fcst >= dry_light_threshold) & (fcst < light_heavy_threshold)
+    fcst3_condition = fcst >= light_heavy_threshold
 
-    obs1_condition = obs < p1
-    obs2_condition = (obs >= p1) & (obs < p3)
-    obs3_condition = obs >= p3
+    obs1_condition = obs < dry_light_threshold
+    obs2_condition = (obs >= dry_light_threshold) & (obs < light_heavy_threshold)
+    obs3_condition = obs >= light_heavy_threshold
 
     # Calculate the penalties
     result = fcst.copy() * 0
@@ -382,7 +401,14 @@ def seeps(
 
     result = result / 2
     # return NaNs
-    result = result.where(~np.isnan(fcst) & ~np.isnan(obs) & ~np.isnan(p1) & ~np.isnan(p3))
+    result = result.where(
+        ~np.isnan(fcst)
+        & ~np.isnan(obs)
+        & ~np.isnan(p1)
+        & ~np.isnan(p3)
+        & ~np.isnan(light_heavy_threshold)
+        & ~np.isnan(dry_light_threshold)
+    )
 
     if mask_clim_extremes:
         result = result.where(np.logical_and(p1 <= max_masked_value, p1 >= min_masked_value))
