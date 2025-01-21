@@ -705,3 +705,6 @@ EXP_SEEPS_CASE0 = 0.5 * xr.DataArray(
         "t": pd.date_range("2020-01-01", periods=2),
     },
 )
+EXP_SEEPS_CASE1 = EXP_SEEPS_CASE0.mean()
+EXP_SEEPS_CASE2 = EXP_SEEPS_CASE0.mean(dim="j")
+EXP_SEEPS_CASE3 = EXP_SEEPS_CASE0.mean(dim="t")

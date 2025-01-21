@@ -528,7 +528,7 @@ def test_firm_raises(
         "expected",
     ),
     [
-        # Preserve all dims
+        # Preserve all dims, tests each entry of the penalty matrix
         (
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
@@ -543,6 +543,54 @@ def test_firm_raises(
             "all",
             None,
             mtd.EXP_SEEPS_CASE0,
+        ),
+        # Reduce all dims, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_P3_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            None,
+            None,
+            mtd.EXP_SEEPS_CASE1,
+        ),
+        # Preserve dim t, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_P3_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "t",
+            None,
+            mtd.EXP_SEEPS_CASE2,
+        ),
+        # Reduce dim t, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_P3_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            "t",
+            None,
+            None,
+            mtd.EXP_SEEPS_CASE3,
         ),
     ],
 )
