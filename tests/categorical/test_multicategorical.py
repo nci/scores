@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.categorical import firm
+from scores.categorical import firm, seeps
 from scores.categorical.multicategorical_impl import _single_category_score
 from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
@@ -509,3 +509,75 @@ def test_firm_raises(
             preserve_dims=preserve_dims,
             threshold_assignment=threshold_assignment,
         )
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "p1",
+        "p3",
+        "light_heavy_threshold",
+        "dry_light_threshold",
+        "mask_clim_extremes",
+        "min_masked_value",
+        "max_masked_value",
+        "reduce_dims",
+        "preserve_dims",
+        "weights",
+        "expected",
+    ),
+    [
+        # Preserve all dims
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_P3_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE0,
+        ),
+    ],
+)
+def test_seeps(
+    fcst,
+    obs,
+    p1,
+    p3,
+    light_heavy_threshold,
+    dry_light_threshold,
+    mask_clim_extremes,
+    min_masked_value,
+    max_masked_value,
+    reduce_dims,
+    preserve_dims,
+    weights,
+    expected,
+):
+    """Tests seeps"""
+    calculated = seeps(
+        fcst,
+        obs,
+        p1,
+        p3,
+        light_heavy_threshold=light_heavy_threshold,
+        dry_light_threshold=dry_light_threshold,
+        mask_clim_extremes=mask_clim_extremes,
+        min_masked_value=min_masked_value,
+        max_masked_value=max_masked_value,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+
+    xr.testing.assert_allclose(
+        calculated,
+        expected,
+    )

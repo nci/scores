@@ -3,6 +3,7 @@ Test data for testing scores.categorical.multicategorical functions
 """
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 DA_FCST_SC = xr.DataArray(
@@ -664,4 +665,43 @@ EXP_FIRM_CASE6 = xr.Dataset(
         "underforecast_penalty": EXP_FIRM_UNDER_CASE6,
         "overforecast_penalty": EXP_FIRM_OVER_CASE6,
     }
+)
+# Data for SEEPS testing
+DA_OBS_SEEPS = xr.DataArray(
+    data=[[0, 0.21, 15, -0.1, 5], [20, 0.2, 10, 200, 3], [20, 0.2, 10, 200, 3]],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=3),
+    },
+)
+
+DA_FCST_SEEPS = xr.DataArray(
+    data=[[0, 0.1, 0.2, 0.21, 5], [10, 15, 20, 200, np.nan]],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+
+DA_P1_SEEPS = xr.DataArray(0.5)
+
+DA_P3_SEEPS = (1 - DA_P1_SEEPS) / 3
+
+DA_LIGHT_HEAVY_THRESHOLD_SEEPS = xr.DataArray(10)
+
+P1 = 0.5
+P3 = (1 - P1) / 3
+
+EXP_SEEPS_CASE0 = 0.5 * xr.DataArray(
+    data=[
+        [0, 1 / (1 - P1), 1 / P3 + 1 / (1 - P1), 1 / P1, 0],
+        [1 / P3, 1 / P1 + 1 / (1 - P3), 1 / (1 - P3), 0, np.nan],
+    ],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
 )

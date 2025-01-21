@@ -268,7 +268,7 @@ def seeps(
     When used to evaluate precipitation forecasts, the SEEPS score calculates the
     performance of a forecast across three categories:
 
-    - Dry weather (e.g., less than 0.2mm),
+    - Dry weather (e.g., less than or equal to 0.2mm),
     - Light precipitation (the climatological lower two-thirds of rainfall above
       the dry threshold),
     - Heavy precipitation (the climatological upper one-third of rainfall above
@@ -313,9 +313,10 @@ def seeps(
         p1: The climatological probability of the dry weather category.
         p3: The climatological probability of the heavy precipitation category. 
         light_heavy_threshold: An array of the rainfall thresholds that separates 
-            light and heavy precipitation.
+            light and heavy precipitation. Light precipitation is inclusive of this
+            threshold.
         dry_light_threshold: The threshold that separates dry weather from light precipitation.
-            Defaults to 0.2.
+            Defaults to 0.2. Dry weather is defined as less than or equal to this threshold.
         mask_clim_extremes: If True, mask out the climatological extremes.
         min_masked_value: Points with climatolgical probabilities of dry weather
             less than this value are masked. Defaults to 0.1.
@@ -356,9 +357,9 @@ def seeps(
         >>> from scores.categorical import seeps
         >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> p1 = xr.DataArray(np.random.rand(3, 4), dims=['lat', 'lon'])
+        >>> p1 = xr.DataArray(np.random.rand(6, 8), dims=['lat', 'lon'])
         >>> p3 = (1 - p1) / 3 
-        >>> light_heavy_threshold = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
+        >>> light_heavy_threshold = 2 * xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> seeps(fcst, obs, p1, p3, light_heavy_threshold=light_heavy_threshold)
     """
     if p1.min() < 0 or p1.max() > 1:
@@ -382,22 +383,22 @@ def seeps(
     index_32 = 1 / (1 - p3)
 
     # Get conditions for each category
-    fcst1_condition = fcst < dry_light_threshold
-    fcst2_condition = (fcst >= dry_light_threshold) & (fcst < light_heavy_threshold)
-    fcst3_condition = fcst >= light_heavy_threshold
+    fcst1_condition = fcst <= dry_light_threshold
+    fcst2_condition = (fcst > dry_light_threshold) & (fcst <= light_heavy_threshold)
+    fcst3_condition = fcst > light_heavy_threshold
 
-    obs1_condition = obs < dry_light_threshold
-    obs2_condition = (obs >= dry_light_threshold) & (obs < light_heavy_threshold)
-    obs3_condition = obs >= light_heavy_threshold
+    obs1_condition = obs <= dry_light_threshold
+    obs2_condition = (obs > dry_light_threshold) & (obs <= light_heavy_threshold)
+    obs3_condition = obs > light_heavy_threshold
 
     # Calculate the penalties
     result = fcst.copy() * 0
-    result = result.where(~(fcst1_condition & obs2_condition), index_12)
-    result = result.where(~(fcst1_condition & obs3_condition), index_13)
-    result = result.where(~(fcst2_condition & obs1_condition), index_21)
-    result = result.where(~(fcst2_condition & obs3_condition), index_23)
-    result = result.where(~(fcst3_condition & obs1_condition), index_31)
-    result = result.where(~(fcst3_condition & obs2_condition), index_32)
+    result = result.where(~(fcst1_condition & obs2_condition), index_12.broadcast_like(result))
+    result = result.where(~(fcst1_condition & obs3_condition), index_13.broadcast_like(result))
+    result = result.where(~(fcst2_condition & obs1_condition), index_21.broadcast_like(result))
+    result = result.where(~(fcst2_condition & obs3_condition), index_23.broadcast_like(result))
+    result = result.where(~(fcst3_condition & obs1_condition), index_31.broadcast_like(result))
+    result = result.where(~(fcst3_condition & obs2_condition), index_32.broadcast_like(result))
 
     result = result / 2
     # return NaNs
