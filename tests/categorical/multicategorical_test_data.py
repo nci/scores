@@ -684,21 +684,56 @@ DA_FCST_SEEPS = xr.DataArray(
         "t": pd.date_range("2020-01-01", periods=2),
     },
 )
+DA_FCST2_SEEPS = xr.DataArray(
+    data=[
+        [[0, np.nan, np.nan, np.nan, 5], [np.nan, np.nan, np.nan, 200, np.nan]],
+        [[0, 0.1, 0.2, 0.21, 5], [10, 15, 20, 200, np.nan]],
+    ],
+    dims=["i", "t", "j"],
+    coords={
+        "i": [1, 2],
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+DA_SEEPS_WEIGHTS = xr.DataArray(
+    data=[1, 2],
+    dims=["i"],
+    coords={"i": [1, 2]},
+)
 
 DA_P1_SEEPS = xr.DataArray(0.5)
-
 DA_P3_SEEPS = (1 - DA_P1_SEEPS) / 3
+DA_P1_VARY1_SEEPS = xr.DataArray(
+    data=[0.5, 0.09, 0.1, 0.5, 0.5],
+    dims=["j"],
+    coords={"j": [1, 2, 3, 4, 5]},
+)
+DA_P3_VARY1_SEEPS = (1 - DA_P1_VARY1_SEEPS) / 3
+
+DA_P1_VARY2_SEEPS = xr.DataArray(
+    data=[0.5, 0.85, 0.86, 0.5, 0.5],
+    dims=["j"],
+    coords={"j": [1, 2, 3, 4, 5]},
+)
+DA_P3_VARY2_SEEPS = (1 - DA_P1_VARY2_SEEPS) / 3
+
 
 DA_LIGHT_HEAVY_THRESHOLD_SEEPS = xr.DataArray(10)
+DA_LIGHT_HEAVY_THRESHOLD_VARY_SEEPS = xr.DataArray(
+    data=[10, 20], dims=["t"], coords={"t": pd.date_range("2020-01-01", periods=2)}
+)
 
 P1 = 0.5
 P3 = (1 - P1) / 3
 
+ALL_INDEX_ARRAY_RESULT = [
+    [0, 1 / (1 - P1), 1 / P3 + 1 / (1 - P1), 1 / P1, 0],
+    [1 / P3, 1 / P1 + 1 / (1 - P3), 1 / (1 - P3), 0, np.nan],
+]
+
 EXP_SEEPS_CASE0 = 0.5 * xr.DataArray(
-    data=[
-        [0, 1 / (1 - P1), 1 / P3 + 1 / (1 - P1), 1 / P1, 0],
-        [1 / P3, 1 / P1 + 1 / (1 - P3), 1 / (1 - P3), 0, np.nan],
-    ],
+    data=ALL_INDEX_ARRAY_RESULT,
     dims=["t", "j"],
     coords={
         "j": [1, 2, 3, 4, 5],
@@ -708,3 +743,93 @@ EXP_SEEPS_CASE0 = 0.5 * xr.DataArray(
 EXP_SEEPS_CASE1 = EXP_SEEPS_CASE0.mean()
 EXP_SEEPS_CASE2 = EXP_SEEPS_CASE0.mean(dim="j")
 EXP_SEEPS_CASE3 = EXP_SEEPS_CASE0.mean(dim="t")
+EXP_SEEPS_CASE4 = 0.5 * xr.DataArray(
+    data=[
+        [
+            [0, np.nan, np.nan, np.nan, 0],
+            [np.nan, np.nan, np.nan, 0, np.nan],
+        ],
+        ALL_INDEX_ARRAY_RESULT,
+    ],
+    dims=["i", "t", "j"],
+    coords={
+        "i": [1, 2],
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+EXP_SEEPS_CASE5 = 0.5 * xr.DataArray(
+    data=[
+        np.array([[0, np.nan, np.nan, np.nan, 0], [np.nan, np.nan, np.nan, 0, np.nan]]),
+        2 * np.array(ALL_INDEX_ARRAY_RESULT),
+    ],
+    dims=["i", "t", "j"],
+    coords={
+        "i": [1, 2],
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+
+EXP_SEEPS_CASE6 = EXP_SEEPS_CASE0 * 0
+
+# P1 varies by j with 0.5, 0.09, 0.1, 0.5, 0.5
+EXP_SEEPS_CASE7 = 0.5 * xr.DataArray(
+    data=[
+        [0, 1 / (1 - 0.09), 1 / ((1 - 0.1) / 3) + 1 / (1 - 0.1), 1 / 0.5, 0],
+        [1 / (1 / 6), 1 / 0.09 + 1 / (1 - ((1 - 0.09) / 3)), 1 / (1 - (0.9 / 3)), 0, np.nan],
+    ],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+# P1 varies by j with 0.5, 0.85, 0.86, 0.5, 0.5
+EXP_SEEPS_CASE8 = 0.5 * xr.DataArray(
+    data=[
+        [0, 1 / (1 - 0.85), 1 / ((1 - 0.86) / 3) + 1 / (1 - 0.86), 1 / 0.5, 0],
+        [1 / (1 / 6), 1 / 0.85 + 1 / (1 - 0.15 / 3), 1 / (1 - ((1 - 0.86) / 3)), 0, np.nan],
+    ],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+# j = 2 should be masked
+EXP_SEEPS_CASE9 = 0.5 * xr.DataArray(
+    data=[
+        [0, np.nan, 1 / ((1 - 0.1) / 3) + 1 / (1 - 0.1), 1 / 0.5, 0],
+        [1 / (1 / 6), np.nan, 1 / (1 - (0.9 / 3)), 0, np.nan],
+    ],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+# j =3 should be masked
+EXP_SEEPS_CASE10 = 0.5 * xr.DataArray(
+    data=[
+        [0, 1 / (1 - 0.85), np.nan, 1 / 0.5, 0],
+        [1 / (1 / 6), 1 / 0.85 + 1 / (1 - 0.15 / 3), np.nan, 0, np.nan],
+    ],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
+
+EXP_SEEPS_CASE11 = 0.5 * xr.DataArray(
+    data=[
+        [0, 1 / (1 - P1), 1 / P3 + 1 / (1 - P1), 1 / P1, 0],
+        [0, 1 / P1, 0, 0, np.nan],
+    ],
+    dims=["t", "j"],
+    coords={
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
+)
