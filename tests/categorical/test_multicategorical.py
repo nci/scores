@@ -757,3 +757,53 @@ def test_seeps(
         calculated,
         expected,
     )
+
+
+@pytest.mark.parametrize(
+    ("p1", "p3", "exp"),
+    [
+        (xr.DataArray(-0.01), xr.DataArray(0.5), "`p1` must have values between 0 and 1 inclusive"),
+        (xr.DataArray(1.01), xr.DataArray(0.5), "`p1` must have values between 0 and 1 inclusive"),
+        (xr.DataArray(0.5), xr.DataArray(-0.01), "`p3` must have values between 0 and 1 inclusive"),
+        (xr.DataArray(0.5), xr.DataArray(1.01), "`p3` must have values between 0 and 1 inclusive"),
+    ],
+)
+def test_seeps_raises(p1, p3, exp):
+    """Tests that seeps raises the correct errors"""
+    with pytest.raises(ValueError, match=exp):
+        seeps(
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            p1,
+            p3,
+            light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+        )
+
+
+def test_seeps_dask():
+    """Tests seeps works with dask"""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
+
+    calculated = seeps(
+        mtd.DA_FCST_SEEPS.chunk(),
+        mtd.DA_OBS_SEEPS.chunk(),
+        mtd.DA_P1_SEEPS.chunk(),
+        mtd.DA_P3_SEEPS.chunk(),
+        light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS.chunk(),
+        dry_light_threshold=0.2,
+        mask_clim_extremes=True,
+        min_masked_value=0.1,
+        max_masked_value=0.85,
+        reduce_dims=None,
+        preserve_dims="all",
+    )
+
+    assert isinstance(calculated.data, dask.array.Array)
+    calculated = calculated.compute()
+    assert isinstance(calculated.data, np.ndarray)
+    xr.testing.assert_allclose(
+        calculated,
+        mtd.EXP_SEEPS_CASE0,
+    )
