@@ -248,20 +248,20 @@ def _single_category_score(
 
 
 def seeps(
-    fcst: XarrayLike,
-    obs: XarrayLike,
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
     p1: xr.DataArray,
     p3: xr.DataArray,
-    *,  # Force keywords arguments to be keyword-only
     light_heavy_threshold: xr.DataArray,
-    dry_light_threshold: float = 0.2,
-    mask_clim_extremes: bool = True,
-    min_masked_value: float = 0.1,
-    max_masked_value: float = 0.85,
+    *,  # Force keywords arguments to be keyword-only
+    dry_light_threshold: Optional[float] = 0.2,
+    mask_clim_extremes: Optional[bool] = True,
+    min_masked_value: Optional[float] = 0.1,
+    max_masked_value: Optional[float] = 0.85,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-) -> XarrayLike:
+) -> xr.DataArray:
     r"""
     Calculates the stable equitable error in probability space (SEEPS) score.
 
