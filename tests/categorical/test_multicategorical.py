@@ -720,6 +720,22 @@ def test_firm_raises(
             None,
             mtd.EXP_SEEPS_CASE11,
         ),
+        # Test with datasets for fcst/obs
+        (
+            mtd.DS_FCST_SEEPS,
+            mtd.DS_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_P3_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE12,
+        ),
     ],
 )
 def test_seeps(

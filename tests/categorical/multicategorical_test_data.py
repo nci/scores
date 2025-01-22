@@ -675,6 +675,7 @@ DA_OBS_SEEPS = xr.DataArray(
         "t": pd.date_range("2020-01-01", periods=3),
     },
 )
+DS_OBS_SEEPS = DA_OBS_SEEPS.to_dataset(name="i")
 
 DA_FCST_SEEPS = xr.DataArray(
     data=[[0, 0.1, 0.2, 0.21, 5], [10, 15, 20, 200, np.nan]],
@@ -696,6 +697,9 @@ DA_FCST2_SEEPS = xr.DataArray(
         "t": pd.date_range("2020-01-01", periods=2),
     },
 )
+
+DS_FCST_SEEPS = DA_FCST2_SEEPS.to_dataset(dim="i")  # .to_array(dim="i")
+
 DA_SEEPS_WEIGHTS = xr.DataArray(
     data=[1, 2],
     dims=["i"],
@@ -833,3 +837,5 @@ EXP_SEEPS_CASE11 = 0.5 * xr.DataArray(
         "t": pd.date_range("2020-01-01", periods=2),
     },
 )
+
+EXP_SEEPS_CASE12 = EXP_SEEPS_CASE5.to_dataset(dim="i")
