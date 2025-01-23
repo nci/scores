@@ -301,7 +301,7 @@ def seeps(
     This implementation of the score is negatively oriented, meaning that lower scores are better. 
     Sometimes in the literature, a SEEPS skill score is used, which is defined as 1 - SEEPS.
 
-    By default, the scores are only calculated for points where :math:`p_1 \\in [0.1, 0.85]` 
+    By default, the scores are only calculated for points where :math:`p_1 \in [0.1, 0.85]` 
     as per Rodwell et al. (2010). This can be changed by setting ``mask_clim_extremes`` to ``False`` or
     by changing the ``min_masked_value`` and ``max_masked_value`` parameters.
 
