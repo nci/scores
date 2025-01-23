@@ -247,7 +247,7 @@ def _single_category_score(
     return score
 
 
-def seeps( # pylint: disable=too-many-arguments, too-many-locals
+def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     fcst: xr.DataArray,
     obs: xr.DataArray,
     p1: xr.DataArray,
