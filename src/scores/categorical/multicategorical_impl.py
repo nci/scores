@@ -10,7 +10,7 @@ import xarray as xr
 
 from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
 
 
@@ -133,7 +133,7 @@ def firm(  # pylint: disable=too-many-arguments
 
 def _check_firm_inputs(
     obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
-):  # pylint: disable=too-many-positional-arguments
+):
     """
     Checks that the FIRM inputs are suitable
     """
@@ -247,7 +247,7 @@ def _single_category_score(
     return score
 
 
-def seeps(
+def seeps( # pylint: disable=too-many-arguments, too-many-locals
     fcst: xr.DataArray,
     obs: xr.DataArray,
     p1: xr.DataArray,

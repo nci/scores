@@ -722,7 +722,7 @@ def test_firm_raises(
         ),
     ],
 )
-def test_seeps(
+def test_seeps( # pylint: disable=too-many-arguments
     fcst,
     obs,
     p1,
