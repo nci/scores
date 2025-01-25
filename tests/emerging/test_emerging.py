@@ -477,19 +477,19 @@ def test_matrix_weights_to_array_raises(weight_matrix, severity_coords, prob_thr
 
 
 @pytest.mark.parametrize(
-    ("scaling_matrix", "assessment_weights", "expected"),
+    ("scaling_matrix", "evaluation_weights", "expected"),
     [
-        (  # LONG-RANGE scaling, equal assessment weights
+        (  # LONG-RANGE scaling, equal evaluation weights
             np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]]),
             [1.0, 1, 1],
             np.array([[0.0, 0, 0], [0, 0, 0], [1, 0, 0]]),
         ),
-        (  # LONG-RANGE scaling, unequal assessment weights
+        (  # LONG-RANGE scaling, unequal evaluation weights
             np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]]),
             [2.0, 1, 1],
             np.array([[0, 0, 0], [0, 0, 0], [2.0, 0, 0]]),
         ),
-        (  # LONG-RANGE scaling, equal assessment weights, column and row length differ
+        (  # LONG-RANGE scaling, equal evaluation weights, column and row length differ
             np.array([[0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 0]]),
             [1.0, 1, 1],
             np.array([[0.0, 0, 0], [1, 0, 0]]),
@@ -516,9 +516,9 @@ def test_matrix_weights_to_array_raises(weight_matrix, severity_coords, prob_thr
         ),
     ],
 )
-def test__scaling_to_weight_matrix(scaling_matrix, assessment_weights, expected):
+def test__scaling_to_weight_matrix(scaling_matrix, evaluation_weights, expected):
     """Tests _scaling_to_weight_matrix"""
-    calculated = _scaling_to_weight_matrix(scaling_matrix, assessment_weights)
+    calculated = _scaling_to_weight_matrix(scaling_matrix, evaluation_weights)
     np.testing.assert_array_equal(calculated, expected, strict=True)
 
 
@@ -536,7 +536,7 @@ def test_weights_from_warning_scaling():
 @pytest.mark.parametrize(
     (
         "scaling_matrix",
-        "assessment_weights",
+        "evaluation_weights",
         "severity_coords",
         "prob_threshold_coords",
         "error_msg_snippet",
@@ -610,7 +610,7 @@ def test_weights_from_warning_scaling():
             (1, 1),
             [1, 2],
             [0.1, 0.3],
-            "length of `assessment_weights` must be at least the highest value in `scaling_matrix`",
+            "length of `evaluation_weights` must be at least the highest value in `scaling_matrix`",
         ),
         (
             np.array([[0, 2, 3], [0, 2, 2], [0, 0, 0]]),
@@ -631,17 +631,17 @@ def test_weights_from_warning_scaling():
             (1.4, 0, 2),
             [1, 2],
             [0.1, 0.3],
-            "values in `assessment_weights` must be positive",
+            "values in `evaluation_weights` must be positive",
         ),
     ],
 )
 def test_weights_from_warning_scaling_raises(
-    scaling_matrix, assessment_weights, severity_coords, prob_threshold_coords, error_msg_snippet
+    scaling_matrix, evaluation_weights, severity_coords, prob_threshold_coords, error_msg_snippet
 ):
     """
     Tests that weights_from_warning_scaling raises as expected.
     """
     with pytest.raises(ValueError, match=error_msg_snippet):
         weights_from_warning_scaling(
-            scaling_matrix, assessment_weights, "sev", severity_coords, "prob", prob_threshold_coords
+            scaling_matrix, evaluation_weights, "sev", severity_coords, "prob", prob_threshold_coords
         )
