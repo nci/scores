@@ -2,7 +2,7 @@
 This module contains functions to calculate the correlation.
 """
 
-from typing import Optional
+from typing import Optional, Union
 
 import xarray as xr
 
@@ -61,63 +61,55 @@ def pearsonr(
 
 
 def spearmanr(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
-    *,  # Force keywords arguments to be keyword-only
+    fcst: Union[xr.DataArray, xr.Dataset],
+    obs: Union[xr.DataArray, xr.Dataset],
+    *,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-) -> xr.DataArray:
+) -> Union[xr.DataArray, xr.Dataset]:
     """
-    Calculates the Spearman's rank correlation coefficient between two xarray DataArrays \
-    Spearman's correlation is identical to Pearson's correlation when the relationship \
-    is linear. They diverge when the relationship is not linear as Spearman's correlation \
-    assesses monotic relationships whereas Pearson's correlation assesses strictly linear \
-    functions.
-
-
-    .. math::
-        \\rho = 1 - \\frac{6\\sum_{i=1}^{n}{d_i^2}}{n(n^2-1)}
-
-    where:
-        - :math:`\\rho` = Spearman's rank correlation coefficient
-        - :math:`d_i` = the difference between the ranks of x and y in a sample
-        - :math:`n` = the number of samples
+    Calculates the Spearman's rank correlation coefficient between two xarray objects \
+    (either DataArrays or Datasets).
 
     Args:
-        fcst: Forecast or predicted variables
-        obs: Observed variables.
+        fcst: Forecast or predicted variables (xarray DataArray or Dataset).
+        obs: Observed variables (xarray DataArray or Dataset).
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the Spearman's rank correlation coefficient.
             All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
             calculating the Spearman's rank correlation coefficient. All other dimensions will
             be reduced. As a special case, 'all' will allow all dimensions to be
-            preserved. In this case, the result will be in the same shape/dimensionality
-            as the forecast, and the errors will be the absolute error at each
-            point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely.
+            preserved.
+
     Returns:
-        xr.DataArray: An xarray object with Spearman's rank correlation coefficient values
-
-    Note:
-        This function isn't set up to take weights.
-
-    See also:
-    :py:func:`scores.continuous.correlation.pearsonr`
-
-    Reference:
-        Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of Psychology, 15(1), 72–101.
-        https://doi.org/10.2307/1412159
+        xr.DataArray or xr.Dataset: An xarray object with Spearman's rank correlation coefficient values.
     """
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
+    if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
+        # Handle DataArray case
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
 
-    # If reduce_dims contains multiple dimensions, handle ranking per dimension
-    fcst_ranks = fcst
-    obs_ranks = obs
-    for dim in reduce_dims:
-        fcst_ranks = fcst_ranks.rank(dim=dim)
-        obs_ranks = obs_ranks.rank(dim=dim)
+        fcst_ranks = fcst
+        obs_ranks = obs
+        for dim in reduce_dims:
+            fcst_ranks = fcst_ranks.rank(dim=dim)
+            obs_ranks = obs_ranks.rank(dim=dim)
 
-    return xr.corr(fcst_ranks, obs_ranks, reduce_dims)
+        return xr.corr(fcst_ranks, obs_ranks, reduce_dims)
+
+    if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
+        # Ensure both datasets have the same variables
+        if set(fcst.data_vars) != set(obs.data_vars):
+            raise ValueError("Both datasets must contain the same variables.")
+
+        # Apply spearmanr to each variable
+        results = {
+            var: spearmanr(fcst[var], obs[var], reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+            for var in fcst.data_vars
+        }
+
+        return xr.Dataset(results)
+
+    raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
