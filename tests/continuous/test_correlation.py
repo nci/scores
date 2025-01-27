@@ -97,7 +97,7 @@ SPEARMAN_OUTPUT = 1.0
 )
 def test_pearson_correlation(da1, da2, reduce_dims, preserve_dims, expected):
     """
-    Tests continuous.correlation
+    Tests continuous.correlation.pearsonr
     """
     result = pearsonr(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
     xr.testing.assert_allclose(result, expected)

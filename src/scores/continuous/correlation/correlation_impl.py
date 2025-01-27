@@ -106,7 +106,8 @@ def spearmanr(
     :py:func:`scores.continuous.correlation.pearsonr`
 
     Reference:
-        https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
+        Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of Psychology, 15(1), 72–101.
+        https://doi.org/10.2307/1412159
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
