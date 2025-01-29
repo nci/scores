@@ -158,7 +158,7 @@ def _bootstrap(*arrays: np.ndarray, indices: List[np.ndarray]) -> Union[np.ndarr
 
 
 def _block_bootstrap(  # pylint: disable=too-many-locals
-    *objects: XarrayLike,
+    *arrays: XarrayLike,
     blocks: Dict[str, int],
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
@@ -171,8 +171,8 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     along that dimension, the second provided dimension is bootstrapped, and so forth.
 
     Args:
-        *objects: Data to bootstrap. Multiple datasets can be passed to be bootstrapped
-            in the same way. All input objects must have nested dimensions.
+        *arrays: Data to bootstrap. Multiple datasets can be passed to be bootstrapped
+            in the same way. All input arrays must have nested dimensions.
         blocks: Dictionary of dimension(s) to bootstrap and the block sizes to use
             along each dimension: `{dim: blocksize}`. Nesting is based on the order of
             this dictionary.
@@ -180,10 +180,10 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
-            bootstrapping for each object provided in `objects`. This parameter expects a list
+            bootstrapping for each arrays provided in `arrays`. This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
-            the respective object. By default, the assumption is that no dimensions are
-            excluded, and all objects are bootstrapped across all specified dimensions in `blocks`.
+            the respective arrays. By default, the assumption is that no dimensions are
+            excluded, and all arrays are bootstrapped across all specified dimensions in `blocks`.
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
@@ -202,38 +202,38 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
       Academic press, 2011.
     """
 
-    objects_list = list(objects)
+    arrays_list = list(arrays)
 
     # Rename exclude_dims so they are not bootstrapped
     if exclude_dims is None:
-        exclude_dims = [[] for _ in range(len(objects_list))]
+        exclude_dims = [[] for _ in range(len(arrays_list))]
     if (
         not isinstance(exclude_dims, list)
-        or len(exclude_dims) != len(objects_list)
+        or len(exclude_dims) != len(arrays_list)
         or not all(isinstance(x, list) for x in exclude_dims)
     ):
         raise ValueError(
             "exclude_dims should be a list of the same length as the number of "
-            "objects containing lists of dimensions to exclude for each object"
+            "arrays containing lists of dimensions to exclude for each array"
         )
     renames = []
-    for i, (obj, exclude) in enumerate(zip(objects_list, exclude_dims)):
-        objects_list[i] = obj.rename(
+    for i, (obj, exclude) in enumerate(zip(arrays_list, exclude_dims)):
+        arrays_list[i] = obj.rename(
             {d: f"dim{ii}" for ii, d in enumerate(exclude)},
         )
         renames.append({f"dim{ii}": d for ii, d in enumerate(exclude)})
 
     dim = list(blocks.keys())
 
-    # Ensure bootstrapped dimensions have consistent sizes across objects_list
+    # Ensure bootstrapped dimensions have consistent sizes across arrays_list
     for d in blocks.keys():
-        dim_sizes = [o.sizes[d] for o in objects_list if d in o.dims]
+        dim_sizes = [o.sizes[d] for o in arrays_list if d in o.dims]
         if not all(s == dim_sizes[0] for s in dim_sizes):
-            raise ValueError(f"Block dimension {d} is not the same size on all input objects")
+            raise ValueError(f"Block dimension {d} is not the same size on all input arrays")
 
-    # Retrieve sizes of the bootstrap dimensions from objects_list
+    # Retrieve sizes of the bootstrap dimensions from arrays_list
     sizes = None
-    for obj in objects_list:
+    for obj in arrays_list:
         try:
             sizes = OrderedDict(
                 {d: (obj.sizes[d], b) for d, b in blocks.items()},
@@ -243,25 +243,25 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             pass
     if sizes is None:
         raise ValueError(
-            "At least one input object must contain all dimensions in blocks.keys()",
+            "At least one input array must contain all dimensions in blocks.keys()",
         )
 
-    # Generate random indices for bootstrapping all objects_list
+    # Generate random indices for bootstrapping all arrays_list
     nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
 
-    # Expand indices for broadcasting for each object separately
+    # Expand indices for broadcasting for each array separately
     indices = []
     input_core_dims = []
-    for obj in objects_list:
+    for obj in arrays_list:
         available_dims = [d for d in dim if d in obj.dims]
         indices_to_expand = [nested_indices[key] for key in available_dims]
 
         indices.append(_expand_n_nested_random_indices(indices_to_expand))
         input_core_dims.append(available_dims)
 
-    # Process objects_list separately to handle non-matching dimensions
+    # Process arrays_list separately to handle non-matching dimensions
     result = []
-    for obj, ind, core_dims in zip(objects_list, indices, input_core_dims):
+    for obj, ind, core_dims in zip(arrays_list, indices, input_core_dims):
         if isinstance(obj, xr.Dataset):
             # Assume all variables have the same dtype
             output_dtype = obj[list(obj.data_vars)[0]].dtype
@@ -286,7 +286,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
 
 
 def block_bootstrap(
-    *objects: XarrayLike,
+    *arrays: XarrayLike,
     blocks: Dict[str, int],
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
@@ -299,24 +299,24 @@ def block_bootstrap(
     handling Dask arrays for chunk size limitation.
 
     Args:
-        objects: The data to bootstrap, which can be multiple datasets. In the case where
+        arrays: The data to bootstrap, which can be multiple datasets. In the case where
             multiple datasets are passed, each dataset can have its own set of dimension. However,
-            for successful bootstrapping, dimensions across all input objects must be nested.
-            For instance, for `block.keys=['d1', 'd2', 'd3'], an object with dimension 'd1' and
-            'd2' is valid, but an object with only dimension 'd2' is not valid. All datasets
+            for successful bootstrapping, dimensions across all input arrays must be nested.
+            For instance, for `block.keys=['d1', 'd2', 'd3'], an array with dimension 'd1' and
+            'd2' is valid, but an array with only dimension 'd2' is not valid. All datasets
             are bootstrapped according to the same random samples along available dimensions.
         blocks: A dictionary specifying the dimension(s) to bootstrap and the block sizes to
             use along each dimension: `{dimension: block_size}`. The keys represent the dimensions
             to be bootstrapped, and the values indicate the block sizes along each dimension.
-            The dimension provided here should exist in the data provided as `objects`.
+            The dimension provided here should exist in the data provided as `arrays`.
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
-            bootstrapping for each object provided in `objects`. This parameter expects a list
+            bootstrapping for each array provided in `arrays`. This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
-            the respective object. By default, the assumption is that no dimensions are
-            excluded, and all objects are bootstrapped across all specified dimensions in `blocks`.
+            the respective array. By default, the assumption is that no dimensions are
+            excluded, and all arrays are bootstrapped across all specified dimensions in `blocks`.
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
@@ -363,10 +363,10 @@ def block_bootstrap(
         return max(chunks)
 
     # Choose iteration blocks to limit chunk size on dask arrays
-    if objects[0].chunks:  # Note: This is a way to check if the array is backed by a dask.array
+    if arrays[0].chunks:  # Note: This is a way to check if the array is backed by a dask.array
         # without loading data into memory.
         # See https://docs.xarray.dev/en/stable/generated/xarray.DataArray.chunks.html
-        ds_max_chunk_size_mb = max(_max_chunk_size_mb(obj) for obj in objects)
+        ds_max_chunk_size_mb = max(_max_chunk_size_mb(obj) for obj in arrays)
         blocksize = int(MAX_CHUNK_SIZE_MB / ds_max_chunk_size_mb)
         blocksize = min(blocksize, n_iteration)
         blocksize = max(blocksize, 1)
@@ -377,7 +377,7 @@ def block_bootstrap(
     for _ in range(blocksize, n_iteration + 1, blocksize):
         bootstraps.append(
             _block_bootstrap(
-                *objects,
+                *arrays,
                 blocks=blocks,
                 n_iteration=blocksize,
                 exclude_dims=exclude_dims,
@@ -388,7 +388,7 @@ def block_bootstrap(
     if leftover:
         bootstraps.append(
             _block_bootstrap(
-                *objects,
+                *arrays,
                 blocks=blocks,
                 n_iteration=leftover,
                 exclude_dims=exclude_dims,
@@ -406,6 +406,6 @@ def block_bootstrap(
         for bootstrap in zip(*bootstraps)
     )
 
-    if len(objects) == 1:
+    if len(arrays) == 1:
         return bootstraps_concat[0]
     return bootstraps_concat
