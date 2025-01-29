@@ -203,11 +203,11 @@ def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims,
             (10, 5, 3),
             xr.DataArray,
         ),
-        # Multiple arrays bootstrap
+        # Multiple arrays bootstrap. Also test it works with NaNs
         (
             [
                 xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
-                xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
+                np.nan * xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
             ],
             {"dim1": 2, "dim2": 2},
             3,
@@ -226,13 +226,13 @@ def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims,
             (10, 5, 7, 3),
             xr.DataArray,
         ),
-        # Dataset bootstrap
+        # Dataset bootstrap. Also test it works with NaNs
         (
             [
                 xr.Dataset(
                     {
                         "var1": xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
-                        "var2": xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
+                        "var2": np.nan * xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
                     }
                 )
             ],
