@@ -341,17 +341,6 @@ def block_bootstrap(
         """
         Get the max chunk size in a dataset
         """
-
-        def size_of_chunk(chunks, itemsize):
-            """
-            Returns size of chunk in MB given dictionary of chunk sizes
-            """
-            num = 1
-            for value in chunks:
-                value = max(value) if not isinstance(value, int) else value
-                num = num * value
-            return itemsize * num / 1024**2
-
         ds = ds.to_dataset(name="ds") if isinstance(ds, xr.DataArray) else ds
 
         chunks = []
@@ -359,7 +348,8 @@ def block_bootstrap(
             da = ds[var]
             chunk = da.chunks
             itemsize = da.data.itemsize
-            chunks.append(size_of_chunk(chunk, itemsize))
+            size_of_chunk = itemsize * np.prod([np.max(x) for x in chunk]) / (1024**2)
+            chunks.append(size_of_chunk)
         return max(chunks)
 
     # Choose iteration blocks to limit chunk size on dask arrays
@@ -385,6 +375,7 @@ def block_bootstrap(
             )
         )
     leftover = n_iteration % blocksize
+
     if leftover:
         bootstraps.append(
             _block_bootstrap(
