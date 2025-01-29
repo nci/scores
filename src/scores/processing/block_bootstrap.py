@@ -230,16 +230,14 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             raise ValueError(f"Block dimension {d} is not the same size on all input arrays")
 
     # Retrieve sizes of the bootstrap dimensions from arrays_list
-    sizes = None
-    for obj in arrays_list:
-        try:
-            sizes = OrderedDict(
-                {d: (obj.sizes[d], b) for d, b in blocks.items()},
-            )
-            break
-        except KeyError:
-            pass
-    if sizes is None:
+    # Iterate over the arrays until we find one that contains all dimensions
+    try:
+        sizes = next(
+            OrderedDict([(d, (obj.sizes[d], b)) for d, b in blocks.items()])
+            for obj in arrays_list
+            if all(d in obj.sizes for d in blocks)
+        )
+    except StopIteration:
         raise ValueError(
             "At least one input array must contain all dimensions in blocks.keys()",
         )
