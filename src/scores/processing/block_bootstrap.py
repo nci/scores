@@ -126,7 +126,7 @@ def _expand_n_nested_random_indices(indices: list[np.ndarray]) -> Tuple[np.ndarr
 
     Args:
     indices:List of numpy arrays of sequentially increasing dimension as output by
-        the function `_n_nested_blocked_random_indices`. The last axis on all
+        the function ``_n_nested_blocked_random_indices``. The last axis on all
         inputs is assumed to correspond to the iteration axis
 
     Returns:
@@ -174,16 +174,16 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         *arrays: Data to bootstrap. Multiple datasets can be passed to be bootstrapped
             in the same way. All input arrays must have nested dimensions.
         blocks: Dictionary of dimension(s) to bootstrap and the block sizes to use
-            along each dimension: `{dim: blocksize}`. Nesting is based on the order of
+            along each dimension: ``{dim: blocksize}``. Nesting is based on the order of
             this dictionary.
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
-            bootstrapping for each arrays provided in `arrays`. This parameter expects a list
+            bootstrapping for each arrays provided in ``arrays``. This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
             the respective arrays. By default, the assumption is that no dimensions are
-            excluded, and all arrays are bootstrapped across all specified dimensions in `blocks`.
+            excluded, and all arrays are bootstrapped across all specified dimensions in ``blocks``.
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
@@ -302,21 +302,21 @@ def block_bootstrap(
         arrays: The data to bootstrap, which can be multiple datasets. In the case where
             multiple datasets are passed, each dataset can have its own set of dimension. However,
             for successful bootstrapping, dimensions across all input arrays must be nested.
-            For instance, for `block.keys=['d1', 'd2', 'd3'], an array with dimension 'd1' and
+            For instance, for ``block.keys=['d1', 'd2', 'd3']``, an array with dimension 'd1' and
             'd2' is valid, but an array with only dimension 'd2' is not valid. All datasets
             are bootstrapped according to the same random samples along available dimensions.
         blocks: A dictionary specifying the dimension(s) to bootstrap and the block sizes to
-            use along each dimension: `{dimension: block_size}`. The keys represent the dimensions
+            use along each dimension: ``{dimension: block_size}``. The keys represent the dimensions
             to be bootstrapped, and the values indicate the block sizes along each dimension.
-            The dimension provided here should exist in the data provided as `arrays`.
+            The dimension provided here should exist in the data provided as ``arrays``.
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
-            bootstrapping for each array provided in `arrays`. This parameter expects a list
+            bootstrapping for each array provided in ``arrays``. This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
             the respective array. By default, the assumption is that no dimensions are
-            excluded, and all arrays are bootstrapped across all specified dimensions in `blocks`.
+            excluded, and all arrays are bootstrapped across all specified dimensions in ``blocks``.
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
