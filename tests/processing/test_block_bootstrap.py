@@ -161,7 +161,7 @@ def test__bootstrap_tuple_return():
             None,
             True,
             ValueError,
-            "Block dimension dim1 is not the same size on all input objects",
+            "Block dimension dim1 is not the same size on all input arrays",
         ),
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
@@ -171,7 +171,7 @@ def test__bootstrap_tuple_return():
             True,
             ValueError,
             "exclude_dims should be a list of the same length as the number of "
-            "objects containing lists of dimensions to exclude for each object",
+            "arrays containing lists of dimensions to exclude for each array",
         ),
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
@@ -180,7 +180,7 @@ def test__bootstrap_tuple_return():
             None,
             True,
             ValueError,
-            "At least one input object must contain all dimensions in blocks.keys()",
+            "At least one input array must contain all dimensions in blocks.keys()",
         ),
     ],
 )
