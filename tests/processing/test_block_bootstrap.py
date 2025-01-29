@@ -293,6 +293,26 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
             True,
             (10, 1000, 1000, 3),
         ),
+        # Dataset with dask arrays
+        (
+            [
+                xr.Dataset(
+                    {
+                        "var1": xr.DataArray(
+                            da.random.random((1000, 1000, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                        ),
+                        "var2": xr.DataArray(
+                            da.random.random((1000, 1000, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                        ),
+                    }
+                )
+            ],
+            {"dim1": 2, "dim2": 2},
+            3,
+            None,
+            True,
+            (30, 1000, 1000, 3),
+        ),
     ],
 )
 def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
@@ -303,7 +323,14 @@ def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circul
     result = block_bootstrap(
         *objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
-    assert isinstance(result.data, dask.array.Array)
-    result = result.compute()
-    assert result.shape == expected_shape
-    assert isinstance(result.data, np.ndarray)
+    if isinstance(result, xr.DataArray):
+        assert isinstance(result.data, dask.array.Array)
+        result = result.compute()
+        assert result.shape == expected_shape
+        assert isinstance(result.data, np.ndarray)
+    else:
+        for var in result.data_vars:
+            assert isinstance(result[var].data, dask.array.Array)
+        result = result.compute()
+        for var in result.data_vars:
+            assert isinstance(result[var].data, np.ndarray)
