@@ -207,11 +207,9 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     # Rename exclude_dims so they are not bootstrapped
     if exclude_dims is None:
         exclude_dims = [[] for _ in range(len(arrays_list))]
-    if (
-        not isinstance(exclude_dims, list)
-        or len(exclude_dims) != len(arrays_list)
-        or not all(isinstance(x, list) for x in exclude_dims)
-    ):
+    if not isinstance(exclude_dims, list) or not all(isinstance(x, list) for x in exclude_dims):
+        raise ValueError("exclude_dims should be a list of lists")
+    if len(exclude_dims) != len(arrays_list):
         raise ValueError(
             "exclude_dims should be a list of the same length as the number of "
             "arrays containing lists of dimensions to exclude for each array"
@@ -341,7 +339,7 @@ def block_bootstrap(
         """
         Get the max chunk size in a dataset
         """
-        ds = ds.to_dataset(name="ds") if isinstance(ds, xr.DataArray) else ds
+        ds = ds if isinstance(ds, xr.Dataset) else ds.to_dataset(name="ds")
 
         chunks = []
         for var in ds.data_vars:
