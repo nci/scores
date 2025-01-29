@@ -303,4 +303,7 @@ def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circul
     result = block_bootstrap(
         *objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
     assert result.shape == expected_shape
+    assert isinstance(result.data, np.ndarray)
