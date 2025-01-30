@@ -650,7 +650,7 @@
   - [API](api.md#scores.processing.binary_discretise_proportion)    
   - Flip-Flop Index
 * - Block Bootstrap
-  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.block_bootstrap)
+  - [API](api.md#scores.processing.block_bootstrap)
   - Confidence intervals. See [tutorial](project:./tutorials/Block_Bootstrapping.md)
 * - Broadcast and Match Not-a-Number (NaN)
   - [API](api.md#scores.processing.broadcast_and_match_nan)   
