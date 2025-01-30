@@ -649,6 +649,9 @@
 * - Binary Discretise Proportion
   - [API](api.md#scores.processing.binary_discretise_proportion)    
   - Flip-Flop Index
+* - Block Bootstrap
+  - [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.block_bootstrap)
+  - Confidence intervals. See [tutorial](project:./tutorials/Block_Bootstrapping.md)
 * - Broadcast and Match Not-a-Number (NaN)
   - [API](api.md#scores.processing.broadcast_and_match_nan)   
   - Murphy Score (Mean Elementary Score)
@@ -664,10 +667,6 @@
     [API](api.md#scores.processing.cdf.add_thresholds)
   - 
     Continuous Ranked Probability Score (CRPS) for CDFs; CRPS CDF Brier Decomposition
-* -  
-    - Block Bootstrap
-  -
-    [API](https://scores.readthedocs.io/en/latest/api.html#scores.processing.block_bootstrap)
 * -  
     - CDF Envelope
   -
