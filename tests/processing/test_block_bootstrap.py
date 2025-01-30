@@ -129,7 +129,7 @@ def test__expand_n_nested_random_indices(indices, expected_shapes):
 def test__block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test _block_bootstrap works as expected"""
     result = _block_bootstrap(
-        *objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
+        objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
     for res in result:
         if isinstance(res, xr.Dataset):
@@ -196,7 +196,7 @@ def test__bootstrap_tuple_return():
 def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims, circular, expected_exception, match):
     """Test _block_bootstrap correctly raises errors"""
     with pytest.raises(expected_exception=expected_exception, match=match):
-        _block_bootstrap(*objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular)
+        _block_bootstrap(objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular)
 
 
 @pytest.mark.parametrize(
@@ -204,7 +204,7 @@ def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims,
     [
         # Single array bootstrap
         (
-            [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
+            xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]),
             {"dim1": 2, "dim2": 2},
             3,
             None,
@@ -257,7 +257,7 @@ def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims,
 def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, expected_shape, expected_type):
     """Test block_bootstrap works as expected"""
     result = block_bootstrap(
-        *objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
+        objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
     if expected_type == tuple:
         assert isinstance(result, tuple)
@@ -330,7 +330,7 @@ def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circul
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = block_bootstrap(
-        *objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
+        objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
     if isinstance(result, xr.DataArray):
         assert isinstance(result.data, dask.array.Array)
