@@ -323,8 +323,11 @@ def block_bootstrap(
         along the "iteration" dimension.
 
     References:
-    Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
-      Academic press, 2011.
+        - Gilleland, E. (2020). Bootstrap Methods for Statistical Inference. Part I:
+            Comparative Forecast Verification for Continuous Variables. Journal of
+            Atmospheric and Oceanic Technology, 37(11), 2117–2134. https://doi.org/10.1175/jtech-d-20-0069.1
+        - Wilks, D. S. (2011). Statistical methods in the atmospheric sciences. Academic press.
+            https://doi.org/10.1016/C2017-0-03921-6
     """
 
     # While the most efficient method involves expanding the iteration dimension withing the
