@@ -22,6 +22,7 @@ from scores.continuous.standard_impl import (
     mean_error,
     mse,
     multiplicative_bias,
+    nse,
     pbias,
     rmse,
 )
@@ -49,6 +50,7 @@ __all__ = [
     "multiplicative_bias",
     "pbias",
     "kge",
+    "nse",
     "isotonic_fit",
     "consistent_expectile_score",
     "consistent_huber_score",

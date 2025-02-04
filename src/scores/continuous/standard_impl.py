@@ -561,3 +561,67 @@ def kge(
             }
         )
     return kge_s  # type: ignore
+
+
+def nse(
+    ...,
+    *,
+    ...,  # kwargs
+) -> XarrayLike:
+    """
+    NOTE: Everything below this horizontal rule is a draft only
+
+    ---------------------------------------------------------------------------
+    PLACEHOLDER FOR NSE SKILL-SCORE
+    -------------------------------
+    TODO:
+    - format this description, equations, references, examples etc.
+    - ensure time_dim is provided for aggregation.
+    - weights typically the same dimensions as time, ensure if further reduction
+      is done, that weights are broadcast to the extra dims appropriately (mse
+      might already do this)
+    - implement nse (basic version) with default weights behaviour and
+      angular=False
+    - check against divide by zero
+    ---------------------------------------------------------------------------
+
+    Description:
+    ...
+
+    nse = 1 - ( sum_i( w_i * (fcst_i - obs_i)^2 )
+              / sum_i( w_i * (obs_i - obs_mean)^2 )
+              )
+        = 1 - mse(fcst, obs) / mse(obs, obs_mean)
+
+    where
+        ...
+
+    Examples:
+
+    1. generic usage
+    >>> nse(obs, fcst, weights=..., time_dim=..., *common_args, **common_kwargs)
+    nse = ...
+
+    2. some specific usage
+    >>> ...
+    nse = ...
+
+    Notes:
+    ... (optional)
+    - typically reduced over time
+
+    References:
+    1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through
+       conceptual models part I — A discussion of principles. In Journal
+       of Hydrology (Vol. 10, Issue 3, pp. 282–290). Elsevier BV.
+       doi:10.1016/0022-1694(70)90255-6
+    2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land
+       use changes on the runoff generation of a river basin through parameter
+       regionalization of a watershed model. Journal of Hydrology, 292(1-4),
+       281-295.
+       doi:10.1016/j.jhydrol.2004.01.002
+    """
+    raise NotImplementedError("NSE is under construction. Why are you even running this?")
+
+    nse = 0.0
+    return nse
