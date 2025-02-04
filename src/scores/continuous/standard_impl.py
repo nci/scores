@@ -623,5 +623,5 @@ def nse(
     """
     raise NotImplementedError("NSE is under construction. Why are you even running this?")
 
-    nse = 0.0
-    return nse
+    nse_s = 0.0
+    return nse_s
