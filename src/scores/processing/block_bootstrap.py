@@ -5,9 +5,10 @@ testable and also consistent with the scores package.
 """
 
 import math
+import os
 from collections import OrderedDict
 from itertools import chain, cycle, islice
-from typing import Dict, Iterable, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import xarray as xr
@@ -212,12 +213,12 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             "arrays containing lists of dimensions to exclude for each array"
         )
     renames = []
+
     for i, (obj, exclude) in enumerate(zip(array_list, exclude_dims)):
         array_list[i] = obj.rename(
             {d: f"dim{ii}" for ii, d in enumerate(exclude)},
         )
         renames.append({f"dim{ii}": d for ii, d in enumerate(exclude)})
-
     dim = list(blocks.keys())
 
     # Ensure bootstrapped dimensions have consistent sizes across arrays_list
