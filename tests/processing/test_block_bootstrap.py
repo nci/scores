@@ -13,6 +13,7 @@ from collections import OrderedDict
 import numpy as np
 import pytest
 import xarray as xr
+from unittest import mock
 
 from scores.processing.block_bootstrap import (
     _block_bootstrap,
@@ -286,21 +287,21 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
         ),
         # Dask arrays to meet block_size < 1
         (
-            [xr.DataArray(da.random.random((110, 110, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
+            [xr.DataArray(da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
             {"dim1": 2, "dim2": 2},
             2,
             None,
             True,
-            (30, 110, 110, 2),
+            (30, 100, 100, 2),
         ),
         # Dask arrays for a case with leftover != 0
         (
-            [xr.DataArray(da.random.random((110, 110, 10), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
+            [xr.DataArray(da.random.random((100, 100, 10), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
             {"dim1": 2, "dim2": 2},
             3,
             None,
             True,
-            (10, 110, 110, 3),
+            (10, 100, 100, 3),
         ),
         # Dataset with dask arrays
         (
@@ -308,10 +309,10 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
                 xr.Dataset(
                     {
                         "var1": xr.DataArray(
-                            da.random.random((110, 110, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                            da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
                         ),
                         "var2": xr.DataArray(
-                            da.random.random((110, 110, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                            da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
                         ),
                     }
                 )
@@ -320,10 +321,13 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
             3,
             None,
             True,
-            (30, 110, 110, 3),
+            (30, 100, 100, 3),
         ),
     ],
 )
+# We mock MAX_BATCH_SIZE so that we don't need to pass in large arrays which
+# slow down the tests
+@mock.patch("scores.processing.block_bootstrap.MAX_BATCH_SIZE_MB", 2)
 def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test block_bootstrap can work with dask arrays"""
     if dask == "Unavailable":  # pragma: no cover
