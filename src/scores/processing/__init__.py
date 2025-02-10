@@ -2,7 +2,7 @@
 Import the functions from the implementations into the public API
 """
 
-from scores.processing.block_bootstrap import block_bootstrap
+from scores.processing.block_bootstrap_impl import block_bootstrap
 from scores.processing.discretise import (
     binary_discretise,
     binary_discretise_proportion,
