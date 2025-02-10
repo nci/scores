@@ -15,7 +15,9 @@ import xarray as xr
 
 from scores.typing import XarrayLike
 
-MAX_CHUNK_SIZE_MB = 200
+# When Dask is being used, this constant helps control the sizes of batches
+# when bootstrapping
+MAX_BATCH_SIZE_MB = 200
 
 
 def _get_blocked_random_indices(
@@ -358,7 +360,7 @@ def block_bootstrap(
         # without loading data into memory.
         # See https://docs.xarray.dev/en/stable/generated/xarray.DataArray.chunks.html
         ds_max_chunk_size_mb = max(_max_chunk_size_mb(obj) for obj in array_list)
-        blocksize = int(MAX_CHUNK_SIZE_MB / ds_max_chunk_size_mb)
+        blocksize = int(MAX_BATCH_SIZE_MB / ds_max_chunk_size_mb)
         blocksize = min(blocksize, n_iteration)
         blocksize = max(blocksize, 1)
     else:
