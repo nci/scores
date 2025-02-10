@@ -325,6 +325,14 @@ def block_bootstrap(
         objects are provided, it returns a tuple of bootstrapped XarrayLike objects, each stacked
         along the "iteration" dimension.
 
+    Raises:
+        ValueError: If bootstrapped dimensions don't consistent sizes across ``arrays_list``.
+        ValueError: If there is not at least one input array that contains all dimensions in blocks.keys().
+        ValueError: If ``exclude_dims`` is not a list of lists.
+        ValueError: If the list ``exclude_dims`` is not the same length as the number of
+            as ``array_list``.
+
+
     References:
         - Gilleland, E. (2020). Bootstrap Methods for Statistical Inference. Part I:
             Comparative Forecast Verification for Continuous Variables. Journal of
