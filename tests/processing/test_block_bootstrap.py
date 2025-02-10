@@ -15,7 +15,7 @@ import pytest
 import xarray as xr
 from unittest import mock
 
-from scores.processing.block_bootstrap import (
+from scores.processing.block_bootstrap_impl import (
     _block_bootstrap,
     _bootstrap,
     _expand_n_nested_random_indices,
@@ -327,7 +327,7 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
 )
 # We mock MAX_BATCH_SIZE so that we don't need to pass in large arrays which
 # slow down the tests
-@mock.patch("scores.processing.block_bootstrap.MAX_BATCH_SIZE_MB", 2)
+@mock.patch("scores.processing.block_bootstrap_impl.MAX_BATCH_SIZE_MB", 2)
 def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test block_bootstrap can work with dask arrays"""
     if dask == "Unavailable":  # pragma: no cover
