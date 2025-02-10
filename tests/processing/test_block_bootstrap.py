@@ -9,12 +9,13 @@ except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except  # p
     dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
 
 from collections import OrderedDict
+from unittest import mock
 
 import numpy as np
 import pytest
 import xarray as xr
-from unittest import mock
 
+import scores.processing.block_bootstrap_impl as block_bootstrap_module
 from scores.processing.block_bootstrap_impl import (
     _block_bootstrap,
     _bootstrap,
@@ -325,14 +326,13 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
         ),
     ],
 )
-# We mock MAX_BATCH_SIZE so that we don't need to pass in large arrays which
-# slow down the tests
-@mock.patch("scores.processing.block_bootstrap_impl.MAX_BATCH_SIZE_MB", 2)
-def test_block_bootstrap_dask(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
+def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test block_bootstrap can work with dask arrays"""
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-
+    # We mock MAX_BATCH_SIZE so that we don't need to pass in large arrays which
+    # slow down the tests
+    monkeypatch.setattr(block_bootstrap_module, "MAX_BATCH_SIZE_MB", 2)
     result = block_bootstrap(
         objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
