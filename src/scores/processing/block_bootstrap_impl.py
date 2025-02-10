@@ -331,13 +331,27 @@ def block_bootstrap(
         ValueError: If the list ``exclude_dims`` is not the same length as the number of
             as ``array_list``.
 
-
     References:
         - Gilleland, E. (2020). Bootstrap Methods for Statistical Inference. Part I:
             Comparative Forecast Verification for Continuous Variables. Journal of
             Atmospheric and Oceanic Technology, 37(11), 2117–2134. https://doi.org/10.1175/jtech-d-20-0069.1
         - Wilks, D. S. (2011). Statistical methods in the atmospheric sciences. Academic press.
             https://doi.org/10.1016/C2017-0-03921-6
+
+    Examples:
+        Bootstrap a fcst and obs dataset along the time and space dimensions with block sizes of 10
+        for each dimension. The bootstrapping is repeated 1000 times.
+
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.processing import block_bootstrap
+        >>> obs = xr.DataArray(np.random.rand(100, 100), dims=["time", "space"])
+        >>> fcst = xr.DataArray(np.random.rand(100, 100), dims=["time", "space"])
+        >>> bootstrapped_obs, bootstrapped_fcst = block_bootstrap(
+        ...     [obs, fcst],
+        ...     blocks={"time": 10, "space": 10},
+        ...     n_iteration=1000,
+        ... )
     """
 
     # While the most efficient method involves expanding the iteration dimension withing the
