@@ -211,8 +211,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         raise ValueError("exclude_dims should be a list of lists")
     if len(exclude_dims) != len(array_list):
         raise ValueError(
-            "exclude_dims should be a list of the same length as the number of "
-            "arrays containing lists of dimensions to exclude for each array"
+            "exclude_dims should be a list of the same length as the number of arrays in array_list",
         )
     renames = []
 

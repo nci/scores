@@ -181,8 +181,7 @@ def test__bootstrap_tuple_return():
             [["lead_day"], ["lead_day"], []],
             True,
             ValueError,
-            "exclude_dims should be a list of the same length as the number of "
-            "arrays containing lists of dimensions to exclude for each array",
+            "exclude_dims should be a list of the same length as the number of arrays in array_list",
         ),
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
