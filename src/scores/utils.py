@@ -442,3 +442,137 @@ def check_binary(data: XarrayLike, name: str):
 
     if not set(unique_values).issubset(binary_set):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
+
+# >>> REFACTOR
+# -------------------------------------------------------------------------------------------------
+# TODO: REFACTOR
+# - move imports to top level
+# - type definition (and runtime guard) should go to typing module
+# - move tests to tests
+# -------------------------------------------------------------------------------------------------
+from typing import Union, TypeGuard, Unpack, Any
+
+DimContainer = Union[str, list[str]]
+
+def _is_dim_ctn(dim_ctn: Any) -> TypeGuard[DimContainer]:
+    """
+    Checks if the input object is a dim container (`str` or `list[str]`)
+    """
+    __is_str = lambda x: isinstance(x, str)
+    __is_str_list = lambda x: isinstance(x, list) and (x == [] or all(__is_str(k) for k in x))
+    return __is_str(dim_ctn) or __is_str_list(dim_ctn)
+
+def _lift_str(dim_str: str) -> DimContainer:
+    """
+    Lifts a string to a single element list
+    """
+    ret : DimContainer = dim_str # default: do nothing
+    if isinstance(dim_str, str):
+        ret = [dim_str]
+    return ret
+
+def merge_dim_names(*ctns: Unpack[DimContainer]) -> list[str]:
+    """
+    Merges input dimension names, removes any duplicates and flattens to a single list. Takes any
+    number of arguments (variadic). Only `str` or `list[str]` are valid arguments. Deep nested lists
+    are not supported.
+
+    For example, this method can be used when gathering which dimensions to reduce, where the
+    dimension names could be strings, lists of strings, or a combination of both, prior to feeding
+    into `gather_dimensions`.
+
+    Returns:
+        A merged list of unique dimension names (str).
+
+    Raises:
+        ValueError: when _any_ argument provided is _not_ a string or a list of strings.
+
+    Example:
+
+    ```ipython
+    >>> merge_dim_names("temp", ["lat", "lon"], "time")
+    ["temp", "lat", "lon", "time"]  # may not be in this order
+    ```
+    """
+    dim_set = set()
+    for d in ctns:
+        if _is_dim_ctn(d):
+            # using set to prevent duplicates.
+            dim_set = dim_set.union(set(_lift_str(d)))
+        else:
+            raise ValueError(f"invalid type for dimension: {d} - expect either `str` or `list[str]`")
+    # convert back to list for compatibility with most other APIs.
+    return list(dim_set)
+
+
+# --- TEST ---
+
+def test__is_dim_ctn():
+    # list of strings is valid
+    assert _is_dim_ctn(["a", "b", "c"]) == True
+    # string is valid
+    assert _is_dim_ctn("potato") == True
+    # float is invalid
+    assert _is_dim_ctn(4.2) == False
+    # list is not of single type
+    assert _is_dim_ctn(["a", "b", 4]) == False
+    # overly nested
+    assert _is_dim_ctn(["a", "b", ["a", "b"]]) == False
+
+def test__lift_str():
+    assert _lift_str("potato") == ["potato"]
+    assert _lift_str(None) is None
+    assert _lift_str(4) == 4
+    assert _lift_str(["1", "2"]) == ["1", "2"]
+
+def test_merge_dim_names():
+    def _expect_error(*x: Unpack[DimContainer], bad_entry: str=""):
+        try:
+            merge_dim_names(*x)
+        except ValueError as err:
+            assert "invalid" in str(err)
+            assert str(bad_entry) in str(err)
+
+    def _unord_assert(x: list[str], y: list[str]):
+        assert set(x) == set(y)
+
+    # empty
+    _unord_assert(merge_dim_names([]), [])
+    # single str
+    _unord_assert(merge_dim_names("potato"), ["potato"])
+    # single list - tapi-o(oo)-ca-(o)
+    _unord_assert(merge_dim_names(["tapi", "o", "o", "o", "ca", "o"]), ["tapi", "o", "ca"])
+    # make sure no dupes
+    _unord_assert(
+        merge_dim_names("mushroom", ["badger", "mushroom", "mushroom"], "badger", ["badger", "badger", "mushroom"]),
+        ["badger", "mushroom"]
+    )
+    # kitchen sink
+    _unord_assert(merge_dim_names("a", ["a", "b", "c"], ["d", "b"], [], "b"), ["a", "b", "c", "d"])
+
+    # wrong type in random position
+    _expect_error("a", ["a", "b"], 1.23, "c", bad_entry=1.23)
+    # wrong type in list
+    _expect_error([1,2,3], bad_entry=[1,2,3])
+    # wrong type in variadic args
+    _expect_error(1, 2, 3, bad_entry=1)
+    # too much depth in collection. Should only accept depth = 0 (str) or depth = 1 (list[str]).
+    _expect_error(
+        ["this", "is", "okay"],
+        "so",
+        "is",
+        "this",
+        ["this should", ["fail"]],
+        bad_entry=["this should", ["fail"]]
+    )
+
+# TODO: remove - temporary testing
+if False:
+    print("RUN: test__is_dim_ctn")
+    test__is_dim_ctn()
+    print("RUN: test__lift_str")
+    test__lift_str()
+    print("RUN: test__merge_dim_names")
+    test_merge_dim_names()
+# -------------------------------------------------------------------------------------------------
+# <<< REFACTOR
