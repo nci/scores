@@ -534,7 +534,7 @@ def test_merge_dim_names():
             assert str(bad_entry) in str(err)
 
     def _unord_assert(x: list[str], y: list[str]):
-        assert set(x) == set(y)
+        assert len(x) == len(y) and set(x) == set(y)
 
     # empty
     _unord_assert(merge_dim_names([]), [])
