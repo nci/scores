@@ -14,6 +14,7 @@ import numpy as np
 import xarray as xr
 
 from scores.typing import XarrayLike
+from scores.utils import tmp_coord_name
 
 # When Dask is being used, this constant helps control the sizes of batches
 # when bootstrapping
@@ -214,12 +215,14 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             "exclude_dims should be a list of the same length as the number of arrays in array_list",
         )
     renames = []
-
     for i, (obj, exclude) in enumerate(zip(array_list, exclude_dims)):
-        array_list[i] = obj.rename(
-            {d: f"dim{ii}" for ii, d in enumerate(exclude)},
-        )
-        renames.append({f"dim{ii}": d for ii, d in enumerate(exclude)})
+        new_dim_list = tmp_coord_name(obj, count=len(exclude))
+        if isinstance(new_dim_list, str):
+            new_dim_list = [new_dim_list]
+        rename_dict = {d: f"{new_dim_list[ii]}" for ii, d in enumerate(exclude)}
+        array_list[i] = obj.rename(rename_dict)
+        renames.append({v: k for k, v in rename_dict.items()})
+
     dim = list(blocks.keys())
 
     # Ensure bootstrapped dimensions have consistent sizes across arrays_list
