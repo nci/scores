@@ -662,36 +662,27 @@ def nse(
     """
     nse_s: XarrayLike | None = None
     merged_reduce_dims : list[str] = scores.utils.merge_dim_names(time_dim, reduce_dims)
-    gathered_reduce_dims : set[Hashable] = scores.utils.gather_dimensions(
-        fcst.dims,
-        obs.dims,
-        reduce_dims=merged_reduce_dims,
-    )
+    # TODO: assert reduce_dims existance in obs, since it's used in obs.mean `mse` handles this for
+    # everything else due to call to `gather_dimensions`.
 
     # helper function to reduce repetition below
     _mse_partial : Callable[[XarrayLike, XarrayLike], XarrayLike] = functools.partial(
         mse,
-        reduce_dims=gathered_reduce_dims,
+        reduce_dims=merged_reduce_dims,
         weights=weights,
         is_angular=is_angular,
     )
 
-    # ---
-    # NOTE: mean obs ignores weight distribution, this aligns with reference 2., which uses obs
-    #       itself as weights.
-    # TODO: verify from citation.
-    obs_mean : XarrayLike = obs.mean(dims=reduce_dims)
-    # ---
-
-    fcst_error : XarrayLike = _mse_partial(fcst, obs)
-    obs_variance : XarrayLike = _mse_partial(obs_mean, obs)
+    # NOTE: obs_mean is calculated prior to weighting as it acts as the "reference" fcst. This is
+    # consistent with fcst_error being calculated prior to weighting. see-also: reference 2.
+    obs_mean: XarrayLike = obs.mean(dims=merged_reduce_dims)
+    fcst_error: XarrayLike = _mse_partial(fcst, obs)
+    obs_variance: XarrayLike = _mse_partial(obs_mean, obs)
 
     # ---
     # This is only really applicable for constant obs scenarios.
-    # raise pre-emptive warning for constant obs e.g. any of obs_variance is 0
     # TODO: this is currently quite arbitrary - there may already be epsilon related logic in
-    # scores somewhere.
-    # TODO: we may also require relative tolerance.
+    # scores somewhere, that can be reused.
     if epsilon is not None:
         assert epsilon > 0.0 and epsilon <= 1e-3
         fcst_error += epsilon
@@ -701,8 +692,9 @@ def nse(
     # ---
     # NOTE: warning on divide by zero, rather than hard throw. Since its most likely due to a data
     # anomaly and other entries may be fine.
-    # TODO: decide whether to warn earlier when computing obs_variance => ignore instead of warn here.
-    # ignore => a / 0  = inf (where a > 0); 0 / 0 = nan
+    # - a / 0 = inf, where a > 0
+    # - 0 / 0 = nan
+    # TODO: decide whether to warn here, or when computing `obs_variance`
     with np.errstate(divide="warn"):
         nse_s = 1.0 - fcst_error / obs_variance
     # ---
