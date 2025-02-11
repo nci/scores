@@ -24,6 +24,12 @@ from scores.emerging.block_bootstrap.axis_info import (
 from scores.emerging.block_bootstrap.helpers import reorder_all_arr_dims
 from scores.emerging.block_bootstrap.methods import FitBlocksMethod
 
+try:
+    import dask
+    DASK_AVAILABLE = True
+except ImportError:
+    DASK_AVAILABLE = False
+
 
 def block_bootstrap(
     arrs: list[xr.DataArray],
@@ -174,12 +180,44 @@ def block_bootstrap(
           the underlying chunking strategy of non-bootstrapped dims.
 
     """
+    iterations = int(iterations)
     if iterations <= 0:
-        ValueError("`iterations` must be greater than 0.")
+        ValueError("`iterations` must be a positive integer >= 1")
 
-    raise NotImplementedError("`block_bootstrap` is currently a stub.")
+    # array for broadcasting sampling operations onto iterations
+    # TODO: check that "iteration" does not already exist in any input arrays
+    iter_arr = xr.DataArray(range(iterations), dims="iteration")
 
-    # note: this will re-organize the arrays
+    # resolve dask related settings
+    # TODO: move to helper function
+    global DASK_AVAILABLE
+    dask_setting = "forbidden"
+
+    if DASK_AVAILABLE:
+        if use_dask:
+            dask_setting = "parallelized"
+            num_iteration_chunks = int(num_iteration_chunks)
+            # resolve iteration chunking
+            if num_iteration_chunks == -1:
+                raise NotImplementedError("auto iteration chunking not implemented")
+            if num_iteration_chunks == 0:
+                raise ValueError("`num_iteration_chunks` must be a positive integer >= 1")
+            if num_iteration_chunks > 1:
+                # clamp chunk_size to be between 1 and number of iterations
+                chunk_size = min(max(int(iterations / num_iteration_chunks), 1), iterations)
+                iter_arr.chunk(chunk_size)
+        else:
+            # load all arrays that are currently chunked to coerce to ndarray
+            # TODO: insert warning that dask is available but `use_dask` is set to False
+            #       causing arrays to explicitly be loaded into memory.
+            for arr in arrs_ordered:
+                if arr.chunk_sizes is None:
+                    continue
+                else:
+                    arr.load()
+
+    # prepare bootstrapping arrays
+    # NOTE: this will transpose the arrays so that the dimensions are in the same order
     array_info_cln = ArrayInfoCollection.make_from_arrays(
         arrs,
         bootstrap_dims,
@@ -188,35 +226,31 @@ def block_bootstrap(
         auto_order_missing,
     )
 
+    # initialize block_sampler - randomized block sampling happens here
     block_sampler = BlockSampler(
         array_info_collection=array_info_cln,
         cyclic=cyclic,
     )
 
-    # ---
-    # broadcast block sampling onto multiple iterations...
-    #
-    # TODO: for parallel operations, iter_arr should be chunked appropriately,
-    # unless the underlying data-arrays themselves are dask arrays, in which
-    # case parallelization happens through broadcast chunks.
-    iter_arr = xr.DataArray(range(iterations), dims="iteration")
+    # extract re-ordered bootstrap dimensions for each array
+    bootstrap_dims_per_arr = [arr.bootstrap_dims for arr in array_info_cln.array_info]
+    arrs_ordered = array_info_cln.data_arrays
 
+    # wrapper to apply block sampling for each iteration "chunk"
     def _block_sample_ufunc_wrapper(iter_, *arrs_, block_sampler_):
         return np.array([block_sampler_.sample_blocks_unchecked(list(arrs_)) for _ in iter_])
 
-    # ---
-
-    # bootstrap dimensions should not be broadcast as they will be resampled as a block
-    # and will not abide by vectorization/chunking rules.
-    bootstrap_dims_per_arr = [arr.bootstrap_dims for arr in array_info_cln.array_info]
-
+    # broadcast sampling operations along iterations and non-bootstrap dimensions
+    # NOTE: first array is a dummy "iteration" array.
+    # NOTE: bootstrap dimensions should not be broadcast as they will be resampled as a
+    #       block and should not abide by vectorization/chunking rules.
     arrs_bootstrapped = xr.apply_ufunc(
         iter_arr,
-        *tuple(array_info_cln.arrays_ordered),
+        *tuple(arrs_ordered),
         core_input_dims=[[], *bootstrap_dims_per_arr],
         output_core_dims=bootstrap_dims_per_arr,
         kwargs={"block_sampler_": block_sampler},
-        dask="parallelized",  # TODO: get from keyword args
+        dask=dask_setting,
     )
 
     return arrs_bootstrapped
