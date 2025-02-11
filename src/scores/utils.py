@@ -445,7 +445,7 @@ def check_binary(data: XarrayLike, name: str):
 
 # >>> REFACTOR
 # -------------------------------------------------------------------------------------------------
-# TODO: REFACTOR
+# merge dimension helper
 # - move imports to top level
 # - type definition (and runtime guard) should go to typing module
 # - move tests to tests
@@ -503,7 +503,6 @@ def merge_dim_names(*ctns: Unpack[DimContainer]) -> list[str]:
             raise ValueError(f"invalid type for dimension: {d} - expect either `str` or `list[str]`")
     # convert back to list for compatibility with most other APIs.
     return list(dim_set)
-
 
 # --- TEST ---
 
@@ -574,5 +573,6 @@ if False:
     test__lift_str()
     print("RUN: test__merge_dim_names")
     test_merge_dim_names()
-# -------------------------------------------------------------------------------------------------
+
 # <<< REFACTOR
+# -------------------------------------------------------------------------------------------------

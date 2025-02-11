@@ -2,7 +2,7 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 import numpy as np
 import xarray as xr
@@ -569,8 +569,8 @@ def nse(
     *,
     time_dim,  # required keyword arg
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
-    preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[XarrayLike] = None,
+    is_angular: Optional[bool] = False,
     epsilon: Optional[float] = None,
 ) -> XarrayLike:
     """
@@ -586,7 +586,18 @@ def nse(
       weights are broadcast to the extra dims appropriately (mse might already do this)
     - implement nse (basic version) with default weights behaviour and angular=False
     - check against divide by zero
+    - check if it works with datasets
     ------------------------------------------------------------------------------------------
+
+    <DESCRIPTION> Calculates `NSE` blahblah...
+
+    <WRONGLY FORMATTED MATH BELOW>
+    .. math::
+        nse = 1 - ( sum_i( w_i * (fcst_i - obs_i)^2 ) / sum_i( w_i * (obs_i - obs_mean)^2 )
+            = 1 - mse(fcst, obs) / mse(obs, obs_mean)
+
+        where
+            <EXPLAIN WHAT VARIABLES MEAN HERE>
 
     Args:
         fcst: "Forecast" or predicted variables.
@@ -596,32 +607,16 @@ def nse(
             All other dimensions will be preserved (except `time_dim`).
         weights: Optional weighting to apply to the NSE computation. Typically weights are applied
             over `time_dim` but can vary by location as well. None => all error terms are treated equal.
-        epsilon
+        is_angular: specifies whether `fcst` and `obs` are angular data (e.g. wind direction). If
+            True, a different function is used to calculate the difference between `fcst` and `obs`,
+            which accounts for circularity. Angular `fcst` and `obs` data should be in degrees
+            rather than radians.
+        epsilon: perturb the `NSE` score with epsilon prior to computing divisions. This score will
+            fail if there is a divide by 0. While uncommon, rounding errors and other anomaly
+            situations may lead to this happening - e.g. obs is constant, but fcst isn't.
 
-    ..note ::
-        This score requires computation of the `obs` population variance over `time_dim` and is
-        essentially the square error between `obs` and `fcst`, divided by the `obs` variance. Since
-        this `obs` variance is not knowable at the time of forecast, "simulation" might be a more
-        apt term, despite being named `fcst` (for consistency reasons).
 
-    ..note ::
-        This function uses `mse` under the hood, so `weights` must be full described i.e. for each
-        value in the input xarray object(s), even if `time_dim` is the only dimension being reduced.
-        see: :py:func:`scores.utils.apply_weights` for more details.
-
-    ..warn ::
-        `preserve_dims` is not supported in this API, its mutually exclusive to `reduce_dims` and
-        `time_dim` is a required reduction.
-
-    Description:
-    ...
-
-    nse = 1 - ( sum_i( w_i * (fcst_i - obs_i)^2 ) / sum_i( w_i * (obs_i - obs_mean)^2 )
-        = 1 - mse(fcst, obs) / mse(obs, obs_mean)
-
-    where
-        ...
-
+    <FIXUP THESE EXAMPLES>
     Examples:
 
     1. generic usage
@@ -632,9 +627,28 @@ def nse(
     >>> ...
     nse = ...
 
-    Notes:
-    ... (optional)
-    - typically reduced over time
+    .. note::
+        This score requires computation of the `obs` population variance over `time_dim` and is
+        essentially the square error between `obs` and `fcst`, divided by the `obs` variance. Since
+        this `obs` variance is not knowable at the time of forecast, "simulation" might be a more
+        apt term, despite being named `fcst` (for consistency reasons).
+
+    .. note::
+        This function uses `mse` under the hood, so `weights` must be full described i.e. for each
+        value in the input xarray object(s), even if `time_dim` is the only dimension being reduced.
+        see: :py:func:`scores.utils.apply_weights` for more details.
+
+    .. note::
+        While `is_angular` is typically not used for this metric. `NSE` is generic enough that it
+        _could_ be used in wider context. Particularly, is highly related (somewhat inversely) to
+        signal-to-noise ratio in signal processing.
+        TODO: citation?
+
+    .. warn::
+        `preserve_dims` is not supported in this API, its mutually exclusive to `reduce_dims` and
+        `time_dim` is a required reduction.
+
+    <DOUBLE CHECK REFERENCES BELOW>
 
     References:
     1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
@@ -646,13 +660,55 @@ def nse(
        of Hydrology, 292(1-4), 281-295.
        doi:10.1016/j.jhydrol.2004.01.002
     """
-    assert isinstance(time_dim, str)  # strict
-    reduce_dims = [time_dim] if reduce_dims is None else reduce_dims.append(time_dim)
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=None
+    nse_s: XarrayLike | None = None
+    merged_reduce_dims : list[str] = scores.utils.merge_dim_names(time_dim, reduce_dims)
+    gathered_reduce_dims : set[Hashable] = scores.utils.gather_dimensions(
+        fcst.dims,
+        obs.dims,
+        reduce_dims=merged_reduce_dims,
     )
 
-    raise NotImplementedError("NSE is under construction. This function shouldn't be called by live code.")
+    # helper function to reduce repetition below
+    _mse_partial : Callable[[XarrayLike, XarrayLike], XarrayLike] = functools.partial(
+        mse,
+        reduce_dims=gathered_reduce_dims,
+        weights=weights,
+        is_angular=is_angular,
+    )
 
-    nse_s = 0.0
+    # ---
+    # NOTE: mean obs ignores weight distribution, this aligns with reference 2., which uses obs
+    #       itself as weights.
+    # TODO: verify from citation.
+    obs_mean : XarrayLike = obs.mean(dims=reduce_dims)
+    # ---
+
+    fcst_error : XarrayLike = _mse_partial(fcst, obs)
+    obs_variance : XarrayLike = _mse_partial(fcst, obs_mean)
+
+    # ---
+    # This is only really applicable for constant obs scenarios.
+    # raise pre-emptive warning for constant obs e.g. any of obs_variance is 0
+    # TODO: this is currently quite arbitrary - there may already be epsilon related logic in
+    # scores somewhere.
+    # TODO: we may also require relative tolerance.
+    if epsilon is not None:
+        assert epsilon > 0.0 and epsilon <= 1e-3
+        fcst_error += epsilon
+        obs_variance += epsilon
+    # ---
+
+    # ---
+    # NOTE: warning on divide by zero, rather than hard throw. Since its most likely due to a data
+    # anomaly and other entries may be fine.
+    # TODO: decide whether to warn earlier when computing obs_variance => ignore instead of warn here.
+    # ignore => a / 0  = inf (where a > 0); 0 / 0 = nan
+    with np.errstate(divide="warn"):
+        nse_s = 1.0 - fcst_error / obs_variance
+    # ---
+
+    # impossible for it to be None if we reached this point - assert and re-cast before returning
+    assert nse_s is not None
+    cast(nse_s, XarrayLike)
+
     return nse_s
