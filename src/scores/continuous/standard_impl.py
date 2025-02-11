@@ -564,33 +564,59 @@ def kge(
 
 
 def nse(
-    ...,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     *,
-    ...,  # kwargs
+    time_dim,  # required keyword arg
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+    epsilon: Optional[float] = None,
 ) -> XarrayLike:
     """
     NOTE: Everything below this horizontal rule is a draft only
 
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------
     PLACEHOLDER FOR NSE SKILL-SCORE
     -------------------------------
     TODO:
     - format this description, equations, references, examples etc.
     - ensure time_dim is provided for aggregation.
-    - weights typically the same dimensions as time, ensure if further reduction
-      is done, that weights are broadcast to the extra dims appropriately (mse
-      might already do this)
-    - implement nse (basic version) with default weights behaviour and
-      angular=False
+    - weights typically the same dimensions as time, ensure if further reduction is done, that
+      weights are broadcast to the extra dims appropriately (mse might already do this)
+    - implement nse (basic version) with default weights behaviour and angular=False
     - check against divide by zero
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------
+
+    Args:
+        fcst: "Forecast" or predicted variables.
+        obs: Observed variables.
+        time_dim: The required time dimension over which to aggregate the NSE score.
+        reduce_dims: Optionally specify additional dimensions to reduce when calculating the NSE.
+            All other dimensions will be preserved (except `time_dim`).
+        weights: Optional weighting to apply to the NSE computation. Typically weights are applied
+            over `time_dim` but can vary by location as well. None => all error terms are treated equal.
+        epsilon
+
+    ..note ::
+        This score requires computation of the `obs` population variance over `time_dim` and is
+        essentially the square error between `obs` and `fcst`, divided by the `obs` variance. Since
+        this `obs` variance is not knowable at the time of forecast, "simulation" might be a more
+        apt term, despite being named `fcst` (for consistency reasons).
+
+    ..note ::
+        This function uses `mse` under the hood, so `weights` must be full described i.e. for each
+        value in the input xarray object(s), even if `time_dim` is the only dimension being reduced.
+        see: :py:func:`scores.utils.apply_weights` for more details.
+
+    ..warn ::
+        `preserve_dims` is not supported in this API, its mutually exclusive to `reduce_dims` and
+        `time_dim` is a required reduction.
 
     Description:
     ...
 
-    nse = 1 - ( sum_i( w_i * (fcst_i - obs_i)^2 )
-              / sum_i( w_i * (obs_i - obs_mean)^2 )
-              )
+    nse = 1 - ( sum_i( w_i * (fcst_i - obs_i)^2 ) / sum_i( w_i * (obs_i - obs_mean)^2 )
         = 1 - mse(fcst, obs) / mse(obs, obs_mean)
 
     where
@@ -611,17 +637,22 @@ def nse(
     - typically reduced over time
 
     References:
-    1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through
-       conceptual models part I — A discussion of principles. In Journal
-       of Hydrology (Vol. 10, Issue 3, pp. 282–290). Elsevier BV.
+    1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
+       part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–290).
+       Elsevier BV.
        doi:10.1016/0022-1694(70)90255-6
-    2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land
-       use changes on the runoff generation of a river basin through parameter
-       regionalization of a watershed model. Journal of Hydrology, 292(1-4),
-       281-295.
+    2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the runoff
+       generation of a river basin through parameter regionalization of a watershed model. Journal
+       of Hydrology, 292(1-4), 281-295.
        doi:10.1016/j.jhydrol.2004.01.002
     """
-    raise NotImplementedError("NSE is under construction. Why are you even running this?")
+    assert isinstance(time_dim, str)  # strict
+    reduce_dims = [time_dim] if reduce_dims is None else reduce_dims.append(time_dim)
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=None
+    )
+
+    raise NotImplementedError("NSE is under construction. This function shouldn't be called by live code.")
 
     nse_s = 0.0
     return nse_s
