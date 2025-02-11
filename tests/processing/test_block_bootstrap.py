@@ -9,7 +9,6 @@ except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except  # p
     dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
 
 from collections import OrderedDict
-from unittest import mock
 
 import numpy as np
 import pytest
@@ -103,6 +102,15 @@ def test__expand_n_nested_random_indices(indices, expected_shapes):
             [["dim1"]],
             True,
             (10, 5, 7, 3),
+        ),
+        # Test excluding 2 dims
+        (
+            [xr.DataArray(np.random.rand(10, 5, 7, 5), dims=["dim1", "dim2", "dim3", "dim4"])],
+            {"dim2": 2, "dim3": 1},
+            3,
+            [["dim1", "dim4"]],
+            True,
+            (10, 5, 5, 7, 3),
         ),
         (
             [
