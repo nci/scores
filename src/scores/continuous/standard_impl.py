@@ -684,7 +684,7 @@ def nse(
     # ---
 
     fcst_error : XarrayLike = _mse_partial(fcst, obs)
-    obs_variance : XarrayLike = _mse_partial(fcst, obs_mean)
+    obs_variance : XarrayLike = _mse_partial(obs_mean, obs)
 
     # ---
     # This is only really applicable for constant obs scenarios.
