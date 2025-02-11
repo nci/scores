@@ -1,8 +1,9 @@
 """
 This module contains methods which may be used for scoring multicategorical forecasts
 """
+
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import Iterable, Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -16,7 +17,7 @@ def firm(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     risk_parameter: float,
-    categorical_thresholds: Sequence[float],
+    categorical_thresholds: Union[Sequence[float], Sequence[xr.DataArray]],
     threshold_weights: Sequence[Union[float, xr.DataArray]],
     *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = 0,
@@ -37,7 +38,9 @@ def firm(  # pylint: disable=too-many-arguments
         risk_parameter: Risk parameter (alpha) for the FIRM score. The value must
             satisfy 0 < `risk_parameter` < 1.
         categorical_thresholds: Category thresholds (thetas) to delineate the
-            categories.
+            categories. A sequence of xr.DataArrays may be supplied to allow
+            for different thresholds at each coordinate (e.g., thresholds
+            determined by climatology).
         threshold_weights: Weights that specify the relative importance of forecasting on
             the correct side of each category threshold. Either a positive
             float can be supplied for each categorical threshold or an
@@ -112,7 +115,7 @@ def firm(  # pylint: disable=too-many-arguments
             fcst,
             obs,
             risk_parameter,
-            categorical_threshold,
+            categorical_threshold,  # type: ignore
             discount_distance=discount_distance,
             threshold_assignment=threshold_assignment,
         )
@@ -129,7 +132,7 @@ def firm(  # pylint: disable=too-many-arguments
 
 def _check_firm_inputs(
     obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
-):
+):  # pylint: disable=too-many-positional-arguments
     """
     Checks that the FIRM inputs are suitable
     """
@@ -165,7 +168,7 @@ def _single_category_score(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     risk_parameter: float,
-    categorical_threshold: float,
+    categorical_threshold: Union[float, xr.DataArray],
     *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = None,
     threshold_assignment: Optional[str] = "lower",
@@ -216,8 +219,10 @@ def _single_category_score(
     # Bring back NaNs
     condition1 = condition1.where(~np.isnan(fcst))
     condition1 = condition1.where(~np.isnan(obs))
+    condition1 = condition1.where(~np.isnan(categorical_threshold))
     condition2 = condition2.where(~np.isnan(fcst))
     condition2 = condition2.where(~np.isnan(obs))
+    condition2 = condition2.where(~np.isnan(categorical_threshold))
 
     if discount_distance:
         scale_1 = np.minimum(categorical_threshold - obs, discount_distance)

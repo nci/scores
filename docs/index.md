@@ -12,6 +12,7 @@
 :maxdepth: 2
 
 self
+key_features
 installation
 included
 api
@@ -20,4 +21,5 @@ data
 tutorials/Tutorial_Gallery
 related_works
 maintainer
+release_notes
 ```

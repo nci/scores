@@ -65,7 +65,9 @@ expected_pofd_weighted = xr.DataArray(data=1 / 2, name="ctable_probability_of_de
         ),  # Test with DataSet for inputs
     ],
 )
-def test_probability_of_detection(fcst, obs, reduce_dims, check_args, weights, expected):
+def test_probability_of_detection(
+    fcst, obs, reduce_dims, check_args, weights, expected
+):  # pylint: disable=too-many-positional-arguments
     """Tests probability_of_detection"""
     result = probability_of_detection(fcst, obs, reduce_dims=reduce_dims, weights=weights, check_args=check_args)
     xr.testing.assert_equal(result, expected)
@@ -80,7 +82,7 @@ def test_pod_dask():
     result = probability_of_detection(fcst_mix.chunk(), obs1.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    assert isinstance(result.data, np.ndarray)
+    assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_pod3)
 
 
@@ -119,7 +121,9 @@ def test_probability_of_detection_raises(fcst, obs, error_msg):
         ),  # Test with DataSet for inputs
     ],
 )
-def test_probability_of_false_detection(fcst, obs, reduce_dims, check_args, weights, expected):
+def test_probability_of_false_detection(
+    fcst, obs, reduce_dims, check_args, weights, expected
+):  # pylint: disable=too-many-positional-arguments
     """Tests probability_of_false_detection"""
     result = probability_of_false_detection(fcst, obs, reduce_dims=reduce_dims, weights=weights, check_args=check_args)
     xr.testing.assert_equal(result, expected)
@@ -134,7 +138,7 @@ def test_pofd_dask():
     result = probability_of_false_detection(fcst_mix.chunk(), obs0.chunk())
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
-    assert isinstance(result.data, np.ndarray)
+    assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_pofd3)
 
 

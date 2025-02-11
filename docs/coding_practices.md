@@ -1,3 +1,7 @@
+```{eval-rst}
+:orphan:
+```
+
 # Coding Practices
 
 The [Contributing Guide](contributing.md) provides (among other things) guidance on the workflows and general expectations associated with contributing a code change to `scores`. This document eschews some of the context to focus on specifying technical information needed when developing code for `scores`.

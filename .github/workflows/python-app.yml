@@ -4,8 +4,7 @@
 name: Unit Tests
 
 on:
-  pull_request:
-    branches: ["develop", "main", "[0-9]+-*"]
+  [push, pull_request]
 
 permissions:
   contents: read
@@ -16,14 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -37,3 +37,17 @@ jobs:
     - name: Test tutorial notebooks with pytest
       run: |
         pytest --nbmake tutorials/
+    - name: Coveralls GitHub Action
+      uses: coverallsapp/github-action@v2.3.0
+      with:
+        flag-name: run-${{ join(matrix.*, '-') }}
+        parallel: true
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Indicate Coveralls Parallel Finished
+      uses: coverallsapp/github-action@v2.3.0
+      with: 
+        parallel-finished: true
+  

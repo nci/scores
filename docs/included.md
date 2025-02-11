@@ -13,6 +13,18 @@
   - [API](api.md#scores.continuous.additive_bias)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
   - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
+* - Consistent Expectile Score
+  - [API](api.md#scores.continuous.consistent_expectile_score)
+  - [Tutorial](project:./tutorials/Consistent_Scores.md)
+  - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r10138); [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Consistent Huber Score
+  - [API](api.md#scores.continuous.consistent_huber_score)
+  - [Tutorial](project:./tutorials/Consistent_Scores.md)
+  - [Taggart (2022a)](https://doi.org/10.1002/qj.4206); [Taggart (2022b)](https://doi.org/10.1214/21-EJS1957)
+* - Consistent Quantile Score
+  - [API](api.md#scores.continuous.consistent_quantile_score)
+  - [Tutorial](project:./tutorials/Consistent_Scores.md)
+  - [Gneiting (2011)](https://doi.org/10.1198/jasa.2011.r10138); [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 * - Flip-Flop Index
   - 
   - 
@@ -33,6 +45,10 @@
     [Tutorial](project:./tutorials/Flip_Flop_Index.md)
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
+* - Interval Score
+  - [API](api.md#scores.continuous.interval_score)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Score.md)
+  - [Gneiting and Raftery (2007) - Section 6.2](https://doi.org/10.1198/016214506000001437)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -40,7 +56,11 @@
 * - Isotonic Regression (Isotonic Fit, Reliability Diagram)
   - [API](api.md#scores.continuous.isotonic_fit)
   - [Tutorial](project:./tutorials/Isotonic_Regression_And_Reliability_Diagrams.md)
-  - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761)   
+  - [de Leeuw et al. (2009)](https://doi.org/10.18637/jss.v032.i05); [Dimitriadis et al. (2020)](https://doi.org/10.1073/pnas.2016191118); [Jordan et al. (2020), version 2](https://doi.org/10.48550/arXiv.1904.04761) 
+* - Kling–Gupta Efficiency (KGE)
+  - [API](api.md#scores.continuous.kge)
+  - [Tutorial](project:./tutorials/Kling_Gupta_Efficiency.md)
+  - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)    
 * - Mean Absolute Error (MAE)
   - [API](api.md#scores.continuous.mae)
   - [Tutorial](project:./tutorials/Mean_Absolute_Error.md)
@@ -82,13 +102,21 @@
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Pearson's Correlation Coefficient
-  - [API](api.md#scores.continuous.correlation)
+  - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
+* - Percent Bias (PBIAS)
+  - [API](api.md#scores.continuous.pbias)
+  - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
+  - [Percent Bias (CRAN hydroGOF)](https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html); [Sorooshian et al. (1993)](https://doi.org/10.1029/92WR02617); [Alfieri et al. (2014)](https://doi.org/10.1016/j.jhydrol.2014.06.035); [Dawson et al. (2007)](https://doi.org/10.1016/j.envsoft.2006.06.008); [Moriasi et al. (2007)](https://doi.org/10.13031/2013.23153)
 * - Pinball Loss, *see Quantile Loss*
   - &mdash;
   - &mdash;
   - &mdash;
+* - Quantile Interval Score
+  - [API](api.md#scores.continuous.quantile_interval_score)
+  - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Score.md)
+  - [Winkler (1972) ](https://doi.org/10.2307/2284720)
 * - Quantile Loss (Quantile Score, Pinball Loss)
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
@@ -105,6 +133,26 @@
   - [API](api.md#scores.continuous.rmse)
   - [Tutorial](project:./tutorials/Root_Mean_Squared_Error.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+* - Threshold Weighted Absolute Error
+  - [API](api.md#scores.continuous.tw_absolute_error)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Expectile Score
+  - [API](api.md#scores.continuous.tw_expectile_score)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Huber Loss
+  - [API](api.md#scores.continuous.tw_huber_loss)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Quantile Score
+  - [API](api.md#scores.continuous.tw_quantile_score)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
+* - Threshold Weighted Squared Error
+  - [API](api.md#scores.continuous.tw_squared_error)
+  - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
+  - [Taggart (2022)](https://doi.org/10.1002/qj.4206)
 ```
 
 ## Probability
@@ -120,38 +168,58 @@
   - [API](api.md#scores.probability.brier_score)
   - [Tutorial](project:./tutorials/Brier_Score.md)
   - [Brier (1950)](https://doi.org/10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO;2)
+* - Brier Score for Ensembles
+  - [API](api.md#scores.probability.brier_score_for_ensemble)
+  - [Tutorial](project:./tutorials/Brier_Score.md)
+  - [Ferro (2013)](https://doi.org/10.1002/qj.2270)
 * - Continuous Ranked Probability Score (CRPS) for Cumulative Distribution Functions (CDFs)
   -    
   - 
-  -
-* -  
-    - CRPS for CDFs
-  -
-    [API](api.md#scores.probability.crps_cdf)
   - 
-    [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
-  - 
-    [Matheson and Winkler (1976)](https://doi.org/10.1287/mnsc.22.10.1087); [Gneiting and Ranjan (2011)](https://doi.org/10.1198/jbes.2010.08110)
 * -  
     - Adjust Forecast for CRPS
-  -
-    [API](api.md#scores.probability.adjust_fcst_for_crps)
-  - 
-    [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
-  - 
-    &mdash;
+  - [API](api.md#scores.probability.adjust_fcst_for_crps)
+  - &mdash;
+  - &mdash;
 * -  
     - CRPS CDF Brier Decomposition
-  -
-    [API](api.md#scores.probability.crps_cdf_brier_decomposition)
-  - 
-    [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
-  - 
-    &mdash;    
+  - [API](api.md#scores.probability.crps_cdf_brier_decomposition)
+  - [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
+  - &mdash;        
+* -  
+    - CRPS for CDFs
+  - [API](api.md#scores.probability.crps_cdf)
+  - [Tutorial](project:./tutorials/CRPS_for_CDFs.md)
+  - [Matheson and Winkler (1976)](https://doi.org/10.1287/mnsc.22.10.1087); [Gneiting and Ranjan (2011)](https://doi.org/10.1198/jbes.2010.08110)
+* -  
+    - CRPS Step Threshold Weights
+  - [API](api.md#scores.probability.crps_step_threshold_weight)
+  - &mdash;
+  - &mdash;
 * - Continuous Ranked Probability Score (CRPS) for Ensembles
+  -    
+  - 
+  -  
+* - 
+    - CRPS for Ensembles
   - [API](api.md#scores.probability.crps_for_ensemble)   
   - [Tutorial](project:./tutorials/CRPS_for_Ensembles.md)
   - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
+* - 
+    - Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)    
+* - 
+    - Interval-Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.interval_tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08) 
+* - 
+    - Tail-Threshold-Weighted CRPS (twCRPS) for Ensembles
+  - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)   
+  - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
+  - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -191,7 +259,7 @@
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
-  - &mdash;  
+  - &mdash;
 ```
 
 ## Categorical
@@ -336,6 +404,14 @@
   - 
     [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
+    - Negative Predictive Value
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.negative_predictive_value)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+* -  
     - Odds Ratio
   -
     [API](api.md#scores.categorical.BasicContingencyManager.odds_ratio)
@@ -360,7 +436,15 @@
   - 
     [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
 * -  
-    - Precision (Success Ratio)
+    - Positive Predictive Value (Success Ratio, Precision)
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+* -  
+    - Precision (Success Ratio, Positive Predictive Value)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.precision)
   - 
@@ -392,21 +476,13 @@
   - 
     [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
 * -  
-    - Symmetric Extremal Dependence Index (SEDI)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
-  - 
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  - 
-    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
-* -  
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.sensitivity)
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -  
     - Specificity (True Negative Rate)
   -
@@ -414,15 +490,23 @@
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -  
-    - Success Ratio (Precision)
+    - Success Ratio (Precision, Positive Predictive Value)
   -
     [API](api.md#scores.categorical.BasicContingencyManager.success_ratio)
   - 
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   - 
     [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)    
+* -  
+    - Symmetric Extremal Dependence Index (SEDI)
+  -
+    [API](api.md#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
+  - 
+    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - 
+    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
 * -  
     - Threat Score (Critical Success Index)
   -
@@ -659,4 +743,36 @@
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
 ```
 
+## Emerging
 
+```{Caution} 
+  This section of the API contains implementations of novel metrics that are still undergoing mathematical peer review. These implementations may change in line with the peer review process.
+```
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Risk Matrix Score
+  - 
+  - 
+  - 
+* -  
+    - Risk Matrix Score
+  - [API](api.md#scores.emerging.risk_matrix_score)
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+* -  
+    - Risk Matrix Score - Matrix Weights to Array
+  - [API](api.md#scores.emerging.matrix_weights_to_array)
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+* -  
+    - Risk Matrix Score - Warning Scaling to Weight Array
+  - [API](api.md#scores.emerging.weights_from_warning_scaling)
+  - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
+  - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+```

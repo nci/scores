@@ -287,7 +287,6 @@ def test__do_ir(functional, solver, expected):
     `_contiguous_quantile_ir` and `_contiguous_ir`.
     """
     result = _do_ir(
-        np.array([1, 2, 3]),
         np.array([5.0, 1, 0]),
         weight=None,
         functional=functional,

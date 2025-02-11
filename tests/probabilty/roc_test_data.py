@@ -1,4 +1,5 @@
 """Data for ROC tests"""
+
 import numpy as np
 import xarray as xr
 

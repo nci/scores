@@ -1,6 +1,7 @@
 """
 Contains unit tests for scores.categorical
 """
+
 try:
     import dask
     import dask.array
@@ -36,8 +37,12 @@ from tests.categorical import multicategorical_test_data as mtd
         (mtd.DA_FCST_SC2, mtd.DA_OBS_SC2, 2, None, "lower", mtd.EXP_SC_CASE4),
         # Test upper/left assignment
         (mtd.DA_FCST_SC2, mtd.DA_OBS_SC2, 2, None, "upper", mtd.EXP_SC_CASE5),
+        # Threshold xr.Datarray, discount = 0, preserve all dims
+        (mtd.DA_FCST_SC, mtd.DA_OBS_SC, mtd.DA_THRESHOLD_SC, 0, "lower", mtd.EXP_SC_CASE6),
     ],
 )
+
+# pylint: disable=too-many-positional-arguments
 def test__single_category_score(fcst, obs, categorical_threshold, discount_distance, threshold_assignment, expected):
     """Tests _single_category_score"""
     risk_parameter = 0.7
@@ -228,8 +233,34 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             0,
             mtd.EXP_FIRM_CASE6,
         ),
+        # 2 categories defined with xr.DataArrays for threhsolds that don't vary by coord
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            mtd.DA_THRESHOLD_FIRM,
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            mtd.EXP_FIRM_CASE3,
+        ),
+        # 2 categories defined with xr.DataArrays for threhsolds that do vary
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            mtd.DA_THRESHOLD_FIRM2,
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            mtd.EXP_FIRM_CASE3,
+        ),
     ],
 )
+
+# pylint: disable=too-many-positional-arguments
 def test_firm(
     fcst,
     obs,
@@ -449,6 +480,8 @@ def test_firm_dask():
         ),
     ],
 )
+
+# pylint: disable=too-many-positional-arguments
 def test_firm_raises(
     fcst,
     obs,

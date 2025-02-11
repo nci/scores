@@ -2,6 +2,7 @@
 Test data for tests.continuous.flip_flop in scores
 Test data for flip_flop_index and related functions
 """
+
 import numpy as np
 import xarray as xr
 

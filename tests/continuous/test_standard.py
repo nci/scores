@@ -582,97 +582,6 @@ def test_rmse_angular():
     xr.testing.assert_equal(result, expected)
 
 
-DA1_CORR = xr.DataArray(
-    np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["w", "x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-
-DA2_CORR = xr.DataArray(
-    np.array([[2, 4, 6], [6, 5, 6], [3, 4, 5], [3, np.nan, 3]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["w", "x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-
-DA3_CORR = xr.DataArray(
-    np.array([[1, 2, 3], [3, 2.5, 3], [1.5, 2, 2.5], [1.5, np.nan, 1.5]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["w", "x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-DA4_CORR = xr.DataArray(
-    np.array([[1, 3, 7], [2, 2, 8], [3, 1, 7]]),
-    dims=("space", "time"),
-    coords=[
-        ("space", ["x", "y", "z"]),
-        ("time", [1, 2, 3]),
-    ],
-)
-DA5_CORR = xr.DataArray(
-    np.array([1, 2, 3]),
-    dims=("space"),
-    coords=[("space", ["x", "y", "z"])],
-)
-
-EXP_CORR_KEEP_SPACE_DIM = xr.DataArray(
-    np.array([1.0, -1.0, 0.0, np.nan]),
-    dims=("space"),
-    coords=[("space", ["w", "x", "y", "z"])],
-)
-
-EXP_CORR_REDUCE_ALL = xr.DataArray(1.0)
-
-EXP_CORR_DIFF_SIZE = xr.DataArray(
-    np.array([1.0, -1.0, 0.0]),
-    dims=("time"),
-    coords=[("time", [1, 2, 3])],
-)
-
-
-@pytest.mark.parametrize(
-    ("da1", "da2", "reduce_dims", "preserve_dims", "expected"),
-    [
-        # Check reduce dim arg
-        (DA1_CORR, DA2_CORR, None, "space", EXP_CORR_KEEP_SPACE_DIM),
-        # Check preserve dim arg
-        (DA1_CORR, DA2_CORR, "time", None, EXP_CORR_KEEP_SPACE_DIM),
-        # Check reduce all
-        (DA3_CORR, DA2_CORR, None, None, EXP_CORR_REDUCE_ALL),
-        # Check different size arrays as input
-        (DA4_CORR, DA5_CORR, "space", None, EXP_CORR_DIFF_SIZE),
-    ],
-)
-def test_correlation(da1, da2, reduce_dims, preserve_dims, expected):
-    """
-    Tests continuous.correlation
-    """
-    result = scores.continuous.correlation(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-    xr.testing.assert_allclose(result, expected)
-
-
-def test_correlation_dask():
-    """
-    Tests continuous.correlation works with Dask
-    """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-
-    result = scores.continuous.correlation(DA3_CORR.chunk(), DA2_CORR.chunk())
-    assert isinstance(result.data, dask.array.Array)
-    result = result.compute()
-    assert isinstance(result.data, np.ndarray)
-    xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
-
-
 DA1_BIAS = xr.DataArray(
     np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
     dims=("space", "time"),
@@ -751,6 +660,119 @@ DS_BIAS1 = xr.Dataset({"a": DA1_BIAS, "b": DA2_BIAS})
 DS_BIAS2 = xr.Dataset({"a": DA2_BIAS, "b": DA1_BIAS})
 EXP_DS_BIAS1 = xr.Dataset({"a": EXP_BIAS1, "b": -EXP_BIAS1})
 EXP_DS_BIAS2 = xr.Dataset({"a": EXP_BIAS4, "b": EXP_BIAS5})
+
+## for pbias
+EXP_PBIAS1 = xr.DataArray(
+    np.array([-50, -100.0, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_PBIAS2 = xr.DataArray(
+    np.array([100.0, np.inf, (0.5 / 3 + 0.5 / 3) / (-0.5 / 3) * 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PBIAS3 = xr.DataArray(
+    np.array([-50.0, -100.0, -75.0]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
+
+EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
+
+## for KGE
+DA1_KGE = xr.DataArray(
+    np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+DA2_KGE = xr.DataArray(
+    np.array([[2, 4, 6], [6, 5, 6], [3, 4, 5], [3, np.nan, 3]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+
+DA3_KGE = xr.DataArray(
+    np.array([[1, 2, 3], [3, 2.5, 3], [1.5, 2, 2.5], [1.5, np.nan, 1.5]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["w", "x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+DA4_KGE = xr.DataArray(
+    np.array([[1, 3, 7], [2, 2, 8], [3, 1, 7]]),
+    dims=("space", "time"),
+    coords=[
+        ("space", ["x", "y", "z"]),
+        ("time", [1, 2, 3]),
+    ],
+)
+DA5_KGE = xr.DataArray(
+    np.array([1, 2, 3]),
+    dims=("space"),
+    coords=[("space", ["x", "y", "z"])],
+)
+
+## Expected KGE values
+EXP_KGE_KEEP_SPACE_DIM = xr.DataArray(
+    np.array([0.2928932188134524, -1.2103875562418747, -0.44811448882050064, np.nan]),
+    dims=("space"),
+    coords=[("space", ["w", "x", "y", "z"])],
+)
+EXP_KGE_REDUCE_ALL = xr.DataArray(0.2928932188134524)
+
+EXP_KGE_rho_returns_components = xr.DataArray(1.0)
+EXP_KGE_alpha_returns_components = xr.DataArray(0.5)
+EXP_KGE_beta_returns_components = xr.DataArray(0.5)
+
+EXP_KGE_returns_components = xr.Dataset(
+    {
+        "kge": EXP_KGE_REDUCE_ALL,
+        "rho": EXP_KGE_rho_returns_components,
+        "alpha": EXP_KGE_alpha_returns_components,
+        "beta": EXP_KGE_beta_returns_components,
+    }
+)
+
+
+EXP_KGE_Scaling_Factors = xr.DataArray(
+    1 - np.sqrt((0.5 * (1 - 1)) ** 2 + (1.0 * (0.5 - 1)) ** 2 + (2 * (0.5 - 1)) ** 2)
+)
+
+
+EXP_KGE_DIFF_SIZE = xr.DataArray(
+    np.array([1.0, -1.0, -1.8791915368841288]),
+    dims=("time"),
+    coords=[("time", [1, 2, 3])],
+)
+
+## Parametrized test for kge function to check various incorrect types and sizes
+Incorrect_Input_KGE = [1, 2, 3]
+Incorrect_SFactors_Type_KGE = "incorrect_type"
+Incorrect_SFactors_List_KGE = [1, 2]
+Incorrect_SFactors_Numpy_KGE = np.array([1, 2, 3, 4])
+
+EXP_KGE_message1 = "kge: fcst must be an xarray.DataArray"
+EXP_KGE_message2 = "kge: obs must be an xarray.DataArray"
+EXP_KGE_message3 = "kge: scaling_factors must be a list of floats or a numpy array"
+EXP_KGE_message4 = "kge: scaling_factors must contain exactly 3 elements"
 
 
 @pytest.mark.parametrize(
@@ -836,3 +858,111 @@ def test_multiplicative_bias_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS6)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", None, EXP_PBIAS1),
+        # Check divide by zero returns a np.inf
+        (DA2_BIAS, DA1_BIAS, None, "space", None, EXP_PBIAS2),
+        # Check weighting works
+        (DA1_BIAS, DA3_BIAS, None, "space", BIAS_WEIGHTS, EXP_PBIAS3),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, None, EXP_PBIAS1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, None, EXP_PBIAS4),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", None, EXP_DS_PBIAS1),
+    ],
+)
+def test_pbias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
+    """
+    Tests continuous.pbias
+    """
+    result = scores.continuous.pbias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
+    # xr.testing.assert_equal(result, expected)
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+def test_pbias_dask():
+    """
+    Tests that continuous.pbias works with Dask
+    """
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    weights = BIAS_WEIGHTS.chunk()
+    result = scores.continuous.pbias(fcst, obs, preserve_dims="space", weights=weights)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_PBIAS3)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", "include_components", "scaling_factors", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_KGE, DA2_KGE, None, "space", False, None, EXP_KGE_KEEP_SPACE_DIM),
+        # Check preserve dim arg
+        (DA1_KGE, DA2_KGE, "time", None, False, None, EXP_KGE_KEEP_SPACE_DIM),
+        # Check reduce all
+        (DA3_KGE, DA2_KGE, None, None, False, None, EXP_KGE_REDUCE_ALL),
+        # returning components
+        (DA3_KGE, DA2_KGE, None, None, True, None, EXP_KGE_returns_components),
+        # Check scaling_factors
+        (DA3_KGE, DA2_KGE, None, None, False, [0.5, 1.0, 2.0], EXP_KGE_Scaling_Factors),
+        # Check different size arrays as input
+        (DA4_KGE, DA5_KGE, "space", None, False, None, EXP_KGE_DIFF_SIZE),
+    ],
+)
+def test_kge(fcst, obs, reduce_dims, preserve_dims, include_components, scaling_factors, expected):
+    """
+    Tests continuous.kge
+    """
+    result = scores.continuous.kge(
+        fcst,
+        obs,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        include_components=include_components,
+        scaling_factors=scaling_factors,
+    )
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+def test_kge_dask():
+    """
+    Tests that continuous.kge works with Dask
+    """
+    fcst = DA3_KGE.chunk()
+    obs = DA2_KGE.chunk()
+    result = scores.continuous.kge(fcst, obs)
+    assert isinstance(result.data, dask.array.Array)  # type: ignore
+    result = result.compute()  # type: ignore
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
+
+
+@pytest.mark.parametrize(
+    "fcst, obs, scaling_factors, expected_exception, expected_message",
+    [
+        # Test case for fcst with incorrect type (list instead of xr.DataArray)
+        (Incorrect_Input_KGE, DA2_KGE, None, TypeError, EXP_KGE_message1),
+        # Test case for obs with incorrect type (list instead of xr.DataArray)
+        (DA1_KGE, Incorrect_Input_KGE, None, TypeError, EXP_KGE_message2),
+        # Test case for scaling_factors with incorrect type (string instead of list or np.ndarray)
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, TypeError, EXP_KGE_message3),
+        # Test case for scaling_factors with incorrect number of elements (list with 2 elements)
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, ValueError, EXP_KGE_message4),
+        # Test case for scaling_factors with incorrect number of elements (numpy array with 4 elements)
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, ValueError, EXP_KGE_message4),
+    ],
+)
+def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_message):
+    """
+    Test continuous.kge raises error with an incorrect type and sizes
+    """
+    with pytest.raises(expected_exception, match=expected_message):
+        scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)  # type: ignore

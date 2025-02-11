@@ -18,11 +18,15 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 Users can supply their own event operators to the top-level module functions.
 """
 
+# pylint: disable=too-many-lines
+
 import operator
+import warnings
 from abc import ABC, abstractmethod
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 import scores.utils
@@ -30,17 +34,34 @@ from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 
 DEFAULT_PRECISION = 8
 
+HIGH_DIMENSION_HTML_CONTINGENCY_WARNING = """
+Note - you are trying to get a representation of a higher-dimensionality contingency table 
+(e.g. with preserved dimensions). This is currently not supported, so a simpler view is being
+returned. If you would like a 2x2 table rendering, try again with all dimensions reduced.
+"""
+
 
 class BasicContingencyManager:  # pylint: disable=too-many-public-methods
     """
-    A BasicContingencyManager is produced when a BinaryContingencyManager is transformed.
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use of this class in practice.
 
-    A basic contingency table is built only from the event counts, losing the connection
-    to the actual event tables in their full dimensionality.
+    A BasicContingencyManager object provides the scoring functions which are calculated
+    from a contingency table. A BasicContingencyManager can be efficiently and repeatedly
+    queried for a wide variety of scores.
 
-    The event count data is much smaller than the full event tables, particularly when
-    considering very large data sets like Numerical Weather Prediction (NWP) data, which
-    could be terabytes to petabytes in size.
+    A BasicContingencyManager is produced when a :py:class:`BinaryContingencyManager` is
+    transformed. It is also possible to create a BasicContingencyManager from event counts or
+    a contingency table, although this not a common user requirement.
+
+    A contingency table is built only from event counts, losing the connection
+    to the actual event tables in their full dimensionality. The event count data is much
+    smaller than the full event tables, particularly when considering very large data sets
+    like Numerical Weather Prediction (NWP) data, which could be terabytes to petabytes in
+    size.
+
+    By contrast, A :py:class:`BinaryContingencyManager` retains the full event data, which provides
+    some more flexbility but may reduce efficiency.
     """
 
     def __init__(self, counts: dict):
@@ -80,19 +101,134 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def get_counts(self) -> dict:
         """
-        Return the contingency table counts (tp, fp, tn, fn)
+
+        Returns:
+            dict: A dictionary of the contingency table counts. Values are xr.DataArray instances.
+            The keys are:
+
+            - tp_count for true positive count
+            - tn_count for true negative count,
+            - fp_count for false positive count
+            - fn_count for false negative count
+            - total_count for the total number of events.
+
+        Here is an example of what may be returned:
+
+        .. code-block :: python
+
+            {'tp_count': <xarray.DataArray ()> Size: 8B array(5.),
+             'tn_count': <xarray.DataArray ()> Size: 8B array(11.),
+             'fp_count': <xarray.DataArray ()> Size: 8B array(1.),
+             'fn_count': <xarray.DataArray ()> Size: 8B array(1.),
+             'total_count': <xarray.DataArray ()> Size: 8B array(18.)}
+
         """
         return self.counts
 
     def get_table(self) -> xr.DataArray:
         """
-        Return the contingency table as an xarray object
+        Returns:
+            xr.DataArray: The contingency table as an xarray object. Contains
+            a coordinate dimension called 'contingency'. Valid coordinates
+            for this dimenstion are:
+
+            - tp_count for true positive count
+            - tn_count for true negative count
+            - fp_count for false positive count
+            - fn_count for false negative count
+            - total_count for the total number of events.
+
+        Here is an example of what may be returned:
+
+        .. code-block :: python
+
+            array([ 5., 11.,  1.,  1., 18.])
+
+            Coordinates:
+
+                contingency
+                (contingency)
+                <U11
+                'tp_count' ... 'total_count'
+
+            Indexes:
+
+                contingency
+                PandasIndex
+
+            Attributes: (0)
+
         """
-        return self.xr_table
+        return self.xr_table  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+
+    def format_table(
+        self, positive_value_name: str = "Positive", negative_value_name: str = "Negative"
+    ) -> pd.DataFrame | xr.DataArray:
+        """Formats a contingency table from a 2x2 contingency manager into a confusion matrix.
+
+        Args:
+            positive_value_name: A string with the value to be displayed on
+                the contingency table visual. The default value is 'Positive'.
+            negative_value_name: A string with the value to be displayed on
+                the contingency table visual. The default value is 'Negative'.
+
+        Returns:
+            pandas.DataFrame: A Pandas DataFrame representing 2x2 binary contingency table if possible.
+            xr.DataArray: An xarray DataArray showing higher-dimension contingency table information otherwise
+
+        This function retrieves the contingency table, extracts the relevant counts, and constructs
+        a 2x2 confusion matrix represented as a Pandas DataFrame. This function does not support
+        HTML rendering of tables where dimensionality has been preserved.
+
+        Example:
+            Assuming `self.xr_table` returns an xr.Array:
+
+            .. code-block :: python
+
+                array([ 5., 11.,  1.,  1., 18.])
+
+                Coordinates:
+
+                    contingency
+                    (contingency)
+                    <U11
+                    'tp_count' ... 'total_count'
+
+            This function will return:
+
+            .. code-block :: python
+
+                    Positive  Negative Total
+            Positive       5       1       6
+            Negative       1      11       12
+            Total          6      12       18
+        """
+
+        table = self.xr_table
+
+        # Reshape into a 2x2 confusion matrix directly via numpy
+        if table.shape == (5,):
+            confusion_matrix = np.array([table[0], table[2], table[3], table[1]]).reshape((2, 2))
+        else:
+            warnings.warn(HIGH_DIMENSION_HTML_CONTINGENCY_WARNING)
+            return self.get_table()
+
+        # Create a pandas DataFrame for better presentation
+        df = pd.DataFrame(
+            confusion_matrix.astype(int),
+            columns=[positive_value_name + " Observed", negative_value_name + " Observed"],
+            index=[positive_value_name + " Forecast", negative_value_name + " Forecast"],
+        )
+
+        # Add totals
+        df["Total"] = df.sum(axis=1)
+        df.loc["Total"] = df.sum(axis=0)
+
+        return df
 
     def accuracy(self) -> xr.DataArray:
         """
-        Identical to fraction correct.
+        Identical to :py:func:`fraction_correct`.
 
         Accuracy calculates the proportion of forecasts which are correct.
 
@@ -113,7 +249,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
-        return ratio
+        return ratio  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def base_rate(self) -> xr.DataArray:
         """
@@ -137,7 +273,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
-        return br
+        return br  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def forecast_rate(self) -> xr.DataArray:
         """
@@ -161,11 +297,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
-        return br
+        return br  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def fraction_correct(self) -> xr.DataArray:
         """
-        Identical to accuracy.
+        Identical to :py:func:`accuracy`.
 
         Fraction correct calculates the proportion of forecasts which are correct.
 
@@ -187,7 +323,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def frequency_bias(self) -> xr.DataArray:
         """
-        Identical to bias scores.
+        Identical to :py:func:`bias_score`.
 
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
@@ -210,11 +346,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
 
-        return freq_bias
+        return freq_bias  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def bias_score(self) -> xr.DataArray:
         """
-        Identical to frequence bias.
+        Identical to :py:func:`frequency_bias`.
 
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
 
@@ -237,7 +373,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def hit_rate(self) -> xr.DataArray:
         """
-        Identical to true positive rate, probability of detection (POD), sensitivity and recall.
+        Identical to :py:func:`true_positive_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -259,7 +396,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def probability_of_detection(self) -> xr.DataArray:
         """
-        Probability of detection (POD) is identical to hit rate, true positive rate, sensitivity and recall.
+        Probability of detection (POD) is identical to :py:func:`hit_rate`, :py:func:`true_positive_rate`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -281,13 +419,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
 
-        return pod
+        return pod  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def true_positive_rate(self) -> xr.DataArray:
         """
-        Identical to hit rate, probability of detection (POD), sensitivity and recall.
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`sensitivity` and :py:func:`recall`.
 
-        What proportion of the observed events where correctly forecast?
+        The proportion of the observed events that were correctly forecast.
 
         Returns:
             xr.DataArray: An xarray object containing the true positive rate
@@ -328,11 +467,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
 
-        return far
+        return far  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def false_alarm_rate(self) -> xr.DataArray:
         """
-        Identical to probability of false detection.
+        Identical to :py:func:`probability_of_false_detection <BasicContingencyManager.probability_of_false_detection>`.
 
         What fraction of the non-events were incorrectly predicted?
 
@@ -355,11 +494,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
 
-        return far
+        return far  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def probability_of_false_detection(self) -> xr.DataArray:
         """
-        Probability of false detection (POFD) is identical to the false alarm rate.
+        Identical to :py:func:`false_alarm_rate`.
 
         What fraction of the non-events were incorrectly predicted?
 
@@ -367,7 +506,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the probability of false detection
 
         .. math::
-            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+            \\text{probability of false detection} = \\frac{\\text{false positives}}{\\text{true negatives} +
+            \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 0.
@@ -382,7 +522,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def success_ratio(self) -> xr.DataArray:
         """
-        Identical to precision.
+        Identical to :py:func:`precision` and :py:func:`positive_predictive_value`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -390,12 +530,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the success ratio
 
         .. math::
-            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{success ratio} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
             - "True positives" is the same as "hits".
-            - "False positives" is the same as "misses".
+            - "False positives" is the same as "false alarms".
 
         References:
             https://www.cawcr.gov.au/projects/verification/#SR
@@ -403,17 +544,18 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
 
-        return sr
+        return sr  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def threat_score(self) -> xr.DataArray:
         """
-        Identical to critical success index.
+        Identical to :py:func:`critical_success_index`.
 
         Returns:
             xr.DataArray: An xarray object containing the threat score
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -428,17 +570,18 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         cd = self.counts
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
-        return ts
+        return ts  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def critical_success_index(self) -> xr.DataArray:
         """
-        Identical to threat score.
+        Identical to :py:func:`threat_score`.
 
         Returns:
             xr.DataArray: An xarray object containing the critical success index
 
         .. math::
-            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives} + \\text{false negatives}}
+            \\text{threat score} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1, 0 indicates no skill. Perfect score: 1.
@@ -454,7 +597,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def peirce_skill_score(self) -> xr.DataArray:
         """
-        Identical to Hanssen and Kuipers discriminant and the true skill statistic.
+        Identical to :py:func:`hanssen_and_kuipers_discriminant` and :py:func:`true_skill_statistic`.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
@@ -462,7 +605,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the Peirce Skill Score
 
         .. math::
-            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{Peirce skill score} = \\frac{\\text{true positives}}{\\text{true positives} + 
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + 
+            \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -480,11 +625,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
         component_b = cd["fp_count"] / (cd["fp_count"] + cd["tn_count"])
         skill_score = component_a - component_b
-        return skill_score
+        return skill_score  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def true_skill_statistic(self) -> xr.DataArray:
         """
-        Identical to Peirce's skill score and to Hanssen and Kuipers discriminant.
+        Identical to :py:func:`peirce_skill_score` and :py:func:`hanssen_and_kuipers_discriminant`.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
@@ -492,7 +637,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the true skill statistic
 
         .. math::
-            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{true skill statistic} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} +
+            \\text{true negatives}}
 
         Notes:
             - Range: -1 to 1, 0 indicates no skill. Perfect score: 1.
@@ -508,7 +655,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def hanssen_and_kuipers_discriminant(self) -> xr.DataArray:
         """
-        Identical to Peirce's skill score and to the true skill statistic.
+        Identical to :py:func:`peirce_skill_score` and :py:func:`true_skill_statistic`.
 
         How well did the forecast separate the "yes" events from the "no" events?
 
@@ -516,7 +663,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing Hanssen and Kuipers' Discriminant
 
         .. math::
-            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} + \\text{true negatives}}
+            \\text{HK} = \\frac{\\text{true positives}}{\\text{true positives} +
+            \\text{false negatives}} - \\frac{\\text{false positives}}{\\text{false positives} +
+            \\text{true negatives}}
 
         where :math:`\\text{HK}` is Hansen and Kuipers Discriminant
 
@@ -534,7 +683,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def sensitivity(self) -> xr.DataArray:
         """
-        Identical to hit rate, probability of detection (POD), true positive rate and recall.
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`true_positive_rate`, and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -552,13 +702,17 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         References:
             - https://www.cawcr.gov.au/projects/verification/#POD
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+              & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
 
         """
         return self.probability_of_detection()
 
     def specificity(self) -> xr.DataArray:
         """
-        Identical to true negative rate.
+        Identical to :py:func:`true_negative_rate`.
 
         The probability that an observed non-event will be correctly predicted.
 
@@ -573,15 +727,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         Reference:
-            https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+            - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+              & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s
+        return s  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def true_negative_rate(self) -> xr.DataArray:
         """
-        Identical to specificity.
+        Identical to :py:func:`specificity`.
 
         The probability that an observed non-event will be correctly predicted.
 
@@ -602,7 +760,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def recall(self) -> xr.DataArray:
         """
-        Identical to hit rate, probability of detection (POD), true positive rate and sensitivity.
+        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`true_positive_rate`, and :py:func:`sensitivity`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -625,7 +784,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def precision(self) -> xr.DataArray:
         """
-        Identical to the Success Ratio.
+        Identical to :py:func:`success_ratio` and :py:func:`positive_predictive_value`.
 
         What proportion of the forecast events actually eventuated?
 
@@ -637,8 +796,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
-            - "True positives" is the same as "hits"
-            - "False positives" is the same as "misses"
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
 
         References:
             - https://www.cawcr.gov.au/projects/verification/#SR
@@ -646,6 +805,64 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         """
         return self.success_ratio()
+
+    def positive_predictive_value(self) -> xr.DataArray:
+        """
+        Identical to :py:func:`success_ratio` and :py:func:`precision`.
+
+        What proportion of the forecast events actually eventuated?
+
+        Returns:
+            xr.DataArray: An xarray object containing the positive predictive value score
+
+        .. math::
+            \\text{positive predictive value} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True positives" is the same as "hits".
+            - "False positives" is the same as "false alarms".
+
+        References:
+            - https://www.cawcr.gov.au/projects/verification/#SR
+            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+              & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
+
+        """
+        return self.success_ratio()
+
+    def negative_predictive_value(self) -> xr.DataArray:
+        """
+        Calculates the negative predictive value (NPV).
+
+        Of all the times a negative result was predicted, how often was the prediction actually correct?
+
+        Returns:
+            xr.DataArray: An xarray object containing the negative predictive value score
+
+        .. math::
+            \\text{negative predictive value} = \\frac{\\text{true negatives}}{\\text{true negatives} +
+            \\text{false negatives}}
+
+        Notes:
+            - Range: 0 to 1.  Perfect score: 1.
+            - "True negatives" is the same as "correct rejections".
+            - "False negatives" is the same as "missed detections".
+
+        References:
+           - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
+           - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
+             & Dmochowski, R. R. (2021).
+             Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
+             and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
+        """
+        cd = self.counts
+        npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
+
+        return npv  # type: ignore
 
     def f1_score(self) -> xr.DataArray:
         """
@@ -655,7 +872,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the F1 score
 
         .. math::
-            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) + \\text{false positives} + \\text{false negatives}}
+            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) +
+            \\text{false positives} + \\text{false negatives}}
 
         Notes:
             - "True positives" is the same as "hits".
@@ -667,11 +885,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
-        return f1
+        return f1  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def equitable_threat_score(self) -> xr.DataArray:
         """
-        Identical to the Gilbert Skill Score.
+        Identical to :py:func:`gilberts_skill_score`.
 
         Calculates the Equitable threat score.
 
@@ -683,12 +901,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{ETS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positives} _\\text{random}}
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - 
+            \\text{true positives} _\\text{random}}
 
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + 
+            \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
@@ -706,11 +926,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
         ets = (cd["tp_count"] - hits_random) / (cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random)
 
-        return ets
+        return ets  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def gilberts_skill_score(self) -> xr.DataArray:
         """
-        Identical to the equitable threat scores
+        Identical to :py:func:`equitable_threat_score`.
 
         Calculates the Gilbert skill score.
 
@@ -722,12 +942,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         .. math::
             \\text{GSS} = \\frac{\\text{true positives} - \\text{true positives} _\\text{random}}\
-            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - \\text{true positivies} _\\text{random}}
+            {\\text{true positives} + \\text{false negatives} + \\text{false positives} - 
+            \\text{true positivies} _\\text{random}}
 
         where
 
         .. math::
-            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
+            \\text{true_positives}_{\\text{random}} = \\frac{(\\text{true positives} + 
+            \\text{false negatives}) (\\text{true positives} + \\text{false positives})}{\\text{total count}}
 
         Notes:
             - Range: -1/3 to 1, 0 indicates no skill. Perfect score: 1.
@@ -745,7 +967,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def heidke_skill_score(self) -> xr.DataArray:
         """
-        Identical to Cohen's Kappa
+        Identical to :py:func:`cohens_kappa`.
 
         Calculates the Heidke skill score.
 
@@ -790,11 +1012,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             + ((cd["tn_count"] + cd["fn_count"]) * (cd["tn_count"] + cd["fp_count"]))
         )
         hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
-        return hss
+        return hss  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def cohens_kappa(self) -> xr.DataArray:
         """
-        Identical to the Heidke skill score.
+        Identical to :py:func:`heidke_skill_score`.
 
         Calculates Cohen's kappa.
 
@@ -886,7 +1108,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def odds_ratio_skill_score(self) -> xr.DataArray:
         """
-        Identical to Yule's Q.
+        Identical to :py:func:`yules_q`.
 
         Calculates the odds ratio skill score.
 
@@ -923,11 +1145,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         orss = (cd["tp_count"] * cd["tn_count"] - cd["fn_count"] * cd["fp_count"]) / (
             cd["tp_count"] * cd["tn_count"] + cd["fn_count"] * cd["fp_count"]
         )
-        return orss
+        return orss  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
     def yules_q(self) -> xr.DataArray:
         """
-        Identical to the odds ratio skill score.
+        Identical to :py:func:`odds_ratio_skill_score`.
 
         Calculates the Yule's Q.
 
@@ -1009,54 +1231,65 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             + np.log(1 - self.probability_of_detection())
             + np.log(1 - self.probability_of_false_detection())
         )
-        return score
+        return score  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
 
 
 class BinaryContingencyManager(BasicContingencyManager):
     """
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use in practice.
 
-    At each location, the value will either be:
+    A BinaryContingencyManager holds the underlying binary forecast and observed event data,
+    from which it builds a contingency table and provides scoring functionality based on that table.
 
-    - A true positive (hit)
-    - A false positive (false alarm)
-    - A true negative (correct negative)
-    - A false negative (miss)
+    A BinaryContingencyManager is typically created by an :py:class:`EventOperator`, such as a
+    :py:class:`ThresholdOperator`, but can also be created directly from binary data if the user
+    wishes.
 
+    Supported operations include:
+        - "Transforming" the data in various ways, such as dimensional reduction
+        - Producing contingency tables
+        - Calculating scores and metrics based on contingency tables
 
-    It will be common to want to operate on masks of these values,
-    such as:
+    The full data comprises several n-dimensional binary arrays which can be considered maps of:
+        - True positives (hits)
+        - False positives (false alarms)
+        - True negatives (correct negatives)
+        - False negatives (misses)
+
+    These masks, in addition to supporting score calculations, can be accessed and used for:
 
     - Plotting these attributes on a map
-    - Calculating the total number of these attributes
-    - Calculating various ratios of these attributes, potentially masked by geographical area (e.g. accuracy in a region)
+    - Masking these values by a geographical region prior to score calculation
 
-    As such, the per-pixel information is useful as well as the overall
-    ratios involved.
+    As such, the per-pixel information is useful as well as the overall ratios involved.
 
-    BinaryContingencyManager utilises the BasicContingencyManager class to provide
-    most functionality.
+    BinaryContingencyManager inherits from (uses) the :py:class:`BasicContingencyManager` class to
+    provide score calculations on the final contingency table. Documentation for the available scores
+    is found in the :py:class:`BasicContingencyManager` API entry but the calls can be made directly
+    against instances of BinaryContingencyManager where performance or transformation are not a concern.
     """
 
     def __init__(
-        self, forecast_events: FlexibleArrayType, observed_events: FlexibleArrayType
+        self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType
     ):  # pylint: disable=super-init-not-called
-        self.forecast_events = forecast_events
-        self.observed_events = observed_events
+        self.fcst_events = fcst_events
+        self.obs_events = obs_events
 
-        self.tp = (self.forecast_events == 1) & (self.observed_events == 1)  # true positives
-        self.tn = (self.forecast_events == 0) & (self.observed_events == 0)  # true negatives
-        self.fp = (self.forecast_events == 1) & (self.observed_events == 0)  # false positives
-        self.fn = (self.forecast_events == 0) & (self.observed_events == 1)  # false negatives
+        self.tp = (self.fcst_events == 1) & (self.obs_events == 1)  # true positives
+        self.tn = (self.fcst_events == 0) & (self.obs_events == 0)  # true negatives
+        self.fp = (self.fcst_events == 1) & (self.obs_events == 0)  # false positives
+        self.fn = (self.fcst_events == 0) & (self.obs_events == 1)  # false negatives
 
         # Bring back NaNs where there is either a forecast or observed event nan
-        self.tp = self.tp.where(~np.isnan(forecast_events))
-        self.tp = self.tp.where(~np.isnan(observed_events))
-        self.tn = self.tn.where(~np.isnan(forecast_events))
-        self.tn = self.tn.where(~np.isnan(observed_events))
-        self.fp = self.fp.where(~np.isnan(forecast_events))
-        self.fp = self.fp.where(~np.isnan(observed_events))
-        self.fn = self.fn.where(~np.isnan(forecast_events))
-        self.fn = self.fn.where(~np.isnan(observed_events))
+        self.tp = self.tp.where(~np.isnan(fcst_events))
+        self.tp = self.tp.where(~np.isnan(obs_events))
+        self.tn = self.tn.where(~np.isnan(fcst_events))
+        self.tn = self.tn.where(~np.isnan(obs_events))
+        self.fp = self.fp.where(~np.isnan(fcst_events))
+        self.fp = self.fp.where(~np.isnan(obs_events))
+        self.fn = self.fn.where(~np.isnan(fcst_events))
+        self.fn = self.fn.where(~np.isnan(obs_events))
 
         # Variables for count-based metrics
         self.counts = self._get_counts()
@@ -1069,7 +1302,15 @@ class BinaryContingencyManager(BasicContingencyManager):
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
     ) -> BasicContingencyManager:
         """
-        Calculate and compute the contingency table according to the specified dimensions
+        Compute the contingency table, preserving or reducing the specified dimensions.
+
+        Args:
+            - reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+            - preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+
+        Returns:
+            scores.categorical.BasicContingencyManager: A `scores` class which supports efficient
+            calculation of contingency metrics.
         """
         cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
         return BasicContingencyManager(cd)
@@ -1085,8 +1326,8 @@ class BinaryContingencyManager(BasicContingencyManager):
         """
 
         to_reduce = scores.utils.gather_dimensions(
-            self.forecast_events.dims,
-            self.observed_events.dims,
+            self.fcst_events.dims,
+            self.obs_events.dims,
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
@@ -1105,14 +1346,19 @@ class BinaryContingencyManager(BasicContingencyManager):
 
 class EventOperator(ABC):
     """
-    Base class for event operators which can be used in deriving contingency
-    tables. This will be expanded as additional use cases are incorporated
-    beyond the ThresholdEventOperator.
+    Abstract Base Class (ABC) for event operators which can be used in deriving contingency
+    tables. ABCs are not used directly but instead define the requirements for other classes
+    and may be used for type checking.
     """
 
     @abstractmethod
     def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
     ):
         """
         This method should be over-ridden to return forecast and observed event tables
@@ -1121,7 +1367,12 @@ class EventOperator(ABC):
 
     @abstractmethod
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
     ):
         """
         This method should be over-ridden to return a contingency table.
@@ -1131,27 +1382,44 @@ class EventOperator(ABC):
 
 class ThresholdEventOperator(EventOperator):
     """
-    Given a forecast and and an observation, consider an event defined by
-    particular variables meeting a threshold condition (e.g. rainfall above 1mm).
+    See https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html for
+    a detailed walkthrough showing the use in practice.
 
-    This class abstracts that concept for any event definition.
+    A ThresholdEventOperator is used to produce a :py:class:`BinaryContingencyManager` from
+    forecast and observed data. It considers an event to be defined when the forecast and
+    observed variables meet a particular threshold condition (e.g. rainfall above 1mm).
+
+    The class may be used for any variable, for any threshold, and for any comparison
+    operator (e.g. greater-than, less-than, greater-than-or-equal-to, ... )
     """
 
-    def __init__(self, *, precision=DEFAULT_PRECISION, default_event_threshold=0.001, default_op_fn=operator.ge):
+    def __init__(
+        self,
+        *,
+        precision=DEFAULT_PRECISION,
+        default_event_threshold=0.001,
+        default_op_fn=operator.ge,
+    ):
         self.precision = precision
         self.default_event_threshold = default_event_threshold
         self.default_op_fn = default_op_fn
 
     def make_event_tables(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
     ):
         """
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
         operator, so this will work on a simple DataArray. To work on a DataSet, a richer
-        understanding is required. It is recommended to work through the Contingency Table
-        tutorial to review more complex use cases, including on multivariate gridded model
-        data, and on station data structures.
+        understanding is required. It is recommended to work through the tutorial at
+        https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html .
+        This tutorial reviews more complex use cases, including multivariate gridded model
+        data, and station data structures.
         """
 
         if not event_threshold:
@@ -1160,25 +1428,31 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(forecast, event_threshold)
-        observed_events = op_fn(observed, event_threshold)
+        fcst_events = op_fn(fcst, event_threshold)
+        obs_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))
-        observed_events = observed_events.where(~np.isnan(observed))
+        fcst_events = fcst_events.where(~np.isnan(fcst))
+        obs_events = obs_events.where(~np.isnan(obs))
 
-        return (forecast_events, observed_events)
+        return (fcst_events, obs_events)
 
     def make_contingency_manager(
-        self, forecast: FlexibleArrayType, observed: FlexibleArrayType, *, event_threshold=None, op_fn=None
+        self,
+        fcst: FlexibleArrayType,
+        obs: FlexibleArrayType,
+        *,
+        event_threshold=None,
+        op_fn=None,
     ) -> BinaryContingencyManager:
         """
         Using this function requires a careful understanding of the structure of the data
         and the use of the operator function. The default operator is a simple greater-than
         operator, so this will work on a simple DataArray. To work on a DataSet, a richer
-        understanding is required. It is recommended to work through the Contingency Table
-        tutorial to review more complex use cases, including on multivariate gridded model
-        data, and on station data structures.
+        understanding is required. It is recommended to work through the tutorial at
+        https://scores.readthedocs.io/en/stable/tutorials/Binary_Contingency_Scores.html .
+        This tutorial reviews more complex use cases, including multivariate gridded model
+        data, and station data structures.
         """
 
         if not event_threshold:
@@ -1187,12 +1461,12 @@ class ThresholdEventOperator(EventOperator):
         if op_fn is None:
             op_fn = self.default_op_fn
 
-        forecast_events = op_fn(forecast, event_threshold)
-        observed_events = op_fn(observed, event_threshold)
+        fcst_events = op_fn(fcst, event_threshold)
+        obs_events = op_fn(obs, event_threshold)
 
         # Bring back NaNs
-        forecast_events = forecast_events.where(~np.isnan(forecast))
-        observed_events = observed_events.where(~np.isnan(observed))
+        fcst_events = fcst_events.where(~np.isnan(fcst))
+        obs_events = obs_events.where(~np.isnan(obs))
 
-        table = BinaryContingencyManager(forecast_events, observed_events)
+        table = BinaryContingencyManager(fcst_events, obs_events)
         return table

@@ -25,23 +25,35 @@ Please submit bug reports, feature requests and feedback as issues in GitHub: [h
 
 Please see the information provided in [SECURITY.md](SECURITY.md)
 
+## Creating Your Own Fork  of `scores` for the First Time
+
+Unless you are an advanced Git user, we would recommend you follow this process:
+
+1. First (i.e. **before** cloning the `scores` repository) create your own fork using the GitHub web user interface.
+2. Clone **your fork**. (Do not clone github.com/nci/scores).
+3. Immediately create a new local branch, with a command such as `git checkout -b branch_name`.
+
 ## Workflow for Submitting Pull Requests
 
 Prior to developing a pull request, it may be a good idea to create a [GitHub issue](https://github.com/nci/scores/issues) to capture what the pull request is trying to achieve, any pertinent details, and (if applicable) how it aligns to the roadmap. Otherwise, please explain this in the pull request.
 
 To submit a pull request, please use the following workflow: 
-1. create a fork of the `scores` repository, 
-2. create a feature branch on your fork,
-3. keep your feature branch rebased and up-to-date with the `scores` develop branch,
-4. when ready, submit a pull request to the develop branch of `scores`.
 
-**Note for new contributors:** we are still establishing the smoothest path for new contributors to make code contributions. If you aren't sure where or how to start, please email scores@bom.gov.au and we would be happy to help discuss your goals and work through any issues getting set up.
+1. Ensure you are working on a new feature branch in **your fork** (see [the section above](#creating-your-own-fork-of-scores-for-the-first-time)).
+2. Keep your feature branch rebased and up-to-date with the develop branch of `scores`. You can do this by first syncing the develop branch on your fork, and then rebase your feature branch against the develop branch on your fork.
+3. When ready, submit a pull request to the develop branch of github.com/nci/scores.
+
+To help disambiguate branches, some contributors like to prefix their branch names with a short numerical indentifier. This is up to the contributor and any approach to branch naming is welcome. 
+
+If you have any questions about the development process, feel free to either raise your question in the [discussions area](https://github.com/nci/scores/discussions) or email scores@bom.gov.au .
 
 ### Submitting a Pull Request for a Feature, Improvement or Correction
 
 Please follow the [workflow for submitting pull requests](#workflow-for-submitting-pull-requests) outlined above.
 
 All pull requests will undergo a code review. When required, pull requests will also undergo a science review. Some examples of when a science review may be required include pull requests that propose changes to existing metrics and proposals for new or updated tutorials. More information about the code review and science review process is provided in the [Review Processes](#review-processes) section below.
+
+Once the review process has been completed, the package maintainer may first merge the pull request into branch "228-documentation-testing-branch" so that rendering of the documentation on the readthedocs site can be tested. This is usually the final step before a pull request is merged into the develop branch.
 
 The `scores` package maintainer may make changes to the code during the pull process or afterwards, such as resolving last-minute conflicts or making any required technical tweaks.
 
@@ -55,7 +67,7 @@ Each pull request should include:
  - 100% unit test coverage.
  - A tutorial notebook showcasing the use of that metric or score, ideally based on the standard sample data.
  - API documentation (docstrings) using [Napoleon (google)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) style, making sure to clearly explain the use of the metric.
- - A reference should be added to the API documentation.
+ - A reference should be added to the API documentation. The preferred referencing style is [APA (7th edition)](https://apastyle.apa.org/style-grammar-guidelines/references/examples).
    - If there is an authoritative reference (e.g. an academic article that defines the metric, or the specific implementation, being used), please cite that reference.
    - When there is an authoritative reference, please cite it even if it cannot be accessed without payment. In these instances, if there is another suitable reference that is open and available without payment, cite that as well.
    - When there is no authoritative reference, please cite a reference that provides a clear description of the function. Where possible, please cite open references that can be accessed without payment.
@@ -65,6 +77,8 @@ Each pull request should include:
 Please also read the [pull request checklist](https://github.com/nci/scores/blob/develop/.github/pull_request_template.md).
   
 All pull requests for new metrics, statistical techniques or tools will undergo both a code review and a science review. The code review will focus on coding style, performance and test coverage. The science review will focus on the mathematical correctness of the implementation and the suitability of the method for inclusion within `scores`. More information about the code review and science review process is provided in the [Review Processes](#review-processes) section below.
+
+Once the review process has been completed, the package maintainer may first merge the pull request into branch "228-documentation-testing-branch" so that rendering of the documentation on the readthedocs site can be tested. This is usually the final step before a pull request is merged into the develop branch.
 
 ## Setting up for Development
 
@@ -83,9 +97,9 @@ pytest
 ### `conda`-based virtual environment
 
 ```bash
-# overwrite default name `scoresenv` with `-n <new-name>` if desired
+# overwrite default name `scores` with `-n <new-name>` if desired
 conda env create -f environment.yml
-conda activate scoresenv
+conda activate scores
 pip install -e .[all]
 pytest
 ```
@@ -103,6 +117,18 @@ To automate linter and fixer checks this project uses `pre-commit` which is set 
 ```bash
 pre-commit install -t pre-commit -t pre-push
 ```
+
+## Pull Request Etiquette
+
+In general, the originator of a pull request will be the person who does all the coding work, including responding to feedback from others. Typically, feedback will be provided in the form of comments or code suggestions made through the GitHub web user interface.
+
+Sometimes, it may be pragmatic for the package maintainers to make or request a more complex code change. This typically occurs when a complex Git operation is needed to keep a pull request (PR) up to date, to resolve conflicts, or to make changes where the originator of the PR does not know how to proceed. It can also occur in the final stages of a PR lifecycle if there are small tidyups needed and time is a factor.
+
+Not every possibility can be accounted for, and the package maintainers will (if needed) push code directly to a PR to get something over the line. However, special circumstances aside, the maintainers will first leave a comment on the PR asking how the originator would like to proceed, so that there are no surprises.
+
+Most of these kinds of code change can also be handled as a PR by the reviewer onto the fork of the originator. This is slightly slower (i.e. does not take effect immediately), but allows for more control by the originator. This is probably most developer's general preference.
+
+In short - once you have made a PR, the maintainers may then take it, modify it, or include it as-is. However, every effort will be made to communicate about that process and make sure that the originator of the PR is happy with any modifications made.
 
 ## Review Processes
 

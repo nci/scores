@@ -39,6 +39,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.DS_Store
 
 # Installer logs
 pip-log.txt
@@ -90,6 +91,7 @@ ENV/
 env.bak/
 venv.bak/
 .vscode
+.idea
 
 # Rope project settings
 .ropeproject

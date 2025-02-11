@@ -570,12 +570,39 @@ DA_FCST_CRPSENS = xr.DataArray(
     dims=["stn", "ens_member"],
     coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4]},
 )
-DA_OBS_CRPSENS = xr.DataArray(data=[2.0, 3, 1, np.nan, 4], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_FCST_CRPSENS_LT = xr.DataArray(
+    data=[
+        [[0.0, 4, 3, 7], [1, -1, 2, 4], [0, 1, 4, np.nan], [2, 3, 4, 1], [2, np.nan, np.nan, np.nan]],
+        [
+            [2, 2, 2, 2],
+            [np.nan, np.nan, np.nan, np.nan],
+            [np.nan, np.nan, np.nan, np.nan],
+            [np.nan, np.nan, np.nan, np.nan],
+            [np.nan, np.nan, np.nan, np.nan],
+        ],
+    ],
+    dims=["lead_time", "stn", "ens_member"],
+    coords={"stn": [101, 102, 103, 104, 105], "ens_member": [1, 2, 3, 4], "lead_time": [1, 2]},
+)
+DA_OBS_CRPSENS = xr.DataArray(
+    data=[2.0, 3, 1, np.nan, 4, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105, 106]}
+)
 DA_WT_CRPSENS = xr.DataArray(data=[1, 2, 1, 0, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_T_TWCRPSENS = xr.DataArray(data=[np.nan, 1, 10, 1, -2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_LI_TWCRPSENS = xr.DataArray(data=[np.nan, 2, 2, 100, -200], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_UI_TWCRPSENS = xr.DataArray(data=[np.nan, 5, 5, 200, -100], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_LI_CONS_TWCRPSENS = xr.DataArray(data=[2, 2, 2, 2, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_UI_CONS_TWCRPSENS = xr.DataArray(data=[5, 5, 5, 5, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 
+DS_FCST_CRPSENS = xr.Dataset({"a": DA_FCST_CRPSENS, "b": DA_FCST_CRPSENS})
+DS_OBS_CRPSENS = xr.Dataset({"a": DA_OBS_CRPSENS, "b": DA_OBS_CRPSENS})
+DS_WT_CRPSENS = xr.Dataset({"a": DA_WT_CRPSENS, "b": DA_WT_CRPSENS})
+DS_T_TWCRPSENS = xr.Dataset({"a": DA_T_TWCRPSENS, "b": DA_T_TWCRPSENS})
 # first and second (spread) terms from crps for ensembles, "ecdf" and "fair" methods
 FIRST_TERM = xr.DataArray(
-    data=[10 / 4, 8 / 4, 4 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+    data=[10 / 4, 8 / 4, 4 / 3, np.nan, 2],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
 )
 SPREAD_ECDF = xr.DataArray(
     data=[(14 + 8 + 8 + 14) / 32, (6 + 10 + 6 + 10) / 32, (5 + 4 + 7) / 18, np.nan, 0],
@@ -587,8 +614,152 @@ SPREAD_FAIR = xr.DataArray(
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104, 105]},
 )
+UNDER_TERM = xr.DataArray(
+    data=[2 / 4, 7 / 4, 1 / 3, np.nan, 2],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+OVER_TERM = xr.DataArray(
+    data=[8 / 4, 1 / 4, 3 / 3, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
 
 # expected results
 EXP_CRPSENS_ECDF = FIRST_TERM - SPREAD_ECDF
+EXP_CRPSENS_ECDF_DECOMPOSITION = xr.concat([EXP_CRPSENS_ECDF, UNDER_TERM, OVER_TERM, SPREAD_ECDF], dim="component")
+EXP_CRPSENS_ECDF_DECOMPOSITION = EXP_CRPSENS_ECDF_DECOMPOSITION.assign_coords(
+    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+)
+
 EXP_CRPSENS_FAIR = FIRST_TERM - SPREAD_FAIR
 EXP_CRPSENS_WT = (EXP_CRPSENS_ECDF * DA_WT_CRPSENS).mean("stn")
+
+EXP_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_CRPSENS_ECDF, "b": EXP_CRPSENS_ECDF})
+EXP_CRPSENS_ECDF_DECOMPOSITION_DS = xr.Dataset(
+    {"a": EXP_CRPSENS_ECDF_DECOMPOSITION, "b": EXP_CRPSENS_ECDF_DECOMPOSITION}
+)
+EXP_CRPSENS_FAIR_DS = xr.Dataset({"a": EXP_CRPSENS_FAIR, "b": EXP_CRPSENS_FAIR})
+EXP_CRPSENS_WT_DS = xr.Dataset({"a": EXP_CRPSENS_WT, "b": EXP_CRPSENS_WT})
+
+# Test data for broadcasting
+FIRST_TERM_BC = xr.DataArray(
+    data=[[10 / 4, 8 / 4, 4 / 3, np.nan, 2], [0, np.nan, np.nan, np.nan, np.nan]],
+    dims=["lead_time", "stn"],
+    coords={"lead_time": [1, 2], "stn": [101, 102, 103, 104, 105]},
+)
+SPREAD_ECDF_BC = xr.DataArray(
+    data=[
+        [(14 + 8 + 8 + 14) / 32, (6 + 10 + 6 + 10) / 32, (5 + 4 + 7) / 18, np.nan, 0],
+        [0, np.nan, np.nan, np.nan, np.nan],
+    ],
+    dims=["lead_time", "stn"],
+    coords={"lead_time": [1, 2], "stn": [101, 102, 103, 104, 105]},
+)
+EXP_CRPSENS_ECDF_BC = FIRST_TERM_BC - SPREAD_ECDF_BC
+
+# exp test data for twCRPS with upper tail for thresholds >=1
+UPPER_TAIL_FIRST_TERM_DA = xr.DataArray(
+    data=[9 / 4, 6 / 4, 3 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+UPPER_TAIL_SPREAD_ECDF_DA = xr.DataArray(
+    data=[(11 + 7 + 7 + 13) / 32, (4 + 4 + 4 + 8) / 32, (3 + 3 + 6) / 18, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+UPPER_TAIL_SPREAD_FAIR_DA = xr.DataArray(
+    data=[(11 + 7 + 7 + 13) / 24, (4 + 4 + 4 + 8) / 24, (3 + 3 + 6) / 12, np.nan, np.nan],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+UPPER_TAIL_UNDER_DA = xr.DataArray(
+    data=[1 / 4, 5 / 4, 0, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+OVER_TAIL_UNDER_DA = xr.DataArray(
+    data=[8 / 4, 1 / 4, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF_DA = UPPER_TAIL_FIRST_TERM_DA - UPPER_TAIL_SPREAD_ECDF_DA
+EXP_UPPER_TAIL_CRPSENS_FAIR_DA = UPPER_TAIL_FIRST_TERM_DA - UPPER_TAIL_SPREAD_FAIR_DA
+EXP_UPPER_TAIL_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DA})
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = xr.concat(
+    [EXP_UPPER_TAIL_CRPSENS_ECDF_DA, UPPER_TAIL_UNDER_DA, OVER_TAIL_UNDER_DA, UPPER_TAIL_SPREAD_ECDF_DA],
+    dim="component",
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA.assign_coords(
+    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
+    {"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA}
+)
+# exp test data for twCRPS with upper tail for thresholds >=1 with broadcasting
+UPPER_TAIL_FIRST_TERM_BC = xr.DataArray(
+    data=[[9 / 4, 6 / 4, 3 / 3, np.nan, 2], [0, np.nan, np.nan, np.nan, np.nan]],
+    dims=["lead_time", "stn"],
+    coords={"lead_time": [1, 2], "stn": [101, 102, 103, 104, 105]},
+)
+UPPER_TAIL_SPREAD_ECDF_BC = xr.DataArray(
+    data=[
+        [(11 + 7 + 7 + 13) / 32, (4 + 4 + 4 + 8) / 32, (3 + 3 + 6) / 18, np.nan, 0],
+        [0, np.nan, np.nan, np.nan, np.nan],
+    ],
+    dims=["lead_time", "stn"],
+    coords={"lead_time": [1, 2], "stn": [101, 102, 103, 104, 105]},
+)
+EXP_UPPER_TAIL_CRPSENS_ECDF_BC = UPPER_TAIL_FIRST_TERM_BC - UPPER_TAIL_SPREAD_ECDF_BC
+
+# exp test data for twCRPS with lower tail for thresholds <=1
+LOWER_TAIL_FIRST_TERM_DA = xr.DataArray(
+    data=[1 / 4, 2 / 4, 1 / 3, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+LOWER_TAIL_SPREAD_ECDF_DA = xr.DataArray(
+    data=[(3 + 1 + 1 + 1) / 32, (2 + 6 + 2 + 2) / 32, (2 + 1 + 1) / 18, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+LOWER_TAIL_SPREAD_FAIR_DA = xr.DataArray(
+    data=[(3 + 1 + 1 + 1) / 24, (2 + 6 + 2 + 2) / 24, (2 + 1 + 1) / 12, np.nan, np.nan],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_LOWER_TAIL_CRPSENS_ECDF_DA = LOWER_TAIL_FIRST_TERM_DA - LOWER_TAIL_SPREAD_ECDF_DA
+EXP_LOWER_TAIL_CRPSENS_FAIR_DA = LOWER_TAIL_FIRST_TERM_DA - LOWER_TAIL_SPREAD_FAIR_DA
+
+# exp test data for twCRP with the upper tail varying across a dimension
+VAR_THRES_FIRST_TERM_DA = xr.DataArray(
+    data=[np.nan, 6 / 4, 0, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+VAR_THRES_SPREAD_ECDF_DA = xr.DataArray(
+    data=[np.nan, (4 + 4 + 4 + 8) / 32, 0, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_VAR_THRES_CRPSENS_DA = VAR_THRES_FIRST_TERM_DA - VAR_THRES_SPREAD_ECDF_DA
+EXP_VAR_THRES_CRPSENS_DS = xr.Dataset({"a": EXP_VAR_THRES_CRPSENS_DA, "b": EXP_VAR_THRES_CRPSENS_DA})
+
+# exp test data for interval twCRPS
+INTERVAL_FIRST_TERM_DA = xr.DataArray(
+    data=[6 / 4, 4 / 4, 2 / 3, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+INTERVAL_SPREAD_ECDF_DA = xr.DataArray(
+    data=[(6 + 4 + 4 + 6) / 32, (2 + 2 + 2 + 6) / 32, (2 + 2 + 4) / 18, np.nan, 0],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104, 105]},
+)
+EXP_INTERVAL_CRPSENS_ECDF_DA = INTERVAL_FIRST_TERM_DA - INTERVAL_SPREAD_ECDF_DA
+
+INTERVAL_UNDER_DA = xr.DataArray(data=[0, 3 / 4, 0, np.nan, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+INTERVAL_OVER_DA = xr.DataArray(
+    data=[6 / 4, 1 / 4, 2 / 3, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = xr.concat(
+    [EXP_INTERVAL_CRPSENS_ECDF_DA, INTERVAL_UNDER_DA, INTERVAL_OVER_DA, INTERVAL_SPREAD_ECDF_DA], dim="component"
+)
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA.assign_coords(
+    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+)
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
+    {"a": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA}
+)
+EXP_VAR_INTERVAL_CRPSENS_ECDF_DA = EXP_INTERVAL_CRPSENS_ECDF_DA * xr.DataArray(
+    data=[np.nan, 1, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)

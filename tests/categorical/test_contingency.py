@@ -5,6 +5,7 @@ Test functions for contingency tables
 import operator
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -142,7 +143,7 @@ def test_str_view():
     _stringrep = str(table)
 
 
-def test_categorical_table():
+def test_categorical_table():  # pylint: disable=too-many-statements
     """
     Test the basic calculations of the contingency table
     """
@@ -157,12 +158,12 @@ def test_categorical_table():
     fcst_events2, obs_events2 = match.make_event_tables(
         simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt
     )
-    xr.testing.assert_equal(fcst_events, table.forecast_events)
-    xr.testing.assert_equal(fcst_events2, table.forecast_events)
-    xr.testing.assert_equal(obs_events, table.observed_events)
-    xr.testing.assert_equal(obs_events2, table.observed_events)
-    xr.testing.assert_equal(table.forecast_events, table2.forecast_events)
-    xr.testing.assert_equal(table.observed_events, table2.observed_events)
+    xr.testing.assert_equal(fcst_events, table.fcst_events)
+    xr.testing.assert_equal(fcst_events2, table.fcst_events)
+    xr.testing.assert_equal(obs_events, table.obs_events)
+    xr.testing.assert_equal(obs_events2, table.obs_events)
+    xr.testing.assert_equal(table.fcst_events, table2.fcst_events)
+    xr.testing.assert_equal(table.obs_events, table2.obs_events)
 
     # Confirm values in the contingency table are correct
     assert counts["tp_count"] == 9
@@ -189,6 +190,7 @@ def test_categorical_table():
     assert table.hit_rate() == 9 / (9 + 1)
     assert table.probability_of_false_detection() == 2 / (6 + 2)
     assert table.success_ratio() == 9 / (9 + 2)
+    assert table.negative_predictive_value() == 6 / (6 + 1)
     assert table.specificity() == 6 / (6 + 2)
     assert table.false_alarm_ratio() == 2 / (9 + 2)
     assert table.f1_score() == 18 / (18 + 2 + 1)
@@ -210,6 +212,7 @@ def test_categorical_table():
     assert table.peirce_skill_score() == table.true_skill_statistic()
     assert table.hanssen_and_kuipers_discriminant() == table.peirce_skill_score()
     assert table.precision() == table.success_ratio()
+    assert table.positive_predictive_value() == table.success_ratio()
     assert table.recall() == table.probability_of_detection()
     assert table.gilberts_skill_score() == table.equitable_threat_score()
     assert table.cohens_kappa() == table.heidke_skill_score()
@@ -364,16 +367,16 @@ def test_dask_if_available_categorical():
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
-    assert isinstance(table.forecast_events.data, dask.array.Array)
+    assert isinstance(table.fcst_events.data, dask.array.Array)
     assert isinstance(table.tp.data, dask.array.Array)
 
     # That can be computed to hold numpy data types
-    computed = table.forecast_events.compute()
+    computed = table.fcst_events.compute()
     assert isinstance(computed.data, np.ndarray)
 
     # And that transformed tables are built out of computed things
     simple_counts = table.transform().get_counts()
-    assert isinstance(simple_counts["tp_count"].data, np.ndarray)
+    assert isinstance(simple_counts["tp_count"].data, (np.ndarray, np.generic))
 
     # And that transformed things get the same numbers
     assert table.false_alarm_rate() == table.transform().false_alarm_rate()
@@ -400,3 +403,32 @@ def test_examples_with_finley():
     # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
     gilbert_expected = xr.DataArray(0.216046)
     xr.testing.assert_allclose(gilbert_expected, gilbert)
+
+
+def test_format_data():
+    """
+    Test the format table method.
+    """
+
+    # Simple 2x2 Example
+
+    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
+    table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
+    expected_df = pd.DataFrame(
+        {"Positive Observed": [9, 1, 10], "Negative Observed": [2, 6, 8], "Total": [11, 7, 18]},
+        index=["Positive Forecast", "Negative Forecast", "Total"],
+    )
+
+    result_df = table.format_table()
+    pd.testing.assert_frame_equal(result_df, expected_df)
+
+    # Higher-dimension handling example
+    table = table.transform(preserve_dims="height")
+    with pytest.warns(UserWarning) as warning_object:
+        format_table = table.format_table()
+
+    assert scores.categorical.contingency_impl.HIGH_DIMENSION_HTML_CONTINGENCY_WARNING in str(
+        warning_object.list[0].message
+    )
+    get_table = table.get_table()
+    xr.testing.assert_equal(format_table, get_table)

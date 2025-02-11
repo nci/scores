@@ -33,7 +33,7 @@ def _flip_flop_index(
         `data`, except for the `sampling_dim` dimension which is collapsed.
 
     See also:
-        `scores.continuous.flip_flop.flip_flop_index`
+        `scores.continuous.flip_flop_impl.flip_flop_index`
     """
     # check that `sampling_dim` is in `data`.
     check_dims(data, [sampling_dim], mode="superset")
@@ -77,8 +77,7 @@ def flip_flop_index(
     *,  # Force keywords arguments to be keyword-only
     is_angular: bool = False,
     **selections: Iterable[int],
-) -> xr.Dataset:
-    ...
+) -> xr.Dataset: ...
 
 
 # If there are no selections, a DataArray is always returned
@@ -89,8 +88,7 @@ def flip_flop_index(
     *,  # Force keywords arguments to be keyword-only
     is_angular: bool = False,
     **selections: None,
-) -> xr.DataArray:
-    ...
+) -> xr.DataArray: ...
 
 
 # Return type is more precise at runtime when it is known if selections are being used
@@ -175,16 +173,14 @@ def flip_flop_index(
 @overload
 def iter_selections(
     data: xr.DataArray, sampling_dim: str, **selections: Optional[Iterable[int]]
-) -> Generator[tuple[str, xr.DataArray], None, None]:
-    ...
+) -> Generator[tuple[str, xr.DataArray], None, None]: ...
 
 
 # Dataset input types load to Dataset output types
 @overload
 def iter_selections(  # type: ignore
     data: xr.Dataset, sampling_dim: str, **selections: Optional[Iterable[int]]
-) -> Generator[tuple[str, xr.Dataset], None, None]:
-    ...
+) -> Generator[tuple[str, xr.Dataset], None, None]: ...
 
 
 def iter_selections(
@@ -437,7 +433,7 @@ def flip_flop_index_proportion_exceeding(
             sampling_dim: lead_day
 
     See also:
-        `scores.continuous.flip_flop_index`
+        :py:func:`scores.continuous.flip_flop_index`
 
     """
     if preserve_dims is not None and sampling_dim in list(preserve_dims):

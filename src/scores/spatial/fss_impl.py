@@ -23,6 +23,7 @@ References:
 .. _GITHUB270: https://github.com/nci/scores/issues/270
 .. _GITHUB353: https://github.com/nci/scores/issues/353
 """
+
 # sphinx docstrings: issue with inconsistent type rerpesentations
 # see: https://github.com/sphinx-doc/sphinx/issues/9813
 from __future__ import annotations  # isort: off
@@ -182,7 +183,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         obs,
         input_core_dims=[list(spatial_dims), list(spatial_dims)],
         vectorize=True,
-        dask=dask,  # pragma: no cover
+        dask=dask,  # type: ignore # pragma: no cover
     )
 
     # gather additional dimensions to aggregate over.
@@ -213,10 +214,10 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         da_fss,
         input_core_dims=[list(dims)],
         vectorize=True,
-        dask=dask,  # pragma: no cover
+        dask=dask,  # type: ignore # pragma: no cover
     )
 
-    return da_fss
+    return da_fss  # type: ignore
 
 
 def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
@@ -278,7 +279,7 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
 
 def fss_2d_single_field(
-    fcst: npt.NDArray[float],
+    fcst: npt.NDArray[float],  # type: ignore
     obs: npt.NDArray[float],
     *,
     event_threshold: float,
@@ -357,7 +358,7 @@ def fss_2d_single_field(
 
     fss_score = fb_obj.compute_fss()
 
-    return fss_score
+    return fss_score  # type: ignore
 
 
 def _make_numpy_threshold_operator(threshold_operator: Optional[Callable]) -> NumpyThresholdOperator:
@@ -384,11 +385,11 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
         l = fss_d.size
 
         if l < 1:
-            return 0.0
+            return np.float64(0.0)
 
         with np.nditer(fss_d) as it:
             for elem in it:
-                (fcst_, obs_, diff_) = elem.item()
+                (fcst_, obs_, diff_) = elem.item()  # type: ignore  # mypy is confused
                 fcst_sum += fcst_ / l
                 obs_sum += obs_ / l
                 diff_sum += diff_ / l
@@ -403,4 +404,4 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     fss_clamped = max(min(fss, 1.0), 0.0)
 
-    return fss_clamped
+    return fss_clamped  # type: ignore
