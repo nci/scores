@@ -452,9 +452,9 @@ def check_binary(data: XarrayLike, name: str):
 # -------------------------------------------------------------------------------------------------
 from typing import Union, TypeGuard, Unpack, Any
 
-DimContainer = Union[str, list[str]]
+DimNameContainer = Union[str, list[str]]
 
-def _is_dim_ctn(dim_ctn: Any) -> TypeGuard[DimContainer]:
+def _is_dim_name_ctn(dim_ctn: Any) -> TypeGuard[DimNameContainer]:
     """
     Checks if the input object is a dim container (`str` or `list[str]`)
     """
@@ -462,16 +462,16 @@ def _is_dim_ctn(dim_ctn: Any) -> TypeGuard[DimContainer]:
     __is_str_list = lambda x: isinstance(x, list) and (x == [] or all(__is_str(k) for k in x))
     return __is_str(dim_ctn) or __is_str_list(dim_ctn)
 
-def _lift_str(dim_str: str) -> DimContainer:
+def _lift_str(dim_str: str) -> DimNameContainer:
     """
     Lifts a string to a single element list
     """
-    ret : DimContainer = dim_str # default: do nothing
+    ret : DimNameContainer = dim_str # default: do nothing
     if isinstance(dim_str, str):
         ret = [dim_str]
     return ret
 
-def merge_dim_names(*ctns: Unpack[DimContainer]) -> list[str]:
+def merge_dim_names(*ctns: Unpack[DimNameContainer]) -> list[str]:
     """
     Merges input dimension names, removes any duplicates and flattens to a single list. Takes any
     number of arguments (variadic). Only `str` or `list[str]` are valid arguments. Deep nested lists
@@ -496,7 +496,7 @@ def merge_dim_names(*ctns: Unpack[DimContainer]) -> list[str]:
     """
     dim_set = set()
     for d in ctns:
-        if _is_dim_ctn(d):
+        if _is_dim_name_ctn(d):
             # using set to prevent duplicates.
             dim_set = dim_set.union(set(_lift_str(d)))
         else:
@@ -506,17 +506,17 @@ def merge_dim_names(*ctns: Unpack[DimContainer]) -> list[str]:
 
 # --- TEST ---
 
-def test__is_dim_ctn():
+def test__is_dim_name_ctn():
     # list of strings is valid
-    assert _is_dim_ctn(["a", "b", "c"]) == True
+    assert _is_dim_name_ctn(["a", "b", "c"]) == True
     # string is valid
-    assert _is_dim_ctn("potato") == True
+    assert _is_dim_name_ctn("potato") == True
     # float is invalid
-    assert _is_dim_ctn(4.2) == False
+    assert _is_dim_name_ctn(4.2) == False
     # list is not of single type
-    assert _is_dim_ctn(["a", "b", 4]) == False
+    assert _is_dim_name_ctn(["a", "b", 4]) == False
     # overly nested
-    assert _is_dim_ctn(["a", "b", ["a", "b"]]) == False
+    assert _is_dim_name_ctn(["a", "b", ["a", "b"]]) == False
 
 def test__lift_str():
     assert _lift_str("potato") == ["potato"]
@@ -525,7 +525,7 @@ def test__lift_str():
     assert _lift_str(["1", "2"]) == ["1", "2"]
 
 def test_merge_dim_names():
-    def _expect_error(*x: Unpack[DimContainer], bad_entry: str=""):
+    def _expect_error(*x: Unpack[DimNameContainer], bad_entry: str=""):
         try:
             merge_dim_names(*x)
         except ValueError as err:
@@ -567,8 +567,8 @@ def test_merge_dim_names():
 
 # TODO: remove - temporary testing
 if False:
-    print("RUN: test__is_dim_ctn")
-    test__is_dim_ctn()
+    print("RUN: test__is_dim_name_ctn")
+    test__is_dim_name_ctn()
     print("RUN: test__lift_str")
     test__lift_str()
     print("RUN: test__merge_dim_names")
