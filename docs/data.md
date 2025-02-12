@@ -20,7 +20,7 @@ To use `scores` with [GRIB](https://codes.wmo.int/grib2) data, install [cfgrib](
 
 ### Working with NetCDF Data
 
-To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https://github.com/HDFGroup/hdf5) data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). The h5netcdf library is included in the `scores` ["all"](installation.md#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](installation.md#tutorial-dependencies) installation options. Opening NetCDF data is demonstrated in [this tutorial](project:./tutorials/First_Data_Fetching.md). 
+To use `scores` with [NetCDF](https://doi.org/10.5065/D6H70CW6) or [HDF5](https://github.com/HDFGroup/hdf5) data, install [h5netcdf](https://github.com/h5netcdf/h5netcdf). The h5netcdf library is included in the `scores` ["all"](installation.md#all-dependencies-excludes-some-maintainer-only-packages) and ["tutorial"](installation.md#tutorial-dependencies) installation options. Opening NetCDF data is demonstrated in [this tutorial](project:./tutorials/First_Data_Fetching.md).
 
 ## Weather and Climate Data
 
@@ -35,13 +35,17 @@ Global numerical weather prediction (NWP) models are used to generate medium ran
 Archived datasets are available for:
 
 - Bureau of Meteorology's Australian Parallel Suite version 3 (APS3) Australian Community Climate and Earth-System Simulator (ACCESS), see [https://doi.org/10.25914/608a993391647](https://doi.org/10.25914/608a993391647).
+- [WeatherBench2](https://weatherbench2.readthedocs.io/en/latest/data-guide.html) contains forecasts with data-driven (AI) and physical NWP models on a common grid. The [twCRPS for ensemble forecasts tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md) shows how to use this data with scores.
 - National Oceanic and Atmospheric Administration (NOAA) Global Forecast System (GFS), see [https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast).
+- An archive of AI weather models going back to October 2020 is hosted at [https://noaa-oar-mlwp-data.s3.amazonaws.com/index.html](https://noaa-oar-mlwp-data.s3.amazonaws.com/index.html) as part of the Open Data Dissemination program. It contains, FourCastNet v2-small, Pangu-Weather, and GraphCast Operational data. It is updated twice a day. You can read more about it in their [paper](https://doi.org/10.1175/BAMS-D-24-0057.1)
 
 #### Point-Based Data
 
 Point-based observations (e.g. from weather stations or buoys) are shared routinely between countries for the purposes of weather modelling.
 
-The NOAA Integrated Surface Database (ISD) provides hourly point-based (*in-situ*) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
+- The NOAA Integrated Surface Database (ISD) provides hourly point-based (*in-situ*) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
+- [WeatherReal](https://github.com/microsoft/WeatherReal-Benchmark) contains quality controlled weather station data that uses the ISD. You can read more about WeatherReal in the [pre-print](https://arxiv.org/abs/2409.09371)
+- The [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/) contains a rich variety of datasets. One particularly useful dataset is the [1-minute Automated Surface Observing Network (ASOS) data](https://mesonet.agron.iastate.edu/request/asos/1min.phtml).
 
 #### Gridded Model Reanalysis Data
 
