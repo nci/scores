@@ -35,9 +35,9 @@ Global numerical weather prediction (NWP) models are used to generate medium ran
 Archived datasets are available for:
 
 - Bureau of Meteorology's Australian Parallel Suite version 3 (APS3) Australian Community Climate and Earth-System Simulator (ACCESS), see [https://doi.org/10.25914/608a993391647](https://doi.org/10.25914/608a993391647).
-- [WeatherBench2](https://weatherbench2.readthedocs.io/en/latest/data-guide.html) contains forecasts with data-driven (AI) and physical NWP models on a common grid. The [twCRPS for ensemble forecasts tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.ipynb) shows how to use this data with scores.
+- [WeatherBench2](https://weatherbench2.readthedocs.io/en/latest/data-guide.html) contains forecasts with data-driven (AI) and physical NWP models on a common grid. The [twCRPS for ensemble forecasts tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md) shows how to use this data with scores.
 - National Oceanic and Atmospheric Administration (NOAA) Global Forecast System (GFS), see [https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast).
-- An archive going back to October 2020 is hosted at [https://noaa-oar-mlwp-data.s3.amazonaws.com/index.html](https://noaa-oar-mlwp-data.s3.amazonaws.com/index.html) as part of the Open Data Dissemination program. It contains, FourCastNet v2-small, Pangu-Weather, and GraphCast Operational data. It is updated twice a day. You can read more about it in their [paper](https://doi.org/10.1175/BAMS-D-24-0057.1)
+- An archive of AI weather models going back to October 2020 is hosted at [https://noaa-oar-mlwp-data.s3.amazonaws.com/index.html](https://noaa-oar-mlwp-data.s3.amazonaws.com/index.html) as part of the Open Data Dissemination program. It contains, FourCastNet v2-small, Pangu-Weather, and GraphCast Operational data. It is updated twice a day. You can read more about it in their [paper](https://doi.org/10.1175/BAMS-D-24-0057.1)
 
 #### Point-Based Data
 
