@@ -454,6 +454,25 @@ def check_binary(data: XarrayLike, name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
+# >>> NEEDS TESTING
+def check_weights_positive(weights: XarrayLike):
+    """
+    This is a semi-strict check that requires weights to be non-negative and their norm should
+    be non-zero. This prevents unexpected destructive cancellations that may affect the
+    interpretability of some scores.
+
+    .. note::
+        - Only use this check if you know that the score cannot deal with negative weights.
+        - NaN values are excluded in this check.
+        - A stricter check would be to impose a particular type of norm and that it's equal to 1,
+          which is out of scope for this function but can be introduced in the future if there's a
+          suitable use-case.
+    """
+    # ignore nans for this check
+    weights_masked = np.ma.array(weights, mask=np.isnan(weights))
+    return np.ma.all(weights_masked >= 0) and np.ma.any(weights_masked > 0)
+# <<< NEEDS TESTING
+
 # >>> REFACTOR
 # -------------------------------------------------------------------------------------------------
 # TODO
