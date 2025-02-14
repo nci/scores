@@ -9,7 +9,7 @@ from typing import Any, TypeAlias, TypeGuard, Union
 import pandas as pd
 import xarray
 
-# Dimension name. `xarray` recommends `str` for dimension names, however, it doesn't imposes
+# Dimension name. `xarray` recommends `str` for dimension names, however, it doesn't impose
 # restrictions on generic hashables, so we also need to support hashables.
 DimName: TypeAlias = Hashable
 
@@ -32,15 +32,20 @@ FlexibleArrayType: TypeAlias = Union[XarrayLike, pd.Series]
 # NOTE: may replace `FlexibleDimensionTypes` down the line - this has more utility functions.
 DimNameCollection: TypeAlias = Union[DimName, Iterable[DimName]]
 
-ERROR_DIMNAMECOLLECTION: str = """
-Invalid type for dimension name collection: `DimensionNameCollection` must be either a `Hashable`
-(e.g. `str`) or an `Iterable` of `Hashable`s e.g. `list[str]`.
-"""
 
-WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[[], str] =  lambda t: f"""
+# Type error message for `DimNameCollection`
+__unfmt_err_dimnamecln: str = r"""
+Invalid type for dimension name collection: {t}. `DimensionNameCollection` must be either a
+`Hashable` (e.g. `str`) or an `Iterable` of `Hashable`s e.g. `list[str]`.
+"""
+ERROR_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_err_dimnamecln.format(t)
+
+# Warning for ambiguous `DimNameCollection`.
+__unfmt_warn_dimnamecln: str = r"""
 Ambiguous `DimNameCollection`. input: {t} is `Iterable` AND `Hashable`. `Hashable` takes priority.
 If you intended to provide an `Iterable`, consider using a non-hashable collection like a `list`.
 """
+WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_warn_dimnamecln.format(t)
 
 # TODO: <PACEHOLDER: insert #issue>: Implement similar functionality to `dim_name_collection`
 # for other types, to ensure consistent API for typechecking for internal methods.
@@ -58,7 +63,7 @@ def _check_dim_name_cln(t: Any) -> None:
         :py:class:`TypeError`: if type check fails.
     """
     if not _is_dim_name_cln(t):
-        raise TypeError(ERROR_DIMNAMECOLLECTION)
+        raise TypeError(ERROR_DIMNAMECOLLECTION(t))
 
 
 def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
@@ -77,7 +82,7 @@ def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
     are_all_names = lambda x: all(map(is_name, x))
 
     if is_name(t) and is_iterable(t):
-        UserWarning(WARN_AMBIGUOUS_DIMNAMECOLLECTION)
+        UserWarning(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t))
 
     # `is_name` takes priority otherwise tuples will never get hashed properly.
     return is_name(t) or (is_iterable(t) and are_all_names(t))
