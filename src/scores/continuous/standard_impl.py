@@ -12,6 +12,8 @@ import scores.utils
 from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
+import scores.continous.nse_impl as nse_impl
+
 
 def mse(
     fcst: FlexibleArrayType,

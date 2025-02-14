@@ -5,13 +5,23 @@ Contains frequently-used functions of a general nature within scores
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union, Unpack
+
+import functools
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import (
+    DimName,
+    DimNameCollection,
+    FlexibleDimensionTypes,
+    XarrayLike,
+    _check_dim_name_cln,
+    _dim_name_cln_to_list,
+)
+
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -443,65 +453,54 @@ def check_binary(data: XarrayLike, name: str):
     if not set(unique_values).issubset(binary_set):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
+
 # >>> REFACTOR
 # -------------------------------------------------------------------------------------------------
-# merge dimension helper
-# - move imports to top level
-# - type definition (and runtime guard) should go to typing module
-# - move tests to tests
+# TODO
+# - fix tests due to added support for hashables and other refactoring
+# - move adhoc tests to tests folder
+# - fixup doctest
 # -------------------------------------------------------------------------------------------------
-from typing import Union, TypeGuard, Unpack, Any
-
-DimNameContainer = Union[str, list[str]]
-
-def _is_dim_name_ctn(dim_ctn: Any) -> TypeGuard[DimNameContainer]:
+def merge_dim_names(*clns: Unpack[DimNameCollection]) -> list[DimName]:
     """
-    Checks if the input object is a dim container (`str` or `list[str]`)
-    """
-    __is_str = lambda x: isinstance(x, str)
-    __is_str_list = lambda x: isinstance(x, list) and (x == [] or all(__is_str(k) for k in x))
-    return __is_str(dim_ctn) or __is_str_list(dim_ctn)
+    Merge collections of dimension names. Removes any duplicates and flattens to a single list.
+    Takes any number of arguments (variadic).
 
-def _lift_str(dim_str: str) -> DimNameContainer:
-    """
-    Lifts a string to a single element list
-    """
-    ret : DimNameContainer = dim_str # default: do nothing
-    if isinstance(dim_str, str):
-        ret = [dim_str]
-    return ret
+    A sample usecase would be to gather collections of varying types with data containing dimension
+    names before feeding it into :py:func:`gather_dimensions`. This is common in functions that have
+    more complicated logic to derive ``reduce_dims`` because they accept (or should be able to
+    handle) polymorphic types, since ``xarray`` does it and users of ``xarray`` will expect it.
 
-def merge_dim_names(*ctns: Unpack[DimNameContainer]) -> list[str]:
-    """
-    Merges input dimension names, removes any duplicates and flattens to a single list. Takes any
-    number of arguments (variadic). Only `str` or `list[str]` are valid arguments. Deep nested lists
-    are not supported.
+    .. important::
 
-    For example, this method can be used when gathering which dimensions to reduce, where the
-    dimension names could be strings, lists of strings, or a combination of both, prior to feeding
-    into `gather_dimensions`.
+        While :py:mod:`xarray` recommends the use of :py:type:`str` for dimension names. It doesn't
+        actually enforce it and any :py:func:`~typing.Hashable` is allowed.
+
+    .. warning::
+
+        Avoid dimension names that are :py:func:`~typing.Hashable` and :py:func:`~typing.Iterable`.
+        :py:func:`~typing.Hashable` takes priority, in case the underlying dataset expects a hash
+        that can be iterable. If the user intended to provide a collection of hashes, they are
+        advised to use something mutable like a ``list`` instead - since they cannot be hashes.
 
     Returns:
-        A merged list of unique dimension names (str).
+        A merged list of unique dimension names (:py:func:`~typing.Hashable`).
 
     Raises:
-        ValueError: when _any_ argument provided is _not_ a string or a list of strings.
-
-    Example:
-
-    ```ipython
-    >>> merge_dim_names("temp", ["lat", "lon"], "time")
-    ["temp", "lat", "lon", "time"]  # may not be in this order
-    ```
+        :py:class:`TypeError`: when *any* argument provided is *not* :py:type:`DimNameCollection`.
+        :py:class:`UserWarning`: when a dimension collection type is ambiguous. See warning above.
     """
-    dim_set = set()
-    for d in ctns:
-        if _is_dim_name_ctn(d):
-            # using set to prevent duplicates.
-            dim_set = dim_set.union(set(_lift_str(d)))
-        else:
-            raise ValueError(f"invalid type for dimension: {d} - expect either `str` or `list[str]`")
-    # convert back to list for compatibility with most other APIs.
+    # check all dims
+    map(_check_dim_name_cln, dim_cln)
+
+    # typehint makes this too long for lambda.
+    def _unpack_to_set(_s: set[DimName], _cln: DimNameCollection) -> set[DimName]:
+        # cast to set, for unique insertion
+        return _s | set(_dim_name_cln_to_list(_cln))
+
+    dim_set: set[DimName] = functools.reduce(_unpack_to_set, clns, set())
+
+    # cast back to list since it has broader compatibility
     return list(dim_set)
 
 # --- TEST ---
