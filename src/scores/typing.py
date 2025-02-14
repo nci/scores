@@ -4,7 +4,7 @@ a consistent approach to typing is handled.
 """
 
 from collections.abc import Hashable, Iterable
-from typing import Any, TypeAlias, TypeGuard, Union
+from typing import Any, TypeAlias, TypeGuard, Union, cast
 
 import pandas as pd
 import xarray
@@ -104,20 +104,23 @@ def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
     Raises:
         TypeError if input is not a ``DimNameCollection``
     """
+    # check input type
     _check_dim_name_cln(dim_cln)
-    return list(_lift_dim_name(dim_cln))
+    ret = None
 
+    if isinstance(dim_cln, DimName):
+        # Hashable takes priority, lift to list
+        ret = [dim_cln]
+    elif not isinstance(dim_cln, list):
+        # if its not a list, transform to list.
+        ret = list(dim_cln)
+    else:
+        # otherwise, it was a list to begin with, assert to make sure.
+        assert isinstance(dim_cln, list)
+        ret = dim_cln
 
-def _lift_dim_name(dim_name: DimName) -> DimNameCollection:
-    """
-    lifts a single ``DimName`` (e.g. str) to a collection (e.g. list[str]). For example, allows ``DimName``
-    to be compatible with functions that only deal with ``DimNameCollection`` or ``FlexibleDimensionTypes``.
-
-    Returns:
-        Returns list[Hashable] if input is a DimName, otherwise does nothing.
-    """
-    ret : DimNameCollection = dim_name  # default - do nothing
-    if isinstance(dim_name, DimName):
-        ret = [dim_name]
+    # safety: re-check and cast return type
     _check_dim_name_cln(ret)
+    cast(ret, list[DimName])
+
     return ret
