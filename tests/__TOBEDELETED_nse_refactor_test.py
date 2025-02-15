@@ -47,9 +47,9 @@ def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
         Only returns a boolean flag for static checking, use :py:func:`_check_dim_name_cln` if you
         want to raise a runtime error.
     """
-    is_name = lambda x: isinstance(x, DimName)
-    is_iterable = lambda x: isinstance(x, Iterable)
-    are_all_names = lambda x: all(map(is_name, x))
+    is_name: Callable[[], bool] = lambda x: isinstance(x, DimName)
+    is_iterable: Callable[[], bool] = lambda x: isinstance(x, Iterable)
+    are_all_names: Callable[[], bool] = lambda x: all(map(is_name, x))
 
     if is_name(t) and is_iterable(t):
         UserWarning(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t))
@@ -74,22 +74,22 @@ def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
     Raises:
         TypeError if input is not a ``DimNameCollection``
     """
-    # check input type
+    # check input type is conformant
     _check_dim_name_cln(dim_cln)
     ret = None
 
     if isinstance(dim_cln, DimName):
-        # Hashable takes priority, lift to list
+        # Hashable: takes priority, lift to list
         ret = [dim_cln]
     elif not isinstance(dim_cln, list):
-        # if its not a list, transform to list.
+        # Iterable: if its not a list, transform to list.
         ret = list(dim_cln)
     else:
-        # otherwise, it was a list to begin with, assert to make sure.
+        # Iterable: was list to begin with - assert and pass-through
         assert isinstance(dim_cln, list)
         ret = dim_cln
 
-    # safety: re-check and cast return type
+    # safety: check return type is conformant and cast to expected type
     _check_dim_name_cln(ret)
     cast(ret, list[DimName])
 
