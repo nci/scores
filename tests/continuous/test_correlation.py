@@ -169,3 +169,29 @@ def test_divergence(da1, da2, reduce_dims, preserve_dims, expected, corr):
     else:
         result = pearsonr(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         assert np.round(result.item(), 2) == expected
+
+
+@pytest.mark.parametrize(
+    ("fcst_ds", "obs_ds", "reduce_dims", "preserve_dims"),
+    [
+        (
+            xr.Dataset({"var1": DA1_CORR, "var2": DA3_CORR}),
+            xr.Dataset({"var1": DA2_CORR, "var2": DA2_CORR}),
+            "time",
+            None,
+        ),
+        (
+            xr.Dataset({"var1": DA1_CORR}),
+            xr.Dataset({"var1": DA2_CORR}),
+            None,
+            "space",
+        ),
+    ],
+)
+def test_spearman_correlation_dataset(fcst_ds, obs_ds, reduce_dims, preserve_dims):
+    """
+    Tests continuous.correlation.spearmanr with xarray.Dataset inputs.
+    """
+    result = spearmanr(fcst_ds, obs_ds, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
+    assert isinstance(result, xr.Dataset)
+    assert set(result.data_vars) == set(fcst_ds.data_vars)
