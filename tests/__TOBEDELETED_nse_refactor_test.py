@@ -1,22 +1,53 @@
-from collections.abc import Hashable, Iterable
-from typing import Any, TypeAlias, TypeGuard, Union, cast
+#!/usr/bin/env nix-shell
+#! nix-shell --impure
+#! nix-shell -i 'pytest -x -s __TOBEDELETED*'
+#! nix-shell -p bash python3
+#! nix-shell -p python312Packages.pytest
+#! nix-shell -p python312Packages.pytest-cov
+#! nix-shell -p python312Packages.numpy
+#! nix-shell -p python312Packages.xarray
+#! nix-shell -p python312Packages.ipdb
+
+import warnings
+import functools
+
+from collections.abc import Hashable, Iterable, Callable
+from typing import Any, TypeAlias, TypeGuard, Union, Unpack, cast
 
 import numpy as np
+import xarray
 import pytest
+
+# Dimension name. `xarray` recommends `str` for dimension names, however, it doesn't impose
+# restrictions on generic hashables, so we also need to support hashables.
+DimName: TypeAlias = Hashable
+
+# `XarrayLike` data types should be used for all forecast, observed and weights. However, currently
+# some are specified as DataArray only
+XarrayLike: TypeAlias = Union[xarray.DataArray, xarray.Dataset]
+
+
+# Generic collection that supports both `DimName`, a single hashable and `FlexibleDimensionTypes`.
+# A iterable collection of dimension names. Useful for applying functions that can support both
+# single names or collections e.g. `gather_dimensions` which currently does these checks internally.
+#
+# NOTE: may replace `FlexibleDimensionTypes` down the line - this has more utility functions.
+DimNameCollection: TypeAlias = Union[DimName, Iterable[DimName]]
+
 
 # Type error message for `DimNameCollection`
 __unfmt_err_dimnamecln: str = r"""
-Invalid type for dimension name collection: {t}. `DimensionNameCollection` must be either a
+Invalid type for dimension name collection: {_type}. `DimensionNameCollection` must be either a
 `Hashable` (e.g. `str`) or an `Iterable` of `Hashable`s e.g. `list[str]`.
 """
-ERROR_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_err_dimnamecln.format(t)
+ERROR_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_err_dimnamecln.format(_type=t)
 
 # Warning for ambiguous `DimNameCollection`.
 __unfmt_warn_dimnamecln: str = r"""
-Ambiguous `DimNameCollection`. input: {t} is `Iterable` AND `Hashable`. `Hashable` takes priority.
+Ambiguous `DimNameCollection`. input: {_type} is `Iterable` AND `Hashable`. `Hashable` takes priority.
 If you intended to provide an `Iterable`, consider using a non-hashable collection like a `list`.
 """
-WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_warn_dimnamecln.format(t)
+WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_warn_dimnamecln.format(_type=t)
 
 # TODO: <PACEHOLDER: insert #issue>: Implement similar functionality to `dim_name_collection`
 # for other types, to ensure consistent API for typechecking for internal methods.
@@ -51,8 +82,9 @@ def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
     is_iterable: Callable[[], bool] = lambda x: isinstance(x, Iterable)
     are_all_names: Callable[[], bool] = lambda x: all(map(is_name, x))
 
-    if is_name(t) and is_iterable(t):
-        UserWarning(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t))
+    # if its iterable and is hashable (but its not a string), then its ambiguous.
+    if not isinstance(t, str) and (is_name(t) and is_iterable(t)):
+        warnings.warn(UserWarning(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t)))
 
     # `is_name` takes priority otherwise tuples will never get hashed properly.
     return is_name(t) or (is_iterable(t) and are_all_names(t))
@@ -184,7 +216,7 @@ def merge_dim_names(*clns: Unpack[DimNameCollection]) -> list[DimName]:
         :py:class:`UserWarning`: when a dimension collection type is ambiguous. See warning above.
     """
     # check all dims
-    map(_check_dim_name_cln, dim_cln)
+    map(_check_dim_name_cln, clns)
 
     # typehint makes this too long for lambda.
     def _unpack_to_set(_s: set[DimName], _cln: DimNameCollection) -> set[DimName]:
@@ -197,7 +229,6 @@ def merge_dim_names(*clns: Unpack[DimNameCollection]) -> list[DimName]:
     return list(dim_set)
 
 # --- TEST ---
-
 def test__is_dim_name_cln():
     """
     TODO: complete docs
@@ -209,14 +240,15 @@ def test__is_dim_name_cln():
     # mixed types are valid since the requirement is "Hashable"
     assert _is_dim_name_cln(["a", "b", 4]) == True
     # tuple is valid but expect warning
-    with pytest.warns(UserWarning, match=f"Ambiguous.*{(1, 2, 3)}"):
-        assert _check_dim_name_cln((1, 2, 3)) == True
+    in_ = (1, 2, 3)
+    with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(in_)):
+        assert _is_dim_name_cln(in_) == True
     # too much nesting
     assert _is_dim_name_cln(["a", "b", ["a", "b"]]) == False
 
 def test_merge_dim_names():
     def _expect_error(*x: Unpack[DimNameCollection], bad_entry: str=""):
-        with pytest.raises(ValueError, match=f"Invalid type.*{bad_entry}"):
+        with pytest.raises(TypeError, match=r"Invalid type.*{}".format(bad_entry)):
             merge_dim_names(*x)
 
     def _unord_assert(x: list[str], y: list[str]):
@@ -262,7 +294,6 @@ def test__dim_name_cln_to_list():
     Also partially tests :py:func:`scores.typing._check_dim_name_cln`.
     """
 
-
 def test__check_dim_name_cln():
     """
     Tests :py:func:`scores.typing._check_dim_name_cln`.
@@ -275,7 +306,7 @@ def test__check_dim_name_cln():
     Also covers :py:func:`scores.typing._is_dim_name_collection`.
     """
     def __expect_error(_t: DimNameCollection):
-        with pytest.raises(ValueError, match=f"Invalid type.*{_t}"):
+        with pytest.raises(TypeError, match=r"Invalid type.*{}".format(_t)):
             _check_dim_name_cln(_t)
 
     def __expect_no_error_no_warn(_t: DimNameCollection):
@@ -286,19 +317,15 @@ def test__check_dim_name_cln():
         return True
 
     def __expect_ambg_warning(_t: DimNameCollection):
-        with pytest.warns(UserWarning, match=f"Ambiguous.*{_t}"):
+        with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(_t)):
             _check_dim_name_cln(_t)
 
-    class __Ding:
-        def __init__(self):
-            self.__dong = "dong"
-
-    # error - wrong type
-    __expect_error(__Ding())
+    # error - wrong type - dicts are not hashable (but their entries are)
+    __expect_error([{ "x": 1, "y": 2 }])
 
     # error - nested types
     __expect_error([["potato", "tapioca"]])
-    __expect_error(["a", ["b", "c", ["d"]])
+    __expect_error(["a", ["b", "c", ["d"]]])
 
     # warning - ambiguous type - tuple
     __expect_ambg_warning((1, 2, 3, 4))
@@ -320,12 +347,15 @@ def test__check_dim_name_cln():
 
 # TODO: remove - temporary testing
 if False:
+    test__dim_name_cln_to_list()
+    print("RUN: test__dim_name_cln_to_list")
+    test__check_dim_name_cln()
+    print("RUN: test__check_dim_name_cln")
+    test_merge_dim_names()
+    print("RUN: test_merge_dim_names")
+    test__is_dim_name_cln()
     print("RUN: test__is_dim_name_cln")
     test__is_dim_name_cln()
-    print("RUN: test__lift_str")
-    test__lift_str()
-    print("RUN: test__merge_dim_names")
-    test_merge_dim_names()
 
 # <<< REFACTOR
 
