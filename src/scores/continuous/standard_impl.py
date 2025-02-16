@@ -568,8 +568,8 @@ def kge(
 def nse(
     fcst: XarrayLike,
     obs: XarrayLike,
+    time_dim: DimName,
     *,
-    time_dim,  # required keyword arg
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[XarrayLike] = None,
     is_angular: Optional[bool] = False,
@@ -657,142 +657,114 @@ def nse(
        of Hydrology, 292(1-4), 281-295.
        doi:10.1016/j.jhydrol.2004.01.002
     """
-    # TODO: this function should only serve as an interface to the internal implementation in nse_impl.py.
-    #       e.g. return nse_impl.nse_builder(...).compute_nse()
-    # TODO: the below should be moved accordingly
-    # ---------------------------------------------------------------------------------------------
-    # helpers - these could go to utility, but for now are nse specific
-    # ---------------------------------------------------------------------------------------------
-    _check_weights: dict[str, Callable[[], bool]] = {
-        "not a number (NaN)": lambda _w: np.any(np.isnan(_w)),
-        "infinite": lambda _w: np.any(np.isinf(_w)),
-        "negative": lambda _w: np.any(_w < 0.0),
-    }
-
-    def _gather_uncertain_weights(_w: XarrayLike) -> list[str]:
-        return [ _k for (_k, _q) in _check_weights.items() if _q(_w) ]
-
-    # simplified `mse` wrapper to reduce repetition
-    # `_mse_partial` wraps `mse`, which implicitly does dim checks (including weights).
-    _mse_partial : Callable[[], XarrayLike] = functools.partial(
-        mse,
-        reduce_dims=merged_reduce_dims,
-        weights=weights,
-        is_angular=is_angular,
-    )
 
     # ---------------------------------------------------------------------------------------------
-    # TODO: we are using `xr.where` here to stick to xarray, and avoid accidental computations by
-    # calling np.where or other types of indexing. Unfortunately, this means we have to invert the
-    # logic where the conditional _evaluates_ the score, rather than using branching.
-    # (though there may be other ways to do it.)
-    #
-    # The paradigm is essentially, apply_where(cond_pred, evaluator_a: Callable, evaluator_b: Identity)
-    # So the below can be refactored as:
-    # chain( apply_where, [*argset1], [*argset2], [*argset3] )
-    #
-    # Example:
-    # chain( apply_where,
-    #        [ numer != 0.0 & denom == 0.0, lambda _, _: -np.inf, __result]
-    #        [ numer == 0.0 & denom == 0.0, lambda _, _: 0.0, __result]
-    #        [ numer == 0.0 & denom == 0.0, lambda x, y: __score(x, y), __result]
-    #      )
-    # Essentially this converts it back to a "switch" case like statement
-    # i.e. switch (numer, denom)
-    #         case numer == ... do A.
-    #         case denom != ... do B.
-    #         otherwise do ...
-    #
-    # and evaluator_b = Identity receives the updated result and propagates down the arg
-    #
-    # except that its all xarray, and hence broadcasting and any dask-y stuff is preserved.
-    #
-    # Arguably, we should just eagerly compute numer and denom which are the heavy compute
-    # portions. Since the remaining logic of combining the parts is probably the least cpu/memory
-    # intensive portion.
-    def _nse_handle_nonzero_by_zero(numer: XarrayLike, denom: XarrayLike, buf: XarrayLike):
-        return xr.where(numer != 0.0 & denom == 0.0, -np.inf, buf)
-
-    def _nse_handle_zero_by_zero(numer: XarrayLike, denom: XarrayLike, buf: XarrayLike):
-        return xr.where(numer == 0.0 & denom == 0.0, 0.0, buf)
-
-    def _nse_handle_any_by_nonzero(numer: XarrayLike, denom: XarrayLike, nse_score: Callable[[], XarrayLike], buf: XarrayLike):
-        return xr.where(denom != 0.0, nse_score(numer, denom), buf)
+    # Builder impl - move to nse_impl.Builder
     # ---------------------------------------------------------------------------------------------
-
-    # ---------------------------------------------------------------------------------------------
-    # Score impl
-    # ---------------------------------------------------------------------------------------------
-    def _nse_impl(error: XarrayLike, variance: XarrayLike, numpy_warn_divide=True) -> XarrayLike:
-        # TODO: data is different if error is a dataset v.s. a dataarray
-        __result: XarrayLike = error.copy(deep=False, data=...)
-        __score: Callable[[], XarrayLike] = lambda: x, y: 1.0 - x / y
-
-        if numpy_warn_divide:
-            with np.errstate(divide="warn"):
-                __result = __score(error, variance)
-        else:
-            # TODO: convert to masked array to preserve nans
-            __err_masked = ...
-            __var_masked = ...
-            with np.errstate(divide="error"):
-                # TODO: this may look better using chained operations since they essentially take
-                # the same inputs. e.g. __result.chain(__score, _nonzero_by_zero, _zero_by_zero)
-                __result_masked = _nse_handle_nonzero_by_zero(error, variance, __result_masked)
-                __result_masked = _nse_handle_zero_by_zero(error, variance, __result_masked)
-                # TODO: __score probably doesn't need to live inside here for us it to pass it
-                # around unnecessarily.
-                __result_masked = _nse_handle_any_by_nonzero(__score, error, variance, __result_masked)
-
-            # TODO: drop masking to preserve nan locations
-            # ...
-
-            # TODO: assert type and cast __result back to XarrayLike
-
-        return __result
-
-    # ---------------------------------------------------------------------------------------------
-    # WARNINGS/ERRORS
-    # ---------------------------------------------------------------------------------------------
-    def _warn_ambiguous_weights(flags: list[str]):
-        UserWarning(
-            f"NSE computations are only tested for weights > 0. The provided weights contain the "
-            f"following flags: {flags}, and may provide un-intended outputs. "
-            f"Any divide by zero resolution is delegated to `numpy` defaults."
+    # nse_impl.NseBuilder.build_mse_callback(...)
+    def _build_mse_callback(self: ...) -> Callable[..., XarrayLike]:
+        # mse_callback : Callable[[], XarrayLike]
+        self.mse_callback = functools.partial(
+            mse,
+            reduce_dims=self.reduce_dims,
+            weights=self.weights,
+            is_angular=self.is_angular,
         )
 
-    # TODO: Add error to test that numer / denom cannot be negative
-    # i.e. numer < 0 and denom >= 0 or demon < 0 and numer >= 0
-    # this can never happen with positive or equal weights.
-    # its likely something malformed happened with the provided weights and the user needs to re-check
+    # nse_impl.NseBuilder.merge_dims(...)
+    def _merge_dims(time_dim: DimName, reduce_dims: DimNameCollection):
 
-    # TODO: Add error if obs/fcst have values like np.inf, -np.inf: that will result in weird
-    # results, since they are physically impossible. `np.nan` may be allowed.
+    # nse_impl.NseBuilder.fcst_error(...)
+    def _fcst_error(self: ...) -> None:
+        self.obs_variance = self.mse_callback(obs_mean, obs)
+
+    # nse_impl.Nse_builder.obs_variance(...)
+    def _obs_variance(self: ...) -> None:
+        # check that reduce_dims is within
+        utils.check_dims(self.obs, self.merged_reduce_dims, "superset")
+        # self.obs_mean : XarrayLike
+        self.obs_mean = self.obs.mean(dims=self.merged_reduce_dims)
+        # self.obs_variance: XarrayLike
+        self.obs_variance = self.mse_callback(self.obs_mean, self.obs)
+
+    # --- builder "methods:
+    # these are fairly straightforward methods doing their own input checks...
+    def __init__(*, obs: XarrayLike, fcst: XarrayLike, time_dim: DimName) -> NseBuilder:
+        pass
+        # ... default output of builder, exposing required arguments
+        # ... but actually this can just be part of dataclass init
+
+    # these represent optionals
+    def _with_weights(self: ..., weights: XarrayLike) -> NseBuilder:
+        context = """
+        NSE requires weights with consistent signage, and by default assumed to be non-negative.
+        Introducing negative weights will affect how the score can be interpretted, as the upper
+        bound will no longer be 1.0. (e.g. when the forecast error is positive, but the obs variance
+        is negative, and vice-versa.)
+        """ 
+        scores.utils.check_weights_positive(weights, context=context)
+        self.weights = weights
+        return self
+
+    def _with_additional_reduce_dims(self: ..., reduce_dims: DimNameCollection) -> NseBuilder:
+        # implicitly type checks dimension names
+        self.reduce_dims = scores.utils.merge_dim_names(self.time_dim, reduce_dims)
+        return self
+
+    def _with_angular(self: ..., is_angular: bool) -> NseBuilder:
+        # automatically handled by underlying mse function
+        self.is_angular = is_angular
+        return self
+    # ---
+
+    # nse_impl.Nse_builder.build(...) - but actually can also be "post init"
+    def _build():
+        _mse: Callback[..., XarrayLike] = self._build_mse_callback()
+        fcst_error: XarrayLike = _mse(fcst, obs)
+        obs_variance: XarrayLike = _mse(obs_mean, obs)
+
+        # ---
+        # TODO: move to separate functions
+        # check decomposed scores...
+        # NOTE: these checks will automatically trigger data loads since conditionals cannot be used
+        # with dask delayed. but they have to be checked for safety.
+        if obs_variance == 0:
+            warnings.warn("Divide by zero...", UserWarning)
+        # ---
+
+        return NseScore(fcst_error)
+
+        # optional - self.destroy():
+        # NOT implemented, because its hard to know what data needs to be kept if dask is involved.
+
+
+    # ---------------------------------------------------------------------------------------------
+    # Score impl - move to nse_impl.NseScore.nse
+    # ---------------------------------------------------------------------------------------------
+    def _nse(self: ..., *) -> XarrayLike:
+        # warning should already have been issued by builder
+        with np.errstate(divide="ignore"):
+            # self.fcst_error: XarrayLike, self.obs_variance: XarrayLike
+            nse: XarrayLike = 1.0 - (self.fcst_error / self.obs_variance)
+            return nse
 
     # ---------------------------------------------------------------------------------------------
     # Entrypoint
     # ---------------------------------------------------------------------------------------------
-    # Only obs needs to be checked for mean calculations, the other inputs are checked more rigorously
-    # implicitly `mse` via `gather_dimensions`
-    utils.check_dims(obs, merged_reduce_dims, "superset")
-    merged_reduce_dims : list[str] = scores.utils.merge_dim_names(time_dim, reduce_dims)
-    obs_mean: XarrayLike = obs.mean(dims=merged_reduce_dims)
-    fcst_error: XarrayLike = _mse_partial(fcst, obs)
-    obs_variance: XarrayLike = _mse_partial(obs_mean, obs)
-    unsure_weights: list[str] = _gather_uncertain_weights(weights)
+    # --- only this is actually necessary in this function ---
+    # FIXME: below code is broken - illustrative only.
+    # NOTE-TO-SELF: see fss backend for reminder.
 
-    # handle zero division and -ve weights
-    # 1. if any weight is non-conformant, we let numpy decide how to handle divide by zero
-    # 2. if weights are proper numerics and >= 0 we decide:
-    #    a. fcst_error = obs_variance = 0 => NSE = 0
-    #    b. fcst_error > 0 && obs_variance = 0 => NSE = -np.inf
-    # TODO: handling input data with nans/infs etc. as well in branch 2.
+    # setup arguments for builder to do checks
+    nse_score_builder = (
+        nse_impl.NseBuilder(obs=obs, fcst=fcst, time_dim=time_dim)
+        .with_weights(weights)
+        .with_additional_reduce_dims(reduce_dims)
+        .is_angular(is_angular)
+    )
 
-    # warn instead of handling error if we're dealing with uncertain weights.
-    numpy_warn_divide: bool = len(unsure_weights) > 0
-    if numpy_warn_divide:
-        raise _warn_ambigious_weights(unsure_weights)
-    nse_s: XarrayLike  = _nse_impl(fcst_error, obs_variance, numpy_warn_divide=numpy_warn_divide)
-    # ---------------------------------------------------------------------------------------------
+    # if inputs are dask arrays, get_nse() automatically returns a delayed computation (future object)
+    nse_s: XarrayLike = nse_score_builder.build().get_nse()
 
     return nse_s
+    # ---------------------------------------------------------------------------------------------
