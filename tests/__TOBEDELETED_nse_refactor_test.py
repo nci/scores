@@ -1,12 +1,4 @@
-#!/usr/bin/env nix-shell
-#! nix-shell --impure
-#! nix-shell -i 'pytest -x -s __TOBEDELETED*'
-#! nix-shell -p bash python3
-#! nix-shell -p python312Packages.pytest
-#! nix-shell -p python312Packages.pytest-cov
-#! nix-shell -p python312Packages.numpy
-#! nix-shell -p python312Packages.xarray
-#! nix-shell -p python312Packages.ipdb
+# --- FIXME: move parts of this file to appropriate places ---
 
 import warnings
 import functools
@@ -14,10 +6,14 @@ import functools
 from collections.abc import Hashable, Iterable, Callable
 from typing import Any, TypeAlias, TypeGuard, Union, Unpack, cast
 
+import re
 import numpy as np
 import xarray
 import pytest
 
+# -------------------------------------------------------------------------------------------------
+# --- FIXME: refactor into typing ---
+# -------------------------------------------------------------------------------------------------
 # Dimension name. `xarray` recommends `str` for dimension names, however, it doesn't impose
 # restrictions on generic hashables, so we also need to support hashables.
 DimName: TypeAlias = Hashable
@@ -40,14 +36,14 @@ __unfmt_err_dimnamecln: str = r"""
 Invalid type for dimension name collection: {_type}. `DimensionNameCollection` must be either a
 `Hashable` (e.g. `str`) or an `Iterable` of `Hashable`s e.g. `list[str]`.
 """
-ERROR_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_err_dimnamecln.format(_type=t)
+ERROR_DIMNAMECOLLECTION: Callable[..., str] = lambda t: __unfmt_err_dimnamecln.format(_type=t)
 
 # Warning for ambiguous `DimNameCollection`.
 __unfmt_warn_dimnamecln: str = r"""
 Ambiguous `DimNameCollection`. input: {_type} is `Iterable` AND `Hashable`. `Hashable` takes priority.
 If you intended to provide an `Iterable`, consider using a non-hashable collection like a `list`.
 """
-WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[[], str] = lambda t: __unfmt_warn_dimnamecln.format(_type=t)
+WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[..., str] = lambda t: __unfmt_warn_dimnamecln.format(_type=t)
 
 # TODO: <PACEHOLDER: insert #issue>: Implement similar functionality to `dim_name_collection`
 # for other types, to ensure consistent API for typechecking for internal methods.
@@ -78,13 +74,13 @@ def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
         Only returns a boolean flag for static checking, use :py:func:`_check_dim_name_cln` if you
         want to raise a runtime error.
     """
-    is_name: Callable[[], bool] = lambda x: isinstance(x, DimName)
-    is_iterable: Callable[[], bool] = lambda x: isinstance(x, Iterable)
-    are_all_names: Callable[[], bool] = lambda x: all(map(is_name, x))
+    is_name: Callable[..., bool] = lambda x: isinstance(x, DimName)
+    is_iterable: Callable[..., bool] = lambda x: isinstance(x, Iterable)
+    are_all_names: Callable[..., bool] = lambda x: all(map(is_name, x))
 
     # if its iterable and is hashable (but its not a string), then its ambiguous.
     if not isinstance(t, str) and (is_name(t) and is_iterable(t)):
-        warnings.warn(UserWarning(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t)))
+        warnings.warn(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t), UserWarning)
 
     # `is_name` takes priority otherwise tuples will never get hashed properly.
     return is_name(t) or (is_iterable(t) and are_all_names(t))
@@ -108,7 +104,7 @@ def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
     """
     # check input type is conformant
     _check_dim_name_cln(dim_cln)
-    ret = None
+    ret: list[DimName] | None = None
 
     if isinstance(dim_cln, DimName):
         # Hashable: takes priority, lift to list
@@ -123,70 +119,15 @@ def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
 
     # safety: check return type is conformant and cast to expected type
     _check_dim_name_cln(ret)
-    cast(ret, list[DimName])
+    cast(list[DimName], ret)
 
     return ret
 
-# >>> NEEDS TESTING
-def check_weights_positive(weights: XarrayLike, context: str):
-    """
-    This is a semi-strict check that requires weights to be non-negative, and their (vector) norm
-    to be non-zero. It alerts the user against unexpected cancellations and sign flips, from
-    introduction of negative weights, as this affects how some scores are interpretted.
-
-    Args:
-        weights: xarray-like data of weights to check
-        context: additional information for the warning message e.g.
-            metric info and metric-specific reason for raising this warning.
-
-    .. important::
-        - This should not be in the public API/docs.
-        - This check should be opt-in - i.e. only use this check if you know that the score cannot
-          deal with negative weights.
-        - NaN values are excluded in this check.
-        - This check covers common issues, but is not a strict check (see notes below).
-
-    .. note::
-        Future work: a stricter version of this check could be introduced to support:
-        - user-defined normalisation that checks that :math:`\\lVert \\text{weights} \\rVert = K`,
-          where, :math:`K = 1` and l1-norm or l2-norm are common choices.
-        - ``reduce_dims`` to run the check individually against each dimension being reduced, since
-          they are accumulated seperately.
-    """
-    # ignore nans for this check
-    weights_masked = np.ma.array(weights, mask=np.isnan(weights))
-    # at least one weight should be strictly positive, rest must be non-negative.
-    checks_passed = np.ma.all(weights_masked >= 0) and np.ma.any(weights_masked > 0)
-    if not checks_passed:
-        raise UserWarning(
-            "Negative weights are not supported for this metric. "
-            "All weights (excluding NaNs) must be >= 0, with at least one strictly positive weight."
-        ).add_note(context)
-
-def test_check_weights_positive():
-    """
-    TODO: complete docs
-
-    Cases:
-    - conformant weights - at least one positive, rest can be >= 0
-    - any one weight negative - should raise warning
-    - all NaNs - should raise warning
-    - all zeros - should raise warning
-    - implicitly test "context" by setting appropriate context message for the above cases
-    - check various data dimensions 1-D, 2-D, 3-D
-    """
-    pass
-
-# <<< NEEDS TESTING
-
-# >>> REFACTOR
 # -------------------------------------------------------------------------------------------------
-# TODO
-# - fix tests due to added support for hashables and other refactoring
-# - move adhoc tests to tests folder
-# - fixup doctest
+# --- FIXME: refactor into utils ---
 # -------------------------------------------------------------------------------------------------
-def merge_dim_names(*clns: Unpack[DimNameCollection]) -> list[DimName]:
+
+def merge_dim_names(*clns: Unpack[tuple[DimNameCollection]]) -> list[DimName]:
     """
     Merge collections of dimension names. Removes any duplicates and flattens to a single list.
     Takes any number of arguments (variadic).
@@ -228,7 +169,99 @@ def merge_dim_names(*clns: Unpack[DimNameCollection]) -> list[DimName]:
     # cast back to list since it has broader compatibility
     return list(dim_set)
 
-# --- TEST ---
+def check_weights_positive(weights: XarrayLike, *, context: str):
+    """
+    This is a semi-strict check that requires weights to be non-negative, and their (vector) norm
+    to be non-zero. It alerts the user against unexpected cancellations and sign flips, from
+    introduction of negative weights, as this affects how some scores are interpretted.
+
+    Args:
+        weights: xarray-like data of weights to check
+        context: additional information for the warning message e.g.
+            metric info and metric-specific reason for raising this warning.
+
+    .. important::
+        - This should not be in the public API/docs.
+        - This check should be opt-in - i.e. only use this check if you know that the score cannot
+          deal with negative weights.
+        - NaN values are excluded in this check.
+        - This check covers common issues, but is not a strict check (see notes below).
+
+    .. note::
+        Future work: a stricter version of this check could be introduced to support:
+        - user-defined normalisation that checks that :math:`\\lVert \\text{weights} \\rVert = K`,
+          where, :math:`K = 1` and l1-norm or l2-norm are common choices.
+        - ``reduce_dims`` to run the check individually against each dimension being reduced, since
+          they are accumulated seperately.
+    """
+    # ignore nans as they may be used as natural exclusion masks in weighted calculations.
+    weights_masked = np.ma.array(weights, mask=np.isnan(weights))
+    # however, still check that we have at least one proper number.
+    checks_passed = np.any(~np.isnan(weights))
+    # the rest (non-NaN) should all be non-negative ...
+    checks_passed = checks_passed and np.ma.all(weights_masked >= 0)
+    # ... and at least one number must be strictly positive.
+    checks_passed = checks_passed and np.ma.any(weights_masked > 0)
+
+    if not checks_passed:
+        _warning = UserWarning(
+            "Negative weights are not supported for this metric. "
+            "All weights (excluding NaNs) must be >= 0, with at least one strictly positive weight."
+            f"Context = '{context}'"
+        )
+        warnings.warn(_warning)
+
+# -------------------------------------------------------------------------------------------------
+# --- FIXME: refactor into tests ---
+# -------------------------------------------------------------------------------------------------
+
+# TODO: parameterize
+def test_check_weights_positive():
+    """
+    Tests :py:func:`scores.utils.check_weights_positive`.
+
+    Cases:
+    - conformant weights - at least one positive, rest can be >= 0
+    - any one weight negative - should raise warning
+    - all NaNs - should raise warning
+    - all zeros - should raise warning
+    - implicitly test "context" by setting appropriate context message for the above cases
+    """
+    def _check_weights_positive_assert_no_warning(_w):
+        threw_warning = False
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            try:
+                check_weights_positive(_w, context="THIS SHOULD NOT BE RAISED!")
+            except Warning:
+                threw_warning = True
+        assert (not threw_warning)
+
+    def __expect_warning(_t: DimNameCollection, _c: str):
+        with pytest.warns(UserWarning, match=r"Negative weights.*{}".format(_c)):
+            check_weights_positive(_t, context=_c)
+
+    _check_weights_positive_assert_no_warning(np.array([1.0, 0.0, 0.1]))
+    # catching np.inf is not the responsibility of this function, ...
+    _check_weights_positive_assert_no_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, np.inf]]))
+    # ... neither is np.nan - which is ignored.
+    _check_weights_positive_assert_no_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, np.nan]]))
+
+    # --- the rest of these should throw warnings ---
+
+    # However inputs with all nans should warn, ...
+    __expect_warning(np.array([[np.nan, np.nan], [np.nan, np.nan]]), "ba-nananana!")
+    # ... and negative infinity is not allowed.
+    __expect_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, -np.inf]]), "negative infinity!")
+    # In fact any negative number is should fail the check, ...
+    __expect_warning(np.array([-1e-7, 0.0, 0.0, 1.0]), "negative any")
+    # ... even if all of them are negative, and theoretically can be flipped to be conformant,
+    # it is not the responsibility of this function to do so.
+    __expect_warning(np.array([-1.0, -0.1]), "negative all")
+    # also the above would have implicitly tested that "context" works as expected.
+
+
+# TODO: parameterize
 def test__is_dim_name_cln():
     """
     TODO: complete docs
@@ -246,8 +279,13 @@ def test__is_dim_name_cln():
     # too much nesting
     assert _is_dim_name_cln(["a", "b", ["a", "b"]]) == False
 
+
+# TODO: parameterize
 def test_merge_dim_names():
-    def _expect_error(*x: Unpack[DimNameCollection], bad_entry: str=""):
+    """
+    TODO: docstring
+    """
+    def _expect_error(*x: Unpack[tuple[DimNameCollection]], bad_entry: str=""):
         with pytest.raises(TypeError, match=r"Invalid type.*{}".format(bad_entry)):
             merge_dim_names(*x)
 
@@ -278,6 +316,8 @@ def test_merge_dim_names():
         bad_entry=["this should", ["fail"]]
     )
 
+# TODO: parameterize
+# TODO: write tests
 def test__dim_name_cln_to_list():
     """
     Tests :py:func:`scores.typing._dim_name_cln_to_list`.
@@ -293,7 +333,9 @@ def test__dim_name_cln_to_list():
 
     Also partially tests :py:func:`scores.typing._check_dim_name_cln`.
     """
+    pass
 
+# TODO: parameterize
 def test__check_dim_name_cln():
     """
     Tests :py:func:`scores.typing._check_dim_name_cln`.
@@ -306,7 +348,7 @@ def test__check_dim_name_cln():
     Also covers :py:func:`scores.typing._is_dim_name_collection`.
     """
     def __expect_error(_t: DimNameCollection):
-        with pytest.raises(TypeError, match=r"Invalid type.*{}".format(_t)):
+        with pytest.raises(TypeError, match=r"Invalid type.*{}".format(re.escape(str(_t)))):
             _check_dim_name_cln(_t)
 
     def __expect_no_error_no_warn(_t: DimNameCollection):
@@ -317,7 +359,7 @@ def test__check_dim_name_cln():
         return True
 
     def __expect_ambg_warning(_t: DimNameCollection):
-        with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(_t)):
+        with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(re.escape(str(_t)))):
             _check_dim_name_cln(_t)
 
     # error - wrong type - dicts are not hashable (but their entries are)
@@ -344,18 +386,4 @@ def test__check_dim_name_cln():
 
     # sucecss - integer
     __expect_no_error_no_warn(42)
-
-# TODO: remove - temporary testing
-if False:
-    test__dim_name_cln_to_list()
-    print("RUN: test__dim_name_cln_to_list")
-    test__check_dim_name_cln()
-    print("RUN: test__check_dim_name_cln")
-    test_merge_dim_names()
-    print("RUN: test_merge_dim_names")
-    test__is_dim_name_cln()
-    print("RUN: test__is_dim_name_cln")
-    test__is_dim_name_cln()
-
-# <<< REFACTOR
 
