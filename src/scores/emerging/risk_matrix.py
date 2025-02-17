@@ -105,7 +105,7 @@ def risk_matrix_score(
 
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
-          with consistent evaluation. https://doi.org/10.48550/arXiv.2502.08891
+          with consistent evaluation. arXiv. https://doi.org/10.48550/arXiv.2502.08891
 
     See also:
         :py:func:`scores.emerging.matrix_weights_to_array`
@@ -300,7 +300,7 @@ def matrix_weights_to_array(
 
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
-          with consistent evaluation. https://doi.org/10.48550/arXiv.2502.08891
+          with consistent evaluation. arXiv. https://doi.org/10.48550/arXiv.2502.08891
 
     Examples:
         Returns weights for each risk matrix decision point, where weights increase with increasing
@@ -398,7 +398,7 @@ def weights_from_warning_scaling(
 
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
-          with consistent evaluation. https://doi.org/10.48550/arXiv.2502.08891
+          with consistent evaluation. arXiv. https://doi.org/10.48550/arXiv.2502.08891
 
     Examples:
         Returns weights for each risk matrix decision point, for the SHORT-RANGE scaling matrix of
