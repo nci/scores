@@ -6,8 +6,8 @@ import scores.continuous.mse
 import weakref
 import functools
 
-from scores.typing import override, DimName, DimNameCollection, XarrayLike
-from scores.utils import check_weights_positive
+from scores.typing import override, DimName, DimNameCollection, XarrayLike, check_dimnamecollection, dimnamecollection_to_list
+from scores.utils import gather_dimensions, check_weights_positive
 
 
 ERROR_SCORE_DIRECT_INIT_DISALLOWED: str = """
@@ -42,7 +42,6 @@ class NseUtils:
     ) -> list[DimName]:
         # check weights conform to NSE computations
         NseUtils.check_weights(weights)
-
         # perform default gather dimensions
         gathered_dims: set[Hashable] = scores.utils.gather_dimensions(
             obs_dims,
@@ -51,17 +50,22 @@ class NseUtils:
             reduce_dims,
             preserve_dims,
         )
-
-        # cast to list for compatiblity with DimNamesCollection
-        gathered_dims: list[DimName] = list(gathered_dims)
-
+        # check result has at least one reducable dimension - required to calculate obs variance
         NseUtils.check_gathered_dims(gathered_dims)
-
-        return gathered_dims
+        ret_dims: list[DimName] = dimnamecollection_to_list(gathered_dims)
+        return ret_dims
 
     @staticmethod
     def check_weights(weights: XarrayLike) -> None:
-        scores.utils.check_weights_positive(weights, msg="`NSE` must have positive weights.")
+        check_weights_positive(weights, msg="`NSE` must have positive weights.")
+
+    @staticmethod
+    def check_nonzero_obsvar(obs_var: XarrayLike) -> None:
+        """
+        Warns if at least one obs variance term is zero.
+        """
+        if np.any(obs_var == 0):
+            raise NotImplementedError("TODO")  # TODO: raise warning
 
     @staticmethod
     def check_gathered_dims(gathered_dims: DimNameCollection):
@@ -69,13 +73,13 @@ class NseUtils:
         Currently, NSE only supports a single time dimension per call. Other dimensions can still be
         reduced by manually specifying `reduce_dims` or `preserve_dims`.
         """
-        scores.typing.check_dimnamecollection(gathered_dims)
-        gathered_dims = scores.typing.dimnamecollection_to_list(gathered_dims)
+        check_dimnamecollection(gathered_dims)
+        gathered_dims = dimnamecollection_to_list(gathered_dims)
         if len(gathered_dims) == 0:
             raise NotImplementedError("TODO")  # TODO: raise error
         if no_gathered_dim_has_more_than_1_datum:  # requires finding len of each gathered dim
             raise NotImplementedError("TODO")  # TODO: raise error
-            
+
 
 @dataclass
 class NseScoreBuilder:
@@ -116,8 +120,9 @@ class NseScoreBuilder:
             builder=weakref.ref(self),
             fcst=fcst,
             obs=obs,
-            weights=weights,
             reduce_dims=reduce_dims,
+            weights=weights,
+            is_angular=is_angular,
         )
 
         self.score = weakref.ref(score)
@@ -155,26 +160,33 @@ class NseScore:
     builder: NseScoreBuilder
     obs: XarrayLike
     fcst: XarrayLike
+    reduce_dims: DimNameCollection
     weights: XarrayLike
-    reduce_dims: XarrayLike
+    is_angular: bool = False
 
-    def __post_init__(ref_builder: NseScoreBuilder):
+    def __post_init__(ref_builder: NseScoreBuilder) -> None:
         if ref_builder is None or ref_builder() is None:
             raise RuntimeError(ERROR_SCORE_DIRECT_INIT_DISALLOWED)
 
-    def calculate(self) -> ...:
-        obs_var = self.calculate_obs_variance()
-        fct_err = self.calculate_forecast_error()
+    def calculate(self) -> XarrayLike:
+        obs_var: XarrayLike = self.calculate_obs_variance()
+        fcst_err: XarrayLike = self.calculate_forecast_error()
+        nse: XarrayLike | None = None
 
-        NseUtils.check_nonzero_obsvar(...)
+        NseUtils.check_nonzero_obsvar(obs_var)
 
-        # Divide by zero warning already should be checked by NseUtils.check_nonzero_obsvar set
-        # divide="ignore". `numpy` will fill divide by zero elements with NaNs.
+        # intentional divide="ignore", as warning is already raised above.
+        # `numpy` will fill divide by zero elements with NaNs.
         with np.errstate(divide="ignore"):
-            # self.fcst_error: XarrayLike, self.obs_variance: XarrayLike
-            nse: XarrayLike = 1.0 - (self.fcst_error / self.obs_variance)
-            return nse
-        
+            nse = 1.0 - (fcst_err / obs_var)
+
+        # explicit checking and casting
+        NseUtils.check_nse_type(nse)
+        NseUtils.verify_nse_structure(nse)
+        cast(nse, XarrayLike)
+
+        return nse
+
     def mse_callback(self) -> Callable[..., XarrayLike]:
         return functools.partial(
             mse,
@@ -184,11 +196,16 @@ class NseScore:
         )
 
     def calculate_forecast_error(self) -> ...:
-        return self.mse_callback(self.fcst, self.obs)
+        mse_cb: Callable[..., XarrayLike] = self.mse_callback()
+        fcst_err: XarrayLike = mse_cb(self.fcst, self.obs)
+
+        return fcst_err
 
     def calculate_obs_variance(self) -> ...:
-        # check that reduce_dims is within
+        mse_cb: Callable[..., XarrayLike] = self.mse_callback()
         utils.check_dims(self.obs, self.reduce_dims, "superset")
-        # self.obs_mean : XarrayLike
-        obs_mean = self.obs.mean(dims=self.reduce_dims)
-        return self.mse_callback(obs_mean, self.obs)
+
+        obs_mean: XarrayLike = self.obs.mean(dims=self.reduce_dims)
+        obs_var: XarrayLike = mse_cb(obs_mean, self.obs)
+
+        return obs_var
