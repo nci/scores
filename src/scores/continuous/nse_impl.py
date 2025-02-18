@@ -93,29 +93,6 @@ class NseUtils:
 
 
 @dataclass
-class GatherDims:
-    _: KW_ONLY
-    obs: CheckableObs
-    fcst: CheckableFcst
-    weights: CheckableWeights
-    reduce_dims: CheckableReduceDims
-
-    def gather():
-        raise NotImplementedError("TODO")
-
-
-class CheckableNseObs(Checkable):
-    pass
-
-
-class CheckableNseInputs(Checkable):
-    pass
-
-
-CheckableObs()
-
-
-@dataclass
 class NseScoreBuilder:
     """
     Internal namespace that builds the `NseScore` object which is used to compute the NSE score.
@@ -158,13 +135,6 @@ class NseScoreBuilder:
         self.score = weakref.ref(score)
 
         return score
-
-    def make_mse_callback(self) -> Callable[..., XarrayLike]:
-        """
-        returns a helper function that performs `mse` for a given fcst and obs, with all
-        other arguments automatically filled based on inputs to this class
-        """
-        pass
 
 
 # fields can only be set once
