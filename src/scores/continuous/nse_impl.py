@@ -6,7 +6,7 @@ import scores.continuous.mse
 import weakref
 import functools
 
-from scores.typing import override, DimName, DimNameCollection, XarrayLike, check_dimnamecollection, dimnamecollection_to_list
+from scores.typing import override, DimName, DimNameCollection, XarrayLike, check_dimnamecollection, dimnames_to_list
 from scores.utils import gather_dimensions, check_weights_positive
 
 
@@ -51,8 +51,7 @@ class NseUtils:
             preserve_dims,
         )
         # check result has at least one reducable dimension - required to calculate obs variance
-        NseUtils.check_gathered_dims(gathered_dims)
-        ret_dims: list[DimName] = dimnamecollection_to_list(gathered_dims)
+        ret_dims: list[DimName] = NseUtils.gathered_dims_to_list(gathered_dims)
         return ret_dims
 
     @staticmethod
@@ -68,17 +67,24 @@ class NseUtils:
             raise NotImplementedError("TODO")  # TODO: raise warning
 
     @staticmethod
-    def check_gathered_dims(gathered_dims: DimNameCollection):
+    def check_gathered_dims(gathered_dims: DimNameCollection, dim_sizes: Mapping[DimName, int]) -> list[DimNames]:
+        if len(gathered_dims) == 0:
+            raise NotImplementedError("TODO")  # TODO: raise error
+
+        # TODO: use dim_sizes to figure out if gathered dims would do a useful reduction
+
+        if no_gathered_dim_has_more_than_1_datum:  # requires finding len of each gathered dim
+            raise NotImplementedError("TODO")  # TODO: raise error
+
+    @staticmethod
+    def gathered_dims_to_list(gathered_dims: DimNameCollection) -> list[DimNames]:
         """
         Currently, NSE only supports a single time dimension per call. Other dimensions can still be
         reduced by manually specifying `reduce_dims` or `preserve_dims`.
         """
-        check_dimnamecollection(gathered_dims)
-        gathered_dims = dimnamecollection_to_list(gathered_dims)
-        if len(gathered_dims) == 0:
-            raise NotImplementedError("TODO")  # TODO: raise error
-        if no_gathered_dim_has_more_than_1_datum:  # requires finding len of each gathered dim
-            raise NotImplementedError("TODO")  # TODO: raise error
+        gathered_dims = dimnames_to_list(gathered_dims)
+        NseUtils.check_gathered_dims()
+        return gathered_dims
 
 
 @dataclass
