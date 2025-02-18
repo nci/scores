@@ -32,18 +32,28 @@ DimNameCollection: TypeAlias = Union[DimName, Iterable[DimName]]
 
 
 # Type error message for `DimNameCollection`
-__unfmt_err_dimnamecln: str = r"""
+# Do not use this directly - use `_str_error_dimnamecollection_wrongtype` instead
+ERROR_DIMNAMECOLLECTION_WRONGTYPE: str = r"""
 Invalid type for dimension name collection: {_type}. `DimensionNameCollection` must be either a
 `Hashable` (e.g. `str`) or an `Iterable` of `Hashable`s e.g. `list[str]`.
 """
-ERROR_DIMNAMECOLLECTION: Callable[..., str] = lambda t: __unfmt_err_dimnamecln.format(_type=t)
+
+
+def _str_error_dimnamecollection_wrongtype(input_type: str):
+    return WARN_AMBIGUOUS_DIMNAME_COLLECTION.format(_type=input_type)
+
 
 # Warning for ambiguous `DimNameCollection`.
-__unfmt_warn_dimnamecln: str = r"""
+# Do not use this directly - use `_str_warn_dimnamecollection_ambiguoustype` instead
+WARN_DIMNAMECOLLECTION_AMBIGUOUSTYPE: str = r"""
 Ambiguous `DimNameCollection`. input: {_type} is `Iterable` AND `Hashable`. `Hashable` takes priority.
 If you intended to provide an `Iterable`, consider using a non-hashable collection like a `list`.
 """
-WARN_AMBIGUOUS_DIMNAMECOLLECTION: Callable[..., str] = lambda t: __unfmt_warn_dimnamecln.format(_type=t)
+
+
+def _str_warn_ambiguous_dimname_collection(input_type: str):
+    return WARN_DIMNAMECOLLECTION_AMBIGUOUSTYPE.format(_type=input_type)
+
 
 # TODO: <PACEHOLDER: insert #issue>: Implement similar functionality to `dim_name_collection`
 # for other types, to ensure consistent API for typechecking for internal methods.
@@ -61,7 +71,9 @@ def _check_dim_name_cln(t: Any) -> None:
         :py:class:`TypeError`: if type check fails.
     """
     if not _is_dim_name_cln(t):
-        raise TypeError(ERROR_DIMNAMECOLLECTION(t))
+        msg = _str_error_dimnamecollection_wrongtype(t)
+        raise TypeError(msg)
+
 
 def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
     """
@@ -80,7 +92,8 @@ def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
 
     # if its iterable and is hashable (but its not a string), then its ambiguous.
     if not isinstance(t, str) and (is_name(t) and is_iterable(t)):
-        warnings.warn(WARN_AMBIGUOUS_DIMNAMECOLLECTION(t), UserWarning)
+        msg = _str_warn_ambiguous_dimname_collection(t)
+        warnings.warn(msg, UserWarning)
 
     # `is_name` takes priority otherwise tuples will never get hashed properly.
     return is_name(t) or (is_iterable(t) and are_all_names(t))
@@ -123,9 +136,11 @@ def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
 
     return ret
 
+
 # -------------------------------------------------------------------------------------------------
 # --- FIXME: refactor into utils ---
 # -------------------------------------------------------------------------------------------------
+
 
 def merge_dim_names(*clns: Unpack[tuple[DimNameCollection]]) -> list[DimName]:
     """
@@ -169,6 +184,7 @@ def merge_dim_names(*clns: Unpack[tuple[DimNameCollection]]) -> list[DimName]:
     # cast back to list since it has broader compatibility
     return list(dim_set)
 
+
 def check_weights_positive(weights: XarrayLike, *, context: str):
     """
     This is a semi-strict check that requires weights to be non-negative, and their (vector) norm
@@ -211,9 +227,11 @@ def check_weights_positive(weights: XarrayLike, *, context: str):
         )
         warnings.warn(_warning)
 
+
 # -------------------------------------------------------------------------------------------------
 # --- FIXME: refactor into tests ---
 # -------------------------------------------------------------------------------------------------
+
 
 # TODO: parameterize
 def test_check_weights_positive():
@@ -227,6 +245,7 @@ def test_check_weights_positive():
     - all zeros - should raise warning
     - implicitly test "context" by setting appropriate context message for the above cases
     """
+
     def _check_weights_positive_assert_no_warning(_w):
         threw_warning = False
         with warnings.catch_warnings():
@@ -235,7 +254,7 @@ def test_check_weights_positive():
                 check_weights_positive(_w, context="THIS SHOULD NOT BE RAISED!")
             except Warning:
                 threw_warning = True
-        assert (not threw_warning)
+        assert not threw_warning
 
     def __expect_warning(_t: DimNameCollection, _c: str):
         with pytest.warns(UserWarning, match=r"Negative weights.*{}".format(_c)):
@@ -285,7 +304,8 @@ def test_merge_dim_names():
     """
     TODO: docstring
     """
-    def _expect_error(*x: Unpack[tuple[DimNameCollection]], bad_entry: str=""):
+
+    def _expect_error(*x: Unpack[tuple[DimNameCollection]], bad_entry: str = ""):
         with pytest.raises(TypeError, match=r"Invalid type.*{}".format(bad_entry)):
             merge_dim_names(*x)
 
@@ -301,20 +321,16 @@ def test_merge_dim_names():
     # make sure no dupes
     _unord_assert(
         merge_dim_names("mushroom", ["badger", "mushroom", "mushroom"], "badger", ["badger", "badger", "mushroom"]),
-        ["badger", "mushroom"]
+        ["badger", "mushroom"],
     )
     # kitchen sink
     _unord_assert(merge_dim_names("a", ["a", "b", "c"], ["d", "b"], [], "b"), ["a", "b", "c", "d"])
 
     # too much depth in collection. Should only accept depth = 0 (str) or depth = 1 (list[str]).
     _expect_error(
-        ["this", "is", "okay"],
-        "so",
-        "is",
-        "this",
-        ["this should", ["fail"]],
-        bad_entry=["this should", ["fail"]]
+        ["this", "is", "okay"], "so", "is", "this", ["this should", ["fail"]], bad_entry=["this should", ["fail"]]
     )
+
 
 # TODO: parameterize
 # TODO: write tests
@@ -333,7 +349,16 @@ def test__dim_name_cln_to_list():
 
     Also partially tests :py:func:`scores.typing._check_dim_name_cln`.
     """
-    pass
+    assert _dim_name_cln_to_list("x") == ["x"]
+    # numbers are also hashable
+    assert _dim_name_cln_to_list(4) == [4]
+    # tuples are hashable but will raise a warning due to ambiguity
+    _t = ("a", 1)
+    with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(re.escape(str(_t)))):
+        assert _dim_name_cln_to_list(_t) == [_t]
+    # no effect on something that is already an iterable
+    assert _dim_name_cln_to_list(["x", "y", "z"]) == ["x", "y", "z"]
+
 
 # TODO: parameterize
 def test__check_dim_name_cln():
@@ -347,43 +372,43 @@ def test__check_dim_name_cln():
 
     Also covers :py:func:`scores.typing._is_dim_name_collection`.
     """
-    def __expect_error(_t: DimNameCollection):
+
+    def _expect_error(_t: DimNameCollection):
         with pytest.raises(TypeError, match=r"Invalid type.*{}".format(re.escape(str(_t)))):
             _check_dim_name_cln(_t)
 
-    def __expect_no_error_no_warn(_t: DimNameCollection):
+    def _expect_no_error_no_warn(_t: DimNameCollection):
         try:
             _check_dim_name_cln(_t)
         except Exception:
             return False
         return True
 
-    def __expect_ambg_warning(_t: DimNameCollection):
+    def _expect_ambg_warning(_t: DimNameCollection):
         with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(re.escape(str(_t)))):
             _check_dim_name_cln(_t)
 
     # error - wrong type - dicts are not hashable (but their entries are)
-    __expect_error([{ "x": 1, "y": 2 }])
+    _expect_error([{"x": 1, "y": 2}])
 
     # error - nested types
-    __expect_error([["potato", "tapioca"]])
-    __expect_error(["a", ["b", "c", ["d"]]])
+    _expect_error([["potato", "tapioca"]])
+    _expect_error(["a", ["b", "c", ["d"]]])
 
     # warning - ambiguous type - tuple
-    __expect_ambg_warning((1, 2, 3, 4))
+    _expect_ambg_warning((1, 2, 3, 4))
 
     # success - list of integers
-    __expect_no_error_no_warn([1, 2, 3, 4])
+    _expect_no_error_no_warn([1, 2, 3, 4])
 
     # success - mixed hashes is allowed
-    __expect_no_error_no_warn(["1", 2, "3", 4])
+    _expect_no_error_no_warn(["1", 2, "3", 4])
 
     # success - set of strings
-    __expect_no_error_no_warn(set(["a", "b", "c", "d"]))
+    _expect_no_error_no_warn(set(["a", "b", "c", "d"]))
 
     # success - string
-    __expect_no_error_no_warn("potato")
+    _expect_no_error_no_warn("potato")
 
     # sucecss - integer
-    __expect_no_error_no_warn(42)
-
+    _expect_no_error_no_warn(42)

@@ -3,11 +3,20 @@ This module contains various compound or union types which can be used across th
 a consistent approach to typing is handled.
 """
 
+import functools
+
 from collections.abc import Hashable, Iterable
 from typing import Any, TypeAlias, TypeGuard, Union, cast
 
 import pandas as pd
 import xarray
+
+try:
+    # checks that override function signature matches
+    from typing import override
+except ImportError:
+    # does nothing
+    override = lambda _f: _f  # type: ignore - identity composition
 
 # Dimension name. `xarray` recommends `str` for dimension names, however, it doesn't impose
 # restrictions on generic hashables, so we also need to support hashables.
