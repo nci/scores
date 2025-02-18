@@ -767,15 +767,18 @@
     - Risk Matrix Score
   - [API](api.md#scores.emerging.risk_matrix_score)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
-  - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+  - [Taggart and Wilke (2025)](https://doi.org/10.48550/arXiv.2502.08891)
+
 * -  
     - Risk Matrix Score - Matrix Weights to Array
   - [API](api.md#scores.emerging.matrix_weights_to_array)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
-  - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+  - [Taggart and Wilke (2025)](https://doi.org/10.48550/arXiv.2502.08891)
+
 * -  
     - Risk Matrix Score - Warning Scaling to Weight Array
   - [API](api.md#scores.emerging.weights_from_warning_scaling)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
-  - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+  - [Taggart and Wilke (2025)](https://doi.org/10.48550/arXiv.2502.08891)
+
 ```
