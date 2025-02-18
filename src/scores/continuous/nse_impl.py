@@ -6,7 +6,8 @@ import scores.continuous.mse
 import weakref
 import functools
 
-from scores.typing import override
+from scores.typing import override, DimName, DimNameCollection, XarrayLike
+from scores.utils import check_weights_positive
 
 
 ERROR_SCORE_DIRECT_INIT_DISALLOWED: str = """
@@ -20,35 +21,10 @@ rebuilding, to avoid data bloat. This is not a user error - if it has been trigg
 issue in github.
 """
 
-
-@dataclass
-class Checkable:
-    """
-    Base class to dictatke if an input is checked or not
-    """
-
-    def __post_init__(self):
-        self.check()
-
-    def check():
-        # default: do nothing - force checked
-        self.checked = True
-
-
-@dataclass
-class CheckableWeights(Checkable):
-    _: KW_ONLY
-    weights: weakref.ref
-
-    @override
-    def check():
-        check_weights_positive(self.unwrap(), context="NSE requires positive weights.")
-
-
-@dataclass
-class CheckableFcst(Checkable):
-    # `gather_dimensions handles forecast checks`
-    pass
+WARN_TIME_DIMENSION_REQUIRED: str = """
+NSE is usually reduced along the time dimension. This is required, otherwise, the variance of the
+observations cannot be computed.
+"""
 
 
 class NseUtils:
@@ -57,40 +33,49 @@ class NseUtils:
     """
 
     @staticmethod
-    def gather_dimensions() -> DimCollection:
+    def check_and_gather_dimensions(
+        obs: DimNamesCollection,
+        fcst: DimNamesCollection,
+        weights: DimNamesCollection | None,
+        reduce_dims: DimNamesCollection | None,
+        preserve_dims: DimNamesCollection | None,
+    ) -> list[DimName]:
+        # check weights conform to NSE computations
+        NseUtils.check_weights(weights)
+
         # perform default gather dimensions
-        ret_dims = scores.utils.gather_dimensions(
-            obs,
-            fcst,
-            weights,
+        gathered_dims: set[Hashable] = scores.utils.gather_dimensions(
+            obs_dims,
+            fcst_dims,
+            weights_dims,
             reduce_dims,
             preserve_dims,
         )
 
-        # perform additional check to ensure that `time_dim` is present in all datasets
-        for xr_data in [obs, fcst, weights]:
-            # `.sizes` is consistent between datasets and dataarrays
-            if "time_dim" not in xr_data.sizes.keys():
-                raise NotImplementedError("TODO")
+        # cast to list for compatiblity with DimNamesCollection
+        gathered_dims: list[DimName] = list(gathered_dims)
 
-        # perform additional check to ensure that `time_dim` is present in the result
-        if ret_dims is None or len(ret_dims) == 0:
-            raise NotImplementedError("TODO")
+        NseUtils.check_gathered_dims(gathered_dims)
+
+        return gathered_dims
 
     @staticmethod
-    def check_weights():
-        pass
+    def check_weights(weights: XarrayLike) -> None:
+        scores.utils.check_weights_positive(weights, msg="`NSE` must have positive weights.")
 
     @staticmethod
-    def prepare_dims_from_input(
-        preserve_dims: DimCollection,
-        reduce_dims: DimCollection,
-        time_dim: DimCollection,
-    ):
-        NseUtils.gather_dimensions(obs, fcst, weights, reduce_dims, time_dim)
-        if preserve_dims == "any":
-            ValueError("'any' is not supported for `preserve_dims` use `reduce_dims` instead")
-
+    def check_gathered_dims(gathered_dims: DimNameCollection):
+        """
+        Currently, NSE only supports a single time dimension per call. Other dimensions can still be
+        reduced by manually specifying `reduce_dims` or `preserve_dims`.
+        """
+        scores.typing.check_dimnamecollection(gathered_dims)
+        gathered_dims = scores.typing.dimnamecollection_to_list(gathered_dims)
+        if len(gathered_dims) == 0:
+            raise NotImplementedError("TODO")  # TODO: raise error
+        if no_gathered_dim_has_more_than_1_datum:  # requires finding len of each gathered dim
+            raise NotImplementedError("TODO")  # TODO: raise error
+            
 
 @dataclass
 class NseScoreBuilder:
@@ -111,6 +96,10 @@ class NseScoreBuilder:
         *,  # force KW_ONLY
         obs: ...,
         fcst: ...,
+        reduce_dims: ...,
+        preserve_dims: ...,
+        weights: ...,
+        is_angular: ...
     ):
         """
         Builds an `NseScore` object
@@ -118,18 +107,17 @@ class NseScoreBuilder:
         - stores a weak reference to the score.
         - cannot be run twice (unless the score object has been garbage collected).
         """
-
         if ref_score is not None and ref_score() is not None:
             raise RuntimeError(ERROR_SCORE_ALREADY_BUILT)
 
-        # --- perform checks here ---
+        reduce_dims = NseUtils.check_and_gather_dimensions(...)
 
-        # ---
         score = NseScore(
-            fcst=fcst_error,
-            obs_variance=obs_variance,
             builder=weakref.ref(self),
-            mse_cb=mse_cb,
+            fcst=fcst,
+            obs=obs,
+            weights=weights,
+            reduce_dims=reduce_dims,
         )
 
         self.score = weakref.ref(score)
@@ -170,6 +158,23 @@ class NseScore:
     weights: XarrayLike
     reduce_dims: XarrayLike
 
+    def __post_init__(ref_builder: NseScoreBuilder):
+        if ref_builder is None or ref_builder() is None:
+            raise RuntimeError(ERROR_SCORE_DIRECT_INIT_DISALLOWED)
+
+    def calculate(self) -> ...:
+        obs_var = self.calculate_obs_variance()
+        fct_err = self.calculate_forecast_error()
+
+        NseUtils.check_nonzero_obsvar(...)
+
+        # Divide by zero warning already should be checked by NseUtils.check_nonzero_obsvar set
+        # divide="ignore". `numpy` will fill divide by zero elements with NaNs.
+        with np.errstate(divide="ignore"):
+            # self.fcst_error: XarrayLike, self.obs_variance: XarrayLike
+            nse: XarrayLike = 1.0 - (self.fcst_error / self.obs_variance)
+            return nse
+        
     def mse_callback(self) -> Callable[..., XarrayLike]:
         return functools.partial(
             mse,
@@ -178,17 +183,12 @@ class NseScore:
             is_angular=self.is_angular,
         )
 
-    @static_method
     def calculate_forecast_error(self) -> ...:
-        raise NotImplementedError("TODO")
+        return self.mse_callback(self.fcst, self.obs)
 
-    @static_method
     def calculate_obs_variance(self) -> ...:
-        raise NotImplementedError("TODO")
-
-    def __post_init__(ref_builder: NseScoreBuilder):
-        # NOTE: dask can cause the following to be delayed
-        fcst_error = NseScore.calculate_forecast_error()
-        obs_variance = NseScore.calculate_obs_variance()
-        if ref_builder is None or ref_builder() is None:
-            raise RuntimeError(ERROR_SCORE_DIRECT_INIT_DISALLOWED)
+        # check that reduce_dims is within
+        utils.check_dims(self.obs, self.reduce_dims, "superset")
+        # self.obs_mean : XarrayLike
+        obs_mean = self.obs.mean(dims=self.reduce_dims)
+        return self.mse_callback(obs_mean, self.obs)

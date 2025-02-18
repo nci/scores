@@ -99,7 +99,7 @@ def _is_dim_name_cln(t: Any) -> TypeGuard[DimNameCollection]:
     return is_name(t) or (is_iterable(t) and are_all_names(t))
 
 
-def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
+def dimnamecollection_to_list(dim_cln: DimNameCollection | None) -> list[DimName]:
     """
     Standardizes ``DimNameCollection`` into a list of dimension names.
     - lifts a single ``DimName`` (e.g. str) to a list (e.g. list[str]).
@@ -115,6 +115,9 @@ def _dim_name_cln_to_list(dim_cln: DimNameCollection) -> list[DimName]:
     Raises:
         TypeError if input is not a ``DimNameCollection``
     """
+    if dim_cln is None:
+        return []
+
     # check input type is conformant
     _check_dim_name_cln(dim_cln)
     ret: list[DimName] | None = None
@@ -177,7 +180,7 @@ def merge_dim_names(*clns: Unpack[tuple[DimNameCollection]]) -> list[DimName]:
     # typehint makes this too long for lambda.
     def _unpack_to_set(_s: set[DimName], _cln: DimNameCollection) -> set[DimName]:
         # cast to set, for unique insertion
-        return _s | set(_dim_name_cln_to_list(_cln))
+        return _s | set(dimnamecollection_to_list(_cln))
 
     dim_set: set[DimName] = functools.reduce(_unpack_to_set, clns, set())
 
@@ -334,9 +337,9 @@ def test_merge_dim_names():
 
 # TODO: parameterize
 # TODO: write tests
-def test__dim_name_cln_to_list():
+def test_dimnamecollection_to_list():
     """
-    Tests :py:func:`scores.typing._dim_name_cln_to_list`.
+    Tests :py:func:`scores.typing.dimnamecollection_to_list`.
 
     Cases:
     - single Hashable
@@ -349,15 +352,15 @@ def test__dim_name_cln_to_list():
 
     Also partially tests :py:func:`scores.typing._check_dim_name_cln`.
     """
-    assert _dim_name_cln_to_list("x") == ["x"]
+    assert dimnamecollection_to_list("x") == ["x"]
     # numbers are also hashable
-    assert _dim_name_cln_to_list(4) == [4]
+    assert dimnamecollection_to_list(4) == [4]
     # tuples are hashable but will raise a warning due to ambiguity
     _t = ("a", 1)
     with pytest.warns(UserWarning, match=r"Ambiguous.*{}".format(re.escape(str(_t)))):
-        assert _dim_name_cln_to_list(_t) == [_t]
+        assert dimnamecollection_to_list(_t) == [_t]
     # no effect on something that is already an iterable
-    assert _dim_name_cln_to_list(["x", "y", "z"]) == ["x", "y", "z"]
+    assert dimnamecollection_to_list(["x", "y", "z"]) == ["x", "y", "z"]
 
 
 # TODO: parameterize
