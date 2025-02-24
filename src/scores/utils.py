@@ -5,23 +5,13 @@ Contains frequently-used functions of a general nature within scores
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union, Unpack
-
-import functools
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import (
-    DimName,
-    DimNameCollection,
-    FlexibleDimensionTypes,
-    XarrayLike,
-    _check_dim_name_cln,
-    _dim_name_cln_to_list,
-)
-
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -453,4 +443,50 @@ def check_binary(data: XarrayLike, name: str):
     if not set(unique_values).issubset(binary_set):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
-# --- FIXME: add back merge dim names from test/__TOBEDELETED_nse_refactor_test.py ---
+
+def check_weights_positive(weights: XarrayLike | None, *, context: str):
+    """
+    This is a semi-strict check that requires weights to be non-negative, and their (vector) norm
+    to be non-zero. It alerts the user against unexpected cancellations and sign flips, from
+    introduction of negative weights, as this affects how some scores are interpretted.
+
+    Args:
+        weights: xarray-like data of weights to check
+        context: additional information for the warning message e.g.
+            metric info and metric-specific reason for raising this warning.
+
+    .. important::
+        - This should not be in the public API/docs.
+        - This check should be opt-in - i.e. only use this check if you know that the score cannot
+          deal with negative weights.
+        - NaN values are excluded in this check.
+        - This check covers common issues, but is not a strict check (see notes below).
+
+    .. note::
+        Future work: a stricter version of this check could be introduced to support:
+        - user-defined normalisation that checks that :math:`\\lVert \\text{weights} \\rVert = K`,
+          where, :math:`K = 1` and l1-norm or l2-norm are common choices.
+        - ``reduce_dims`` to run the check individually against each dimension being reduced, since
+          they are accumulated seperately.
+    """
+    if weights is None:
+        return  # ignore None type
+
+    # explicit casting to XarrayLike
+    cast(weights, XarrayLike)
+    # ignore nans as they may be used as natural exclusion masks in weighted calculations.
+    weights_masked = np.ma.array(weights, mask=np.isnan(weights))
+    # however, still check that we have at least one proper number.
+    checks_passed = np.any(~np.isnan(weights))
+    # the rest (non-NaN) should all be non-negative ...
+    checks_passed = checks_passed and np.ma.all(weights_masked >= 0)
+    # ... and at least one number must be strictly positive.
+    checks_passed = checks_passed and np.ma.any(weights_masked > 0)
+
+    if not checks_passed:
+        _warning = UserWarning(
+            "Negative weights are not supported for this metric. "
+            "All weights (excluding NaNs) must be >= 0, with at least one strictly positive weight."
+            f"Context = '{context}'"
+        )
+        warnings.warn(_warning)

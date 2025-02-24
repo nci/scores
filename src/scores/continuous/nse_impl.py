@@ -2,13 +2,18 @@
 Internal module used to support the computation of NSE. Not to be used directly.
 """
 
-import scores.continuous.mse
-import weakref
+from dataclasses import dataclass, KW_ONLY
 import functools
-from typing import Unpack, Mapping, TypeAlias, Hashable
+import weakref
+import warnings
+from typing import Hashable, Mapping, TypeAlias, Unpack, Callable, assert_type
 
-from scores.typing import XarrayLike, FlexibleDimensionTypes
-from scores.utils import gather_dimensions, check_weights_positive
+import numpy as np
+import xarray as xr
+
+from scores.continuous import mse as scores_mse
+from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import check_weights_positive, gather_dimensions, check_dims
 
 
 class NseUtils:
@@ -64,14 +69,15 @@ class NseUtils:
         """
         # check weights conform to NSE computations
         NseUtils.check_weights(weights)
+        weights_dims = weights.dims if isinstance(weights, xr.Dataset) or isinstance(weights, xr.DataArray) else None
 
         # perform default gather dimensions
-        ret_dims: FlexibleDimensionTypes = scores.utils.gather_dimensions(
-            obs_dims,
-            fcst_dims,
-            weights_dims,
-            reduce_dims,
-            preserve_dims,
+        ret_dims: FlexibleDimensionTypes = gather_dimensions(
+            fcst_dims=fcst.dims,
+            obs_dims=obs.dims,
+            weights_dims=weights_dims,
+            reduce_dims=reduce_dims,
+            preserve_dims=preserve_dims,
         )
 
         merged_sizes: Mapping[Hashable, int] = NseUtils.merge_sizes(obs, fcst, weights)
@@ -82,22 +88,37 @@ class NseUtils:
         return ret_dims
 
     @staticmethod
+    def weights_dims(weights: XarrayLike | None) -> ...:
+        """
+        Helper to retrieve "dims" from optional weights
+
+        TODO: this should really go in utils, currently many functions in ``scores`` have their own
+              version of this check. see-also: issue #830
+        """
+        if weights is None:
+            return None
+        else:
+            assert_type(weights, XarrayLike)
+            return weights.dims
+
+    @staticmethod
     def merge_sizes(*xr_data: Unpack[tuple[XarrayLike]]) -> Mapping[Hashable, int]:
         """
         Merges the maps that contain the size (value) for each dimension (key) (key) in a given
         `XarrayLike` object.
+
+        TODO: this should be a general utility
         """
-        # TODO: this should be a general utility
-        ret_sizes = functools.reduce(lambda _acc, _x: _acc | _x,  xr_data)
+        ret_sizes: Mapping[Hashable, int] = functools.reduce(lambda _acc, _x: _acc | _x.sizes, xr_data, dict())
         return ret_sizes
 
     @staticmethod
-    def check_weights(weights: XarrayLike) -> None:
+    def check_weights(weights: XarrayLike | None) -> None:
         """
         Wrapper around :py:func:`~scores.utils.check_weights_positive`, with a context specific
         warning message.
         """
-        check_weights_positive(weights, msg="`NSE` must have positive weights.")
+        check_weights_positive(weights, context="`NSE` must have positive weights.")
 
     @staticmethod
     def check_nonzero_obsvar(obs_var: XarrayLike) -> None:
@@ -108,7 +129,7 @@ class NseUtils:
             warnings.warn(NseUtils.WARN_ZERO_OBS_VARIANCE)
 
     @staticmethod
-    def check_gathered_dims(gathered_dims: FlexibleDimensionsTypes, dim_sizes: Mapping[Hashable, int]) -> None:
+    def check_gathered_dims(gathered_dims: FlexibleDimensionTypes, dim_sizes: Mapping[Hashable, int]) -> None:
         """
         Checks that gathered dimensions has at least one entry (key or hash) AND at least one of the
         gathered dimensions has more than 1 data point.
@@ -131,7 +152,7 @@ class NseUtils:
             :py:meth:`xarray.DataArray.sizes`
         """
         # TODO: this should be a general utility
-        if len(gathered_dims) == 0:
+        if len(list(gathered_dims)) == 0:
             raise KeyError(NseUtils.ERROR_NO_DIMS_TO_REDUCE)
 
         dim_has_more_than_one_obs = any(dim_sizes[k] > 1 for k in gathered_dims)
@@ -159,8 +180,8 @@ class NseScoreBuilder:
         *,  # force KW_ONLY - note
         fcst: XarrayLike,
         obs: XarrayLike,
-        reduce_dims: FlexibleDimensionsTypes | None = None,
-        preserve_dims: FlexibleDimensionsTypes | None = None,
+        reduce_dims: FlexibleDimensionTypes | None = None,
+        preserve_dims: FlexibleDimensionTypes | None = None,
         weights: XarrayLike | None = None,
         is_angular: bool | None = False,
     ):
@@ -178,7 +199,7 @@ class NseScoreBuilder:
             `NseScore` isn't instantiated directly. If this error is raised, the user would be
             prompted to raise an issue.
         """
-        if ref_nsescorer is not None and self.ref_nsescorer() is not None:
+        if self.ref_nsescorer is not None and self.ref_nsescorer() is not None:
             raise RuntimeError(NseUtils.ERROR_SCORE_ALREADY_BUILT)
 
         reduce_dims = NseUtils.check_and_gather_dimensions(
@@ -190,7 +211,7 @@ class NseScoreBuilder:
         )
 
         ret_nsescorer = NseScore(
-            builder=weakref.ref(self),
+            builder=self,
             fcst=fcst,
             obs=obs,
             reduce_dims=reduce_dims,
@@ -198,7 +219,7 @@ class NseScoreBuilder:
             is_angular=is_angular,
         )
 
-        self.ref_nsescorer = weakref.ref(score)
+        self.ref_nsescorer = weakref.ref(ret_nsescorer)
 
         return ret_nsescorer
 
@@ -229,15 +250,15 @@ class NseScore:
     """
 
     _: KW_ONLY
-    #: ref to builder - to keep it in scope
-    builder: NseScoreBuilder
+    #: strong ref to builder - to keep it in scope
+    ref_builder: NseScoreBuilder
     obs: XarrayLike
     fcst: XarrayLike
-    reduce_dims: FlexibleDimensionsTypes | None
+    reduce_dims: FlexibleDimensionTypes | None
     weights: XarrayLike | None
     is_angular: bool = False
 
-    def __post_init__(ref_builder: NseScoreBuilder) -> None:
+    def __post_init__(self) -> None:
         """
         Checks referenced builder has not already initialised, otherwise raises a ``RuntimeError``.
 
@@ -247,7 +268,7 @@ class NseScore:
             `NseScore` isn't instantiated directly. If this error is raised, the user would be
             prompted to raise an issue.
         """
-        if ref_builder is None or ref_builder() is None:
+        if self.ref_builder is None:
             raise RuntimeError(NseUtils.ERROR_SCORE_DIRECT_INIT_DISALLOWED)
 
     def mse_callback(self) -> Callable[..., XarrayLike]:
@@ -255,7 +276,7 @@ class NseScore:
         Callback helper for calculating :py:func:`scores.mse`, with prefilled keyword args.
         """
         return functools.partial(
-            mse,
+            scores_mse,
             reduce_dims=self.reduce_dims,
             weights=self.weights,
             is_angular=self.is_angular,
@@ -279,7 +300,7 @@ class NseScore:
 
         # cast strictly to `XarrayLike` from an `Optional`
         assert isinstance(ret_nse, XarrayLike)  # nosec - for internal safety & tests only.
-        cast(ret_nse, XarrayLike)
+        assert_type(ret_nse, XarrayLike)
 
         return ret_nse
 
@@ -296,7 +317,7 @@ class NseScore:
         """
         Calculates the obs variance which is essentially ``scores.mse(obs_mean, obs)``.
         """
-        utils.check_dims(self.obs, self.reduce_dims, "superset")
+        check_dims(self.obs, self.reduce_dims, mode="superset")
 
         mse_cb: Callable[..., XarrayLike] = self.mse_callback()
         obs_mean: XarrayLike = self.obs.mean(dims=self.reduce_dims)

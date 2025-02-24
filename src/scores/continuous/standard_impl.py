@@ -569,10 +569,10 @@ def nse(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
-    reduce_dims: Optional[DimNameCollection] = None,
-    preserve_dims: Optional[DimNameCollection] = None,
-    weights: Optional[XarrayLike] = None,
-    is_angular: Optional[bool] = False,
+    reduce_dims: FlexibleDimensiontypes | None = None,
+    preserve_dims: FlexibleDimensiontypes | None = None,
+    weights: XarrayLike | None = None,
+    is_angular: bool | None = False,
 ) -> XarrayLike:
     """
     NOTE: Everything below this horizontal rule is a draft only
