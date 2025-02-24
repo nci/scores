@@ -374,32 +374,26 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     # Penalties for index i, j in the penalty matrix. Row i corresponds to the
     # forecast category while row j corresponds to the observation category
     # row 1 of the penalty matrix
-    penalty_12 = 1 / (1 - p1)
-    penalty_13 = (1 / p3) + (1 / (1 - p1))
-    # row 2 of the penalty matrix
-    penalty_21 = 1 / p1
-    penalty_23 = 1 / p3
-    # row 3 of the penalty matrix
-    penalty_31 = (1 / p1) + (1 / (1 - p3))
-    penalty_32 = 1 / (1 - p3)
+    penalties = {
+        (1, 2): 1 / (1 - p1),
+        (1, 3): (1 / p3) + (1 / (1 - p1)),
+        (2, 1): 1 / p1,
+        (2, 3): 1 / p3,
+        (3, 1): (1 / p1) + (1 / (1 - p3)),
+        (3, 2): 1 / (1 - p3),
+    }
 
-    # Get conditions for each category
-    fcst1_condition = fcst <= dry_light_threshold
-    fcst2_condition = (fcst > dry_light_threshold) & (fcst <= light_heavy_threshold)
-    fcst3_condition = fcst > light_heavy_threshold
+    # Classify fcst and obs into categories:
+    #   Category 1: dry weather
+    #   Category 2: light precipitaton
+    #   Category 3: heavy precipitaton
+    fcst_cat = xr.where(fcst <= dry_light_threshold, 1, xr.where(fcst <= light_heavy_threshold, 2, 3))
+    obs_cat = xr.where(obs <= dry_light_threshold, 1, xr.where(obs <= light_heavy_threshold, 2, 3))
 
-    obs1_condition = obs <= dry_light_threshold
-    obs2_condition = (obs > dry_light_threshold) & (obs <= light_heavy_threshold)
-    obs3_condition = obs > light_heavy_threshold
-
-    # Calculate the penalties
-    result = fcst.copy() * 0
-    result = result.where(~(fcst1_condition & obs2_condition), penalty_12.broadcast_like(result))
-    result = result.where(~(fcst1_condition & obs3_condition), penalty_13.broadcast_like(result))
-    result = result.where(~(fcst2_condition & obs1_condition), penalty_21.broadcast_like(result))
-    result = result.where(~(fcst2_condition & obs3_condition), penalty_23.broadcast_like(result))
-    result = result.where(~(fcst3_condition & obs1_condition), penalty_31.broadcast_like(result))
-    result = result.where(~(fcst3_condition & obs2_condition), penalty_32.broadcast_like(result))
+    result = xr.zeros_like(fcst)
+    for (f_cat, o_cat), pen in penalties.items():
+        mask = (fcst_cat == f_cat) & (obs_cat == o_cat)
+        result = result.where(~mask, pen)
 
     result = result / 2
     # return NaNs
