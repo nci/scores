@@ -12,6 +12,7 @@ from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
+import warnings
 
 
 def firm(  # pylint: disable=too-many-arguments
@@ -343,8 +344,8 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     Returns:
         An xarray DataArray containing the SEEPS score.
 
-    Raises:
-        ValueError: if any values in `p1` are outside the range (0, 1).
+    Warning:
+        This function raises a warning if any values in `p1` are outside the range (0, 1).
     
     References:
         Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010). 
@@ -363,7 +364,8 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         >>> seeps(fcst, obs, p1, light_heavy_threshold=light_heavy_threshold)
     """
     if p1.min() <= 0 or p1.max() >= 1:
-        raise ValueError("`p1` must have values between 0 and 1")
+        p1 = p1.where((p1 > 0) & (p1 < 1))
+        warnings.warn("`p1` has values outside (0,1). These values will be masked", UserWarning)
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     fcst, obs = broadcast_and_match_nan(fcst, obs)
