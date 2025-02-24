@@ -255,8 +255,8 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     *,  # Force keywords arguments to be keyword-only
     dry_light_threshold: Optional[float] = 0.2,
     mask_clim_extremes: Optional[bool] = True,
-    min_masked_value: Optional[float] = 0.1,
-    max_masked_value: Optional[float] = 0.85,
+    lower_masked_value: Optional[float] = 0.1,
+    upper_masked_value: Optional[float] = 0.85,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
@@ -268,10 +268,10 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     performance of a forecast across three categories:
 
     - Dry weather (e.g., less than or equal to 0.2mm),
-    - Light precipitation (the climatological lower two-thirds of rainfall above
-      the dry threshold),
-    - Heavy precipitation (the climatological upper one-third of rainfall above
-      the dry threshold).
+    - Light precipitation (the climatological lower two-thirds of 
+      rainfall conditioned on it raining),
+    - Heavy precipitation (the climatological upper one-third of rainfall 
+      conditioned on it raining).
 
     The SEEPS penalty matrix is defined as
 
@@ -287,36 +287,42 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
 
         
     where 
-        - :math:`p_1` is the climatological probability of the dry weather category
-        - :math:`p_3` is the climatological probability of the heavy precipitation category.
-        - The rows correspond to the forecast category (dry, light, heavy).
-        - The columns correspond to the observation category (dry, light, heavy).
+        - :math:`p_1` is the climatological probability of the dry weather category,
+        - :math:`p_3` is the climatological probability of the heavy precipitation category,
+        - The rows correspond to the forecast category (dry, light, heavy),
+        - The columns correspond to the observation category (dry, light, heavy),
+    
+    as defined in Eq 15 in Rodwell et al. (2010).
 
     Note that since :math:`p_2 = 2p_3` and :math:`p_1 + p_2 + p_3 = 1`, then :math:`p_3 = (1 - p_1) / 3`
     can be substituted into the penalty matrix. In this implementation, the user only provides
     :math:`p_1` and the function calculates :math:`p_3` internally. Additionally, this 
     implementation of the score is negatively oriented, meaning that lower scores are better. 
-    Sometimes in the literature, a SEEPS skill score is used, which is defined as 1 - SEEPS.
+    
+    Sometimes in the literature, a positively oriented versions of SEEPS is used,
+    which is defined as :math:`1 - \mathrm{SEEPS}`.
 
     By default, the scores are only calculated for points where :math:`p_1 \in [0.1, 0.85]` 
     as per Rodwell et al. (2010). This can be changed by setting ``mask_clim_extremes`` to ``False`` or
-    by changing the ``min_masked_value`` and ``max_masked_value`` parameters.
+    by changing the ``lower_masked_value`` and ``upper_masked_value`` parameters.
 
     For further details on generating the p1 array see Rodwell et al. (2010).
 
     Args:
-        fcst: An array of real-valued forecasts.
-        obs: An array of real-valued observations.
+        fcst: An array of real-valued forecasts (e.g., precipitation forecasts in mm).
+        obs: An array of real-valued observations (e.g., precipitation forecasts in mm).
         p1: The climatological probability of the dry weather category.
-        light_heavy_threshold: An array of the rainfall thresholds that separates 
-            light and heavy precipitation. Light precipitation is inclusive of this
-            threshold.
-        dry_light_threshold: The threshold that separates dry weather from light precipitation.
+        light_heavy_threshold: An array of the rainfall thresholds (e.g., in mm) that separates 
+            light and heavy precipitation. The threshold itself is included in the light
+            precipitation category.
+        dry_light_threshold: The threshold (e.g., in mm) that separates dry weather from light precipitation.
             Defaults to 0.2. Dry weather is defined as less than or equal to this threshold.
-        mask_clim_extremes: If True, mask out the climatological extremes.
-        min_masked_value: Points with climatolgical probabilities of dry weather
+        mask_clim_extremes: If True, mask out the climatological extremes at points where
+            :math:`p_1` is less than ``lower_masked_value`` or greater than ``upper_masked_value``.
+            Instead a NaN is returned at these points. Defaults to True.
+        lower_masked_value: Points with climatolgical probabilities of dry weather
             less than this value are masked. Defaults to 0.1.
-        max_masked_value: Points with climatolgical probabilities of dry weather
+        upper_masked_value: Points with climatolgical probabilities of dry weather
             greater than this value are masked. Defaults to 0.85.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the SEEPS score. All other dimensions will be preserved. As a
@@ -324,7 +330,7 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
             of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve
-            when calculating SEEPS. All other dimensions will be reduced.
+            when calculating the SEEPS score. All other dimensions will be reduced.
             As a special case, 'all' will allow all dimensions to be
             preserved. In this case, the result will be in the same
             shape/dimensionality as the forecast, and the errors will be
@@ -338,7 +344,7 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         An xarray DataArray containing the SEEPS score.
 
     Raises:
-        ValueError: if any values in `p1` are outside the range [0, 1].
+        ValueError: if any values in `p1` are outside the range (0, 1).
     
     References:
         Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010). 
@@ -356,8 +362,8 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         >>> light_heavy_threshold = 2 * xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> seeps(fcst, obs, p1, light_heavy_threshold=light_heavy_threshold)
     """
-    if p1.min() < 0 or p1.max() > 1:
-        raise ValueError("`p1` must have values between 0 and 1 inclusive")
+    if p1.min() <= 0 or p1.max() >= 1:
+        raise ValueError("`p1` must have values between 0 and 1")
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     fcst, obs = broadcast_and_match_nan(fcst, obs)
@@ -366,14 +372,14 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     # Penalties for index i, j in the penalty matrix. Row i corresponds to the
     # forecast category while row j corresponds to the observation category
     # row 1 of the penalty matrix
-    index_12 = 1 / (1 - p1)
-    index_13 = (1 / p3) + (1 / (1 - p1))
+    penalty_12 = 1 / (1 - p1)
+    penalty_13 = (1 / p3) + (1 / (1 - p1))
     # row 2 of the penalty matrix
-    index_21 = 1 / p1
-    index_23 = 1 / p3
+    penalty_21 = 1 / p1
+    penalty_23 = 1 / p3
     # row 3 of the penalty matrix
-    index_31 = (1 / p1) + (1 / (1 - p3))
-    index_32 = 1 / (1 - p3)
+    penalty_31 = (1 / p1) + (1 / (1 - p3))
+    penalty_32 = 1 / (1 - p3)
 
     # Get conditions for each category
     fcst1_condition = fcst <= dry_light_threshold
@@ -386,12 +392,12 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
 
     # Calculate the penalties
     result = fcst.copy() * 0
-    result = result.where(~(fcst1_condition & obs2_condition), index_12.broadcast_like(result))
-    result = result.where(~(fcst1_condition & obs3_condition), index_13.broadcast_like(result))
-    result = result.where(~(fcst2_condition & obs1_condition), index_21.broadcast_like(result))
-    result = result.where(~(fcst2_condition & obs3_condition), index_23.broadcast_like(result))
-    result = result.where(~(fcst3_condition & obs1_condition), index_31.broadcast_like(result))
-    result = result.where(~(fcst3_condition & obs2_condition), index_32.broadcast_like(result))
+    result = result.where(~(fcst1_condition & obs2_condition), penalty_12.broadcast_like(result))
+    result = result.where(~(fcst1_condition & obs3_condition), penalty_13.broadcast_like(result))
+    result = result.where(~(fcst2_condition & obs1_condition), penalty_21.broadcast_like(result))
+    result = result.where(~(fcst2_condition & obs3_condition), penalty_23.broadcast_like(result))
+    result = result.where(~(fcst3_condition & obs1_condition), penalty_31.broadcast_like(result))
+    result = result.where(~(fcst3_condition & obs2_condition), penalty_32.broadcast_like(result))
 
     result = result / 2
     # return NaNs
@@ -404,7 +410,7 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     )
 
     if mask_clim_extremes:
-        result = result.where(np.logical_and(p1 <= max_masked_value, p1 >= min_masked_value))
+        result = result.where(np.logical_and(p1 <= upper_masked_value, p1 >= lower_masked_value))
 
     result = apply_weights(result, weights=weights)
     result = result.mean(dim=reduce_dims)
