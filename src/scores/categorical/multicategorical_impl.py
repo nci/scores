@@ -251,7 +251,6 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     fcst: xr.DataArray,
     obs: xr.DataArray,
     p1: xr.DataArray,
-    p3: xr.DataArray,
     light_heavy_threshold: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
     dry_light_threshold: Optional[float] = 0.2,
@@ -293,25 +292,22 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         - The rows correspond to the forecast category (dry, light, heavy).
         - The columns correspond to the observation category (dry, light, heavy).
 
-    Note that although :math:`p_2`, does not appear in the penalty matrix, it is defined as
-    :math:`p_2 = 2p_3` with :math:`p_1 + p_2 + p_3 = 1` which means that the light 
-    precipitation category is twice as likely to occur climatologically as the 
-    heavy precipitation category.
-
-    This implementation of the score is negatively oriented, meaning that lower scores are better. 
+    Note that since :math:`p_2 = 2p_3` and :math:`p_1 + p_2 + p_3 = 1`, then :math:`p_3 = (1 - p_1) / 3`
+    can be substituted into the penalty matrix. In this implementation, the user only provides
+    :math:`p_1` and the function calculates :math:`p_3` internally. Additionally, this 
+    implementation of the score is negatively oriented, meaning that lower scores are better. 
     Sometimes in the literature, a SEEPS skill score is used, which is defined as 1 - SEEPS.
 
     By default, the scores are only calculated for points where :math:`p_1 \in [0.1, 0.85]` 
     as per Rodwell et al. (2010). This can be changed by setting ``mask_clim_extremes`` to ``False`` or
     by changing the ``min_masked_value`` and ``max_masked_value`` parameters.
 
-    For further details on generating the p1 and p3 arrays, see Rodwell et al. (2010).
+    For further details on generating the p1 array see Rodwell et al. (2010).
 
     Args:
         fcst: An array of real-valued forecasts.
         obs: An array of real-valued observations.
         p1: The climatological probability of the dry weather category.
-        p3: The climatological probability of the heavy precipitation category. 
         light_heavy_threshold: An array of the rainfall thresholds that separates 
             light and heavy precipitation. Light precipitation is inclusive of this
             threshold.
@@ -343,7 +339,6 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
 
     Raises:
         ValueError: if any values in `p1` are outside the range [0, 1].
-        ValueError: if any values in `p3` are outside the range [0, 1].
     
     References:
         Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010). 
@@ -358,18 +353,16 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
         >>> p1 = xr.DataArray(np.random.rand(6, 8), dims=['lat', 'lon'])
-        >>> p3 = (1 - p1) / 3 
         >>> light_heavy_threshold = 2 * xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> seeps(fcst, obs, p1, p3, light_heavy_threshold=light_heavy_threshold)
+        >>> seeps(fcst, obs, p1, light_heavy_threshold=light_heavy_threshold)
     """
     if p1.min() < 0 or p1.max() > 1:
         raise ValueError("`p1` must have values between 0 and 1 inclusive")
-    if p3.min() < 0 or p3.max() > 1:
-        raise ValueError("`p3` must have values between 0 and 1 inclusive")
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     fcst, obs = broadcast_and_match_nan(fcst, obs)
 
+    p3 = (1 - p1) / 3
     # Penalties for index i, j in the penalty matrix. Row i corresponds to the
     # forecast category while row j corresponds to the observation category
     # row 1 of the penalty matrix
@@ -406,7 +399,6 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         ~np.isnan(fcst)
         & ~np.isnan(obs)
         & ~np.isnan(p1)
-        & ~np.isnan(p3)
         & ~np.isnan(light_heavy_threshold)
         & ~np.isnan(dry_light_threshold)
     )

@@ -703,21 +703,17 @@ DA_SEEPS_WEIGHTS = xr.DataArray(
 )
 
 DA_P1_SEEPS = xr.DataArray(0.5)
-DA_P3_SEEPS = (1 - DA_P1_SEEPS) / 3
 DA_P1_VARY1_SEEPS = xr.DataArray(
     data=[0.5, 0.09, 0.1, 0.5, 0.5],
     dims=["j"],
     coords={"j": [1, 2, 3, 4, 5]},
 )
-DA_P3_VARY1_SEEPS = (1 - DA_P1_VARY1_SEEPS) / 3
 
 DA_P1_VARY2_SEEPS = xr.DataArray(
     data=[0.5, 0.85, 0.86, 0.5, 0.5],
     dims=["j"],
     coords={"j": [1, 2, 3, 4, 5]},
 )
-DA_P3_VARY2_SEEPS = (1 - DA_P1_VARY2_SEEPS) / 3
-
 
 DA_LIGHT_HEAVY_THRESHOLD_SEEPS = xr.DataArray(10)
 DA_LIGHT_HEAVY_THRESHOLD_VARY_SEEPS = xr.DataArray(
@@ -726,7 +722,6 @@ DA_LIGHT_HEAVY_THRESHOLD_VARY_SEEPS = xr.DataArray(
 
 P1 = 0.5
 P3 = (1 - P1) / 3
-
 ALL_INDEX_ARRAY_RESULT = [
     [0, 1 / (1 - P1), 1 / P3 + 1 / (1 - P1), 1 / P1, 0],
     [1 / P3, 1 / P1 + 1 / (1 - P3), 1 / (1 - P3), 0, np.nan],

@@ -516,7 +516,6 @@ def test_firm_raises(
         "fcst",
         "obs",
         "p1",
-        "p3",
         "light_heavy_threshold",
         "dry_light_threshold",
         "mask_clim_extremes",
@@ -533,7 +532,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -549,7 +547,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -565,7 +562,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -581,7 +577,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -597,7 +592,6 @@ def test_firm_raises(
             mtd.DA_FCST2_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -613,7 +607,6 @@ def test_firm_raises(
             mtd.DA_FCST2_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -629,7 +622,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             1000 * mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             1000,
             True,
@@ -640,12 +632,11 @@ def test_firm_raises(
             None,
             mtd.EXP_SEEPS_CASE6,
         ),
-        # Vary P1 and P3, with no masking
+        # Vary P1 with no masking
         (
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_VARY1_SEEPS,
-            mtd.DA_P3_VARY1_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             False,
@@ -656,12 +647,11 @@ def test_firm_raises(
             None,
             mtd.EXP_SEEPS_CASE7,
         ),
-        # Vary P1 and P3 to test with different edge cases from above, with no masking
+        # Vary P1 to test with different edge cases from above, with no masking
         (
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_VARY2_SEEPS,
-            mtd.DA_P3_VARY2_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             False,
@@ -677,7 +667,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_VARY1_SEEPS,
-            mtd.DA_P3_VARY1_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -693,7 +682,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_VARY2_SEEPS,
-            mtd.DA_P3_VARY2_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
             0.2,
             True,
@@ -709,7 +697,6 @@ def test_firm_raises(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
-            mtd.DA_P3_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_VARY_SEEPS,
             0.2,
             True,
@@ -726,7 +713,6 @@ def test_seeps(  # pylint: disable=too-many-arguments
     fcst,
     obs,
     p1,
-    p3,
     light_heavy_threshold,
     dry_light_threshold,
     mask_clim_extremes,
@@ -742,7 +728,6 @@ def test_seeps(  # pylint: disable=too-many-arguments
         fcst,
         obs,
         p1,
-        p3,
         light_heavy_threshold=light_heavy_threshold,
         dry_light_threshold=dry_light_threshold,
         mask_clim_extremes=mask_clim_extremes,
@@ -760,22 +745,19 @@ def test_seeps(  # pylint: disable=too-many-arguments
 
 
 @pytest.mark.parametrize(
-    ("p1", "p3", "exp"),
+    ("p1", "exp"),
     [
-        (xr.DataArray(-0.01), xr.DataArray(0.5), "`p1` must have values between 0 and 1 inclusive"),
-        (xr.DataArray(1.01), xr.DataArray(0.5), "`p1` must have values between 0 and 1 inclusive"),
-        (xr.DataArray(0.5), xr.DataArray(-0.01), "`p3` must have values between 0 and 1 inclusive"),
-        (xr.DataArray(0.5), xr.DataArray(1.01), "`p3` must have values between 0 and 1 inclusive"),
+        (xr.DataArray(-0.01), "`p1` must have values between 0 and 1 inclusive"),
+        (xr.DataArray(1.01), "`p1` must have values between 0 and 1 inclusive"),
     ],
 )
-def test_seeps_raises(p1, p3, exp):
+def test_seeps_raises(p1, exp):
     """Tests that seeps raises the correct errors"""
     with pytest.raises(ValueError, match=exp):
         seeps(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             p1,
-            p3,
             light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
         )
 
@@ -790,7 +772,6 @@ def test_seeps_dask():
         mtd.DA_FCST_SEEPS.chunk(),
         mtd.DA_OBS_SEEPS.chunk(),
         mtd.DA_P1_SEEPS.chunk(),
-        mtd.DA_P3_SEEPS.chunk(),
         light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS.chunk(),
         dry_light_threshold=0.2,
         mask_clim_extremes=True,
