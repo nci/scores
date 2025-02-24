@@ -2,6 +2,7 @@
 This module contains methods which may be used for scoring multicategorical forecasts
 """
 
+import warnings
 from collections.abc import Sequence
 from typing import Optional, Union
 
@@ -12,7 +13,6 @@ from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
-import warnings
 
 
 def firm(  # pylint: disable=too-many-arguments
