@@ -365,7 +365,7 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     """
     if p1.min() <= 0 or p1.max() >= 1:
         p1 = p1.where((p1 > 0) & (p1 < 1))
-        warnings.warn("`p1` has values outside (0,1). These values will be masked", UserWarning)
+        warnings.warn("`p1` contains values not strictly between 0 and 1. These values will be masked", UserWarning)
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     fcst, obs = broadcast_and_match_nan(fcst, obs)

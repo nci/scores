@@ -745,15 +745,15 @@ def test_seeps(  # pylint: disable=too-many-arguments
 
 
 @pytest.mark.parametrize(
-    ("p1", "exp"),
+    ("p1"),
     [
-        (xr.DataArray(0), "These values will be masked"),
-        (xr.DataArray(1), "These values will be masked"),
+        (xr.DataArray([0, 0.5])),
+        (xr.DataArray([1, 0.5])),
     ],
 )
-def test_seeps_warns(p1, exp):
+def test_seeps_warns(p1):
     """Tests that seeps emits a warning"""
-    with pytest.warns(UserWarning, match=exp):
+    with pytest.warns(UserWarning, match="contains values not strictly between 0 and 1"):
         seeps(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
