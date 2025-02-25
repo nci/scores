@@ -44,8 +44,7 @@ Archived datasets are available for:
 Point-based observations (e.g. from weather stations or buoys) are shared routinely between countries for the purposes of weather modelling.
 
 - The NOAA Integrated Surface Database (ISD) provides hourly point-based (*in-situ*) weather station data globally. It is a good starting point for understanding how to work with point-based data. For more information about the NOAA ISD see [https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database).
-- [WeatherReal](https://github.com/microsoft/WeatherReal-Benchmark) contains quality controlled weather station data that uses the ISD. You can read more about WeatherReal in the [pre-print]( 	
-https://doi.org/10.48550/arXiv.2409.09371).
+- [WeatherReal](https://github.com/microsoft/WeatherReal-Benchmark) contains quality controlled weather station data that uses the ISD. You can read more about WeatherReal in the [pre-print](https://doi.org/10.48550/arXiv.2409.09371).
 - The [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/) contains a rich variety of datasets. One particularly useful dataset is the [1-minute Automated Surface Observing Network (ASOS) data](https://mesonet.agron.iastate.edu/request/asos/1min.phtml).
 
 #### Gridded Model Reanalysis Data
