@@ -574,48 +574,65 @@ def nse(
     is_angular: bool | None = False,
 ) -> XarrayLike:
     """
-    NOTE: Everything below this horizontal rule is a draft only
+    The Nash-Sutcliffe efficiency (NSE) is primarily used in hydrology to assess the skill of model
+    predictions (of e.g. "discharge").
 
-    ------------------------------------------------------------------------------------------
-    PLACEHOLDER FOR NSE SKILL-SCORE
-    -------------------------------
-    TODO:
-    - refactor internal implementation to dataclass
-    - format this description, equations, references, examples etc.
-    - weights typically the same dimensions as time, ensure if further reduction is done, that
-      weights are broadcast to the extra dims appropriately (mse might already do this)
-    - implement nse (basic version) with default weights behaviour and angular=False
-    - check against divide by zero
-    - check if it works with datasets
-    ------------------------------------------------------------------------------------------
+    While often used to aggregate metrics over the time dimension, it is actually a fairly generic
+    statistical measure that determines the relative magnitude of the residual variance ("noise")
+    compared to the measured data variance ("information") (Nash and Sutcliffe, 1970). Incidentally,
+    it is (inversely) related to the signal-to-noise ratio (SNR).
 
-    <DESCRIPTION> Calculates `NSE` blahblah...
+    The general formulation of NSE is as follows:
 
-    <WRONGLY FORMATTED MATH BELOW>
     .. math::
-        nse = 1 - ( sum_i( w_i * (fcst_i - obs_i)^2 ) / sum_i( w_i * (obs_i - obs_mean)^2 )
-            = 1 - mse(fcst, obs) / mse(obs, obs_mean)
 
-        where
-            <EXPLAIN WHAT VARIABLES MEAN HERE>
+        \\text{NSE} = 1 - \\frac{\\sum_i{(O_i - S_i)^2}}{\\sum_i{(O_i - \\bar{O})^2}}
 
-    TODO: NSE is a generic score, so remove time_dim - instead assert that reduce_dim must have
-    at least one dimension being reduced (and its count must be >1). Typically the time dimension
-    should be used, but we don't have to enforce this.
+    where
+      - :math:`i` is a generic "indexer" representing the set of datapoints along the dimensions being
+         reduced e.g. time (:math:`t`) or xy-coordinates (:math:`(x, y)`). The latter represents
+         reduction over two dimensions as an example.
+      - :math:`O_i` is the observation at the :math:`\\text{i^{th}}` index.
+      - :math:`S_i` is the "forecast" or model simulation at the :math:`\\text{i^{th}}` index.
+      - :math:`\\bar{O}` is the mean observation of the set of indexed samples as specified by
+        ``reduce_dims`` and ``preserve_dims``.
 
     Args:
         fcst: "Forecast" or predicted variables.
         obs: Observed variables.
-        reduce_dims: Optionally specify additional dimensions to reduce when calculating the NSE.
-            All other dimensions will be preserved (except `time_dim`).
+        reduce_dims: dimensions to reduce when calculating the NSE. (i.e. NSE will be calculated
+            using datapoints along these dimensions as samples, the other dimensions will be
+            preserved).
+        preserve_dims: dimensions to preserve. Mutually exclusive to ``reduce_dims``. All
+            dimensions not specified here will be reduced as described in ``reduce_dims``.
+            Note: ``preserve_dims="all"`` is not supported for NSE. See notes below.
         weights: Optional weighting to apply to the NSE computation. Typically weights are applied
-            over `time_dim` but can vary by location as well. None => all error terms are treated equal.
+            over `time_dim` but can vary by location as well. Weights must be non-negative and
+            specified for each data point _(i.e. the user must not assume broadcasting will handle
+            appropriate assignment of weights for this score)_.
         is_angular: specifies whether `fcst` and `obs` are angular data (e.g. wind direction). If
             True, a different function is used to calculate the difference between `fcst` and `obs`,
             which accounts for circularity. Angular `fcst` and `obs` data should be in degrees
             rather than radians.
 
-    <FIXUP THESE EXAMPLES>
+    Returns:
+        Dataset containing the NSE score for each preserved dimension.
+
+    Raises:
+        KeyError: If no dimensions are being reduced.
+        IndexError: If the dimensions being reduced only have 1 value - not sufficient for
+            computation of obs variance.
+        RuntimeError: If something went wrong with the underlying implementation. The user will be
+            prompted to report this as a github issue.
+        UserWarning: If weights are negative.
+        UserWarning: If attempting to divide by 0. The computation will still succeed but produce
+            `np.nan` where divide by zero would occur.
+        Exception: Any other errors or warnings not otherwise listed due to calculations associated
+            with utility functions such as `gather_dimensions`.
+
+
+    TODO: fixup examples
+    -------------------------------------------------------------------------------------------------
     Examples:
 
     1. generic usage
@@ -625,45 +642,67 @@ def nse(
     2. some specific usage
     >>> ...
     nse = ...
+    -------------------------------------------------------------------------------------------------
+
+    Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the closer to 1, the more accurate
+    the model is.
+    - NSE = 1, corresponds to a perfect match of modelled to the observed data.
+    - NSE = 0, indicates that the model predictions are as accurate as the mean of the observed data.
+    - -Inf < NSE < 0, indicates that the observed mean is better predictor than the model.
+
+    The optional ``weights`` argument can additionally be used to perform a weighted NSE (wNSE).
+    Although, this is a generic set of weights, and it is the _user's responsiblility_ to define
+    them appropriately. Typically this is the observation itself (Hundecha, Y., & Bárdossy, A.,
+    2004).
+
+    The only check that is performed here is that the ``weights`` must be non-negative. Therefore,
+    the observations must ideally also be non-negative (or formulated appropriately) if used as
+    weights.
 
     .. note::
-        This score requires computation of the `obs` population variance over `time_dim` and is
-        essentially the square error between `obs` and `fcst`, divided by the `obs` variance. Since
-        this `obs` variance is not knowable at the time of forecast, "simulation" might be a more
-        apt term, despite being named `fcst` (for consistency reasons).
+
+        For Hydrology in particular :math:`i = t` i.e. the time dimension. In order to keep things
+        generic, this function does not explicitly require the user to provide a "time" dimension
+        to apply the score. Instead, it sets a hard requirement that _at least one_ dimension is
+        being reduced from either a specification of ``reduce_dims`` or ``preserve_dims``
+        (mutually exclusive).
+
+        The reason is - the observation variance cannot be non-zero if nothing is being reduced.
+
+        If the user is particularly interested in applying the NSE computation over the "time"
+        dimension, they should provide the "time" dimension as one of the elements in the
+        ``reduce_dims`` argument, and ensure that the input datasets and associated variables have
+        this dimension. Or otherwise, omit it from the ``preserve_dims`` argument.
+
+        As a side-effect of the above requirement, ``preserve_dims="all"`` is not allowed and will
+        naturally throw an error.
 
     .. note::
-        This function uses `mse` under the hood, so `weights` must be full described i.e. for each
-        value in the input xarray object(s), even if `time_dim` is the only dimension being reduced.
-        see: :py:func:`scores.utils.apply_weights` for more details.
 
-    .. note::
-        While `is_angular` is typically not used for this metric. `NSE` is generic enough that it
-        _could_ be used in wider context. Particularly, is highly related (somewhat inversely) to
-        signal-to-noise ratio in signal processing.
-        TODO: citation?
-
-    .. warn::
-        `preserve_dims` is not supported in this API, its mutually exclusive to `reduce_dims` and
-        `time_dim` is a required reduction.
-
-    <DOUBLE CHECK REFERENCES BELOW>
+        While ``is_angular`` is typically not used for this score, NSE is generic enough that it
+        _could_ be used in wider context, and hence is kept as an option. It is defaulted to
+        ``False`` as that's the typical use-case.
 
     References:
-    1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
-       part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–290).
-       Elsevier BV.
-       doi:10.1016/0022-1694(70)90255-6
-    2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the runoff
-       generation of a river basin through parameter regionalization of a watershed model. Journal
-       of Hydrology, 292(1-4), 281-295.
-       doi:10.1016/j.jhydrol.2004.01.002
+      1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
+         part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–290).
+         Elsevier BV. doi:10.1016/0022-1694(70)90255-6
+      2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the runoff
+         generation of a river basin through parameter regionalization of a watershed model. Journal
+         of Hydrology, 292(1-4), 281-295. doi:10.1016/j.jhydrol.2004.01.002
     """
 
     # setup arguments for builder to do checks
+    # fmt: off
     nse_score: NseScore = NseScoreBuilder().build(
-        obs=obs, fcst=fcst, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular
+        obs=obs,
+        fcst=fcst,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+        is_angular=is_angular,
     )
+    # fmt: on
 
     # calculate the actual score: note - delayed if using dask.
     nse_result: XarrayLike = nse_score.calculate()
