@@ -6,10 +6,9 @@ import functools
 import warnings
 import weakref
 from dataclasses import KW_ONLY, dataclass
-from typing import Callable, Hashable, Iterable, Mapping, TypeAlias, cast
+from typing import Callable, Hashable, Iterable, cast
 
 import numpy as np
-import xarray as xr
 
 import scores.continuous as _cnt
 from scores.typing import FlexibleDimensionTypes, XarrayLike
@@ -46,9 +45,9 @@ class NseUtils:
 
     WARN_ZERO_OBS_VARIANCE: str = """
     Possible divide by zero: at least one element in the reduced obs variance array is 0. Any divide
-    by zero entries will be filled in as `np.nan`. This is so that any other valid entries are still
-    computed and returned. The user should still verify that zero obs variance is expected for the
-    given input data.
+    by zero entries will be filled in as `np.nan` if the forecast error is also 0, otherwise it will
+    be `-np.inf`. This is so that any other valid entries are still computed and returned. The user
+    should still verify that zero obs variance is expected for the given input data.
     """
 
     @staticmethod
@@ -255,8 +254,9 @@ class NseScore:
 
     .. important::
 
-        divide by zero errors are intentionally ignored here and ``numpy`` will automatically
-        fill them with ``np.nan``. ``NseScoreBuilder`` the class that constructs a ``NseScore``
+        divide by zero errors are intentionally ignored here and ``numpy`` will automatically fill
+        them with ``np.nan``, or ``-np.inf``. ``NseScoreBuilder`` the class that constructs
+        a ``NseScore``
         object, already handles warnings during these scenarios.
     """
 

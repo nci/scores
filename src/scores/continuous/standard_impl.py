@@ -2,7 +2,7 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
-from typing import Optional, Union, cast
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -626,7 +626,7 @@ def nse(
             prompted to report this as a github issue.
         UserWarning: If weights are negative.
         UserWarning: If attempting to divide by 0. The computation will still succeed but produce
-            `np.nan` where divide by zero would occur.
+            ``np.nan`` (numerator is also 0) or ``-np.inf`` where divide by zero would occur.
         Exception: Any other errors or warnings not otherwise listed due to calculations associated
             with utility functions such as `gather_dimensions`.
 
