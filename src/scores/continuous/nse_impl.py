@@ -6,12 +6,12 @@ import functools
 import warnings
 import weakref
 from dataclasses import KW_ONLY, dataclass
-from typing import Callable, Hashable, Iterable, Mapping, TypeAlias, Unpack, assert_type
+from typing import Callable, Hashable, Iterable, Mapping, TypeAlias, cast
 
 import numpy as np
 import xarray as xr
 
-from scores.continuous import mse as scores_mse
+import scores.continuous as _cnt
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, check_weights_positive, gather_dimensions
 
@@ -44,11 +44,6 @@ class NseUtils:
     possible to calculate a non-zero obs variance from 1 point.
     """
 
-    WARN_TIME_DIMENSION_REQUIRED: str = """
-    NSE is usually reduced along the time dimension. This is required, otherwise, the variance of
-    the observations cannot be computed.
-    """
-
     WARN_ZERO_OBS_VARIANCE: str = """
     Possible divide by zero: at least one element in the reduced obs variance array is 0. Any divide
     by zero entries will be filled in as `np.nan`. This is so that any other valid entries are still
@@ -69,7 +64,7 @@ class NseUtils:
         """
         # check weights conform to NSE computations
         NseUtils.check_weights(weights)
-        weights_dims = weights.dims if isinstance(weights, xr.Dataset) or isinstance(weights, xr.DataArray) else None
+        weights_dims: Iterable[Hashable] | None = None if weights is None else weights.dims
 
         # perform default gather dimensions
         ret_dims: FlexibleDimensionTypes = gather_dimensions(
@@ -80,7 +75,7 @@ class NseUtils:
             preserve_dims=preserve_dims,
         )
 
-        merged_sizes: Mapping[Hashable, int] = NseUtils.merge_sizes(obs, fcst, weights)
+        merged_sizes: dict[Hashable, int] = NseUtils.merge_sizes(obs, fcst, weights)
 
         # check result has at least one reducable dimension - required to calculate obs variance
         NseUtils.check_gathered_dims(ret_dims, merged_sizes)
@@ -88,28 +83,13 @@ class NseUtils:
         return ret_dims
 
     @staticmethod
-    def weights_dims(weights: XarrayLike | None) -> FlexibleDimensionTypes | None:
-        """
-        Helper to retrieve "dims" from optional weights
-
-        TODO: this should really go in utils, currently many functions in ``scores`` have their own
-              version of this check. see-also: issue #830
-        """
-        if weights is None:
-            return None
-        else:
-            assert_type(weights, XarrayLike)
-            return weights.dims
-
-    @staticmethod
-    def merge_sizes(*xr_data) -> Mapping[Hashable, int]:
+    def merge_sizes(*xr_data) -> dict[Hashable, int]:
         """
         Merges the maps that contain the size (value) for each dimension (key) (key) in a given
         `XarrayLike` object.
-
-        TODO: this should be a general utility
         """
-        ret_sizes: Mapping[Hashable, int] = functools.reduce(lambda _acc, _x: _acc | _x.sizes, xr_data, dict())
+        all_sizes: list[dict[Hashable, int]] = [dict(_x.sizes) for _x in xr_data if _x is not None]
+        ret_sizes: dict[Hashable, int] = functools.reduce(lambda _acc, _x: _acc | _x, all_sizes)
         return ret_sizes
 
     @staticmethod
@@ -125,11 +105,11 @@ class NseUtils:
         """
         Warns if at least one obs variance term is zero.
         """
-        if np.any(obs_var == 0):
+        if (obs_var == 0).any():
             warnings.warn(NseUtils.WARN_ZERO_OBS_VARIANCE)
 
     @staticmethod
-    def check_gathered_dims(gathered_dims: FlexibleDimensionTypes, dim_sizes: Mapping[Hashable, int]) -> None:
+    def check_gathered_dims(gathered_dims: FlexibleDimensionTypes, dim_sizes: dict[Hashable, int]) -> None:
         """
         Checks that gathered dimensions has at least one entry (key or hash) AND at least one of the
         gathered dimensions has more than 1 data point.
@@ -151,7 +131,6 @@ class NseUtils:
             For more info on the concept of ``sizes`` see :py:meth:`xarray.Dataset.sizes` or
             :py:meth:`xarray.DataArray.sizes`
         """
-        # TODO: this should be a general utility
         if len(list(gathered_dims)) == 0:
             raise KeyError(NseUtils.ERROR_NO_DIMS_TO_REDUCE)
 
@@ -164,12 +143,20 @@ class NseUtils:
 @dataclass
 class NseScoreBuilder:
     """
-    Internal namespace that builds the `NseScore` object which is used to compute the NSE score.
+    Internal class that builds the `NseScore` object which is used to compute the NSE score.
+
+    .. important::
+
+        DEVELOPER-NOTE: This is the class you want to use if you need to instantiate the
+        ``NseScore`` object for further computations NOT ``NseScore`` directly.
+            - The builder focuses on the accuracy of the interface (i.e. the input arguments).
+            - The score focuses on the accuracy of the computation assuming accuracy of the inputs.
 
     The scope of this class is to:
-    - perform any validity checks on the input
-    - resolve optional inputs
-    - raise any issues if the above are not conformant with the "NSE" score
+        - perform checks on input arrays and their dimensions
+        - perform checks on weights
+        - resolves dimensions to be reduced
+        - raise any issues if the above are not conformant with the "NSE" score
 
     Raises:
         RuntimeError: If the builder has already expired after building a score - see notes below.
@@ -250,14 +237,12 @@ class NseScore:
     Assumes that all setups and checks have been done by :py:class:`NseScoreBuilder`, and hence should
     not be initialised directly. Instead, ``NseScoreBuilder`` should be used to do any setup.
 
-    .. math::
-        \\text{nse} = 1 - \\text{weighted_fct_error} / \\text{weighted_obs_variance}
+    .. important::
 
-    In order to produce this result, ``NseScore`` requires the ``fcst_error``, the ``obs_variance``
-    as well as a callback to ``mse`` which is used to assign weighting and perform any appropriate
-    reduction.
-
-    The rest of the operations are simple broadcastable operations e.g. subtraction and division
+        DEVELOPER-NOTE: DO NOT USE THIS CLASS TO INSTANTIATE ``NseScore``. This is only meant to be
+        instantiated by the ``NseScoreBuilder`.`
+            - The builder focuses on the accuracy of the interface (i.e. the input arguments).
+            - The score focuses on the accuracy of the computation assuming accuracy of the inputs.
 
     Raises:
         RuntimeError: If the ``NseScore`` object is being initialised directly. ``NseScoreBuilder``
@@ -265,7 +250,8 @@ class NseScore:
 
     .. see-also::
 
-        All other errors raised are documented in the main api under :py:func:`scores.continous.nse`
+        :py:func:`scores.continous.nse` for the full documentation of the score itself and any the
+        full description of error states.
 
     .. important::
 
@@ -294,11 +280,7 @@ class NseScore:
             `NseScore` isn't instantiated directly. If this error is raised, the user would be
             prompted to raise an issue.
         """
-        if (
-            self.ref_builder is None
-            or self.ref_builder.ref_nsescore is None
-            or id(self.ref_builder.ref_nsescore()) != id(self)
-        ):
+        if self.ref_builder is None or not isinstance(self.ref_builder, NseScoreBuilder):
             raise RuntimeError(NseUtils.ERROR_SCORE_DIRECT_INIT_DISALLOWED)
 
     def mse_callback(self) -> Callable[..., XarrayLike]:
@@ -306,7 +288,7 @@ class NseScore:
         Callback helper for calculating :py:func:`scores.mse`, with prefilled keyword args.
         """
         return functools.partial(
-            scores_mse,
+            _cnt.mse,
             reduce_dims=self.reduce_dims,
             weights=self.weights,
             is_angular=self.is_angular,
@@ -316,8 +298,8 @@ class NseScore:
         """
         The main calculation function for NSE:
         - denominator (D): calculates the obs variance using a combination of ``xr.mean`` and :py:func:`scores.mse`
-        - numerator (N): calculates
-        - score = ``1 - N / D`` reduced and broadcast appropriately by ``xarray``.
+        - numerator (N): calculates the forecast error using :py:func:`scores.mse` on ``obs`` and ``fcst``.
+        - ``score = 1 - N / D`` reduced and broadcast appropriately by ``xarray``.
         """
         obs_var: XarrayLike = self.calculate_obs_variance()
         fcst_err: XarrayLike = self.calculate_forecast_error()
@@ -328,8 +310,8 @@ class NseScore:
         with np.errstate(divide="ignore"):
             ret_nse = 1.0 - (fcst_err / obs_var)
 
-        # cast strictly to `XarrayLike` from an `Optional`
-        assert_type(ret_nse, XarrayLike)
+        # cast strictly to `XarrayLike` from an `Optional`. If we got this far, it can't be `None`.
+        cast(XarrayLike, ret_nse)
 
         return ret_nse
 
@@ -350,7 +332,7 @@ class NseScore:
         check_dims(self.obs, reduce_dims, mode="superset")
 
         mse_cb: Callable[..., XarrayLike] = self.mse_callback()
-        obs_mean: XarrayLike = self.obs.mean(dims=self.reduce_dims)
+        obs_mean: XarrayLike = self.obs.mean(dim=self.reduce_dims)
         ret_obs_var: XarrayLike = mse_cb(obs_mean, self.obs)
 
         NseUtils.check_nonzero_obsvar(ret_obs_var)

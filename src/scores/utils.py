@@ -5,7 +5,7 @@ Contains frequently-used functions of a general nature within scores
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union, assert_type
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -472,7 +472,7 @@ def check_weights_positive(weights: XarrayLike | None, *, context: str):
     if weights is None:
         return
     # otherwise, weights MUST be an XarrayLike
-    assert_type(weights, XarrayLike)
+    cast(XarrayLike, weights)
     # ignore nans as they may be used as natural exclusion masks in weighted calculations.
     weights_masked = np.ma.array(weights, mask=np.isnan(weights))
     # however, still check that we have at least one proper number.

@@ -577,10 +577,10 @@ def nse(
     The Nash-Sutcliffe efficiency (NSE) is primarily used in hydrology to assess the skill of model
     predictions (of e.g. "discharge").
 
-    While often used to aggregate metrics over the time dimension, it is actually a fairly generic
-    statistical measure that determines the relative magnitude of the residual variance ("noise")
-    compared to the measured data variance ("information") (Nash and Sutcliffe, 1970). Incidentally,
-    it is (inversely) related to the signal-to-noise ratio (SNR).
+    While NSE is often calculated over observations and model predictions in the time dimension, it
+    is actually a fairly generic statistical measure that determines the relative magnitude of the
+    residual variance ("noise") compared to the measured data variance ("information") (Nash and
+    Sutcliffe, 1970). Incidentally, it is (inversely) related to the signal-to-noise ratio (SNR).
 
     The general formulation of NSE is as follows:
 
@@ -589,12 +589,12 @@ def nse(
         \\text{NSE} = 1 - \\frac{\\sum_i{(O_i - S_i)^2}}{\\sum_i{(O_i - \\bar{O})^2}}
 
     where
-      - :math:`i` is a generic "indexer" representing the set of datapoints along the dimensions being
+        - :math:`i` is a generic "indexer" representing the set of datapoints along the dimensions being
          reduced e.g. time (:math:`t`) or xy-coordinates (:math:`(x, y)`). The latter represents
          reduction over two dimensions as an example.
-      - :math:`O_i` is the observation at the :math:`\\text{i^{th}}` index.
-      - :math:`S_i` is the "forecast" or model simulation at the :math:`\\text{i^{th}}` index.
-      - :math:`\\bar{O}` is the mean observation of the set of indexed samples as specified by
+        - :math:`O_i` is the observation at the :math:`\\text{i^{th}}` index.
+        - :math:`S_i` is the "forecast" or model simulation at the :math:`\\text{i^{th}}` index.
+        - :math:`\\bar{O}` is the mean observation of the set of indexed samples as specified by
         ``reduce_dims`` and ``preserve_dims``.
 
     Args:
@@ -616,7 +616,7 @@ def nse(
             rather than radians.
 
     Returns:
-        Dataset containing the NSE score for each preserved dimension.
+        ``xr.Dataset`` containing the NSE score for each preserved dimension.
 
     Raises:
         KeyError: If no dimensions are being reduced.
@@ -630,34 +630,21 @@ def nse(
         Exception: Any other errors or warnings not otherwise listed due to calculations associated
             with utility functions such as `gather_dimensions`.
 
-
-    TODO: fixup examples
-    -------------------------------------------------------------------------------------------------
-    Examples:
-
-    1. generic usage
-    >>> nse(obs, fcst, weights=..., time_dim=..., *common_args, **common_kwargs)
-    nse = ...
-
-    2. some specific usage
-    >>> ...
-    nse = ...
-    -------------------------------------------------------------------------------------------------
-
-    Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the closer to 1, the more accurate
-    the model is.
-    - NSE = 1, corresponds to a perfect match of modelled to the observed data.
-    - NSE = 0, indicates that the model predictions are as accurate as the mean of the observed data.
-    - -Inf < NSE < 0, indicates that the observed mean is better predictor than the model.
-
-    The optional ``weights`` argument can additionally be used to perform a weighted NSE (wNSE).
-    Although, this is a generic set of weights, and it is the _user's responsiblility_ to define
-    them appropriately. Typically this is the observation itself (Hundecha, Y., & Bárdossy, A.,
-    2004).
-
-    The only check that is performed here is that the ``weights`` must be non-negative. Therefore,
-    the observations must ideally also be non-negative (or formulated appropriately) if used as
-    weights.
+    Supplementary details:
+        - Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the closer to 1, the more
+          accurate the model is.
+            - NSE = 1, corresponds to a perfect match of the model to the obs.
+            - NSE = 0, indicates that the model is as accurate as the mean obs.
+            - -Inf < NSE < 0, indicates that the mean obs is better predictor than the model.
+        - The optional ``weights`` argument can additionally be used to perform a weighted NSE
+          (wNSE). Although, this is a generic set of weights, and it is the _user's responsiblility_
+          to define them appropriately. Typically this is the observation itself (Hundecha, Y., &
+          Bárdossy, A., 2004).
+        - ``weights`` must be non-negative. Therefore, the observations must ideally also be
+          non-negative (or formulated appropriately) if used as weights.
+        - While ``is_angular`` is typically not used for this score, NSE is generic enough that it
+          _could_ be used in wider context, and hence is kept as an option. It is defaulted to
+          ``False`` as that's the typical use-case.
 
     .. note::
 
@@ -677,19 +664,48 @@ def nse(
         As a side-effect of the above requirement, ``preserve_dims="all"`` is not allowed and will
         naturally throw an error.
 
-    .. note::
-
-        While ``is_angular`` is typically not used for this score, NSE is generic enough that it
-        _could_ be used in wider context, and hence is kept as an option. It is defaulted to
-        ``False`` as that's the typical use-case.
+    Examples:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.continuous import nse
+        >>>
+        >>> obs_raw = np.array(
+        ...     [
+        ...         [[1,2,3], [4,5,6]],
+        ...         [[3,2,1], [6,5,4]],
+        ...         [[3,2,5], [2,2,6]],
+        ...         [[5,2,3], [4,-1,4]],
+        ...     ]
+        ...
+        ... )  # dimension lengths: x=4, y=2, t=3
+        >>>
+        >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
+        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
+        >>>
+        >>> # Example 1:
+        >>> # reduce over t - time - should produce a 4x2 array representing the xy coordinate grid
+        >>> nse(obs, fcst, reduce_dims=["t"])
+        <xarray.DataArray (x: 4, y: 2)> Size: 64B
+        array([[ 0.71180556, -0.28819444],
+               [ 0.71180556, -0.28819444],
+               [ 0.70982143,  0.85742188],
+               [ 0.70982143,  0.93208333]])
+        Dimensions without coordinates: x, y
+        >>>
+        >>> # Example 2:
+        >>> # reduce over (x, y) - space - should produce a 3x1 representing a time series
+        >>> nse(obs, fcst, reduce_dims=["x", "y"])
+        <xarray.DataArray (t: 3)> Size: 24B
+        array([0.77469136, 0.90123457, 0.74722222])
+        Dimensions without coordinates: t
 
     References:
-      1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
-         part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–290).
-         Elsevier BV. doi:10.1016/0022-1694(70)90255-6
-      2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the runoff
-         generation of a river basin through parameter regionalization of a watershed model. Journal
-         of Hydrology, 292(1-4), 281-295. doi:10.1016/j.jhydrol.2004.01.002
+        1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
+           part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–
+           290). Elsevier BV. doi:10.1016/0022-1694(70)90255-6
+        2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the
+           runoff generation of a river basin through parameter regionalization of a watershed
+           model. Journal of Hydrology, 292(1-4), 281-295. doi:10.1016/j.jhydrol.2004.01.002
     """
 
     # setup arguments for builder to do checks
