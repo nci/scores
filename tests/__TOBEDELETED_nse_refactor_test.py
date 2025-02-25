@@ -1,15 +1,14 @@
 # --- FIXME: move parts of this file to appropriate places ---
 
-import warnings
 import functools
-
-from collections.abc import Hashable, Iterable, Callable
+import re
+import warnings
+from collections.abc import Callable, Hashable, Iterable
 from typing import Any, TypeAlias, TypeGuard, Union, Unpack, cast
 
-import re
 import numpy as np
-import xarray
 import pytest
+import xarray
 
 # -------------------------------------------------------------------------------------------------
 # --- FIXME: refactor into typing ---

@@ -5,7 +5,7 @@ Contains frequently-used functions of a general nature within scores
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union, assert_type
 
 import numpy as np
 import pandas as pd
@@ -20,7 +20,6 @@ In order to reduce or preserve the named data dimension, specify ['all'] as a li
 rather than relying on string interpretation. The program will continue to interpret the
 string as an instruction to reduce or preserve every dimension.
 """
-
 
 ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
 You are requesting to preserve a dimension which does not appear in your data 
@@ -469,11 +468,11 @@ def check_weights_positive(weights: XarrayLike | None, *, context: str):
         - ``reduce_dims`` to run the check individually against each dimension being reduced, since
           they are accumulated seperately.
     """
+    # No check required if weights is None.
     if weights is None:
-        return  # ignore None type
-
-    # explicit casting to XarrayLike
-    cast(weights, XarrayLike)
+        return
+    # otherwise, weights MUST be an XarrayLike
+    assert_type(weights, XarrayLike)
     # ignore nans as they may be used as natural exclusion masks in weighted calculations.
     weights_masked = np.ma.array(weights, mask=np.isnan(weights))
     # however, still check that we have at least one proper number.

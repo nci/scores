@@ -2,18 +2,18 @@
 Internal module used to support the computation of NSE. Not to be used directly.
 """
 
-from dataclasses import dataclass, KW_ONLY
 import functools
-import weakref
 import warnings
-from typing import Hashable, Mapping, TypeAlias, Unpack, Callable, assert_type
+import weakref
+from dataclasses import KW_ONLY, dataclass
+from typing import Callable, Hashable, Iterable, Mapping, TypeAlias, Unpack, assert_type
 
 import numpy as np
 import xarray as xr
 
 from scores.continuous import mse as scores_mse
 from scores.typing import FlexibleDimensionTypes, XarrayLike
-from scores.utils import check_weights_positive, gather_dimensions, check_dims
+from scores.utils import check_dims, check_weights_positive, gather_dimensions
 
 
 class NseUtils:
@@ -88,7 +88,7 @@ class NseUtils:
         return ret_dims
 
     @staticmethod
-    def weights_dims(weights: XarrayLike | None) -> ...:
+    def weights_dims(weights: XarrayLike | None) -> FlexibleDimensionTypes | None:
         """
         Helper to retrieve "dims" from optional weights
 
@@ -102,7 +102,7 @@ class NseUtils:
             return weights.dims
 
     @staticmethod
-    def merge_sizes(*xr_data: Unpack[tuple[XarrayLike]]) -> Mapping[Hashable, int]:
+    def merge_sizes(*xr_data) -> Mapping[Hashable, int]:
         """
         Merges the maps that contain the size (value) for each dimension (key) (key) in a given
         `XarrayLike` object.
@@ -158,7 +158,7 @@ class NseUtils:
         dim_has_more_than_one_obs = any(dim_sizes[k] > 1 for k in gathered_dims)
 
         if not dim_has_more_than_one_obs:
-            raise NotImplementedError(NseUtils.ERROR_NO_DIMS_WITH_MULTIPLE_OBS)
+            raise IndexError(NseUtils.ERROR_NO_DIMS_WITH_MULTIPLE_OBS)
 
 
 @dataclass
@@ -170,10 +170,28 @@ class NseScoreBuilder:
     - perform any validity checks on the input
     - resolve optional inputs
     - raise any issues if the above are not conformant with the "NSE" score
+
+    Raises:
+        RuntimeError: If the builder has already expired after building a score - see notes below.
+
+    .. see-also::
+        All other errors raised are documented in the main api under :py:func:`scores.continous.nse`
+
+    .. note::
+
+        No data or reference to data is kept in the builder object - this is intentional. Normally
+        the builder pattern _should_ self-destruct after building, and move all its resources to the
+        built object, but this is not guarenteed with python's garbage collector.
+
+        Therefore, we retain a weak reference to ``ref_nsescore`` just in case an instantiation of
+        the builder is trying to create another score - and raise an error if it does.
+
+        However, if the ``ref_nsescore`` has been garbage collected, the builder is free to rebuild
+        - although the usecase for this is almost non-existant.
     """
 
-    # weakref to scores - to avoid circular reference
-    ref_nsescorer: weakref.ref | None = None
+    #: weakref because builder shouldn't circularly reference itself via ref_nsescore.ref_builder
+    ref_nsescore: weakref.ref | None = None
 
     def build(
         self,
@@ -186,12 +204,7 @@ class NseScoreBuilder:
         is_angular: bool | None = False,
     ):
         """
-        Builds an ``NseScore`` object
-        - performs any checks and preliminary computations.
-        - stores a weak reference to the score.
-        - cannot be run twice (unless the score object has been garbage collected).
-
-        raises a ``RuntimeError`` if ``NseScore`` has already been built.
+        Builds an ``NseScore`` object.
 
         .. note::
 
@@ -199,7 +212,11 @@ class NseScoreBuilder:
             `NseScore` isn't instantiated directly. If this error is raised, the user would be
             prompted to raise an issue.
         """
-        if self.ref_nsescorer is not None and self.ref_nsescorer() is not None:
+        # it is unlikely that a single instantiation of a builder is used to create multiple scores,
+        # simultaneously as they refer to the same data and arguments. If build is invoked on an
+        # already built score from this builder -  it's likely that this internal class was used
+        # and/or developed incorrectly - hence the runtime error.
+        if self.ref_nsescore is not None and self.ref_nsescore() is not None:
             raise RuntimeError(NseUtils.ERROR_SCORE_ALREADY_BUILT)
 
         reduce_dims = NseUtils.check_and_gather_dimensions(
@@ -210,8 +227,8 @@ class NseScoreBuilder:
             preserve_dims=preserve_dims,
         )
 
-        ret_nsescorer = NseScore(
-            builder=self,
+        ret_nsescore = NseScore(
+            ref_builder=self,
             fcst=fcst,
             obs=obs,
             reduce_dims=reduce_dims,
@@ -219,9 +236,9 @@ class NseScoreBuilder:
             is_angular=is_angular,
         )
 
-        self.ref_nsescorer = weakref.ref(ret_nsescorer)
+        self.ref_nsescore = weakref.ref(ret_nsescore)
 
-        return ret_nsescorer
+        return ret_nsescore
 
 
 # fields can only be set once
@@ -242,7 +259,15 @@ class NseScore:
 
     The rest of the operations are simple broadcastable operations e.g. subtraction and division
 
-    .. important ::
+    Raises:
+        RuntimeError: If the ``NseScore`` object is being initialised directly. ``NseScoreBuilder``
+            should be used instead as it performs input checking
+
+    .. see-also::
+
+        All other errors raised are documented in the main api under :py:func:`scores.continous.nse`
+
+    .. important::
 
         divide by zero errors are intentionally ignored here and ``numpy`` will automatically
         fill them with ``np.nan``. ``NseScoreBuilder`` the class that constructs a ``NseScore``
@@ -250,17 +275,18 @@ class NseScore:
     """
 
     _: KW_ONLY
-    #: strong ref to builder - to keep it in scope
+    #: strong ref to builder, since we want to keep the builder in scope to check how this object
+    #: was created - see ``__post_init__``
     ref_builder: NseScoreBuilder
     obs: XarrayLike
     fcst: XarrayLike
     reduce_dims: FlexibleDimensionTypes | None
     weights: XarrayLike | None
-    is_angular: bool = False
+    is_angular: bool | None = False
 
     def __post_init__(self) -> None:
         """
-        Checks referenced builder has not already initialised, otherwise raises a ``RuntimeError``.
+        Checks that this object has been initialised by a valid ``NseScoreBuilder``.
 
         .. note::
 
@@ -268,7 +294,11 @@ class NseScore:
             `NseScore` isn't instantiated directly. If this error is raised, the user would be
             prompted to raise an issue.
         """
-        if self.ref_builder is None:
+        if (
+            self.ref_builder is None
+            or self.ref_builder.ref_nsescore is None
+            or id(self.ref_builder.ref_nsescore()) != id(self)
+        ):
             raise RuntimeError(NseUtils.ERROR_SCORE_DIRECT_INIT_DISALLOWED)
 
     def mse_callback(self) -> Callable[..., XarrayLike]:
@@ -299,7 +329,6 @@ class NseScore:
             ret_nse = 1.0 - (fcst_err / obs_var)
 
         # cast strictly to `XarrayLike` from an `Optional`
-        assert isinstance(ret_nse, XarrayLike)  # nosec - for internal safety & tests only.
         assert_type(ret_nse, XarrayLike)
 
         return ret_nse
@@ -317,7 +346,8 @@ class NseScore:
         """
         Calculates the obs variance which is essentially ``scores.mse(obs_mean, obs)``.
         """
-        check_dims(self.obs, self.reduce_dims, mode="superset")
+        reduce_dims: Iterable[Hashable] = [] if self.reduce_dims is None else self.reduce_dims
+        check_dims(self.obs, reduce_dims, mode="superset")
 
         mse_cb: Callable[..., XarrayLike] = self.mse_callback()
         obs_mean: XarrayLike = self.obs.mean(dims=self.reduce_dims)

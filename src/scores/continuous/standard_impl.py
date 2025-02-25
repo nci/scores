@@ -9,10 +9,9 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
+from scores.continuous.nse_impl import NseScore, NseScoreBuilder
 from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
-
-import scores.continous.nse_impl as nse_impl
 
 
 def mse(
@@ -569,8 +568,8 @@ def nse(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
-    reduce_dims: FlexibleDimensiontypes | None = None,
-    preserve_dims: FlexibleDimensiontypes | None = None,
+    reduce_dims: FlexibleDimensionTypes | None = None,
+    preserve_dims: FlexibleDimensionTypes | None = None,
     weights: XarrayLike | None = None,
     is_angular: bool | None = False,
 ) -> XarrayLike:
@@ -662,13 +661,8 @@ def nse(
     """
 
     # setup arguments for builder to do checks
-    nse_score: nse_impl.NseScore = nse_impl.NseScoreBuilder().build(
-        obs=obs,
-        fcst=fcst,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        weights=weights,
-        is_angular=is_angular
+    nse_score: NseScore = NseScoreBuilder().build(
+        obs=obs, fcst=fcst, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular
     )
 
     # calculate the actual score: note - delayed if using dask.
