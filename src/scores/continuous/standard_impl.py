@@ -721,6 +721,6 @@ def nse(
     # fmt: on
 
     # calculate the actual score: note - delayed if using dask.
-    nse_result: XarrayLike = nse_score.calculate()
+    nse_result: XarrayLike = nse_score.nse
 
     return nse_result

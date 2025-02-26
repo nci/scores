@@ -179,6 +179,9 @@ class NseScoreBuilder:
     #: weakref because builder shouldn't circularly reference itself via ref_nsescore.ref_builder
     ref_nsescore: weakref.ref | None = None
 
+    # NOTE: no explicit __init__ of other members since this object shouldn't store any data
+    # (neither copy nor reference).
+
     def build(
         self,
         *,  # force KW_ONLY - note
@@ -243,6 +246,11 @@ class NseScore:
             - The builder focuses on the accuracy of the interface (i.e. the input arguments).
             - The score focuses on the accuracy of the computation assuming accuracy of the inputs.
 
+    .. note::
+
+        Most of the methods in this class are cached properties, because they only need to be
+        computed one time per score object.
+
     Raises:
         RuntimeError: If the ``NseScore`` object is being initialised directly. ``NseScoreBuilder``
             should be used instead as it performs input checking
@@ -283,6 +291,7 @@ class NseScore:
         if self.ref_builder is None or not isinstance(self.ref_builder, NseScoreBuilder):
             raise RuntimeError(NseUtils.ERROR_SCORE_DIRECT_INIT_DISALLOWED)
 
+    @functools.cached_property
     def mse_callback(self) -> Callable[..., XarrayLike]:
         """
         Callback helper for calculating :py:func:`scores.mse`, with prefilled keyword args.
@@ -294,46 +303,43 @@ class NseScore:
             is_angular=self.is_angular,
         )
 
-    def calculate(self) -> XarrayLike:
+    @functools.cached_property
+    def nse(self) -> XarrayLike:
         """
         The main calculation function for NSE:
         - denominator (D): calculates the obs variance using a combination of ``xr.mean`` and :py:func:`scores.mse`
         - numerator (N): calculates the forecast error using :py:func:`scores.mse` on ``obs`` and ``fcst``.
         - ``score = 1 - N / D`` reduced and broadcast appropriately by ``xarray``.
         """
-        obs_var: XarrayLike = self.calculate_obs_variance()
-        fcst_err: XarrayLike = self.calculate_forecast_error()
         ret_nse: XarrayLike | None = None
 
         # intentional divide="ignore", as warning is already raised above.
         # `numpy` will fill divide by zero elements with NaNs.
         with np.errstate(divide="ignore"):
-            ret_nse = 1.0 - (fcst_err / obs_var)
+            ret_nse = 1.0 - (self.fcst_error / self.obs_variance)
 
         # cast strictly to `XarrayLike` from an `Optional`. If we got this far, it can't be `None`.
         cast(XarrayLike, ret_nse)
 
         return ret_nse
 
-    def calculate_forecast_error(self) -> XarrayLike:
+    @functools.cached_property
+    def fcst_error(self) -> XarrayLike:
         """
         Calculates the forecast error which is essentially ``scores.mse(fcst, obs)``
         """
-        mse_cb: Callable[..., XarrayLike] = self.mse_callback()
-        ret_fcst_err: XarrayLike = mse_cb(self.fcst, self.obs)
+        return self.mse_callback(self.fcst, self.obs)
 
-        return ret_fcst_err
-
-    def calculate_obs_variance(self) -> XarrayLike:
+    @functools.cached_property
+    def obs_variance(self) -> XarrayLike:
         """
         Calculates the obs variance which is essentially ``scores.mse(obs_mean, obs)``.
         """
         reduce_dims: Iterable[Hashable] = [] if self.reduce_dims is None else self.reduce_dims
         check_dims(self.obs, reduce_dims, mode="superset")
 
-        mse_cb: Callable[..., XarrayLike] = self.mse_callback()
         obs_mean: XarrayLike = self.obs.mean(dim=self.reduce_dims)
-        ret_obs_var: XarrayLike = mse_cb(obs_mean, self.obs)
+        ret_obs_var: XarrayLike = self.mse_callback(obs_mean, self.obs)
 
         NseUtils.check_nonzero_obsvar(ret_obs_var)
 
