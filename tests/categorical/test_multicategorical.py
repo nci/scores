@@ -753,7 +753,25 @@ def test_seeps(  # pylint: disable=too-many-arguments
 )
 def test_seeps_warns(p1):
     """Tests that seeps emits a warning"""
-    with pytest.warns(UserWarning, match="contains values not strictly between 0 and 1"):
+    with pytest.warns(UserWarning, match="values that are exactly equal to 0 or 1"):
+        seeps(
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            p1,
+            light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+        )
+
+
+@pytest.mark.parametrize(
+    ("p1"),
+    [
+        (xr.DataArray([-0.1, 0.5])),
+        (xr.DataArray([1.1, 0.5])),
+    ],
+)
+def test_seeps_raises(p1):
+    """Tests that seeps raises an error"""
+    with pytest.raises(ValueError, match="must not contain values outside the range"):
         seeps(
             mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
