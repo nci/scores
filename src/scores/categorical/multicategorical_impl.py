@@ -309,8 +309,6 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     as per Rodwell et al. (2010). This can be changed by setting ``mask_clim_extremes`` to ``False`` or
     by changing the ``lower_masked_value`` and ``upper_masked_value`` parameters.
 
-    For further details on generating the array for the `prob_dry` arg see Rodwell et al. (2010).
-
     Args:
         fcst: An array of real-valued forecasts (e.g., precipitation forecasts in mm).
         obs: An array of real-valued observations (e.g., precipitation forecasts in mm).
