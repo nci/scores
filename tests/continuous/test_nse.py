@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from numpy import typing as npt
 import xarray as xr
 
 from scores.continuous import nse
@@ -19,6 +20,20 @@ class NseSetup:
         math:`X_i ~ N(0, 1)`pi.  ``dim_names`` must match the size of ``shape``.
         """
         return xr.DataArray(np.random.rand(*shape), dims=dim_names)
+
+    @staticmethod
+    def naive_nse(
+        *,
+        fcst: npt.NDArray[float],
+        obs: npt.NDArray[float],
+        weight: npt.NDArray[float],
+    ):
+        """
+        Naive implementation of NSE using for loops - this is to check that the internals of e.g.
+        xarray/numpy/dask are doing the right thing in conjunction with how they are used for this
+        score. However, this function is slow and should not be run for big arrays.
+        """
+        pass
 
     @pytest.fixture(scope="class", autouse=True)
     def setup_numpy_seed(self):
@@ -145,20 +160,14 @@ class TestNseScore(NseSetup):
     verifiable by a naive secondary algorithm.
     """
 
-    @staticmethod
-    def naive_nse(fcst: np.float64, obs: np.float64, weight: np.float64):
-        pass
-
-
 class TestNseDask(NseSetup):
     """
     Basic testing if dask is available and used appropriately by NSE.
     """
     @pytest.fixture(scope="class", autouse=True)
-    def dask_available(self):
+    def skip_if_dask_unavailable(self):
         try:
             import dask
             import dask.array
         except ImportError:
             pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-
