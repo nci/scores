@@ -190,7 +190,7 @@ class NseScoreBuilder:
 
     def build(
         self,
-        *,  # force KW_ONLY - note
+        *,  # force KW_ONLY
         fcst: XarrayLike,
         obs: XarrayLike,
         reduce_dims: FlexibleDimensionTypes | None = None,
