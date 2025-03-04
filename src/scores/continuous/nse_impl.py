@@ -5,73 +5,16 @@ Internal module used to support the computation of NSE. Not to be used directly.
 import functools
 import warnings
 import weakref
-from enum import Enum
+from collections.abc import Hashable, Iterable
 from dataclasses import KW_ONLY, dataclass
-from typing import Callable, Hashable, Iterable, cast
+from typing import Callable, cast
 
 import numpy as np
+
 import scores.continuous as _cnt
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, check_weights_positive, gather_dimensions
 
-
-# --------------------------------------------------------------------------------------------------
-# TODO: this can probably go into common utils at some point
-class NseXarrayType(Enum):
-    """
-    Xarray type resolver - used to convert
-    """
-
-    #: invalid type 
-    INVALID = -1
-    #: maps to ``xr.Dataset``
-    DATASET = 1
-    #: maps to ``xr.DataArray``
-    DATAARRAY = 2
-
-
-@dataclass(frozen=True, kw_only=True, slots=True, init=False)
-class LiftedDataset:
-    """
-    Higher order data type that lifts a data array into a dataset, this way it is SUFFICIENT for
-    functions to ONLY be compatible with datasets, even if a data array is provided as input.
-
-    .. important::
-
-        There may be cases where the functions using this type may have to iteratively perform
-        operations on the underlying data arrays in the dataset, because no native implementation
-        exists for ``xr.Dataset`` (but it does for ``xr.DataArray``). However, this needs to be done
-        anyway if we are supporting both types.
-
-        This class exists as an "aid" to avoid repeated logic and branching.
-    """
-    ds: xr.Dataset
-    raw_type: NseXarrayType
-    var_names: list[str]
-
-    #: data arrays don't necessarily have variable names so give it a ascii only dummy
-    _DUMMY_DATAARRAY_VARNAME: str = "dummyvarname"
-
-    def __init__(self, xr_data: XarrayLike):
-        if isinstance(xr_data, xr.Dataset):
-            self.ds = xr_data
-            self.raw_type = NseXarrayType.DATASET
-            self.var_names = [ k for k in xr_data.variables.keys() ]
-        elif isinstance(xr_data, xr.Dataset):
-            # a data array could have a name...
-            da_name: str = (
-                LiftedDataset._DUMMY_DATAARRAY_VARNAME
-                if xr_data.name is None else xr_data.name
-            )
-            # but a dataset MUST have a name for its variables
-            self.ds = xr_data.to_dataset(name=da_name)
-            self.raw_type = NseXarrayType.DATAARRAY
-            self.var_names = [da_name]
-        # if we reached this point, then we're dealing with an illegal runtime type
-        self.raw_type = NseXarrayType.INVALID
-        raise TypeError("Invalid type for `XarrayLike`, must be a `xr.Dataset` or a `xr.DataArray`")
-
-# --------------------------------------------------------------------------------------------------
 
 class NseUtils:
     """
@@ -88,12 +31,6 @@ class NseUtils:
     Internal Class: `NseScore` has already been built - re-use the output of this builder instead
     of rebuilding, to avoid data bloat. This is not a user error - if it has been triggered please
     raise an issue in github.
-    """
-
-    ERROR_MIXING_DATASET_AND_DATAARRAY: str = """
-    Mixing of xarray datasets and data arrays is not allowed for this score. ALL of `fcst`, `obs`
-    and `weights` MUST be either `xr.Dataset` or `xr.DataArray` EXCLUSIVELY, AND MUST have common
-    variables.
     """
 
     ERROR_NO_DIMS_TO_REDUCE: str = """
@@ -126,16 +63,9 @@ class NseUtils:
         Checks the dimension compatibilty of the various input arguments. This is the main utility
         function that groups all the checks needed for NSE.
         """
-        # lift data arrays to datasets
-        if isinstance(fcst, xr.Dataset):
-            mixed_types = not isinstance(obs, xr.Dataset)
-            mixed_types = mixed_types or not isinstance(weights, xr.Dataset)
-            raise TypeError(ERROR_MIXING_DATASET_AND_DATAARRAY)
-
-        if isinstance(fcst, xr.DataArray):
-            mixed_types = not isinstance(obs, xr.DataArray)
-            mixed_types = mixed_types or not isinstance(weights, xr.DataArray)
-            raise TypeError(ERROR_MIXING_DATASET_AND_DATAARRAY)
+        # TODO: use LiftedDataset here for fcst, obs and weights...
+        # TODO: change the checks below to expect a LiftedDataset instead and perform using
+        #       LiftedDataset.ds instead.
 
         # check weights conform to NSE computations
         NseUtils.check_weights(weights)
@@ -156,13 +86,6 @@ class NseUtils:
         NseUtils.check_gathered_dims(ret_dims, merged_sizes)
 
         return ret_dims
-
-    @staticmethod
-    def check_xarray_type_homogeneity(xr_data_list: tuple[XarrayLike]):
-        functools.reduce(xr_data_list)
-
-    @staticmethod
-    def lift_dataarrays_to_datasets(da_list: tuple[xr.Dataset]) -> ds_list:
 
     @staticmethod
     def merge_sizes(*xr_data) -> dict[Hashable, int]:
@@ -188,7 +111,6 @@ class NseUtils:
         Warns if at least one obs variance term is zero.
         """
         if (obs_var == 0).any():
-            import pdb; pdb.set_trace()
             warnings.warn(NseUtils.WARN_ZERO_OBS_VARIANCE)
 
     @staticmethod

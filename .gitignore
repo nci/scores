@@ -110,5 +110,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# pixi
+# pixi environments
+.pixi
 .pixi/
+*.egg-info
