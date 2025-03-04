@@ -462,11 +462,8 @@ def check_weights_positive(weights: XarrayLike | None, *, context: str):
         - This check covers common issues, but is not a strict check (see notes below).
 
     .. note::
-        Future work: a stricter version of this check could be introduced to support:
-        - user-defined normalisation that checks that :math:`\\lVert \\text{weights} \\rVert = K`,
-          where, :math:`K = 1` and l1-norm or l2-norm are common choices.
-        - ``reduce_dims`` to run the check individually against each dimension being reduced, since
-          they are accumulated seperately.
+    
+        Future work: see #829 and #828 for potential improvements on this function.
     """
     # No check required if weights is None.
     if weights is None:
