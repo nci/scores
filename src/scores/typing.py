@@ -66,7 +66,7 @@ class LiftedDataset:  # pylint: disable-msg=too-few-public-methods
         operations on the underlying data arrays in the dataset, because no native implementation
         exists for ``xr.Dataset``, while it does for ``xr.DataArray``.
 
-        Note, this is not unique to this implementation as it needs to be done regardless, since we
+        Note, this is not unique to this implementation as it needs to be done anyway, since we
         are supporting both types. Regardless, do not assume ``xr.Dataset`` will "automagically"
         handle anything ``xr.DataArray`` can (though for most cases there is an equivilent method).
     """
