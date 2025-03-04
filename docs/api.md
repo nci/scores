@@ -68,6 +68,7 @@
     :members:
 .. autoclass:: scores.categorical.EventOperator
     :members:
+.. autofunction:: scores.categorical.seeps
 ```
 
 ## scores.spatial

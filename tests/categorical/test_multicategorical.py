@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.categorical import firm
+from scores.categorical import firm, seeps
 from scores.categorical.multicategorical_impl import _single_category_score
 from scores.utils import DimensionError
 from tests.categorical import multicategorical_test_data as mtd
@@ -509,3 +509,300 @@ def test_firm_raises(
             preserve_dims=preserve_dims,
             threshold_assignment=threshold_assignment,
         )
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "p1",
+        "light_heavy_threshold",
+        "dry_light_threshold",
+        "mask_clim_extremes",
+        "lower_masked_value",
+        "upper_masked_value",
+        "reduce_dims",
+        "preserve_dims",
+        "weights",
+        "expected",
+    ),
+    [
+        # Preserve all dims, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE0,
+        ),
+        # Reduce all dims, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            None,
+            None,
+            mtd.EXP_SEEPS_CASE1,
+        ),
+        # Preserve dim t, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "t",
+            None,
+            mtd.EXP_SEEPS_CASE2,
+        ),
+        # Reduce dim t, tests each entry of the penalty matrix
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            "t",
+            None,
+            None,
+            mtd.EXP_SEEPS_CASE3,
+        ),
+        # Test broadcasting of extra fcst dim
+        (
+            mtd.DA_FCST2_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE4,
+        ),
+        # Test weighting
+        (
+            mtd.DA_FCST2_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            mtd.DA_SEEPS_WEIGHTS,
+            mtd.EXP_SEEPS_CASE5,
+        ),
+        # Test different dry_light_threshold
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            1000 * mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            1000,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE6,
+        ),
+        # Vary P1 with no masking
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_VARY1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            False,
+            None,
+            None,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE7,
+        ),
+        # Vary P1 to test with different edge cases from above, with no masking
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_VARY2_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            False,
+            None,
+            None,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE8,
+        ),
+        # Test masking of lower masking threshold
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_VARY1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE9,
+        ),
+        # Test masking of upper masking threshold
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_VARY2_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE10,
+        ),
+        # Test varying light_heavy_threshold
+        (
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            mtd.DA_P1_SEEPS,
+            mtd.DA_LIGHT_HEAVY_THRESHOLD_VARY_SEEPS,
+            0.2,
+            True,
+            0.1,
+            0.85,
+            None,
+            "all",
+            None,
+            mtd.EXP_SEEPS_CASE11,
+        ),
+    ],
+)
+def test_seeps(  # pylint: disable=too-many-arguments
+    fcst,
+    obs,
+    p1,
+    light_heavy_threshold,
+    dry_light_threshold,
+    mask_clim_extremes,
+    lower_masked_value,
+    upper_masked_value,
+    reduce_dims,
+    preserve_dims,
+    weights,
+    expected,
+):
+    """Tests seeps"""
+    calculated = seeps(
+        fcst,
+        obs,
+        p1,
+        light_heavy_threshold=light_heavy_threshold,
+        dry_light_threshold=dry_light_threshold,
+        mask_clim_extremes=mask_clim_extremes,
+        lower_masked_value=lower_masked_value,
+        upper_masked_value=upper_masked_value,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+
+    xr.testing.assert_allclose(
+        calculated,
+        expected,
+    )
+
+
+@pytest.mark.parametrize(
+    ("p1"),
+    [
+        (xr.DataArray([0, 0.5])),
+        (xr.DataArray([1, 0.5])),
+    ],
+)
+def test_seeps_warns(p1):
+    """Tests that seeps emits a warning"""
+    with pytest.warns(UserWarning, match="values that are exactly equal to 0 or 1"):
+        seeps(
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            p1,
+            light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+        )
+
+
+@pytest.mark.parametrize(
+    ("p1"),
+    [
+        (xr.DataArray([-0.1, 0.5])),
+        (xr.DataArray([1.1, 0.5])),
+    ],
+)
+def test_seeps_raises(p1):
+    """Tests that seeps raises an error"""
+    with pytest.raises(ValueError, match="must not contain values outside the range"):
+        seeps(
+            mtd.DA_FCST_SEEPS,
+            mtd.DA_OBS_SEEPS,
+            p1,
+            light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
+        )
+
+
+def test_seeps_dask():
+    """Tests seeps works with dask"""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
+
+    calculated = seeps(
+        mtd.DA_FCST_SEEPS.chunk(),
+        mtd.DA_OBS_SEEPS.chunk(),
+        mtd.DA_P1_SEEPS.chunk(),
+        light_heavy_threshold=mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS.chunk(),
+        dry_light_threshold=0.2,
+        mask_clim_extremes=True,
+        lower_masked_value=0.1,
+        upper_masked_value=0.85,
+        reduce_dims=None,
+        preserve_dims="all",
+    )
+
+    assert isinstance(calculated.data, dask.array.Array)
+    calculated = calculated.compute()
+    assert isinstance(calculated.data, np.ndarray)
+    xr.testing.assert_allclose(
+        calculated,
+        mtd.EXP_SEEPS_CASE0,
+    )
