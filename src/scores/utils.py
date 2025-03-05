@@ -15,9 +15,11 @@ import xarray as xr
 
 from scores.typing import (
     FlexibleDimensionTypes,
-    LiftedDataset,
     XarrayLike,
+    LiftedDataset,
     XarrayTypeMarker,
+    assert_xarraylike,
+    assert_lifteddataset,
 )
 
 WARN_ALL_DATA_CONFLICT_MSG = """
@@ -43,6 +45,17 @@ raised instead.
 ERROR_OVERSPECIFIED_PRESERVE_REDUCE = """
 You have specified both preserve_dims and reduce_dims. This method doesn't know how
 to properly interpret that, therefore an exception has been raised.
+"""
+
+ERROR_INVALID_WEIGHTS = """
+You have specified invalid weights. The weights (excluding NaNs) must be >= 0, with at least one
+strictly positive weight.
+"""
+
+WARN_INVALID_WEIGHTS = f"""
+{ERROR_INVALID_WEIGHTS}
+NOTE: The score in which this check has been used has allowed this to be a warning instead of a
+      error. The user is responsible for checking the integrity of the inputs and outputs.
 """
 
 
@@ -218,31 +231,28 @@ class LiftedDatasetUtils:
     @staticmethod
     def lift_fn(fn: Callable) -> Callable:
         """
-        Wrapper to automatically apply a function that is compatible with ``XarrayLike`` but on
-        ``LiftedDataset`` instead. Since ``XarrayLike`` functions should work with ``xr.Datasets``,
-        by extension they should work for for the underlying ``LiftedDatasets.ds``
+        Wrapper to maintain backward compatibility with legacy functions that use ``XarrayLike``
+        arguments instead of ``LiftedDataset``.
 
         .. important::
 
-            This is an internal function - not for public API.
+            For INTERNAL use only - NOT for public API.
 
-            The main reason to use this function is for compatibility with existing API that expect
-            ``XarrayLike`` rather than ``LiftedDataset``.
+        .. caution::
 
-            Unlike ``lift_fn_ret`` this does not attempt to preserve structure, i.e. giving it a
-            identity function with input as ``xr.DataArray`` may result in ``xr.Dataset`` as output.
+            This wrapper should be used sparingly - it should be deprecated if the code is
+            refactored to natively support ``LiftedDataset``. The end goal is to simplify
+            compatibility between xarray (and potentially other) data structures.
 
-        Recommendations:
-            - _New_ functionality that require cross compatiblity between ``xr.DataArray`` and
-              ``xr.Dataset`` should not use this wrapper - they should directly use
-              ``LiftedDataset`` as inputs.
-            - The wrapped function, must be compatible with ``xr.Dataset`` API.
-            - If the underlying function only works for ``xr.DataArray``, then, while the
-              computations might still be valid, the metadata structure will not be preserved.
-            - If a dataset compatible API does not exist, the developer would have to change the
-              underlying function to iteratively perform the computations for each dataarray in the
-              dataset - however, it may be easier to just upgrade it to use ``LiftedDataset``
-              directly.
+        .. tip::
+
+            This wrapper is preferrable for maintaining compatiblity with functions that query
+            datasets to e.g. perform checks, but NOT directly operate on the underlying numeric
+            values.
+
+            For mathematical computations (which generally take numeric data and return numeric
+            data), it's generally preferrable to use :py:meth:`lift_fn_ret` as it is structure
+            preserving.
 
         .. see-also::
 
@@ -270,33 +280,12 @@ class LiftedDatasetUtils:
     @classmethod
     def lift_fn_ret(cls, fn: Callable[..., XarrayLike]) -> Callable[..., LiftedDataset]:
         """
-        Wrapper of functions that deal with ``XarrayLike``, similar to ``lift_fn`` but also lifts
-        the return type to a ``LiftedDataset``, if possible.
+        Like ``lift_fn`` but also lifts the return type to a ``LiftedDataset``. Uses
+        ``lift_fn`` under the hood.
 
         .. important::
 
-            This is an internal function - not for public API.
-
-            The main reason to use this function is for compatibility with existing API that expect
-            ``XarrayLike`` rather than ``LiftedDataset``.
-
-            Unlike ``lift_fn``, this wrapper tries to preserve isomorphism, i.e. outputs a
-            ``LiftedDataset``. However, it additionally requires that the input data types
-            homogeneous e.g. ALL datasets XOR (exclusive-or) ALL data arrays.
-
-            see-also: :py:meth:`LiftedDatasetUtils.all_same_type`
-
-        Recommendations:
-            - _New_ functionality that require cross compatiblity between ``xr.DataArray`` and
-              ``xr.Dataset`` should not use this wrapper - they should directly use
-              ``LiftedDataset`` as inputs.
-            - The wrapped function, must be compatible with ``xr.Dataset`` API.
-            - If the underlying function only works for ``xr.DataArray``, then, while the
-              computations might still be valid, the metadata structure will not be preserved.
-            - If a dataset compatible API does not exist, the developer would have to change the
-              underlying function to iteratively perform the computations for each dataarray in the
-              dataset - however, it may be easier to just upgrade it to use ``LiftedDataset``
-              directly.
+            For INTERNAL use only - NOT for public API. Read the docstring for ``lift_fn``.
 
         .. see-also::
 
@@ -650,33 +639,39 @@ def check_binary(data: XarrayLike, name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
-def check_weights_positive(weights: XarrayLike | None, *, context: str):
+def check_weights_positive(weights: XarrayLike | None, *, raise_error=True):
     """
-    This is a semi-strict check that requires weights to be non-negative, and their (vector) norm
-    to be non-zero. It alerts the user against unexpected cancellations and sign flips, from
-    introduction of negative weights, as this affects how some scores are interpretted.
-
-    Args:
-        weights: xarray-like data of weights to check
-        context: additional information for the warning message e.g.
-            metric info and metric-specific reason for raising this warning.
-
-    .. important::
-        - This should not be in the public API/docs.
-        - This check should be opt-in - i.e. only use this check if you know that the score cannot
-          deal with negative weights.
-        - NaN values are excluded in this check.
-        - This check covers common issues, but is not a strict check (see notes below).
+    This is a check that requires weights to be non-negative (NaN values are excluded from the check
+    since they are used as masks). At least one of the weights must be strictly positive.
 
     .. note::
 
-        Future work: see #829 and #828 for potential improvements on this function.
+        It has optional support to raise a warning instead (by setting ``raise_error=False``) for
+        specialized functions that may need to support negative weights (though this is not
+        recommended).
+
+    Args:
+        weights: weights to check
+        raise_error: raise an error, instead of warning (default: ``True``)
+
+    .. see-also::
+
+        This function covers most bases, regardless, for potential improvements see:
+            - `#828 <GITHUB828_>`_.
+            - `#829 <GITHUB829_>`_.
+
+    Raises:
+        UserWarning: if ``raise_error=False`` and weights are invalid
+        ValueError: if ``raise_error=True`` and weights are invalid
+
+    .. _GITHUB828: https://github.com/nci/scores/issues/828
+    .. _GITHUB829: https://github.com/nci/scores/issues/829
     """
-    # No check required if weights is None.
+    # nothing to check
     if weights is None:
         return
-    # otherwise, weights MUST be an XarrayLike
-    cast(XarrayLike, weights)
+    # safety: typehint
+    assert typing.is_xrarraylike(weights)
     # ignore nans as they may be used as natural exclusion masks in weighted calculations.
     weights_masked = np.ma.array(weights, mask=np.isnan(weights))
     # however, still check that we have at least one proper number.
@@ -687,9 +682,7 @@ def check_weights_positive(weights: XarrayLike | None, *, context: str):
     checks_passed = checks_passed and np.ma.any(weights_masked > 0)
 
     if not checks_passed:
-        _warning = UserWarning(
-            "Negative weights are not supported for this metric. "
-            "All weights (excluding NaNs) must be >= 0, with at least one strictly positive weight."
-            f"Context = '{context}'"
-        )
-        warnings.warn(_warning)
+        if raise_error:
+            raise ValueError(ERROR_INVALID_WEIGHTS)
+        else:
+            warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)

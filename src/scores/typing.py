@@ -26,13 +26,12 @@ FlexibleArrayType = Union[XarrayLike, pd.Series]
 
 class XarrayTypeMarker(Enum):
     """
-    .. important::
-
-        For INTERNAL use only. This is currently an EXPERIMENTAL type utility, and not to be
-        used in typehints in public API. However, it can be used as part of internal functions.
-
     xarray type marker: used to mark ``xr.Dataset`` and ``xr.DataArray`` before they are unified
     into ``LiftedDataset``
+
+    .. important::
+
+        For INTERNAL use only - NOT for public API.
     """
 
     #: invalid type
@@ -56,25 +55,16 @@ class LiftedDataset:
     invalidate the lifted structure, tainting it and removing any references to the underlying
     dataset.
 
-    For an EXPERIMENTAL auto-dispatch see: :py:meth:`LiftedDataset.lift_fn`. This automatically
-    "lifts" the function itself, handling any input arguments that are ``LiftedDatasets`` as if they
-    were ``XarrayLike``. This is useful to maintain compatiblity with legacy utility functions.
+    For an auto-dispatch see: :py:meth:`LiftedDatasetUtils.lift_fn_ret`
 
     .. important::
 
-        For INTERNAL use only. This is currently an EXPERIMENTAL type utility, and not to be
-        used in typehints in public API. However, it can be used as part of internal functions.
+        For INTERNAL use only - NOT for public API.
 
-    .. note::
         In particular, any errors thrown by this function needs to be handled by the caller. As the
         errors are mainly aimed for development and testing. Ideally, they should not be raised in
-        runtime.
-
-        However, if there are "exceptions" that need to propagate to the user, the user will have to
-        handle and re-raise any errors appropriately.
-
-        see :py:meth:`~scores.continuous.nse_impl.NseUtils.get_xr_type_marker` for an example.
-
+        runtime; and if they must - they should be caught within the calling function and re-raised
+        with a more helpful message.
     """
 
     #: dummy variable name - internal static variable
@@ -202,3 +192,22 @@ class LiftedDataset:
             ret_xr_data = ds_local
         # returning the inner ds will remove any remaining references from this scope.
         return ret_xr_data
+
+
+def assert_xarraylike(maybe_xrlike: XarrayLike):
+    """
+    Runtime assert for Xarraylike
+    - To assist in type safety for development and testing purposes only
+    - Should not be used as a user error as this will be obfuscated depending on compile settings
+    """
+    assert isinstance(maybe_xrlike, (xr.Dataset, xr.DataArray))
+
+
+def assert_lifteddataset(maybe_lds: LiftedDataset):
+    """
+    Runtime assert for LiftedDataset
+    - To assist in type safety for development and testing purposes only
+    - Should not be used as a user error as this will be obfuscated depending on compile settings
+    """
+    assert isinstance(maybe_lds, LiftedDataset)
+
