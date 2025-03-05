@@ -3,10 +3,9 @@ This module contains various compound or union types which can be used across th
 a consistent approach to typing is handled.
 """
 
-import functools
 from collections.abc import Hashable, Iterable
 from enum import Enum
-from typing import Union, Self, Callable
+from typing import Union
 
 import pandas as pd
 import xarray
@@ -110,23 +109,45 @@ class LiftedDataset:
             raise TypeError(err_invalid_type)
 
     def is_valid(self) -> bool:
-        return self.xr_type_marker != XarrayTypeMarker.INVALID
+        """
+        return True if the LiftedDataset obj is valid
+        """
+        ret: bool = self.xr_type_marker != XarrayTypeMarker.INVALID
+        return ret
 
     def is_dataarray(self) -> bool:
-        return self.xr_type_marker == XarrayTypeMarker.DATAARRAY
+        """
+        return True if the LiftedDataset obj is an xr.DataArray
+        """
+        ret: bool = self.xr_type_marker == XarrayTypeMarker.DATAARRAY
+        return ret
 
     def is_dataset(self) -> bool:
-        return self.xr_type_marker == XarrayTypeMarker.DATASET
+        """
+        return True if the LiftedDataset obj is an xr.Dataset
+        """
+        ret: bool = self.xr_type_marker == XarrayTypeMarker.DATASET
+        return ret
 
-    def reset(self):
-        self.dummy_name: bool = False
-        self.xr_type_marker: XarrayTypeMarker = XarrayTypeMarker.INVALID
-        self.ds: xarray.Dataset | None = None
+    def reset(self) -> None:
+        """
+        Resets any members in this class, allowing them to be dereferenced and garbage collected.
+
+        .. warning::
+
+           This action is irreversable, and should not typically be called manually.
+           It is used by ``.raw()`` to consume this structure and reproduce the original inner
+           dataset or data array.
+        """
+        self.dummy_name = False
+        self.xr_type_marker = XarrayTypeMarker.INVALID
+        self.ds = None
 
     def raw(self) -> XarrayLike:
         """
-        Like ``.ref()`` but consumes any references in the ``LiftedDataset`` structure, invalidating
-        it.  This is usually the last operation before returning the result to the user.
+        Like ``.inner_ref()`` but consumes any references in the ``LiftedDataset`` structure,
+        invalidating it.  This is usually the last operation before returning the result to the
+        user.
 
         .. important::
             To reiterate: this is a CONSUMING operation, that is to say it will retract the
@@ -144,6 +165,20 @@ class LiftedDataset:
         return ret_xr_data
 
     def inner_ref(self) -> XarrayLike:
+        """
+        Retracts the inner dataset or data array contained in this lifted object.
+
+        Uses the type marking as well as whether or not dummy names have been assigned to find a
+        unique retraction such that the raw data can be recovered.
+
+        Unlike ``.raw()`` this does not reset the overarching lifted obj, allowing it to be reused.
+
+        .. note::
+            For most intermediate operations prefer using ``.inner_ref()``, so that it doesn't
+            invalidate the inner data - allowing it to be reused. However, for a finalizing
+            operation, use ``.raw()`` so that the lifted obj and any stale references are
+            appropriately cleaned up.
+        """
         # safety: cannot call this function on an invalid initialisation
         assert self.is_valid()
         # get reference to dataset so that it isn't destroyed on reset.

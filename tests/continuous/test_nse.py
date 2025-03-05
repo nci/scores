@@ -1,7 +1,7 @@
-import pytest
 import numpy as np
-from numpy import typing as npt
+import pytest
 import xarray as xr
+from numpy import typing as npt
 
 from scores.continuous import nse
 from scores.utils import DimensionError
@@ -11,6 +11,7 @@ class NseSetup:
     """
     Base class for NSE tests with some setup and helper functions
     """
+
     _SEED: int = 42
 
     @staticmethod
@@ -70,45 +71,45 @@ class TestNsePublicApi(NseSetup):
         # --- input arrays ---
         # default obs
         cls.obs = NseSetup.make_random_xr_array(
-            shape=(4,2,3),
+            shape=(4, 2, 3),
             dim_names=["t", "x", "y"],
         )
-        # default fcst 
+        # default fcst
         cls.fcst = NseSetup.make_random_xr_array(
-            shape=(4,2,3),
+            shape=(4, 2, 3),
             dim_names=["t", "x", "y"],
         )
         # bad obs name
         # note: all the names must be wrong, if some names are correct
         cls.obs_badnames = NseSetup.make_random_xr_array(
-            shape=(4,2,3),
+            shape=(4, 2, 3),
             dim_names=["t_bad", "x_bad", "y_bad"],
         )
         # incorrect dim sizes between arrays (non broadcastable)
         cls.obs_baddimsizes = NseSetup.make_random_xr_array(
-            shape=(5,1,2),
+            shape=(5, 1, 2),
             dim_names=["t", "x", "y"],
         )
 
         # --- dimension specification ---
         # good dimension specifications
-        cls.reduce_dim_string = "t"           # should give (x, y) array
-        cls.reduce_dims_list = [ "t", "x" ]   # should give (y, 1) array
-        cls.reduce_dim_all = "all"            # single value output
-        cls.preserve_dim_string = "y"         # should give (y, 1) array
-        cls.preserve_dim_list = [ "x", "y" ]  # should give (x, y) array
+        cls.reduce_dim_string = "t"  # should give (x, y) array
+        cls.reduce_dims_list = ["t", "x"]  # should give (y, 1) array
+        cls.reduce_dim_all = "all"  # single value output
+        cls.preserve_dim_string = "y"  # should give (y, 1) array
+        cls.preserve_dim_list = ["x", "y"]  # should give (x, y) array
         # bad dimension specifications
-        cls.preserve_dim_all1 = "all"          # NSE cannot be computed, no dimensions reduced 
-        cls.preserve_dim_all2 = [ "x", "y", "t" ]  # ditto above
-        cls.reduce_dims_none = [ ]             # ditto above
+        cls.preserve_dim_all1 = "all"  # NSE cannot be computed, no dimensions reduced
+        cls.preserve_dim_all2 = ["x", "y", "t"]  # ditto above
+        cls.reduce_dims_none = []  # ditto above
 
         # --- insufficient data to reduce ---
-        cls.fcst_insufficient_data  = NseSetup.make_random_xr_array(
-            shape=(4,1,1),
+        cls.fcst_insufficient_data = NseSetup.make_random_xr_array(
+            shape=(4, 1, 1),
             dim_names=["t", "x", "y"],
         )
         cls.obs_insufficient_data = NseSetup.make_random_xr_array(
-            shape=(4,1,1),
+            shape=(4, 1, 1),
             dim_names=["t", "x", "y"],
         )
 
@@ -118,17 +119,17 @@ class TestNsePublicApi(NseSetup):
         #   currently allowed (and potentially okay, as long as the dimension shapes conform for
         #   the specified axes.)
         cls.weights = NseSetup.make_random_xr_array(
-            shape=(4,2),
+            shape=(4, 2),
             dim_names=["t", "x"],
         )
         # these should still work, as "nan" acts as exclusion and 0 acts as zero-forcing
-        cls.weights.loc[1, "x"] = 0.0     # make one of the weights 0 
-        cls.weights.loc[1, "t"] = np.nan  # make one of the weights np.nan 
+        cls.weights.loc[dict(x=1, t=0)] = 0.0  # make one of the weights 0
+        cls.weights.loc[dict(t=1, x=0)] = np.nan  # make one of the weights np.nan
         # failure conditions for weights
-        cls.negative_weights = cls.weights.copy(deep=True) 
-        cls.negative_weights.loc[0, "t"] = -1.0  # make one of the weights negative
-        cls.allzero_weights = cls.weights.copy(deep=True, data=0.0) 
-        cls.allnan_weights = cls.weights.copy(deep=True, data=np.nan)
+        cls.negative_weights = cls.weights.copy(deep=True)
+        cls.negative_weights.loc[dict(t=0, x=0)] = -1.0  # make one of the weights negative
+        cls.allzero_weights = cls.weights.copy(deep=True, data=np.zeros(cls.weights.shape))
+        cls.allnan_weights = cls.weights.copy(deep=True, data=np.full(cls.weights.shape, fill_value=np.nan))
 
         # --- divide by zero ---
         # set the value along one index of the dimension being reduced: "t", as all one
@@ -137,7 +138,7 @@ class TestNsePublicApi(NseSetup):
 
         # obs_divide_by_zero v.s. fcst (default) = -np.inf only on the plane where this happens
         cls.obs_divide_by_zero = cls.obs.copy(deep=True)
-        cls.obs_divide_by_zero.loc[dict(t=1)] = 42.123 
+        cls.obs_divide_by_zero.loc[dict(t=1)] = 42.123
         # obs_divide_by_zero v.s. fcst_divide_by_zero = np.nan, ditto above
         cls.fcst_divide_by_zero = cls.fcst.copy(deep=True)
         cls.fcst_divide_by_zero.loc[dict(t=1)] = 42.123
@@ -148,21 +149,21 @@ class TestNsePublicApi(NseSetup):
 
     def test_error_incompatible_dimsizes(self):
         with pytest.raises(ValueError):
-            nse(fcst, self.obs_baddimsizes, reduce_dims=self.reduce_dim_string)
+            nse(self.fcst, self.obs_baddimsizes, reduce_dims=self.reduce_dim_string)
 
     def test_error_invalid_dims_specification(self):
         # preserve=all
         with pytest.raises(DimensionError):
-            nse(fcst, self.obs, preserve_dims=self.preserve_dim_all1)
+            nse(self.fcst, self.obs, preserve_dims=self.preserve_dim_all1)
         # essentially the same as above but explicitly specified - see class setup
         with pytest.raises(DimensionError):
-            nse(fcst, self.obs, preserve_dims=self.preserve_dim_all2)
+            nse(self.fcst, self.obs, preserve_dims=self.preserve_dim_all2)
         # reduce_dims is empty - also essentially the same
         with pytest.raises(DimensionError):
-            nse(fcst, self.obs, reduce_dims=self.reduce_dims_none)
-        # both options specified (safety check)
-        with pytest.raises(DimensionError):
-            nse(fcst, self.obs, reduce_dims=self.reduce_dim_string, preserve_dims=self.preserve_dim_list)
+            nse(self.fcst, self.obs, reduce_dims=self.reduce_dims_none)
+        # both options specified (safety check) - note: overspecified args (i.e. both reduce_dims and preserve_dims) is a ValueError
+        with pytest.raises(ValueError):
+            nse(self.fcst, self.obs, reduce_dims=self.reduce_dim_string, preserve_dims=self.preserve_dim_list)
 
     def test_error_no_dim_reduced(self):
         pass
@@ -177,20 +178,21 @@ class TestNsePublicApi(NseSetup):
         pass
 
 
-
 class TestNseScoreBuilder:
     """
     NOTE: most of NseScoreBuilder is tested by the public API test suite and is not repeated here.
-    Only things missed by the public API test suite will be covered here. 
+    Only things missed by the public API test suite will be covered here.
     """
+
     ...
 
 
 class TestNseUtil(NseSetup):
     """
     NOTE: most of NseScoreBuilder is tested by the public API test suite and is not repeated here.
-    Only things missed by the public API test suite will be covered here. 
+    Only things missed by the public API test suite will be covered here.
     """
+
     ...
 
 
@@ -201,6 +203,7 @@ class TestNseScore(NseSetup):
     verifiable by a naive secondary algorithm.
     """
 
+
 class TestNseDataset(NseSetup):
     """
     Basic testing for compatibility with xarray datasets. Only variables & dimensions that match
@@ -210,6 +213,7 @@ class TestNseDataset(NseSetup):
     NOTE: failure conditions will not be the responsibility of this test, as there are utility
     functions that should handle this.
     """
+
     def test_nse_with_datasets(self):
         """
         obs:
@@ -231,19 +235,32 @@ class TestNseDataset(NseSetup):
         """
         ds_obs = xr.Dataset(
             data_vars=dict(
-                temp=NseSetup.make_random_xr_array((3,5,2), ["x", "y", "t"]),
-                precip=NseSetup.make_random_xr_array((3,5,2), ["x", "y", "t"]),
+                temp=NseSetup.make_random_xr_array((3, 5, 2), ["x", "y", "t"]),
+                precip=NseSetup.make_random_xr_array((3, 5, 2), ["x", "y", "t"]),
             ),
         )
         ds_fcst = xr.Dataset(
             data_vars=dict(
-                temp=NseSetup.make_random_xr_array((3,5,2,4), ["x", "y", "t", "h"]),
-                precip=NseSetup.make_random_xr_array((3,5), ["x", "y"]),
-                tapioca=NseSetup.make_random_xr_array((2,5), ["t", "y"]),
+                temp=NseSetup.make_random_xr_array((3, 5, 2, 4), ["x", "y", "t", "h"]),
+                precip=NseSetup.make_random_xr_array((3, 5), ["x", "y"]),
+                tapioca=NseSetup.make_random_xr_array((2, 5), ["t", "y"]),
             ),
         )
-        reduce_dims = [ "x", "y" ]
+        reduce_dims = ["x", "y"]
         res = nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
+        # result is a dataset
+        assert isinstance(res, xr.Dataset)
+        # variables are data arrays
+        assert isinstance(res["precip"], xr.DataArray)
+        assert isinstance(res["temp"], xr.DataArray)
+        # precip should only have "t", since "h" isn't defined for either obs or fcst in precip
+        assert set(res["precip"].dims) == set(["t"])
+        assert res["precip"].shape == (2,)
+        # temp should have both "t" and "h"
+        assert set(res["temp"].dims) == set(["t", "h"])
+        assert res["temp"].shape == (2, 4)
+        # tapioca is ignored
+        assert not ("tapioca" in res.variables.keys())
 
 
 class TestNseDask(NseSetup):
@@ -253,6 +270,7 @@ class TestNseDask(NseSetup):
     NOTE: failure conditions will not be the responsibility of this test, this suite just exists to
     check if dask computes things appropriately with non-dask as a compatiblity measure.
     """
+
     @pytest.fixture(scope="class", autouse=True)
     def skip_if_dask_unavailable(self):
         try:
@@ -260,4 +278,3 @@ class TestNseDask(NseSetup):
             import dask.array
         except ImportError:
             pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-

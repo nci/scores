@@ -571,7 +571,7 @@ def nse(
     reduce_dims: FlexibleDimensionTypes | None = None,
     preserve_dims: FlexibleDimensionTypes | None = None,
     weights: XarrayLike | None = None,
-    is_angular: bool | None = False,
+    is_angular: bool = False,
 ) -> XarrayLike:
     """
     The Nash-Sutcliffe efficiency (NSE) is primarily used in hydrology to assess the skill of model
@@ -668,7 +668,6 @@ def nse(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import nse
-        >>>
         >>> obs_raw = np.array(
         ...     [
         ...         [[1,2,3], [4,5,6]],
@@ -678,10 +677,8 @@ def nse(
         ...     ]
         ...
         ... )  # dimension lengths: x=4, y=2, t=3
-        >>>
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
         >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
-        >>>
         >>> # Example 1:
         >>> # reduce over t - time - should produce a 4x2 array representing the xy coordinate grid
         >>> nse(obs, fcst, reduce_dims=["t"])

@@ -13,7 +13,12 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike, LiftedDataset, XarrayTypeMarker
+from scores.typing import (
+    FlexibleDimensionTypes,
+    LiftedDataset,
+    XarrayLike,
+    XarrayTypeMarker,
+)
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -249,15 +254,15 @@ class LiftedDatasetUtils:
             # shallow copy is okay, since no data is actually being changed, just wrapped
             args_new = list(copy.copy(args))
             kwargs_new = copy.copy(kwargs)
-            is_compat = lambda _lds: isinstance(_lds, LiftedDataset) and _lds.is_valid()
+            is_compat = lambda _lds: isinstance(_lds, LiftedDataset) and _lds.is_valid()  # pylint: disable=C3001
             # fixup args -> replace LiftedDataset with LiftedDataset.inner_ref()
             for i, v in enumerate(args):
                 if is_compat(v):
                     args_new[i] = args[i].inner_ref()
             # fixup kwargs -> replace LiftedDataset with LiftedDataset.inner_ref()
-            for k in kwargs.keys():
-                if is_compat(kwargs[k]):
-                    kwargs_new[k] = kwargs[k].inner_ref()
+            for k, v in kwargs.items():
+                if is_compat(v):
+                    kwargs_new[k] = v.inner_ref()
             return fn(*args_new, **kwargs_new)
 
         return _wrapper
@@ -300,7 +305,7 @@ class LiftedDatasetUtils:
         fn_lifted = LiftedDatasetUtils.lift_fn(fn)
 
         @functools.wraps(fn_lifted)
-        def _wrapper(*args, **kwargs):
+        def _wrapper(*args, **kwargs) -> LiftedDataset:
             # --- check for type consistency ---
             # collect all args that are LiftedDatasets and assert that they are the same type
             lifted_ds_list = [v for v in args if isinstance(v, LiftedDataset)]
@@ -313,7 +318,7 @@ class LiftedDatasetUtils:
             # than ``raw``, since the inputs may need to be re-used down the track
             ret_xr: XarrayLike = fn_lifted(*args, **kwargs)
             # --- more checks ---
-            if not isinstance(ret_xr, XarrayLike):
+            if not isinstance(ret_xr, xr.Dataset) or not isinstance(ret_xr, xr.DataArray):
                 raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
             if isinstance(ret_xr, xr.DataArray) and xr_type_marker != XarrayTypeMarker.DATAARRAY:
                 raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
@@ -374,7 +379,7 @@ class LiftedDatasetUtils:
         if all_ds == all_da:
             raise TypeError(cls.ERROR_INCONSISTENT_TYPES)
         # return marker type for dataset
-        elif all_ds:
+        if all_ds:
             ret_marker = XarrayTypeMarker.DATASET
         # return marker type for data array
         elif all_da:
