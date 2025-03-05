@@ -92,8 +92,8 @@ class NseUtils:
 
         # perform default gather dimensions
         ret_dims: FlexibleDimensionTypes = gather_dimensions(
-            fcst_dims=fcst.dims,
-            obs_dims=obs.dims,
+            fcst_dims=fcst.ds.dims,
+            obs_dims=obs.ds.dims,
             weights_dims=weights_dims,
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
@@ -130,43 +130,48 @@ class NseUtils:
         """
 
         # helper function to process one lifted dataset at a time
-        def _get_sizes(_sizes: dict[Hashable, int], _lds: LiftedDataset | None) -> dict[Hashable, int]:
+        def _get_sizes(acc_sizes: dict[Hashable, int], curr_lds: LiftedDataset | None) -> dict[Hashable, int]:
             # -- None => return the accumulation
-            if _lds is None:
-                return _sizes
+            if curr_lds is None:
+                return acc_sizes
             # -- Otherwise => get sizes
             # get reference to inner ds
-            ds_ref: xr.Dataset = LiftedDataset.as_ds()
+            curr_ds: xr.Dataset = LiftedDataset.as_ds(curr_lds)
             # get sizes
             # note: this API is not per variable name at time of writing, it was changed to maintain
             # compatibility with DataArray.
-            sizes_ref: dict[Hashable, int] = ds_ref.sizes
+            curr_sizes: dict[Hashable, int] = curr_ds.sizes
             # merge (take the union) of the sizes and return a new dict
-            return _sizes | sizes_ref
+            return acc_sizes | curr_sizes
 
         # fold _get_sizes on all lifted datasets
-        return functools.reduce(_get_sizes, lds)
+        return functools.reduce(_get_sizes, lds, {})
 
     @staticmethod
-    def check_weights(weights: LiftedDataset | None) -> None:
+    def check_weights(weights: LiftedDataset | None):
         """
         Wrapper around :py:func:`~scores.utils.check_weights_positive`, with a context specific
         warning message.
         """
         if weights is not None:
-            ds_weights = weights.ds
-        check_weights_positive(ds_weights, context="`NSE` must have positive weights.")
+            check_weights_positive(ds_weights, context="`NSE` must have positive weights.")
 
     @staticmethod
-    def check_nonzero_obsvar(obs_var: XarrayLike) -> None:
+    def check_nonzero_obsvar(obs_var: LiftedDataset):
         """
-        Warns if at least one obs variance term is zero.
+        Warns if at least one obs variance term is zero in any variable in the dataset.
         """
-        if (obs_var == 0).any():
+        ref_ds: xr.Dataset = LiftedDataset.as_ds(obs_var)
+        # check if variables have zero obs variance
+        ref_ds_has_zero_obs: xr.Dataset = (obs_var == 0).any()
+        # check if any element in the entire dataset has zero obs variance
+        any_zero_obs = any(v for _, v in enumerate(ref_ds_has_zero_obs))
+        # custom warning for NSE overriding numpy's default divide by 0 warning
+        if any_zero_obs:
             warnings.warn(NseUtils.WARN_ZERO_OBS_VARIANCE)
 
     @staticmethod
-    def check_gathered_dims(gathered_dims: FlexibleDimensionTypes, dim_sizes: dict[Hashable, int]) -> None:
+    def check_gathered_dims(gathered_dims: FlexibleDimensionTypes, dim_sizes: dict[Hashable, int]):
         """
         Checks that gathered dimensions has at least one entry (key or hash) AND at least one of the
         gathered dimensions has more than 1 data point.
@@ -397,7 +402,7 @@ class NseScore:
     #: optional setting to flag that the data is angular or directional (in degrees)
     is_angular: bool = False
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         """
         Checks that this object has been initialised by a valid ``NseScoreBuilder``.
 
@@ -411,14 +416,14 @@ class NseScore:
             raise RuntimeError(NseUtils.ERROR_SCORE_DIRECT_INIT_DISALLOWED)
 
     @functools.cached_property
-    def mse_callback(self) -> Callable[..., XarrayLike]:
+    def mse_callback(self) -> Callable[..., LiftedDataset]:
         """
         Callback helper for calculating :py:func:`scores.mse`, with prefilled keyword args.
         """
         return functools.partial(
-            _cnt.mse,
+            LiftedDataset.lift_fn(_cnt.mse),
             reduce_dims=self.reduce_dims,
-            weights=self.weights,
+            weights=self.weights.ds,
             is_angular=self.is_angular,
         )
 
@@ -430,15 +435,26 @@ class NseScore:
         - numerator (N): calculates the forecast error using :py:func:`scores.mse` on ``obs`` and ``fcst``.
         - ``score = 1 - N / D`` reduced and broadcast appropriately by ``xarray``.
         """
-        ret_nse: XarrayLike | None = None
+
+        # perform all operations as Datasets
+        ret_nse: xr.Dataset | None = None
+        ds_fcst: xr.Dataset = LiftedDataset.as_ds(self.fcst)
+        ds_obs: xr.Dataset = LiftedDataset.as_ds(self.obs)
+
+        # compute intermediate terms
+        obs_mean: xr.Dataset = self.obs.ds.mean(dim=self.reduce_dims)
+        obs_variance: LiftedDataset = self.mse_callback(obs_mean, self.obs)
+        fcst_error: LiftedDataset = self.mse_callback(ds_fcst, ds_obs)
+
+        # raise warnings due to divide by zero in fcst/obs
 
         # intentional divide="ignore", as warning is already raised above.
         # `numpy` will fill divide by zero elements with NaNs.
         with np.errstate(divide="ignore"):
             ret_nse = 1.0 - (self.fcst_error / self.obs_variance)
-
-        # cast strictly to `XarrayLike` from an `Optional`. If we got this far, it can't be `None`.
-        cast(XarrayLike, ret_nse)
+        # cast strictly to `xr.Dataset` from an `Optional`. If we got this far, it can't be `None`.
+        cast(xr.Dataset, ret_nse)
+        # convert return type strictly to original
 
         return ret_nse
 
