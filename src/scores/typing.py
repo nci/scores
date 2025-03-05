@@ -54,7 +54,12 @@ class LiftedDataset:  # pylint: disable-msg=too-few-public-methods
     SUFFICIENT for functions to ONLY be compatible with datasets, even if a data array is provided
     as input.
 
-    This class exists is simply an "aid" to avoid repeated logic and branching.
+    This class exists is simply an "aid" to avoid repeated logic and branching.  To dispatch to
+    common utility functions, use ``.ds`` to get the underlying dataset. Only call ``.raw()`` if you
+    no longer intend use the wrapped structure ``LiftedDataset`` and want to retract to the original
+    xarray datatype. While, the lifted version isn't explicitly destroyed - calling ``.raw()`` will
+    invalidate the lifted structure, tainting it and removing any references to the underlying
+    dataset.
 
     .. note::
 
@@ -74,6 +79,17 @@ class LiftedDataset:  # pylint: disable-msg=too-few-public-methods
     #: dummy variable name - internal static variable
     _DUMMY_DATAARRAY_VARNAME: str = "dummyvarname"
 
+    @staticmethod
+    def as_ds(lds: LiftedDataset):
+        """
+        Alternative to self.ds, but callable as a static method. Useful for referring to collections
+        of lifted datasets, but may have advantages when chaining operations in functional style
+        programming.
+            - e.g. ``map(LiftedDataset.as_ds, [lds_1, lds_2, ...])``
+            - equivilent to ``[ x.ds for x in [lds_1, lds_2, ...]``
+        """
+        return lds.ds
+
     def __init__(self, xr_data: XarrayLike):
         """
         Converts a ``xr.DataArray`` to a ``xr.Dataset``, preserving its original type.
@@ -82,8 +98,7 @@ class LiftedDataset:  # pylint: disable-msg=too-few-public-methods
         err_invalid_type: str = """
             Invalid type for `XarrayLike`, must be a `xr.Dataset` or a `xr.DataArray` object.
         """
-        self.dummy_name: bool = False
-        self.xr_type_marker: XarrayTypeMarker = XarrayTypeMarker.INVALID
+        self.reset()
         # handle dataset input
         if isinstance(xr_data, xarray.Dataset):
             self.xr_type_marker = XarrayTypeMarker.DATASET
@@ -103,53 +118,102 @@ class LiftedDataset:  # pylint: disable-msg=too-few-public-methods
         else:
             raise TypeError(err_invalid_type)
 
+    def reset(self):
+        self.dummy_name: bool = False
+        self.xr_type_marker: XarrayTypeMarker = XarrayTypeMarker.INVALID
+        self.ds: xarray.Dataset | None = None
+
     def raw(self) -> XarrayLike:
         """
         Returns the reference to the underlying dataset or data array
+
+        .. important::
+            This is a CONSUMING operation, that is to say it will retract the ``LiftedDataset`` back
+            to its original form, invalidating the wrapper structure. If you simply want a
+            reference, use the ``ds`` property.
         """
         # safety: `raw` can only be accessed by a constructed object, which would raised a
         # `TypeError`, if INVALID (see: ``__init__`).
         assert self.xr_type_marker != XarrayTypeMarker.INVALID
+        # get reference to dataset so that it isn't destroyed on reset.
+        ds_local: xarray.Dataset = self.ds
         # data array: remove dummy name (if assigned one) and convert it back to an array
         if self.xr_type_marker == XarrayTypeMarker.DATAARRAY:
-            keys: list[Hashable] = list(self.ds.variables.keys())
+            keys: list[Hashable] = list(ds_local.variables.keys())
             # safety: we should only have 1 variable if this is actually a data array
             assert len(keys) == 1
-            da: xarray.DataArray = self.ds.data_vars[keys[0]]
+            da: xarray.DataArray = ds_local.data_vars[keys[0]]
             if self.dummy_name:
                 da.name = None
             return da
         # safety: assert last remaining branch, pylint doesn't like unspecified returns so we
         # can't use `(else|if|elif) self.xr_type_marker == XarrayTypeMarker.DATASET:`
         assert self.xr_type_marker == XarrayTypeMarker.DATASET
-        return self.ds
+        # reset to invalidate this structure
+        self.reset()
+        return ds_local
 
 
-def check_lds_same_type(*lds: LiftedDataset):
+def check_lds_same_type(*lds: LiftedDataset) -> XarrayTypeMarker:
     """
+    .. important::
+
+        This is an internal function - not for public API.
+
     Checks if the internal data types for the input :py:class:`LiftedDataset` (``lds``) have the
     same type marker (see: :py:class:`XarrayTypeMarker`).
 
     Args:
         *lds: Variadic args of type :py:class:`LiftedDataset`
+
+    Returns:
+        xarray type marker if the inputs are a subset of ``XarrayLike`` and ALL of same type.
+
+    Raises:
+        TypeError: If types are not consistent or not valid - development only
+        AssertionError: For internal checks - development only
+
+    .. note::
+
+        As this is an internal function, any error messages are not global. It is intended mainly
+        for safety during development. It is up to the calling function to catch the errors and
+        rethrow with an appropriate note for the specific public function that utilizes this helper.
+
+        As mentioned at the start of this docstring, it should not be directly used by a public API
+        function, and if it is, it is responsible for handling any thrown errors.
+
+        see :py:meth:`~scores.continuous.nse_impl.NseUtils.get_xr_type_marker` for an example.
     """
+    # need at least one argument to check
+    assert len(lds) > 0
+    ret_marker: XarrayTypeMarker = XarrayTypeMarker.INVALID
+    # define error messages - not global, as this is a internal function and these errors are more
+    # relevant to a developer and in unittests.
     err_invalid_type: str = """
         Input type is not a `LiftedDataset`. Did you attempt to pass in `xr.Dataset` or
         xr.DataArray` instead of `scores.typing.LiftedDataset`?
     """
-
     err_inconsistent_type: str = """
         The provided xarray data inputs are not of same type, they must ALL EXCLUSIVELY be ONLY
         `xr.Dataset`, otherwise, ONLY `xr.DataArray`.
     """
-
+    # check that all input types are lifted datasets
     for d in lds:
         if not isinstance(d, LiftedDataset):
             raise TypeError(err_invalid_type)
-
+    # do check: homogeneous xr_data types
     all_ds = all(d.xr_type_marker == XarrayTypeMarker.DATASET for d in lds)
     all_da = all(d.xr_type_marker == XarrayTypeMarker.DATAARRAY for d in lds)
-
     # both cannot be False (mixed types), and both cannot be True (impossible scenario)
     if all_ds == all_da:
         raise TypeError(err_inconsistent_type)
+    # return marker type for dataset
+    elif all_ds:
+        marker = XarrayTypeMarker.DATASET
+    # return marker type for data array
+    elif all_da:
+        marker = XarrayTypeMarker.DATAARRAY
+    # saftey check: would have raised TypeError earlier - but may not be obvious to pylint
+    assert marker != XarrayTypeMarker.INVALID
+
+    return ret_marker

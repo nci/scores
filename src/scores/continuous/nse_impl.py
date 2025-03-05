@@ -12,13 +12,31 @@ from typing import Callable, cast
 import numpy as np
 
 import scores.continuous as _cnt
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import (
+    FlexibleDimensionTypes,
+    LiftedDataset,
+    XarrayLike,
+    XarrayTypeMarker,
+)
 from scores.utils import check_dims, check_weights_positive, gather_dimensions
 
 
 class NseUtils:
     """
-    Helper class with static methods for use in NSE computations only.
+    Helper class with static methods for use in NSE computations only. Also contains error msg
+    strings specific to NSE.
+
+    .. important::
+
+        DEVELOPER-NOTE:
+
+            - All utility functions assume that we are dealing with ``LiftedDataset``s Any new
+              helpers declared here should follow the same pattern. To dispatch to common utility
+              functions, use ``.ds`` or ``LiftedDataset.as_ds()`` to get the underlying dataset.
+
+            - Only call ``.raw()`` if you no longer intend to use the ``LiftedDataset`` and want to
+              retract to the original xarray datatype. ``.raw()`` invalidates the ``LiftedDataset``
+              object and it can no longer be used. This is usually the last operation in a chain.
     """
 
     ERROR_SCORE_DIRECT_INIT_DISALLOWED: str = """
@@ -44,6 +62,11 @@ class NseUtils:
     possible to calculate a non-zero obs variance from 1 point.
     """
 
+    ERROR_MIXED_XR_DATA_TYPES: str = """
+    Triggered during NSE calculations` check `fcst`, `obs` and `weights` are of the same type
+    `xr.Dataset` OR `xr.DataArray` EXCLUSIVELY; NOT a mix of the two types.
+    """
+
     WARN_ZERO_OBS_VARIANCE: str = """
     Possible divide by zero: at least one element in the reduced obs variance array is 0. Any divide
     by zero entries will be filled in as `np.nan` if the forecast error is also 0, otherwise it will
@@ -53,9 +76,9 @@ class NseUtils:
 
     @staticmethod
     def preprocess_nse_inputs(
-        fcst: XarrayLike,
-        obs: XarrayLike,
-        weights: XarrayLike | None,
+        fcst: LiftedDataset,
+        obs: LiftedDataset,
+        weights: LiftedDataset | None,
         reduce_dims: FlexibleDimensionTypes | None,
         preserve_dims: FlexibleDimensionTypes | None,
     ) -> FlexibleDimensionTypes:
@@ -63,10 +86,6 @@ class NseUtils:
         Checks the dimension compatibilty of the various input arguments. This is the main utility
         function that groups all the checks needed for NSE.
         """
-        # TODO: use LiftedDataset here for fcst, obs and weights...
-        # TODO: change the checks below to expect a LiftedDataset instead and perform using
-        #       LiftedDataset.ds instead.
-
         # check weights conform to NSE computations
         NseUtils.check_weights(weights)
         weights_dims: Iterable[Hashable] | None = None if weights is None else weights.dims
@@ -88,22 +107,55 @@ class NseUtils:
         return ret_dims
 
     @staticmethod
-    def merge_sizes(*xr_data) -> dict[Hashable, int]:
+    def get_xr_type_marker(
+        lds_obs: LiftedDataset,
+        lds_fcst: LiftedDataset,
+        lds_weights: LiftedDataset,
+    ) -> XarrayTypeMarker:
+        try:
+            return check_lds_same_type(fcst, obs, weights)
+        except TypeError as _e:
+            # add a note specific to NSE and re-raise
+            _e.add_note(NseUtils.ERROR_MIXED_XR_DATA_TYPES)
+            raise
+
+    @staticmethod
+    def merge_sizes(*lifted_ds) -> dict[Hashable, int]:
         """
         Merges the maps that contain the size (value) for each dimension (key) (key) in a given
         `XarrayLike` object.
+
+        Args:
+            *lifted_ds: Variadic argument of each of type ``LiftedDataset``
         """
-        all_sizes: list[dict[Hashable, int]] = [dict(_x.sizes) for _x in xr_data if _x is not None]
-        ret_sizes: dict[Hashable, int] = functools.reduce(lambda _acc, _x: _acc | _x, all_sizes)
-        return ret_sizes
+
+        # helper function to process one lifted dataset at a time
+        def _get_sizes(_sizes: dict[Hashable, int], _lds: LiftedDataset | None) -> dict[Hashable, int]:
+            # -- None => return the accumulation
+            if _lds is None:
+                return _sizes
+            # -- Otherwise => get sizes
+            # get reference to inner ds
+            ds_ref: xr.Dataset = LiftedDataset.as_ds()
+            # get sizes
+            # note: this API is not per variable name at time of writing, it was changed to maintain
+            # compatibility with DataArray.
+            sizes_ref: dict[Hashable, int] = ds_ref.sizes
+            # merge (take the union) of the sizes and return a new dict
+            return _sizes | sizes_ref
+
+        # fold _get_sizes on all lifted datasets
+        return functools.reduce(_get_sizes, lds)
 
     @staticmethod
-    def check_weights(weights: XarrayLike | None) -> None:
+    def check_weights(weights: LiftedDataset | None) -> None:
         """
         Wrapper around :py:func:`~scores.utils.check_weights_positive`, with a context specific
         warning message.
         """
-        check_weights_positive(weights, context="`NSE` must have positive weights.")
+        if weights is not None:
+            ds_weights = weights.ds
+        check_weights_positive(ds_weights, context="`NSE` must have positive weights.")
 
     @staticmethod
     def check_nonzero_obsvar(obs_var: XarrayLike) -> None:
@@ -188,6 +240,54 @@ class NseScoreBuilder:
     # NOTE: no explicit __init__ of other members since this object shouldn't store any data
     # (neither copy nor reference).
 
+    def lift_xrdata(
+        cls,
+        fcst: XarrayLike,
+        obs: XarrayLike,
+        weights: XarrayLike | None = None,
+        /,  # force positional ordering
+    ) -> tuple[tuple[LiftedDataset], XarrayTypeMarker]:
+        """
+        The output of this function is a little complex since it has to return the original
+        arguments in its lifted form AND also requires all the arguments to check for type
+        consistency.
+
+        However, its usecase is narrow and is merely used as a helper for this builder so its not
+        abstracted to its own ``NseUtils`` helper. An example might help clarify its usage.
+
+        Example:
+            .. code-block :: python
+
+                fcst: XarrayLike = ...
+                obs: XarrayLike = ...
+                weights: XarrayLike = ...
+
+                (
+                    (lds_fcst, lds_obs, lds_weights),  # (LiftedDataset, LiftedDataset, LiftedDataset)
+                    xr_type_marker,                    # XarrayTypeMarker
+                ) = lift_xrdata(fcst, obs, weights)
+
+        here ``lds`` prefix stands for ``LiftedDataset`` and ``xr_type_marker`` is the common xr
+        data type associated to all of ``fcst``, ``obs`` and ``weights``.
+
+        .. important::
+
+            - ``weights`` are optional, if so, lds_weights is None. This has to be handled
+              appropriately by the caller.
+            - the order of the outputs must match the inputs, the logic in this function relies on
+              positional args (i.e. fcst is always first and weights is always last) to avoid
+              complexity in the caller having to handle kwargs -> key-value pairs (which themselves
+              may have their own quirks)
+
+        Raises:
+            TypeError: see :py:func:`scores.typing.check_lds_same_type` for more details
+        """
+        # lift and check
+        lifted_all: tuple[LiftedDataset] = map(LiftedDataset, (fcst, obs, weights))
+        xr_type_marker: XarrayTypeMarker = NseUtils.get_xr_type_marker(*lifted_all)
+        # see docstring on how to use this output or associated tests
+        return (lifted_all, xr_type_marker)
+
     def build(
         self,
         *,  # force KW_ONLY
@@ -214,20 +314,24 @@ class NseScoreBuilder:
         if self.ref_nsescore is not None and self.ref_nsescore() is not None:
             raise RuntimeError(NseUtils.ERROR_SCORE_ALREADY_BUILT)
 
-        reduce_dims = NseUtils.preprocess_nse_inputs(
-            fcst=fcst,
-            obs=obs,
-            weights=weights,
+        # order is important, see docstring for lift_xrdata
+        ((lds_fcst, lds_obs, lds_weights), xr_type_marker) = self.lift_xrdata(fcst, obs, weights)
+
+        reduce_dims = NseUtils.check_and_gather_dims(
+            fcst=lds_fcst,
+            obs=lds_obs,
+            weights=lds_weights,
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
 
         ret_nsescore = NseScore(
             ref_builder=self,
-            fcst=fcst,
-            obs=obs,
+            fcst=lds_fcst,
+            obs=lds_obs,
+            xr_type_marker=xr_type_marker,
             reduce_dims=reduce_dims,
-            weights=weights,
+            weights=lds_weights,
             is_angular=is_angular,
         )
 
@@ -274,15 +378,24 @@ class NseScore:
         object, already handles warnings during these scenarios.
     """
 
-    _: KW_ONLY
     #: strong ref to builder, since we want to keep the builder in scope to check how this object
     #: was created - see ``__post_init__``
     ref_builder: NseScoreBuilder
-    obs: XarrayLike
-    fcst: XarrayLike
-    reduce_dims: FlexibleDimensionTypes | None
-    weights: XarrayLike | None
-    is_angular: bool | None = False
+    #: observations as a lifted dataset
+    obs: LiftedDataset
+    #: forecasts (or "simulation") as a lifted dataset
+    fcst: LiftedDataset
+    #: marker to keep track of the underlying (consistent) type the obs, fcst, and weights. Mainly
+    #: for isomorphism i.e. if a user provides data arrays they get back data arrays and similarly
+    #: for datasets.
+    xr_type_marker: XarrayTypeMarker
+    #: dimensions to reduce - ``preserve_dims`` and ``reduce_dims`` is converted to this equivilent
+    #: representation.
+    reduce_dims: FlexibleDimensionTypes
+    #: optional weights as a lifted dataset
+    weights: LiftedDataset | None
+    #: optional setting to flag that the data is angular or directional (in degrees)
+    is_angular: bool = False
 
     def __post_init__(self) -> None:
         """
