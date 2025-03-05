@@ -829,7 +829,7 @@ def test_ldsutils_lift_fn():
     # lift_fn: return type should be preserved, result should match expected
     lds_da_x, lds_da_y, lds_da_a, lds_da_b = map(LiftedDataset, [test_da_x, test_da_y, test_da_a, test_da_b])
     da_res = _lifted_test_func(lds_da_x, lds_da_y, scalar_z, a=lds_da_a, b=lds_da_b, c=scalar_c)
-    assert da_res.identical(da_expected)
+    da_res.identical(da_expected)
     assert isinstance(da_res, xr.DataArray)
 
     # lift_fn_res: return type should be lifted to LiftedDataset
@@ -853,9 +853,9 @@ def test_ldsutils_lift_fn():
     # actual tests - result is still a data array, not a lifted data array
     # lift_fn: return type should be preserved, result should match expected
     lds_ds_x, lds_ds_y, lds_ds_a, lds_ds_b = map(LiftedDataset, [test_ds_x, test_ds_y, test_ds_a, test_ds_b])
-    ds_test = _lifted_test_func(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
-    assert ds_.identical(ds_expected)
-    assert isinstance(ds_res, xr.DataArray)
+    ds_res = _lifted_test_func(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
+    assert ds_res.identical(ds_expected)
+    assert isinstance(ds_res, xr.Dataset)
 
     # lift_fn_res: return type should be lifted to LiftedDataset
     ds_res = _lifted_test_func_ret(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
@@ -877,11 +877,21 @@ def test_ldsutils_lift_fn_invalid_ret():
     def _test_func(x) -> str:
         return "hi"
 
-    # lift_fn should not do anything
+    # lift_fn should not do anything regardless of whether any of the args or return type is
+    # compatible.
     _lifted_test_func = utils.LiftedDatasetUtils.lift_fn(_test_func)
     ret = _lifted_test_func(0)
     assert ret == "hi"
 
-    # lift_fn_ret should raise an error because of incompatible types
+    # lift_fn_ret should raise an error because of incompatible return type
     _lifted_test_func_ret = utils.LiftedDatasetUtils.lift_fn_ret(_test_func)
-    ret = _lifted_test_func(0)
+
+    # TypeError: because the output return type is a string
+    # UserWarning: because none of the arguments are lifted datasets
+    with pytest.raises(TypeError), pytest.warns(UserWarning):
+        _lifted_test_func_ret(0)
+
+    # TypeError: as before
+    # UserWarning: should NOT occur because the input is a lifted dataset
+    with pytest.raises(TypeError):
+        _lifted_test_func_ret(LiftedDataset(xr.DataArray([1, 2], dims="a")))

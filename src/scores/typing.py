@@ -125,14 +125,25 @@ class LiftedDataset:
 
     def raw(self) -> XarrayLike:
         """
-        Returns the reference to the underlying dataset or data array, consuming the
-        ``LiftedDataset`` structure.
+        Like ``.ref()`` but consumes any references in the ``LiftedDataset`` structure, invalidating
+        it.  This is usually the last operation before returning the result to the user.
 
         .. important::
             To reiterate: this is a CONSUMING operation, that is to say it will retract the
             ``LiftedDataset`` back to its original form, invalidating the wrapper structure. If you
-            simply want a reference, use the ``ds`` property.
+            simply want a reference, use the ``.ds`` property or ``.inner_ref()`` to retrieve the
+            underlying dataset or dataarray.
         """
+        # get local reference to inner xarray data, so that it doesn't get destructed.
+        ret_xr_data: XarrayLike = self.inner_ref()
+        # reset to remove reference to dataset in this lifted structure. Essentially invalidating
+        # it. `ret_xr_data` should still exist in this scope and be unaffected.
+        self.reset()
+        # return reference to data to caller, this object should no longer be referring to any data
+        # and can be garbage collected, i.e consumed.
+        return ret_xr_data
+
+    def inner_ref(self) -> XarrayLike:
         # safety: cannot call this function on an invalid initialisation
         assert self.is_valid()
         # get reference to dataset so that it isn't destroyed on reset.
@@ -154,7 +165,5 @@ class LiftedDataset:
             assert self.is_dataset()
             # intentional repitition - for readiblity
             ret_xr_data = ds_local
-        # reset to remove reference to dataset in this lifted structure.
-        self.reset()
         # returning the inner ds will remove any remaining references from this scope.
         return ret_xr_data
