@@ -9,6 +9,7 @@ import xarray as xr
 from scores import utils
 from scores.utils import DimensionError, check_binary
 from scores.utils import gather_dimensions as gd
+from scores.typing import XarrayLike, LiftedDataset, XarrayTypeMarker
 from tests import utils_test_data
 
 
@@ -756,3 +757,131 @@ def test_invalid_numpy_operator():
     """
     with pytest.raises(ValueError):
         utils.NumpyThresholdOperator(sorted)
+
+
+# ---
+# tests for LiftedDatasetUtils = ldsutils (short form)
+_DS_TEST = xr.Dataset({"a": xr.DataArray([1], dims="t"), "b": xr.DataArray([2], dims="t")})
+
+
+@pytest.mark.parametrize(
+    "xr_data, do_lift, expect_error_raised, expect_xr_type",
+    [
+        # one dataset and one data array => should produce error
+        (tuple([xr.DataArray([1], dims="a"), _DS_TEST]), True, True, "invalid"),
+        # multiple inputs with data arrays => all data arrays => no error
+        (tuple([xr.DataArray([1], dims="a"), xr.DataArray([2], dims="b")]), True, False, "dataarray"),
+        # single input with dataset => all datasets => no error
+        (tuple([_DS_TEST]), True, False, "dataset"),
+        # intentionally don't lift the dataset to prompt a type error => should produce error
+        (tuple([_DS_TEST]), False, True, "dataset"),
+    ],
+)
+def test_ldsutils_allsametype(xr_data, do_lift, expect_error_raised, expect_xr_type):
+    """
+    Checks for homogeneity in LiftedDataset (lds) types, and checks that it raises an error if they
+    are of different types.
+    """
+    lds = [LiftedDataset(x) for x in xr_data] if do_lift else xr_data
+    if expect_error_raised:
+        with pytest.raises(TypeError):
+            utils.LiftedDatasetUtils.all_same_type(*lds)
+    else:
+        ret = utils.LiftedDatasetUtils.all_same_type(*lds)
+        if expect_xr_type == "dataarray":
+            assert ret == XarrayTypeMarker.DATAARRAY
+        else:  # dataset
+            assert ret == XarrayTypeMarker.DATASET
+
+
+def test_ldsutils_lift_fn():
+    """
+    Checks lift functions: ``LiftedDatasetUtils.lift_fn`` and ``LiftedDatasetUtils.lift_fn_ret``
+        - ``lift_fn`` only lifts the fn args
+        - ``lift_fn_ret`` lifts both the args and the return type
+    """
+
+    # --- helper dummy functions
+    # test function that works on `XarrayLike`. Output can be anything - arbitrarily chosen string
+    def _test_func(x: XarrayLike, y: XarrayLike, z: int, *, a: XarrayLike, b: XarrayLike, c: int) -> XarrayLike:
+        return (x * z + y) - (a + b * c)
+
+    _lifted_test_func = utils.LiftedDatasetUtils.lift_fn(_test_func)
+    _lifted_test_func_ret = utils.LiftedDatasetUtils.lift_fn_ret(_test_func)
+
+    # --- prepare dataarray testcase
+    test_da_x: xr.DataArray = xr.DataArray([1, 2], dims=["x"])
+    test_da_y: xr.DataArray = xr.DataArray([3, 4], dims=["x"])
+    test_da_a: xr.DataArray = xr.DataArray([5, 6], dims=["x"])
+    test_da_b: xr.DataArray = xr.DataArray([7, 8], dims=["x"])
+    scalar_z: int = 20
+    scalar_c: int = 4
+    da_test = _test_func(test_da_x, test_da_y, scalar_z, a=test_da_a, b=test_da_b, c=scalar_c)
+
+    # this is not the actual test - just a safety check
+    # elem 1: 20 + 3 - 5 - 28 = -10
+    # elem 2: 40 + 4 - 6 - 32 =   6
+    da_expected = xr.DataArray([-10, 6], dims=["x"])
+    assert da_expected.identical(da_test)
+
+    # --- FUNCTION LIFTING TESTS FOR DATAARRAY --> START
+    # actual tests - result is still a data array, not a lifted data array
+    # lift_fn: return type should be preserved, result should match expected
+    lds_da_x, lds_da_y, lds_da_a, lds_da_b = map(LiftedDataset, [test_da_x, test_da_y, test_da_a, test_da_b])
+    da_res = _lifted_test_func(lds_da_x, lds_da_y, scalar_z, a=lds_da_a, b=lds_da_b, c=scalar_c)
+    assert da_res.identical(da_expected)
+    assert isinstance(da_res, xr.DataArray)
+
+    # lift_fn_res: return type should be lifted to LiftedDataset
+    da_res = _lifted_test_func_ret(lds_da_x, lds_da_y, scalar_z, a=lds_da_a, b=lds_da_b, c=scalar_c)
+    assert isinstance(da_res, LiftedDataset)
+    assert da_res.is_dataarray()
+    assert da_res.raw().identical(da_expected)
+    # <--  END
+
+    # --- prepare dataset testcase
+    test_ds_x: xr.DataArray = xr.Dataset(dict(y=test_da_x))
+    test_ds_y: xr.DataArray = xr.Dataset(dict(y=test_da_y))
+    test_ds_a: xr.DataArray = xr.Dataset(dict(y=test_da_a))
+    test_ds_b: xr.DataArray = xr.Dataset(dict(y=test_da_b))
+    ds_test = _test_func(test_ds_x, test_ds_y, scalar_z, a=test_ds_a, b=test_ds_b, c=scalar_c)
+    ds_expected = xr.Dataset(dict(y=da_expected))
+    # this is not the actual test - just a safety check
+    assert ds_expected.identical(ds_test)
+
+    # --- FUNCTION LIFTING TESTS FOR DATASET --> START
+    # actual tests - result is still a data array, not a lifted data array
+    # lift_fn: return type should be preserved, result should match expected
+    lds_ds_x, lds_ds_y, lds_ds_a, lds_ds_b = map(LiftedDataset, [test_ds_x, test_ds_y, test_ds_a, test_ds_b])
+    ds_test = _lifted_test_func(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
+    assert ds_.identical(ds_expected)
+    assert isinstance(ds_res, xr.DataArray)
+
+    # lift_fn_res: return type should be lifted to LiftedDataset
+    ds_res = _lifted_test_func_ret(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
+    assert isinstance(ds_res, LiftedDataset)
+    assert ds_res.is_dataset()
+    assert ds_res.raw().identical(ds_expected)
+    # <--  END
+
+
+def test_ldsutils_lift_fn_invalid_ret():
+    """
+    Test against a dummy function that simply returns a string.
+        - Neither function should care about the input arguments
+        - ``lift_fn_ret`` should raise an error because it can't lift a string to a
+          ``LiftedDataset``
+    """
+
+    # dummy function that returns a string
+    def _test_func(x) -> str:
+        return "hi"
+
+    # lift_fn should not do anything
+    _lifted_test_func = utils.LiftedDatasetUtils.lift_fn(_test_func)
+    ret = _lifted_test_func(0)
+    assert ret == "hi"
+
+    # lift_fn_ret should raise an error because of incompatible types
+    _lifted_test_func_ret = utils.LiftedDatasetUtils.lift_fn_ret(_test_func)
+    ret = _lifted_test_func(0)

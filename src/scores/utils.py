@@ -2,6 +2,8 @@
 Contains frequently-used functions of a general nature within scores
 """
 
+import copy
+import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
@@ -11,7 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, LiftedDataset, XarrayTypeMarker
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -180,6 +182,144 @@ class NumpyThresholdOperator(BinaryOperator):
             "scores.utils.left_identity_operator": left_identity_operator,
         }
         super().__post_init__()
+
+
+class LiftedDatasetUtils:
+    """
+    namespace class containing utility methods for LiftedDataset.
+    """
+
+    @staticmethod
+    def lift_fn(fn: Callable) -> Callable:
+        """
+        Wrapper to automatically apply a function that is compatible with ``XarrayLike`` but on
+        ``LiftedDataset`` instead. Since ``XarrayLike`` functions should work with ``Datasets``, by
+        extension they should work for for the underlying ``LiftedDatasets.ds``
+
+        .. important::
+
+            CAUTION: EXPERIMENTAL
+
+            This is an internal function - not for public API. It is mainly to maintain
+            compatibility with existing utility functions that depend on ``XarrayLike`` as inputs.
+
+        Args:
+            fn: Any function, but in-particular should only be used with functions that take an
+                ``XarrayLike`` argument, but made compatible with ``LiftedDataset`` instead.
+        """
+
+        @functools.wraps(fn)
+        def _wrapper(*args, **kwargs):
+            # shallow copy is okay, since no data is actually being changed, just wrapped
+            args_new = list(copy.copy(args))
+            kwargs_new = copy.copy(kwargs)
+            is_compat = lambda _lds: isinstance(_lds, LiftedDataset) and _lds.is_valid()
+            # fixup args -> replace LiftedDataset with LiftedDataset.ds
+            for i, v in enumerate(args):
+                if is_compat(v):
+                    args_new[i] = args[i].ds
+            # fixup kwargs -> replace LiftedDataset with LiftedDataset.ds
+            for k in kwargs.keys():
+                if is_compat(kwargs[k]):
+                    kwargs_new[k] = kwargs[k].ds
+            return fn(*args_new, **kwargs_new)
+
+        return _wrapper
+
+    @staticmethod
+    def lift_fn_ret(fn: Callable[..., XarrayLike]) -> Callable[..., LiftedDataset]:
+        """
+        Like ``lift_fn`` but also lifts the return type to a ``LiftedDataset``, if possible.
+
+        .. important::
+
+            CAUTION: EXPERIMENTAL
+
+            This is an internal function - not for public API. It is mainly used to maintain
+            compatibility with existing utility functions that depend on ``XarrayLike`` as inputs
+            and returns an ``XarrayLike`` but the caller would like to provide ``LiftedDataset`` as
+            the args and also expects it as the return type
+
+            New utility methods should just directly operate on ``LiftedDataset`` types.
+
+            i.e. this wrapper tries to preserve isomorphism, while ``lift_fn`` is destructive and
+            the caller could receive any output.
+
+        .. see-also::
+
+            :py:meth:`LiftedDatasetUtils.lift_fn`
+        """
+        fn_lifted = LiftedDatasetUtils.lift_fn(fn)
+
+        @functools.wraps(fn_lifted)
+        def _wrapper(*args, **kwargs):
+            ret: XarrayLike = fn_lifted(*args, **kwargs)
+            return LiftedDataset(ret)
+
+        return _wrapper
+
+    @staticmethod
+    def all_same_type(*lds: LiftedDataset) -> XarrayTypeMarker:
+        """
+        Checks if the internal data types for the input :py:class:`LiftedDataset` (``lds``) have the
+        same type marker (see: :py:class:`XarrayTypeMarker`).
+
+        .. important::
+
+            This is an internal function - not for public API.
+
+        .. note::
+            In particular, any errors thrown by this function needs to be handled by the caller. As the
+            errors are mainly aimed for development and testing. Ideally, they should not be raised in
+            runtime.
+
+            However, if there are "exceptions" that need to propagate to the user, the user will have to
+            handle and re-raise any errors appropriately.
+
+            see :py:meth:`~scores.continuous.nse_impl.NseUtils.get_xr_type_marker` for an example.
+
+        Args:
+            *lds: Variadic args of type :py:class:`LiftedDataset`
+
+        Returns:
+            xarray type marker if the inputs are a subset of ``XarrayLike`` and ALL of same type.
+
+        Raises:
+            TypeError: If types are not consistent or not valid - development only
+            AssertionError: For internal checks - development only
+        """
+        # need at least one argument to check
+        assert len(lds) > 0
+        ret_marker: XarrayTypeMarker = XarrayTypeMarker.INVALID
+        # define error messages - not global, as this is a internal function and these errors are more
+        # relevant to a developer and in unittests.
+        err_invalid_type: str = """
+            Input type is not a `LiftedDataset`. Did you attempt to pass in `xr.Dataset` or
+            xr.DataArray` instead of `scores.typing.LiftedDataset`?
+        """
+        err_inconsistent_type: str = """
+            The provided xarray data inputs are not of same type, they must ALL EXCLUSIVELY be ONLY
+            `xr.Dataset`, otherwise, ONLY `xr.DataArray`.
+        """
+        # check that all input types are lifted datasets
+        for d in lds:
+            if not isinstance(d, LiftedDataset):
+                raise TypeError(err_invalid_type)
+        # do check: homogeneous xr_data types
+        all_ds = all(d.xr_type_marker == XarrayTypeMarker.DATASET for d in lds)
+        all_da = all(d.xr_type_marker == XarrayTypeMarker.DATAARRAY for d in lds)
+        # both cannot be False (mixed types), and both cannot be True (impossible scenario)
+        if all_ds == all_da:
+            raise TypeError(err_inconsistent_type)
+        # return marker type for dataset
+        elif all_ds:
+            ret_marker = XarrayTypeMarker.DATASET
+        # return marker type for data array
+        elif all_da:
+            ret_marker = XarrayTypeMarker.DATAARRAY
+        # saftey check: would have raised TypeError earlier - but may not be obvious to pylint
+        assert ret_marker != XarrayTypeMarker.INVALID
+        return ret_marker
 
 
 def gather_dimensions(  # pylint: disable=too-many-branches
@@ -462,7 +602,7 @@ def check_weights_positive(weights: XarrayLike | None, *, context: str):
         - This check covers common issues, but is not a strict check (see notes below).
 
     .. note::
-    
+
         Future work: see #829 and #828 for potential improvements on this function.
     """
     # No check required if weights is None.

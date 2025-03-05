@@ -13,8 +13,7 @@ import pytest
 import xarray as xr
 
 import scores.typing
-
-_DS_TEST = xr.Dataset({"a": xr.DataArray([1], dims="t"), "b": xr.DataArray([2], dims="t")})
+import scores.utils
 
 
 def test_lift_dataarray_withname():
@@ -37,9 +36,12 @@ def test_lift_dataarray_withname():
     assert keys[0] == da_test_name
     assert not lds.dummy_name
     # check that marker is XarrayTypeMarker.DATAARRAY
-    assert lds.xr_type_marker == scores.typing.XarrayTypeMarker.DATAARRAY
-    # check raw format is preserved when converted back to dataarray with original name
+    assert lds.is_dataarray()
+    # get raw dataset
     da_raw = lds.raw()
+    # assert lds is invalidated
+    assert not lds.is_valid()
+    # assert identity
     assert da_raw.identical(da)
 
 
@@ -61,9 +63,12 @@ def test_lift_dataarray_withnameequalsdummy():
     assert keys[0] == scores.typing.LiftedDataset._DUMMY_DATAARRAY_VARNAME  # pylint: disable-msg=protected-access
     assert not lds.dummy_name
     # check that marker is XarrayTypeMarker.DATAARRAY
-    assert lds.xr_type_marker == scores.typing.XarrayTypeMarker.DATAARRAY
+    assert lds.is_dataarray()
     # check raw format is preserved when converted back to dataarray with original name
     da_raw = lds.raw()
+    # assert lds is invalidated
+    assert not lds.is_valid()
+    # assert identity
     assert da_raw.identical(da)
 
 
@@ -84,6 +89,9 @@ def test_lift_dataarray_noname():
     assert lds.xr_type_marker == scores.typing.XarrayTypeMarker.DATAARRAY
     # check raw format is preserved when converted back to dataarray with no name
     da_raw = lds.raw()
+    # assert lds is invalidated
+    assert not lds.is_valid()
+    # assert identity
     assert da_raw.identical(da)
 
 
@@ -97,11 +105,14 @@ def test_lift_dataset():
     # check lifted dataset has all its variables
     lds = scores.typing.LiftedDataset(ds)
     # check that marker is XarrayTypeMarker.DATASET
-    assert lds.xr_type_marker == scores.typing.XarrayTypeMarker.DATASET
+    assert lds.is_dataset()
     # check that name isn't dummy
     assert not lds.dummy_name
     # check raw format is preserved when converted back to dataarray with no name
     ds_raw = lds.raw()
+    # assert lds is invalidated
+    assert not lds.is_valid()
+    # assert identity
     assert ds_raw.identical(ds)
 
 
@@ -112,29 +123,3 @@ def test_invalid_input_type():
     # lists are not lifted automatically, only `xr.DataArrays`
     with pytest.raises(TypeError):
         scores.typing.LiftedDataset([1, 2, 3])
-
-
-@pytest.mark.parametrize(
-    "xr_data, do_lift, expect_error_raised",
-    [
-        # one dataset and one data array => should produce error
-        (tuple([xr.DataArray([1], dims="a"), _DS_TEST]), True, True),
-        # multiple inputs with data arrays => all data arrays => no error
-        (tuple([xr.DataArray([1], dims="a"), xr.DataArray([2], dims="b")]), True, False),
-        # single input with dataset => all datasets => no error
-        (tuple([_DS_TEST]), True, False),
-        # intentionally don't lift the dataset to prompt a type error => should produce error
-        (tuple([_DS_TEST]), False, True),
-    ],
-)
-def test_same_lds_type(xr_data, do_lift, expect_error_raised):
-    """
-    Checks for homogeneity in LiftedDataset (lds) types, and checks that it raises an error if they
-    are of different types.
-    """
-    lds = [scores.typing.LiftedDataset(x) for x in xr_data] if do_lift else xr_data
-    if expect_error_raised:
-        with pytest.raises(TypeError):
-            scores.typing.check_lds_same_type(*lds)
-    else:
-        scores.typing.check_lds_same_type(*lds)

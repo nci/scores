@@ -18,7 +18,7 @@ from scores.typing import (
     XarrayLike,
     XarrayTypeMarker,
 )
-from scores.utils import check_dims, check_weights_positive, gather_dimensions
+from scores.utils import check_dims, check_weights_positive, gather_dimensions, LiftedDatasetUtils
 
 
 class NseUtils:
@@ -32,7 +32,10 @@ class NseUtils:
 
             - All utility functions assume that we are dealing with ``LiftedDataset``s Any new
               helpers declared here should follow the same pattern. To dispatch to common utility
-              functions, use ``.ds`` or ``LiftedDataset.as_ds()`` to get the underlying dataset.
+              functions, use ``.ds`` to get the underlying dataset.
+
+            - Alternative, the experimental wrapper functions of the form
+              ``LiftedDataset.lift_fn*`` may be useful.
 
             - Only call ``.raw()`` if you no longer intend to use the ``LiftedDataset`` and want to
               retract to the original xarray datatype. ``.raw()`` invalidates the ``LiftedDataset``
@@ -113,7 +116,7 @@ class NseUtils:
         lds_weights: LiftedDataset,
     ) -> XarrayTypeMarker:
         try:
-            return check_lds_same_type(fcst, obs, weights)
+            return LiftedDatasetUtils.all_same_type(lds_fcst, lds_obs, lds_weights)
         except TypeError as _e:
             # add a note specific to NSE and re-raise
             _e.add_note(NseUtils.ERROR_MIXED_XR_DATA_TYPES)
@@ -136,7 +139,7 @@ class NseUtils:
                 return acc_sizes
             # -- Otherwise => get sizes
             # get reference to inner ds
-            curr_ds: xr.Dataset = LiftedDataset.as_ds(curr_lds)
+            curr_ds: xr.Dataset = curr_lds.ds
             # get sizes
             # note: this API is not per variable name at time of writing, it was changed to maintain
             # compatibility with DataArray.
@@ -154,14 +157,14 @@ class NseUtils:
         warning message.
         """
         if weights is not None:
-            check_weights_positive(ds_weights, context="`NSE` must have positive weights.")
+            check_weights_positive(weights.ds, context="`NSE` must have positive weights.")
 
     @staticmethod
     def check_nonzero_obsvar(obs_var: LiftedDataset):
         """
         Warns if at least one obs variance term is zero in any variable in the dataset.
         """
-        ref_ds: xr.Dataset = LiftedDataset.as_ds(obs_var)
+        ref_ds: xr.Dataset = obs_var.ds
         # check if variables have zero obs variance
         ref_ds_has_zero_obs: xr.Dataset = (obs_var == 0).any()
         # check if any element in the entire dataset has zero obs variance
@@ -285,7 +288,7 @@ class NseScoreBuilder:
               may have their own quirks)
 
         Raises:
-            TypeError: see :py:func:`scores.typing.check_lds_same_type` for more details
+            TypeError: see :py:func:`scores.utils.LiftedDatasetUtils.all_same_type` for more details
         """
         # lift and check
         lifted_all: tuple[LiftedDataset] = map(LiftedDataset, (fcst, obs, weights))
@@ -420,8 +423,11 @@ class NseScore:
         """
         Callback helper for calculating :py:func:`scores.mse`, with prefilled keyword args.
         """
+        # NOTE: `lift_fn_ret` lifts any input arguments to LiftedDataset and lifts the output also
+        # to `LiftedDataset`. This only works for functions that return an `XarrayLike` and take
+        # ``XarrayLike`` as inputs.
         return functools.partial(
-            LiftedDataset.lift_fn(_cnt.mse),
+            LiftedDataset.lift_fn_ret(_cnt.mse),
             reduce_dims=self.reduce_dims,
             weights=self.weights.ds,
             is_angular=self.is_angular,
@@ -438,8 +444,8 @@ class NseScore:
 
         # perform all operations as Datasets
         ret_nse: xr.Dataset | None = None
-        ds_fcst: xr.Dataset = LiftedDataset.as_ds(self.fcst)
-        ds_obs: xr.Dataset = LiftedDataset.as_ds(self.obs)
+        ds_fcst: xr.Dataset = self.fcst.ds
+        ds_obs: xr.Dataset = self.obs.ds
 
         # compute intermediate terms
         obs_mean: xr.Dataset = self.obs.ds.mean(dim=self.reduce_dims)
@@ -447,11 +453,15 @@ class NseScore:
         fcst_error: LiftedDataset = self.mse_callback(ds_fcst, ds_obs)
 
         # raise warnings due to divide by zero in fcst/obs
+        NseUtils.check_nonzero_obsvar(obs_variance)
 
-        # intentional divide="ignore", as warning is already raised above.
-        # `numpy` will fill divide by zero elements with NaNs.
+        # intentional divide="ignore", as warning is already raised above. `numpy` will fill divide
+        # by zero elements with np.nan if denominator and numerator are both 0, otherwise if only
+        # denomintor is 0 it will be filled with -np.inf.
         with np.errstate(divide="ignore"):
+            # Compose the decomposed parts to final score.
             ret_nse = 1.0 - (self.fcst_error / self.obs_variance)
+
         # cast strictly to `xr.Dataset` from an `Optional`. If we got this far, it can't be `None`.
         cast(xr.Dataset, ret_nse)
         # convert return type strictly to original
