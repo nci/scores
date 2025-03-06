@@ -1,3 +1,5 @@
+# pylint: disable=use-dict-literal
+# most official xarray examples use `.loc[dict(...)]` for slicing
 """
 Test suite that tests helper functions and classes in the ``scores.typing`` module.
 
@@ -101,7 +103,7 @@ def test_lift_dataset():
 
     Also checks that the LiftedDataset has correctly populated metadata.
     """
-    ds = _DS_TEST
+    ds = xr.Dataset(dict(x=xr.DataArray([1], dims="t", name="potato")))
     # check lifted dataset has all its variables
     lds = scores.typing.LiftedDataset(ds)
     # check that marker is XarrayTypeMarker.DATASET

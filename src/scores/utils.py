@@ -7,7 +7,7 @@ import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union, cast
+from typing import Callable, Dict, Generic, Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -15,11 +15,11 @@ import xarray as xr
 
 from scores.typing import (
     FlexibleDimensionTypes,
-    XarrayLike,
     LiftedDataset,
+    XarrayLike,
     XarrayTypeMarker,
-    assert_xarraylike,
     assert_lifteddataset,
+    assert_xarraylike,
 )
 
 WARN_ALL_DATA_CONFLICT_MSG = """
@@ -295,26 +295,25 @@ class LiftedDatasetUtils:
 
         @functools.wraps(fn_lifted)
         def _wrapper(*args, **kwargs) -> LiftedDataset:
-            # --- check for type consistency ---
-            # collect all args that are LiftedDatasets and assert that they are the same type
             lifted_ds_list = [v for v in args if isinstance(v, LiftedDataset)]
             lifted_ds_list += [v for v in kwargs.values() if isinstance(v, LiftedDataset)]
             xr_type_marker: XarrayTypeMarker = LiftedDatasetUtils.all_same_type(*lifted_ds_list)
-            # invalid types if the type marker and return type don't match
-            # --- run the actual function ---
-            # run the actual function and store its result (reference)
-            # NOTE: ``fn_lifted`` does not consume any input datasets it calls ``inner_ref`` rather
-            # than ``raw``, since the inputs may need to be re-used down the track
+
+            # --- run inner function ---
             ret_xr: XarrayLike = fn_lifted(*args, **kwargs)
-            # --- more checks ---
-            if not isinstance(ret_xr, xr.Dataset) or not isinstance(ret_xr, xr.DataArray):
-                raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
+            # ---
+
+            # check return type can be lifted to `LiftedDataset`
+            try:
+                assert_xarraylike(ret_xr)
+            except TypeError as _err:
+                _err.add_note(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
+                raise
             if isinstance(ret_xr, xr.DataArray) and xr_type_marker != XarrayTypeMarker.DATAARRAY:
                 raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
             if isinstance(ret_xr, xr.Dataset) and xr_type_marker != XarrayTypeMarker.DATASET:
                 raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
-            # --- return ---
-            # if everything is okay, return the (re)lifted dataset
+
             return LiftedDataset(ret_xr)
 
         return _wrapper
@@ -350,30 +349,37 @@ class LiftedDatasetUtils:
             AssertionError: For internal checks - development only
         """
         ret_marker: XarrayTypeMarker = XarrayTypeMarker.INVALID
-        # need at least one argument to check - otherwise warn and exit since there's nothing to
-        # compute
+
+        # safety warning: this function should ideally not be called with no arguments, but is not a
+        # deal breaker if it is.
         if len(lds) == 0:
             warnings.warn(cls.WARN_EMPTYARGS_FOR_ALLSAMETYPECHECK, UserWarning)
             return XarrayTypeMarker.INVALID
-        # define error messages - not global, as this is a internal function and these errors are more
-        # relevant to a developer and in unittests.
-        # check that all input types are lifted datasets
+
+        # all inputs must be lifted
         for d in lds:
-            if not isinstance(d, LiftedDataset):
-                raise TypeError(cls.ERROR_INVALID_LIFTED_DATASET_TYPE)
-        # do check: homogeneous xr_data types
+            try:
+                assert_lifteddataset(d)
+            except TypeError as _err:
+                _err.add_note(cls.ERROR_INVALID_LIFTED_DATASET_TYPE)
+                raise
+
         all_ds = all(d.xr_type_marker == XarrayTypeMarker.DATASET for d in lds)
         all_da = all(d.xr_type_marker == XarrayTypeMarker.DATAARRAY for d in lds)
-        # both cannot be False (mixed types), and both cannot be True (impossible scenario)
+
+        # type safety:
+        #   - cannot be ALL datasets AND ALL dataarrays: impossible
+        #   - conversely, cannot be NEITHER datasets NOR dataarrays: also impossible
         if all_ds == all_da:
             raise TypeError(cls.ERROR_INCONSISTENT_TYPES)
-        # return marker type for dataset
+
+        # assign appropriate type marker
         if all_ds:
             ret_marker = XarrayTypeMarker.DATASET
-        # return marker type for data array
         elif all_da:
             ret_marker = XarrayTypeMarker.DATAARRAY
-        # saftey check: would have raised TypeError earlier - but may not be obvious to pylint
+
+        # type assert: if INVALID, should have already raised a TypeError or Warning
         assert ret_marker != XarrayTypeMarker.INVALID
         return ret_marker
 
@@ -670,8 +676,8 @@ def check_weights_positive(weights: XarrayLike | None, *, raise_error=True):
     # nothing to check
     if weights is None:
         return
-    # safety: typehint
-    assert typing.is_xrarraylike(weights)
+    # assert type: XarrayLike
+    assert_xarraylike(weights)
     # ignore nans as they may be used as natural exclusion masks in weighted calculations.
     weights_masked = np.ma.array(weights, mask=np.isnan(weights))
     # however, still check that we have at least one proper number.
@@ -684,5 +690,5 @@ def check_weights_positive(weights: XarrayLike | None, *, raise_error=True):
     if not checks_passed:
         if raise_error:
             raise ValueError(ERROR_INVALID_WEIGHTS)
-        else:
-            warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)
+        # otherwise warn - pylint doesn't like explicit else
+        warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)

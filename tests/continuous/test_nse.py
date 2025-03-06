@@ -1,3 +1,14 @@
+# pylint: disable=use-dict-literal
+"""
+Collection of tests for the NSE score, contains:
+    - NseSetup: Base class used by all other test classes 
+    - TestNsePublicApi: Tests concerning the public API interface - this is the main suite
+    - TestNseScoreBuilder: Tests specific to the builder that are not covered by public API 
+    - TestNseUtils: Tests specific to the utils that are not covered by public API 
+    - TestNseScore: Tests specific to score computation not already covered by public API
+    - TestNseDataset: Tests compatiblity with datasets (most tests use data array for convenience)
+    - TestNseDask: Tests compatibility with dask
+"""
 import numpy as np
 import pytest
 import xarray as xr
@@ -15,11 +26,26 @@ class NseSetup:
     _SEED: int = 42
 
     @staticmethod
-    def make_random_xr_array(shape: tuple[int], dim_names: list[str]) -> xr.DataArray:
+    def make_random_xr_array(
+        shape: tuple[int],
+        dim_names: list[str],
+        override_seed: int | None = None,
+    ) -> xr.DataArray:
         """
         Random xarray data array with each element in multi-index, "i", normally distributed,
         math:`X_i ~ N(0, 1)`pi.  ``dim_names`` must match the size of ``shape``.
+
+        Optional ``override_seed`` to change seed - caution this may be okay during setup e.g.
+        in ``setup_class`` - especially if the forecast and obs need to use different seeds.
+
+        .. caution::
+
+            Do not use ``override_seed`` when generating random arrays INSIDE a test. During setup
+            is okay...
         """
+        if override_seed is not None:
+            assert isinstance(override_seed, int)
+            np.random.seed(override_seed)
         return xr.DataArray(np.random.rand(*shape), dims=dim_names)
 
     @staticmethod
@@ -69,15 +95,18 @@ class TestNsePublicApi(NseSetup):
         Common data to be reused by the rest of this class
         """
         # --- input arrays ---
+        # make the default obs/fcst have different seeds so we don't get back the same array.
         # default obs
         cls.obs = NseSetup.make_random_xr_array(
             shape=(4, 2, 3),
             dim_names=["t", "x", "y"],
+            override_seed=42,
         )
         # default fcst
         cls.fcst = NseSetup.make_random_xr_array(
             shape=(4, 2, 3),
             dim_names=["t", "x", "y"],
+            override_seed=24,
         )
         # bad obs name
         # note: all the names must be wrong, if some names are correct
@@ -104,14 +133,17 @@ class TestNsePublicApi(NseSetup):
         cls.reduce_dims_none = []  # ditto above
 
         # --- insufficient data to reduce ---
-        cls.fcst_insufficient_data = NseSetup.make_random_xr_array(
-            shape=(4, 1, 1),
-            dim_names=["t", "x", "y"],
-        )
         cls.obs_insufficient_data = NseSetup.make_random_xr_array(
             shape=(4, 1, 1),
             dim_names=["t", "x", "y"],
+            override_seed=42,
         )
+        cls.fcst_insufficient_data = NseSetup.make_random_xr_array(
+            shape=(4, 1, 1),
+            dim_names=["t", "x", "y"],
+            override_seed=24,
+        )
+        cls.reduce_dims_insufficient_data = ["x", "y"]
 
         # --- weights ---
         # default weights
@@ -128,14 +160,20 @@ class TestNsePublicApi(NseSetup):
         # failure conditions for weights
         cls.negative_weights = cls.weights.copy(deep=True)
         cls.negative_weights.loc[dict(t=0, x=0)] = -1.0  # make one of the weights negative
-        cls.allzero_weights = cls.weights.copy(deep=True, data=np.zeros(cls.weights.shape))
-        cls.allnan_weights = cls.weights.copy(deep=True, data=np.full(cls.weights.shape, fill_value=np.nan))
+        cls.allzero_weights = cls.weights.copy(
+            deep=True,
+            data=np.zeros(cls.weights.shape),
+        )
+        cls.allnan_weights = cls.weights.copy(
+            deep=True,
+            data=np.full(cls.weights.shape, fill_value=np.nan),
+        )
 
         # --- divide by zero ---
-        # set the value along one index of the dimension being reduced: "t", as all one
+        # set the value along one index of the dimension being reduced: "x,y" , as all one
         # this will force a divide by zero error in one entry in the resulting array, which should
         # still allow the calculation to be completed.
-
+        cls.reduce_dims_divide_by_zero = ["x", "y"]
         # obs_divide_by_zero v.s. fcst (default) = -np.inf only on the plane where this happens
         cls.obs_divide_by_zero = cls.obs.copy(deep=True)
         cls.obs_divide_by_zero.loc[dict(t=1)] = 42.123
@@ -144,14 +182,24 @@ class TestNsePublicApi(NseSetup):
         cls.fcst_divide_by_zero.loc[dict(t=1)] = 42.123
 
     def test_error_incompatible_fcst_obs_dimnames(self):
-        with pytest.raises(DimensionError):
+        """
+        If there are no common dimension names we should expect a ValueError
+        """
+        with pytest.raises(ValueError):
             nse(self.fcst, self.obs_badnames)
 
     def test_error_incompatible_dimsizes(self):
+        """
+        If the dimension sizes don't match we should expect a ValueError
+        """
         with pytest.raises(ValueError):
             nse(self.fcst, self.obs_baddimsizes, reduce_dims=self.reduce_dim_string)
 
     def test_error_invalid_dims_specification(self):
+        """
+        A battery of tests to check for invalid input specifications for preserve_dims and
+        reduce_dims.
+        """
         # preserve=all
         with pytest.raises(DimensionError):
             nse(self.fcst, self.obs, preserve_dims=self.preserve_dim_all1)
@@ -163,19 +211,102 @@ class TestNsePublicApi(NseSetup):
             nse(self.fcst, self.obs, reduce_dims=self.reduce_dims_none)
         # both options specified (safety check) - note: overspecified args (i.e. both reduce_dims and preserve_dims) is a ValueError
         with pytest.raises(ValueError):
-            nse(self.fcst, self.obs, reduce_dims=self.reduce_dim_string, preserve_dims=self.preserve_dim_list)
-
-    def test_error_no_dim_reduced(self):
-        pass
+            nse(
+                self.fcst,
+                self.obs,
+                reduce_dims=self.reduce_dim_string,
+                preserve_dims=self.preserve_dim_list,
+            )
 
     def test_error_reduced_dims_not_enough_data_for_obs_variance(self):
-        pass
+        """
+        Should raise DimensionError if the theres only one item to be reduced, as this cannot be
+        used to compute the observation variance, making the score useless.
+        """
+        with pytest.raises(DimensionError):
+            nse(
+                self.fcst_insufficient_data,
+                self.obs_insufficient_data,
+                reduce_dims=self.reduce_dims_insufficient_data,
+            )
 
-    def test_warn_negative_weights(self):
-        pass
+    def test_error_invalid_weights(self):
+        """
+        Should raise an error if weights:
+            - contain a negative element, and the following cases raise errors in case of
+              unintentional inputs.
+            - are all nans (everything is masked - nothing to compute)
+            - are all zeros (everything is zero forced - score is NaN)
+        """
+        with pytest.raises(ValueError):
+            nse(
+                self.fcst,
+                self.obs,
+                weights=self.negative_weights,
+                reduce_dims=self.reduce_dims_list,
+            )
+        with pytest.raises(ValueError):
+            nse(
+                self.fcst,
+                self.obs,
+                weights=self.allnan_weights,
+                reduce_dims=self.reduce_dims_list,
+            )
+        with pytest.raises(ValueError):
+            nse(
+                self.fcst,
+                self.obs,
+                weights=self.allzero_weights,
+                reduce_dims=self.reduce_dims_list,
+            )
 
     def test_warn_divide_by_zero(self):
-        pass
+        """
+        Should warn when divide by zero error happens, but not raise an error, tests two cases:
+            - when both obs and fcst are 0 - should have a NaN result
+            - when only obs is 0 - should have -Inf in the result
+        """
+        # should have one fabricated -Inf entry at t=1
+        with pytest.warns(UserWarning):
+            ret = nse(
+                self.fcst,
+                self.obs_divide_by_zero,
+                reduce_dims=self.reduce_dims_divide_by_zero,
+            )
+            assert np.any(np.isneginf(ret[1]))
+        # should have one fabricated NaN entry at t=1
+        with pytest.warns(UserWarning):
+            ret = nse(
+                self.fcst_divide_by_zero,
+                self.obs_divide_by_zero,
+                reduce_dims=self.reduce_dims_divide_by_zero,
+            )
+            assert np.any(np.isnan(ret[1]))
+
+    def test_minimal_default_behaviour(self):
+        # reduce_dims and preserve_dims = None => everything reduced
+        ret = nse(self.fcst, self.obs)
+        assert np.all(ret <= 1.0) and np.all(ret >= -np.inf)
+
+    def test_default_behaviour_with_kitchen_sink(self):
+        # using obs as weights is quite common
+        ret = nse(
+            self.fcst,
+            self.obs,
+            weights=np.abs(self.obs),
+            reduce_dims=None,
+            preserve_dims=["x", "y"],
+            is_angular=False,
+        )
+        # expect x by y array returned
+        assert "x" in ret.dims
+        assert "y" in ret.dims
+        assert ret.shape == (2, 3)
+        assert np.all(ret <= 1.0) and np.all(ret >= -np.inf)
+
+    def test_default_with_angular_data(self):
+        ret = nse(self.fcst * 360, self.obs * 360, reduce_dims="t", is_angular=True)
+        assert np.all(ret <= 1.0) and np.all(ret >= -np.inf)
 
 
 class TestNseScoreBuilder:

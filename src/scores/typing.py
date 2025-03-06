@@ -8,7 +8,7 @@ from enum import Enum
 from typing import Union
 
 import pandas as pd
-import xarray
+import xarray as xr
 
 # FlexibleDimensionTypes should be used for preserve_dims and reduce_dims in all
 # cases across the repository
@@ -16,7 +16,7 @@ FlexibleDimensionTypes = Iterable[Hashable]
 
 # Xarraylike data types should be used for all forecast, observed and weights
 # However currently some are specified as DataArray only
-XarrayLike = Union[xarray.DataArray, xarray.Dataset]
+XarrayLike = Union[xr.DataArray, xr.Dataset]
 
 # These type hint values *may* be used for various arguments across the
 # scores repository but are not establishing a standard or expectation beyond
@@ -48,15 +48,6 @@ class LiftedDataset:
     SUFFICIENT for functions to ONLY be compatible with datasets, even if a data array is provided
     as input.
 
-    This class exists is simply an "aid" to avoid repeated logic and branching.  To dispatch to
-    common utility functions, use ``.ds`` to get the underlying dataset. Only call ``.raw()`` if you
-    no longer intend use the wrapped structure ``LiftedDataset`` and want to retract to the original
-    xarray datatype. While, the lifted version isn't explicitly destroyed - calling ``.raw()`` will
-    invalidate the lifted structure, tainting it and removing any references to the underlying
-    dataset.
-
-    For an auto-dispatch see: :py:meth:`LiftedDatasetUtils.lift_fn_ret`
-
     .. important::
 
         For INTERNAL use only - NOT for public API.
@@ -65,6 +56,18 @@ class LiftedDataset:
         errors are mainly aimed for development and testing. Ideally, they should not be raised in
         runtime; and if they must - they should be caught within the calling function and re-raised
         with a more helpful message.
+
+    This class exists is simply an "aid" to avoid repeated logic and branching.  To dispatch to
+    common utility functions, use ``.ds`` to get the underlying dataset. Or alternatively, use
+    ``LiftedDataset.inner_ref()`` to get a refence to the original type (more expensive).
+
+    Only call ``LiftedDataset.raw()`` if you want to consume (or destroy) ``LiftedDataset`` wrapper.
+    I.e. only want to deal with the inner data for the rest of the execution scope.
+
+    .. see-also::
+
+        :py:meth:`LiftedDatasetUtils.lift_fn_ret` has a convenient wrapper to provide compatibility
+        to ``LiftedDataset`` using pre-existing utility functions that only work with ``XarrayLike``.
     """
 
     #: dummy variable name - internal static variable
@@ -73,29 +76,27 @@ class LiftedDataset:
     def __init__(self, xr_data: XarrayLike):
         """
         Converts a ``xr.DataArray`` to a ``xr.Dataset``, preserving its original type.
-        For a ``xr.Dataset``, this is just a shallow wrapper.
+            - For a ``xr.Dataset``, this is essentially a shallow wrapper, with type metadata.
+            - For a ``xr.DataArray``, this operation is more expensive as it wraps it inside a
+              dataset first and unwrapping it requires extra logic
         """
         err_invalid_type: str = """
             Invalid type for `XarrayLike`, must be a `xr.Dataset` or a `xr.DataArray` object.
         """
         self.reset()
-        # handle dataset input
-        if isinstance(xr_data, xarray.Dataset):
+        if isinstance(xr_data, xr.Dataset):
             self.xr_type_marker = XarrayTypeMarker.DATASET
             self.ds = xr_data  # nothing to lift - already a dataset
-        # handle data array input
-        elif isinstance(xr_data, xarray.DataArray):
+        elif isinstance(xr_data, xr.DataArray):
             self.xr_type_marker = XarrayTypeMarker.DATAARRAY
-            # a data array may have no name, but a dataset MUST have a name for all its variables;
-            # so give it a dummy name if it doesn't have one.
+            # if data array has no name give it a dummy name - required for dataset
             if xr_data.name is None or not xr_data.name:
                 self.ds = xr_data.to_dataset(name=LiftedDataset._DUMMY_DATAARRAY_VARNAME)
                 self.dummy_name = True
-            # ...in this case it already had a name.
             else:
                 self.ds = xr_data.to_dataset()
-        # invalid: if we reached this point, then we're dealing with an illegal runtime type
         else:
+            # type assert: input is not XarrayLike, raise error
             raise TypeError(err_invalid_type)
 
     def is_valid(self) -> bool:
@@ -123,11 +124,13 @@ class LiftedDataset:
         """
         Resets any members in this class, allowing them to be dereferenced and garbage collected.
 
+        It is mainly used by ``.raw()`` to consume this structure and reproduce the original inner
+        dataset or data array; and ``.__init__()`` to construct an object from this class.
+
         .. warning::
 
-           This action is irreversable, and should not typically be called manually.
-           It is used by ``.raw()`` to consume this structure and reproduce the original inner
-           dataset or data array.
+           This action is irreversable, and should only be called internally to this class.
+
         """
         self.dummy_name = False
         self.xr_type_marker = XarrayTypeMarker.INVALID
@@ -172,7 +175,7 @@ class LiftedDataset:
         # safety: cannot call this function on an invalid initialisation
         assert self.is_valid()
         # get reference to dataset so that it isn't destroyed on reset.
-        ds_local: xarray.Dataset = self.ds
+        ds_local: xr.Dataset = self.ds
         # default to returning the whole dataset, as its non-destructive
         ret_xr_data: XarrayLike = ds_local
         # data array: remove dummy name (if assigned one) and convert it back to an array
@@ -180,7 +183,7 @@ class LiftedDataset:
             keys: list[Hashable] = list(ds_local.variables.keys())
             # safety: we should only have 1 variable if this is actually a data array
             assert len(keys) == 1
-            da: xarray.DataArray = ds_local.data_vars[keys[0]]
+            da: xr.DataArray = ds_local.data_vars[keys[0]]
             # reset name back to None if dummy_name was used in-place.
             if self.dummy_name:
                 da.name = None
@@ -200,7 +203,12 @@ def assert_xarraylike(maybe_xrlike: XarrayLike):
     - To assist in type safety for development and testing purposes only
     - Should not be used as a user error as this will be obfuscated depending on compile settings
     """
-    assert isinstance(maybe_xrlike, (xr.Dataset, xr.DataArray))
+    if not isinstance(maybe_xrlike, (xr.Dataset, xr.DataArray)):
+        raise TypeError(
+            f"""
+            Runtime type check failed: {maybe_xrlike} != xr.Dataset or xr.DataArray
+            """
+        )
 
 
 def assert_lifteddataset(maybe_lds: LiftedDataset):
@@ -209,5 +217,9 @@ def assert_lifteddataset(maybe_lds: LiftedDataset):
     - To assist in type safety for development and testing purposes only
     - Should not be used as a user error as this will be obfuscated depending on compile settings
     """
-    assert isinstance(maybe_lds, LiftedDataset)
-
+    if not isinstance(maybe_lds, LiftedDataset):
+        raise TypeError(
+            f"""
+            Runtime type check failed: {maybe_lds} != scores.typing.LiftedDataset
+            """
+        )

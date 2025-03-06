@@ -18,11 +18,11 @@ from scores.typing import (
     LiftedDataset,
     XarrayLike,
     XarrayTypeMarker,
+    assert_xarraylike,
 )
 from scores.utils import (
     DimensionError,
     LiftedDatasetUtils,
-    check_dims,
     check_weights_positive,
     gather_dimensions,
 )
@@ -93,11 +93,8 @@ class NseUtils:
         preserve_dims: FlexibleDimensionTypes | None,
     ) -> FlexibleDimensionTypes:
         """
-        Checks the dimension compatibilty of the various input arguments. This is the main utility
-        function that groups all the checks needed for NSE.
+        Checks the dimension compatibilty of the various input arguments.
         """
-        # check weights conform to NSE computations
-        NseUtils.check_weights(weights)
         weights_dims: Iterable[Hashable] | None = None if weights is None else weights.ds.dims
 
         # perform default gather dimensions
@@ -123,14 +120,17 @@ class NseUtils:
         lds_weights: LiftedDataset | None,
     ) -> XarrayTypeMarker:
         """
-        Returns the type marker that is common to fcst, obs and weights.
+        Returns the type marker that is common to fcst, obs and weights. Used to check consistency
+        of input types:
             - if they are all data arrays this will return ``XarrayTypeMarker.DATAARRAY``.
             - similarly for datasets this will return ``XarrayTypeMarker.DATASET``.
-            - mixed types are not supported and will raise an error.
+
+        Raises:
+            TypeError: if using a mixture of ``xr.Dataset`` and ``xr.DataArray``
         """
         try:
             return LiftedDatasetUtils.all_same_type(
-                filter(
+                *filter(
                     lambda _x: _x is not None,
                     (lds_fcst, lds_obs, lds_weights),
                 )
@@ -150,32 +150,21 @@ class NseUtils:
             *lifted_ds: Variadic argument of each of type ``LiftedDataset``
         """
 
-        # helper function to process one lifted dataset at a time
-        def _get_sizes(acc_sizes: dict[Hashable, int], curr_lds: LiftedDataset | None) -> dict[Hashable, int]:
-            # -- None => return the accumulation
+        def _get_sizes(
+            acc_sizes: dict[Hashable, int],
+            curr_lds: LiftedDataset | None,
+        ) -> dict[Hashable, int]:
+            """
+            Helper function to process one lifted dataset at a time. Iteratively retrieves and
+            merges sizes from each ``LiftedDataset`` array when used with ``functools.reduce``.
+            """
             if curr_lds is None:
                 return acc_sizes
-            # -- Otherwise => get sizes
-            # get reference to inner ds
             curr_ds: xr.Dataset = curr_lds.ds
-            # get sizes
-            # note: this API is not per variable name at time of writing, it was changed to maintain
-            # compatibility with DataArray.
             curr_sizes: dict[Hashable, int] = dict(curr_ds.sizes)
-            # merge (take the union) of the sizes and return a new dict
             return acc_sizes | curr_sizes
 
-        # fold _get_sizes on all lifted datasets
         return functools.reduce(_get_sizes, lifted_ds, {})
-
-    @staticmethod
-    def check_weights(weights: LiftedDataset | None):
-        """
-        Wrapper around :py:func:`~scores.utils.check_weights_positive`, with a context specific
-        warning message.
-        """
-        if weights is not None:
-            check_weights_positive(weights.ds, context="`NSE` must have positive weights.")
 
     @staticmethod
     def check_nonzero_obsvar(obs_var: LiftedDataset):
@@ -183,11 +172,10 @@ class NseUtils:
         Warns if at least one obs variance term is zero in any variable in the dataset.
         """
         ref_ds: xr.Dataset = obs_var.ds
-        # check if variables have zero obs variance
+        # runs for each variable in dataset:
         ref_ds_has_zero_obs: xr.Dataset = (ref_ds == 0).any()
-        # check if any element in the entire dataset has zero obs variance
+        # combines boolean flags for all variables:
         any_zero_obs = any(ref_ds_has_zero_obs.values())
-        # custom warning for NSE overriding numpy's default divide by 0 warning
         if any_zero_obs:
             warnings.warn(NseUtils.WARN_ZERO_OBS_VARIANCE)
 
@@ -263,8 +251,8 @@ class NseScoreBuilder:
     #: weakref because builder shouldn't circularly reference itself via ref_nsescore.ref_builder
     ref_nsescore: weakref.ref | None = None
 
-    # NOTE: no explicit __init__ of other members since this object shouldn't store any data
-    # (neither copy nor reference).
+    # The implicit __init__ will set ref_nsescore to None as above, there is no explicit __init__
+    # since no other data should be stored in this class.
 
     def build(
         self,
@@ -277,18 +265,21 @@ class NseScoreBuilder:
         is_angular: bool = False,
     ):
         """
-        Builds an ``NseScore`` object.
+        Builds an ``NseScore`` object. Runs a bunch of checks on the inputs - for details see
+        individual methods in ``NseUtils``
+
+        Raises:
+            RuntimeError: if the builder has already built a score.
+            Exception: Various errors if input checks fails as handled by helpers in ``NseUtils``
 
         .. note::
 
-            The ``RuntimeError`` raised would be an internal error is a development safety so that
-            `NseScore` isn't instantiated directly. If this error is raised, the user would be
-            prompted to raise an issue.
+            The ``RuntimeError`` is for development safety and testing only.  A user facing this
+            error will be prompted to raise a github issue. A builder is a transient
+
+            A builder structure, ideally it should be invalidated once a score has been constructed,
+            but this is not guarenteed in ``python``. So we perform an intentional runtime check.
         """
-        # it is unlikely that a single instantiation of a builder is used to create multiple scores,
-        # simultaneously as they refer to the same data and arguments. If build is invoked on an
-        # already built score from this builder -  it's likely that this internal class was used
-        # and/or developed incorrectly - hence the runtime error.
         if self.ref_nsescore is not None and self.ref_nsescore() is not None:
             raise RuntimeError(NseUtils.ERROR_SCORE_ALREADY_BUILT)
 
@@ -300,6 +291,9 @@ class NseScoreBuilder:
         lds_obs: LiftedDataset = LiftedDataset(obs)
         lds_weights: LiftedDataset | None = none_or_do(weights, LiftedDataset)
         xr_type_marker: XarrayTypeMarker = NseUtils.get_xr_type_marker(lds_fcst, lds_obs, lds_weights)
+
+        # check weights conform to NSE
+        none_or_do(lds_weights, LiftedDatasetUtils.lift_fn(check_weights_positive))
 
         reduce_dims = NseUtils.check_and_gather_dimensions(
             fcst=lds_fcst,
@@ -399,9 +393,7 @@ class NseScore:
         """
         Callback helper for calculating :py:func:`scores.mse`, with prefilled keyword args.
         """
-        # NOTE: `lift_fn_ret` lifts any input arguments to LiftedDataset and lifts the output also
-        # to `LiftedDataset`. This only works for functions that return an `XarrayLike` and take
-        # ``XarrayLike`` as inputs.
+        # lifts `mse` so that it can work with LiftedDataset types
         return functools.partial(
             LiftedDatasetUtils.lift_fn_ret(scores.continuous.mse),
             reduce_dims=self.reduce_dims,
@@ -413,23 +405,42 @@ class NseScore:
     def nse(self) -> XarrayLike:
         """
         The main calculation function for NSE:
-        - denominator (D): calculates the obs variance using a combination of ``xr.mean`` and :py:func:`scores.mse`
-        - numerator (N): calculates the forecast error using :py:func:`scores.mse` on ``obs`` and ``fcst``.
-        - ``score = 1 - N / D`` reduced and broadcast appropriately by ``xarray``.
+
+            - denominator (D): calculates the obs variance using a combination of ``xr.mean`` and
+              :py:func:`scores.mse`
+
+            - numerator (N): calculates the forecast error using :py:func:`scores.mse` on ``obs``
+              and ``fcst``.
+
+            - ``score = 1 - N / D`` reduced and broadcast appropriately by ``xarray``, ``numpy``
+              and/or ``dask``.
+
+        Raises:
+            UserWarning: If divide by 0 detected in ANY element.
+                         raised by :py:meth:`NseUtils.check_nonzero_obsvar`
+
+        .. note::
+
+            Divide by zero in itself is allowed, as the rare case where e.g. all entries along a
+            coordinate may genuinely be 0 or missing - though rare.
+
+            This shouldn't stop other entries from being calculated - so a warning is raised instead.
+
+            .. code-block::
+
+                n / 0  =  NaN   : if n == 0  (represented by np.nan)
+                       = -Inf   : if n == 0  (represented by -np.inf)
+
         """
         ret_nse: XarrayLike | None = None
-        # intentional divide="ignore", as warning would have already been raised by ``obs_variance``
-        # calculation. `numpy` will fill as follows:
-        # - denominator = numerator = 0 => np.nan
-        # - numerator > 0 but denominator = 0 => -np.inf
+
+        # ignore divide-by-zero errors: already raised by other checks - see docstring
         with np.errstate(divide="ignore"):
-            # Compose the decomposed parts to final score.
-            # Call ``raw`` here since we are finalizing the score and want to revert to original
-            # input type.
+            # compose final score
             ret_nse = 1.0 - (self.fcst_error.raw() / self.obs_variance.raw())
 
-        # safety: return type must be XarrayLike
-        assert isinstance(ret_nse, (xr.DataArray, xr.Dataset))
+        # assert type: return type must be XarrayLike
+        assert_xarraylike(ret_nse)
 
         return ret_nse
 
@@ -447,13 +458,12 @@ class NseScore:
         """
         # get inner xarray data
         obs_ref: XarrayLike = self.obs.inner_ref()
-        # safety: check dimensions compatible with reduce_dims for mean computation
-        reduce_dims: Iterable[Hashable] = [] if self.reduce_dims is None else self.reduce_dims
-        check_dims(obs_ref, reduce_dims, mode="superset")
+
         # perform calculations in "lifted" space
         xr_obs_mean: XarrayLike = obs_ref.mean(dim=self.reduce_dims)
         lds_obs_mean: LiftedDataset = LiftedDataset(xr_obs_mean)
         lds_obs_var: LiftedDataset = self.mse_callback(lds_obs_mean, self.obs)
+
         # check for 0 obs variance: divide by zero condition
         NseUtils.check_nonzero_obsvar(lds_obs_var)
 

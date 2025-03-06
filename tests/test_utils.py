@@ -7,9 +7,9 @@ import pytest
 import xarray as xr
 
 from scores import utils
+from scores.typing import LiftedDataset, XarrayLike, XarrayTypeMarker
 from scores.utils import DimensionError, check_binary
 from scores.utils import gather_dimensions as gd
-from scores.typing import XarrayLike, LiftedDataset, XarrayTypeMarker
 from tests import utils_test_data
 
 
@@ -795,6 +795,8 @@ def test_ldsutils_allsametype(xr_data, do_lift, expect_error_raised, expect_xr_t
 
 
 def test_ldsutils_lift_fn():
+    # pylint: disable=use-dict-literal, too-many-locals
+    # most official xarray examples use `.loc[dict(...)]` for slicing
     """
     Checks lift functions: ``LiftedDatasetUtils.lift_fn`` and ``LiftedDatasetUtils.lift_fn_ret``
         - ``lift_fn`` only lifts the fn args
@@ -875,6 +877,7 @@ def test_ldsutils_lift_fn_invalid_ret():
 
     # dummy function that returns a string
     def _test_func(x) -> str:
+        # pylint: disable=unused-argument
         return "hi"
 
     # lift_fn should not do anything regardless of whether any of the args or return type is
