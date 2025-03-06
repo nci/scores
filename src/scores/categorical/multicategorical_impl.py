@@ -322,10 +322,10 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         mask_clim_extremes: If True, mask out the score at points where
             :math:`p_1` is less than ``lower_masked_value`` or greater than ``upper_masked_value``.
             Instead a NaN is returned at these points. Defaults to True.
-        lower_masked_value: Scores where the climatolgical probabilities of dry weather
-            less than this value are masked. Defaults to 0.1.
-        upper_masked_value: Scores where the climatolgical probabilities of dry weather
-            greater than this value are masked. Defaults to 0.85.
+        lower_masked_value: The SEEPS score is masked at points where ``prob_dry`` is 
+            less than this value. Defaults to 0.1.
+        upper_masked_value: The SEEPS score is masked at points where ``prob_dry`` is 
+            greater than this value. Defaults to 0.85.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the SEEPS score. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
