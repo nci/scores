@@ -23,7 +23,7 @@ from scores.typing import (
 from scores.utils import (
     DimensionError,
     LiftedDatasetUtils,
-    check_weights_positive,
+    check_weights,
     gather_dimensions,
 )
 
@@ -293,7 +293,7 @@ class NseScoreBuilder:
         xr_type_marker: XarrayTypeMarker = NseUtils.get_xr_type_marker(lds_fcst, lds_obs, lds_weights)
 
         # check weights conform to NSE
-        none_or_do(lds_weights, LiftedDatasetUtils.lift_fn(check_weights_positive))
+        none_or_do(lds_weights, LiftedDatasetUtils.lift_fn(check_weights))
 
         reduce_dims = NseUtils.check_and_gather_dimensions(
             fcst=lds_fcst,

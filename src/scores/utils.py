@@ -309,10 +309,11 @@ class LiftedDatasetUtils:
             except TypeError as _err:
                 _err.add_note(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
                 raise
+            # safety checks:
             if isinstance(ret_xr, xr.DataArray) and xr_type_marker != XarrayTypeMarker.DATAARRAY:
-                raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
+                raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)  # pragma: no cover
             if isinstance(ret_xr, xr.Dataset) and xr_type_marker != XarrayTypeMarker.DATASET:
-                raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)
+                raise TypeError(cls.ERROR_INVALID_LIFTFUNC_RETTYPE)  # pragma: no cover
 
             return LiftedDataset(ret_xr)
 
@@ -645,7 +646,7 @@ def check_binary(data: XarrayLike, name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
-def check_weights_positive(weights: XarrayLike | None, *, raise_error=True):
+def check_weights(weights: XarrayLike | None, *, raise_error=True):
     """
     This is a check that requires weights to be non-negative (NaN values are excluded from the check
     since they are used as masks). At least one of the weights must be strictly positive.

@@ -2,13 +2,15 @@
 Contains tests for the scores.utils file
 """
 
+import warnings
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores import utils
 from scores.typing import LiftedDataset, XarrayLike, XarrayTypeMarker
-from scores.utils import DimensionError, check_binary
+from scores.utils import DimensionError, check_binary, check_weights
 from scores.utils import gather_dimensions as gd
 from tests import utils_test_data
 
@@ -759,6 +761,64 @@ def test_invalid_numpy_operator():
         utils.NumpyThresholdOperator(sorted)
 
 
+def test_check_weights():
+    """
+    Tests :py:func:`scores.utils.check_weights`.
+
+    Cases:
+    - conformant weights - at least one positive, rest can be >= 0
+    - any one weight negative - should raise warning
+    - all NaNs - should raise warning
+    - all zeros - should raise warning
+    - implicitly test "context" by setting appropriate context message for the above cases
+    """
+
+    def _check_weights_assert_no_warning(_w):
+        threw_warning = False
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            try:
+                _w = xr.DataArray(_w)
+                check_weights(_w, raise_error=False)
+            except Warning:
+                threw_warning = True
+        assert not threw_warning
+
+    def _expect_warning(_w):
+        with pytest.warns(UserWarning):
+            _w = xr.DataArray(_w)
+            check_weights(_w, raise_error=False)
+
+    def _expect_error(_w):
+        with pytest.raises(ValueError):
+            _w = xr.DataArray(_w)
+            check_weights(_w, raise_error=True)
+
+    _check_weights_assert_no_warning(np.array([1.0, 0.0, 0.1]))
+    # catching np.inf is not the responsibility of this function, ...
+    _check_weights_assert_no_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, np.inf]]))
+    # ... neither is np.nan - which is ignored.
+    _check_weights_assert_no_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, np.nan]]))
+
+    # --- the rest of these should throw warnings (or error depending on raise_error) ---
+    # However inputs with all nans is invalid, ...
+    _expect_warning(np.array([[np.nan, np.nan], [np.nan, np.nan]]))
+    _expect_error(np.array([[np.nan, np.nan], [np.nan, np.nan]]))
+    # ... and negative infinity is not allowed.
+    _expect_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, -np.inf]]))
+    _expect_error(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, -np.inf]]))
+    # In fact any negative number is should fail the check, ...
+    _expect_warning(np.array([-1e-7, 0.0, 0.0, 1.0]))
+    _expect_error(np.array([-1e-7, 0.0, 0.0, 1.0]))
+    # ... even if all of them are negative, and theoretically can be flipped to be conformant,
+    # it is not the responsibility of this function to do so.
+    _expect_warning(np.array([-1.0, -0.1]))
+    _expect_error(np.array([-1.0, -0.1]))
+
+    # --- weights=None should do nothing ---
+    assert check_weights(None) is None
+
+
 # ---
 # tests for LiftedDatasetUtils = ldsutils (short form)
 _DS_TEST = xr.Dataset({"a": xr.DataArray([1], dims="t"), "b": xr.DataArray([2], dims="t")})
@@ -771,6 +831,8 @@ _DS_TEST = xr.Dataset({"a": xr.DataArray([1], dims="t"), "b": xr.DataArray([2], 
         (tuple([xr.DataArray([1], dims="a"), _DS_TEST]), True, True, "invalid"),
         # multiple inputs with data arrays => all data arrays => no error
         (tuple([xr.DataArray([1], dims="a"), xr.DataArray([2], dims="b")]), True, False, "dataarray"),
+        # multiple inputs with data arrays => all data arrays => no error
+        (tuple([xr.DataArray([1], dims="a"), xr.DataArray([2], dims="b")]), False, True, "dataarray"),
         # single input with dataset => all datasets => no error
         (tuple([_DS_TEST]), True, False, "dataset"),
         # intentionally don't lift the dataset to prompt a type error => should produce error
@@ -898,3 +960,14 @@ def test_ldsutils_lift_fn_invalid_ret():
     # UserWarning: should NOT occur because the input is a lifted dataset
     with pytest.raises(TypeError):
         _lifted_test_func_ret(LiftedDataset(xr.DataArray([1, 2], dims="a")))
+
+    # TypeError: as before
+    # UserWarning: should NOT occur because the input is a lifted dataset
+    with pytest.raises(TypeError):
+        _lifted_test_func_ret(
+            LiftedDataset(
+                xr.Dataset(
+                    dict(x=xr.DataArray([1, 2], dims="a")),
+                ),
+            ),
+        )
