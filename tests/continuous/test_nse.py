@@ -14,7 +14,7 @@ import pytest
 import xarray as xr
 from numpy import typing as npt
 
-from scores.continuous import nse
+from scores.continuous import nse, nse_impl
 from scores.utils import DimensionError
 
 
@@ -315,16 +315,35 @@ class TestNseScoreBuilder:
     Only things missed by the public API test suite will be covered here.
     """
 
-    ...
+    def test_invalid_builder_initialization(self):
+        obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+        fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+
+        with pytest.raises(RuntimeError):
+            bld = nse_impl.NseScoreBuilder()
+            # ok
+            score1 = bld.build(fcst=fcst, obs=obs)
+            # double building not allowed before score1 is destructed.
+            # Otherwise, score2 may implicitly be able to reference the same data.
+            score2 = bld.build(fcst=fcst, obs=obs)
 
 
-class TestNseUtil(NseSetup):
+class TestNseUtils(NseSetup):
     """
     NOTE: most of NseScoreBuilder is tested by the public API test suite and is not repeated here.
     Only things missed by the public API test suite will be covered here.
     """
 
-    ...
+    def test_get_xr_type_marker_mixed_type_error(self):
+        """
+        Tests error is raised when mixed input types are given.
+        """
+        da = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+        ds = xr.Dataset(dict(mix_and_match=da))
+        dw = None
+
+        with pytest.raises(TypeError):
+            nse_impl.NseUtils.get_xr_type_marker(da, ds, dw)
 
 
 class TestNseScore(NseSetup):
@@ -333,6 +352,243 @@ class TestNseScore(NseSetup):
     here should not use ``np.random.random``, instead they'd need to be either handcrafted or
     verifiable by a naive secondary algorithm.
     """
+
+    def test_invalid_score_initialization(self):
+        obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+        fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+        weights = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+
+        with pytest.raises(RuntimeError):
+            nse_impl.NseScore(
+                fcst=fcst,
+                obs=obs,
+                weights=weights,
+                xr_type_marker=1,
+                reduce_dims="x",
+                ref_builder=None,
+            )
+
+    def test_nse_score_with_worked_example(self):
+        """
+        Worked example - note this is not a scientific example, its still very much contrived, but
+        still verifies some important properties of NSE.  Please have a look at the tutorial
+        notebooks for a simulated hydrograph example.
+
+        ------------------------------------------------------------------------------------------
+         setup
+        ------------------------------------------------------------------------------------------
+            arbitrarily using a dataset, since most of the public API tests uses a data array
+
+            dims:    2 * 4 * 2 * 3    : x, y, t, l => 48 values
+            obs:     1, 2, 3, 4...    reshaped
+            fcst:    2, 3, 4, 5...    reshaped
+            weights: ...?             to be introduced below
+
+        ------------------------------------------------------------------------------------------
+         obs mean calculation - scratch work
+        ------------------------------------------------------------------------------------------
+            reduce over (x, y) => 1 nse result per (t, l) 2 x 3 => 6 elements being reduced
+            => (2i + 5) / 2 is the mean, where i is the starting index of each group,
+               assuming (t, l) are the innermost elements of the whole data structure.
+            => e.g. for i = 1  | obs = 1, 2, 3, 4, 5 ,6,
+                               | mean = 3 + 4 / 2 = 3.5 = (2*1 + 5)/2
+            => e.g. for i = 10 | obs = 10, 11, 12, 13, 14, 15
+                               | mean = 12 + 13 / 2 = 12.5 = (2*10 + 5)/2
+
+        ------------------------------------------------------------------------------------------
+         forecast error calculation
+        ------------------------------------------------------------------------------------------
+            since the error is always 1, the square is 1, and hence
+
+            +---------------------------------------------+
+            | forecast error = (1^2) * 6 / 6 = 1  --> [1] |
+            +---------------------------------------------+
+
+            probably not very surprising.
+
+        ------------------------------------------------------------------------------------------
+         obs variance calculation
+        ------------------------------------------------------------------------------------------
+            intuition: the variance should be the same since the "spread" of data for each group
+            being reduced should be the same (again assuming t, l are the inner most indices).
+
+            given any starting index, mean = (2i + 5)/2, obs = j: i->i+5 (total 6), so...
+
+            error_j = (j - (2i + 5)/2)^2: j from i -> i+5
+
+            because j is always relative to i, the first error term is -5/2 and the last error term
+            is 5/2. We can also assume because i increases linearly, the error term must also
+            increase linearly from -5/2 -> 5/2, since there are 6 entries there are 5 intervals.
+
+            (5/2-(-5/2))/5 = 10/10 = 1, which means the errors also increase by 1
+
+            obs_variance = (-5/2)^2 + (-3/2)^2 + (-1/2)^2  + (1/2)^2 + (3/2)^2 + (5/2)^2 / 6
+                         = (25 + 9 + 1 + 1 + 9 + 25) / (6 * 4) = 70 / 24 ~= 2.9166... ---> [2]
+
+            +------------------------------------------------------------------+
+            | obs variance = sum_j((j-i)+5/2)/6 ~= 70 / 24 ~= 2.9166... -> [2] |
+            +------------------------------------------------------------------+
+
+        ------------------------------------------------------------------------------------------
+         NSE without weights
+        ------------------------------------------------------------------------------------------
+            combining [1] and [2] we get NSE without weights
+
+            +--------------------------------------------------+
+            | NSE = 1 - 24 / 70 = 46 / 70 ~= 0.657... ---> [3] |
+            +--------------------------------------------------+
+
+            this makes sense the obs groups have a differences uniformly ranging from 0 to 5,
+            whereas the fcst is always bounded to 1, which means it is a better predictor than the
+            mean. If the (t, l) is grouped according to the assumption then for every (x, y) element
+            should have the same value: 46/70 ~= 0.657
+
+        ------------------------------------------------------------------------------------------
+         NSE with weights
+        ------------------------------------------------------------------------------------------
+            Suppose we want to add some weights - say we want to weight lead times (l) now suppose
+            we want a triangular weighting scheme because why not, [0,3,1]. This also forces the
+            first entry to 0 for <insert arbitrary reason here>.
+
+            Broadcasting this over time (t), the full weighting is [[0,3,1],[0,3,1]].
+
+            So now essentially we have (noting that weights are applied to the squared error):
+              - fcst error   = (0+3+1+0+3+1)/6 = 8/6 = 4/3 = 1.333...
+              - obs variance = ((9/4)*3 + (1/4)*1 + (9/4)*3 + (25/4)*1)/6
+                             = (27+1+27+25)/24 = 80/24 = 10/3 = 3.333...
+
+            +------------------------------------------------------------+
+            | NSE with weights = 1 - 24*4/3*80 = 3/5 = 0.6... ---> [4a]  |
+            +------------------------------------------------------------+
+
+            Note that the error has not changed much, but if we think about it we have 0s in
+            (unintentionally) strategic spots, the first 0 eliminates a large error term in obs,
+            while the second 0 elements a small error term, this sort of cancels each other out.
+
+            However, this will still have the same value for all the elements in the returned array.
+            If we were to vary things a little, we could also add weights based on (x, y)
+            coordinates. Because (x, y) are not being reduced - this is essentially a scaling
+            operation.
+
+            Arbitrarily lets just scale on x which has cardinality=2. If we choose [1,2] as the
+            weighting on x then effectively we have for:
+                - x = 0: weights along l = [0,3,1] => we already computed this
+                - x = 1: weights along l = [0,6,2]
+                - since there is a slight assymetry in the error, we'd expect x=1 to have a slightly
+                  smaller score - [smaller score]
+
+            for x = 1:
+                - fcst error =             8/3 = 2.6666....    (scaled by 2)
+                - obs error  = (36+2+36+50)/24 = 63/12 = 5.25  (scaled by less than 2)
+
+            +----------------------------------------------------------------+
+            | NSE with weights = 1 - 8*12/3*63 = 31/63 = 0.492... ---> [4b]  |
+            +----------------------------------------------------------------+
+
+            - [smaller score]: as expected
+
+            So the result will be for x=0: 0.6 and x=1: 0.492...
+
+        ------------------------------------------------------------------------------------------
+         Let's add another variable - it is a dataset after all
+        ------------------------------------------------------------------------------------------
+            Let's assume the above was for temperature, let's make our life harder and add another
+            variable - precipitation. This time let's make the difference cycle between 2 and 0
+            instead of 1 the average error is still 1 - but let's see if it affects the score
+
+            i.e. fcst = [obs+2, obs+0, obs+2, obs+0, ...]
+
+            +-------------------------------------------------------------------------+
+            | now:                                                                    |
+            |     - forecast error = (2^2 * 3) / 6 = 3: shock! error has increased!   |
+            |     - obs variance = still the same (thankfully)                        |
+            |     - nse without weights = 1 - (3 * 24 / 70)                           |
+            |                           =  ~=-0.0285 (we're slightly worse than mean) |
+            |     --> [6a,6b,6c]                                                      |
+            +-------------------------------------------------------------------------+
+
+            We're slighly worse off than using the mean, this also makes sense! We have effectively
+            made our predictions less consistent/reliable and as a result more noisy even when
+            compared to the obs. In fact the spread is 3 (fcst error) v.s. 2.91 (obs variance), as
+            opposed to 1 v.s. 2.91 previously.  Eventhough, our _average_ error has not changed.
+            Cool!
+
+            lets add some cheeky weights now to conveniently only select the forecasts with 0
+            errors. This time the result should be easy to work out i.e. if we have no error the
+            best score NSE can give us is 1.0.
+
+            How do we choose the weights? We use the selection pattern i.e. 0 if even, 1 if odd,
+            assuming assuming the odd fcst indices match the obs and the evens are 2 away from the
+            obs (.. or alternatively we could mask it - it doesn't matter for this particular
+            score). [0, 1, 0, 1...]
+
+            +--------------------------------------+
+            | NSE with weights = 1.0 (QED) -> [7]  |
+            +--------------------------------------+
+
+        ------------------------------------------------------------------------------------------
+        .. note::
+
+            All of the above was done by hand so that it can be analytically verifiable against
+            fractional results, derived using some heuristic shortcuts.
+
+            However, we also compare it with ``nse_naive`` helper in NSE setup, which uses a
+            bunch of nested for loops to do the same effective computation.
+        """
+        # -------------------------
+        # x=2,y=4,t=2,l=3: total=48
+        # -------------------------
+
+        # build temperature dataarray - offset by 1:
+        temp_obs = np.linspace(start=0, stop=48, dtype=int, endpoint=False)
+        temp_fct = np.linspace(start=1, stop=49, dtype=int, endpoint=False)
+        temp_obs = np.reshape(temp_obs, (2, 4, 2, 3))
+        temp_fct = np.reshape(temp_fct, (2, 4, 2, 3))
+
+        # build precipitation dataarray - offset by 2 on even entries:
+        # actual start value shouldn't actually matter since the error is relative
+        precip_obs = np.linspace(start=10, stop=58, dtype=int, endpoint=False)
+        precip_fct = np.linspace(start=10, stop=58, dtype=int, endpoint=False)
+        precip_fct[slice(0, None, 2)] += 2  # offset every even index
+        precip_obs = np.reshape(precip_obs, (2, 4, 2, 3))
+        precip_fct = np.reshape(precip_fct, (2, 4, 2, 3))
+
+        # weights
+        temp_weights = np.array([[[0, 3, 1]], [[0, 6, 2]]])  # x,.,.,l: 2*1*1*3
+        precip_weights = np.array([[[0, 1, 0], [1, 0, 1]]])  # .,.,t,l: 1*1*2*3
+
+        # expected values (needs to be broadcast appropriately)
+        # temperature - scalar values
+        exp_temp_fct_err = 1.0
+        exp_temp_obs_var = 70.0 / 24.0
+        exp_temp_nse_scr = 46.0 / 70.0
+        exp_temp_fct_err_weights_a = 4.0 / 3.0
+        exp_temp_obs_var_weights_a = 10.0 / 3.0
+        exp_temp_nse_scr_weights_a = 3.0 / 5.0
+        exp_temp_fct_err_weights_b = 8.0 / 3.0
+        exp_temp_obs_var_weights_b = 63.0 / 12.0
+        exp_temp_nse_scr_weights_b = 31.0 / 63.0
+        # temperature - as broadcast array
+        # TODO:
+
+        # precipitation - scalar values
+        exp_precip_fct_err = 3.0
+        exp_precip_obs_var = 70.0 / 24.0
+        exp_precip_nse_scr = -1.0 / 35.0
+        exp_precip_fct_err_weights_a = 0.0
+        exp_precip_obs_var_weights_a = 999  # irrelvant
+        exp_precip_nse_scr_weights_a = 1.0
+        exp_precip_fct_err_weights_b = 0.0
+        exp_precip_obs_var_weights_b = 999  # irrelevant
+        exp_precip_nse_scr_weights_b = 1.0
+
+        # temperature - as broadcast array
+        # TODO:
+
+        # TODO: finish this test
+        # - assert individual components
+        # - assert final score
+        # - assert compare against naive_nse
 
 
 class TestNseDataset(NseSetup):
@@ -347,22 +603,11 @@ class TestNseDataset(NseSetup):
 
     def test_nse_with_datasets(self):
         """
-        obs:
-        temp = x, y, t
-        precip = x, y, t
-        ---
-        fcst:
-        temp = x, y, t, h
-        precip = t, h
-        tapioca = x, y
-        ---
-        reduce_dims = [ "x", "y" ]
-        ---
         expected behaviour:
-        - obs & forecast should be broadcast appropriately so that they both contain x,y,t,h for both arrays.
-        - reduce_dims then applies as per normal
-        - tapioca is ignored
-        - no errors
+        - reduce_dims must be specified such that the dimensions being reduced exist in both arrays
+        - the result can then be broadcast to the remaining dimensions appropriately
+        - tapioca is ignored i.e. variables that do not exist in both datasets
+        - no raised errors are tested here as they should be handled by utility calls
         """
         ds_obs = xr.Dataset(
             data_vars=dict(
@@ -401,6 +646,8 @@ class TestNseDask(NseSetup):
     NOTE: failure conditions will not be the responsibility of this test, this suite just exists to
     check if dask computes things appropriately with non-dask as a compatiblity measure.
     """
+
+    # TODO: finish this test
 
     @pytest.fixture(scope="class", autouse=True)
     def skip_if_dask_unavailable(self):

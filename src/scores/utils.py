@@ -377,11 +377,11 @@ class LiftedDatasetUtils:
         # assign appropriate type marker
         if all_ds:
             ret_marker = XarrayTypeMarker.DATASET
-        elif all_da:
+        else:
+            # safety: can only be DATAARRAY
+            assert all_da
             ret_marker = XarrayTypeMarker.DATAARRAY
 
-        # type assert: if INVALID, should have already raised a TypeError or Warning
-        assert ret_marker != XarrayTypeMarker.INVALID
         return ret_marker
 
 
