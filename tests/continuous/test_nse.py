@@ -1,14 +1,19 @@
+# disable non-critical pylinting for tests:
 # pylint: disable=use-dict-literal
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-locals
+# pylint: disable=too-few-public-methods
 """
 Collection of tests for the NSE score, contains:
-    - NseSetup: Base class used by all other test classes 
+    - NseSetup: Base class used by all other test classes
     - TestNsePublicApi: Tests concerning the public API interface - this is the main suite
-    - TestNseScoreBuilder: Tests specific to the builder that are not covered by public API 
-    - TestNseUtils: Tests specific to the utils that are not covered by public API 
+    - TestNseScoreBuilder: Tests specific to the builder that are not covered by public API
+    - TestNseUtils: Tests specific to the utils that are not covered by public API
     - TestNseScore: Tests specific to score computation not already covered by public API
     - TestNseDataset: Tests compatiblity with datasets (most tests use data array for convenience)
     - TestNseDask: Tests compatibility with dask
 """
+import os
 import numpy as np
 import pytest
 import xarray as xr
@@ -16,6 +21,15 @@ from numpy import typing as npt
 
 from scores.continuous import nse, nse_impl
 from scores.utils import DimensionError
+
+DASK_AVAILABLE = False
+try:
+    import dask
+    import dask.array
+
+    DASK_AVAILABLE = True
+except ImportError:
+    pass
 
 
 class NseSetup:
@@ -68,7 +82,7 @@ class NseSetup:
         xarray/numpy/dask are doing the right thing in conjunction with how they are used for this
         score. However, this function is slow and should not be run for big arrays.
         """
-        pass
+        # TODO: implement naive NSE using for loops
 
     @pytest.fixture
     def setup_numpy_seed(self):
@@ -284,11 +298,17 @@ class TestNsePublicApi(NseSetup):
             assert np.any(np.isnan(ret[1]))
 
     def test_minimal_default_behaviour(self):
+        """
+        Tests minimal NSE score function
+        """
         # reduce_dims and preserve_dims = None => everything reduced
         ret = nse(self.fcst, self.obs)
-        assert np.all(ret <= 1.0) and np.all(ret >= -np.inf)
+        assert np.all(ret <= 1.0)
 
     def test_default_behaviour_with_kitchen_sink(self):
+        """
+        Tests NSE score function with all args/kwargs
+        """
         # using obs as weights is quite common
         ret = nse(
             self.fcst,
@@ -302,11 +322,14 @@ class TestNsePublicApi(NseSetup):
         assert "x" in ret.dims
         assert "y" in ret.dims
         assert ret.shape == (2, 3)
-        assert np.all(ret <= 1.0) and np.all(ret >= -np.inf)
+        assert np.all(ret <= 1.0)
 
     def test_default_with_angular_data(self):
+        """
+        Tests NSE score function with angular data
+        """
         ret = nse(self.fcst * 360, self.obs * 360, reduce_dims="t", is_angular=True)
-        assert np.all(ret <= 1.0) and np.all(ret >= -np.inf)
+        assert np.all(ret <= 1.0)
 
 
 class TestNseScoreBuilder:
@@ -316,16 +339,19 @@ class TestNseScoreBuilder:
     """
 
     def test_invalid_builder_initialization(self):
+        """
+        Tests if runtime error is raised if builder is used more than once in the same scope.
+        This is bad, as it will cause different score functions to share the same reference data.
+        """
         obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
         fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
 
         with pytest.raises(RuntimeError):
             bld = nse_impl.NseScoreBuilder()
             # ok
-            score1 = bld.build(fcst=fcst, obs=obs)
-            # double building not allowed before score1 is destructed.
-            # Otherwise, score2 may implicitly be able to reference the same data.
-            score2 = bld.build(fcst=fcst, obs=obs)
+            # intentionally disable unused-variable to test for double builder usage error
+            score1 = bld.build(fcst=fcst, obs=obs)  # pylint: disable=unused-variable
+            score2 = bld.build(fcst=fcst, obs=obs)  # pylint: disable=unused-variable
 
 
 class TestNseUtils(NseSetup):
@@ -353,21 +379,7 @@ class TestNseScore(NseSetup):
     verifiable by a naive secondary algorithm.
     """
 
-    def test_invalid_score_initialization(self):
-        obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-        fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-        weights = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-
-        with pytest.raises(RuntimeError):
-            nse_impl.NseScore(
-                fcst=fcst,
-                obs=obs,
-                weights=weights,
-                xr_type_marker=1,
-                reduce_dims="x",
-                ref_builder=None,
-            )
-
+    @classmethod
     def setup_class(cls):
         """
         TODO: move this to setup class, and create one test per expected output
@@ -475,21 +487,18 @@ class TestNseScore(NseSetup):
             Arbitrarily lets just scale on x which has cardinality=2. If we choose [1,2] as the
             weighting on x then effectively we have for:
                 - x = 0: weights along l = [0,3,1] => we already computed this
-                - x = 1: weights along l = [0,6,2]
+                - x = 1: weights along l = [0,6,3]
                 - since there is a slight assymetry in the error, we'd expect x=1 to have a slightly
-                  smaller score - [smaller score]
-
+                  different score, since its not quite double
             for x = 1:
-                - fcst error =             8/3 = 2.6666....    (scaled by 2)
-                - obs error  = (36+2+36+50)/24 = 63/12 = 5.25  (scaled by less than 2)
+                - fcst error   = 18/6  = 3.0
+                - obs variance = (6*9+3*1+6*9+3*25)/24 = 186/24 => 7.75
 
-            +----------------------------------------------------------------+
-            | NSE with weights = 1 - 8*12/3*63 = 31/63 = 0.492... ---> [4b]  |
-            +----------------------------------------------------------------+
+            +---------------------------------------------------------------+
+            | NSE with weights = 1 - 72/186 = 114/186 = 0.612... ---> [4b]  |
+            +---------------------------------------------------------------+
 
-            - [smaller score]: as expected
-
-            So the result will be for x=0: 0.6 and x=1: 0.492...
+            So the result will be for x=0: 0.6 and x=1: 0.612...
 
         ------------------------------------------------------------------------------------------
          Let's add another variable - it is a dataset after all
@@ -502,27 +511,28 @@ class TestNseScore(NseSetup):
 
             +-------------------------------------------------------------------------+
             | now:                                                                    |
-            |     - forecast error = (2^2 * 3) / 6 = 3: shock! error has increased!   |
+            |     - forecast error = (2^2 * 3) / 6 = 2: shock! error has increased!   |
             |     - obs variance = still the same (thankfully)                        |
-            |     - nse without weights = 1 - (3 * 24 / 70)                           |
-            |                           =  ~=-0.0285 (we're slightly worse than mean) |
+            |     - nse without weights = 1 - (2 * 24 / 70)                           |
+            |                           = 22 / 70 ~= 0.314 (worse than before)        |
             |     --> [6a,6b,6c]                                                      |
             +-------------------------------------------------------------------------+
 
-            We're slighly worse off than using the mean, this also makes sense! We have effectively
-            made our predictions less consistent/reliable and as a result more noisy even when
-            compared to the obs. In fact the spread is 3 (fcst error) v.s. 2.91 (obs variance), as
-            opposed to 1 v.s. 2.91 previously.  Eventhough, our _average_ error has not changed.
-            Cool!
+            We're slighly worse off - note we have effectively made our predictions less
+            consistent/reliable and as a result more noisy even when compared to the obs. In fact
+            the spread ratio of error:variance is 2:2.91, whereas before it was 1:2.91
+            previously. Eventhough, our _average_ error has not changed!
 
             lets add some cheeky weights now to conveniently only select the forecasts with 0
             errors. This time the result should be easy to work out i.e. if we have no error the
             best score NSE can give us is 1.0.
 
-            How do we choose the weights? We use the selection pattern i.e. 0 if even, 1 if odd,
-            assuming assuming the odd fcst indices match the obs and the evens are 2 away from the
-            obs (.. or alternatively we could mask it - it doesn't matter for this particular
-            score). [0, 1, 0, 1...]
+            How do we choose the weights? We use the selection pattern i.e. 0 if index is even, 1 if
+            odd, assuming assuming the odd fcst indices match the obs and the evens are 2 away from
+            the obs. Set it to [[0, 1, 0], [2, 0, 2]], arbitrarily, the value doesn't matter, as
+            long as it matches the parts where forecast error = 0.
+
+            (note: with weights the obs error is 61/24 - though this won't matter.)
 
             +--------------------------------------+
             | NSE with weights = 1.0 (QED) -> [7]  |
@@ -537,9 +547,10 @@ class TestNseScore(NseSetup):
             However, we also compare it with ``nse_naive`` helper in NSE setup, which uses a
             bunch of nested for loops to do the same effective computation.
         """
-        # -------------------------
-        # x=2,y=4,t=2,l=3: total=48
-        # -------------------------
+        # -----------------------------------------------
+        #  dimensions | x:2,y:4,t:2,l:3: total:48 values
+        # -----------------------------------------------
+        # -> reducing over (t, l)
 
         def _build_ds(np_temp, np_precip):
             _dims = ["x", "y", "t", "l"]
@@ -564,44 +575,116 @@ class TestNseScore(NseSetup):
         precip_obs = np.reshape(precip_obs, (2, 4, 2, 3))
         precip_fcst = np.reshape(precip_fcst, (2, 4, 2, 3))
 
-        # weights
-        temp_weights = np.array([[[[0, 3, 1]]], [[[0, 6, 2]]]])  # x,.,.,l: 2*1*1*3
-        precip_weights = np.array([[[[0, 1, 0], [1, 0, 1]]]])  # .,.,t,l: 1*1*2*3
+        # weights - unbroadcasted
+        temp_weights = np.array([[[[0, 3, 1]]], [[[0, 6, 3]]]])  # x,.,.,l: 2*1*1*3
+        precip_weights = np.array([[[[0, 1, 0], [2, 0, 2]]]])  # .,.,t,l: 1*1*2*3
 
         # helper to convert to expected output - this will always be x=2 * y=4,
         # because we're reducing by (t, l)
-        def _build_exp_output_da(_x, name, dim_names=["x", "y"]):
+        def _build_exp_output_da(_x, name, dim_names=("x", "y")):
             return xr.DataArray(
                 np.reshape(np.repeat(_x, repeats=8), (2, 4)),
                 dims=dim_names,
                 name=name,
             )
 
-        # expected values
-        # output = x=2 * y=4, 8 values total
-        # temperature - scalar values
-        cls.exp_temp_fcst_err = _build_exp_output_da(1.0, "temperature")
-        cls.exp_temp_obs_var = _build_exp_output_da(70.0 / 24.0, "temperature")
-        cls.exp_temp_nse_scr = _build_exp_output_da(46.0 / 70.0, "temperature")
-        cls.exp_temp_fcst_err_weights_a = _build_exp_output_da(4.0 / 3.0, "temperature")
-        cls.exp_temp_obs_var_weights_a = _build_exp_output_da(10.0 / 3.0, "temperature")
-        cls.exp_temp_nse_scr_weights_a = _build_exp_output_da(3.0 / 5.0, "temperature")
-        cls.exp_temp_fcst_err_weights_b = _build_exp_output_da(8.0 / 3.0, "temperature")
-        cls.exp_temp_obs_var_weights_b = _build_exp_output_da(63.0 / 12.0, "temperature")
-        cls.exp_temp_nse_scr_weights_b = _build_exp_output_da(31.0 / 63.0, "temperature")
+        # -------------------------
+        #  Prepare expected values
+        # -------------------------
+        # See docstrings of this setup function to see how they were derived
 
-        # precipitation - scalar values
-        cls.exp_precip_fcst_err = _build_exp_output_da(3.0, "precipitation")
-        cls.exp_precip_obs_var = _build_exp_output_da(70.0 / 24.0, "precipitation")
-        cls.exp_precip_nse_scr = _build_exp_output_da(-1.0 / 35.0, "precipitation")
-        cls.exp_precip_fcst_err_weights_a = _build_exp_output_da(0.0, "precipitation")
-        cls.exp_precip_obs_var_weights_a = _build_exp_output_da(999, "precipitation")  # irrelevant
-        cls.exp_precip_nse_scr_weights_a = _build_exp_output_da(1.0, "precipitation")
-        cls.exp_precip_fcst_err_weights_b = _build_exp_output_da(0.0, "precipitation")
-        cls.exp_precip_obs_var_weights_b = _build_exp_output_da(999, "precipitation")  # irrelevant
-        cls.exp_precip_nse_scr_weights_b = _build_exp_output_da(1.0, "precipitation")
+        # --- without weights ---
+        exp_temp_fcst_err = _build_exp_output_da(1.0, "temperature")
+        exp_temp_obs_var = _build_exp_output_da(70.0 / 24.0, "temperature")
+        exp_temp_nse_scr = _build_exp_output_da(46.0 / 70.0, "temperature")
+        exp_precip_fcst_err = _build_exp_output_da(2.0, "precipitation")
+        exp_precip_obs_var = _build_exp_output_da(70.0 / 24.0, "precipitation")
+        exp_precip_nse_scr = _build_exp_output_da(22.0 / 70.0, "precipitation")
 
-        # inputs
+        # --- with weights ---
+        # nomenclature [t|p][e|v|s][1|2]
+        # t = temperature, p = precipitation
+        # e = error, v = variance, s = score
+        # 1 = first weight, 2 = second weight
+        # - NOTE:
+        #    we will have two different values for weights, repeated at specific positions because
+        #    of the way it is reduced.
+
+        # temperature
+        te1 = 4.0 / 3.0
+        tv1 = 10.0 / 3.0
+        ts1 = 3.0 / 5.0
+        te2 = 3.0
+        tv2 = 186.0 / 24.0
+        ts2 = 114.0 / 186.0
+
+        # result depends on x axis, and must be 2*4
+        exp_temp_fcst_err_weights = xr.DataArray(
+            np.array([[te1] * 4, [te2] * 4]),
+            dims=["x", "y"],
+        )
+        exp_temp_obs_var_weights = xr.DataArray(
+            np.array([[tv1] * 4, [tv2] * 4]),
+            dims=["x", "y"],
+        )
+        exp_temp_nse_scr_weights = xr.DataArray(
+            np.array([[ts1] * 4, [ts2] * 4]),
+            dims=["x", "y"],
+        )
+
+        # precipitation - note precipitation only has one value for weights
+        pe1 = 0.0
+        pv1 = 61.0 / 24.0
+        ps1 = 1.0
+        exp_precip_fcst_err_weights = _build_exp_output_da(pe1, "precipitation")
+        exp_precip_obs_var_weights = _build_exp_output_da(pv1, "precipitation")
+        exp_precip_nse_scr_weights = _build_exp_output_da(ps1, "precipitation")
+
+        # expose expected values by assigning them to the class
+        # --- no weights ---
+        cls.exp_fcst_error = xr.Dataset(
+            dict(
+                temperature=exp_temp_fcst_err,
+                precipitation=exp_precip_fcst_err,
+            )
+        )
+        cls.exp_obs_variance = xr.Dataset(
+            dict(
+                temperature=exp_temp_obs_var,
+                precipitation=exp_precip_obs_var,
+            )
+        )
+        cls.exp_nse_score = xr.Dataset(
+            dict(
+                temperature=exp_temp_nse_scr,
+                precipitation=exp_precip_nse_scr,
+            )
+        )
+
+        # --- with weights ---
+        cls.exp_fcst_error_weights = xr.Dataset(
+            dict(
+                temperature=exp_temp_fcst_err_weights,
+                precipitation=exp_precip_fcst_err_weights,
+            )
+        )
+        cls.exp_obs_variance_weights = xr.Dataset(
+            dict(
+                temperature=exp_temp_obs_var_weights,
+                precipitation=exp_precip_obs_var_weights,
+            )
+        )
+        cls.exp_nse_score_weights = xr.Dataset(
+            dict(
+                temperature=exp_temp_nse_scr_weights,
+                precipitation=exp_precip_nse_scr_weights,
+            )
+        )
+
+        # --------
+        #  inputs
+        # --------
+        # expose input values by assigning them to the class
         cls.ds_obs = _build_ds(temp_obs, precip_obs)
         cls.ds_fcst = _build_ds(temp_fcst, precip_fcst)
         expand_dims = {"x": 2, "y": 4, "t": 2, "l": 3}
@@ -617,22 +700,44 @@ class TestNseScore(NseSetup):
                 ),
             }
         )
-
         cls.reduce_dims = ("t", "l")
 
-        # this (lazy) computation is used for most tests
-        cls.nse_score_weights = nse_impl.NseScoreBuilder().build(
-            obs=cls.ds_obs,
+        # ---------------------------------------
+        #  scores - prepped but not yet computed
+        # ---------------------------------------
+        # expose score values by assigning them to the class
+        # these (lazy) computations are used for most tests
+        cls.nse_score = nse_impl.NseScoreBuilder().build(
             fcst=cls.ds_fcst,
+            obs=cls.ds_obs,
+            reduce_dims=cls.reduce_dims,
+        )
+
+        cls.nse_score_weights = nse_impl.NseScoreBuilder().build(
+            fcst=cls.ds_fcst,
+            obs=cls.ds_obs,
             weights=cls.ds_weights,
             reduce_dims=cls.reduce_dims,
         )
 
-        cls.nse_score_no_weights = nse_impl.NseScoreBuilder().build(
-            obs=cls.ds_obs,
-            fcst=cls.ds_fcst,
-            reduce_dims=cls.reduce_dims,
-        )
+    def test_invalid_score_initialization(self):
+        """
+        Tests scenario where score is initialized without a builder. This is bad, as a builder
+        performs all the checks from interfacing with the public API.
+        """
+        obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+        fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+        weights = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
+
+        with pytest.raises(RuntimeError):
+            nse_impl.NseScore(
+                fcst=fcst,
+                obs=obs,
+                weights=weights,
+                xr_type_marker=1,
+                reduce_dims="x",
+                ref_builder=None,
+            )
 
     @pytest.mark.parametrize(
         "var_,use_weights",
@@ -644,12 +749,15 @@ class TestNseScore(NseSetup):
         ],
     )
     def test_obs_variance(self, var_, use_weights):
-        scorer = self.nse_score_no_weights
-        exp_score = self.exp_obs_var_no_weights
+        """
+        Tests obs variance is the same as the handcrafted scenario
+        """
+        res = self.nse_score.obs_variance
+        exp = self.exp_obs_variance
         if use_weights:
-            scorer = self.nse_score_weights
-            exp_score = self.exp_obs_var_no_weights
-        assert scorer.obs_variance.ds.data_var[var_].identical(exp_score[var_])
+            res = self.nse_score_weights.obs_variance
+            exp = self.exp_obs_variance_weights
+        xr.testing.assert_allclose(res.ds.data_vars[var_], exp[var_])
 
     @pytest.mark.parametrize(
         "var_,use_weights",
@@ -661,12 +769,15 @@ class TestNseScore(NseSetup):
         ],
     )
     def test_fcst_error(self, var_, use_weights):
-        scorer = self.nse_score_no_weights
-        exp_score = self.exp_obs_var_no_weights
+        """
+        Tests forecast error is the same as the handcrafted scenario
+        """
+        res = self.nse_score.fcst_error
+        exp = self.exp_fcst_error
         if use_weights:
-            scorer = self.nse_score_weights
-            exp_score = self.exp_obs_var_no_weights
-        assert scorer.fcst_error.ds.data_var[var_].identical(exp_score[var_])
+            res = self.nse_score_weights.fcst_error
+            exp = self.exp_fcst_error_weights
+        xr.testing.assert_allclose(res.ds.data_vars[var_], exp[var_])
 
     @pytest.mark.parametrize(
         "var_,use_weights",
@@ -677,13 +788,16 @@ class TestNseScore(NseSetup):
             ("precipitation", True),
         ],
     )
-    def test_nse_score(self):
-        scorer = self.nse_score_no_weights
-        exp_score = self.exp_nse_scr_no_weights
+    def test_nse_score(self, var_, use_weights):
+        """
+        Tests NSE score is the same as the handcrafted scenario
+        """
+        res = self.nse_score.nse
+        exp = self.exp_nse_score
         if use_weights:
-            scorer = self.nse_score_weights
-            exp_score = self.exp_nse_scr_weights
-        assert scorer.nse.data_var[var_].identical(exp_score[var_])
+            res = self.nse_score_weights.nse
+            exp = self.exp_nse_score_weights
+        xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
 
 class TestNseDataset(NseSetup):
@@ -731,7 +845,7 @@ class TestNseDataset(NseSetup):
         assert set(res["temp"].dims) == set(["t", "h"])
         assert res["temp"].shape == (2, 4)
         # tapioca is ignored
-        assert not ("tapioca" in res.variables.keys())
+        assert "tapioca" not in res.variables.keys()
 
 
 class TestNseDask(NseSetup):
@@ -746,8 +860,46 @@ class TestNseDask(NseSetup):
 
     @pytest.fixture(scope="class", autouse=True)
     def skip_if_dask_unavailable(self):
-        try:
-            import dask
-            import dask.array
-        except ImportError:
+        """
+        fixture to skip dask if it doesn't exist
+        """
+        if not DASK_AVAILABLE:
             pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    def test_nse_with_dask_inputs(self, tmpdir):
+        """
+        Basic test to see if NSE works with dask. This is a contrived setup, and we're just looking
+        at whether compatiblity exists.
+
+        Detailed analysis is currently out of scope.
+        """
+        # prep dataarrays - probably not very optimal chunk strategy
+        chunks = {"x": 25, "y": 25}
+        da1 = self.make_random_xr_array((100, 100, 10), ("x", "y", "t")).chunk(chunks)
+        da2 = da1 * 0.99  # make them almost equal - [1]
+        tmp_da1_path = os.path.join(tmpdir, "da1.nc")
+        tmp_da2_path = os.path.join(tmpdir, "da2.nc")
+        da1.to_netcdf(tmp_da1_path)
+        da2.to_netcdf(tmp_da2_path)
+
+        # try NSE with dask
+        with (
+            xr.open_dataarray(tmp_da1_path, chunks=chunks) as da1_disk,
+            xr.open_dataarray(tmp_da2_path, chunks=chunks) as da2_disk,
+        ):
+            res = nse(da1_disk, da2_disk, reduce_dims=("x", "y"))
+            assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
+
+            # Load into memory and perform computation
+            true_res = res.compute()
+
+            # SHOULD be a regular DataArray after compute()
+            assert isinstance(true_res, xr.DataArray)
+            # SHOULD be close to 1 ~= NSE >> 0 see: [1]
+            # using "any" instead of "all" as a weak check, so this is unlikely to fail
+            not_terrible = (true_res > 0).any().item()
+            not_wrong = (true_res <= 1).all().item()
+            # SHOULD NOT be dask anymore, typecheck: bool
+            assert isinstance(not_terrible and not_wrong, bool)
+            # Do the actual assertion for [1]
+            assert not_terrible and not_wrong
