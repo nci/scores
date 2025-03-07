@@ -196,4 +196,4 @@ make-docs = "sphinx-build -b html docs/ htmldocs"
 
 [tool.pixi.feature.tutorial.tasks]
 # launch jupyter lab
-run-jupyerlab = "jupyter lab --notebook-dir=./tutorial"
+jupyterlab = "jupyter lab --notebook-dir=./tutorials"

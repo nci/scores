@@ -128,17 +128,12 @@ class NseUtils:
         Raises:
             TypeError: if using a mixture of ``xr.Dataset`` and ``xr.DataArray``
         """
-        try:
-            return LiftedDatasetUtils.all_same_type(
-                *filter(
-                    lambda _x: _x is not None,
-                    (lds_fcst, lds_obs, lds_weights),
-                )
+        return LiftedDatasetUtils.all_same_type(
+            *filter(
+                lambda _x: _x is not None,
+                (lds_fcst, lds_obs, lds_weights),
             )
-        except TypeError as _e:
-            # add a note specific to NSE and re-raise
-            _e.add_note(NseUtils.ERROR_MIXED_XR_DATA_TYPES)
-            raise
+        )
 
     @staticmethod
     def merge_sizes(*lifted_ds) -> dict[Hashable, int]:
