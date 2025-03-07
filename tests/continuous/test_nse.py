@@ -368,8 +368,10 @@ class TestNseScore(NseSetup):
                 ref_builder=None,
             )
 
-    def test_nse_score_with_worked_example(self):
+    def setup_class(cls):
         """
+        TODO: move this to setup class, and create one test per expected output
+
         Worked example - note this is not a scientific example, its still very much contrived, but
         still verifies some important properties of NSE.  Please have a look at the tutorial
         notebooks for a simulated hydrograph example.
@@ -539,56 +541,149 @@ class TestNseScore(NseSetup):
         # x=2,y=4,t=2,l=3: total=48
         # -------------------------
 
+        def _build_ds(np_temp, np_precip):
+            _dims = ["x", "y", "t", "l"]
+            return xr.Dataset(
+                dict(
+                    temperature=xr.DataArray(np_temp, dims=_dims),
+                    precipitation=xr.DataArray(np_precip, dims=_dims),
+                )
+            )
+
         # build temperature dataarray - offset by 1:
-        temp_obs = np.linspace(start=0, stop=48, dtype=int, endpoint=False)
-        temp_fct = np.linspace(start=1, stop=49, dtype=int, endpoint=False)
+        temp_obs = np.linspace(start=0, stop=48, num=48, dtype=int, endpoint=False)
+        temp_fcst = np.linspace(start=1, stop=49, num=48, dtype=int, endpoint=False)
         temp_obs = np.reshape(temp_obs, (2, 4, 2, 3))
-        temp_fct = np.reshape(temp_fct, (2, 4, 2, 3))
+        temp_fcst = np.reshape(temp_fcst, (2, 4, 2, 3))
 
         # build precipitation dataarray - offset by 2 on even entries:
         # actual start value shouldn't actually matter since the error is relative
-        precip_obs = np.linspace(start=10, stop=58, dtype=int, endpoint=False)
-        precip_fct = np.linspace(start=10, stop=58, dtype=int, endpoint=False)
-        precip_fct[slice(0, None, 2)] += 2  # offset every even index
+        precip_obs = np.linspace(start=10, stop=58, num=48, dtype=int, endpoint=False)
+        precip_fcst = np.linspace(start=10, stop=58, num=48, dtype=int, endpoint=False)
+        precip_fcst[slice(0, None, 2)] += 2  # offset every even index
         precip_obs = np.reshape(precip_obs, (2, 4, 2, 3))
-        precip_fct = np.reshape(precip_fct, (2, 4, 2, 3))
+        precip_fcst = np.reshape(precip_fcst, (2, 4, 2, 3))
 
         # weights
-        temp_weights = np.array([[[0, 3, 1]], [[0, 6, 2]]])  # x,.,.,l: 2*1*1*3
-        precip_weights = np.array([[[0, 1, 0], [1, 0, 1]]])  # .,.,t,l: 1*1*2*3
+        temp_weights = np.array([[[[0, 3, 1]]], [[[0, 6, 2]]]])  # x,.,.,l: 2*1*1*3
+        precip_weights = np.array([[[[0, 1, 0], [1, 0, 1]]]])  # .,.,t,l: 1*1*2*3
 
-        # expected values (needs to be broadcast appropriately)
+        # helper to convert to expected output - this will always be x=2 * y=4,
+        # because we're reducing by (t, l)
+        def _build_exp_output_da(_x, name, dim_names=["x", "y"]):
+            return xr.DataArray(
+                np.reshape(np.repeat(_x, repeats=8), (2, 4)),
+                dims=dim_names,
+                name=name,
+            )
+
+        # expected values
+        # output = x=2 * y=4, 8 values total
         # temperature - scalar values
-        exp_temp_fct_err = 1.0
-        exp_temp_obs_var = 70.0 / 24.0
-        exp_temp_nse_scr = 46.0 / 70.0
-        exp_temp_fct_err_weights_a = 4.0 / 3.0
-        exp_temp_obs_var_weights_a = 10.0 / 3.0
-        exp_temp_nse_scr_weights_a = 3.0 / 5.0
-        exp_temp_fct_err_weights_b = 8.0 / 3.0
-        exp_temp_obs_var_weights_b = 63.0 / 12.0
-        exp_temp_nse_scr_weights_b = 31.0 / 63.0
-        # temperature - as broadcast array
-        # TODO:
+        cls.exp_temp_fcst_err = _build_exp_output_da(1.0, "temperature")
+        cls.exp_temp_obs_var = _build_exp_output_da(70.0 / 24.0, "temperature")
+        cls.exp_temp_nse_scr = _build_exp_output_da(46.0 / 70.0, "temperature")
+        cls.exp_temp_fcst_err_weights_a = _build_exp_output_da(4.0 / 3.0, "temperature")
+        cls.exp_temp_obs_var_weights_a = _build_exp_output_da(10.0 / 3.0, "temperature")
+        cls.exp_temp_nse_scr_weights_a = _build_exp_output_da(3.0 / 5.0, "temperature")
+        cls.exp_temp_fcst_err_weights_b = _build_exp_output_da(8.0 / 3.0, "temperature")
+        cls.exp_temp_obs_var_weights_b = _build_exp_output_da(63.0 / 12.0, "temperature")
+        cls.exp_temp_nse_scr_weights_b = _build_exp_output_da(31.0 / 63.0, "temperature")
 
         # precipitation - scalar values
-        exp_precip_fct_err = 3.0
-        exp_precip_obs_var = 70.0 / 24.0
-        exp_precip_nse_scr = -1.0 / 35.0
-        exp_precip_fct_err_weights_a = 0.0
-        exp_precip_obs_var_weights_a = 999  # irrelvant
-        exp_precip_nse_scr_weights_a = 1.0
-        exp_precip_fct_err_weights_b = 0.0
-        exp_precip_obs_var_weights_b = 999  # irrelevant
-        exp_precip_nse_scr_weights_b = 1.0
+        cls.exp_precip_fcst_err = _build_exp_output_da(3.0, "precipitation")
+        cls.exp_precip_obs_var = _build_exp_output_da(70.0 / 24.0, "precipitation")
+        cls.exp_precip_nse_scr = _build_exp_output_da(-1.0 / 35.0, "precipitation")
+        cls.exp_precip_fcst_err_weights_a = _build_exp_output_da(0.0, "precipitation")
+        cls.exp_precip_obs_var_weights_a = _build_exp_output_da(999, "precipitation")  # irrelevant
+        cls.exp_precip_nse_scr_weights_a = _build_exp_output_da(1.0, "precipitation")
+        cls.exp_precip_fcst_err_weights_b = _build_exp_output_da(0.0, "precipitation")
+        cls.exp_precip_obs_var_weights_b = _build_exp_output_da(999, "precipitation")  # irrelevant
+        cls.exp_precip_nse_scr_weights_b = _build_exp_output_da(1.0, "precipitation")
 
-        # temperature - as broadcast array
-        # TODO:
+        # inputs
+        cls.ds_obs = _build_ds(temp_obs, precip_obs)
+        cls.ds_fcst = _build_ds(temp_fcst, precip_fcst)
+        expand_dims = {"x": 2, "y": 4, "t": 2, "l": 3}
+        cls.ds_weights = xr.Dataset(
+            {
+                "temperature": xr.DataArray(
+                    np.broadcast_to(temp_weights, expand_dims.values()),
+                    dims=expand_dims.keys(),
+                ),
+                "precipitation": xr.DataArray(
+                    np.broadcast_to(precip_weights, expand_dims.values()),
+                    dims=expand_dims.keys(),
+                ),
+            }
+        )
 
-        # TODO: finish this test
-        # - assert individual components
-        # - assert final score
-        # - assert compare against naive_nse
+        cls.reduce_dims = ("t", "l")
+
+        # this (lazy) computation is used for most tests
+        cls.nse_score_weights = nse_impl.NseScoreBuilder().build(
+            obs=cls.ds_obs,
+            fcst=cls.ds_fcst,
+            weights=cls.ds_weights,
+            reduce_dims=cls.reduce_dims,
+        )
+
+        cls.nse_score_no_weights = nse_impl.NseScoreBuilder().build(
+            obs=cls.ds_obs,
+            fcst=cls.ds_fcst,
+            reduce_dims=cls.reduce_dims,
+        )
+
+    @pytest.mark.parametrize(
+        "var_,use_weights",
+        [
+            ("temperature", False),
+            ("precipitation", False),
+            ("temperature", True),
+            ("precipitation", True),
+        ],
+    )
+    def test_obs_variance(self, var_, use_weights):
+        scorer = self.nse_score_no_weights
+        exp_score = self.exp_obs_var_no_weights
+        if use_weights:
+            scorer = self.nse_score_weights
+            exp_score = self.exp_obs_var_no_weights
+        assert scorer.obs_variance.ds.data_var[var_].identical(exp_score[var_])
+
+    @pytest.mark.parametrize(
+        "var_,use_weights",
+        [
+            ("temperature", False),
+            ("precipitation", False),
+            ("temperature", True),
+            ("precipitation", True),
+        ],
+    )
+    def test_fcst_error(self, var_, use_weights):
+        scorer = self.nse_score_no_weights
+        exp_score = self.exp_obs_var_no_weights
+        if use_weights:
+            scorer = self.nse_score_weights
+            exp_score = self.exp_obs_var_no_weights
+        assert scorer.fcst_error.ds.data_var[var_].identical(exp_score[var_])
+
+    @pytest.mark.parametrize(
+        "var_,use_weights",
+        [
+            ("temperature", False),
+            ("precipitation", False),
+            ("temperature", True),
+            ("precipitation", True),
+        ],
+    )
+    def test_nse_score(self):
+        scorer = self.nse_score_no_weights
+        exp_score = self.exp_nse_scr_no_weights
+        if use_weights:
+            scorer = self.nse_score_weights
+            exp_score = self.exp_nse_scr_weights
+        assert scorer.nse.data_var[var_].identical(exp_score[var_])
 
 
 class TestNseDataset(NseSetup):

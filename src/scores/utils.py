@@ -21,7 +21,6 @@ from scores.typing import (
     assert_lifteddataset,
     assert_xarraylike,
     is_lifteddataset,
-    is_xarraylike,
 )
 
 WARN_ALL_DATA_CONFLICT_MSG = """
@@ -699,7 +698,7 @@ def check_binary(data: XarrayLike, name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
-def check_weights(weights: XarrayLike | None, *, raise_error=True):
+def check_weights(weights: LiftedDataset | None, *, raise_error=True):
     """
     This is a check that requires weights to be non-negative (NaN values are excluded from the check
     since they are used as masks). At least one of the weights must be strictly positive.
@@ -730,19 +729,26 @@ def check_weights(weights: XarrayLike | None, *, raise_error=True):
     # nothing to check
     if weights is None:
         return
-    # assert type: XarrayLike
-    assert_xarraylike(weights)
-    # ignore nans as they may be used as natural exclusion masks in weighted calculations.
-    weights_masked = np.ma.array(weights, mask=np.isnan(weights))
-    # however, still check that we have at least one proper number.
-    checks_passed = np.any(~np.isnan(weights))
-    # the rest (non-NaN) should all be non-negative ...
-    checks_passed = checks_passed and np.ma.all(weights_masked >= 0)
-    # ... and at least one number must be strictly positive.
-    checks_passed = checks_passed and np.ma.any(weights_masked > 0)
 
-    if not checks_passed:
-        if raise_error:
-            raise ValueError(ERROR_INVALID_WEIGHTS)
-        # otherwise warn - pylint doesn't like explicit else
-        warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)
+    assert_lifteddataset(weights)
+
+    def _check_single_array(_da_weights: xr.DataArray):
+        # type safety: dev/test only
+        assert isinstance(_da_weights, xr.DataArray)
+        # ignore NaNs - they are used for exclusion
+        weights_masked = np.ma.array(_da_weights, mask=np.isnan(_da_weights))
+        # however, still check that we have at least one proper number.
+        checks_passed = np.any(~np.isnan(_da_weights))
+        # the rest (non-NaN) should all be non-negative ...
+        checks_passed = checks_passed and np.ma.all(weights_masked >= 0)
+        # ... and at least one number must be strictly positive.
+        checks_passed = checks_passed and np.ma.any(weights_masked > 0)
+
+        if not checks_passed:
+            if raise_error:
+                raise ValueError(ERROR_INVALID_WEIGHTS)
+            # otherwise warn - pylint doesn't like explicit else
+            warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)
+
+    for da_weights in weights.ds.data_vars.values():
+        _check_single_array(da_weights)

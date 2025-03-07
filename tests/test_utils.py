@@ -775,23 +775,23 @@ def test_check_weights():
 
     def _check_weights_assert_no_warning(_w):
         threw_warning = False
+        _w = LiftedDataset(xr.DataArray(_w))
         with warnings.catch_warnings():
             warnings.simplefilter("always")
             try:
-                _w = xr.DataArray(_w)
                 check_weights(_w, raise_error=False)
             except Warning:
                 threw_warning = True
         assert not threw_warning
 
     def _expect_warning(_w):
+        _w = LiftedDataset(xr.DataArray(_w))
         with pytest.warns(UserWarning):
-            _w = xr.DataArray(_w)
             check_weights(_w, raise_error=False)
 
     def _expect_error(_w):
+        _w = LiftedDataset(xr.DataArray(_w))
         with pytest.raises(ValueError):
-            _w = xr.DataArray(_w)
             check_weights(_w, raise_error=True)
 
     _check_weights_assert_no_warning(np.array([1.0, 0.0, 0.1]))
