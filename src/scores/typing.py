@@ -3,6 +3,7 @@ This module contains various compound or union types which can be used across th
 a consistent approach to typing is handled.
 """
 
+import copy
 from collections.abc import Hashable, Iterable
 from enum import Enum
 from typing import Union
@@ -80,45 +81,68 @@ class LiftedDataset:
             - For a ``xr.DataArray``, this operation is more expensive as it wraps it inside a
               dataset first and unwrapping it requires extra logic
         """
+
         err_invalid_type: str = """
             Invalid type for `XarrayLike`, must be a `xr.Dataset` or a `xr.DataArray` object.
         """
+
         self.reset()
+
         if isinstance(xr_data, xr.Dataset):
+            # dataset - simply wrap it
+            self.ds = xr_data
             self.xr_type_marker = XarrayTypeMarker.DATASET
-            self.ds = xr_data  # nothing to lift - already a dataset
         elif isinstance(xr_data, xr.DataArray):
-            self.xr_type_marker = XarrayTypeMarker.DATAARRAY
-            # if data array has no name give it a dummy name - required for dataset
+            # dataarray - lift to dataset then wrap, insert dummy name (required) if unnamed
             if xr_data.name is None or not xr_data.name:
-                self.ds = xr_data.to_dataset(name=LiftedDataset._DUMMY_DATAARRAY_VARNAME)
                 self.dummy_name = True
+                self.ds = xr_data.to_dataset(name=LiftedDataset._DUMMY_DATAARRAY_VARNAME)
             else:
+                self.dummy_name = False
                 self.ds = xr_data.to_dataset()
+            self.xr_type_marker = XarrayTypeMarker.DATAARRAY
         else:
             # type assert: input is not XarrayLike, raise error
             raise TypeError(err_invalid_type)
+
+    def make_dataarray_ref(self) -> xr.DataArray:
+        """
+        Retrieves the underlying reference data array, removes dummy names
+        """
+        if not self.is_dataarray():
+            raise TypeError("Cannot revert name for xr.Dataset, only xr.DataArray")
+
+        var_names: list[Hashable] = list(self.ds.variables.keys())
+
+        # safety: we should only have 1 variable if this is actually a data array
+        assert len(var_names) == 1
+
+        # retrieve array
+        da: xr.DataArray = self.ds.data_vars[var_names[0]]
+
+        # revert dummy name if it was assigned one
+        if self.dummy_name:
+            da.name = None
+
+        return da
 
     def is_valid(self) -> bool:
         """
         return True if the LiftedDataset obj is valid
         """
-        ret: bool = self.xr_type_marker != XarrayTypeMarker.INVALID
-        return ret
+        return self.xr_type_marker != XarrayTypeMarker.INVALID
 
     def is_dataarray(self) -> bool:
         """
         return True if the LiftedDataset obj is an xr.DataArray
         """
-        ret: bool = self.xr_type_marker == XarrayTypeMarker.DATAARRAY
-        return ret
+        return self.xr_type_marker == XarrayTypeMarker.DATAARRAY
 
     def is_dataset(self) -> bool:
         """
         return True if the LiftedDataset obj is an xr.Dataset
         """
-        ret: bool = self.xr_type_marker == XarrayTypeMarker.DATASET
-        return ret
+        return self.xr_type_marker == XarrayTypeMarker.DATASET
 
     def reset(self) -> None:
         """
@@ -148,13 +172,9 @@ class LiftedDataset:
             simply want a reference, use the ``.ds`` property or ``.inner_ref()`` to retrieve the
             underlying dataset or dataarray.
         """
-        # get local reference to inner xarray data, so that it doesn't get destructed.
         ret_xr_data: XarrayLike = self.inner_ref()
-        # reset to remove reference to dataset in this lifted structure. Essentially invalidating
-        # it. `ret_xr_data` should still exist in this scope and be unaffected.
+        # remove and invalidate any inner references from THIS structure and return to caller
         self.reset()
-        # return reference to data to caller, this object should no longer be referring to any data
-        # and can be garbage collected, i.e consumed.
         return ret_xr_data
 
     def inner_ref(self) -> XarrayLike:
@@ -174,52 +194,41 @@ class LiftedDataset:
         """
         # safety: cannot call this function on an invalid initialisation
         assert self.is_valid()
-        # get reference to dataset so that it isn't destroyed on reset.
-        ds_local: xr.Dataset = self.ds
-        # default to returning the whole dataset, as its non-destructive
-        ret_xr_data: XarrayLike = ds_local
-        # data array: remove dummy name (if assigned one) and convert it back to an array
+        # dataarray: make ref and return
         if self.is_dataarray():
-            keys: list[Hashable] = list(ds_local.variables.keys())
-            # safety: we should only have 1 variable if this is actually a data array
-            assert len(keys) == 1
-            da: xr.DataArray = ds_local.data_vars[keys[0]]
-            # reset name back to None if dummy_name was used in-place.
-            if self.dummy_name:
-                da.name = None
-            ret_xr_data = da
-        else:
-            # dataset: safety assert - should only be a dataset if we reached this point.
-            assert self.is_dataset()
-            # intentional repitition - for readiblity
-            ret_xr_data = ds_local
-        # returning the inner ds will remove any remaining references from this scope.
-        return ret_xr_data
+            return self.make_dataarray_ref()
+        # safety assert: can only be a dataset
+        assert self.is_dataset()
+        return self.ds
+
+
+def is_xarraylike(maybe_xrlike: XarrayLike) -> bool:
+    """
+    Returns True if XarrayLike else False
+    """
+    return isinstance(maybe_xrlike, (xr.Dataset, xr.DataArray))
 
 
 def assert_xarraylike(maybe_xrlike: XarrayLike):
     """
-    Runtime assert for Xarraylike
-    - To assist in type safety for development and testing purposes only
-    - Should not be used as a user error as this will be obfuscated depending on compile settings
+    Runtime assert for Xarraylike: For dev/testing only
     """
-    if not isinstance(maybe_xrlike, (xr.Dataset, xr.DataArray)):
-        raise TypeError(
-            f"""
-            Runtime type check failed: {maybe_xrlike} != xr.Dataset or xr.DataArray
-            """
-        )
+    err_msg: str = f" Runtime type check failed: {maybe_xrlike} != xr.Dataset or xr.DataArray"
+    if not is_xarraylike(maybe_xrlike):
+        raise TypeError(err_msg)
+
+
+def is_lifteddataset(maybe_lds: LiftedDataset) -> bool:
+    """
+    Returns True if LiftedDataset else False
+    """
+    return isinstance(maybe_lds, LiftedDataset)
 
 
 def assert_lifteddataset(maybe_lds: LiftedDataset):
     """
-    Runtime assert for LiftedDataset
-    - To assist in type safety for development and testing purposes only
-    - Should not be used as a user error as this will be obfuscated depending on compile settings
+    Runtime assert for LiftedDataset: For dev/testing only
     """
-    if not isinstance(maybe_lds, LiftedDataset):
-        raise TypeError(
-            f"""
-            Runtime type check failed: {maybe_lds} != scores.typing.LiftedDataset
-            """
-        )
+    err_msg: str = f" Runtime type check failed: {maybe_lds} != scores.typing.LiftedDataset"
+    if not is_lifteddataset(maybe_lds):
+        raise TypeError(err_msg)

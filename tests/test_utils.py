@@ -952,8 +952,7 @@ def test_ldsutils_lift_fn_invalid_ret():
     _lifted_test_func_ret = utils.LiftedDatasetUtils.lift_fn_ret(_test_func)
 
     # TypeError: because the output return type is a string
-    # UserWarning: because none of the arguments are lifted datasets
-    with pytest.raises(TypeError), pytest.warns(UserWarning):
+    with pytest.raises(TypeError):
         _lifted_test_func_ret(0)
 
     # TypeError: as before
