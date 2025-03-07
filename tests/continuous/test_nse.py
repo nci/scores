@@ -846,7 +846,7 @@ class TestNseDataset(NseSetup):
         assert set(res["temp"].dims) == set(["t", "h"])
         assert res["temp"].shape == (2, 4)
         # tapioca is ignored
-        assert "tapioca" not in res.variables.keys()
+        assert "tapioca" not in res.data_vars.keys()
 
 
 class TestNseDask(NseSetup):

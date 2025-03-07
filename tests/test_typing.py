@@ -32,7 +32,7 @@ def test_lift_dataarray_withname():
     da = xr.DataArray([1], dims="t", name=da_test_name)
     lds = scores.typing.LiftedDataset(da)
     # check lifted dataset only has one array
-    keys = list(lds.ds.variables.keys())
+    keys = list(lds.ds.data_vars.keys())
     assert len(keys) == 1
     # check that the name is preserved and isn't a dummy
     assert keys[0] == da_test_name
@@ -59,7 +59,7 @@ def test_lift_dataarray_withnameequalsdummy():
     da = xr.DataArray([1], dims="t", name=da_test_name)
     lds = scores.typing.LiftedDataset(da)
     # check lifted dataset only has one array
-    keys = list(lds.ds.variables.keys())
+    keys = list(lds.ds.data_vars.keys())
     assert len(keys) == 1
     # check that the name is the same as the dummy, BUT it isn't actually flagged as a dummy
     assert keys[0] == scores.typing.LiftedDataset._DUMMY_DATAARRAY_VARNAME  # pylint: disable-msg=protected-access
@@ -82,7 +82,7 @@ def test_lift_dataarray_noname():
     da = xr.DataArray([1], dims="t")
     lds = scores.typing.LiftedDataset(da)
     # check lifted dataset only has one array
-    keys = list(lds.ds.variables.keys())
+    keys = list(lds.ds.data_vars.keys())
     assert len(keys) == 1
     # check that the name is the same as the dummy, AND is also flagged as dummy
     assert keys[0] == scores.typing.LiftedDataset._DUMMY_DATAARRAY_VARNAME  # pylint: disable-msg=protected-access

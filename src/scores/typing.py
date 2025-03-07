@@ -112,7 +112,7 @@ class LiftedDataset:
         if not self.is_dataarray():
             raise TypeError("Cannot revert name for xr.Dataset, only xr.DataArray")
 
-        var_names: list[Hashable] = list(self.ds.variables.keys())
+        var_names: list[Hashable] = list(self.ds.data_vars.keys())
 
         # safety: we should only have 1 variable if this is actually a data array
         assert len(var_names) == 1
