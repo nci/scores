@@ -118,10 +118,21 @@ def test_lift_dataset():
     assert ds_raw.identical(ds)
 
 
-def test_invalid_input_type():
+def test_liftedds_invalid_input_type():
     """
     Checks that invalid types raise an error, since this is not a anemic data model.
     """
     # lists are not lifted automatically, only `xr.DataArrays`
     with pytest.raises(TypeError):
         scores.typing.LiftedDataset([1, 2, 3])
+
+
+def test_invalid_make_dataarrayref_with_dataset():
+    """
+    A lifted dataset from a xr.Dataset cannot be used to retrieve a dataarray reference.
+    This should in practice only be called internally and shouldn't be raised...
+    """
+    ds = xr.Dataset(dict(x=xr.DataArray([1], dims="t", name="potato")))
+    lds = scores.utils.LiftedDataset(ds)
+    with pytest.raises(TypeError):
+        lds.make_dataarray_ref()

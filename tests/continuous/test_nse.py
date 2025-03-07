@@ -14,6 +14,7 @@ Collection of tests for the NSE score, contains:
     - TestNseDask: Tests compatibility with dask
 """
 import os
+
 import numpy as np
 import pytest
 import xarray as xr
