@@ -24,6 +24,7 @@
 .. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.pbias
 .. autofunction:: scores.continuous.kge
+.. autofunction:: scores.continuous.nse
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
 .. autofunction:: scores.continuous.consistent_quantile_score

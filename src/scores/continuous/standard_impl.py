@@ -574,8 +574,8 @@ def nse(
     is_angular: bool = False,
 ) -> XarrayLike:
     """
-    The Nash-Sutcliffe efficiency (NSE) is primarily used in hydrology to assess the skill of model
-    predictions (of e.g. "discharge").
+    The Nash-Sutcliffe model Efficiency coefficient (NSE) is primarily used in hydrology to assess
+    the skill of model predictions (of e.g. "discharge").
 
     While NSE is often calculated over observations and model predictions in the time dimension, it
     is actually a fairly generic statistical measure that determines the relative magnitude of the
@@ -699,10 +699,10 @@ def nse(
     References:
         1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
            part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–
-           290). Elsevier BV. doi:10.1016/0022-1694(70)90255-6
+           290). Elsevier BV. https://doi.org/10.1016/0022-1694%2870%2990255-6
         2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the
            runoff generation of a river basin through parameter regionalization of a watershed
-           model. Journal of Hydrology, 292(1-4), 281-295. doi:10.1016/j.jhydrol.2004.01.002
+           model. Journal of Hydrology, 292(1-4), 281-295. https://doi.org/10.1016/j.jhydrol.2004.01.002
     """
 
     # setup arguments for builder to do checks
