@@ -72,18 +72,41 @@ class NseSetup:
         return xr.DataArray(np.ones(shape), dims=dim_names)
 
     @staticmethod
-    def naive_nse(
-        *,
+    def nse_naive(
         fcst: npt.NDArray[float],
         obs: npt.NDArray[float],
-        weight: npt.NDArray[float],
+        weights: npt.NDArray[float],
     ):
         """
         Naive implementation of NSE using for loops - this is to check that the internals of e.g.
         xarray/numpy/dask are doing the right thing in conjunction with how they are used for this
         score. However, this function is slow and should not be run for big arrays.
+
+        # used mainly by NseScore as a helper
         """
-        # TODO: implement naive NSE using for loops
+        assert fcst.shape == obs.shape
+        assert weights.shape == fcst.shape
+        ret_shape = (2, 4)
+        obs_mean = np.zeros(ret_shape)
+        fcst_error = np.zeros(ret_shape)
+        obs_variance = np.zeros(ret_shape)
+        # multindex : (0, 0, 0, 0) -> (2, 4, 2*, 3*): (*) => dim to be reduced
+        #           : total iterations: 2 * 4 = 8
+        #           : total broadcast elements per iteration = 2 * 3 = 6
+
+        for idx in np.ndindex(ret_shape):
+            obs_mean[idx] = np.mean(obs[idx])
+
+        for idx in np.ndindex(fcst.shape):
+            ix, iy, _, _ = idx
+            _f, _o, _w = (fcst[idx], obs[idx], weights[idx])
+            _om = obs_mean[ix, iy]
+            fcst_error[ix, iy] += _w * np.power((_f - _o), 2)
+            obs_variance[ix, iy] += _w * np.power(_om - _o, 2)
+
+        nse_score = 1.0 - fcst_error / obs_variance
+
+        return nse_score
 
     @pytest.fixture
     def setup_numpy_seed(self):
@@ -800,6 +823,33 @@ class TestNseScore(NseSetup):
             exp = self.exp_nse_score_weights
         xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
+    @pytest.mark.parametrize(
+        "var_,use_weights",
+        [
+            ("temperature", False),
+            ("precipitation", False),
+            ("temperature", True),
+            ("precipitation", True),
+        ],
+    )
+    def test_nse_against_naive_impl(self, var_, use_weights):
+        np_obs = self.ds_obs[var_].to_numpy()
+        np_fcst = self.ds_fcst[var_].to_numpy()
+        # no weights == all weights = 1.0
+        np_weights = np.full_like(np_fcst, fill_value=1.0)
+
+        # compute result
+        res = self.nse_score.nse
+
+        if use_weights:
+            res = self.nse_score_weights.nse
+            np_weights = self.ds_weights[var_].to_numpy()
+
+        # compute nse_naive algorithm (loops)
+        exp = NseSetup.nse_naive(np_fcst, np_obs, np_weights)
+
+        assert np.allclose(res.data_vars[var_].to_numpy(), exp)
+
 
 class TestNseDataset(NseSetup):
     """
@@ -856,8 +906,6 @@ class TestNseDask(NseSetup):
     NOTE: failure conditions will not be the responsibility of this test, this suite just exists to
     check if dask computes things appropriately with non-dask as a compatiblity measure.
     """
-
-    # TODO: finish this test
 
     @pytest.fixture(scope="class", autouse=True)
     def skip_if_dask_unavailable(self):
