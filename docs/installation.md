@@ -50,7 +50,7 @@ Examples:
   - command:  `pixi run make-docs`
   - description: This will render the docs locally to "htmldocs" (similar to what the github pipeline currently does)
 - **As any user** I arbitrary command in a particular environment
-  - command: `pixi run -e <env> <cmd>`
+  - command: `pixi run -e <env> <cmd>`, where `<env> = dev | tutorial | maintainer | all` - see section on installation options below.
   - description: This will run the command in the specified environment, and return you back to the original shell once it has been executed.
 
 #### Lock file
