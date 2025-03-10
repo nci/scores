@@ -21,10 +21,8 @@ from scores.typing import (
 )
 from scores.utils import DimensionError, check_weights, gather_dimensions
 
-NseDataArrayMetadata = TypedDict(lifted=bool, dummyname=bool)
 
-
-def nse_build_score(
+def nse_score(
     *,  # Force kwargs only
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -34,16 +32,7 @@ def nse_build_score(
     is_angular: bool = False,
 ) -> XarrayLike:
     """
-    Sets up the main calculation function for NSE:
-
-        - denominator (D): calculates the obs variance using a combination of
-          ``xr.mean`` and :py:func:`scores.mse`
-
-        - numerator (N): calculates the forecast error using
-          :py:func:`scores.mse` on ``obs`` and ``fcst``.
-
-        - ``score = 1 - N / D`` reduced and broadcast appropriately by
-          ``xarray``, ``numpy`` and/or ``dask``.
+    Sets up the main calculation function for NSE.
 
     Args:
         same as the public API, but enforced to be kwarg only. Uses ``NseScore``
@@ -91,6 +80,10 @@ def nse_build_score(
         if using dask, no computation should have happened until
         ``.compute(...)`` is called (similar to any other score).
     """
+
+    # -------------------------------------------------------------------------
+    # TODO: unify this into a utility function
+    # -------------------------------------------------------------------------
     # check if all input xarray are same type, mixed types are not allowed
     all_same_xrlike = all_same_xarraylike([fcst, obs])
     if weights is not None:
@@ -100,11 +93,19 @@ def nse_build_score(
 
     # retain original xarray type: all types same so only need to check one.
     is_dataarray: bool = isinstance(fcst, xr.DataArray)
+    use_dummyname: bool = False
+
+    # we need to use dummyname appropriately when lifting an array to a
+    # dataset, while operations still work with dataarrays with different name,
+    # they don't with datasets - so we need to mimic this behaviour.
+    if is_dataarray:
+        use_dummyname = dataarray_use_dummyname(fcst, obs, weights)
 
     # lift inputs to dataset
-    ds_fcst, fcst_dummyname = NseUtils.lift_to_ds(fcst)
-    ds_obs, obs_dummyname = NseUtils.lift_to_ds(obs)
-    ds_weights, weights_dumymname = NseUtils.lift_to_ds(weights)
+    ds_fcst = NseUtils.lift_to_ds(fcst, use_dummyname)
+    ds_obs = NseUtils.lift_to_ds(obs, use_dummyname)
+    ds_weights = NseUtils.lift_to_ds(weights, use_dummyname)
+    # -------------------------------------------------------------------------
 
     # initialize score - implicitly also runs several checks.
     nse_score: NseScore = NseScore(
@@ -116,7 +117,25 @@ def nse_build_score(
         is_angular=is_angular,
     )
 
-    return nse_score
+    # -------------------------------------------------------------------------
+    # TODO: unify this into a utility function
+    # -------------------------------------------------------------------------
+    res_ds: xr.Dataset = nse_score.nse
+    # revert name and type was originally a dataarray
+    if is_dataarray:
+        res_da: xr.DataArray = res.to_dataarray()
+
+        if use_dummyname:
+            res_da.name = None
+
+        # safety: assert final return type
+        assert isinstance(res_da, xr.DataArray)
+        return res_da
+
+    # safety: assert final return type
+    assert isinstance(res_ds, xr.Dataset)
+    return res_ds
+    # -------------------------------------------------------------------------
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -194,11 +213,11 @@ class NseScore:
         # compute mean along reduce dims - this does not need to be weighted
         obs_mean: XarrayLike = self.obs.mean(dim=self.reduce_dims)
         # using `mse` since its compatible with weights and angular data
-        obs_var: XarrayLike = self._mse_callback(lds_obs_mean, self.obs)
+        obs_var: XarrayLike = self._mse_callback(obs_mean, self.obs)
         # check for 0 obs variance: divide by zero condition
         NseUtils.check_nonzero_obsvar(obs_var)
 
-        return lds_obs_var
+        return obs_var
 
     @property
     def _mse_callback(self):
@@ -256,6 +275,7 @@ class NseUtils:
 
     _DATAARRAY_TEMPORARY_NAME: str = "__NONAME"
 
+    # TODO: this needs refactoring:
     @staticmethod
     def dataarray_use_dummyname(*da) -> bool:
         """
@@ -285,6 +305,7 @@ class NseUtils:
         # same as: `all_samename` and `all_hasname`
         return any_diffname or any_noname
 
+    # TODO: this needs refactoring:
     @staticmethod
     def lift_to_ds(xr_data: XarrayLike, use_dummyname: bool = True) -> xr.Dataset:
         """
@@ -359,7 +380,7 @@ class NseUtils:
             mapping: dimension name -> length. In theory this should also be
             compatible with data arrays.
             """
-            if curr_lds is None:
+            if curr_ds is None:
                 return acc_sizes
             merged_sizes = acc_sizes | curr_ds.sizes
             return merged_sizes
