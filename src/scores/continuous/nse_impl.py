@@ -89,7 +89,7 @@ def nse_score(
     result: xr.Dataset = ret_score.nse
 
     if metads.is_dataarray:
-        # demote if originally a data array, must have only one key if this is the case 
+        # demote if originally a data array, must have only one key if this is the case
         da_keys = list(result.data_vars.keys())
         if len(da_keys) != 1:
             raise RuntimeError(NseUtils.ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY)
@@ -241,6 +241,7 @@ class NseUtils:
         is performed at a higher level at the earliest point of the call chain before
         computing the sore.
     """
+
     ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY: str = """
     The underlying data array type should only be represented by a single key in its
     dataset form. Either no keys or multiple keys detected. This is NOT EXPECTED.

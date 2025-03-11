@@ -351,7 +351,6 @@ class TestNsePublicApi(NseSetup):
         assert np.all(ret <= 1.0)
 
 
-
 class TestNseUtils(NseSetup):
     """
     NOTE: most of NseUtils is tested by the public API test suite and is not repeated here.
