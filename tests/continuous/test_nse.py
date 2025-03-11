@@ -7,7 +7,6 @@
 Collection of tests for the NSE score, contains:
     - NseSetup: Base class used by all other test classes
     - TestNsePublicApi: Tests concerning the public API interface - this is the main suite
-    - TestNseScoreBuilder: Tests specific to the builder that are not covered by public API
     - TestNseUtils: Tests specific to the utils that are not covered by public API
     - TestNseScore: Tests specific to score computation not already covered by public API
     - TestNseDataset: Tests compatiblity with datasets (most tests use data array for convenience)
@@ -82,7 +81,7 @@ class NseSetup:
         xarray/numpy/dask are doing the right thing in conjunction with how they are used for this
         score. However, this function is slow and should not be run for big arrays.
 
-        # used mainly by NseScore as a helper
+        used mainly by NseScore as a helper
         """
         assert fcst.shape == obs.shape
         assert weights.shape == fcst.shape
@@ -121,10 +120,6 @@ class TestNsePublicApi(NseSetup):
     Test suite that tests the public API. Mainly consists of structural tests and argument
     compatibility, as well as checking expected errors and warnings are raised. For specific scoring
     tests ``TestNseScore`` is more suited.
-
-
-    NOTE: this implicitly tests most of the ``NseScoreBuilder`` class, since it essentially
-    dispatches any checks to that class, as such they are not repeated as long as coverage is happy.
     """
 
     @classmethod
@@ -356,44 +351,12 @@ class TestNsePublicApi(NseSetup):
         assert np.all(ret <= 1.0)
 
 
-class TestNseScoreBuilder:
-    """
-    NOTE: most of NseScoreBuilder is tested by the public API test suite and is not repeated here.
-    Only things missed by the public API test suite will be covered here.
-    """
-
-    def test_invalid_builder_initialization(self):
-        """
-        Tests if runtime error is raised if builder is used more than once in the same scope.
-        This is bad, as it will cause different score functions to share the same reference data.
-        """
-        obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-        fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-
-        with pytest.raises(RuntimeError):
-            bld = nse_impl.NseScoreBuilder()
-            # ok
-            # intentionally disable unused-variable to test for double builder usage error
-            score1 = bld.build(fcst=fcst, obs=obs)  # pylint: disable=unused-variable
-            score2 = bld.build(fcst=fcst, obs=obs)  # pylint: disable=unused-variable
-
 
 class TestNseUtils(NseSetup):
     """
-    NOTE: most of NseScoreBuilder is tested by the public API test suite and is not repeated here.
+    NOTE: most of NseUtils is tested by the public API test suite and is not repeated here.
     Only things missed by the public API test suite will be covered here.
     """
-
-    def test_get_xr_type_marker_mixed_type_error(self):
-        """
-        Tests error is raised when mixed input types are given.
-        """
-        da = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-        ds = xr.Dataset(dict(mix_and_match=da))
-        dw = None
-
-        with pytest.raises(TypeError):
-            nse_impl.NseUtils.get_xr_type_marker(da, ds, dw)
 
 
 class TestNseScore(NseSetup):
@@ -731,37 +694,18 @@ class TestNseScore(NseSetup):
         # ---------------------------------------
         # expose score values by assigning them to the class
         # these (lazy) computations are used for most tests
-        cls.nse_score = nse_impl.NseScoreBuilder().build(
+        cls.nse_score = nse_impl.NseScore(
             fcst=cls.ds_fcst,
             obs=cls.ds_obs,
             reduce_dims=cls.reduce_dims,
         )
 
-        cls.nse_score_weights = nse_impl.NseScoreBuilder().build(
+        cls.nse_score_weights = nse_impl.NseScore(
             fcst=cls.ds_fcst,
             obs=cls.ds_obs,
             weights=cls.ds_weights,
             reduce_dims=cls.reduce_dims,
         )
-
-    def test_invalid_score_initialization(self):
-        """
-        Tests scenario where score is initialized without a builder. This is bad, as a builder
-        performs all the checks from interfacing with the public API.
-        """
-        obs = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-        fcst = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-        weights = NseSetup.make_random_xr_array((1, 2), ["x", "y"])
-
-        with pytest.raises(RuntimeError):
-            nse_impl.NseScore(
-                fcst=fcst,
-                obs=obs,
-                weights=weights,
-                xr_type_marker=1,
-                reduce_dims="x",
-                ref_builder=None,
-            )
 
     @pytest.mark.parametrize(
         "var_,use_weights",
@@ -781,7 +725,7 @@ class TestNseScore(NseSetup):
         if use_weights:
             res = self.nse_score_weights.obs_variance
             exp = self.exp_obs_variance_weights
-        xr.testing.assert_allclose(res.ds.data_vars[var_], exp[var_])
+        xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
     @pytest.mark.parametrize(
         "var_,use_weights",
@@ -801,7 +745,7 @@ class TestNseScore(NseSetup):
         if use_weights:
             res = self.nse_score_weights.fcst_error
             exp = self.exp_fcst_error_weights
-        xr.testing.assert_allclose(res.ds.data_vars[var_], exp[var_])
+        xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
     @pytest.mark.parametrize(
         "var_,use_weights",

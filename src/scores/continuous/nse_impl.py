@@ -89,8 +89,11 @@ def nse_score(
     result: xr.Dataset = ret_score.nse
 
     if metads.is_dataarray:
-        # demote if originally a data array
-        result = result.to_dataarray()
+        # demote if originally a data array, must have only one key if this is the case 
+        da_keys = list(result.data_vars.keys())
+        if len(da_keys) != 1:
+            raise RuntimeError(NseUtils.ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY)
+        result = result.data_vars[da_keys[0]]
         # undo dummy name
         if metads.is_dummyname:
             result.name = None
@@ -238,6 +241,12 @@ class NseUtils:
         is performed at a higher level at the earliest point of the call chain before
         computing the sore.
     """
+    ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY: str = """
+    The underlying data array type should only be represented by a single key in its
+    dataset form. Either no keys or multiple keys detected. This is NOT EXPECTED.
+
+    Please raise an issue on github.com/nci/scores citing this error.
+    """
 
     ERROR_NO_DIMS_TO_REDUCE: str = """
     NSE needs at least one dimension to be reduced. Check that `preserve_dims` is not
@@ -358,7 +367,7 @@ class NseUtils:
         """
         Checks the dimension compatibilty of the various input arguments.
         """
-        weights_dims = None if weights is None else weights.ds.dims
+        weights_dims = None if weights is None else weights.dims
 
         # perform default gather dimensions
         ret_dims: FlexibleDimensionTypes = gather_dimensions(
