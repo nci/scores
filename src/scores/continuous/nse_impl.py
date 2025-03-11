@@ -101,18 +101,10 @@ def nse_score(
     return result
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(kw_only=True)
 class NseScore:
     """
     Helper structure used to perform checks on data during initialization.
-
-    Freezes data post initialization.
-
-    .. note::
-
-        freezing, this is a safety feature that only stops shallow assignment, it cannot
-        prevent mutable properties from being changed. Regardless, some immutability is
-        preferable to None.
     """
 
     #: forecast/prediction/simulation/model
@@ -310,30 +302,44 @@ class NseUtils:
         """
         NseUtils.check_all_same_type(fcst, obs, weights)
 
-        # assume all dataset by default
-        ds_nse = NseDatasets(fcst=fcst, obs=obs, weights=weights)
-        is_dummyname = False
-        is_dataarray = False
-        ref_name = None
+        # use fcst as arbitrary reference name
+        ref_name = fcst.name if isinstance(fcst, xr.DataArray) else None
 
-        for xrlike in [fcst, obs, weights]:
-            if xrlike is None:  # skip optionals
-                continue
+        def _lift_single(xrlike) -> tuple[xr.Dataset, bool, bool]:
+            """
+            lifts a single dataarray to a dataset
+            Returns:
+                tuple containing:
+                    ret[0] (xr.Dataset): lifted dataset
+                    ret[1] (bool): whether it was originally a data array
+                    ret[2] (bool): whether a dummy name was assigned to the data array
+            """
+            # assume all dataset by default
+            _ret_ds = xrlike
+            _is_dummyname = False
+            _is_dataarray = False
 
-            # check if it is a dataarray and needs a name assigned
-            # type homogenuity guarenteed due to `check_all_same_type` above
-            if isinstance(xrlike, xr.DataArray):
-                is_dataarray = True
-                # assign dummy name if the array names don't match or name is missing
-                #   - xr.dataarray by default obfuscates names if they don't match
-                #   - i.e. suppose d1 = d2 + d3, given dataarrays d1, d2, d3
-                #     d1 is nameless IF d2 and d3 names don't match
-                #   - however, if they do match then the matched name is assigned.
-                #     we want to retain this behaviour.
-                if ref_name is None:
-                    ref_name = xrlike.name
+            if xrlike is not None and isinstance(xrlike, xr.DataArray):
+                _is_dataarray = True
+                # assign dummy name if name is not consistent or is None
                 if xrlike.name is None or ref_name != xrlike.name:
-                    is_dummyname = True
+                    _ret_ds = xrlike.to_dataset(name=NseUtils._DATAARRAY_TEMPORARY_NAME)
+                    _is_dummyname = True
+                else:
+                    _ret_ds = xrlike.to_dataset()
+
+            return (_ret_ds, _is_dataarray, _is_dummyname)
+
+        # only need is_dataarray from fcst, type consistency is guarenteed due to
+        # `check_all_same_type`
+        ds_fcst, is_dataarray, is_fcst_dummyname = _lift_single(fcst)
+        ds_obs, _, is_obs_dummyname = _lift_single(obs)
+        ds_weights, _, is_weights_dummyname = _lift_single(weights)
+
+        # any name inconsistency is sufficient for assigning a dummy name
+        is_dummyname = any([is_fcst_dummyname, is_obs_dummyname, is_weights_dummyname])
+
+        ds_nse = NseDatasets(fcst=ds_fcst, obs=ds_obs, weights=ds_weights)
 
         return NseMetaDataset(
             datasets=ds_nse,
@@ -393,7 +399,7 @@ class NseUtils:
             """
             if curr_ds is None:
                 return acc_sizes
-            merged_sizes: dict[Hashable, int] = acc_sizes | curr_ds.sizes
+            merged_sizes: dict[Hashable, int] = acc_sizes | dict(curr_ds.sizes)
             return merged_sizes
 
         ret_sizes: dict[Hashable, int] = functools.reduce(_merge_single, ds, {})

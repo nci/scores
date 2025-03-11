@@ -2,9 +2,8 @@
 Contains tests for the scores.typing file
 """
 
-import pytest
-
 import numpy as np
+import pytest
 import xarray as xr
 
 import scores.typing
@@ -38,16 +37,16 @@ def test_is_xarraylike(xrlike, check_pass):
         (["hi", "how", "are", "you"], True),
         # all integers - pass
         ([1, 2, 3], True),
-        # single tuple - pass
+        # single tuple - pass - treated as iterable
         ((1, 2, 3), True),
-        # multiple tuples - pass - each tuple is a hashable
+        # single string - pass - this is a special case of a valid dimension argument
+        ("hello", True),
+        # multiple tuples - pass - each tuple is a hashable - note the use of list
         ([tuple([1]), tuple([1, 2, 3])], True),
         # nested list - fail
         ([[1], [2, 3]], False),
-        # mised nested list - fail
+        # mixed nested list - fail
         ([1, [2, 3]], False),
-        # single string - fail
-        ("hello", False),
     ],
 )
 def test_is_flexibledimensiontypes(dims, check_pass):

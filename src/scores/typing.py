@@ -24,23 +24,41 @@ FlexibleArrayType: TypeAlias = Union[XarrayLike, pd.Series]
 
 
 def is_flexibledimensiontypes(
-    val: Iterable[object],
+    val: Iterable[Hashable] | Hashable,
     /,  # enforce position only - typeguards can only take one arg
 ) -> TypeGuard[FlexibleDimensionTypes]:
     """
     Determines if the input is a iterable of flexible dimensions. Essentially a
     ``Iterable`` of ``Hashable``s
 
+    .. important::
+        Most `reduce_dims` and `preserve_dims` arguments allow a single hash or multiple
+        hashes.
+
+        For simplicity tuples are treated as iterables by this check. (since they are both
+        iterable and hashable). If you really want to use a tuple as a hash, provide a
+        list of tuples instead of the tuple directly.
+
+        In general xarray prefers the use of strings as dimension types, but doesn't
+        madate it - thus loose support is maintained for an arbitrary hashable.
+
+        However, custom hashable/iterable classes are not well supported by this check.
+
     Returns:
         True ONLY IF ``val`` is ``Iterable`` and its elements are ``Hashable``;
         ELSE False
     """
-    # require list of strings not single string - we do not want to accidentally iterate
-    # through the string, counting it as a dimension.
-    if isinstance(val, str):
-        return False
+    # A single hashable is allowed by most functions, but do not check tuples yet as we
+    # treat them as Iterables.
+    if not isinstance(val, tuple) and isinstance(val, Hashable):
+        return True
+
+    # safety: it should be a iterable if we reached this point
     assert isinstance(val, Iterable)
-    return all(map(lambda _x: isinstance(_x, Hashable), val))
+
+    ret = all(map(lambda _x: isinstance(_x, Hashable), val))
+
+    return ret
 
 
 def is_xarraylike(
