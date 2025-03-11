@@ -310,49 +310,42 @@ class NseUtils:
             FUTUREWORK: this should eventually be some sort of higher order structure,
                         common to other scores.
         """
-        NseUtils.check_all_same_type(fcst, obs, weights)
+        NseUtils.check_all_same_type(*[fcst, obs, weights])
 
         # use fcst as arbitrary reference name
         ref_name = fcst.name if isinstance(fcst, xr.DataArray) else None
+        is_dataarray = False
+        is_dummyname = False
 
-        def _lift_single(xrlike) -> tuple[xr.Dataset, bool, bool]:
-            """
-            lifts a single dataarray to a dataset
-            Returns:
-                tuple containing:
-                    ret[0] (xr.Dataset): lifted dataset
-                    ret[1] (bool): whether it was originally a data array
-                    ret[2] (bool): whether a dummy name was assigned to the data array
-            """
-            # assume all dataset by default
-            _ret_ds = xrlike
-            _is_dummyname = False
-            _is_dataarray = False
-
+        for xrlike in [fcst, obs, weights]:
             if xrlike is not None and isinstance(xrlike, xr.DataArray):
-                _is_dataarray = True
-                # assign dummy name if name is not consistent or is None
+                is_dataarray = True
                 if xrlike.name is None or ref_name != xrlike.name:
-                    _ret_ds = xrlike.to_dataset(name=NseUtils._DATAARRAY_TEMPORARY_NAME)
-                    _is_dummyname = True
+                    is_dummyname = True
+
+        def _to_ds(_xrlike: XarrayLike) -> xr.Dataset:
+            """
+            helper to lift the input xarraylike depending on whether it is a data array
+            and whether it needs a dummy name.
+            """
+            # assume dataset as default
+            _ret = _xrlike
+            # otherwise if its a dataarray, promote it to a dataset, and give it a dummy
+            # name if needed
+            if is_dataarray:
+                assert isinstance(_ret, xr.DataArray)
+                if is_dummyname:
+                    return _ret.to_dataset(name=NseUtils._DATAARRAY_TEMPORARY_NAME)
                 else:
-                    _ret_ds = xrlike.to_dataset()
-
-            return (_ret_ds, _is_dataarray, _is_dummyname)
-
-        # only need is_dataarray from fcst, type consistency is guarenteed due to
-        # `check_all_same_type`
-        ds_fcst, is_dataarray, is_fcst_dummyname = _lift_single(fcst)
-        ds_obs, _, is_obs_dummyname = _lift_single(obs)
-        ds_weights, _, is_weights_dummyname = _lift_single(weights)
-
-        # any name inconsistency is sufficient for assigning a dummy name
-        is_dummyname = any([is_fcst_dummyname, is_obs_dummyname, is_weights_dummyname])
-
-        ds_nse = NseDatasets(fcst=ds_fcst, obs=ds_obs, weights=ds_weights)
+                    return _ret.to_dataset()
+            return _ret
 
         return NseMetaDataset(
-            datasets=ds_nse,
+            datasets=NseDatasets(
+                fcst=_to_ds(fcst),
+                obs=_to_ds(obs),
+                weights=_to_ds(weights) if weights is not None else None,
+            ),
             is_dataarray=is_dataarray,
             is_dummyname=is_dummyname,
         )
