@@ -1,3 +1,5 @@
+# disable non-critical pylinting for tests:
+# pylint: disable=use-dict-literal
 """
 Test data for scores.utils
 """

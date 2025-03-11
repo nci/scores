@@ -13,13 +13,15 @@ Collection of tests for the NSE score, contains:
     - TestNseDask: Tests compatibility with dask
 """
 import os
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 import xarray as xr
 from numpy import typing as npt
 
-from scores.continuous import nse, nse_impl
+import scores.continuous.nse_impl as nse_impl
+from scores.continuous import mse, nse
 from scores.utils import DimensionError
 
 DASK_AVAILABLE = False
@@ -356,6 +358,273 @@ class TestNseUtils(NseSetup):
     NOTE: most of NseUtils is tested by the public API test suite and is not repeated here.
     Only things missed by the public API test suite will be covered here.
     """
+
+    def test_check_all_same_type_error(self):
+        """
+        Checks for raising error condition when checking all same type.
+        The success & failure conditions are already checked by ``tests_typing.py``
+        """
+        with pytest.raises(TypeError):
+            nse_impl.NseUtils.check_all_same_type(
+                xr.DataArray([1]),
+                xr.Dataset(dict(y=xr.DataArray([1]))),
+            )
+
+    def test_check_all_same_type_none_ignored(self):
+        """
+        Optionals are allowed in this check
+        """
+        nse_impl.NseUtils.check_all_same_type(
+            xr.DataArray([1]),
+            None,
+        )
+
+    @pytest.mark.parametrize(
+        "datasets,is_dataarray,is_dummyname,expect_name,num_da",
+        [
+            # all dataarrays - all unnamed - dummy name
+            (
+                (
+                    xr.DataArray([1, 2]),
+                    xr.DataArray([3, 4]),
+                    xr.DataArray([1, 0]),
+                ),
+                True,
+                True,
+                "__NONAME",
+                1,
+            ),
+            # one dataarray unnamed - dummy name
+            (
+                (
+                    xr.DataArray([1, 2], name="x"),
+                    xr.DataArray([3, 4], name="x"),
+                    xr.DataArray([1, 0]),
+                ),
+                True,
+                True,
+                "__NONAME",
+                1,
+            ),
+            # all dataarray same name - should retain name
+            (
+                (
+                    xr.DataArray([1, 2], name="Potato"),
+                    xr.DataArray([3, 4], name="Potato"),
+                    xr.DataArray([1, 0], name="Potato"),
+                ),
+                True,
+                False,
+                "Potato",
+                1,
+            ),
+            # all dataarray named but one different - dummyname
+            (
+                (
+                    xr.DataArray([1, 2], name="Potato"),
+                    xr.DataArray([3, 4], name="Potato"),
+                    xr.DataArray([1, 0], name="Tapioca"),
+                ),
+                True,
+                True,
+                "__NONAME",
+                1,
+            ),
+            # all datasets
+            (
+                (
+                    xr.Dataset(
+                        dict(
+                            Potato=xr.DataArray([4, 5]),
+                            Tomato=xr.DataArray([3, 4]),
+                            Tapioca=xr.DataArray([3, 4]),
+                        ),
+                    ),
+                    xr.Dataset(
+                        dict(
+                            Potato=xr.DataArray([3, 4]),
+                            Tomato=xr.DataArray([2, 3]),
+                            Tapioca=xr.DataArray([2, 4]),
+                        ),
+                    ),
+                    xr.Dataset(dict(Potato=xr.DataArray([1, 1]), Tomato=xr.DataArray([1, 0]))),
+                ),
+                False,
+                False,
+                # Tapioca should be ignored
+                ["Potato", "Tomato"],
+                2,
+            ),
+            # weights is None
+            (
+                (
+                    xr.Dataset(dict(Potato=xr.DataArray([1, 2]), Tomato=xr.DataArray([2, 4]))),
+                    xr.Dataset(dict(Potato=xr.DataArray([3, 4]), Tomato=xr.DataArray([2, 3]))),
+                    None,
+                ),
+                False,
+                False,
+                ["Potato", "Tomato"],
+                2,
+            ),
+        ],
+    )
+    def test_make_metadataset(
+        self,
+        datasets,
+        is_dataarray,
+        is_dummyname,
+        expect_name,
+        num_da,
+    ):
+        """
+        Tests making metadataset from xarralike
+        """
+        metads = nse_impl.NseUtils.make_metadataset(
+            fcst=datasets[0],
+            obs=datasets[1],
+            weights=datasets[2],
+        )
+        assert metads.is_dataarray == is_dataarray
+        assert metads.is_dummyname == is_dummyname
+        # simulate apply weights using mse
+        res = mse(
+            metads.datasets.fcst,
+            metads.datasets.obs,
+            weights=metads.datasets.weights,
+        )
+        da_names = list(res.keys())
+        assert len(da_names) == num_da
+        if is_dataarray:
+            assert da_names[0] == expect_name
+        else:
+            assert expect_name == da_names
+
+    def test_run_nsescore_and_undo_metadataset_dataset(self):
+        """
+        Test running score and undoing metadataset operations
+        """
+        metads = nse_impl.NseMetaDataset(
+            datasets=nse_impl.NseDatasets(
+                fcst=xr.Dataset(dict(Tapioca=xr.DataArray([1, 3], dims="x"))),
+                obs=xr.Dataset(dict(Tapioca=xr.DataArray([1, 5], dims="x"))),
+                weights=None,
+            ),
+            is_dataarray=False,
+            is_dummyname=False,
+        )
+
+        obj_nsescore = nse_impl.NseScore(
+            fcst=metads.datasets.fcst,
+            obs=metads.datasets.obs,
+            weights=metads.datasets.weights,
+        )
+
+        ret = nse_impl.NseUtils.run_nsescore_and_undo_metadataset(
+            obj_nsescore,
+            metads,
+        )
+
+        # should be a data array
+        assert isinstance(ret, xr.Dataset)
+        # should have data_vars and an entry for Tapioca
+        assert "Tapioca" in ret.data_vars.keys()
+
+    def test_run_nsescore_and_undo_metadataset_dataarray_noname(self):
+        """
+        Run test case with no name
+        """
+        metads = nse_impl.NseMetaDataset(
+            datasets=nse_impl.NseDatasets(
+                fcst=xr.Dataset(dict(__NONAME=xr.DataArray([1, 3], dims="x"))),
+                obs=xr.Dataset(dict(__NONAME=xr.DataArray([1, 5], dims="x"))),
+                weights=None,
+            ),
+            is_dataarray=True,
+            is_dummyname=True,
+        )
+
+        obj_nsescore = nse_impl.NseScore(
+            fcst=metads.datasets.fcst,
+            obs=metads.datasets.obs,
+            weights=metads.datasets.weights,
+        )
+
+        ret = nse_impl.NseUtils.run_nsescore_and_undo_metadataset(
+            obj_nsescore,
+            metads,
+        )
+
+        # should be a dataarray
+        assert isinstance(ret, xr.DataArray)
+        # should have a dummy name
+        assert ret.name is None
+
+    def test_run_nsescore_and_undo_metadataset_dataarray_withname(self):
+        """
+        Run test case with name
+        """
+        metads = nse_impl.NseMetaDataset(
+            datasets=nse_impl.NseDatasets(
+                fcst=xr.Dataset(dict(Potato=xr.DataArray([1, 3], dims="x"))),
+                obs=xr.Dataset(dict(Potato=xr.DataArray([1, 5], dims="x"))),
+                weights=None,
+            ),
+            is_dataarray=True,
+            is_dummyname=False,
+        )
+
+        obj_nsescore = nse_impl.NseScore(
+            fcst=metads.datasets.fcst,
+            obs=metads.datasets.obs,
+            weights=metads.datasets.weights,
+        )
+
+        ret = nse_impl.NseUtils.run_nsescore_and_undo_metadataset(
+            obj_nsescore,
+            metads,
+        )
+
+        # should be a data array
+        assert isinstance(ret, xr.DataArray)
+        # should retain Potato as the name since its common
+        assert ret.name == "Potato"
+
+    def test_run_nsescore_and_retract_metadataset_malformed_keys(self):
+        """
+        Tests for multiple keys in metadataset even though inputs are data arrays
+
+        This should be impossible since a dataarray promoted to a dataset can only have
+        one key. However, quirks exist where xr.Dataset.variables ALSO returns
+        coordinates. Whereas, xr.Dataset.data_var only returns the data arrays.
+
+        To prevent any mishaps from changes in xarray API - testing that it correctly
+        raises a RuntimeError.
+        """
+        # mock NseScore
+        obj_nsescore = SimpleNamespace()
+
+        # intentional mutation of nse score to have multiple dataarrays
+        obj_nsescore.nse = xr.Dataset(
+            dict(
+                __NONAME=xr.DataArray([1, 3], dims="x"),
+                SOMENAME=xr.DataArray([1, 5], dims="x"),
+            ),
+        )
+
+        # mocked metads
+        metads = nse_impl.NseMetaDataset(
+            datasets=nse_impl.NseDatasets(
+                fcst=xr.Dataset(dict(__NONAME=xr.DataArray([1, 3], dims="x"))),
+                obs=xr.Dataset(dict(__NONAME=xr.DataArray([1, 5], dims="x"))),
+                weights=xr.Dataset(dict(__NONAME=xr.DataArray([1, 1], dims="x"))),
+            ),
+            is_dataarray=True,
+            is_dummyname=True,
+        )
+
+        with pytest.raises(RuntimeError):
+            nse_impl.NseUtils.run_nsescore_and_undo_metadataset(obj_nsescore, metads)
 
 
 class TestNseScore(NseSetup):

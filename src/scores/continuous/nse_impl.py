@@ -74,10 +74,14 @@ def nse_score(
     """
     # lift inputs to a meta dataset dataset see: NseUtils.make_metadataset and
     # NseTypes.MetaDataset = tuple(tuple[xr.Dataset], is_dataarray, is_dummyname)
-    metads: NseMetaDataset = NseUtils.make_metadataset(fcst, obs, weights)
+    metads: NseMetaDataset = NseUtils.make_metadataset(
+        fcst=fcst,
+        obs=obs,
+        weights=weights,
+    )
 
     # initialize score - implicitly also runs several checks.
-    ret_score: NseScore = NseScore(
+    obj_nsescore: NseScore = NseScore(
         fcst=metads.datasets.fcst,
         obs=metads.datasets.obs,
         weights=metads.datasets.weights,
@@ -86,22 +90,16 @@ def nse_score(
         is_angular=is_angular,
     )
 
-    result: xr.Dataset = ret_score.nse
-
-    if metads.is_dataarray:
-        # demote if originally a data array, must have only one key if this is the case
-        da_keys = list(result.data_vars.keys())
-        if len(da_keys) != 1:
-            raise RuntimeError(NseUtils.ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY)
-        result = result.data_vars[da_keys[0]]
-        # undo dummy name
-        if metads.is_dummyname:
-            result.name = None
+    # executes the NseScore object and resolves the appropriate return datatype
+    nse_result: XarrayLike = NseUtils.run_nsescore_and_undo_metadataset(
+        obj_nsescore,
+        metads,
+    )
 
     # safety: assert xarraylike before returning
-    assert is_xarraylike(result)
+    assert is_xarraylike(nse_result)
 
-    return result
+    return nse_result
 
 
 @dataclass(kw_only=True)
@@ -295,7 +293,12 @@ class NseUtils:
             raise TypeError(NseUtils.ERROR_MIXED_XR_DATA_TYPES)
 
     @staticmethod
-    def make_metadataset(fcst, obs, weights) -> NseMetaDataset:
+    def make_metadataset(
+        *,  # enforce keyword-only
+        fcst: XarrayLike,
+        obs: XarrayLike,
+        weights: XarrayLike,
+    ) -> NseMetaDataset:
         """
         Consolidates ``XarrayLike`` - a union type - to a xarray dataset, in order to
         simplify API calls. Other utility functions assume that they are dealing with
@@ -349,6 +352,30 @@ class NseUtils:
             is_dataarray=is_dataarray,
             is_dummyname=is_dummyname,
         )
+
+    @staticmethod
+    def run_nsescore_and_undo_metadataset(
+        obj_nsescore: NseScore,
+        metads: NseMetaDataset,
+    ) -> XarrayLike:
+        """
+        Runs the scorer to compute nse and use metadata from NseMetaDataset to return the
+        result to its original xarraylike
+        """
+        # if lazy: partial computation is actually performed here
+        # (i.e. obs_variance and obs_forecast)
+        result = obj_nsescore.nse
+
+        if metads.is_dataarray:
+            # demote if originally a data array, must have only one key if this is the case
+            da_keys = list(result.data_vars.keys())
+            if len(da_keys) != 1:
+                raise RuntimeError(NseUtils.ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY)
+            result = result.data_vars[da_keys[0]]
+            if metads.is_dummyname:
+                result.name = None
+
+        return result
 
     @staticmethod
     def check_and_gather_dimensions(
