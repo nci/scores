@@ -13,8 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike
-
+from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -457,7 +456,7 @@ def check_binary(data: XarrayLike, name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
-def check_weights(weights: LiftedDataset | None, *, raise_error=True):
+def check_weights(weights: XarrayLike, *, raise_error=True):
     """
     This is a check that requires weights to be non-negative (NaN values are excluded from the check
     since they are used as masks). At least one of the weights must be strictly positive.
@@ -485,11 +484,8 @@ def check_weights(weights: LiftedDataset | None, *, raise_error=True):
     .. _GITHUB828: https://github.com/nci/scores/issues/828
     .. _GITHUB829: https://github.com/nci/scores/issues/829
     """
-    # nothing to check
-    if weights is None:
-        return
-
-    assert_lifteddataset(weights)
+    # safety: weights must be XarrayLike
+    assert is_xarraylike(weights)
 
     def _check_single_array(_da_weights: xr.DataArray):
         # type safety: dev/test only
@@ -509,5 +505,13 @@ def check_weights(weights: LiftedDataset | None, *, raise_error=True):
             # otherwise warn - pylint doesn't like explicit else
             warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)
 
-    for da_weights in weights.ds.data_vars.values():
-        _check_single_array(da_weights)
+    # handle both data arrays and datasets
+    if isinstance(weights, xr.DataArray):
+        _check_single_array(weights)
+    else:
+        # NOTE:
+        # Calling``items`` explicitly instead of ``values`` as ``values`` is confusing - it
+        # could be interpretted as retreiving the underlying ``numpy`` values which we
+        # DO NOT want to (accidentally) do.
+        for _, da_weights in weights.data_vars.items():
+            _check_single_array(da_weights)

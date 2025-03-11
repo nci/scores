@@ -9,7 +9,7 @@ import pytest
 import xarray as xr
 
 from scores import utils
-from scores.typing import LiftedDataset, XarrayLike, XarrayTypeMarker
+from scores.typing import XarrayLike
 from scores.utils import DimensionError, check_binary, check_weights
 from scores.utils import gather_dimensions as gd
 from tests import utils_test_data
@@ -761,212 +761,56 @@ def test_invalid_numpy_operator():
         utils.NumpyThresholdOperator(sorted)
 
 
-def test_check_weights():
+@pytest.mark.parametrize(
+    "weights,expect_error,expect_warning",
+    [
+        (utils_test_data.DA_WEIGHTS_GOOD, False, False),
+        (utils_test_data.DA_WEIGHTS_GOOD_SOME_NAN, False, False),
+        (utils_test_data.DA_WEIGHTS_GOOD_SOME_ZERO, False, False),
+        (utils_test_data.DA_WEIGHTS_BAD_ALL_NAN, True, False),
+        (utils_test_data.DA_WEIGHTS_BAD_ALL_ZERO, True, False),
+        (utils_test_data.DA_WEIGHTS_BAD_ANY_NEG, True, False),
+        (utils_test_data.DS_WEIGHTS_GOOD, False, False),
+        (utils_test_data.DS_WEIGHTS_GOOD_SOME_NAN, False, False),
+        (utils_test_data.DS_WEIGHTS_GOOD_SOME_ZERO, False, False),
+        (utils_test_data.DS_WEIGHTS_BAD_ALL_NAN, True, False),
+        (utils_test_data.DS_WEIGHTS_BAD_ALL_ZERO, True, False),
+        (utils_test_data.DS_WEIGHTS_BAD_ANY_NEG, True, False),
+        # no need to be extensive with warnings - we don't want to skew coverage
+        # unnecessarily - just testing a couple to make sure:
+        (utils_test_data.DS_WEIGHTS_BAD_ALL_ZERO, False, True),
+        (utils_test_data.DA_WEIGHTS_BAD_ANY_NEG, False, True),
+    ],
+)
+def test_check_weights(weights, expect_error, expect_warning):
     """
     Tests :py:func:`scores.utils.check_weights`.
 
     Cases:
-    - conformant weights - at least one positive, rest can be >= 0
-    - any one weight negative - should raise warning
-    - all NaNs - should raise warning
-    - all zeros - should raise warning
-    - implicitly test "context" by setting appropriate context message for the above cases
+        - conformant weights - at least one positive, rest can be >= 0
+        - any one weight negative - should raise error
+        - all NaNs - should raise error
+        - all zeros - should raise error
+        - should work for both dataarrays and datasets, with datasets even one weight
+          being "bad" should throw an error or warning regardless of the variable.
+        - should optionally support warnings
     """
 
-    def _check_weights_assert_no_warning(_w):
-        threw_warning = False
-        _w = LiftedDataset(xr.DataArray(_w))
-        with warnings.catch_warnings():
-            warnings.simplefilter("always")
-            try:
-                check_weights(_w, raise_error=False)
-            except Warning:
-                threw_warning = True
-        assert not threw_warning
-
-    def _expect_warning(_w):
-        _w = LiftedDataset(xr.DataArray(_w))
+    def _check_with_warning(_w):
         with pytest.warns(UserWarning):
             check_weights(_w, raise_error=False)
 
-    def _expect_error(_w):
-        _w = LiftedDataset(xr.DataArray(_w))
+    def _check_with_error(_w):
         with pytest.raises(ValueError):
             check_weights(_w, raise_error=True)
 
-    _check_weights_assert_no_warning(np.array([1.0, 0.0, 0.1]))
-    # catching np.inf is not the responsibility of this function, ...
-    _check_weights_assert_no_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, np.inf]]))
-    # ... neither is np.nan - which is ignored.
-    _check_weights_assert_no_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, np.nan]]))
+    if expect_error:
+        _check_with_error(weights)
 
-    # --- the rest of these should throw warnings (or error depending on raise_error) ---
-    # However inputs with all nans is invalid, ...
-    _expect_warning(np.array([[np.nan, np.nan], [np.nan, np.nan]]))
-    _expect_error(np.array([[np.nan, np.nan], [np.nan, np.nan]]))
-    # ... and negative infinity is not allowed.
-    _expect_warning(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, -np.inf]]))
-    _expect_error(np.array([[1.0, 0.0, 0.1], [0.0, 0.0, -np.inf]]))
-    # In fact any negative number is should fail the check, ...
-    _expect_warning(np.array([-1e-7, 0.0, 0.0, 1.0]))
-    _expect_error(np.array([-1e-7, 0.0, 0.0, 1.0]))
-    # ... even if all of them are negative, and theoretically can be flipped to be conformant,
-    # it is not the responsibility of this function to do so.
-    _expect_warning(np.array([-1.0, -0.1]))
-    _expect_error(np.array([-1.0, -0.1]))
+    if expect_warning:
+        _check_with_warning(weights)
 
-    # --- weights=None should do nothing ---
-    assert check_weights(None) is None
+    expect_success = not expect_error and not expect_warning
 
-
-# ---
-# tests for LiftedDatasetUtils = ldsutils (short form)
-_DS_TEST = xr.Dataset({"a": xr.DataArray([1], dims="t"), "b": xr.DataArray([2], dims="t")})
-
-
-@pytest.mark.parametrize(
-    "xr_data, do_lift, expect_error_raised, expect_xr_type",
-    [
-        # one dataset and one data array => should produce error
-        (tuple([xr.DataArray([1], dims="a"), _DS_TEST]), True, True, "invalid"),
-        # multiple inputs with data arrays => all data arrays => no error
-        (tuple([xr.DataArray([1], dims="a"), xr.DataArray([2], dims="b")]), True, False, "dataarray"),
-        # multiple inputs with data arrays => all data arrays => no error
-        (tuple([xr.DataArray([1], dims="a"), xr.DataArray([2], dims="b")]), False, True, "dataarray"),
-        # single input with dataset => all datasets => no error
-        (tuple([_DS_TEST]), True, False, "dataset"),
-        # intentionally don't lift the dataset to prompt a type error => should produce error
-        (tuple([_DS_TEST]), False, True, "dataset"),
-    ],
-)
-def test_ldsutils_allsametype(xr_data, do_lift, expect_error_raised, expect_xr_type):
-    """
-    Checks for homogeneity in LiftedDataset (lds) types, and checks that it raises an error if they
-    are of different types.
-    """
-    lds = [LiftedDataset(x) for x in xr_data] if do_lift else xr_data
-    if expect_error_raised:
-        with pytest.raises(TypeError):
-            utils.LiftedDatasetUtils.all_same_type(*lds)
-    else:
-        ret = utils.LiftedDatasetUtils.all_same_type(*lds)
-        if expect_xr_type == "dataarray":
-            assert ret == XarrayTypeMarker.DATAARRAY
-        else:  # dataset
-            assert ret == XarrayTypeMarker.DATASET
-
-
-def test_ldsutils_lift_fn():
-    # pylint: disable=use-dict-literal, too-many-locals
-    # most official xarray examples use `.loc[dict(...)]` for slicing
-    """
-    Checks lift functions: ``LiftedDatasetUtils.lift_fn`` and ``LiftedDatasetUtils.lift_fn_ret``
-        - ``lift_fn`` only lifts the fn args
-        - ``lift_fn_ret`` lifts both the args and the return type
-    """
-
-    # --- helper dummy functions
-    # test function that works on `XarrayLike`. Output can be anything - arbitrarily chosen string
-    def _test_func(x: XarrayLike, y: XarrayLike, z: int, *, a: XarrayLike, b: XarrayLike, c: int) -> XarrayLike:
-        return (x * z + y) - (a + b * c)
-
-    _lifted_test_func = utils.LiftedDatasetUtils.lift_fn(_test_func)
-    _lifted_test_func_ret = utils.LiftedDatasetUtils.lift_fn_ret(_test_func)
-
-    # --- prepare dataarray testcase
-    test_da_x: xr.DataArray = xr.DataArray([1, 2], dims=["x"])
-    test_da_y: xr.DataArray = xr.DataArray([3, 4], dims=["x"])
-    test_da_a: xr.DataArray = xr.DataArray([5, 6], dims=["x"])
-    test_da_b: xr.DataArray = xr.DataArray([7, 8], dims=["x"])
-    scalar_z: int = 20
-    scalar_c: int = 4
-    da_test = _test_func(test_da_x, test_da_y, scalar_z, a=test_da_a, b=test_da_b, c=scalar_c)
-
-    # this is not the actual test - just a safety check
-    # elem 1: 20 + 3 - 5 - 28 = -10
-    # elem 2: 40 + 4 - 6 - 32 =   6
-    da_expected = xr.DataArray([-10, 6], dims=["x"])
-    assert da_expected.identical(da_test)
-
-    # --- FUNCTION LIFTING TESTS FOR DATAARRAY --> START
-    # actual tests - result is still a data array, not a lifted data array
-    # lift_fn: return type should be preserved, result should match expected
-    lds_da_x, lds_da_y, lds_da_a, lds_da_b = map(LiftedDataset, [test_da_x, test_da_y, test_da_a, test_da_b])
-    da_res = _lifted_test_func(lds_da_x, lds_da_y, scalar_z, a=lds_da_a, b=lds_da_b, c=scalar_c)
-    da_res.identical(da_expected)
-    assert isinstance(da_res, xr.DataArray)
-
-    # lift_fn_res: return type should be lifted to LiftedDataset
-    da_res = _lifted_test_func_ret(lds_da_x, lds_da_y, scalar_z, a=lds_da_a, b=lds_da_b, c=scalar_c)
-    assert isinstance(da_res, LiftedDataset)
-    assert da_res.is_dataarray()
-    assert da_res.raw().identical(da_expected)
-    # <--  END
-
-    # --- prepare dataset testcase
-    test_ds_x: xr.DataArray = xr.Dataset(dict(y=test_da_x))
-    test_ds_y: xr.DataArray = xr.Dataset(dict(y=test_da_y))
-    test_ds_a: xr.DataArray = xr.Dataset(dict(y=test_da_a))
-    test_ds_b: xr.DataArray = xr.Dataset(dict(y=test_da_b))
-    ds_test = _test_func(test_ds_x, test_ds_y, scalar_z, a=test_ds_a, b=test_ds_b, c=scalar_c)
-    ds_expected = xr.Dataset(dict(y=da_expected))
-    # this is not the actual test - just a safety check
-    assert ds_expected.identical(ds_test)
-
-    # --- FUNCTION LIFTING TESTS FOR DATASET --> START
-    # actual tests - result is still a data array, not a lifted data array
-    # lift_fn: return type should be preserved, result should match expected
-    lds_ds_x, lds_ds_y, lds_ds_a, lds_ds_b = map(LiftedDataset, [test_ds_x, test_ds_y, test_ds_a, test_ds_b])
-    ds_res = _lifted_test_func(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
-    assert ds_res.identical(ds_expected)
-    assert isinstance(ds_res, xr.Dataset)
-
-    # lift_fn_res: return type should be lifted to LiftedDataset
-    ds_res = _lifted_test_func_ret(lds_ds_x, lds_ds_y, scalar_z, a=lds_ds_a, b=lds_ds_b, c=scalar_c)
-    assert isinstance(ds_res, LiftedDataset)
-    assert ds_res.is_dataset()
-    assert ds_res.raw().identical(ds_expected)
-    # <--  END
-
-
-def test_ldsutils_lift_fn_invalid_ret():
-    """
-    Test against a dummy function that simply returns a string.
-        - Neither function should care about the input arguments
-        - ``lift_fn_ret`` should raise an error because it can't lift a string to a
-          ``LiftedDataset``
-    """
-
-    # dummy function that returns a string
-    def _test_func(x) -> str:
-        # pylint: disable=unused-argument
-        return "hi"
-
-    # lift_fn should not do anything regardless of whether any of the args or return type is
-    # compatible.
-    _lifted_test_func = utils.LiftedDatasetUtils.lift_fn(_test_func)
-    ret = _lifted_test_func(0)
-    assert ret == "hi"
-
-    # lift_fn_ret should raise an error because of incompatible return type
-    _lifted_test_func_ret = utils.LiftedDatasetUtils.lift_fn_ret(_test_func)
-
-    # TypeError: because the output return type is a string
-    with pytest.raises(TypeError):
-        _lifted_test_func_ret(0)
-
-    # TypeError: as before
-    # UserWarning: should NOT occur because the input is a lifted dataset
-    with pytest.raises(TypeError):
-        _lifted_test_func_ret(LiftedDataset(xr.DataArray([1, 2], dims="a")))
-
-    # TypeError: as before
-    # UserWarning: should NOT occur because the input is a lifted dataset
-    with pytest.raises(TypeError):
-        _lifted_test_func_ret(
-            LiftedDataset(
-                xr.Dataset(
-                    dict(x=xr.DataArray([1, 2], dims="a")),
-                ),
-            ),
-        )
+    if expect_success:
+        check_weights(weights)

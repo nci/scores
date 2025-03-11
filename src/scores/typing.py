@@ -4,7 +4,7 @@ a consistent approach to typing is handled.
 """
 
 from collections.abc import Hashable, Iterable
-from typing import TypeAlias, Union
+from typing import TypeAlias, TypeGuard, Union
 
 import pandas as pd
 import xarray as xr
@@ -35,8 +35,12 @@ def is_flexibledimensiontypes(
         True ONLY IF ``val`` is ``Iterable`` and its elements are ``Hashable``;
         ELSE False
     """
+    # require list of strings not single string - we do not want to accidentally iterate
+    # through the string, counting it as a dimension.
+    if isinstance(val, str):
+        return False
     assert isinstance(val, Iterable)
-    return all(lambda _x: isinstance(_x, Hashable), val)
+    return all(map(lambda _x: isinstance(_x, Hashable), val))
 
 
 def is_xarraylike(
@@ -52,7 +56,7 @@ def is_xarraylike(
         True ONLY IF ``val`` is  a `xr.Dataset`` or ``xr.DataArray``;
         ELSE False
     """
-    return isinstance(val, xr.Dataset) or isinstance(val, xr.DataArray)
+    return isinstance(val, (xr.Dataset, xr.DataArray))
 
 
 def all_same_xarraylike(
@@ -67,14 +71,13 @@ def all_same_xarraylike(
         ``xr.Dataset`` or _all_ ``xr.DataArray`` (exclusive or - i.e. xor);
         ELSE False
     """
-    is_ds = lambda _x: isinstance(_x, xr.Dataset)
-    is_da = lambda _x: isinstance(_x, xr.Dataarray)
-    all_ds = _typecheck_iterable(is_ds, skip_none=False)
-    all_da = _typecheck_iterable(is_da, skip_none=False)
+    assert isinstance(val, Iterable)
+    all_ds = all(map(lambda _x: isinstance(_x, xr.Dataset), val))
+    all_da = all(map(lambda _x: isinstance(_x, xr.DataArray), val))
 
     # safety: dev/testing => impossible to be both all dataarray AND all dataset
-    assert not (all_ds(val) == True and all_da(val) == True)
+    assert not (all_ds is True and all_da is True)
 
     # with the above assert, "or" now behaves as a "xor";
     # i.e. only True if one is True and the other isn't.
-    return all_ds(val) or all_da(val)
+    return all_ds or all_da

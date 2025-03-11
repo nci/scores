@@ -7,9 +7,9 @@ from typing import Optional, Union
 import numpy as np
 import xarray as xr
 
+import scores.continuous.nse_impl as nse_impl
 import scores.functions
 import scores.utils
-from scores.continuous.nse_impl import NseScore, NseScoreBuilder
 from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
@@ -705,9 +705,8 @@ def nse(
            model. Journal of Hydrology, 292(1-4), 281-295. https://doi.org/10.1016/j.jhydrol.2004.01.002
     """
 
-    # setup arguments for builder to do checks
     # fmt: off
-    nse_score: NseScore = NseScoreBuilder().build(
+    nse_s: XarrayLike = nse_impl.nse_score(
         obs=obs,
         fcst=fcst,
         reduce_dims=reduce_dims,
@@ -717,7 +716,4 @@ def nse(
     )
     # fmt: on
 
-    # calculate the actual score: note - delayed if using dask.
-    nse_result: XarrayLike = nse_score.nse
-
-    return nse_result
+    return nse_s
