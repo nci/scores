@@ -22,10 +22,10 @@ from scores.continuous.standard_impl import (
     mean_error,
     mse,
     multiplicative_bias,
-    nse,
     pbias,
     rmse,
 )
+from scores.continuous.standard_impl.nse_impl import nse
 from scores.continuous.threshold_weighted_impl import (
     tw_absolute_error,
     tw_expectile_score,
