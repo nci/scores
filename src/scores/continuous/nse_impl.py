@@ -1,5 +1,17 @@
 """
-Internal module used to support the computation of NSE. Not to be used directly.
+Internal module used to support the computation of Nash-Sutcliffe model Efficiency coefficient (NSE).
+
+The only publically exposed function should be `nse`.
+
+.. note::
+
+    FUTUREWORK:
+
+        the structures introduced in this score can be abstracted as they are useful checks that can
+        geenrally apply to most scores, in the short-term it is likely the hydro scores can all
+        adapt the same pattern.
+
+        Further adoption can be determined if the pattern works well for hydro metrics.
 """
 
 import functools
@@ -121,16 +133,23 @@ def nse(
 
     .. warning::
 
-        For simplicity, when working with ``xr.DataArray`` the returned score will have its name
-        forced to the name of this score i.e. "nse". If this is an issue - use ``xr.Dataset``
-        instead. See tips below for more information.
+        Operations between dataarrays are not guarenteed to preserve names. If the user is
+        working with dataarrays, it is assumed that preserving names is not a major requirement. If
+        a user needs the name preserved, they should explicitly convert all data array inputs to
+        datasets using `xr.DataArray.to_dataset(...)` , and verify that the naming is retained
+        appropriately before calling the score.
+
+        For operations where ONLY ``xr.DataArray`` inputs are used, the returned score will have its
+        name forced to the name of this score i.e. "NSE", for simplicity.
+
+        See tips below for more information.
 
     .. note::
 
         For Hydrology in particular :math:`i = t` - the reduced dimension is usually the time
         dimension. However, in order to keep things generic, this function does not explicitly
-        mandate a time dimension be provided. Instead it requires it has a hard requirement that
-        _at least one_ dimension is being reduced from either a specification of ``reduce_dims`` or
+        mandate a time dimension be provided. Instead it requires it has a hard requirement that _at
+        least one_ dimension is being reduced from either a specification of ``reduce_dims`` or
         ``preserve_dims`` (mutually exclusive).
 
         The reason is that the observation variance cannot be non-zero if nothing is being reduced.
@@ -140,16 +159,15 @@ def nse(
 
     .. note::
 
-        Divide by zero is ALLOWED - to accomodate scenarios where all obs entries in the
-        group being reduced is constant (0 obs variance).
+        Divide by zero is ALLOWED - to accomodate scenarios where all obs entries in the group being
+        reduced is constant (0 obs variance).
 
-        While these may cause divide by zero errors, they should not halt execution of
-        computations for other valid coordinates - so a warning is issued instead to
-        prompt the user to double check the data.
+        While these may cause divide by zero errors, they should not halt execution of computations
+        for other valid coordinates - so a warning is issued instead to prompt the user to double
+        check the data.
 
-        It may also be that divide by zero is unavoidable - in which case we still want
-        to return the correctly calculated values. To this end, this is how ``numpy``
-        resolves divide by zero:
+        It may also be that divide by zero is unavoidable - in which case we still want to return
+        the correctly calculated values. To this end, this is how ``numpy`` resolves divide by zero:
 
         .. code-block::
 
@@ -205,33 +223,28 @@ def nse(
         Dimensions without coordinates: t
 
     References:
+
         1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting through conceptual models
            part I — A discussion of principles. In Journal of Hydrology (Vol. 10, Issue 3, pp. 282–
            290). Elsevier BV. https://doi.org/10.1016/0022-1694%2870%2990255-6
+
         2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land use changes on the
            runoff generation of a river basin through parameter regionalization of a watershed
            model. Journal of Hydrology, 292(1-4), 281-295. https://doi.org/10.1016/j.jhydrol.2004.01.002
     """
-    # safety: assert that the input types are as expected. This aimed more for
-    # catching early errors while development/testing, and will be re-checked anyway
-    # appropriately by `check_weights` and `check_and_gather_dimensions` as well as
-    # during any computational checks performed in `_nse_metascore`
+    # safety: assert that the input types are as expected. This is for early failure during
+    # dev/testing only when incompatible types are detected at runtime.
     assert (
-        isinstance(fcst, xr.Dataset)
-        and isinstance(obs, xr.Dataset)
+        is_xarraylike(obs) and is_xarraylike(fcst)
         # These are optionals (i.e. skipped if None):
-        and (weights is None or isinstance(weights, xr.Dataset))
+        and (weights is None or is_xarraylike(weights))
         and (reduce_dims is None or is_flexibledimensiontypes(reduce_dims))
         and (preserve_dims is None or is_flexibledimensiontypes(preserve_dims))
         and isinstance(is_angular, bool)
     )
 
-    # check weights if its provided
-    if weights is not None:
-        check_weights(weights)
-
     # do any dimension checks and store the final reduced (gathered) dimensions
-    gathered_dims = NseUtils.check_and_gather_dimensions(
+    gathered_dims: FlexibleDimensionTypes = NseUtils.check_and_gather_dimensions(
         fcst=fcst,
         obs=obs,
         weights=weights,
@@ -253,72 +266,13 @@ def nse(
     # actual nse computation happens here.
     meta_score: NseMetaScore = _nse_metascore(meta_input)
 
-    # check that metadata hasn't been corrupted by any operations so far.
-    ...  # TODO
+    # extracts the raw score from the metascore, converting to data array if required
+    nse_result: XarrayLike = NseUtils.extract_result_from_metascore(meta_score)
 
-    # extracts the result from the metascore, converting back to a data array if
-    # needed
-    nse_result: XarrayLike = NseUtils.extract_result_from_metascore(
-        meta_input,
-        meta_score,
-    )
-
-    # safety: assert xarraylike before returning
+    # safety: assert xarraylike before returning. For dev/testing only.
     assert is_xarraylike(nse_result)
 
     return nse_result
-
-
-def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
-    """
-    The actual internal score function that computes NSE. Takes in input parameters with
-    associated metadata, NseMetaInput and returns a NseMetaScore - transferring any
-    metadata to it.
-
-    since NseMetaInput and NseMetaScore are namedtuples they cannot be mutated so their
-    data can only be transferred.
-
-    IMPORTANT: This internal function is only compatible with "Meta" types that deal
-               solely with datasets.
-    """
-    # Warning would have been raised by `warn_nonzero_obsvar` instead
-    with np.errstate(divide="ignore"):
-        # observation variance computation
-        obs_mean = meta_input.datasets.obs.mean(dim=meta_input.gathered_dims)
-        obs_variance = meta_input.mse_prefilled(obs_mean, self.obs)
-
-        # forecast error computation
-        fcst_error = meta_input.mse_prefilled(fcst, obs)
-
-        # nse computation - raise warning if divide by zero
-        NseUtils.warn_nonzero_obsvar(obs_var)
-        nse = 1.0 - (fcst_err / obs_var)
-
-        # store components in NseMetaScore
-        meta_score = NseMetaScore(
-            components=NseComponents(
-                nse=nse,
-                obs_variance=obs_var,
-                fcst_error=fcst_err,
-            ),
-            # propagate required return type
-            is_dataarray=is_dataarray,
-        )
-
-
-class NseMetaScore(NamedTuple):
-    """
-    Meta score structure containing:
-        components: individual components of the score
-            - currently only NseComponents.score is returned
-            - NseComponents.fcst_error and NseComponents.obs_variance are only used for
-              testing
-        is_dataarray: whether the underlying datasets to revert back to its original
-            form before returning
-    """
-
-    components: NseComponents
-    is_dataarray: bool
 
 
 class NseComponents(NamedTuple):
@@ -328,7 +282,22 @@ class NseComponents(NamedTuple):
 
     fcst_error: xr.Dataset
     obs_variance: xr.Dataset
-    score: xr.Dataset
+    nse: xr.Dataset
+
+
+class NseMetaScore(NamedTuple):
+    """
+    Meta score structure containing:
+        components: individual components of the score
+            - currently only NseComponents.nse is returned
+            - NseComponents.fcst_error and NseComponents.obs_variance are only used for
+              testing
+        is_dataarray: whether the underlying datasets to revert back to its original
+            form before returning
+    """
+
+    components: NseComponents
+    is_dataarray: bool
 
 
 class NseDatasets(NamedTuple):
@@ -356,6 +325,45 @@ class NseMetaInput(NamedTuple):
     is_angular: bool
 
 
+def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
+    """
+    The actual internal score function that computes NSE. Takes in input parameters with
+    associated metadata, NseMetaInput and returns a NseMetaScore - transferring any
+    metadata to it.
+
+    since NseMetaInput and NseMetaScore are namedtuples they cannot be mutated so their
+    data can only be transferred.
+
+    IMPORTANT: This internal function is only compatible with "Meta" types that deal
+               solely with datasets.
+    """
+    # Warning would have been raised by `warn_nonzero_obsvar` instead
+    with np.errstate(divide="ignore"):
+        # observation variance computation
+        obs_mean = meta_input.datasets.obs.mean(dim=meta_input.gathered_dims)
+        obs_variance = meta_input.mse_prefilled(obs_mean, meta_input.datasets.obs)
+
+        # forecast error computation
+        fcst_error = meta_input.mse_prefilled(fcst, obs)
+
+        # nse computation - raise warning if divide by zero
+        NseUtils.warn_nonzero_obsvar(obs_var)
+        nse = 1.0 - (fcst_err / obs_var)
+
+        # store components in NseMetaScore
+        meta_score = NseMetaScore(
+            components=NseComponents(
+                nse=nse,
+                obs_variance=obs_var,
+                fcst_error=fcst_err,
+            ),
+            # propagate required return type
+            is_dataarray=is_dataarray,
+        )
+
+        return meta_score
+
+
 class NseUtils:
     """
     Helper class with static methods for use in NSE computations only. Also contains
@@ -374,41 +382,45 @@ class NseUtils:
         computing the sore.
     """
 
-    ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY: str = """
-    The underlying data array type should only be represented by a single key in its
-    dataset form. Either no keys or multiple keys detected. This is NOT EXPECTED.
+    # score name used for promoted dataarrays
+    SCORE_NAME: str = "NSE"
+
+    # datasets require a name - used when promoting a dataarray without a name.
+    # NOTE: this doesn't actually replace the input dataarray name.
+    _DATAARRAY_TEMPORARY_NAME: str = "__NONAME"
+
+    ERROR_CORRUPT_METADATA: str = f"""
+    {SCORE_NAME}: CRITICAL FAILURE! The internal state of either NseMetaInputs or
+    NseMetaScore has been corrupt.  This should not happen and is either a BUG or is being run on a
+    mutated version of the code.
 
     Please raise an issue on github.com/nci/scores citing this error.
     """
 
-    ERROR_NO_DIMS_TO_REDUCE: str = """
-    NSE needs at least one dimension to be reduced. Check that `preserve_dims` is not
-    preserving all dimensions, OR check that `reduce_dims` is specified with at least one
+    ERROR_NO_DIMS_TO_REDUCE: str = f"""
+    {SCORE_NAME}: need at least one dimension to be reduced. Check that `preserve_dims` is
+    not preserving all dimensions, OR check that `reduce_dims` is specified with at least one
     dimension.
     """
 
-    ERROR_NO_DIMS_WITH_MULTIPLE_OBS: str = """
-    NSE needs at least one dimension that is being reduced where its length > 1.  Check
-    that the input provided have at least 2 or more data points along the dimensions
-    being reduced. It is not possible to calculate a non-zero obs variance from 1 point.
+    ERROR_NO_DIMS_WITH_MULTIPLE_OBS: str = f"""
+    {SCORE_NAME}: need at least one dimension that is being reduced where its length > 1.
+    Check that the input provided have at least 2 or more data points along the dimensions being
+    reduced. It is not possible to calculate a non-zero obs variance from 1 point.
     """
 
-    ERROR_MIXED_XR_DATA_TYPES: str = """
-    Triggered during NSE calculations` check `fcst`, `obs` and `weights` are of the same
-    type `xr.Dataset` OR `xr.DataArray` EXCLUSIVELY; NOT a mix of the two types.
+    ERROR_MIXED_XR_DATA_TYPES: str = f"""
+    {SCORE_NAME}: Triggered during NSE calculations` check `fcst`, `obs` and `weights` are
+    of the same type `xr.Dataset` OR `xr.DataArray` EXCLUSIVELY; NOT a mix of the two types.
     """
 
-    WARN_ZERO_OBS_VARIANCE: str = """
-    Possible divide by zero: at least one element in the reduced obs variance array is 0.
-    Any divide by zero entries will be filled in as `np.nan` if the forecast error is
-    also 0, otherwise it will be `-np.inf`. This is so that any other valid entries are
-    still computed and returned. The user should still verify that zero obs variance is
-    expected for the given input data.
+    WARN_ZERO_OBS_VARIANCE: str = f"""
+    {SCORE_NAME}: possible divide by zero - at least one element in the reduced obs
+    variance array is 0.  Any divide by zero entries will be filled in as `np.nan` if the forecast
+    error is also 0, otherwise it will be `-np.inf`. This is so that any other valid entries are
+    still computed and returned.  The user should still verify that zero obs variance is expected
+    for the given input data.
     """
-
-    #: datasets require a name - used when promoting a dataarray without a name.
-    #: NOTE: it is FAIRLY COMMON that a dataarray DOES NOT have a name.
-    _DATAARRAY_TEMPORARY_NAME: str = "__NONAME"
 
     @staticmethod
     def check_all_same_type(*xrlike):
@@ -452,28 +464,10 @@ class NseUtils:
         # enforce all of `fcst`, `obs` and (optionally) `weights` have the same type
         NseUtils.check_all_same_type(*[fcst, obs, weights])
 
-        def _to_ds(_xrlike: XarrayLike | None) -> xr.Dataset:
-            """
-            Helper to convert to dataset if not None, assigning it a dummy name if
-            its a data array.
+        fcst_ds, obs_ds, weights_ds = map(NseUtils.xarraylike_to_dataset, (fcst, obs, weights))
 
-            .. note::
-
-                names are obscured if dataarray since the final name will be replaced
-                by "nse" instead - these datasets are transient objects. This
-                simplifies the need to deal with names.
-            """
-            if _xrlike is None:
-                return None
-            # default - assume no lifting to dataset needed
-            _ret = _xrlike
-            if is_dataarray:
-                # if its an array change it to a dataset, giving it a temporary name
-                assert isinstance(_ret, xr.DataArray)
-                return _ret.to_dataset(name=NseUtils._DATAARRAY_TEMPORARY_NAME)
-            return _ret
-
-        fcst_ds, obs_ds, weights_ds = map(_to_ds, (fcst, obs, weights))
+        # same types already enforced above so just arbitrarily test fcst
+        is_dataarray = isinstance(fcst_ds, xr.DataArray)
 
         return NseMetaInput(
             datasets=NseDatasets(
@@ -486,37 +480,106 @@ class NseUtils:
             is_dataarray=is_dataarray,
         )
 
+    def xarraylike_to_dataset(xrlike: XarrayLike) -> xr.Dataset:
+        """
+        Helper that promotes dataarrays to datasets or does nothing if None or a dataset is given.
+
+        .. note ::
+
+            operations between dataarrays are not guarenteed to preserve names. If the user is
+            working with dataarrays, it is assumed that preserving names is not a major requirement
+            (unlike datasets).
+        """
+        ret_ds = xrlike
+
+        if isinstance(xrlike, xr.DataArray):
+            # keep original name for assertion - see below
+            original_name = xrlike.name
+
+            # obfuscate the name of the dataarray when it is promoted to dataset so that operations
+            # can broadcast with each other. NOTE: this doesn't actually change the name of the
+            # underlying data array.
+            ret_ds = xrlike.to_dataset(name=NseUtils._DATAARRAY_TEMPORARY_NAME)
+
+            # assertion below to make sure this behaviour does not change between xarray versions.
+            # assert that referenced dataarray still has the same name.
+            assert xrlike.name == original_name
+
+        return ret_ds
+
+    @staticmethod
+    def dataset_has_single_key(ds: xr.Dataset) -> bool:
+        """
+        Helper that checks that a dataset only has single key - used mostly for checking dataarrays
+        that have been promoted to datasets.
+        """
+        has_single_key = len(meta_score.components.nse.data_vars.keys()) == 1
+        return has_single_key
+
     @staticmethod
     def check_metadata_consistency(
-        metainput: NseMetaInput,
-        metascore: NseMetaScore,
-    ): ...  # TODO
+        meta_score: NseMetaScore,
+        ref_meta_input: NseMetaInput,
+    ):
+        """
+        Checks against corruption of data. This usually cannot happen unless there is a bug in the
+        code that tries to copy and replace one of the named tuples - normally their shallow
+        properties shouldn't be mutable.
+
+        Raises:
+            RuntimeError: If a corruption is detected this is critical failure. User will be
+                prompted to create a github issue, so a developer can address it.
+        """
+        corrupt = False
+
+        if meta_score.is_dataarray != ref_meta_input.is_dataarray:
+            corrupt = True
+
+        # A dataset produced from a dataarray must only have one key
+        if meta_score.is_dataarray:
+            all_single_key = all(
+                map(
+                    lambda _f: NseUtils.dataset_has_single_key(getattr(meta_score.components, _f)),
+                    meta_score.components._fields,
+                )
+            )
+            if not all_single_key:
+                corrupt = True
+
+        if corrupt:
+            raise RuntimeError(NseUtils.ERROR_CORRUPT_METADATA)
 
     @staticmethod
     def extract_result_from_metascore(
-        metascore: NseMetaScore,
+        meta_score: NseMetaScore,
+        ref_meta_input: NseMetaInput,
     ) -> XarrayLike:
         """
-        Runs the scorer to compute nse and use metadata from NseMetaInput to return the
-        result to its original xarraylike.
+        If inputs were originally dataarrays, downgrades the score to a dataarray, naming it with
+        the score i.e. "NSE".
 
-        Its name is forced to "nse" for simplicity, rather than having to resolve name compatibility
-        and conflicts. If this is an issue - the user is encouraged to use datasets natively - see
-        tips in the public API docstrings.
+        Otherwise returns the score as is (as a dataset)
 
-        DataArrays operate against themselves regardless of name anyway, and whether or not they
-        preserve their name is very operation dependent.
+        Checks that the meta score is consistent with the meta input - i.e. no corruption has
+        happened to the underlying datasets or metadata. see: ``check_metadata_consistency``
+
+        Args:
+            meta_score: the meta score to extract the raw NSE score from
+            ref_meta_input: reference to the meta input for checking consistency
         """
-        if metads.is_dataarray:
-            # demote if originally a data array, must have only one key if this is the case
-            da_keys = list(result.data_vars.keys())
-            if len(da_keys) != 1:
-                raise RuntimeError(NseUtils.ERROR_DATAARRAY_NOT_MAPPED_TO_SINGLE_KEY)
-            result = result.data_vars[da_keys[0]]
-            if metads.is_dummyname:
-                result.name = None
+        NseUtils.check_metadata_consistency(meta_score, ref_meta_input)
 
-        return result
+        ret_nse = meta_score.components.nse
+
+        # demote if originally a data array and force the name to "NSE"
+        if meta_score.is_dataarray:
+            # safety: assert single key - this should already have been checked above
+            #         dev/testing only
+            assert NseUtils.dataset_has_single_key(meta_score.components.nse)
+            keys_copy = list(meta_score.components.nse.keys())
+            ret_nse = ret_nse.data_vars[keys_copy[0]]
+
+        return ret_nse
 
     @staticmethod
     def check_and_gather_dimensions(
@@ -528,8 +591,14 @@ class NseUtils:
     ) -> FlexibleDimensionTypes:
         """
         Checks the dimension compatibilty of the various input arguments.
+            - offloads dimensions checks to generic utility ``gather_dimensions`` does
+            - the above is also used to gather dimensions.
+            - checks that the input weights are conformant
+            - checks that the reduced dimensions have at least one value, otherwise NSE cannot be
+              calculated as it needs ``count(obs) > 1`` along the reduced dimension for variance
+              calculations.
         """
-        weights_dims = None if weights is None else weights.dims
+        weights_dims = getattr(weights, "dims", None)
 
         # perform default gather dimensions
         ret_dims: FlexibleDimensionTypes = gather_dimensions(
@@ -539,6 +608,10 @@ class NseUtils:
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
+
+        # check weights if its provided
+        if weights is not None:
+            check_weights(weights)
 
         merged_sizes: dict[Hashable, int] = NseUtils.merge_sizes(obs, fcst, weights)
 

@@ -514,7 +514,7 @@ class TestNseUtils(NseSetup):
             is_dummyname=False,
         )
 
-        obj_nsescore = nse_impl.NseScore(
+        obj_nsescore = nse(
             fcst=metads.datasets.fcst,
             obs=metads.datasets.obs,
             weights=metads.datasets.weights,
@@ -544,7 +544,7 @@ class TestNseUtils(NseSetup):
             is_dummyname=True,
         )
 
-        obj_nsescore = nse_impl.NseScore(
+        obj_nsescore = nse(
             fcst=metads.datasets.fcst,
             obs=metads.datasets.obs,
             weights=metads.datasets.weights,
@@ -574,7 +574,7 @@ class TestNseUtils(NseSetup):
             is_dummyname=False,
         )
 
-        obj_nsescore = nse_impl.NseScore(
+        obj_nsescore = nse(
             fcst=metads.datasets.fcst,
             obs=metads.datasets.obs,
             weights=metads.datasets.weights,
@@ -962,13 +962,13 @@ class TestNseScore(NseSetup):
         # ---------------------------------------
         # expose score values by assigning them to the class
         # these (lazy) computations are used for most tests
-        cls.nse_score = nse_impl.NseScore(
+        cls.nse_score = nse(
             fcst=cls.ds_fcst,
             obs=cls.ds_obs,
             reduce_dims=cls.reduce_dims,
         )
 
-        cls.nse_score_weights = nse_impl.NseScore(
+        cls.nse_score_weights = nse(
             fcst=cls.ds_fcst,
             obs=cls.ds_obs,
             weights=cls.ds_weights,

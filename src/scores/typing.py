@@ -4,23 +4,23 @@ a consistent approach to typing is handled.
 """
 
 from collections.abc import Hashable, Iterable
-from typing import TypeAlias, TypeGuard, Union
+from typing import TypeGuard, Union
 
 import pandas as pd
 import xarray as xr
 
 # FlexibleDimensionTypes should be used for preserve_dims and reduce_dims in
 # all cases across the repository.
-FlexibleDimensionTypes: TypeAlias = Iterable[Hashable]
+FlexibleDimensionTypes = Iterable[Hashable]
 
 # Xarraylike data types should be used for all forecast, observed and weights.
 # However, currently some are specified as DataArray only.
-XarrayLike: TypeAlias = Union[xr.DataArray, xr.Dataset]
+XarrayLike = Union[xr.DataArray, xr.Dataset]
 
 # FlexibleArrayType *may* be used for various arguments across the scores
 # repository; but are not establishing a standard or expectation, beyond the
 # functions in which they are used.
-FlexibleArrayType: TypeAlias = Union[XarrayLike, pd.Series]
+FlexibleArrayType = Union[XarrayLike, pd.Series]
 
 
 def is_flexibledimensiontypes(

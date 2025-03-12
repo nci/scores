@@ -25,7 +25,7 @@ from scores.continuous.standard_impl import (
     pbias,
     rmse,
 )
-from scores.continuous.standard_impl.nse_impl import nse
+from scores.continuous.nse_impl import nse
 from scores.continuous.threshold_weighted_impl import (
     tw_absolute_error,
     tw_expectile_score,
