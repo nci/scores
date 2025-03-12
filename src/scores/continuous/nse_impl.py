@@ -91,17 +91,21 @@ def nse(
             prompted to report this as a github issue.
 
     Supplementary details:
+
         - Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the closer to 1, the more
           accurate the model is.
             - NSE = 1, corresponds to a perfect match of the model to the obs.
             - NSE = 0, indicates that the model is as accurate as the mean obs.
             - -Inf < NSE < 0, indicates that the mean obs is better predictor than the model.
+
         - The optional ``weights`` argument can additionally be used to perform a weighted NSE
           (wNSE). Although, this is a generic set of weights, and it is the _user's responsiblility_
           to define them appropriately. Typically this is the observation itself (Hundecha, Y., &
           Bárdossy, A., 2004).
+
         - ``weights`` must be non-negative. Therefore, the observations must ideally also be
           non-negative (or formulated appropriately) if used as weights.
+
         - While ``is_angular`` is typically not used for this score, NSE is generic enough that it
           _could_ be used in wider context, and hence is kept as an option. It is defaulted to
           ``False`` as that's the typical use-case.
@@ -123,18 +127,13 @@ def nse(
 
     .. note::
 
-        For Hydrology in particular :math:`i = t` i.e. the time dimension. In order to keep things
-        generic, this function does not explicitly require the user to provide a "time" dimension
-        along which to apply the score. Instead, it sets a hard requirement that _at least one_
-        dimension is being reduced from either a specification of ``reduce_dims`` or
+        For Hydrology in particular :math:`i = t` - the reduced dimension is usually the time
+        dimension. However, in order to keep things generic, this function does not explicitly
+        mandate a time dimension be provided. Instead it requires it has a hard requirement that
+        _at least one_ dimension is being reduced from either a specification of ``reduce_dims`` or
         ``preserve_dims`` (mutually exclusive).
 
         The reason is that the observation variance cannot be non-zero if nothing is being reduced.
-
-        If the user is particularly interested in applying the NSE computation over the "time"
-        dimension, they should provide the "time" dimension as one of the elements in the
-        ``reduce_dims`` argument, and ensure that the input datasets and associated variables have
-        this dimension. Or otherwise, omit it from the ``preserve_dims`` argument.
 
         As a side-effect of the above requirement, ``preserve_dims="all"`` is not allowed and will
         naturally throw an error.
@@ -157,35 +156,22 @@ def nse(
             n / 0  =  NaN   : if n == 0  (represented by np.nan)
                    = -Inf   : if n == 0  (represented by -np.inf)
 
-    .. note::
+    .. tip::
 
-        if using dask, no computation should have happened until ``.compute(...)`` is
-        called (similar to any other score).
+        When dealing with dask arrays dask, no computation will happen until ``.compute(...)`` is
+        called on the returned score.
 
     .. tip::
 
-        As a general tip - work with datasets where possible with NSE, or for any score that
-        supports datasets for that matter. Datasets maintain structural integrity better than their
-        dataarray counterparts and also are compatible with higher order types like `xr.DataTree`.
+        Work with datasets where possible with NSE, or for any score that supports datasets for that
+        matter. Datasets maintain structural integrity better than their dataarray counterparts and
+        also are compatible with higher order types like `xr.DataTree`.
 
-        To see why this is recommended, consider that ``xr.DataArray`` does not respect names
-        (worse, its not consistent in whether or not it respects names either depending on the
-        operation and operands). In fact the same argument can trickle down to ``np.array`` which
-        has even less metadata constraints - useful for speed, but not for public API interfaces in
-        scores.
-
-        In particular, when operating with ``xr.Dataset``s, or even other ``xr.DataArray``s for
-        that matter. A named dataarray would broadcast its operations to all variables in the
-        dataset regardless of name - It's unclear if the user wants it or not.
-
-        For example, if the dataarray was originally extracted from a dataset in the first place
-        (and hence named) - we have two sets of different operations that could be equally valid
-        without knowing intent.  One broadcasted, and the other only applying to variables that
-        share the name.
-
-        It is much clearer if the user intentionally works with datasets as this will clarify
-        intent, either by manually broadcasting (using a helper to replicate the data across
-        variables) or refraining from broadcasting because they want the default behaviour.
+        Operations between datasets are more predictable than operations with mixed types.
+        Dataarrays on the other hand may ignore names and broadcast liberally even when names do not
+        match, and this may not be consistent depending on the oepration. This may or may not be the
+        intented behaviour the user expects.  Operations between ONLY dataarrays are fine as long as
+        preserving names is not mandatory.
 
     Examples:
         >>> import numpy as np
@@ -211,7 +197,6 @@ def nse(
                [ 0.70982143,  0.85742188],
                [ 0.70982143,  0.93208333]])
         Dimensions without coordinates: x, y
-        >>>
         >>> # Example 2:
         >>> # reduce over (x, y) - space - should produce a 3x1 representing a time series
         >>> nse(obs, fcst, reduce_dims=["x", "y"])
