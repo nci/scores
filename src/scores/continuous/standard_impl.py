@@ -7,7 +7,6 @@ from typing import Optional, Union
 import numpy as np
 import xarray as xr
 
-import scores.continuous.nse_impl as nse_impl
 import scores.functions
 import scores.utils
 from scores.processing import broadcast_and_match_nan
@@ -562,4 +561,3 @@ def kge(
             }
         )
     return kge_s  # type: ignore
-

@@ -17,7 +17,6 @@ The only publically exposed function should be `nse`.
 import functools
 import warnings
 from collections.abc import Hashable
-from dataclasses import dataclass
 from typing import NamedTuple
 
 import numpy as np
@@ -235,7 +234,8 @@ def nse(
     # safety: assert that the input types are as expected. This is for early failure during
     # dev/testing only when incompatible types are detected at runtime.
     assert (
-        is_xarraylike(obs) and is_xarraylike(fcst)
+        is_xarraylike(obs)
+        and is_xarraylike(fcst)
         # These are optionals (i.e. skipped if None):
         and (weights is None or is_xarraylike(weights))
         and (reduce_dims is None or is_flexibledimensiontypes(reduce_dims))
@@ -244,13 +244,14 @@ def nse(
     )
 
     # do any dimension checks and store the final reduced (gathered) dimensions
-    gathered_dims: FlexibleDimensionTypes = NseUtils.check_and_gather_dimensions(
+    gathered_dims = NseUtils.check_and_gather_dimensions(
         fcst=fcst,
         obs=obs,
         weights=weights,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
+    gathered_dims = list(gathered_dims)
 
     # prepare inputs to pass into internal scoring function - also lifts any
     # dataarrays to datasets storing appropriate metadata to undo this operation in
@@ -267,8 +268,7 @@ def nse(
     meta_score: NseMetaScore = _nse_metascore(meta_input)
 
     # extracts the raw score from the metascore, converting to data array if required
-    nse_result: XarrayLike = NseUtils.extract_result_from_metascore(meta_score)
-
+    nse_result = NseUtils.extract_result_from_metascore(meta_score, meta_input)
     # safety: assert xarraylike before returning. For dev/testing only.
     assert is_xarraylike(nse_result)
 
@@ -324,6 +324,44 @@ class NseMetaInput(NamedTuple):
     is_dataarray: bool
     is_angular: bool
 
+    # NOTE: these methods are read-only, due to Named tuple inheritence:
+
+    def _mse(self, x1: xr.Dataset, x2: xr.Dataset) -> xr.Dataset:
+        """
+        Runs _mse with defaults prefilled from input data.
+
+        This version assumes datasets are passed in.
+
+        The order of x1 and x2 do not matter since mse is a symmetric score.
+        """
+        # safety: dev/testing only
+        assert isinstance(x1, xr.Dataset) and isinstance(x2, xr.Dataset)
+        ret: xr.Dataset = scores.continuous.mse(
+            x1,
+            x2,
+            reduce_dims=self.gathered_dims,
+            weights=self.datasets.weights,
+            is_angular=self.is_angular,
+        )
+        # safety: dev/testing only
+        assert isinstance(ret, xr.Dataset)
+        return ret
+
+    def forecast_error(self) -> xr.Dataset:
+        """
+        Returns the forecast error - calculated using ``scores.continuous.mse``
+        """
+        fcst_error = self._mse(self.datasets.fcst, self.datasets.obs)
+        return fcst_error
+
+    def observation_variance(self) -> xr.Dataset:
+        """
+        Returns the observation variance - calculated using ``scores.continuous.mse``
+        """
+        obs_mean = self.datasets.obs.mean(dim=self.gathered_dims)
+        obs_variance = self._mse(obs_mean, self.datasets.obs)
+        return obs_variance
+
 
 def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
     """
@@ -339,26 +377,24 @@ def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
     """
     # Warning would have been raised by `warn_nonzero_obsvar` instead
     with np.errstate(divide="ignore"):
-        # observation variance computation
-        obs_mean = meta_input.datasets.obs.mean(dim=meta_input.gathered_dims)
-        obs_variance = meta_input.mse_prefilled(obs_mean, meta_input.datasets.obs)
+        fcst_error = meta_input.forecast_error()
+        obs_variance = meta_input.observation_variance()
 
-        # forecast error computation
-        fcst_error = meta_input.mse_prefilled(fcst, obs)
+        # raise error if divide by zero in any element in obs variance
+        NseUtils.warn_nonzero_obsvar(obs_variance)
 
-        # nse computation - raise warning if divide by zero
-        NseUtils.warn_nonzero_obsvar(obs_var)
-        nse = 1.0 - (fcst_err / obs_var)
+        # nse computation
+        _nse: xr.Dataset = 1.0 - (fcst_error / obs_variance)
 
         # store components in NseMetaScore
         meta_score = NseMetaScore(
             components=NseComponents(
-                nse=nse,
-                obs_variance=obs_var,
-                fcst_error=fcst_err,
+                nse=_nse,
+                obs_variance=obs_variance,
+                fcst_error=fcst_error,
             ),
             # propagate required return type
-            is_dataarray=is_dataarray,
+            is_dataarray=meta_input.is_dataarray,
         )
 
         return meta_score
@@ -444,7 +480,7 @@ class NseUtils:
         fcst: XarrayLike,
         obs: XarrayLike,
         weights: XarrayLike,
-        gathered_dims: FlexibleDimensionTypes,
+        gathered_dims: list[Hashable],
         is_angular: bool,
     ) -> NseMetaInput:
         """
@@ -464,10 +500,10 @@ class NseUtils:
         # enforce all of `fcst`, `obs` and (optionally) `weights` have the same type
         NseUtils.check_all_same_type(*[fcst, obs, weights])
 
-        fcst_ds, obs_ds, weights_ds = map(NseUtils.xarraylike_to_dataset, (fcst, obs, weights))
+        # same types already enforced - we can arbitrarily use the type of fcst
+        is_dataarray = isinstance(fcst, xr.DataArray)
 
-        # same types already enforced above so just arbitrarily test fcst
-        is_dataarray = isinstance(fcst_ds, xr.DataArray)
+        fcst_ds, obs_ds, weights_ds = map(NseUtils.xarraylike_to_dataset, (fcst, obs, weights))
 
         return NseMetaInput(
             datasets=NseDatasets(
@@ -480,6 +516,7 @@ class NseUtils:
             is_dataarray=is_dataarray,
         )
 
+    @staticmethod
     def xarraylike_to_dataset(xrlike: XarrayLike) -> xr.Dataset:
         """
         Helper that promotes dataarrays to datasets or does nothing if None or a dataset is given.
@@ -508,13 +545,18 @@ class NseUtils:
         return ret_ds
 
     @staticmethod
-    def dataset_has_single_key(ds: xr.Dataset) -> bool:
+    def try_extract_singleton_dataarray(ds: xr.Dataset) -> xr.DataArray | None:
         """
-        Helper that checks that a dataset only has single key - used mostly for checking dataarrays
-        that have been promoted to datasets.
+        Tries to extract a dataarray if there is only one key.
+
+        Returns xr.DataArray, if a singleton is found
+                None, if multiple dataarrays or dataset is empty i.e. no keys
         """
-        has_single_key = len(meta_score.components.nse.data_vars.keys()) == 1
-        return has_single_key
+        keys_ = list(ds.keys())
+        if len(keys_) == 1:
+            da = ds[keys_[0]]
+            return da
+        return None
 
     @staticmethod
     def check_metadata_consistency(
@@ -535,14 +577,18 @@ class NseUtils:
         if meta_score.is_dataarray != ref_meta_input.is_dataarray:
             corrupt = True
 
-        # A dataset produced from a dataarray must only have one key
+        def _ds_has_single_key(fieldname):
+            """
+            Helper that checks whether a component in meta_score has a single
+            dataarray (as determined by the number of keys in `data_vars` key)
+            """
+            _ds = getattr(meta_score.components, fieldname)
+            _single_key = len(_ds.data_vars.keys()) == 1
+            return _single_key
+
+        # A dataset produced from a dataarray MUST only have ONE data_var key
         if meta_score.is_dataarray:
-            all_single_key = all(
-                map(
-                    lambda _f: NseUtils.dataset_has_single_key(getattr(meta_score.components, _f)),
-                    meta_score.components._fields,
-                )
-            )
+            all_single_key = all(map(_ds_has_single_key, meta_score.components._fields))
             if not all_single_key:
                 corrupt = True
 
@@ -573,11 +619,10 @@ class NseUtils:
 
         # demote if originally a data array and force the name to "NSE"
         if meta_score.is_dataarray:
-            # safety: assert single key - this should already have been checked above
-            #         dev/testing only
-            assert NseUtils.dataset_has_single_key(meta_score.components.nse)
-            keys_copy = list(meta_score.components.nse.keys())
-            ret_nse = ret_nse.data_vars[keys_copy[0]]
+            # returns None if extraction fails
+            ret_nse = NseUtils.try_extract_singleton_dataarray(meta_score.components.nse)
+            # safety: check_metadata_consistency should have already handled this
+            assert ret_nse is not None
 
         return ret_nse
 

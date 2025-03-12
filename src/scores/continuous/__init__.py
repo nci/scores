@@ -14,6 +14,7 @@ from scores.continuous.flip_flop_impl import (
 )
 from scores.continuous.interval_impl import interval_score, quantile_interval_score
 from scores.continuous.murphy_impl import murphy_score, murphy_thetas
+from scores.continuous.nse_impl import nse
 from scores.continuous.quantile_loss_impl import quantile_score
 from scores.continuous.standard_impl import (
     additive_bias,
@@ -25,7 +26,6 @@ from scores.continuous.standard_impl import (
     pbias,
     rmse,
 )
-from scores.continuous.nse_impl import nse
 from scores.continuous.threshold_weighted_impl import (
     tw_absolute_error,
     tw_expectile_score,

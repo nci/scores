@@ -3,6 +3,7 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-locals
 # pylint: disable=too-few-public-methods
+# pylint: disable=protected-access
 """
 Collection of tests for the NSE score, contains:
     - NseSetup: Base class used by all other test classes
@@ -13,7 +14,7 @@ Collection of tests for the NSE score, contains:
     - TestNseDask: Tests compatibility with dask
 """
 import os
-from types import SimpleNamespace
+import typing
 
 import numpy as np
 import pytest
@@ -21,7 +22,6 @@ import xarray as xr
 from numpy import typing as npt
 
 import scores.continuous.nse_impl as nse_impl
-from scores.continuous import mse, nse
 from scores.utils import DimensionError
 
 DASK_AVAILABLE = False
@@ -34,6 +34,37 @@ except ImportError:
     pass
 
 
+# Metafunction used to generate tests from TestClasses
+def pytest_generate_tests(metafunc):
+    """
+    Metafunction that looks through the reserved "params"  arg list of each test class
+
+    Usage ::
+
+        class Test...():
+
+            params = {
+                "test_1": dict(x=1, y=2),
+                ...
+            }
+
+            def test_1(self, x, y):
+                assert y != x
+
+    Taken directly (and adapted slightly) from:
+         doc: https://docs.pytest.org/en/stable/example/parametrize.html
+         section: parametrizing-test-methods-through-per-class-configuration
+    """
+    # called once per each test function
+    if hasattr(metafunc.cls, "params"):
+        funcarglist = metafunc.cls.params[metafunc.function.__name__]
+        argnames = sorted(funcarglist[0])
+        metafunc.parametrize(
+            argnames,
+            [[funcargs[name] for name in argnames] for funcargs in funcarglist],
+        )
+
+
 class NseSetup:
     """
     Base class for NSE tests with some setup and helper functions
@@ -43,7 +74,7 @@ class NseSetup:
 
     @staticmethod
     def make_random_xr_array(
-        shape: tuple[int],
+        shape: tuple[int, ...],
         dim_names: list[str],
         override_seed: int | None = None,
     ) -> xr.DataArray:
@@ -124,148 +155,219 @@ class TestNsePublicApi(NseSetup):
     tests ``TestNseScore`` is more suited.
     """
 
-    @classmethod
-    def setup_class(cls):
-        """
-        Common data to be reused by the rest of this class
-        """
-        # --- input arrays ---
-        # make the default obs/fcst have different seeds so we don't get back the same array.
-        # default obs
-        cls.obs = NseSetup.make_random_xr_array(
-            shape=(4, 2, 3),
-            dim_names=["t", "x", "y"],
-            override_seed=42,
-        )
-        # default fcst
-        cls.fcst = NseSetup.make_random_xr_array(
-            shape=(4, 2, 3),
-            dim_names=["t", "x", "y"],
-            override_seed=24,
-        )
-        # bad obs name
-        # note: all the names must be wrong, if some names are correct
-        cls.obs_badnames = NseSetup.make_random_xr_array(
-            shape=(4, 2, 3),
-            dim_names=["t_bad", "x_bad", "y_bad"],
-        )
-        # incorrect dim sizes between arrays (non broadcastable)
-        cls.obs_baddimsizes = NseSetup.make_random_xr_array(
-            shape=(5, 1, 2),
-            dim_names=["t", "x", "y"],
-        )
+    _OBS_DEFAULT = NseSetup.make_random_xr_array(
+        shape=(4, 2, 3),
+        dim_names=["t", "x", "y"],
+        override_seed=42,
+    )
+    _FCST_DEFAULT = NseSetup.make_random_xr_array(
+        shape=(4, 2, 3),
+        dim_names=["t", "x", "y"],
+        override_seed=42,
+    )
+    _OBS_WRONG_DIMNAMES = NseSetup.make_random_xr_array(
+        shape=(4, 2, 3),
+        dim_names=["t_bad", "x_bad", "y_bad"],
+    )
+    _OBS_WRONG_DIMSIZES = NseSetup.make_random_xr_array(
+        shape=(5, 1, 2),
+        dim_names=["t", "x", "y"],
+    )
+    _OBS_INSUFFICIENT_DATA = NseSetup.make_random_xr_array(
+        shape=(4, 1, 1),
+        dim_names=["t", "x", "y"],
+        override_seed=42,
+    )
+    _FCST_INSUFFICIENT_DATA = NseSetup.make_random_xr_array(
+        shape=(4, 1, 1),
+        dim_names=["t", "x", "y"],
+        override_seed=24,
+    )
+    _WEIGHTS_DEFAULT = NseSetup.make_random_xr_array(
+        shape=(4, 2),
+        dim_names=["t", "x"],
+    )
+    _WEIGHTS_DEFAULT.loc[dict(x=1, t=0)] = 0.0
+    _WEIGHTS_DEFAULT.loc[dict(t=1, x=0)] = np.nan
+    _WEIGHTS_NEGATIVE = _WEIGHTS_DEFAULT.copy(deep=True)
+    _WEIGHTS_NEGATIVE.loc[dict(t=0, x=0)] = -1.0
+    _WEIGHTS_ALLZEROS = _WEIGHTS_DEFAULT.copy(
+        deep=True,
+        data=np.zeros(_WEIGHTS_DEFAULT.shape),
+    )
+    _WEIGHTS_ALLNANS = _WEIGHTS_DEFAULT.copy(
+        deep=True,
+        data=np.full(_WEIGHTS_DEFAULT.shape, fill_value=np.nan),
+    )
+    _OBS_DIVIDE_BY_ZERO = _OBS_DEFAULT.copy(deep=True)
+    _OBS_DIVIDE_BY_ZERO.loc[dict(t=1)] = 42.123
+    _FCST_DIVIDE_BY_ZERO = _FCST_DEFAULT.copy(deep=True)
+    _FCST_DIVIDE_BY_ZERO.loc[dict(t=1)] = 42.123
 
-        # --- dimension specification ---
-        # good dimension specifications
-        cls.reduce_dim_string = "t"  # should give (x, y) array
-        cls.reduce_dims_list = ["t", "x"]  # should give (y, 1) array
-        cls.reduce_dim_all = "all"  # single value output
-        cls.preserve_dim_string = "y"  # should give (y, 1) array
-        cls.preserve_dim_list = ["x", "y"]  # should give (x, y) array
-        # bad dimension specifications
-        cls.preserve_dim_all1 = "all"  # NSE cannot be computed, no dimensions reduced
-        cls.preserve_dim_all2 = ["x", "y", "t"]  # ditto above
-        cls.reduce_dims_none = []  # ditto above
+    # reserved pytest name to dispatch params to tests
+    params = {
+        "test_error_incompatible_dims": [
+            # incompatible dimension names
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_WRONG_DIMNAMES,
+                reduce_dims=None,
+                preserve_dims=None,
+                expect_context=pytest.raises(ValueError),
+            ),
+            # incompatible dimension sizes
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_WRONG_DIMSIZES,
+                reduce_dims="t",
+                preserve_dims=None,
+                expect_context=pytest.raises(ValueError),
+            ),
+            # preserve all
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                reduce_dims=None,
+                preserve_dims="all",
+                expect_context=pytest.raises(DimensionError),
+            ),
+            # preserve all (explicitly specified)
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                reduce_dims=None,
+                preserve_dims=["x", "y", "t"],
+                expect_context=pytest.raises(DimensionError),
+            ),
+            # no dims reduced - essentially the same as preserve all
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                reduce_dims=[],
+                preserve_dims=None,
+                expect_context=pytest.raises(DimensionError),
+            ),
+            # overspecified - in theory this is valid, but in practice scores does
+            # not attempt to resolve both reduce_dims AND preserve_dims - mutually
+            # exclusive.
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                reduce_dims="t",
+                preserve_dims=["x", "y"],
+                expect_context=pytest.raises(ValueError),
+            ),
+        ],
+        "test_error_insufficient_data": [
+            dict(
+                fcst=_FCST_INSUFFICIENT_DATA,
+                obs=_OBS_INSUFFICIENT_DATA,
+                reduce_dims=["x", "y"],
+            ),
+        ],
+        "test_error_invalid_weights": [
+            # any negative
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                weights=_WEIGHTS_NEGATIVE,
+                reduce_dims=["x", "t"],
+            ),
+            # all zeros
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                weights=_WEIGHTS_ALLZEROS,
+                reduce_dims=["x", "t"],
+            ),
+            # all nans
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                weights=_WEIGHTS_ALLNANS,
+                reduce_dims=["x", "t"],
+            ),
+        ],
+        "test_warn_divide_by_zero": [
+            # 0 / 0 => should fill with nan
+            dict(
+                fcst=_FCST_DIVIDE_BY_ZERO,
+                obs=_OBS_DIVIDE_BY_ZERO,
+                reduce_dims=["x", "y"],
+                both_zero=True,
+            ),
+            # a / 0 where a > 0 => should fill with -inf
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DIVIDE_BY_ZERO,
+                reduce_dims=["x", "y"],
+                both_zero=False,
+            ),
+        ],
+        "test_nse_no_error_no_warn": [
+            # test no options
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                nse_kwargs={},
+                expect_dims=[],
+                expect_shape=(1,),
+            ),
+            # test multiple options
+            dict(
+                fcst=_FCST_DEFAULT,
+                obs=_OBS_DEFAULT,
+                nse_kwargs=dict(
+                    weights=np.abs(_OBS_DEFAULT),
+                    reduce_dims=None,
+                    preserve_dims=["x", "y"],
+                    is_angular=False,
+                ),
+                expect_dims=["x", "y"],
+                expect_shape=(2, 3),
+            ),
+            # test angular
+            dict(
+                fcst=_FCST_DEFAULT * 360,
+                obs=_OBS_DEFAULT * 360,
+                nse_kwargs=dict(reduce_dims="t", is_angular=True),
+                expect_dims=["x", "y"],
+                expect_shape=(2, 3),
+            ),
+        ],
+    }
 
-        # --- insufficient data to reduce ---
-        cls.obs_insufficient_data = NseSetup.make_random_xr_array(
-            shape=(4, 1, 1),
-            dim_names=["t", "x", "y"],
-            override_seed=42,
-        )
-        cls.fcst_insufficient_data = NseSetup.make_random_xr_array(
-            shape=(4, 1, 1),
-            dim_names=["t", "x", "y"],
-            override_seed=24,
-        )
-        cls.reduce_dims_insufficient_data = ["x", "y"]
-
-        # --- weights ---
-        # default weights
-        #   NOTE: ideally weights should be specified explicitly for each index, but broadcasting is
-        #   currently allowed (and potentially okay, as long as the dimension shapes conform for
-        #   the specified axes.)
-        cls.weights = NseSetup.make_random_xr_array(
-            shape=(4, 2),
-            dim_names=["t", "x"],
-        )
-        # these should still work, as "nan" acts as exclusion and 0 acts as zero-forcing
-        cls.weights.loc[dict(x=1, t=0)] = 0.0  # make one of the weights 0
-        cls.weights.loc[dict(t=1, x=0)] = np.nan  # make one of the weights np.nan
-        # failure conditions for weights
-        cls.negative_weights = cls.weights.copy(deep=True)
-        cls.negative_weights.loc[dict(t=0, x=0)] = -1.0  # make one of the weights negative
-        cls.allzero_weights = cls.weights.copy(
-            deep=True,
-            data=np.zeros(cls.weights.shape),
-        )
-        cls.allnan_weights = cls.weights.copy(
-            deep=True,
-            data=np.full(cls.weights.shape, fill_value=np.nan),
-        )
-
-        # --- divide by zero ---
-        # set the value along one index of the dimension being reduced: "x,y" , as all one
-        # this will force a divide by zero error in one entry in the resulting array, which should
-        # still allow the calculation to be completed.
-        cls.reduce_dims_divide_by_zero = ["x", "y"]
-        # obs_divide_by_zero v.s. fcst (default) = -np.inf only on the plane where this happens
-        cls.obs_divide_by_zero = cls.obs.copy(deep=True)
-        cls.obs_divide_by_zero.loc[dict(t=1)] = 42.123
-        # obs_divide_by_zero v.s. fcst_divide_by_zero = np.nan, ditto above
-        cls.fcst_divide_by_zero = cls.fcst.copy(deep=True)
-        cls.fcst_divide_by_zero.loc[dict(t=1)] = 42.123
-
-    def test_error_incompatible_fcst_obs_dimnames(self):
+    def test_error_incompatible_dims(
+        self,
+        fcst,
+        obs,
+        reduce_dims,
+        preserve_dims,
+        expect_context,
+    ):
         """
-        If there are no common dimension names we should expect a ValueError
+        Tests dimension incompatibility raises errors
         """
-        with pytest.raises(ValueError):
-            nse(self.fcst, self.obs_badnames)
-
-    def test_error_incompatible_dimsizes(self):
-        """
-        If the dimension sizes don't match we should expect a ValueError
-        """
-        with pytest.raises(ValueError):
-            nse(self.fcst, self.obs_baddimsizes, reduce_dims=self.reduce_dim_string)
-
-    def test_error_invalid_dims_specification(self):
-        """
-        A battery of tests to check for invalid input specifications for preserve_dims and
-        reduce_dims.
-        """
-        # preserve=all
-        with pytest.raises(DimensionError):
-            nse(self.fcst, self.obs, preserve_dims=self.preserve_dim_all1)
-        # essentially the same as above but explicitly specified - see class setup
-        with pytest.raises(DimensionError):
-            nse(self.fcst, self.obs, preserve_dims=self.preserve_dim_all2)
-        # reduce_dims is empty - also essentially the same
-        with pytest.raises(DimensionError):
-            nse(self.fcst, self.obs, reduce_dims=self.reduce_dims_none)
-        # both options specified (safety check) - note: overspecified args (i.e. both reduce_dims and preserve_dims) is a ValueError
-        with pytest.raises(ValueError):
-            nse(
-                self.fcst,
-                self.obs,
-                reduce_dims=self.reduce_dim_string,
-                preserve_dims=self.preserve_dim_list,
+        with expect_context:
+            nse_impl.nse(
+                fcst,
+                obs,
+                reduce_dims=reduce_dims,
+                preserve_dims=preserve_dims,
             )
 
-    def test_error_reduced_dims_not_enough_data_for_obs_variance(self):
+    def test_error_insufficient_data(self, fcst, obs, reduce_dims):
         """
-        Should raise DimensionError if the theres only one item to be reduced, as this cannot be
-        used to compute the observation variance, making the score useless.
+        Should raise DimensionError if the theres only one item to be reduced, as
+        this cannot be used to compute the observation variance (=0 with one item,
+        and guarenteed to cause every field to divide by zero), this means the score
+        will not produce anything meaningful - so an error is thrown to show this is
+        the case.
         """
         with pytest.raises(DimensionError):
-            nse(
-                self.fcst_insufficient_data,
-                self.obs_insufficient_data,
-                reduce_dims=self.reduce_dims_insufficient_data,
-            )
+            nse_impl.nse(fcst, obs, reduce_dims=reduce_dims)
 
-    def test_error_invalid_weights(self):
+    def test_error_invalid_weights(self, fcst, obs, weights, reduce_dims):
         """
         Should raise an error if weights:
             - contain a negative element, and the following cases raise errors in case of
@@ -274,28 +376,14 @@ class TestNsePublicApi(NseSetup):
             - are all zeros (everything is zero forced - score is NaN)
         """
         with pytest.raises(ValueError):
-            nse(
-                self.fcst,
-                self.obs,
-                weights=self.negative_weights,
-                reduce_dims=self.reduce_dims_list,
-            )
-        with pytest.raises(ValueError):
-            nse(
-                self.fcst,
-                self.obs,
-                weights=self.allnan_weights,
-                reduce_dims=self.reduce_dims_list,
-            )
-        with pytest.raises(ValueError):
-            nse(
-                self.fcst,
-                self.obs,
-                weights=self.allzero_weights,
-                reduce_dims=self.reduce_dims_list,
+            nse_impl.nse(
+                fcst,
+                obs,
+                weights=weights,
+                reduce_dims=reduce_dims,
             )
 
-    def test_warn_divide_by_zero(self):
+    def test_warn_divide_by_zero(self, fcst, obs, reduce_dims, both_zero):
         """
         Should warn when divide by zero error happens, but not raise an error, tests two cases:
             - when both obs and fcst are 0 - should have a NaN result
@@ -303,54 +391,27 @@ class TestNsePublicApi(NseSetup):
         """
         # should have one fabricated -Inf entry at t=1
         with pytest.warns(UserWarning):
-            ret = nse(
-                self.fcst,
-                self.obs_divide_by_zero,
-                reduce_dims=self.reduce_dims_divide_by_zero,
+            ret = nse_impl.nse(
+                fcst,
+                obs,
+                reduce_dims=reduce_dims,
             )
-            assert np.any(np.isneginf(ret[1]))
-        # should have one fabricated NaN entry at t=1
-        with pytest.warns(UserWarning):
-            ret = nse(
-                self.fcst_divide_by_zero,
-                self.obs_divide_by_zero,
-                reduce_dims=self.reduce_dims_divide_by_zero,
-            )
-            assert np.any(np.isnan(ret[1]))
+            if both_zero:
+                assert np.any(np.isnan(ret[1]))
+            else:
+                assert np.any(np.isneginf(ret[1]))
 
-    def test_minimal_default_behaviour(self):
+    def test_nse_no_error_no_warn(self, fcst, obs, nse_kwargs, expect_dims, expect_shape):
         """
-        Tests minimal NSE score function
+        Tests the typical behaviour of NSE with some different argument combinations
+        - should not raise any warnings or errors.
         """
-        # reduce_dims and preserve_dims = None => everything reduced
-        ret = nse(self.fcst, self.obs)
+        ret = nse_impl.nse(fcst, obs, **nse_kwargs)
         assert np.all(ret <= 1.0)
-
-    def test_default_behaviour_with_kitchen_sink(self):
-        """
-        Tests NSE score function with all args/kwargs
-        """
-        # using obs as weights is quite common
-        ret = nse(
-            self.fcst,
-            self.obs,
-            weights=np.abs(self.obs),
-            reduce_dims=None,
-            preserve_dims=["x", "y"],
-            is_angular=False,
-        )
-        # expect x by y array returned
-        assert "x" in ret.dims
-        assert "y" in ret.dims
-        assert ret.shape == (2, 3)
-        assert np.all(ret <= 1.0)
-
-    def test_default_with_angular_data(self):
-        """
-        Tests NSE score function with angular data
-        """
-        ret = nse(self.fcst * 360, self.obs * 360, reduce_dims="t", is_angular=True)
-        assert np.all(ret <= 1.0)
+        assert isinstance(ret, xr.DataArray)
+        if len(expect_dims) > 0:
+            assert ret.shape == expect_shape
+            assert all(d in ret.dims for d in expect_dims)
 
 
 class TestNseUtils(NseSetup):
@@ -358,6 +419,160 @@ class TestNseUtils(NseSetup):
     NOTE: most of NseUtils is tested by the public API test suite and is not repeated here.
     Only things missed by the public API test suite will be covered here.
     """
+
+    params = {
+        "test_try_extract_singleton_dataarray": [
+            # empty - should not return anything
+            dict(ds=xr.Dataset(), expect_da=None),
+            # multiple dataarrays should not return anything
+            dict(ds=xr.Dataset(dict(x=xr.DataArray([1]), y=xr.DataArray([1]))), expect_da=None),
+            # single dataarrays should return:
+            # Using fully specified array - to check that dims/coordinates and
+            # metadata do not affect extraction of ``keys``
+            # i.e. only FOO should count as a key
+            dict(
+                ds=xr.Dataset(
+                    data_vars=dict(FOO=xr.DataArray([1, 2, 3, 4, 5], dims="x")),
+                    coords={"x": ["I", "AM", "NOT", "A", "KEY"]},
+                    attrs=dict(description="I should not be counted as a key either"),
+                ),
+                expect_da=xr.DataArray(
+                    [1, 2, 3, 4, 5],
+                    name="FOO",
+                    coords={"x": ["I", "AM", "NOT", "A", "KEY"]},
+                ),
+            ),
+        ],
+        # unparametrized
+        "test_check_all_same_type_error": [{}],
+        # unparametrized
+        "test_check_all_same_type_none_ignored": [{}],
+        "test_check_metadata_consistency_error": [
+            # is_dataarray do not match
+            dict(
+                meta_score=nse_impl.NseMetaScore(
+                    components=nse_impl.NseComponents(
+                        fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        # give it a value in case nse check happens first:
+                        nse=xr.Dataset(dict(x=xr.DataArray([1]))),
+                    ),
+                    is_dataarray=False,  # >>> checking for this
+                ),
+                meta_input=nse_impl.NseMetaInput(
+                    datasets=[],  # type: ignore
+                    gathered_dims=[],  # type: ignore
+                    is_angular=False,  # doesn't matter
+                    is_dataarray=True,  # >>> checking for this
+                ),
+            ),
+            # is_dataarray do not match - flipped
+            dict(
+                meta_score=nse_impl.NseMetaScore(
+                    components=nse_impl.NseComponents(
+                        fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        # give it a valid value in case nse check happens first:
+                        nse=xr.Dataset(dict(x=xr.DataArray([1]))),
+                    ),
+                    is_dataarray=True,  # >>> checking for this
+                ),
+                meta_input=nse_impl.NseMetaInput(
+                    datasets=[],  # type: ignore
+                    gathered_dims=[],  # type: ignore
+                    is_angular=False,
+                    is_dataarray=False,  # >>> checking for this
+                ),
+            ),
+            # is data array but has multiple keys
+            dict(
+                meta_score=nse_impl.NseMetaScore(
+                    components=nse_impl.NseComponents(
+                        fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        # >>> checking for this: multiple keys
+                        nse=xr.Dataset(dict(x=xr.DataArray([1]), y=xr.DataArray([2]))),
+                    ),
+                    is_dataarray=True,
+                ),
+                meta_input=nse_impl.NseMetaInput(
+                    datasets=[],  # type: ignore
+                    gathered_dims=[],  # type: ignore
+                    is_angular=False,  # doesn't matter
+                    is_dataarray=True,
+                ),
+            ),
+            # is data array but has no keys
+            dict(
+                meta_score=nse_impl.NseMetaScore(
+                    components=nse_impl.NseComponents(
+                        fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        # >>> checking for this: empty
+                        nse=xr.Dataset(),
+                    ),
+                    is_dataarray=True,
+                ),
+                meta_input=nse_impl.NseMetaInput(
+                    datasets=[],  # type: ignore
+                    gathered_dims=[],  # type: ignore
+                    is_angular=False,  # doesn't matter
+                    is_dataarray=True,
+                ),
+            ),
+        ],
+        "test_check_metadata_consistency_okay": [
+            # both datasets - nothing to check/not possible to detect errors
+            dict(
+                meta_score=nse_impl.NseMetaScore(
+                    components=nse_impl.NseComponents(
+                        fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        # give it a value in case nse check happens first:
+                        nse=xr.Dataset(dict(x=xr.DataArray([1]))),
+                    ),
+                    is_dataarray=False,  # >>> checking for this
+                ),
+                meta_input=nse_impl.NseMetaInput(
+                    datasets=[],  # type: ignore
+                    gathered_dims=[],  # type: ignore
+                    is_angular=False,  # doesn't matter
+                    is_dataarray=False,  # >>> checking for this
+                ),
+            ),
+            # both is_dataarray and score only has one key
+            dict(
+                meta_score=nse_impl.NseMetaScore(
+                    components=nse_impl.NseComponents(
+                        fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
+                        # >>> checking for this:
+                        nse=xr.Dataset(dict(x=xr.DataArray([1]))),
+                    ),
+                    is_dataarray=True,  # >>> checking for this
+                ),
+                meta_input=nse_impl.NseMetaInput(
+                    datasets=[],  # type: ignore
+                    gathered_dims=[],  # type: ignore
+                    is_angular=False,  # doesn't matter
+                    is_dataarray=True,  # >>> checking for this
+                ),
+            ),
+        ],
+    }
+
+    def test_try_extract_singleton_dataarray(self, ds, expect_da):
+        """
+        Try to extract from dataset with multiple keys or no keys - should trigger an
+        error.
+        """
+        maybe_da = nse_impl.NseUtils.try_extract_singleton_dataarray(ds)
+
+        if expect_da is None:
+            assert maybe_da is None
+        else:
+            assert isinstance(maybe_da, xr.DataArray)
+            assert maybe_da.identical(expect_da)
 
     def test_check_all_same_type_error(self):
         """
@@ -379,252 +594,22 @@ class TestNseUtils(NseSetup):
             None,
         )
 
-    @pytest.mark.parametrize(
-        "datasets,is_dataarray,is_dummyname,expect_name,num_da",
-        [
-            # all dataarrays - all unnamed - dummy name
-            (
-                (
-                    xr.DataArray([1, 2]),
-                    xr.DataArray([3, 4]),
-                    xr.DataArray([1, 0]),
-                ),
-                True,
-                True,
-                "__NONAME",
-                1,
-            ),
-            # one dataarray unnamed - dummy name
-            (
-                (
-                    xr.DataArray([1, 2], name="x"),
-                    xr.DataArray([3, 4], name="x"),
-                    xr.DataArray([1, 0]),
-                ),
-                True,
-                True,
-                "__NONAME",
-                1,
-            ),
-            # all dataarray same name - should retain name
-            (
-                (
-                    xr.DataArray([1, 2], name="Potato"),
-                    xr.DataArray([3, 4], name="Potato"),
-                    xr.DataArray([1, 0], name="Potato"),
-                ),
-                True,
-                False,
-                "Potato",
-                1,
-            ),
-            # all dataarray named but one different - dummyname
-            (
-                (
-                    xr.DataArray([1, 2], name="Potato"),
-                    xr.DataArray([3, 4], name="Potato"),
-                    xr.DataArray([1, 0], name="Tapioca"),
-                ),
-                True,
-                True,
-                "__NONAME",
-                1,
-            ),
-            # all datasets
-            (
-                (
-                    xr.Dataset(
-                        dict(
-                            Potato=xr.DataArray([4, 5]),
-                            Tomato=xr.DataArray([3, 4]),
-                            Tapioca=xr.DataArray([3, 4]),
-                        ),
-                    ),
-                    xr.Dataset(
-                        dict(
-                            Potato=xr.DataArray([3, 4]),
-                            Tomato=xr.DataArray([2, 3]),
-                            Tapioca=xr.DataArray([2, 4]),
-                        ),
-                    ),
-                    xr.Dataset(dict(Potato=xr.DataArray([1, 1]), Tomato=xr.DataArray([1, 0]))),
-                ),
-                False,
-                False,
-                # Tapioca should be ignored
-                ["Potato", "Tomato"],
-                2,
-            ),
-            # weights is None
-            (
-                (
-                    xr.Dataset(dict(Potato=xr.DataArray([1, 2]), Tomato=xr.DataArray([2, 4]))),
-                    xr.Dataset(dict(Potato=xr.DataArray([3, 4]), Tomato=xr.DataArray([2, 3]))),
-                    None,
-                ),
-                False,
-                False,
-                ["Potato", "Tomato"],
-                2,
-            ),
-        ],
-    )
-    def test_make_metadataset(
-        self,
-        datasets,
-        is_dataarray,
-        is_dummyname,
-        expect_name,
-        num_da,
-    ):
+    def test_check_metadata_consistency_error(self, meta_score, meta_input):
         """
-        Tests making metadataset from xarralike
+        Fail condition
+            - One is a datarray but other isn't
+            - Both are datasets but score has either no keys or multiple keys
         """
-        metads = nse_impl.NseUtils.make_metadataset(
-            fcst=datasets[0],
-            obs=datasets[1],
-            weights=datasets[2],
-        )
-        assert metads.is_dataarray == is_dataarray
-        assert metads.is_dummyname == is_dummyname
-        # simulate apply weights using mse
-        res = mse(
-            metads.datasets.fcst,
-            metads.datasets.obs,
-            weights=metads.datasets.weights,
-        )
-        da_names = list(res.keys())
-        assert len(da_names) == num_da
-        if is_dataarray:
-            assert da_names[0] == expect_name
-        else:
-            assert expect_name == da_names
-
-    def test_run_nsescore_and_undo_metadataset_dataset(self):
-        """
-        Test running score and undoing metadataset operations
-        """
-        metads = nse_impl.NseMetaDataset(
-            datasets=nse_impl.NseDatasets(
-                fcst=xr.Dataset(dict(Tapioca=xr.DataArray([1, 3], dims="x"))),
-                obs=xr.Dataset(dict(Tapioca=xr.DataArray([1, 5], dims="x"))),
-                weights=None,
-            ),
-            is_dataarray=False,
-            is_dummyname=False,
-        )
-
-        obj_nsescore = nse(
-            fcst=metads.datasets.fcst,
-            obs=metads.datasets.obs,
-            weights=metads.datasets.weights,
-        )
-
-        ret = nse_impl.NseUtils.run_nsescore_and_undo_metadataset(
-            obj_nsescore,
-            metads,
-        )
-
-        # should be a data array
-        assert isinstance(ret, xr.Dataset)
-        # should have data_vars and an entry for Tapioca
-        assert "Tapioca" in ret.data_vars.keys()
-
-    def test_run_nsescore_and_undo_metadataset_dataarray_noname(self):
-        """
-        Run test case with no name
-        """
-        metads = nse_impl.NseMetaDataset(
-            datasets=nse_impl.NseDatasets(
-                fcst=xr.Dataset(dict(__NONAME=xr.DataArray([1, 3], dims="x"))),
-                obs=xr.Dataset(dict(__NONAME=xr.DataArray([1, 5], dims="x"))),
-                weights=None,
-            ),
-            is_dataarray=True,
-            is_dummyname=True,
-        )
-
-        obj_nsescore = nse(
-            fcst=metads.datasets.fcst,
-            obs=metads.datasets.obs,
-            weights=metads.datasets.weights,
-        )
-
-        ret = nse_impl.NseUtils.run_nsescore_and_undo_metadataset(
-            obj_nsescore,
-            metads,
-        )
-
-        # should be a dataarray
-        assert isinstance(ret, xr.DataArray)
-        # should have a dummy name
-        assert ret.name is None
-
-    def test_run_nsescore_and_undo_metadataset_dataarray_withname(self):
-        """
-        Run test case with name
-        """
-        metads = nse_impl.NseMetaDataset(
-            datasets=nse_impl.NseDatasets(
-                fcst=xr.Dataset(dict(Potato=xr.DataArray([1, 3], dims="x"))),
-                obs=xr.Dataset(dict(Potato=xr.DataArray([1, 5], dims="x"))),
-                weights=None,
-            ),
-            is_dataarray=True,
-            is_dummyname=False,
-        )
-
-        obj_nsescore = nse(
-            fcst=metads.datasets.fcst,
-            obs=metads.datasets.obs,
-            weights=metads.datasets.weights,
-        )
-
-        ret = nse_impl.NseUtils.run_nsescore_and_undo_metadataset(
-            obj_nsescore,
-            metads,
-        )
-
-        # should be a data array
-        assert isinstance(ret, xr.DataArray)
-        # should retain Potato as the name since its common
-        assert ret.name == "Potato"
-
-    def test_run_nsescore_and_retract_metadataset_malformed_keys(self):
-        """
-        Tests for multiple keys in metadataset even though inputs are data arrays
-
-        This should be impossible since a dataarray promoted to a dataset can only have
-        one key. However, quirks exist where xr.Dataset.variables ALSO returns
-        coordinates. Whereas, xr.Dataset.data_var only returns the data arrays.
-
-        To prevent any mishaps from changes in xarray API - testing that it correctly
-        raises a RuntimeError.
-        """
-        # mock NseScore
-        obj_nsescore = SimpleNamespace()
-
-        # intentional mutation of nse score to have multiple dataarrays
-        obj_nsescore.nse = xr.Dataset(
-            dict(
-                __NONAME=xr.DataArray([1, 3], dims="x"),
-                SOMENAME=xr.DataArray([1, 5], dims="x"),
-            ),
-        )
-
-        # mocked metads
-        metads = nse_impl.NseMetaDataset(
-            datasets=nse_impl.NseDatasets(
-                fcst=xr.Dataset(dict(__NONAME=xr.DataArray([1, 3], dims="x"))),
-                obs=xr.Dataset(dict(__NONAME=xr.DataArray([1, 5], dims="x"))),
-                weights=xr.Dataset(dict(__NONAME=xr.DataArray([1, 1], dims="x"))),
-            ),
-            is_dataarray=True,
-            is_dummyname=True,
-        )
-
         with pytest.raises(RuntimeError):
-            nse_impl.NseUtils.run_nsescore_and_undo_metadataset(obj_nsescore, metads)
+            nse_impl.NseUtils.check_metadata_consistency(meta_score, meta_input)
+
+    def test_check_metadata_consistency_okay(self, meta_input, meta_score):
+        """
+        Success condition
+            - both are datasets or
+            - both are dataarrays and score as single key
+        """
+        nse_impl.NseUtils.check_metadata_consistency(meta_score, meta_input)
 
 
 class TestNseScore(NseSetup):
@@ -957,104 +942,94 @@ class TestNseScore(NseSetup):
         )
         cls.reduce_dims = ("t", "l")
 
-        # ---------------------------------------
-        #  scores - prepped but not yet computed
-        # ---------------------------------------
-        # expose score values by assigning them to the class
-        # these (lazy) computations are used for most tests
-        cls.nse_score = nse(
-            fcst=cls.ds_fcst,
-            obs=cls.ds_obs,
-            reduce_dims=cls.reduce_dims,
+        # get scores (with components) from the inner score function
+        cls.nse_score = nse_impl._nse_metascore(
+            nse_impl.NseMetaInput(
+                nse_impl.NseDatasets(
+                    fcst=cls.ds_fcst,
+                    obs=cls.ds_obs,
+                    weights=None,
+                ),
+                gathered_dims=cls.reduce_dims,
+                is_dataarray=True,
+                is_angular=False,
+            )
         )
 
-        cls.nse_score_weights = nse(
-            fcst=cls.ds_fcst,
-            obs=cls.ds_obs,
-            weights=cls.ds_weights,
-            reduce_dims=cls.reduce_dims,
+        cls.nse_score_weights = nse_impl._nse_metascore(
+            nse_impl.NseMetaInput(
+                nse_impl.NseDatasets(
+                    fcst=cls.ds_fcst,
+                    obs=cls.ds_obs,
+                    weights=cls.ds_weights,
+                ),
+                gathered_dims=cls.reduce_dims,
+                is_dataarray=True,
+                is_angular=False,
+            )
         )
 
-    @pytest.mark.parametrize(
-        "var_,use_weights",
-        [
-            ("temperature", False),
-            ("precipitation", False),
-            ("temperature", True),
-            ("precipitation", True),
-        ],
-    )
+    common_params = [
+        dict(var_="temperature", use_weights=False),
+        dict(var_="precipitation", use_weights=False),
+        dict(var_="temperature", use_weights=True),
+        dict(var_="precipitation", use_weights=True),
+    ]
+
+    params = {
+        "test_obs_variance": common_params,
+        "test_fcst_error": common_params,
+        "test_nse_score": common_params,
+        "test_nse_against_naive_impl": common_params,
+    }
+
     def test_obs_variance(self, var_, use_weights):
         """
         Tests obs variance is the same as the handcrafted scenario
         """
-        res = self.nse_score.obs_variance
+        res = self.nse_score.components.obs_variance
         exp = self.exp_obs_variance
         if use_weights:
-            res = self.nse_score_weights.obs_variance
+            res = self.nse_score_weights.components.obs_variance
             exp = self.exp_obs_variance_weights
         xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
-    @pytest.mark.parametrize(
-        "var_,use_weights",
-        [
-            ("temperature", False),
-            ("precipitation", False),
-            ("temperature", True),
-            ("precipitation", True),
-        ],
-    )
     def test_fcst_error(self, var_, use_weights):
         """
         Tests forecast error is the same as the handcrafted scenario
         """
-        res = self.nse_score.fcst_error
+        res = self.nse_score.components.fcst_error
         exp = self.exp_fcst_error
         if use_weights:
-            res = self.nse_score_weights.fcst_error
+            res = self.nse_score_weights.components.fcst_error
             exp = self.exp_fcst_error_weights
         xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
-    @pytest.mark.parametrize(
-        "var_,use_weights",
-        [
-            ("temperature", False),
-            ("precipitation", False),
-            ("temperature", True),
-            ("precipitation", True),
-        ],
-    )
     def test_nse_score(self, var_, use_weights):
         """
         Tests NSE score is the same as the handcrafted scenario
         """
-        res = self.nse_score.nse
+        res = self.nse_score.components.nse
         exp = self.exp_nse_score
         if use_weights:
-            res = self.nse_score_weights.nse
+            res = self.nse_score_weights.components.nse
             exp = self.exp_nse_score_weights
         xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
-    @pytest.mark.parametrize(
-        "var_,use_weights",
-        [
-            ("temperature", False),
-            ("precipitation", False),
-            ("temperature", True),
-            ("precipitation", True),
-        ],
-    )
     def test_nse_against_naive_impl(self, var_, use_weights):
+        """
+        Tests against naive implementation of NSE (using for loops)
+        """
         np_obs = self.ds_obs[var_].to_numpy()
         np_fcst = self.ds_fcst[var_].to_numpy()
         # no weights == all weights = 1.0
         np_weights = np.full_like(np_fcst, fill_value=1.0)
 
         # compute result
-        res = self.nse_score.nse
+        res = self.nse_score.components.nse
 
         if use_weights:
-            res = self.nse_score_weights.nse
+            res = self.nse_score_weights.components.nse
             np_weights = self.ds_weights[var_].to_numpy()
 
         # compute nse_naive algorithm (loops)
@@ -1095,7 +1070,7 @@ class TestNseDataset(NseSetup):
             ),
         )
         reduce_dims = ["x", "y"]
-        res = nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
+        res = nse_impl.nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
         # result is a dataset
         assert isinstance(res, xr.Dataset)
         # variables are data arrays
@@ -1148,7 +1123,7 @@ class TestNseDask(NseSetup):
             xr.open_dataarray(tmp_da1_path, chunks=chunks) as da1_disk,
             xr.open_dataarray(tmp_da2_path, chunks=chunks) as da2_disk,
         ):
-            res = nse(da1_disk, da2_disk, reduce_dims=("x", "y"))
+            res = nse_impl.nse(da1_disk, da2_disk, reduce_dims=("x", "y"))
             assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
 
             # Load into memory and perform computation
