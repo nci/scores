@@ -44,6 +44,16 @@ def is_flexibledimensiontypes(
 
         However, custom hashable/iterable classes are not well supported by this check.
 
+    .. note::
+
+        For internal use only:
+
+            - TypeGuards help mypy resolve complex static type checks - avoids
+              the need to use "type: ignore" when types are ambiguous.
+
+            - Often used in conjunction with, type-based control flow, asserts
+              or raising TypeError at runtime.
+
     Returns:
         True ONLY IF ``val`` is ``Iterable`` and its elements are ``Hashable``;
         ELSE False
@@ -70,6 +80,16 @@ def is_xarraylike(
 
     ``isinstance(val, XarrayLike)`` currently will fail since it is a union type
 
+    .. note::
+
+        For internal use only:
+
+            - TypeGuards help mypy resolve complex static type checks - avoids
+              the need to use "type: ignore" when types are ambiguous.
+
+            - Often used in conjunction with, type-based control flow, asserts
+              or raising TypeError at runtime.
+
     Returns:
         True ONLY IF ``val`` is  a `xr.Dataset`` or ``xr.DataArray``;
         ELSE False
@@ -83,6 +103,16 @@ def all_same_xarraylike(
 ) -> TypeGuard[Iterable[XarrayLike]]:
     """
     Check whether all the elements in val are XarrayLike and of the same type
+
+    .. note::
+
+        For internal use only:
+
+            - TypeGuards help mypy resolve complex static type checks - avoids
+              the need to use "type: ignore" when types are ambiguous.
+
+            - Often used in conjunction with, type-based control flow, asserts
+              or raising TypeError at runtime.
 
     Returns:
         True ONLY IF ``val`` is ``Iterable`` and its elements are either _all_
