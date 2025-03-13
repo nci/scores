@@ -61,15 +61,11 @@ def nse(
         \\text{NSE} = 1 - \\frac{\\sum_i{(O_i - S_i)^2}}{\\sum_i{(O_i - \\bar{O})^2}}
 
     where
-
         - :math:`i` is a generic "indexer" representing the set of datapoints along the dimensions
           being reduced e.g. time (:math:`t`) or xy-coordinates (:math:`(x, y)`). The latter
           represents reduction over two dimensions as an example.
-
-        - :math:`O_i` is the observation at the :math:`\\text{i^{th}}` index.
-
-        - :math:`S_i` is the "forecast" or model simulation at the :math:`\\text{i^{th}}` index.
-
+        - :math:`O_i` is the observation at index :math:`i`.
+        - :math:`S_i` is the "forecast" or model simulation at the index :math:`i` index.
         - :math:`\\bar{O}` is the mean observation of the set of indexed samples as specified by
           ``reduce_dims`` and ``preserve_dims``.
 
@@ -88,18 +84,26 @@ def nse(
             Note: ``preserve_dims="all"`` is not supported for NSE. See notes below.
 
         weights: Optional weighting to apply to the NSE computation. Typically weights are applied
-            over `time_dim` but can vary by location as well. Weights must be non-negative and
-            specified for each data point _(i.e. the user must not assume broadcasting will handle
-            appropriate assignment of weights for this score)_.
+            over the time dimension but can vary by location as well. Weights must be non-negative and
+            specified for each data point *(i.e. the user must not assume broadcasting will handle
+            appropriate assignment of weights for this score)*.
 
-        is_angular: specifies whether `fcst` and `obs` are angular data (e.g. wind direction). If
-            True, a different function is used to calculate the difference between `fcst` and
-            `obs`, which accounts for circularity. Angular `fcst` and `obs` data should be in
+        is_angular: specifies whether ``fcst`` and ``obs`` are angular data (e.g. wind direction).
+            If True, a different function is used to calculate the difference between ``fcst`` and
+            ``obs``, which accounts for circularity. Angular ``fcst`` and ``obs`` data should be in
             degrees rather than radians.
 
     Returns:
 
-        ``XarrayLike`` containing the NSE score for each preserved dimension.
+        NSE score for each preserved dimension
+
+        ``xr.Dataset``:  if ``fcst``, ``obs`` and optionally ``weights`` are all datasets.
+
+        ``xr.DataArray``: ditto above - where inputs are all dataarrays
+
+
+        See comments below for more information on mixed xarray data types (which this score does
+        **not** handle)  and type isomorphism.
 
     Raises:
 
@@ -117,27 +121,23 @@ def nse(
             ``np.nan`` (numerator is also 0) or ``-np.inf`` where divide by zero would occur.
 
         Exception: Any other errors or warnings not otherwise listed due to calculations associated
-            with utility functions such as `gather_dimensions`.
+            with utility functions such as ``gather_dimensions``.
 
         RuntimeError: If something went wrong with the underlying implementation. The user will be
             prompted to report this as a github issue.
 
     Supplementary details:
-
         - Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the closer to 1, the more
           accurate the model is.
             - NSE = 1, corresponds to a perfect match of the model to the obs.
             - NSE = 0, indicates that the model is as accurate as the mean obs.
             - -Inf < NSE < 0, indicates that the mean obs is better predictor than the model.
-
         - The optional ``weights`` argument can additionally be used to perform a weighted NSE
-          (wNSE). Although, this is a generic set of weights, and it is the _user's responsiblility_
+          (wNSE). Although, this is a generic set of weights, and it is the *user's responsiblility*
           to define them appropriately. Typically this is the observation itself (Hundecha, Y., &
           Bárdossy, A., 2004).
-
         - ``weights`` must be non-negative. Therefore, the observations must ideally also be
           non-negative (or formulated appropriately) if used as weights.
-
         - While ``is_angular`` is typically not used for this score, NSE is generic enough that it
           _could_ be used in wider context, and hence is kept as an option. It is defaulted to
           ``False`` as that's the typical use-case.
@@ -156,7 +156,7 @@ def nse(
         Operations between dataarrays are not guarenteed to preserve names. If the user is
         working with dataarrays, it is assumed that preserving names is not a major requirement. If
         a user needs the name preserved, they should explicitly convert all data array inputs to
-        datasets using `xr.DataArray.to_dataset(...)` , and verify that the naming is retained
+        datasets using ``xr.DataArray.to_dataset(...)`` , and *verify* that the naming is retained
         appropriately before calling the score.
 
         For operations where ONLY ``xr.DataArray`` inputs are used, the returned score will have its
@@ -166,10 +166,10 @@ def nse(
 
     .. note::
 
-        For Hydrology in particular :math:`i = t` - the reduced dimension is usually the time
+        For Hydrology in particular :math:`i = t`,  the reduced dimension is usually the time
         dimension. However, in order to keep things generic, this function does not explicitly
-        mandate a time dimension be provided. Instead it requires it has a hard requirement that _at
-        least one_ dimension is being reduced from either a specification of ``reduce_dims`` or
+        mandate a time dimension be provided. Instead it requires it has a hard requirement that
+        *at least one* dimension is being reduced from either a specification of ``reduce_dims`` or
         ``preserve_dims`` (mutually exclusive).
 
         The reason is that the observation variance cannot be non-zero if nothing is being reduced.
@@ -179,7 +179,7 @@ def nse(
 
     .. note::
 
-        Divide by zero is ALLOWED - to accomodate scenarios where all obs entries in the group being
+        Divide by zero *is allowed* - to accomodate scenarios where all obs entries in the group being
         reduced is constant (0 obs variance).
 
         While these may cause divide by zero errors, they should not halt execution of computations
@@ -191,6 +191,7 @@ def nse(
 
         .. code-block::
 
+            # note: psuedocode
             n / 0  =  NaN   : if n == 0  (represented by np.nan)
                    = -Inf   : if n == 0  (represented by -np.inf)
 
@@ -203,13 +204,13 @@ def nse(
 
         Work with datasets where possible with NSE, or for any score that supports datasets for that
         matter. Datasets maintain structural integrity better than their dataarray counterparts and
-        also are compatible with higher order types like `xr.DataTree`.
+        also are compatible with higher order types like ``xr.DataTree``.
 
         Operations between datasets are more predictable than operations with mixed types.
         Dataarrays on the other hand may ignore names and broadcast liberally even when names do not
         match, and this may not be consistent depending on the oepration. This may or may not be the
-        intented behaviour the user expects.  Operations between ONLY dataarrays are fine as long as
-        preserving names is not mandatory.
+        intented behaviour the user expects.  Operations between **only** dataarrays are fine as
+        long as preserving names is not mandatory.
 
     Examples:
         >>> import numpy as np
