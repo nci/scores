@@ -1,22 +1,25 @@
 """
-Internal module used to support the computation of Nash-Sutcliffe model Efficiency coefficient (NSE).
+Internal module used to support the computation of Nash-Sutcliffe model Efficiency
+coefficient (NSE).
 
-The only publically exposed function should be `nse`.
+The only publically exposed function should be `nse_impl.nse`.
 
 .. note::
 
     FUTUREWORK:
 
-        the structures introduced in this score can be abstracted as they are useful checks that can
-        geenrally apply to most scores, in the short-term it is likely the hydro scores can all
-        adapt the same pattern.
+        The data structures introduced in this score can be abstracted as they are useful
+        checks that can be applied in general to most scores. In the short-term, it is
+        likely the hydro scores (e.g. KGE, Pbias) can easily adapt to this pattern .
 
-        Further adoption can be determined if the pattern works well for hydro metrics.
+        Broader adoption can be determined in the future if the pattern works well for
+        hydro metrics.
 """
 
 import functools
 import warnings
 from collections.abc import Hashable
+from types import SimpleNamespace
 from typing import NamedTuple
 
 import numpy as np
@@ -58,46 +61,64 @@ def nse(
         \\text{NSE} = 1 - \\frac{\\sum_i{(O_i - S_i)^2}}{\\sum_i{(O_i - \\bar{O})^2}}
 
     where
+
         - :math:`i` is a generic "indexer" representing the set of datapoints along the dimensions
           being reduced e.g. time (:math:`t`) or xy-coordinates (:math:`(x, y)`). The latter
           represents reduction over two dimensions as an example.
+
         - :math:`O_i` is the observation at the :math:`\\text{i^{th}}` index.
+
         - :math:`S_i` is the "forecast" or model simulation at the :math:`\\text{i^{th}}` index.
+
         - :math:`\\bar{O}` is the mean observation of the set of indexed samples as specified by
           ``reduce_dims`` and ``preserve_dims``.
 
     Args:
+
         fcst: "Forecast" or predicted variables.
+
         obs: Observed variables.
+
         reduce_dims: dimensions to reduce when calculating the NSE. (i.e. NSE will be calculated
             using datapoints along these dimensions as samples, the other dimensions will be
             preserved).
+
         preserve_dims: dimensions to preserve. Mutually exclusive to ``reduce_dims``. All
             dimensions not specified here will be reduced as described in ``reduce_dims``.
             Note: ``preserve_dims="all"`` is not supported for NSE. See notes below.
+
         weights: Optional weighting to apply to the NSE computation. Typically weights are applied
             over `time_dim` but can vary by location as well. Weights must be non-negative and
             specified for each data point _(i.e. the user must not assume broadcasting will handle
             appropriate assignment of weights for this score)_.
+
         is_angular: specifies whether `fcst` and `obs` are angular data (e.g. wind direction). If
-            True, a different function is used to calculate the difference between `fcst` and `obs`,
-            which accounts for circularity. Angular `fcst` and `obs` data should be in degrees
-            rather than radians.
+            True, a different function is used to calculate the difference between `fcst` and
+            `obs`, which accounts for circularity. Angular `fcst` and `obs` data should be in
+            degrees rather than radians.
 
     Returns:
+
         ``XarrayLike`` containing the NSE score for each preserved dimension.
 
     Raises:
+
         DimensionError: If any dimension checks fail.
+
         KeyError: If no dimensions are being reduced - NSE requries at least 1 dimension to be
-            reduced to compute obs variance.
+            reduced to compute the observation variance.
+
         IndexError: If the dimensions being reduced only have 1 value - not sufficient for
             computation of obs variance.
+
         UserWarning: If weights are negative, or invalid (e.g. all zeros or all NaNs).
+
         UserWarning: If attempting to divide by 0. The computation will still succeed but produce
             ``np.nan`` (numerator is also 0) or ``-np.inf`` where divide by zero would occur.
+
         Exception: Any other errors or warnings not otherwise listed due to calculations associated
             with utility functions such as `gather_dimensions`.
+
         RuntimeError: If something went wrong with the underlying implementation. The user will be
             prompted to report this as a github issue.
 
@@ -314,9 +335,10 @@ class NseMetaInput(NamedTuple):
     """
     Namespace that wraps NseDatasets with metadata about the underlying datasets
     particularly:
+        datasets: the input datasets: `fcst`, `obs` and optionally `weights`.
+        gathered_dims: the result of checking and resolving preserve_dims/reduce_dims
         is_dataarray: whether the underlying datasets were originally data arrays
-        is_dummyname: whether the underlying dataarrays were provided dummy names
-        datasets: the NseDatasets being wrapped
+        is_angular: whether the input data is angular [0, 360)
     """
 
     datasets: NseDatasets
@@ -324,15 +346,18 @@ class NseMetaInput(NamedTuple):
     is_dataarray: bool
     is_angular: bool
 
-    # NOTE: these methods are read-only, due to Named tuple inheritence:
+    # NOTE: the methods in this class are read-only, due to Named tuple inheritence:
 
     def _mse(self, x1: xr.Dataset, x2: xr.Dataset) -> xr.Dataset:
         """
-        Runs _mse with defaults prefilled from input data.
+        Runs mse (mean square error) with defaults prefilled from input data.
 
         This version assumes datasets are passed in.
 
         The order of x1 and x2 do not matter since mse is a symmetric score.
+
+        This same helper is used for fcst_error and obs_variance for consistency, but also to
+        maintain consistency with the API for `mse` itself.
         """
         # safety: dev/testing only
         assert isinstance(x1, xr.Dataset) and isinstance(x2, xr.Dataset)
@@ -365,15 +390,21 @@ class NseMetaInput(NamedTuple):
 
 def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
     """
-    The actual internal score function that computes NSE. Takes in input parameters with
-    associated metadata, NseMetaInput and returns a NseMetaScore - transferring any
-    metadata to it.
+    The actual score logic is for NSE is presented here.
 
-    since NseMetaInput and NseMetaScore are namedtuples they cannot be mutated so their
-    data can only be transferred.
+    Takes in NseMetaInput with all the information from the input data the user provided with
+    checks performed on them (see docstring for NseMetaInput for what the collection contains).
 
-    IMPORTANT: This internal function is only compatible with "Meta" types that deal
-               solely with datasets.
+    Returns NseMetaScore, which retains some of the metadata of NseMetaInput, particularly whether
+    the input data contained dataarrays or datasets.
+
+    .. important::
+
+        For predictability of the xarray APIs used to perform the computations, this internal
+        function is only compatible with "Meta" types that deal solely with datasets.
+
+        NseMetaScore can be retracted back to its "raw" form using
+        :py:func:`NseUtils.extract_result_from_metascore`
     """
     # Warning would have been raised by `warn_nonzero_obsvar` instead
     with np.errstate(divide="ignore"):
@@ -400,22 +431,82 @@ def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
         return meta_score
 
 
-class NseUtils:
+class NseUtils(SimpleNamespace):
     """
     Helper class with static methods for use in NSE computations only. Also contains
     error msg strings specific to NSE.
 
+    .. note::
+
+        This class is essentially a simple namespace type (dict) in a class-like structure for
+        improved clarity in documentation and typehints.
+
     .. important::
 
-        To simplify checks, all checks are assumed to be compatible with ``xr.Dataset``
-        only. The helper method ``NseUtils.lift_to_ds`` can be used to transform the
-        input xarraylike into a dataset, returning any metadata associated with the
-        original datatype along with the promoted dataset.
+        To simplify things, and reduce the chance of error and incompatibilities of mixed types and
+        APIs - all checks are assumed to be compatible with ``xr.Dataset`` only.
 
-        The utility module is also not very strict with runtime type assertions (as this
-        would increase code bloat - and potential circular logic) and assumes that this
-        is performed at a higher level at the earliest point of the call chain before
-        computing the sore.
+        In particular:
+
+            NseUtils.make_metainput:
+
+                converts any XarrayLike objects in the input into datasets
+
+            NseUtils.extract_result_from_metascore:
+
+                does an undo of the above operation returning the original data type to the user
+
+            NseUtils.check_all_same_type:
+
+                is important for most calculations here to be performed unambiguously - it is
+                called within make_metainput and enforces that all the inputs are either dataarrays
+                or datasets but not a mix of both.
+
+        The two are very often called together with a computation in between. For example:
+
+        code-block ::
+
+            # some checks on input args
+            NseUtils.do_checks(*args, **kwargs)
+
+            # make meta input using args and kwargs from nse public API
+            # [1]: lift to dataset
+            meta_input = NseUtils.make_metainput(*args, **kwargs)
+            # a score always takes a meta_input and returns a meta_score
+            meta_result: meta_score = fn_score(meta_input)
+
+            # we can then retrieve the original data array like using extract...
+            # [2]: revert to original form
+            raw_result: XarrayLike = NseUtils.extract_result_from_metascore(meta_score)
+
+            # goes back to the user, raw_result and any data in *args **kwargs will be the same
+            # XarrayLike sub-type
+            return raw_result
+
+        FUTUREWORK:
+
+            It is quite apparent that this type of design need not be exclusive to NSE, other
+            scores may benefit from this added structure especially helping with behavioural
+            predictability of the different scores, and reducing the need for adhoc checks and
+            branching logic.
+
+            The developer only needs to design `fn_score`. Where `do_checks` can inherit from a
+            namespace like this that abstracts common checks (albeit it needs a more commonly named
+            utility not "Nse..").
+
+            This also helps the reviewer down the track, because the only thing they need to check
+            for is the soundness of the mathematical implementation and **computational** checks
+            rather than structural.
+
+        .. important ::
+
+            It is worth mentioning that the utility module is not very strict with runtime type
+            assertions, other than some important functions highlighted above.
+
+            This is intentional as this would increase code bloat - and potential circular logic.
+            Instead it assumes that this is performed at a higher level at the earliest point of
+            the call chain before computing the scores, or via implicit checks within scores.utils
+            which the functions in this namespace rely on heavily.
     """
 
     # score name used for promoted dataarrays
