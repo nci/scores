@@ -61,10 +61,6 @@
   - [API](api.md#scores.continuous.kge)
   - [Tutorial](project:./tutorials/Kling_Gupta_Efficiency.md)
   - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)    
-* - Nash-Sutcliffe model efficiency coefficient (NSE)
-  - [API](api.md#scores.continuous.nse)
-  - [Tutorial](project:./tutorials/NSE.md)
-  - [Nash & Sutcliffe et al. (1970)](https://doi.org/10.1016/0022-1694%2870%2990255-6)
 * - Mean Absolute Error (MAE)
   - [API](api.md#scores.continuous.mae)
   - [Tutorial](project:./tutorials/Mean_Absolute_Error.md)
@@ -105,6 +101,10 @@
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* - Nash-Sutcliffe model efficiency coefficient (NSE)
+  - [API](api.md#scores.continuous.nse)
+  - [Tutorial](project:./tutorials/NSE.md)
+  - [Nash and Sutcliffe (1970)](https://doi.org/10.1016/0022-1694%2870%2990255-6)
 * - Pearson's Correlation Coefficient
   - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)

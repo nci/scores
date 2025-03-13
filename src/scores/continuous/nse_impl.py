@@ -65,7 +65,7 @@ def nse(
           being reduced e.g. time (:math:`t`) or xy-coordinates (:math:`(x, y)`). The latter
           represents reduction over two dimensions as an example.
         - :math:`O_i` is the observation at index :math:`i`.
-        - :math:`S_i` is the "forecast" or model simulation at the index :math:`i` index.
+        - :math:`S_i` is the "forecast" or model simulation at index :math:`i`.
         - :math:`\\bar{O}` is the mean observation of the set of indexed samples as specified by
           ``reduce_dims`` and ``preserve_dims``.
 

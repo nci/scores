@@ -623,11 +623,18 @@ class TestNseScore(NseSetup):
     @classmethod
     def setup_class(cls):
         """
-        TODO: move this to setup class, and create one test per expected output
+        Worked example - note this is not a scientific example, its still very much contrived.
 
-        Worked example - note this is not a scientific example, its still very much contrived, but
-        still verifies some important properties of NSE.  Please have a look at the tutorial
-        notebooks for a simulated hydrograph example.
+        However, it is intentionally made deterministic to test the intuitive outcomes of the
+        underlying (decomposed) mathematical calculations.
+
+        This is very useful for verifying the computational soundness NSE, particularly by
+        comparing it against intuitive handwritten solutions which are representated as fractions,
+        rather than randomly generated values.
+
+        Further it also compares against a naive implementation of NSE e.g. using multi-indexed for
+        loops (essentially same as nested for loops but with numpy so that it looks less cluttered -
+        see: ``test_nse_against_naive_impl``)
 
         ------------------------------------------------------------------------------------------
          setup
