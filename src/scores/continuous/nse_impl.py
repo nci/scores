@@ -715,6 +715,8 @@ class NseUtils(SimpleNamespace):
             ret_nse = NseUtils.try_extract_singleton_dataarray(meta_score.components.nse)
             # safety: check_metadata_consistency should have already handled this
             assert ret_nse is not None
+            # force score to NSE
+            ret_nse.name = NseUtils.SCORE_NAME
 
         return ret_nse
 

@@ -409,6 +409,7 @@ class TestNsePublicApi(NseSetup):
         ret = nse_impl.nse(fcst, obs, **nse_kwargs)
         assert np.all(ret <= 1.0)
         assert isinstance(ret, xr.DataArray)
+        assert ret.name == "NSE"
         if len(expect_dims) > 0:
             assert ret.shape == expect_shape
             assert all(d in ret.dims for d in expect_dims)
