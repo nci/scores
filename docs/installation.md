@@ -129,10 +129,10 @@ A sample command to register a new kernel is:
 ## Using `pixi` for environment management
 
 An alternative approach that `scores` supports for installing environments is [`pixi`](pixi.sh),
-which is a powerful envrionment management tool.
+which is a powerful environment management tool.
 
 It uses a combination of PyPI and Conda channels. `pixi` is configured in `pyproject.toml` in the
-root directory of the  `scores` github repository. It is configured with some default tasks that a
+root directory of the `scores` github repository. It is configured with some default tasks that a
 user can run in ephemeral environments specific for those tasks (see examples below).
 
 `pixi` handles creation, swapping, stacking and cleanup of environments automatically, depending on
@@ -140,7 +140,7 @@ the task being run.
 
 ```{note}
 `scores` currently does not save `pixi.lock` files in its github repository. While `pixi` is
-supported in the project, is *not* part of the recommended development toolchain.
+supported in the project, it is *not* part of the recommended development toolchain.
 
 `pixi.lock` is intentionally filtered out in `.gitignore`, in order to prevent accidental commits of
 the lock file. This may change in the future if there is sufficient adoption.
