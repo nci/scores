@@ -8,7 +8,7 @@
 Collection of tests for the NSE score, contains:
     - NseSetup: Base class used by all other test classes
     - TestNsePublicApi: Tests concerning the public API interface - this is the main suite
-    - TestNseUtils: Tests specific to the utils that are not covered by public API
+    - TestNseInternals: Tests specific to the utils that are not covered by public API
     - TestNseScore: Tests specific to score computation not already covered by public API
     - TestNseDataset: Tests compatiblity with datasets (most tests use data array for convenience)
     - TestNseDask: Tests compatibility with dask
@@ -415,11 +415,25 @@ class TestNsePublicApi(NseSetup):
             assert all(d in ret.dims for d in expect_dims)
 
 
-class TestNseUtils(NseSetup):
+class TestNseInternals(NseSetup):
     """
     NOTE: most of NseUtils is tested by the public API test suite and is not repeated here.
     Only things missed by the public API test suite will be covered here.
     """
+
+    META_INPUT_DA = nse_impl.NseMetaInput(
+        datasets=[],  # type: ignore
+        gathered_dims=[],  # type: ignore
+        is_angular=False,  # doesn't matter
+        is_dataarray=True,  # >>> checking for this
+    )
+
+    META_INPUT_NOT_DA = nse_impl.NseMetaInput(
+        datasets=[],  # type: ignore
+        gathered_dims=[],  # type: ignore
+        is_angular=False,  # doesn't matter
+        is_dataarray=False,  # >>> checking for this
+    )
 
     params = {
         "test_try_extract_singleton_dataarray": [
@@ -458,14 +472,9 @@ class TestNseUtils(NseSetup):
                         # give it a value in case nse check happens first:
                         nse=xr.Dataset(dict(x=xr.DataArray([1]))),
                     ),
-                    is_dataarray=False,  # >>> checking for this
+                    ref_meta_input=META_INPUT_NOT_DA,  # >>> checking this
                 ),
-                meta_input=nse_impl.NseMetaInput(
-                    datasets=[],  # type: ignore
-                    gathered_dims=[],  # type: ignore
-                    is_angular=False,  # doesn't matter
-                    is_dataarray=True,  # >>> checking for this
-                ),
+                meta_input=META_INPUT_DA,  # >>> checking this
             ),
             # is_dataarray do not match - flipped
             dict(
@@ -476,14 +485,9 @@ class TestNseUtils(NseSetup):
                         # give it a valid value in case nse check happens first:
                         nse=xr.Dataset(dict(x=xr.DataArray([1]))),
                     ),
-                    is_dataarray=True,  # >>> checking for this
+                    ref_meta_input=META_INPUT_DA,  # >>> checking this
                 ),
-                meta_input=nse_impl.NseMetaInput(
-                    datasets=[],  # type: ignore
-                    gathered_dims=[],  # type: ignore
-                    is_angular=False,
-                    is_dataarray=False,  # >>> checking for this
-                ),
+                meta_input=META_INPUT_NOT_DA,  # >>> checking this
             ),
             # is data array but has multiple keys
             dict(
@@ -494,14 +498,9 @@ class TestNseUtils(NseSetup):
                         # >>> checking for this: multiple keys
                         nse=xr.Dataset(dict(x=xr.DataArray([1]), y=xr.DataArray([2]))),
                     ),
-                    is_dataarray=True,
+                    ref_meta_input=META_INPUT_DA,
                 ),
-                meta_input=nse_impl.NseMetaInput(
-                    datasets=[],  # type: ignore
-                    gathered_dims=[],  # type: ignore
-                    is_angular=False,  # doesn't matter
-                    is_dataarray=True,
-                ),
+                meta_input=META_INPUT_DA,
             ),
             # is data array but has no keys
             dict(
@@ -512,14 +511,9 @@ class TestNseUtils(NseSetup):
                         # >>> checking for this: empty
                         nse=xr.Dataset(),
                     ),
-                    is_dataarray=True,
+                    ref_meta_input=META_INPUT_DA,
                 ),
-                meta_input=nse_impl.NseMetaInput(
-                    datasets=[],  # type: ignore
-                    gathered_dims=[],  # type: ignore
-                    is_angular=False,  # doesn't matter
-                    is_dataarray=True,
-                ),
+                meta_input=META_INPUT_DA,
             ),
         ],
         "test_check_metadata_consistency_okay": [
@@ -532,14 +526,9 @@ class TestNseUtils(NseSetup):
                         # give it a value in case nse check happens first:
                         nse=xr.Dataset(dict(x=xr.DataArray([1]))),
                     ),
-                    is_dataarray=False,  # >>> checking for this
+                    ref_meta_input=META_INPUT_NOT_DA,
                 ),
-                meta_input=nse_impl.NseMetaInput(
-                    datasets=[],  # type: ignore
-                    gathered_dims=[],  # type: ignore
-                    is_angular=False,  # doesn't matter
-                    is_dataarray=False,  # >>> checking for this
-                ),
+                meta_input=META_INPUT_NOT_DA,
             ),
             # both is_dataarray and score only has one key
             dict(
@@ -550,14 +539,9 @@ class TestNseUtils(NseSetup):
                         # >>> checking for this:
                         nse=xr.Dataset(dict(x=xr.DataArray([1]))),
                     ),
-                    is_dataarray=True,  # >>> checking for this
+                    ref_meta_input=META_INPUT_DA,
                 ),
-                meta_input=nse_impl.NseMetaInput(
-                    datasets=[],  # type: ignore
-                    gathered_dims=[],  # type: ignore
-                    is_angular=False,  # doesn't matter
-                    is_dataarray=True,  # >>> checking for this
-                ),
+                meta_input=META_INPUT_DA,
             ),
         ],
     }
