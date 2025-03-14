@@ -126,10 +126,10 @@ A sample command to register a new kernel is:
 
 [https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html](https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html) provides additional technical details regarding the registration of kernels.
 
-## Using `pixi` for environment management
+## Using `pixi` for Environment Management (Optional)
 
-An alternative approach that `scores` supports for installing environments is [`pixi`](pixi.sh),
-which is a powerful environment management tool.
+An optional, alternative, approach that `scores` supports for installing environments is [`pixi`](https://pixi.sh/latest/).
+`pixi` is a powerful environment management tool.
 
 It uses a combination of PyPI and Conda channels. `pixi` is configured in `pyproject.toml` in the
 root directory of the `scores` github repository. It is configured with some default tasks that a
@@ -140,7 +140,7 @@ the task being run.
 
 ```{note}
 `scores` currently does not save `pixi.lock` files in its github repository. While `pixi` is
-supported in the project, it is *not* part of the recommended development toolchain.
+supported in `scores`, it is *not* part of the recommended development toolchain.
 
 `pixi.lock` is intentionally filtered out in `.gitignore`, in order to prevent accidental commits of
 the lock file. This may change in the future if there is sufficient adoption.
@@ -157,18 +157,18 @@ here: <https://pixi.sh/latest/#installation>.
 ### Examples
 
 - **As a developer** I want to run some tests.
-   - command: `pixi run pytest-src`
-   - description: this will test the source code in the `dev` environment.
+   - Command: `pixi run pytest-src`
+   - Description: this will test the source code in the `dev` environment.
 - **As a researcher** I want to launch jupyerlab.
-  - command: `pixi run jupyterlab`
-  - description: This will launch a local jupyterlab server in the `tutorial` environment.
+  - Command: `pixi run jupyterlab`
+  - Description: this will launch a local jupyterlab server in the `tutorial` environment.
 - **As a maintainer** I want to render the docs as html.
-  - command:  `pixi run make-docs`
-  - description: This will render the docs locally to "htmldocs" (similar to what the github
-    pipeline currently does)
-- **As any user** I arbitrary command in a particular environment
-  - command: `pixi run -e <env> <cmd>`, where `<env> = dev | tutorial | maintainer | all` - see
-    section on installation options below.
-  - description: This will run the command in the specified environment, and return you back to the
+  - Command:  `pixi run make-docs`
+  - Description: this will render the docs locally to "htmldocs" (similar to what the github
+    pipeline currently does).
+- **As any user** I want to run a specified command in a particular environment.
+  - Command: `pixi run -e <env> <cmd>`, where `<env> = dev | tutorial | maintainer | all` - see
+    section on [installation options](#installation-options) above.
+  - Description: this will run the command in the specified environment, and return you back to the
     original shell once it has been executed.
 
