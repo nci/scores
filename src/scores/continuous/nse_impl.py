@@ -342,10 +342,9 @@ class NseMetaInput(NamedTuple):
 
     datasets: NseDatasets
     is_dataarray: bool
+    gathered_dims: list[Hashable]
 
-    # optional NOTE: gathered_dims should be typically populated by
-    # `scores.utils.gather_dimensions`
-    gathered_dims: list[Hashable] | None
+    # optional
     is_angular: bool = False
 
     # NOTE: the methods in this class are read-only, due to Named tuple inheritence:
@@ -416,7 +415,7 @@ class NseMetaScore(NamedTuple):
     ref_meta_input: NseMetaInput
 
 
-def _nse_metascore(meta_input: NseMetaInput) -> NseComponents:
+def _nse_metascore(meta_input: NseMetaInput) -> NseMetaScore:
     """
     The actual score logic is for NSE is presented here.
 
@@ -590,8 +589,8 @@ class NseMetaHandler(SimpleNamespace):
         fcst: XarrayLike,
         obs: XarrayLike,
         weights: XarrayLike,
-        preserve_dims: FlexibleDimensionTypes,
-        reduce_dims: FlexibleDimensionTypes,
+        preserve_dims: FlexibleDimensionTypes | None,
+        reduce_dims: FlexibleDimensionTypes | None,
         is_angular: bool,
     ) -> NseMetaInput:
         """
@@ -642,6 +641,7 @@ class NseMetaHandler(SimpleNamespace):
             reduce_dims=reduce_dims,
             preserve_dims=preserve_dims,
         )
+        gathered_dims = list(gathered_dims)
 
         if ds_weights is not None:
             check_weights(ds_weights)
