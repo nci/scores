@@ -29,38 +29,6 @@ conda create --name <my-env>
 conda activate <my-env>
 ```
 
-### Using `pixi` for environment management
-
-An alternative approach that `scores` supports for installing environments is [`pixi`](pixi.sh), which is a powerful envrionment management tool.
-
-It uses a combination of PyPI and conda channels. `pixi` is configured in `pyproject.toml` in the root directory of the  `scores` github repo, and comes with configured with some tasks that can be run.
-
-#### Installation
-
-`pixi` supports multiple platforms. Its installation process is straightforward and can be found here: <https://pixi.sh/latest/#installation>
-
-Examples:
-- **As a developer** I want to run some tests.
-   - command: `pixi run pytest-src`
-   - description: this will test the source code in the `dev` environment.
-- **As a researcher** I want to launch jupyerlab.
-  - command: `pixi run jupyterlab`
-  - description: This will launch a local jupyterlab server in the `tutorial` environment.
-- **As a maintainer** I want to render the docs as html.
-  - command:  `pixi run make-docs`
-  - description: This will render the docs locally to "htmldocs" (similar to what the github pipeline currently does)
-- **As any user** I arbitrary command in a particular environment
-  - command: `pixi run -e <env> <cmd>`, where `<env> = dev | tutorial | maintainer | all` - see section on installation options below.
-  - description: This will run the command in the specified environment, and return you back to the original shell once it has been executed.
-
-#### Lock file
-
-`pixi` recommends the introduction of the `pixi.lock` (yaml format) file to help in reproducibility.
-
-This will allow all users to use the same set of recommended packages. By default the lock file is updated as packages are introduced. However, this is not mandated.
-
-To understand how to use the lock file see: <https://pixi.sh/latest/features/lockfile/#how-to-use-a-lock-file>. In particular, the `--locked` and `--frozen` options.
-
 ## Installation Options
 
 There are multiple installation options. Most users currently want the "all" installation option. 
@@ -157,4 +125,50 @@ A sample command to register a new kernel is:
 `python -m ipykernel install --user --prefix=<path-to-server-environment> --name=<pick-any-name-here>`
 
 [https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html](https://jupyter-tutorial.readthedocs.io/en/24.1.0/kernels/install.html) provides additional technical details regarding the registration of kernels.
+
+## Using `pixi` for environment management
+
+An alternative approach that `scores` supports for installing environments is [`pixi`](pixi.sh),
+which is a powerful envrionment management tool.
+
+It uses a combination of PyPI and Conda channels. `pixi` is configured in `pyproject.toml` in the
+root directory of the  `scores` github repository. It is configured with some default tasks that a
+user can run in ephemeral environments specific for those tasks (see examples below).
+
+`pixi` handles creation, swapping, stacking and cleanup of environments automatically, depending on
+the task being run.
+
+```{note}
+`scores` currently does not save `pixi.lock` files in its github repository. While `pixi` is
+supported in the project, is *not* part of the recommended development toolchain.
+
+`pixi.lock` is intentionally filtered out in `.gitignore`, in order to prevent accidental commits of
+the lock file. This may change in the future if there is sufficient adoption.
+
+`pixi` is mainly there for users who *already* are familiar with it, and those who prefer not to
+manually deal with python environments.
+```
+
+### Installation
+
+`pixi` supports multiple platforms. Its installation process is straightforward and can be found
+here: <https://pixi.sh/latest/#installation>.
+
+### Examples
+
+- **As a developer** I want to run some tests.
+   - command: `pixi run pytest-src`
+   - description: this will test the source code in the `dev` environment.
+- **As a researcher** I want to launch jupyerlab.
+  - command: `pixi run jupyterlab`
+  - description: This will launch a local jupyterlab server in the `tutorial` environment.
+- **As a maintainer** I want to render the docs as html.
+  - command:  `pixi run make-docs`
+  - description: This will render the docs locally to "htmldocs" (similar to what the github
+    pipeline currently does)
+- **As any user** I arbitrary command in a particular environment
+  - command: `pixi run -e <env> <cmd>`, where `<env> = dev | tutorial | maintainer | all` - see
+    section on installation options below.
+  - description: This will run the command in the specified environment, and return you back to the
+    original shell once it has been executed.
 
