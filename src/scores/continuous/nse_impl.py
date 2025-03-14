@@ -104,11 +104,9 @@ def nse(
 
         NSE score for each preserved dimension
 
-        ``xr.Dataset``:  if ``fcst``, ``obs`` and optionally ``weights`` are
-            all datasets.
+        ``xr.Dataset``:  if ``fcst``, ``obs`` and optionally ``weights`` are all datasets.
 
         ``xr.DataArray``: ditto above - where inputs are all dataarrays
-
 
         See comments below for more information on mixed xarray data types
         (which this score does **not** handle)  and type isomorphism.
