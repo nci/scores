@@ -128,7 +128,7 @@ A sample command to register a new kernel is:
 
 ## Using `pixi` for Environment Management (Optional)
 
-An optional, alternative, approach that `scores` supports for installing environments is [`pixi`](https://pixi.sh/latest/).
+An optional, alternative, approach that `scores` supports for installing environments is [`pixi`](https://pixi.sh).
 `pixi` is a powerful environment management tool.
 
 It uses a combination of PyPI and Conda channels. `pixi` is configured in `pyproject.toml` in the
