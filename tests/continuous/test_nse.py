@@ -335,6 +335,28 @@ class TestNsePublicApi(NseSetup):
                 expect_shape=(2, 3),
             ),
         ],
+        "test_nse_nan_broadcasting": [
+            dict(
+                fcst=xr.DataArray([3, 4, 5, 6, 7]),
+                obs=xr.DataArray([2, 3, 4, 5, 6]),
+                expect_nse=0.5,
+            ),
+            dict(
+                fcst=xr.DataArray([np.nan, 4, 5, 6, 7]),
+                obs=xr.DataArray([2, 3, 4, 5, 6]),
+                expect_nse=0.2,
+            ),
+            dict(
+                fcst=xr.DataArray([3, 4, 5, 6, 7]),
+                obs=xr.DataArray([np.nan, 3, 4, 5, 6]),
+                expect_nse=0.2,
+            ),
+            dict(
+                fcst=xr.DataArray([np.nan, 4, 5, 6, 7]),
+                obs=xr.DataArray([np.nan, 3, 4, 5, 6]),
+                expect_nse=0.2,
+            ),
+        ],
     }
 
     def test_error_incompatible_dims(
@@ -413,6 +435,13 @@ class TestNsePublicApi(NseSetup):
         if len(expect_dims) > 0:
             assert ret.shape == expect_shape
             assert all(d in ret.dims for d in expect_dims)
+
+    def test_nse_nan_broadcasting(self, fcst, obs, expect_nse):
+        """
+        Tests that nans are matched properly between fcst and obs.
+        """
+        res = nse_impl.nse(fcst, obs)
+        assert np.abs(res - expect_nse) <= 1e-6
 
 
 class TestNseInternals(NseSetup):
