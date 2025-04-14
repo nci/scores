@@ -4,17 +4,15 @@ Efficiency coefficient (NSE).
 
 The only publically exposed function should be `nse_impl.nse`.
 
-.. note::
+FUTUREWORK:
 
-    FUTUREWORK:
+    The data structures introduced in this score can be abstracted as they are
+    useful checks that can be applied in general to most scores. In the
+    short-term, it is likely the hydro scores (e.g. KGE, Pbias) can easily
+    adapt to this pattern .
 
-        The data structures introduced in this score can be abstracted as they
-        are useful checks that can be applied in general to most scores. In the
-        short-term, it is likely the hydro scores (e.g. KGE, Pbias) can easily
-        adapt to this pattern .
-
-        Broader adoption can be determined in the future if the pattern works
-        well for hydro metrics.
+    Broader adoption can be determined in the future if the pattern works well
+    for hydro metrics.
 """
 
 import functools
@@ -27,6 +25,7 @@ import numpy as np
 import xarray as xr
 
 import scores.continuous
+from scores.processing import broadcast_and_match_nan
 from scores.typing import (
     FlexibleDimensionTypes,
     XarrayLike,
@@ -228,10 +227,10 @@ def nse(
         compatible with higher order types like ``xr.DataTree``.
 
         Operations between datasets are more predictable than operations with
-        mixed types.  Dataarrays on the other hand may ignore names and
+        mixed types. Data arrays on the other hand may ignore names and
         broadcast liberally even when names do not match, and this may not be
-        consistent depending on the oepration. This may or may not be the
-        intented behaviour the user expects.  Operations between **only**
+        consistent depending on the operation. This may or may not be the
+        intented behaviour the user expects. Operations between **only**
         dataarrays are fine as long as preserving names is not mandatory.
 
     Examples:
@@ -632,8 +631,14 @@ class NseMetaHandler(SimpleNamespace):
         #
         # Further, they rely on the input arguments from the public API so this
         # is the most efficient spot to place them currently.
+
         weights_dims = getattr(ds_weights, "dims", None)
 
+        # check that weights are valid
+        if ds_weights is not None:
+            check_weights(ds_weights)
+
+        # gather dimensions based on input args
         gathered_dims: FlexibleDimensionTypes = gather_dimensions(
             fcst_dims=ds_fcst.dims,
             obs_dims=ds_obs.dims,
@@ -643,8 +648,13 @@ class NseMetaHandler(SimpleNamespace):
         )
         gathered_dims = list(gathered_dims)
 
-        if ds_weights is not None:
-            check_weights(ds_weights)
+        # check that gathered dims is in obs and fcst - they must be present in both
+        # should be done before `broadcast_and_match_nan`
+        NseUtils.check_vars_have_reducible_dims(ds_fcst, gathered_dims)
+        NseUtils.check_vars_have_reducible_dims(ds_obs, gathered_dims)
+
+        # broadcast nans between fcst and obs
+        ds_fcst, ds_obs = broadcast_and_match_nan(ds_fcst, ds_obs)
 
         # END COMMONCHECKS
         # ---------------------------------------------------------------------
@@ -1060,6 +1070,7 @@ class NseUtils(SimpleNamespace):
             :py:meth:`xarray.Dataset.sizes` or
             :py:meth:`xarray.DataArray.sizes`
         """
+        # this check is specific to NSE which requires at least one reduce dim
         if len(list(gathered_dims)) == 0:
             raise DimensionError(NseUtils.ERROR_NO_DIMS_TO_REDUCE)
 
@@ -1067,3 +1078,22 @@ class NseUtils(SimpleNamespace):
 
         if not dim_has_more_than_one_obs:
             raise DimensionError(NseUtils.ERROR_NO_DIMS_WITH_MULTIPLE_OBS)
+
+    @staticmethod
+    def check_vars_have_reducible_dims(ds: xr.Dataset, ref_dims: FlexibleDimensionTypes):
+        """
+        Raises error if any var is missing a dimension by comparing with the
+        reference.
+        """
+        # ignore if ref_dims is empty
+        if len(list(ref_dims)) == 0:
+            return
+
+        # otherwise (if ref_dims has at least one entry),
+        # check that each variable has at least one dim contained in ref_dims
+        var_names = list(ds.variables.keys())
+        fn_checkvar = lambda _v: any(_d in ref_dims for _d in ds[_v].dims)
+        atleastone_reducedim = all(map(fn_checkvar, var_names))
+
+        if not atleastone_reducedim:
+            raise DimensionError(NseUtils.ERROR_NO_DIMS_TO_REDUCE)

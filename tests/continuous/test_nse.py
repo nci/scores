@@ -211,9 +211,9 @@ class TestNsePublicApi(NseSetup):
             dict(
                 fcst=_FCST_DEFAULT,
                 obs=_OBS_WRONG_DIMNAMES,
-                reduce_dims=None,
+                reduce_dims="t",  # need to set this, otherwise "t_bad" maybe auto included
                 preserve_dims=None,
-                expect_context=pytest.raises(ValueError),
+                expect_context=pytest.raises(DimensionError),
             ),
             # incompatible dimension sizes
             dict(
@@ -440,7 +440,10 @@ class TestNseInternals(NseSetup):
             # empty - should not return anything
             dict(ds=xr.Dataset(), expect_da=None),
             # multiple dataarrays should not return anything
-            dict(ds=xr.Dataset(dict(x=xr.DataArray([1]), y=xr.DataArray([1]))), expect_da=None),
+            dict(
+                ds=xr.Dataset(dict(x=xr.DataArray([1]), y=xr.DataArray([1]))),
+                expect_da=None,
+            ),
             # single dataarrays should return:
             # Using fully specified array - to check that dims/coordinates and
             # metadata do not affect extraction of ``keys``
@@ -1069,8 +1072,9 @@ class TestNseDataset(NseSetup):
         assert isinstance(res["precip"], xr.DataArray)
         assert isinstance(res["temp"], xr.DataArray)
         # precip should only have "t", since "h" isn't defined for either obs or fcst in precip
-        assert set(res["precip"].dims) == set(["t"])
-        assert res["precip"].shape == (2,)
+        # HOWEVER, because of broadcasting, nan values get added in to match temp.
+        assert set(res["precip"].dims) == set(["t", "h"])
+        assert res["precip"].shape == (2, 4)
         # temp should have both "t" and "h"
         assert set(res["temp"].dims) == set(["t", "h"])
         assert res["temp"].shape == (2, 4)
