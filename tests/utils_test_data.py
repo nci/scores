@@ -1,3 +1,5 @@
+# disable non-critical pylinting for tests:
+# pylint: disable=use-dict-literal
 """
 Test data for scores.utils
 """
@@ -30,3 +32,17 @@ DS_RG_R = xr.Dataset({"DA_RG": DA_RG, "DA_R": DA_R})
 DS_RGB_GB = xr.Dataset({"DA_RGB": DA_RGB, "DA_GB": DA_GB})
 
 DS_RGB = xr.Dataset({"DA_RGB": DA_RGB})
+
+DA_WEIGHTS_GOOD = xr.DataArray([1, 2, 3, 4])
+DA_WEIGHTS_GOOD_SOME_NAN = xr.DataArray([np.nan, 1, np.nan, 3])
+DA_WEIGHTS_GOOD_SOME_ZERO = xr.DataArray([0, 2, 0, 4])
+DA_WEIGHTS_BAD_ALL_NAN = xr.DataArray([np.nan, np.nan, np.nan, np.nan])
+DA_WEIGHTS_BAD_ALL_ZERO = xr.DataArray([0, 0, 0, 0])
+DA_WEIGHTS_BAD_ANY_NEG = xr.DataArray([1, 2, -1, 4])
+
+DS_WEIGHTS_GOOD = xr.Dataset(dict(good1=DA_WEIGHTS_GOOD, good2=DA_WEIGHTS_GOOD))
+DS_WEIGHTS_GOOD_SOME_NAN = xr.Dataset(dict(good1=DA_WEIGHTS_GOOD_SOME_NAN, good2=DA_WEIGHTS_GOOD))
+DS_WEIGHTS_GOOD_SOME_ZERO = xr.Dataset(dict(good1=DA_WEIGHTS_GOOD_SOME_ZERO, good2=DA_WEIGHTS_GOOD))
+DS_WEIGHTS_BAD_ALL_NAN = xr.Dataset(dict(bad=DA_WEIGHTS_BAD_ALL_NAN, good=DA_WEIGHTS_GOOD))
+DS_WEIGHTS_BAD_ALL_ZERO = xr.Dataset(dict(bad=DA_WEIGHTS_BAD_ALL_ZERO, good=DA_WEIGHTS_GOOD))
+DS_WEIGHTS_BAD_ANY_NEG = xr.Dataset(dict(bad=DA_WEIGHTS_BAD_ANY_NEG, good=DA_WEIGHTS_GOOD))

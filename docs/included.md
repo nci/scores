@@ -101,6 +101,10 @@
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* - Nash-Sutcliffe Model Efficiency Coefficient (NSE)
+  - [API](api.md#scores.continuous.nse)
+  - [Tutorial](project:./tutorials/NSE.md)
+  - [Nash and Sutcliffe (1970)](https://doi.org/10.1016/0022-1694%2870%2990255-6)
 * - Pearson's Correlation Coefficient
   - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)
