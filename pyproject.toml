@@ -27,10 +27,10 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "black == 24.1.0",
+    "black == 24.10.0",
     "mypy == 1.13.0",
     "pylint == 3.3.1",
-    "bandit == 1.7.8",
+    "bandit == 1.8.0",
     "dask",
     "h5netcdf",
     "pandas-stubs",
@@ -82,7 +82,7 @@ override = true  # This is required to activate the build hook.
 # The pinned versions of these dependencies will be subsituted during package builds.
 # Pinned versions will only be substitued for packages that are already in this package's dependencies list.
 pinned_dependencies = [
-    "xarray ~= 2024.1",
+    "xarray >= 2024.1",  # xarray follows calver rather than semver, so using >= is the best we can do
     "pandas ~= 2.0",
     "scipy ~= 1.13",
     "bottleneck ~= 1.3"
@@ -103,9 +103,6 @@ warn_unused_configs = true
 
 [[tool.mypy.overrides]]
 module = "scipy.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
 ignore_missing_imports = true
 
 [tool.coverage.paths]
@@ -155,3 +152,48 @@ good-names=['df','da','x','y','z','i','j','k','ae']  # pylint: disable=E0015
 disable = [
     "too-many-positional-arguments",
 ]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+scores = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+all = { features = ["all", "dev", "tutorial"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+maintainer = { features = ["maintainer"], solve-group = "default" }
+tutorial = { features = ["tutorial"], solve-group = "default" }
+
+# -------------------------------------------------------------------------------------------------
+#  pixi tasks defined below
+# -------------------------------------------------------------------------------------------------
+# Tasks are grouped by "feature", a feature is mapped to collection of base and extra
+# dependencies.  For scores, the environments directly.
+#
+# Examples:
+#    - pre-canned task 1  |  `pixi run make-docs`        |  runs in environment "maintainer"
+#    - pre-canned task 2  |  `pixi run pre-commit`       |  runs in environment "dev"
+#    - custom task        |  `pixi run -e all python3 -m |  runs in environment "all"
+#
+# To see the exact packages in an environment run: `pixi list -x -e <env>
+#
+# -------------------------------------------------------------------------------------------------
+
+[tool.pixi.feature.dev.tasks]
+# run pre-commit on all files
+pre-commit = "pre-commit run --all-files"
+# test source code
+pytest-src = "pytest tests/ --cov=src/"
+# test notebooks
+pytest-nb = "pytest --nbmake tutorials/"
+
+[tool.pixi.feature.maintainer.tasks]
+# make documents & render tutorials
+make-docs = "sphinx-build -b html docs/ htmldocs"
+
+[tool.pixi.feature.tutorial.tasks]
+# launch jupyter lab
+jupyterlab = "jupyter lab --notebook-dir=./tutorials"

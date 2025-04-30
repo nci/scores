@@ -29,7 +29,7 @@ def risk_matrix_score(
         This is an implementation of a novel metric that is still undergoing mathematical peer review. 
         This implementation may change in line with the peer review process.
 
-    Calculates the risk matrix score of Taggart & Wilke (2024). 
+    Calculates the risk matrix score of Taggart & Wilke (2025). 
     
     Let :math:`(S_1, \\ldots,S_m)` denote the tuple of nested severity categories,
     let :math:`(p_1, \\ldots,p_n)`  denote the probability thresholds that delineate the
@@ -104,8 +104,8 @@ def risk_matrix_score(
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework
-          with consistent evaluation. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
+          with consistent evaluation. arXiv. https://doi.org/10.48550/arXiv.2502.08891
 
     See also:
         :py:func:`scores.emerging.matrix_weights_to_array`
@@ -219,7 +219,7 @@ def _risk_matrix_score(
     threshold_assignment: Optional[str] = "lower",
 ) -> XarrayLike:
     """
-    Calculates the risk matrix score (MS) of Taggart and Wilke (2024).
+    Calculates the risk matrix score (MS) of Taggart and Wilke (2025).
 
     Args:
         fcst: an array of forecast probabilities for the observation lying in each severity
@@ -299,8 +299,8 @@ def matrix_weights_to_array(
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework
-          with consistent evaluation. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
+          with consistent evaluation. arXiv. https://doi.org/10.48550/arXiv.2502.08891
 
     Examples:
         Returns weights for each risk matrix decision point, where weights increase with increasing
@@ -326,7 +326,7 @@ def matrix_weights_to_array(
     if matrix_dims[1] != len(severity_coords):  # type: ignore
         raise ValueError("number of `severity_coords` must equal number of columns of `matrix_weights`")
 
-    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):  # type: ignore
         raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
 
     prob_threshold_coords = np.flip(np.sort(np.array(prob_threshold_coords)))
@@ -345,7 +345,7 @@ def matrix_weights_to_array(
 
 def weights_from_warning_scaling(
     scaling_matrix: np.ndarray,
-    assessment_weights: Iterable,
+    evaluation_weights: Iterable,
     severity_dim: str,
     severity_coords: Iterable,
     prob_threshold_dim: str,
@@ -356,22 +356,22 @@ def weights_from_warning_scaling(
         This function is part of an implementation of a novel metric that is still undergoing
         mathematical peer review. This implementation may change in line with the peer review process.
 
-    Given a warning scaling matrix, assessment weights and other inputs,
+    Given a warning scaling matrix, evaluation weights and other inputs,
     returns the weights for each risk matrix decision point as an xarray data array. The returned
     data array is designed to be used for the :py:func:`scores.emerging.risk_matrix_score` calculation.
 
     Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
-    of warning scaling in Table 1 of Taggart & Wilke (2024).
+    of warning scaling in Table 1 of Taggart & Wilke (2025).
 
     Args:
         scaling_matrix: a 2-dimensional matrix encoding the warning scaling. Warning levels
             are given integer values 0, 1, ..., q. The top row corresponds to the
             highest certainty category while the right-most column corresponds to most
             severe category.
-        assessment_weights: positive weights used for warning assessment. The kth weight
-            (corresponding to ``assessment_weights[k-1]``) is proportional to the importance
+        evaluation_weights: positive weights used for warning evaluation. The kth weight
+            (corresponding to ``evaluation_weights[k-1]``) is proportional to the importance
             of accurately discriminating between warning states below level k and
-            warning states at or above level k. ``len(assessment_weights)`` must be at least q.
+            warning states at or above level k. ``len(evaluation_weights)`` must be at least q.
         severity_dim: name of the severity category dimension.
         severity_coords: labels for each of the severity categories, in order of increasing
             severity. Does NOT include the lowest severity category for which no warning would
@@ -392,17 +392,17 @@ def weights_from_warning_scaling(
         ValueError: if ``scaling_matrix`` increases along any column (moving top to bottom).
         ValueError: if number of rows of ``matrix_weights`` doesn't equal length of ``prob_threshold_coords``.
         ValueError: if number of columns of ``matrix_weights`` doesn't equal length of ``severity_coords``.
-        ValueError: ``len(assessment_weights)`` is less than the maximum value in ``scaling_matrix``.
+        ValueError: ``len(evaluation_weights)`` is less than the maximum value in ``scaling_matrix``.
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
-        ValueError: if ``assessment_weights`` aren't strictly positive.
+        ValueError: if ``evaluation_weights`` aren't strictly positive.
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework
-          with consistent evaluation. In preparation.
+        - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
+          with consistent evaluation. arXiv. https://doi.org/10.48550/arXiv.2502.08891
 
     Examples:
         Returns weights for each risk matrix decision point, for the SHORT-RANGE scaling matrix of
-        Taggart & Wilke (2024), with ESCALATION assessment weights.
+        Taggart & Wilke (2025), with ESCALATION evaluation weights.
 
         >>> import numpy as np
         >>> from scores.emerging import weights_from_warning_scaling
@@ -439,36 +439,36 @@ def weights_from_warning_scaling(
         raise ValueError("Length of `prob_threshold_coords` should be one less than rows of `scaling_matrix`")
     if scaling_matrix_shape[1] - 1 != len(severity_coords):  # type: ignore
         raise ValueError("Length of `severity_coords` should be one less than columns of `scaling_matrix`")
-    if len(assessment_weights) < np.max(scaling_matrix):  # type: ignore
-        raise ValueError("length of `assessment_weights` must be at least the highest value in `scaling_matrix`")
+    if len(evaluation_weights) < np.max(scaling_matrix):  # type: ignore
+        raise ValueError("length of `evaluation_weights` must be at least the highest value in `scaling_matrix`")
 
     # check on other inputs
-    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):  # type: ignore
         raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
-    if np.min(assessment_weights) <= 0:
-        raise ValueError("values in `assessment_weights` must be positive")
+    if np.min(evaluation_weights) <= 0:  # type: ignore
+        raise ValueError("values in `evaluation_weights` must be positive")
 
-    weight_matrix = _scaling_to_weight_matrix(scaling_matrix, assessment_weights)
+    weight_matrix = _scaling_to_weight_matrix(scaling_matrix, evaluation_weights)
     weight_array = matrix_weights_to_array(
         weight_matrix, severity_dim, severity_coords, prob_threshold_dim, prob_threshold_coords
     )
     return weight_array
 
 
-def _scaling_to_weight_matrix(scaling_matrix, assessment_weights):
+def _scaling_to_weight_matrix(scaling_matrix, evaluation_weights):
     """
-    Given a scaling matrix and assessment weights, outputs the weight matrix for the
+    Given a scaling matrix and evaluation weights, outputs the weight matrix for the
     decision points of the corresponding risk matrix.
 
-    This is an implementation of the algorithm of Appendix B, Taggart & Wilke (2024).
+    This is an implementation of the algorithm of Appendix B, Taggart & Wilke (2025).
 
     Args:
         scaling_matrix: np.array of warning scaling values. Values must be integers.
-        assessment_weights: list of weights for each warning level decision threshold.
+        evaluation_weights: list of weights for each warning level decision threshold.
     Returns:
         np.array of weights
     """
-    max_level = max(np.max(scaling_matrix), len(assessment_weights))
+    max_level = max(np.max(scaling_matrix), len(evaluation_weights))
 
     scaling_matrix_shape = scaling_matrix.shape
     n_sev = scaling_matrix_shape[1] - 1  # number of severity categories for weight matrix
@@ -491,7 +491,7 @@ def _scaling_to_weight_matrix(scaling_matrix, assessment_weights):
             if prob_index >= lowest_prob_index:
                 prob_index = 0
             if prob_index > 0:
-                wts[prob_index - 1, column - 1] = wts[prob_index - 1, column - 1] + assessment_weights[level - 1]
+                wts[prob_index - 1, column - 1] = wts[prob_index - 1, column - 1] + evaluation_weights[level - 1]
                 lowest_prob_index = prob_index
 
     wts = np.flip(wts, axis=0)

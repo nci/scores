@@ -1,5 +1,47 @@
 # Release Notes (What's New)
 
+## Version 2.1.0 (April 30, 2025)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.0.0...2.1.0). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+- Added a new fuction:
+	- Block bootstrap: `scores.processing.block_bootstrap`. See [PR #418](https://github.com/nci/scores/pull/418).
+- Added two new metrics:
+	- Stable equitable error in probability space (SEEPS): `scores.categorical.seeps`. See [PR #809](https://github.com/nci/scores/pull/809) and [PR #833](https://github.com/nci/scores/pull/833).
+	- Nash-Sutcliffe model efficiency coefficient (NSE): `scores.continuous.nse`. See [PR #815](https://github.com/nci/scores/pull/815).
+
+### Documentation
+
+- Added "Block Bootstrapping" tutorial. See [PR #418](https://github.com/nci/scores/pull/418). 
+- Added "Stable Equitable Error in Probability Space (SEEPS)" tutorial. See [PR #809](https://github.com/nci/scores/pull/809).
+- Added "Nash-Sutcliffe Efficiency (NSE)" tutorial. See [PR #815](https://github.com/nci/scores/pull/815).
+- Updated the "Continuous Ranked Probability Score (CRPS) for Ensembles" tutorial:
+	- Labelled dimensions in fcst/obs data.
+	- Updated description of the plot to say the area squared corresponds to the CRPS.
+	- Added an example with multiple coordinates along a dimension.  
+	See [PR #805](https://github.com/nci/scores/pull/805).
+- Updated "Data Sources":
+	- Added links to two additional datasets for gridded global numerical weather prediction.
+	- Added links to several additional datasets for point-based data.  
+	See [PR #823](https://github.com/nci/scores/pull/823) and [PR #831](https://github.com/nci/scores/pull/831). 
+- Updated references in several sections of the documentation, following the publication of a [preprint](https://doi.org/10.48550/arXiv.2502.08891) for the risk matrix score. See [PR #827](https://github.com/nci/scores/pull/827).
+
+### Internal Changes
+
+- Tested and added compatibility for recent Xarray versions (2025 and onwards) and adjusted dependency specification so new year "major version" rollovers will be permitted by default in future. See [commit #f109f2f](https://github.com/nci/scores/commit/f109f2f434ac684b3d54f447c330466d33703279) and [commit #8428d64](https://github.com/nci/scores/commit/8428d64dcf2a5f5480c61b266284260d4b5078d2).
+- In `scores.emerging.weights_from_warning_scaling`, changed the name of the argument `assessment_weights` to  `evaluation_weights`. See [PR #806](https://github.com/nci/scores/issues/806).  
+***Note:** This is technically a breaking change, but does not trigger a major release as it is contained within the "emerging" section of the API. This area of the API is designated for metrics which are still undergoing peer review and as such are expected to undergo change. Once peer review is concluded, the implementation will be finalised and moved.*
+- Add support for developers of `scores` who choose to use the `pixi` tool for environment management. See [PR #835](https://github.com/nci/scores/pull/835), [PR #839](https://github.com/nci/scores/pull/839) and [PR #840](https://github.com/nci/scores/pull/840).
+
+### Contributors to this Release
+
+Dougal T. Squire* ([@dougiesquire](https://github.com/dougiesquire)), Mohammad Mahadi Hasan* ([@engrmahadi](https://github.com/engrmahadi)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)), Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)) Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), 
+Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Durga Shrestha ([@durgals](https://github.com/durgals)) and Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.0.0 (December 7, 2024)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.3.0...2.0.0). Below are the changes we think users may wish to be aware of.

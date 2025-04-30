@@ -2,6 +2,8 @@
 Contains frequently-used functions of a general nature within scores
 """
 
+import copy
+import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
@@ -11,7 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -20,7 +22,6 @@ In order to reduce or preserve the named data dimension, specify ['all'] as a li
 rather than relying on string interpretation. The program will continue to interpret the
 string as an instruction to reduce or preserve every dimension.
 """
-
 
 ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
 You are requesting to preserve a dimension which does not appear in your data 
@@ -37,6 +38,17 @@ raised instead.
 ERROR_OVERSPECIFIED_PRESERVE_REDUCE = """
 You have specified both preserve_dims and reduce_dims. This method doesn't know how
 to properly interpret that, therefore an exception has been raised.
+"""
+
+ERROR_INVALID_WEIGHTS = """
+You have specified invalid weights. The weights (excluding NaNs) must be >= 0, with at least one
+strictly positive weight.
+"""
+
+WARN_INVALID_WEIGHTS = f"""
+{ERROR_INVALID_WEIGHTS}
+NOTE: The score in which this check has been used has allowed this to be a warning instead of a
+      error. The user is responsible for checking the integrity of the inputs and outputs.
 """
 
 
@@ -442,3 +454,64 @@ def check_binary(data: XarrayLike, name: str):
 
     if not set(unique_values).issubset(binary_set):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
+
+
+def check_weights(weights: XarrayLike, *, raise_error=True):
+    """
+    This is a check that requires weights to be non-negative (NaN values are excluded from the check
+    since they are used as masks). At least one of the weights must be strictly positive.
+
+    .. note::
+
+        It has optional support to raise a warning instead (by setting ``raise_error=False``) for
+        specialized functions that may need to support negative weights (though this is not
+        recommended).
+
+    Args:
+        weights: weights to check
+        raise_error: raise an error, instead of warning (default: ``True``)
+
+    .. see-also::
+
+        This function covers most bases, regardless, for potential improvements see:
+            - `#828 <GITHUB828_>`_.
+            - `#829 <GITHUB829_>`_.
+
+    Raises:
+        UserWarning: if ``raise_error=False`` and weights are invalid
+        ValueError: if ``raise_error=True`` and weights are invalid
+
+    .. _GITHUB828: https://github.com/nci/scores/issues/828
+    .. _GITHUB829: https://github.com/nci/scores/issues/829
+    """
+    # safety: weights must be XarrayLike
+    assert is_xarraylike(weights)
+
+    def _check_single_array(_da_weights: xr.DataArray):
+        # type safety: dev/test only
+        assert isinstance(_da_weights, xr.DataArray)
+        # ignore NaNs - they are used for exclusion
+        weights_masked = np.ma.array(_da_weights, mask=np.isnan(_da_weights))
+        # however, still check that we have at least one proper number.
+        checks_passed = np.any(~np.isnan(_da_weights))
+        # the rest (non-NaN) should all be non-negative ...
+        checks_passed = checks_passed and np.ma.all(weights_masked >= 0)
+        # ... and at least one number must be strictly positive.
+        checks_passed = checks_passed and np.ma.any(weights_masked > 0)
+
+        if not checks_passed:
+            if raise_error:
+                raise ValueError(ERROR_INVALID_WEIGHTS)
+            # otherwise warn - pylint doesn't like explicit else
+            warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)
+
+    # handle both data arrays and datasets
+    if isinstance(weights, xr.DataArray):
+        _check_single_array(weights)
+    else:
+        # NOTE:
+        # Calling``items`` explicitly instead of ``values`` as ``values`` is confusing - it
+        # could be interpretted as retreiving the underlying ``numpy`` values which we
+        # DO NOT want to (accidentally) do.
+        for _, da_weights in weights.data_vars.items():
+            _check_single_array(da_weights)

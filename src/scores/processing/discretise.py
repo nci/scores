@@ -1,7 +1,8 @@
 """Tools for discretising data for verification"""
 
 import operator
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from numbers import Real
 from typing import Callable, Optional, Union
 
 import numpy as np
@@ -132,12 +133,12 @@ def comparative_discretise(
 
 def binary_discretise(
     data: XarrayLike,
-    thresholds: Optional[FlexibleDimensionTypes],
+    thresholds: Real | Sequence[Real],
     mode: Union[Callable, str],
     *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,
     autosqueeze: Optional[bool] = False,
-):
+) -> XarrayLike:
     """
     Converts the values of `data` to 0 or 1 for each threshold in `thresholds`
     according to the operation defined by `mode`.
@@ -347,7 +348,7 @@ def binary_discretise_proportion(
 
     """
     # values are 1 when (data {mode} threshold), and 0 when ~(data {mode} threshold).
-    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)
+    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)  # type: ignore
 
     # The proportion in each category
     dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)

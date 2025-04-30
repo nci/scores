@@ -5,7 +5,7 @@ This module contains methods related to the Brier score
 import operator
 from collections.abc import Sequence
 from numbers import Real
-from typing import Callable, Optional
+from typing import Callable, Optional, cast
 
 import xarray as xr
 
@@ -212,7 +212,7 @@ def brier_score_for_ensemble(
         score_specific_fcst_dims=ensemble_member_dim,
     )
     if isinstance(event_thresholds, (float, int)):
-        event_thresholds = [event_thresholds]
+        event_thresholds = [event_thresholds]  # type: ignore
     thresholds_xr = xr.DataArray(event_thresholds, dims=[threshold_dim], coords={threshold_dim: event_thresholds})
 
     # calculate i term in equation
@@ -237,4 +237,4 @@ def brier_score_for_ensemble(
     # apply weights and take means across specified dims
     result = apply_weights(result, weights=weights).mean(dim=dims_for_mean)
 
-    return result
+    return result  # type: ignore

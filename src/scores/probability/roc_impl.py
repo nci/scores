@@ -106,7 +106,7 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
 
     # make a discrete forecast for each threshold in thresholds
     # discrete_fcst has an extra dimension 'threshold'
-    discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)
+    discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)  # type: ignore
 
     all_dims = set(fcst.dims).union(set(obs.dims))
     final_reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)

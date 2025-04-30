@@ -101,6 +101,10 @@
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* - Nash-Sutcliffe Model Efficiency Coefficient (NSE)
+  - [API](api.md#scores.continuous.nse)
+  - [Tutorial](project:./tutorials/NSE.md)
+  - [Nash and Sutcliffe (1970)](https://doi.org/10.1016/0022-1694%2870%2990255-6)
 * - Pearson's Correlation Coefficient
   - [API](api.md#scores.continuous.correlation.pearsonr)
   - [Tutorial](project:./tutorials/Pearsons_Correlation.md)
@@ -559,6 +563,10 @@
   - [API](api.md#scores.categorical.probability_of_false_detection)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+* - Stable Equitable Error in Probability Space (SEEPS)
+  - [API](api.md#scores.categorical.seeps)
+  - [Tutorial](project:./tutorials/SEEPS.md)
+  - [Rodwell et al. (2010)](https://doi.org/10.1002/qj.656)
 * - Threshold Event Operator
   - [API](api.md#scores.categorical.ThresholdEventOperator)
   - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
@@ -649,6 +657,9 @@
 * - Binary Discretise Proportion
   - [API](api.md#scores.processing.binary_discretise_proportion)    
   - Flip-Flop Index
+* - Block Bootstrap
+  - [API](api.md#scores.processing.block_bootstrap)
+  - Confidence intervals. See [tutorial](project:./tutorials/Block_Bootstrapping.md)
 * - Broadcast and Match Not-a-Number (NaN)
   - [API](api.md#scores.processing.broadcast_and_match_nan)   
   - Murphy Score (Mean Elementary Score)
@@ -764,15 +775,18 @@
     - Risk Matrix Score
   - [API](api.md#scores.emerging.risk_matrix_score)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
-  - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+  - [Taggart and Wilke (2025)](https://doi.org/10.48550/arXiv.2502.08891)
+
 * -  
     - Risk Matrix Score - Matrix Weights to Array
   - [API](api.md#scores.emerging.matrix_weights_to_array)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
-  - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+  - [Taggart and Wilke (2025)](https://doi.org/10.48550/arXiv.2502.08891)
+
 * -  
     - Risk Matrix Score - Warning Scaling to Weight Array
   - [API](api.md#scores.emerging.weights_from_warning_scaling)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
-  - Taggart, R. J., & Wilke, D. J. (2024). Warnings based on risk matrices: a coherent framework with consistent evaluation. In preparation.
+  - [Taggart and Wilke (2025)](https://doi.org/10.48550/arXiv.2502.08891)
+
 ```

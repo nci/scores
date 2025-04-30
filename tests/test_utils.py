@@ -2,12 +2,15 @@
 Contains tests for the scores.utils file
 """
 
+import warnings
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores import utils
-from scores.utils import DimensionError, check_binary
+from scores.typing import XarrayLike
+from scores.utils import DimensionError, check_binary, check_weights
 from scores.utils import gather_dimensions as gd
 from tests import utils_test_data
 
@@ -756,3 +759,58 @@ def test_invalid_numpy_operator():
     """
     with pytest.raises(ValueError):
         utils.NumpyThresholdOperator(sorted)
+
+
+@pytest.mark.parametrize(
+    "weights,expect_error,expect_warning",
+    [
+        (utils_test_data.DA_WEIGHTS_GOOD, False, False),
+        (utils_test_data.DA_WEIGHTS_GOOD_SOME_NAN, False, False),
+        (utils_test_data.DA_WEIGHTS_GOOD_SOME_ZERO, False, False),
+        (utils_test_data.DA_WEIGHTS_BAD_ALL_NAN, True, False),
+        (utils_test_data.DA_WEIGHTS_BAD_ALL_ZERO, True, False),
+        (utils_test_data.DA_WEIGHTS_BAD_ANY_NEG, True, False),
+        (utils_test_data.DS_WEIGHTS_GOOD, False, False),
+        (utils_test_data.DS_WEIGHTS_GOOD_SOME_NAN, False, False),
+        (utils_test_data.DS_WEIGHTS_GOOD_SOME_ZERO, False, False),
+        (utils_test_data.DS_WEIGHTS_BAD_ALL_NAN, True, False),
+        (utils_test_data.DS_WEIGHTS_BAD_ALL_ZERO, True, False),
+        (utils_test_data.DS_WEIGHTS_BAD_ANY_NEG, True, False),
+        # no need to be extensive with warnings - we don't want to skew coverage
+        # unnecessarily - just testing a couple to make sure:
+        (utils_test_data.DS_WEIGHTS_BAD_ALL_ZERO, False, True),
+        (utils_test_data.DA_WEIGHTS_BAD_ANY_NEG, False, True),
+    ],
+)
+def test_check_weights(weights, expect_error, expect_warning):
+    """
+    Tests :py:func:`scores.utils.check_weights`.
+
+    Cases:
+        - conformant weights - at least one positive, rest can be >= 0
+        - any one weight negative - should raise error
+        - all NaNs - should raise error
+        - all zeros - should raise error
+        - should work for both dataarrays and datasets, with datasets even one weight
+          being "bad" should throw an error or warning regardless of the variable.
+        - should optionally support warnings
+    """
+
+    def _check_with_warning(_w):
+        with pytest.warns(UserWarning):
+            check_weights(_w, raise_error=False)
+
+    def _check_with_error(_w):
+        with pytest.raises(ValueError):
+            check_weights(_w, raise_error=True)
+
+    if expect_error:
+        _check_with_error(weights)
+
+    if expect_warning:
+        _check_with_warning(weights)
+
+    expect_success = not expect_error and not expect_warning
+
+    if expect_success:
+        check_weights(weights)

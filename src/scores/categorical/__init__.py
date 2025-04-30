@@ -12,12 +12,13 @@ from scores.categorical.contingency_impl import (
     EventOperator,
     ThresholdEventOperator,
 )
-from scores.categorical.multicategorical_impl import firm
+from scores.categorical.multicategorical_impl import firm, seeps
 
 __all__ = [
     "probability_of_detection",
     "probability_of_false_detection",
     "firm",
+    "seeps",
     "BasicContingencyManager",
     "BinaryContingencyManager",
     "ThresholdEventOperator",

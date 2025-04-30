@@ -24,6 +24,7 @@
 .. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.pbias
 .. autofunction:: scores.continuous.kge
+.. autofunction:: scores.continuous.nse
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
 .. autofunction:: scores.continuous.consistent_quantile_score
@@ -68,6 +69,7 @@
     :members:
 .. autoclass:: scores.categorical.EventOperator
     :members:
+.. autofunction:: scores.categorical.seeps
 ```
 
 ## scores.spatial
@@ -87,6 +89,7 @@
 
 ## scores.processing
 ```{eval-rst}
+.. autofunction:: scores.processing.block_bootstrap
 .. autofunction:: scores.processing.isotonic_fit
 .. autofunction:: scores.processing.broadcast_and_match_nan
 .. autofunction:: scores.processing.comparative_discretise
