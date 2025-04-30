@@ -293,7 +293,7 @@ def block_bootstrap(
 ) -> Union[XarrayLike, Tuple[XarrayLike, ...]]:
     """
     Perform block bootstrapping on provided arrays. The function creates new arrays by repeatedly
-    bootstrapping along specified dimensions and stacking the new arrays alone a new "iteration"
+    bootstrapping along specified dimensions and stacking the new arrays along a new "iteration"
     dimension. Additionally, it includes internal functions for chunk size calculation and
     handling Dask arrays for chunk size limitation.
 
