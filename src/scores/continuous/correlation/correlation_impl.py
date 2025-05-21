@@ -55,6 +55,9 @@ def pearsonr(
 
     Reference:
         https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+
+    See Also:
+        :py:func:`scores.continuous.correlation.spearmanr`
     """
     if preserve_dims == "all":
         raise ValueError(
@@ -78,13 +81,11 @@ def spearmanr(
     Calculates the Spearman's rank correlation coefficient between two xarray objects.
 
     .. math::
+        r_s = \\rho\\big(R(x), R(y)\\big)
 
-        r_s = 1 - \\frac{6 \\sum d_i^2}{n(n^2 - 1)}
-
-    \\text{where:} \\\\
-    \\quad d_i = R(x_i) - R(y_i) \\\\
-    \\quad R(x_i), R(y_i) \\text{ are ranks of } x_i \\text{ and } y_i \\\\
-    \\quad n \\text{ is the number of observations}
+    where:
+        - :math:`\\rho` is the Pearson correlation coefficient.
+        - :math:`R` is the ranking operator.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -108,6 +109,9 @@ def spearmanr(
     Reference:
         Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of Psychology, 15(1), 72–101.
         https://doi.org/10.2307/1412159
+
+    See also:
+        :py:func:`scores.continuous.correlation.pearsonr`
     """
     if preserve_dims == "all":
         raise ValueError(
