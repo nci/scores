@@ -49,6 +49,8 @@ def pearsonr(
 
     Raises:
         ValueError: If `preserve_dims` is set to 'all', a ValueError will be raised.
+        TypeError: If the input types are not xarray DataArrays or Datasets.
+        ValueError: If the input Datasets do not have the same data variables.
 
     Note:
         This function isn't set up to take weights.

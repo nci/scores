@@ -147,12 +147,35 @@ def test_spearman_correlation(da1, da2, reduce_dims, preserve_dims, expected):
     xr.testing.assert_allclose(result, expected)
 
 
-def test_spearman_correlation_raises():
+@pytest.mark.parametrize(
+    ("da1", "da2", "preserve_dims", "err", "err_msg"),
+    [
+        # Check preserve_dims = "all"
+        (DA1_CORR, DA2_CORR, "all", ValueError, "The 'preserve_dims' argument cannot be set to 'all'"),
+        # Check xr.Datasets with different variables
+        (
+            xr.Dataset({"var1": DA1_CORR}),
+            xr.Dataset({"var2": DA2_CORR}),
+            None,
+            ValueError,
+            "Both datasets must contain the same variables",
+        ),
+        # Check mixing Datasets with DataArrays
+        (
+            xr.Dataset({"var1": DA1_CORR}),
+            DA2_CORR,
+            None,
+            TypeError,
+            "Both fcst and obs must be either xarray DataArrays or xarray Datasets",
+        ),
+    ],
+)
+def test_spearman_correlation_raises(da1, da2, preserve_dims, err, err_msg):
     """
-    Tests continuous.correlation.spearmanr raises the correct error
+    Tests continuous.correlation.spearmanr raises the correct errors
     """
-    with pytest.raises(ValueError, match="The 'preserve_dims' argument cannot be set to 'all'"):
-        spearmanr(DA1_CORR, DA2_CORR, preserve_dims="all", reduce_dims=None)
+    with pytest.raises(err, match=err_msg):
+        spearmanr(da1, da2, preserve_dims=preserve_dims)
 
 
 def test_spearman_correlation_dask():
