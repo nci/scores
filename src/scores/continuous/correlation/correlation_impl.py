@@ -49,8 +49,6 @@ def pearsonr(
 
     Raises:
         ValueError: If `preserve_dims` is set to 'all', a ValueError will be raised.
-        TypeError: If the input types are not xarray DataArrays or Datasets.
-        ValueError: If the input Datasets do not have the same data variables.
 
     Note:
         This function isn't set up to take weights.
@@ -77,7 +75,7 @@ def spearmanr(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> Union[xr.DataArray, xr.Dataset]:
     """
-    Calculates the Spearman's rank correlation coefficient between two xarray objects \
+    Calculates the Spearman's rank correlation coefficient between two xarray objects 
     (either DataArrays or Datasets).
 
     .. math::
@@ -105,6 +103,8 @@ def spearmanr(
 
     Raise ValueError:
         If `preserve_dims` is set to 'all', a ValueError will be raised.
+        TypeError: If the input types are not xarray DataArrays or Datasets.
+        ValueError: If the input Datasets do not have the same data variables.
 
     Reference:
         Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of Psychology, 15(1), 72–101.
