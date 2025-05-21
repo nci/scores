@@ -94,14 +94,15 @@ def spearmanr(
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
+        # Flatten/stack the arrays along the dimensions to be reduced
+        tmp_dim = "".join(list(fcst.dims) + list(obs.dims))
+        obs_stacked = obs.stack({tmp_dim: reduce_dims})
+        fcst_stacked = fcst.stack({tmp_dim: reduce_dims})
+        # Rank
+        fcst_ranks = fcst_stacked.rank(dim=tmp_dim)
+        obs_ranks = obs_stacked.rank(dim=tmp_dim)
 
-        fcst_ranks = fcst
-        obs_ranks = obs
-        for dim in reduce_dims:
-            fcst_ranks = fcst_ranks.rank(dim=dim)
-            obs_ranks = obs_ranks.rank(dim=dim)
-
-        return xr.corr(fcst_ranks, obs_ranks, reduce_dims)
+        return xr.corr(fcst_ranks, obs_ranks, tmp_dim)
 
     if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
         # Ensure both datasets have the same variables
