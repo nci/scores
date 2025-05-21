@@ -58,6 +58,17 @@ def pearsonr(
 
     See Also:
         :py:func:`scores.continuous.correlation.spearmanr`
+
+    Example:
+        >>> import xarray as xr
+        >>> import numpy as np
+        >>> from scores.continuous.correlation.correlation_impl import pearsonr
+        >>> # Create example forecast and observation DataArrays
+        >>> fcst = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
+        >>> obs = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
+        >>> # Calculate Pearson's correlation coefficient
+        >>> result = pearsonr(fcst, obs, reduce_dims="time")
+        >>> print(result)
     """
     if preserve_dims == "all":
         raise ValueError(
@@ -106,12 +117,26 @@ def spearmanr(
         TypeError: If the input types are not xarray DataArrays or Datasets.
         ValueError: If the input Datasets do not have the same data variables.
 
+    Note:
+        This function isn't set up to take weights.
+
     Reference:
         Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of Psychology, 15(1), 72–101.
         https://doi.org/10.2307/1412159
 
     See also:
         :py:func:`scores.continuous.correlation.pearsonr`
+
+    Example:
+        >>> import xarray as xr
+        >>> import numpy as np
+        >>> from scores.continuous.correlation.correlation_impl import spearmanr
+        >>> # Create example forecast and observation DataArrays
+        >>> fcst = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
+        >>> obs = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
+        >>> # Calculate Spearman's rank correlation coefficient
+        >>> result = spearmanr(fcst, obs, reduce_dims="time")
+        >>> print(result)
     """
     if preserve_dims == "all":
         raise ValueError(
