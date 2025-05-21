@@ -103,6 +103,14 @@ def test_pearson_correlation(da1, da2, reduce_dims, preserve_dims, expected):
     xr.testing.assert_allclose(result, expected)
 
 
+def test_pearson_correlation_raises():
+    """
+    Tests continuous.correlation.pearsonr raises tje correct error
+    """
+    with pytest.raises(ValueError, match="The 'preserve_dims' argument cannot be set to 'all'"):
+        pearsonr(DA1_CORR, DA2_CORR, preserve_dims="all", reduce_dims=None)
+
+
 def test_correlation_dask():
     """
     Tests continuous.correlation works with Dask
@@ -137,6 +145,14 @@ def test_spearman_correlation(da1, da2, reduce_dims, preserve_dims, expected):
     """
     result = spearmanr(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
     xr.testing.assert_allclose(result, expected)
+
+
+def test_spearman_correlation_raises():
+    """
+    Tests continuous.correlation.spearmanr raises the correct error
+    """
+    with pytest.raises(ValueError, match="The 'preserve_dims' argument cannot be set to 'all'"):
+        spearmanr(DA1_CORR, DA2_CORR, preserve_dims="all", reduce_dims=None)
 
 
 def test_spearman_correlation_dask():

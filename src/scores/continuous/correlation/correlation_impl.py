@@ -47,12 +47,19 @@ def pearsonr(
     Returns:
         xr.DataArray: An xarray object with Pearson's correlation coefficient values
 
+    Raises:
+        ValueError: If `preserve_dims` is set to 'all', a ValueError will be raised.
+
     Note:
         This function isn't set up to take weights.
 
     Reference:
         https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
     """
+    if preserve_dims == "all":
+        raise ValueError(
+            "The 'preserve_dims' argument cannot be set to 'all' for the Pearson's correlation coefficient."
+        )
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
@@ -85,10 +92,17 @@ def spearmanr(
     Returns:
         xr.DataArray or xr.Dataset: An xarray object with Spearman's rank correlation coefficient values.
 
+    Raise ValueError:
+        If `preserve_dims` is set to 'all', a ValueError will be raised.
+
     Reference:
         Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of Psychology, 15(1), 72–101.
         https://doi.org/10.2307/1412159
     """
+    if preserve_dims == "all":
+        raise ValueError(
+            "The 'preserve_dims' argument cannot be set to 'all' for the Spearman's correlation coefficient."
+        )
     if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
         # Handle DataArray case
         reduce_dims = scores.utils.gather_dimensions(
