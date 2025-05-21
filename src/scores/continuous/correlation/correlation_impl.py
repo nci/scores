@@ -103,11 +103,14 @@ def spearmanr(
         raise ValueError(
             "The 'preserve_dims' argument cannot be set to 'all' for the Spearman's correlation coefficient."
         )
-    if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
-        # Handle DataArray case
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+
+    def _spearman_calc(fcst, obs, reduce_dims):
+        """
+        Core calculation for Spearman's rank correlation coefficient.
+        """
         # Flatten/stack the arrays along the dimensions to be reduced
         tmp_dim = "".join(list(fcst.dims) + list(obs.dims))
         obs_stacked = obs.stack({tmp_dim: reduce_dims})
@@ -118,16 +121,16 @@ def spearmanr(
 
         return xr.corr(fcst_ranks, obs_ranks, tmp_dim)
 
+    if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
+        return _spearman_calc(fcst, obs, reduce_dims)
+
     if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
         # Ensure both datasets have the same variables
         if set(fcst.data_vars) != set(obs.data_vars):
             raise ValueError("Both datasets must contain the same variables.")
 
         # Apply spearmanr to each variable
-        results = {
-            var: spearmanr(fcst[var], obs[var], reduce_dims=reduce_dims, preserve_dims=preserve_dims)
-            for var in fcst.data_vars
-        }
+        results = {var: _spearman_calc(fcst[var], obs[var], reduce_dims) for var in fcst.data_vars}
 
         return xr.Dataset(results)
 
