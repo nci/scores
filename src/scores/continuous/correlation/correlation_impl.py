@@ -80,6 +80,15 @@ def spearmanr(
     Calculates the Spearman's rank correlation coefficient between two xarray objects \
     (either DataArrays or Datasets).
 
+    .. math::
+
+        r_s = 1 - \\frac{6 \\sum d_i^2}{n(n^2 - 1)}
+
+    \\text{where:} \\\\
+    \\quad d_i = R(x_i) - R(y_i) \\\\
+    \\quad R(x_i), R(y_i) \\text{ are ranks of } x_i \\text{ and } y_i \\\\
+    \\quad n \\text{ is the number of observations}
+
     Args:
         fcst: Forecast or predicted variables (xarray DataArray or Dataset).
         obs: Observed variables (xarray DataArray or Dataset).
