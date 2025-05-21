@@ -7,7 +7,7 @@ from typing import Optional, Union
 import xarray as xr
 
 import scores.utils
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 
 def pearsonr(
@@ -68,15 +68,14 @@ def pearsonr(
 
 
 def spearmanr(
-    fcst: Union[xr.DataArray, xr.Dataset],
-    obs: Union[xr.DataArray, xr.Dataset],
+    fcst: XarrayLike,
+    obs: XarrayLike,
     *,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-) -> Union[xr.DataArray, xr.Dataset]:
+) -> XarrayLike:
     """
-    Calculates the Spearman's rank correlation coefficient between two xarray objects 
-    (either DataArrays or Datasets).
+    Calculates the Spearman's rank correlation coefficient between two xarray objects.
 
     .. math::
 
@@ -88,8 +87,8 @@ def spearmanr(
     \\quad n \\text{ is the number of observations}
 
     Args:
-        fcst: Forecast or predicted variables (xarray DataArray or Dataset).
-        obs: Observed variables (xarray DataArray or Dataset).
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the Spearman's rank correlation coefficient.
             All other dimensions will be preserved.
@@ -99,10 +98,10 @@ def spearmanr(
             preserved.
 
     Returns:
-        xr.DataArray or xr.Dataset: An xarray object with Spearman's rank correlation coefficient values.
+        An xarray object with Spearman's rank correlation coefficient values.
 
-    Raise ValueError:
-        If `preserve_dims` is set to 'all', a ValueError will be raised.
+    Raises:
+        ValueError: If `preserve_dims` is set to 'all', a ValueError will be raised.
         TypeError: If the input types are not xarray DataArrays or Datasets.
         ValueError: If the input Datasets do not have the same data variables.
 
