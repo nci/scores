@@ -2,7 +2,7 @@
 This module contains functions to calculate the correlation.
 """
 
-from typing import Optional, Union
+from typing import Optional, all_same_xarraylike
 
 import xarray as xr
 
@@ -70,14 +70,13 @@ def pearsonr(
         >>> result = pearsonr(fcst, obs, reduce_dims="time")
         >>> print(result)
     """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
     if preserve_dims == "all":
         raise ValueError(
             "The 'preserve_dims' argument cannot be set to 'all' for the Pearson's correlation coefficient."
         )
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
-
     return xr.corr(fcst, obs, reduce_dims)
 
 
@@ -138,13 +137,13 @@ def spearmanr(
         >>> result = spearmanr(fcst, obs, reduce_dims="time")
         >>> print(result)
     """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
     if preserve_dims == "all":
         raise ValueError(
             "The 'preserve_dims' argument cannot be set to 'all' for the Spearman's correlation coefficient."
         )
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
 
     def _spearman_calc(fcst, obs, reduce_dims):
         """
@@ -158,7 +157,7 @@ def spearmanr(
         fcst_ranks = fcst_stacked.rank(dim=tmp_dim)
         obs_ranks = obs_stacked.rank(dim=tmp_dim)
 
-        return xr.corr(fcst_ranks, obs_ranks, tmp_dim)
+        return pearsonr(fcst_ranks, obs_ranks, reduce_dims=tmp_dim)
 
     if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
         return _spearman_calc(fcst, obs, reduce_dims)
