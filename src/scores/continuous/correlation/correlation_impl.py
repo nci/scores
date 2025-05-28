@@ -2,7 +2,7 @@
 This module contains functions to calculate the correlation.
 """
 
-from typing import Optional, all_same_xarraylike
+from typing import Optional
 
 import xarray as xr
 
