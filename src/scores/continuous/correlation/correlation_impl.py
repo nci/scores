@@ -7,7 +7,7 @@ from typing import Optional
 import xarray as xr
 
 import scores.utils
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 
 
 def pearsonr(
@@ -72,6 +72,9 @@ def pearsonr(
         >>> result = pearsonr(fcst, obs, reduce_dims="time")
         >>> print(result)
     """
+    if not all_same_xarraylike([fcst, obs]):
+        raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
+
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
@@ -91,8 +94,6 @@ def pearsonr(
         results = {_var: xr.corr(fcst[_var], obs[_var], reduce_dims) for _var in fcst.data_vars}
 
         return xr.Dataset(results)
-
-    raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
 
 
 def spearmanr(
