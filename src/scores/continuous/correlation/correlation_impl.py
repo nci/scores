@@ -86,14 +86,13 @@ def pearsonr(
     if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
         return xr.corr(fcst, obs, reduce_dims)
 
-    if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
-        # Ensure both datasets have the same variables
-        if set(fcst.data_vars) != set(obs.data_vars):
-            raise ValueError("Both datasets must contain the same variables.")
+    # Ensure both datasets have the same variables
+    if set(fcst.data_vars) != set(obs.data_vars):
+        raise ValueError("Both datasets must contain the same variables.")
 
-        results = {_var: xr.corr(fcst[_var], obs[_var], reduce_dims) for _var in fcst.data_vars}
+    results = {_var: xr.corr(fcst[_var], obs[_var], reduce_dims) for _var in fcst.data_vars}
 
-        return xr.Dataset(results)
+    return xr.Dataset(results)
 
 
 def spearmanr(
