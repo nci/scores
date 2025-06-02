@@ -115,9 +115,9 @@ def test_pearson_correlation(da1, da2, reduce_dims, preserve_dims, expected):
     ("da1", "da2", "preserve_dims", "err", "err_msg"),
     [
         # Check preserve_dims = "all"
-        (DA1_CORR, DA2_CORR, "all", ValueError, "The 'preserve_dims' argument cannot be set to 'all'"),
+        (DA1_CORR, DA2_CORR, "all", ValueError, "You cannot preserve all dimensions with"),
         # Check preserve_dims = all the dims
-        (DA1_CORR, DA2_CORR, ["time", "space"], ValueError, "The 'preserve_dims' argument cannot be set to 'all'"),
+        (DA1_CORR, DA2_CORR, ["time", "space"], ValueError, "You cannot preserve all dimensions with"),
         # Check xr.Datasets with different variables
         (
             xr.Dataset({"var1": DA1_CORR}),
@@ -184,9 +184,9 @@ def test_spearman_correlation(da1, da2, reduce_dims, preserve_dims, expected):
     ("da1", "da2", "preserve_dims", "err", "err_msg"),
     [
         # Check preserve_dims = "all"
-        (DA1_CORR, DA2_CORR, "all", ValueError, "The 'preserve_dims' argument cannot be set to 'all'"),
+        (DA1_CORR, DA2_CORR, "all", ValueError, "You cannot preserve all dimensions with"),
         # Check preserve_dims = all the dims
-        (DA1_CORR, DA2_CORR, ["time", "space"], ValueError, "The 'preserve_dims' argument cannot be set to 'all'"),
+        (DA1_CORR, DA2_CORR, ["time", "space"], ValueError, "You cannot preserve all dimensions with"),
         # Check xr.Datasets with different variables
         (
             xr.Dataset({"var1": DA1_CORR}),
