@@ -78,9 +78,10 @@ def pearsonr(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    if preserve_dims == "all":
+    if len(reduce_dims) == 0:
         raise ValueError(
-            "The 'preserve_dims' argument cannot be set to 'all' for the Pearson's correlation coefficient."
+            "The 'preserve_dims' argument cannot be set to 'all' for the Pearson's "
+            "correlation coefficient, nor can you list all dimensions to preserve."
         )
 
     if isinstance(fcst, xr.DataArray) and isinstance(obs, xr.DataArray):
@@ -155,9 +156,10 @@ def spearmanr(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    if preserve_dims == "all":
+    if len(reduce_dims) == 0:
         raise ValueError(
-            "The 'preserve_dims' argument cannot be set to 'all' for the Spearman's correlation coefficient."
+            "The 'preserve_dims' argument cannot be set to 'all' for the Spearman's "
+            "correlation coefficient, nor can you list all dimensions to preserve."
         )
     tmp_dim = "".join(list(fcst.dims) + list(obs.dims))
     obs_stacked = obs.stack({tmp_dim: reduce_dims})
