@@ -29,7 +29,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     .. math::
         \\text{quantile interval score} = \\underbrace{(q_{u} - q_{l})}_{\\text{interval width penalty}} +
         \\underbrace{\\frac{1}{\\alpha_l} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l})}_{\\text{over-prediction penalty}} +
-        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
+        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y > q_{u})}_{\\text{under-prediction penalty}}
 
     where
         - :math:`q_u` is the forecast at the upper quantile
