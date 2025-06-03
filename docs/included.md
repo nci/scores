@@ -137,6 +137,10 @@
   - [API](api.md#scores.continuous.rmse)
   - [Tutorial](project:./tutorials/Root_Mean_Squared_Error.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+* - Spearman's Correlation Coefficient
+  - [API](api.md#scores.continuous.correlation.spearmanr)
+  - [Tutorial](project:./tutorials/Spearmans_Correlation.md)
+  - [Spearman, C. (1904)](https://doi.org/10.2307/1412159)
 * - Threshold Weighted Absolute Error
   - [API](api.md#scores.continuous.tw_absolute_error)
   - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
