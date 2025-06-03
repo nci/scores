@@ -140,7 +140,7 @@
 * - Spearman's Correlation Coefficient
   - [API](api.md#scores.continuous.correlation.spearmanr)
   - [Tutorial](project:./tutorials/Spearmans_Correlation.md)
-  - [Spearman, C. (1904)](https://doi.org/10.2307/1412159)
+  - [Spearman (1904)](https://doi.org/10.2307/1412159)
 * - Threshold Weighted Absolute Error
   - [API](api.md#scores.continuous.tw_absolute_error)
   - [Tutorial](project:./tutorials/Threshold_Weighted_Scores.md)
