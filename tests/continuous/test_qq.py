@@ -31,30 +31,35 @@ NP_INTERP_METHODS = [
 
 @pytest.fixture
 def sample_dataarray1():
+    """Generate data for testing"""
     data = np.linspace(0, 99, num=100).reshape(10, 10)
     return xr.DataArray(data, dims=("x", "y"), coords={"x": np.arange(10), "y": np.arange(10)})
 
 
 @pytest.fixture
 def sample_dataarray2():
+    """Generate data for testing"""
     data = np.linspace(0, 198, num=100).reshape(10, 10)
     return xr.DataArray(data, dims=("x", "y"), coords={"x": np.arange(10), "y": np.arange(10)})
 
 
 @pytest.fixture
 def sample_dataarray3():
+    """Generate data for testing"""
     data = np.linspace(0, 9, num=10)
     return xr.DataArray(data, dims=("x"), coords={"x": np.arange(10)})
 
 
 @pytest.fixture
 def sample_dataarray4():
+    """Generate data for testing"""
     data = [0, 1, np.nan, 3, 4]
     return xr.DataArray(data, dims=("x"), coords={"x": [1, 2, 3, 4, 5]})
 
 
 @pytest.fixture
 def sample_dataset1():
+    """Generate data for testing"""
     data1 = np.linspace(0, 99, num=100).reshape(10, 10)
     da1 = xr.DataArray(data1, dims=("x", "y"), coords={"x": np.arange(10), "y": np.arange(10)})
     data2 = np.linspace(0, 198, num=100).reshape(10, 10)
@@ -65,6 +70,7 @@ def sample_dataset1():
 
 @pytest.fixture
 def sample_dataset2():
+    """Generate data for testing"""
     data1 = np.linspace(0, 198, num=100).reshape(10, 10)
     da1 = xr.DataArray(data1, dims=("x", "y"), coords={"x": np.arange(10), "y": np.arange(10)})
     data2 = np.linspace(0, 99, num=100).reshape(10, 10)
@@ -75,6 +81,7 @@ def sample_dataset2():
 
 @pytest.fixture
 def expected_result1():
+    """Expected result for testing"""
     data = np.array(
         [
             [
@@ -103,6 +110,7 @@ def expected_result1():
 
 @pytest.fixture
 def expected_result2():
+    """Expected result for testing"""
     da = xr.DataArray(
         np.array([[0, 49.5, 99], [0, 99, 198]]),
         dims=(
@@ -119,6 +127,7 @@ def expected_result2():
 
 @pytest.fixture
 def expected_result3():
+    """Expected result for testing"""
     data = np.array(
         [
             [
@@ -147,6 +156,7 @@ def expected_result3():
 
 @pytest.fixture
 def expected_result4():
+    """Expected result for testing"""
     da1 = xr.DataArray(
         np.array([[0, 99, 198], [0, 49.5, 99]]),
         dims=(
@@ -175,6 +185,7 @@ def expected_result4():
 
 @pytest.fixture
 def expected_result5():
+    """Expected result for testing"""
     da = xr.DataArray(
         np.array([[0, 2, 4], [0, 2, 4]]),
         dims=(
@@ -220,7 +231,7 @@ def test_empirical_quantiles_with_varied_inputs(
 
 
 @pytest.mark.parametrize("method", NP_INTERP_METHODS)
-def test_valid_interpolation_methods(method, sample_dataarray1):
+def test_valid_interpolation_methods(method, sample_dataarray1):  # pylint: disable=redefined-outer-name
     """
     Check that all interpolation methods work. Doesn't check the correctness of the results.
     """
@@ -232,7 +243,7 @@ def test_valid_interpolation_methods(method, sample_dataarray1):
     assert result.sizes["data_source"] == 2
 
 
-def test_invalid_interpolation_method(sample_dataarray1):
+def test_invalid_interpolation_method(sample_dataarray1):  # pylint: disable=redefined-outer-name
     """
     Tests that an error is raised if an invalid interpolation method is used
     """
@@ -243,7 +254,7 @@ def test_invalid_interpolation_method(sample_dataarray1):
 
 
 @pytest.mark.parametrize("quantiles", [[-0.01, 0.5], [0.5, 1.01]])
-def test_invalid_quantiles(quantiles, sample_dataarray1):
+def test_invalid_quantiles(quantiles, sample_dataarray1):  # pylint: disable=redefined-outer-name
     """
     Tests that an error is raised if values outside of [0, 1] are passed into the quantile arg
     """
@@ -251,7 +262,7 @@ def test_invalid_quantiles(quantiles, sample_dataarray1):
         empirical_quantile_quantile(sample_dataarray1, sample_dataarray1, quantiles=quantiles)
 
 
-def test_disallowed_data_source_dim(sample_dataarray1):
+def test_disallowed_data_source_dim(sample_dataarray1):  # pylint: disable=redefined-outer-name
     """
     Tests that an error is raised if a dimension is named 'data_source'
     """
@@ -270,7 +281,7 @@ def test_mismatched_dataset_variables():
         empirical_quantile_quantile(ds1, ds2, quantiles=[0.5])
 
 
-def test_type_mismatch(sample_dataarray1, sample_dataset1):
+def test_type_mismatch(sample_dataarray1, sample_dataset1):  # pylint: disable=redefined-outer-name
     """
     Tests that an error is raised when both xr.DataArrays and xr.Datasets are
     passed in at the same time
@@ -279,7 +290,7 @@ def test_type_mismatch(sample_dataarray1, sample_dataset1):
         empirical_quantile_quantile(sample_dataarray1, sample_dataset1, quantiles=[0.5])
 
 
-def test_all_dims_preserved_error(sample_dataarray1, sample_dataarray2):
+def test_all_dims_preserved_error(sample_dataarray1, sample_dataarray2):  # pylint: disable=redefined-outer-name
     """
     Test that when 'all' is specified for preserve_dims, the result has the same dimensions as the forecast.
     """
@@ -289,7 +300,7 @@ def test_all_dims_preserved_error(sample_dataarray1, sample_dataarray2):
         )
 
 
-def test_emperical_qq_dask(sample_dataarray4, expected_result5):
+def test_emperical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disable=redefined-outer-name
     """
     Tests continuous.empirical_quantile_quantile works with dask
     """
