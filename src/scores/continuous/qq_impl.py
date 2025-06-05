@@ -8,11 +8,27 @@ import numpy as np
 import xarray as xr
 
 from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import gather_dimensions
 
+NP_INTERP_METHODS = [
+    "inverted_cdf",
+    "averaged_inverted_cdf",
+    "closest_observation",
+    "interpolated_inverted_cdf",
+    "hazen",
+    "weibull",
+    "linear",
+    "median_unbiased",
+    "normal_unbiased",
+    "lower",
+    "higher",
+    "midpoint",
+    "nearest",
+]
 
-def quantile_quantile(
+
+def empirical_quantile_quantile(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
@@ -53,6 +69,10 @@ def quantile_quantile(
     Raises:
         ValueError: If the interpolation method is invalid.
         ValueError: if quantiles are not between 0 and 1.
+        ValueError: If dimensions named 'data_source' are present in the input data.
+        ValueError: If fcst and obs are Datasets with different data variables.
+        ValueError: If a user tries to preserve all dimensions.
+        TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
 
     References:
         Déqué, M. (2012). Deterministic forecasts of continuous variables. In I. T.
@@ -67,21 +87,7 @@ def quantile_quantile(
         >>> obs = xr.DataArray(np.random.rand(100), dims='time')
         >>> result = quantile_quantile(fcst, obs, quantiles=[0.1, 0.5, 0.9])
     """
-    if interpolation_method not in [
-        "inverted_cdf",
-        "averaged_inverted_cdf",
-        "closest_observation",
-        "interpolated_inverted_cdf",
-        "hazen",
-        "weibull",
-        "linear",
-        "median_unbiased",
-        "normal_unbiased",
-        "lower",
-        "higher",
-        "midpoint",
-        "nearest",
-    ]:
+    if interpolation_method not in NP_INTERP_METHODS:
         raise ValueError(
             f"Invalid interpolation method: {interpolation_method}. "
             "Choose from 'inverted_cdf', 'averaged_inverted_cdf', 'closest_observation', "
@@ -91,22 +97,39 @@ def quantile_quantile(
     if not (0 <= np.array(quantiles)).all() or not (np.array(quantiles) <= 1).all():
         raise ValueError("Quantiles must be in the range [0, 1]")
 
+    # Check that there isn't a dimension called 'data_source' in either fcst or obs
+    if "data_source" in fcst.dims or "data_source" in obs.dims:
+        raise ValueError("Dimensions named 'data_source' are not allowed in the input data.")
+    # Check if fcst and obs are both the same type (xarray.DataArray or xarray.Dataset)
+    if not all_same_xarraylike([fcst, obs]):
+        raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
+    # Check if datasets, that they have the same data vars
+    if isinstance(fcst, xr.Dataset):
+        if set(fcst.data_vars) != set(obs.data_vars) and isinstance(fcst, xr.Dataset):
+            raise ValueError("Both xr.Datasets must contain the same variables.")
+
     reduce_dims: FlexibleDimensionTypes = gather_dimensions(
         fcst_dims=fcst.dims,
         obs_dims=obs.dims,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
     )
+
+    if len(reduce_dims) == 0:
+        raise ValueError("You cannot preserve all dimensions with empirical_quantile_quantile.")
+
     fcst, obs = broadcast_and_match_nan(fcst, obs)
 
     fcst_quantiles = fcst.quantile(
-        quantiles=quantiles,
+        q=quantiles,
         dim=reduce_dims,
         method=interpolation_method,
     )
-    obs_quantiles = fcst.quantile(
-        quantiles=quantiles,
+    obs_quantiles = obs.quantile(
+        q=quantiles,
         dim=reduce_dims,
         method=interpolation_method,
     )
-    return {"fcst_q": fcst_quantiles, "obs_q": obs_quantiles}
+
+    result = xr.concat([fcst_quantiles, obs_quantiles], dim=xr.DataArray(["fcst", "obs"], dims=["data_source"]))
+    return result
