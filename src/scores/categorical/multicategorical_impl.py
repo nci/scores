@@ -108,12 +108,21 @@ def firm(  # pylint: disable=too-many-arguments
         is always proportional to the distance of the observation from the
         threshold, and similarly for false alarms.
 
+    Example:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.categorical import firm
+        >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
+        >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
+        >>> categorical_thresholds = [0.2, 0.5, 0.8]
+        >>> risk_parameter = 0.1
+        >>> firm_score = firm(fcst, obs, risk_parameter, categorical_thresholds)
+
     References:
         Taggart, R., Loveday, N. and Griffiths, D., 2022. A scoring framework for tiered
         warnings and multicategorical forecasts based on fixed risk measures. Quarterly
         Journal of the Royal Meteorological Society, 148(744), pp.1389-1406.
     """
-    # TODO: Check that a dim name isn't called 'components' in fcst or obs
     _check_firm_inputs(
         fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
     )
