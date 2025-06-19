@@ -47,6 +47,8 @@ DA_THRESHOLD_SC = xr.DataArray(
         "k": [10, 11],
     },
 )
+DS_FCST_SC = xr.Dataset(data_vars={"a": DA_FCST_SC, "b": DA_FCST_SC * 0})
+DS_OBS_SC = xr.Dataset(data_vars={"a": DA_OBS_SC, "b": DA_OBS_SC * 0})
 
 EXP_SC_TOTAL_CASE0 = xr.DataArray(
     data=[[[np.nan, 0.3], [0.7, np.nan]], [[0.0, 0], [0, np.nan]]],
@@ -75,12 +77,10 @@ EXP_SC_OVER_CASE0 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_SC_CASE0 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE0,
-        "underforecast_penalty": EXP_SC_UNDER_CASE0,
-        "overforecast_penalty": EXP_SC_OVER_CASE0,
-    }
+
+EXP_SC_CASE0 = xr.concat(
+    [EXP_SC_TOTAL_CASE0, EXP_SC_OVER_CASE0, EXP_SC_UNDER_CASE0],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_SC_TOTAL_CASE1 = xr.DataArray(
@@ -93,12 +93,9 @@ EXP_SC_TOTAL_CASE1 = xr.DataArray(
     },
 )
 
-EXP_SC_CASE1 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE1,
-        "underforecast_penalty": EXP_SC_TOTAL_CASE1,
-        "overforecast_penalty": EXP_SC_TOTAL_CASE1,
-    }
+EXP_SC_CASE1 = xr.concat(
+    [EXP_SC_TOTAL_CASE1, EXP_SC_TOTAL_CASE1, EXP_SC_TOTAL_CASE1],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_SC_TOTAL_CASE2 = xr.DataArray(
@@ -128,12 +125,9 @@ EXP_SC_OVER_CASE2 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_SC_CASE2 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE2,
-        "underforecast_penalty": EXP_SC_UNDER_CASE2,
-        "overforecast_penalty": EXP_SC_OVER_CASE2,
-    }
+EXP_SC_CASE2 = xr.concat(
+    [EXP_SC_TOTAL_CASE2, EXP_SC_OVER_CASE2, EXP_SC_UNDER_CASE2],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_SC_TOTAL_CASE3 = xr.DataArray(
@@ -163,12 +157,9 @@ EXP_SC_OVER_CASE3 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_SC_CASE3 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE3,
-        "underforecast_penalty": EXP_SC_UNDER_CASE3,
-        "overforecast_penalty": EXP_SC_OVER_CASE3,
-    }
+EXP_SC_CASE3 = xr.concat(
+    [EXP_SC_TOTAL_CASE3, EXP_SC_OVER_CASE3, EXP_SC_UNDER_CASE3],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 
@@ -194,12 +185,9 @@ EXP_SC_OVER_CASE4 = xr.DataArray(
     },
 )
 
-EXP_SC_CASE4 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE4,
-        "underforecast_penalty": EXP_SC_UNDER_CASE4,
-        "overforecast_penalty": EXP_SC_OVER_CASE4,
-    }
+EXP_SC_CASE4 = xr.concat(
+    [EXP_SC_TOTAL_CASE4, EXP_SC_OVER_CASE4, EXP_SC_UNDER_CASE4],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_SC_TOTAL_CASE5 = xr.DataArray(
@@ -224,12 +212,9 @@ EXP_SC_OVER_CASE5 = xr.DataArray(
     },
 )
 
-EXP_SC_CASE5 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE5,
-        "underforecast_penalty": EXP_SC_UNDER_CASE5,
-        "overforecast_penalty": EXP_SC_OVER_CASE5,
-    }
+EXP_SC_CASE5 = xr.concat(
+    [EXP_SC_TOTAL_CASE5, EXP_SC_OVER_CASE5, EXP_SC_UNDER_CASE5],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_SC_TOTAL_CASE6 = xr.DataArray(
@@ -259,13 +244,12 @@ EXP_SC_OVER_CASE6 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_SC_CASE6 = xr.Dataset(
-    {
-        "firm_score": EXP_SC_TOTAL_CASE6,
-        "underforecast_penalty": EXP_SC_UNDER_CASE6,
-        "overforecast_penalty": EXP_SC_OVER_CASE6,
-    }
+EXP_SC_CASE6 = xr.concat(
+    [EXP_SC_TOTAL_CASE6, EXP_SC_OVER_CASE6, EXP_SC_UNDER_CASE6],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
+
+EXP_SC_CASE7 = xr.Dataset(data_vars={"a": EXP_SC_CASE0, "b": EXP_SC_CASE0 * 0})
 
 DA_FCST_FIRM = xr.DataArray(
     data=[
@@ -279,6 +263,7 @@ DA_FCST_FIRM = xr.DataArray(
         "k": [10, 11, 12],
     },
 )
+DS_FCST_FIRM = xr.Dataset(data_vars={"a": DA_FCST_FIRM, "b": DA_FCST_FIRM * 0})
 DA_OBS_FIRM = xr.DataArray(
     data=[[0, 1], [10, np.nan], [0, 10]],
     dims=["j", "k"],
@@ -287,6 +272,7 @@ DA_OBS_FIRM = xr.DataArray(
         "k": [10, 11],
     },
 )
+DS_OBS_FIRM = xr.Dataset(data_vars={"a": DA_OBS_FIRM, "b": DA_OBS_FIRM * 0})
 
 DA_THRESHOLD_FIRM = [
     xr.DataArray(
@@ -449,12 +435,9 @@ EXP_FIRM_OVER_CASE0 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_FIRM_CASE0 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE0,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE0,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE0,
-    }
+EXP_FIRM_CASE0 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE0, EXP_FIRM_OVER_CASE0, EXP_FIRM_UNDER_CASE0],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_FIRM_TOTAL_CASE1 = xr.DataArray(
@@ -472,23 +455,17 @@ EXP_FIRM_OVER_CASE1 = xr.DataArray(
     dims=["i"],
     coords={"i": [1, 2]},
 )
-EXP_FIRM_CASE1 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE1,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE1,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE1,
-    }
+EXP_FIRM_CASE1 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE1, EXP_FIRM_OVER_CASE1, EXP_FIRM_UNDER_CASE1],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_FIRM_TOTAL_CASE2 = xr.DataArray(data=0.2666666666666)
 EXP_FIRM_OVER_CASE2 = xr.DataArray(data=0.3 / 9)
 EXP_FIRM_UNDER_CASE2 = xr.DataArray(data=2.1 / 9)
-EXP_FIRM_CASE2 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE2,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE2,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE2,
-    }
+EXP_FIRM_CASE2 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE2, EXP_FIRM_OVER_CASE2, EXP_FIRM_UNDER_CASE2],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_FIRM_TOTAL_CASE3 = xr.DataArray(
@@ -527,12 +504,9 @@ EXP_FIRM_OVER_CASE3 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_FIRM_CASE3 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE3,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE3,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE3,
-    }
+EXP_FIRM_CASE3 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE3, EXP_FIRM_OVER_CASE3, EXP_FIRM_UNDER_CASE3],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_FIRM_TOTAL_CASE4 = xr.DataArray(
@@ -571,12 +545,9 @@ EXP_FIRM_OVER_CASE4 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_FIRM_CASE4 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE4,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE4,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE4,
-    }
+EXP_FIRM_CASE4 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE4, EXP_FIRM_OVER_CASE4, EXP_FIRM_UNDER_CASE4],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_FIRM_TOTAL_CASE5 = xr.DataArray(
@@ -615,12 +586,9 @@ EXP_FIRM_OVER_CASE5 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_FIRM_CASE5 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE5,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE5,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE5,
-    }
+EXP_FIRM_CASE5 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE5, EXP_FIRM_OVER_CASE5, EXP_FIRM_UNDER_CASE5],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
 
 EXP_FIRM_TOTAL_CASE6 = xr.DataArray(
@@ -659,13 +627,12 @@ EXP_FIRM_OVER_CASE6 = xr.DataArray(
         "k": [10, 11],
     },
 )
-EXP_FIRM_CASE6 = xr.Dataset(
-    {
-        "firm_score": EXP_FIRM_TOTAL_CASE6,
-        "underforecast_penalty": EXP_FIRM_UNDER_CASE6,
-        "overforecast_penalty": EXP_FIRM_OVER_CASE6,
-    }
+EXP_FIRM_CASE6 = xr.concat(
+    [EXP_FIRM_TOTAL_CASE6, EXP_FIRM_OVER_CASE6, EXP_FIRM_UNDER_CASE6],
+    dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
 )
+
+EXP_FIRM_CASE7 = xr.Dataset(data_vars={"a": EXP_FIRM_CASE5, "b": EXP_FIRM_CASE5 * 0})
 # Data for SEEPS testing
 DA_OBS_SEEPS = xr.DataArray(
     data=[[0, 0.21, 15, -0.1, 5], [20, 0.2, 10, 200, 3], [20, 0.2, 10, 200, 3]],

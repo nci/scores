@@ -11,13 +11,13 @@ import xarray as xr
 
 from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, gather_dimensions
 
 
 def firm(  # pylint: disable=too-many-arguments
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     risk_parameter: float,
     categorical_thresholds: Union[Sequence[float], Sequence[xr.DataArray]],
     threshold_weights: Sequence[Union[float, xr.DataArray]],
@@ -27,7 +27,8 @@ def firm(  # pylint: disable=too-many-arguments
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     threshold_assignment: Optional[str] = "lower",
-) -> xr.Dataset:
+    return_components: bool = True,
+) -> XarrayLike:
     """
     Calculates the FIxed Risk Multicategorical (FIRM) score including the
     underforecast and overforecast penalties.
@@ -77,7 +78,8 @@ def firm(  # pylint: disable=too-many-arguments
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
 
     Returns:
-        An xarray Dataset with data vars:
+        An xarray object with the FIRM score. If `return_components` is true, then
+        a new dimension called "components" is created that contains the following coordinates:
 
         * firm_score: A score for a single category for each coord based on
           the FIRM framework.
@@ -108,24 +110,27 @@ def firm(  # pylint: disable=too-many-arguments
         warnings and multicategorical forecasts based on fixed risk measures. Quarterly
         Journal of the Royal Meteorological Society, 148(744), pp.1389-1406.
     """
+    # TODO: Check that a dim name isn't called 'components' in fcst or obs
     _check_firm_inputs(
         obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
     )
+    reduce_dims = gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )  # type: ignore[assignment]
     total_score = []
-    for categorical_threshold, weight in zip(categorical_thresholds, threshold_weights):
-        score = weight * _single_category_score(
+    for categorical_threshold, threshold_weight in zip(categorical_thresholds, threshold_weights):
+        score = threshold_weight * _single_category_score(
             fcst,
             obs,
             risk_parameter,
             categorical_threshold,  # type: ignore
             discount_distance=discount_distance,
             threshold_assignment=threshold_assignment,
+            return_components=return_components,
         )
         total_score.append(score)
     summed_score = sum(total_score)
-    reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )  # type: ignore[assignment]
+
     summed_score = apply_weights(summed_score, weights=weights)  # type: ignore
     score = summed_score.mean(dim=reduce_dims)  # type: ignore
 
@@ -167,14 +172,15 @@ def _check_firm_inputs(
 
 
 def _single_category_score(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     risk_parameter: float,
     categorical_threshold: Union[float, xr.DataArray],
     *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = None,
     threshold_assignment: Optional[str] = "lower",
-) -> xr.Dataset:
+    return_components: bool = True,
+) -> XarrayLike:
     """
     Calculates the score for a single category for the `firm` metric at each
     coord. Under-forecast and over-forecast penalties are also calculated
@@ -197,12 +203,13 @@ def _single_category_score(
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
 
     Returns:
-        An xarray Dataset with data vars:
+        An xarray object with the FIRM score for a single category. If `return_components` is true, then
+        a new dimension called "components" is created that contains the following coordinates:
 
-            * firm_score: a score for a single category for each coord
-              based on the FIRM framework. All dimensions are preserved.
-            * overforecast_penalty: Penalty for False Alarms.
-            * underforecast_penalty: Penalty for Misses.
+        * firm_score: A score for a single category for each coord based on
+          the FIRM framework.
+        * overforecast_penalty: Penalty for False Alarms.
+        * underforecast_penalty: Penalty for Misses.
     """
     # pylint: disable=unbalanced-tuple-unpacking
     fcst, obs = xr.align(fcst, obs)
@@ -237,15 +244,13 @@ def _single_category_score(
     underforecast_penalty = risk_parameter * scale_2 * condition2
     firm_score = overforecast_penalty + underforecast_penalty
 
-    score = xr.Dataset(
-        {
-            "firm_score": firm_score,
-            "overforecast_penalty": overforecast_penalty,
-            "underforecast_penalty": underforecast_penalty,
-        }
-    )
-    score = score.transpose(*fcst.dims)
-    return score
+    if return_components:
+        firm_score = xr.concat(
+            [firm_score, overforecast_penalty, underforecast_penalty],
+            dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
+        )
+        firm_score = firm_score.transpose("components", *fcst.dims)
+    return firm_score
 
 
 def seeps(  # pylint: disable=too-many-arguments, too-many-locals
