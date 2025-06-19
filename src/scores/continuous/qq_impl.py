@@ -28,7 +28,7 @@ NP_INTERP_METHODS = [
 ]
 
 
-def empirical_quantile_quantile(
+def generate_qq_plot_data(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
@@ -85,7 +85,7 @@ def empirical_quantile_quantile(
         >>> from scores.continuous import quantile_quantile
         >>> fcst = xr.DataArray(np.random.rand(100), dims='time')
         >>> obs = xr.DataArray(np.random.rand(100), dims='time')
-        >>> result = quantile_quantile(fcst, obs, quantiles=[0.1, 0.5, 0.9])
+        >>> result = generate_qq_plot_data(fcst, obs, quantiles=[0.1, 0.5, 0.9])
     """
     if interpolation_method not in NP_INTERP_METHODS:
         raise ValueError(
@@ -116,7 +116,7 @@ def empirical_quantile_quantile(
     )
 
     if len(reduce_dims) == 0:
-        raise ValueError("You cannot preserve all dimensions with empirical_quantile_quantile.")
+        raise ValueError("You cannot preserve all dimensions with generate_qq_plot_data.")
 
     fcst, obs = broadcast_and_match_nan(fcst, obs)
 

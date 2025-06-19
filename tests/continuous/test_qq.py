@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.continuous import empirical_quantile_quantile
+from scores.continuous import generate_qq_plot_data
 
 try:
     import dask
@@ -220,12 +220,10 @@ def expected_result5():
 def test_empirical_quantiles_with_varied_inputs(
     request, fcst_fixture, obs_fixture, quantiles, preserve_dims, reduce_dims, expected
 ):
-    """Tests that empirical_quantile_quantile produces the correct results"""
+    """Tests that generate_qq_plot_data produces the correct results"""
     fcst = request.getfixturevalue(fcst_fixture)
     obs = request.getfixturevalue(obs_fixture)
-    result = empirical_quantile_quantile(
-        fcst, obs, quantiles=quantiles, preserve_dims=preserve_dims, reduce_dims=reduce_dims
-    )
+    result = generate_qq_plot_data(fcst, obs, quantiles=quantiles, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
     expected = request.getfixturevalue(expected)
     xr.testing.assert_allclose(result, expected)
 
@@ -235,7 +233,7 @@ def test_valid_interpolation_methods(method, sample_dataarray1):  # pylint: disa
     """
     Check that all interpolation methods work. Doesn't check the correctness of the results.
     """
-    result = empirical_quantile_quantile(
+    result = generate_qq_plot_data(
         sample_dataarray1, sample_dataarray1.copy(), quantiles=[0.1, 0.5, 0.9], interpolation_method=method
     )
     assert isinstance(result, xr.DataArray)
@@ -248,7 +246,7 @@ def test_invalid_interpolation_method(sample_dataarray1):  # pylint: disable=red
     Tests that an error is raised if an invalid interpolation method is used
     """
     with pytest.raises(ValueError, match="Invalid interpolation method"):
-        empirical_quantile_quantile(
+        generate_qq_plot_data(
             sample_dataarray1, sample_dataarray1, quantiles=[0.1, 0.5], interpolation_method="invalid_method"
         )
 
@@ -259,7 +257,7 @@ def test_invalid_quantiles(quantiles, sample_dataarray1):  # pylint: disable=red
     Tests that an error is raised if values outside of [0, 1] are passed into the quantile arg
     """
     with pytest.raises(ValueError, match="Quantiles must be in the range"):
-        empirical_quantile_quantile(sample_dataarray1, sample_dataarray1, quantiles=quantiles)
+        generate_qq_plot_data(sample_dataarray1, sample_dataarray1, quantiles=quantiles)
 
 
 def test_disallowed_data_source_dim(sample_dataarray1):  # pylint: disable=redefined-outer-name
@@ -268,7 +266,7 @@ def test_disallowed_data_source_dim(sample_dataarray1):  # pylint: disable=redef
     """
     da = sample_dataarray1.expand_dims("data_source")
     with pytest.raises(ValueError, match="Dimensions named 'data_source'"):
-        empirical_quantile_quantile(da, sample_dataarray1, quantiles=[0.1, 0.5])
+        generate_qq_plot_data(da, sample_dataarray1, quantiles=[0.1, 0.5])
 
 
 def test_mismatched_dataset_variables():
@@ -278,7 +276,7 @@ def test_mismatched_dataset_variables():
     ds1 = xr.Dataset({"var1": ("time", np.random.rand(10))})
     ds2 = xr.Dataset({"var2": ("time", np.random.rand(10))})
     with pytest.raises(ValueError, match="must contain the same variables"):
-        empirical_quantile_quantile(ds1, ds2, quantiles=[0.5])
+        generate_qq_plot_data(ds1, ds2, quantiles=[0.5])
 
 
 def test_type_mismatch(sample_dataarray1, sample_dataset1):  # pylint: disable=redefined-outer-name
@@ -287,26 +285,24 @@ def test_type_mismatch(sample_dataarray1, sample_dataset1):  # pylint: disable=r
     passed in at the same time
     """
     with pytest.raises(TypeError, match="must be either xarray DataArrays or xarray Datasets"):
-        empirical_quantile_quantile(sample_dataarray1, sample_dataset1, quantiles=[0.5])
+        generate_qq_plot_data(sample_dataarray1, sample_dataset1, quantiles=[0.5])
 
 
 def test_all_dims_preserved_error(sample_dataarray1, sample_dataarray2):  # pylint: disable=redefined-outer-name
     """
     Test that when 'all' is specified for preserve_dims, the result has the same dimensions as the forecast.
     """
-    with pytest.raises(ValueError, match="You cannot preserve all dimensions with empirical_quantile_quantile."):
-        empirical_quantile_quantile(
-            sample_dataarray1, sample_dataarray2, quantiles=[0.1, 0.5, 0.9], preserve_dims="all"
-        )
+    with pytest.raises(ValueError, match="You cannot preserve all dimensions with generate_qq_plot_data."):
+        generate_qq_plot_data(sample_dataarray1, sample_dataarray2, quantiles=[0.1, 0.5, 0.9], preserve_dims="all")
 
 
 def test_emperical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disable=redefined-outer-name
     """
-    Tests continuous.empirical_quantile_quantile works with dask
+    Tests continuous.generate_qq_plot_data works with dask
     """
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-    result = empirical_quantile_quantile(sample_dataarray4.chunk(), sample_dataarray4.chunk(), quantiles=[0, 0.5, 1])
+    result = generate_qq_plot_data(sample_dataarray4.chunk(), sample_dataarray4.chunk(), quantiles=[0, 0.5, 1])
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))

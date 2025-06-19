@@ -125,6 +125,10 @@
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
+* - Generate Q-Q plot data
+  - [API](api.md#scores.continuous.generate_qq_plot_data)
+  - [Tutorial](project:./tutorials/Q-Q_plots.md)
+  - [Déqué, M. (2012)](https://doi.org/10.1002/9781119960003)
 * - Quantile Score, *see Quantile Loss*
   - &mdash;
   - &mdash;

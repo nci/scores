@@ -37,6 +37,7 @@
 .. autofunction:: scores.continuous.tw_expectile_score
 .. autofunction:: scores.continuous.quantile_interval_score
 .. autofunction:: scores.continuous.interval_score
+.. autofunction:: scores.continuous.generate_qq_plot_data
 ```
 
 ## scores.probability
