@@ -36,7 +36,7 @@ def generate_qq_plot_data(
     interpolation_method: str = "linear",
     reduce_dims: FlexibleDimensionTypes | None = None,
     preserve_dims: FlexibleDimensionTypes | None = None,
-) -> Dict[str, XarrayLike]:
+) -> XarrayLike:
     """
     Calculate the quantiles of empirical forecast and observation data for a
     quantile-quantile (Q-Q) plot.
@@ -82,7 +82,7 @@ def generate_qq_plot_data(
     Example:
         >>> import xarray as xr
         >>> import numpy as np
-        >>> from scores.continuous import quantile_quantile
+        >>> from scores.continuous import generate_qq_plot_data
         >>> fcst = xr.DataArray(np.random.rand(100), dims='time')
         >>> obs = xr.DataArray(np.random.rand(100), dims='time')
         >>> result = generate_qq_plot_data(fcst, obs, quantiles=[0.1, 0.5, 0.9])
@@ -105,10 +105,10 @@ def generate_qq_plot_data(
         raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
     # Check if datasets, that they have the same data vars
     if isinstance(fcst, xr.Dataset):
-        if set(fcst.data_vars) != set(obs.data_vars) and isinstance(fcst, xr.Dataset):
+        if set(fcst.data_vars) != set(obs.data_vars):
             raise ValueError("Both xr.Datasets must contain the same variables.")
 
-    reduce_dims: FlexibleDimensionTypes = gather_dimensions(
+    reduce_dims = gather_dimensions(
         fcst_dims=fcst.dims,
         obs_dims=obs.dims,
         reduce_dims=reduce_dims,

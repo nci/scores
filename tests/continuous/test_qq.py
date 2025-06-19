@@ -225,7 +225,7 @@ def test_empirical_quantiles_with_varied_inputs(
     obs = request.getfixturevalue(obs_fixture)
     result = generate_qq_plot_data(fcst, obs, quantiles=quantiles, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
     expected = request.getfixturevalue(expected)
-    xr.testing.assert_allclose(result, expected)
+    xr.testing.assert_equal(result, expected)
 
 
 @pytest.mark.parametrize("method", NP_INTERP_METHODS)
@@ -271,7 +271,7 @@ def test_disallowed_data_source_dim(sample_dataarray1):  # pylint: disable=redef
 
 def test_mismatched_dataset_variables():
     """
-    Tests that an error is raised when Datasets have different datav ars
+    Tests that an error is raised when Datasets have different data vars
     """
     ds1 = xr.Dataset({"var1": ("time", np.random.rand(10))})
     ds2 = xr.Dataset({"var2": ("time", np.random.rand(10))})
@@ -296,7 +296,7 @@ def test_all_dims_preserved_error(sample_dataarray1, sample_dataarray2):  # pyli
         generate_qq_plot_data(sample_dataarray1, sample_dataarray2, quantiles=[0.1, 0.5, 0.9], preserve_dims="all")
 
 
-def test_emperical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disable=redefined-outer-name
+def test_empirical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disable=redefined-outer-name
     """
     Tests continuous.generate_qq_plot_data works with dask
     """
@@ -306,4 +306,4 @@ def test_emperical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disa
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
-    xr.testing.assert_allclose(result, expected_result5)
+    xr.testing.assert_equal(result, expected_result5)
