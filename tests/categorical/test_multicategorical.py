@@ -495,9 +495,47 @@ def test_firm_dask():
             ValueError,
             """ `threshold_assignment` must be either \"upper\" or \"lower\" """,
         ),
+        # "components" is a dim name in fcst
+        (
+            mtd.DA_FCST_FIRM1,
+            mtd.DA_OBS_FIRM,
+            0.5,
+            [5],
+            [1],
+            None,
+            0.0,
+            "upper",
+            ValueError,
+            "The dimension name 'components' is reserved ",
+        ),
+        # "components" is a dim name in obs
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM1,
+            0.5,
+            [5],
+            [1],
+            None,
+            0.0,
+            "upper",
+            ValueError,
+            "The dimension name 'components' is reserved ",
+        ),
+        # fcst and obs are not both xarray DataArrays or Datasets
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DS_OBS_FIRM,
+            0.5,
+            [5],
+            [1],
+            None,
+            0.0,
+            "upper",
+            TypeError,
+            "Both fcst and obs must be either xarray DataArrays or xarray Datasets",
+        ),
     ],
 )
-
 # pylint: disable=too-many-positional-arguments
 def test_firm_raises(
     fcst,

@@ -11,7 +11,7 @@ import xarray as xr
 
 from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import check_dims, gather_dimensions
 
 
@@ -95,6 +95,9 @@ def firm(  # pylint: disable=too-many-arguments
         ValueError: if `discount_distance` is not None and < 0.
         scores.utils.DimensionError: if `threshold_weights` is a list of xr.DataArrays
             and if the dimensions of these xr.DataArrays is not a subset of the `obs` dims.
+        ValueError: if `threshold_assignment` is not "upper" or "lower".
+        ValueError: if the dimension name "components" is used in `fcst` or `obs`.
+        TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
 
     Note:
         Setting `discount distance` to None or 0, will mean that no
@@ -112,7 +115,7 @@ def firm(  # pylint: disable=too-many-arguments
     """
     # TODO: Check that a dim name isn't called 'components' in fcst or obs
     _check_firm_inputs(
-        obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
+        fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
     )
     reduce_dims = gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -138,11 +141,15 @@ def firm(  # pylint: disable=too-many-arguments
 
 
 def _check_firm_inputs(
-    obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
+    fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
 ):
     """
     Checks that the FIRM inputs are suitable
     """
+    if "components" in obs.dims or "components" in fcst.dims:
+        raise ValueError("The dimension name 'components' is reserved and cannot be used in `fcst` or `obs`.")
+    if not all_same_xarraylike([fcst, obs]):
+        raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
     if len(categorical_thresholds) < 1:
         raise ValueError("`categorical_thresholds` must have at least one threshold")
 

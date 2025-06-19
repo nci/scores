@@ -263,12 +263,32 @@ DA_FCST_FIRM = xr.DataArray(
         "k": [10, 11, 12],
     },
 )
+DA_FCST_FIRM1 = xr.DataArray(
+    data=[
+        [[np.nan, 7, 4], [-100, 0, 1], [0, -100, 1]],
+        [[0, 1, 5], [10, 16, 1], [-10, -16, 1]],
+    ],
+    dims=["components", "j", "k"],
+    coords={
+        "components": [1, 2],
+        "j": [10000, 100001, 900000],
+        "k": [10, 11, 12],
+    },
+)
 DS_FCST_FIRM = xr.Dataset(data_vars={"a": DA_FCST_FIRM, "b": DA_FCST_FIRM * 0})
 DA_OBS_FIRM = xr.DataArray(
     data=[[0, 1], [10, np.nan], [0, 10]],
     dims=["j", "k"],
     coords={
         "j": [10000, 100001, 900000],
+        "k": [10, 11],
+    },
+)
+DA_OBS_FIRM1 = xr.DataArray(
+    data=[[0, 1], [10, np.nan], [0, 10]],
+    dims=["components", "k"],
+    coords={
+        "components": [10000, 100001, 900000],
         "k": [10, 11],
     },
 )
