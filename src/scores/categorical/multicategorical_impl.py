@@ -217,6 +217,9 @@ def _single_category_score(
         threshold_assignment: Specifies whether the intervals defining the categories are
             left or right closed. That is whether the decision threshold is included in
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
+        return_components: If True, then the function returns the FIRM score
+            along with the overforecast and underforecast penalties as a new dimension
+            called "components". If False, then only the FIRM score is returned.
 
     Returns:
         An xarray object with the FIRM score for a single category. If `return_components` is true, then

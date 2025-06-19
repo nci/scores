@@ -70,195 +70,211 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
         "reduce_dims",
         "preserve_dims",
         "discount_distance",
+        "return_components",
         "expected",
     ),
     [
-        # # Test for single category case identical to CASE0 in
-        # # test__single_category_score
-        # (
-        #     mtd.DA_FCST_SC,
-        #     mtd.DA_OBS_SC,
-        #     0.7,
-        #     [5],
-        #     [1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0.0,
-        #     mtd.EXP_SC_CASE0,
-        # ),
-        # # Test for single category with discount distance. Identical to CASE3
-        # # in test__single_category_score
-        # (
-        #     mtd.DA_FCST_SC,
-        #     mtd.DA_OBS_SC,
-        #     0.7,
-        #     [5],
-        #     [1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0.5,
-        #     mtd.EXP_SC_CASE3,
-        # ),
-        # # Test for single category case on slightly bigger dataset
-        # # Preserve dimensions
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [5],
-        #     [1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE0,
-        # ),
-        # # Single category, only keep one dimension
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [5],
-        #     [1],
-        #     None,
-        #     ["i"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE1,
-        # ),
-        # # Single category, no dimensions
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [5],
-        #     [1],
-        #     None,
-        #     None,
-        #     0,
-        #     mtd.EXP_FIRM_CASE2,
-        # ),
-        # # Single category, no dimensions
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [5],
-        #     [1],
-        #     "all",
-        #     None,
-        #     0,
-        #     mtd.EXP_FIRM_CASE2,
-        # ),
-        # # 2 categories, same weight
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5],
-        #     [1, 1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE3,
-        # ),
-        # # 3 categories, same weight
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5, 8],
-        #     [1, 1, 1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE4,
-        # ),
-        # # 2 categories, 2 weights
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5],
-        #     [2, 1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE4,
-        # ),
-        # # 2 categories, 2 weights that are xr.DataArrays
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5],
-        #     mtd.LIST_WEIGHTS_FIRM0,
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE4,
-        # ),
-        # # 2 categories, 2 weights with the first a xr.DataArray and the second
-        # # a float
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5],
-        #     [mtd.LIST_WEIGHTS_FIRM0[0], 1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE4,
-        # ),
-        # # 2 categories, 2 weights that are xr.DataArrays with different values
-        # # for different coords
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5],
-        #     mtd.LIST_WEIGHTS_FIRM1,
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE5,
-        # ),
-        # # 2 categories, 2 weights that are xr.DataArrays with different values
-        # # for different coords, with NaN in weights
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     [0, 5],
-        #     mtd.LIST_WEIGHTS_FIRM2,
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE6,
-        # ),
-        # # 2 categories defined with xr.DataArrays for thresholds that don't vary by coord
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     mtd.DA_THRESHOLD_FIRM,
-        #     [1, 1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE3,
-        # ),
-        # # 2 categories defined with xr.DataArrays for thresholds that do vary
-        # (
-        #     mtd.DA_FCST_FIRM,
-        #     mtd.DA_OBS_FIRM,
-        #     0.7,
-        #     mtd.DA_THRESHOLD_FIRM2,
-        #     [1, 1],
-        #     None,
-        #     ["i", "j", "k"],
-        #     0,
-        #     mtd.EXP_FIRM_CASE3,
-        # ),
+        # Test for single category case identical to CASE0 in
+        # test__single_category_score
+        (
+            mtd.DA_FCST_SC,
+            mtd.DA_OBS_SC,
+            0.7,
+            [5],
+            [1],
+            None,
+            ["i", "j", "k"],
+            0.0,
+            True,
+            mtd.EXP_SC_CASE0,
+        ),
+        # Test for single category with discount distance. Identical to CASE3
+        # in test__single_category_score
+        (
+            mtd.DA_FCST_SC,
+            mtd.DA_OBS_SC,
+            0.7,
+            [5],
+            [1],
+            None,
+            ["i", "j", "k"],
+            0.5,
+            True,
+            mtd.EXP_SC_CASE3,
+        ),
+        # Test for single category case on slightly bigger dataset
+        # Preserve dimensions
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [5],
+            [1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE0,
+        ),
+        # Single category, only keep one dimension
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [5],
+            [1],
+            None,
+            ["i"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE1,
+        ),
+        # Single category, no dimensions
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [5],
+            [1],
+            None,
+            None,
+            0,
+            True,
+            mtd.EXP_FIRM_CASE2,
+        ),
+        # Single category, no dimensions
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [5],
+            [1],
+            "all",
+            None,
+            0,
+            True,
+            mtd.EXP_FIRM_CASE2,
+        ),
+        # 2 categories, same weight
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5],
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE3,
+        ),
+        # 3 categories, same weight
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5, 8],
+            [1, 1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE4,
+        ),
+        # 2 categories, 2 weights
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5],
+            [2, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE4,
+        ),
+        # 2 categories, 2 weights that are xr.DataArrays
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5],
+            mtd.LIST_WEIGHTS_FIRM0,
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE4,
+        ),
+        # 2 categories, 2 weights with the first a xr.DataArray and the second
+        # a float
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5],
+            [mtd.LIST_WEIGHTS_FIRM0[0], 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE4,
+        ),
+        # 2 categories, 2 weights that are xr.DataArrays with different values
+        # for different coords
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5],
+            mtd.LIST_WEIGHTS_FIRM1,
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE5,
+        ),
+        # 2 categories, 2 weights that are xr.DataArrays with different values
+        # for different coords, with NaN in weights
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            [0, 5],
+            mtd.LIST_WEIGHTS_FIRM2,
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE6,
+        ),
+        # 2 categories defined with xr.DataArrays for thresholds that don't vary by coord
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            mtd.DA_THRESHOLD_FIRM,
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE3,
+        ),
+        # 2 categories defined with xr.DataArrays for thresholds that do vary
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            mtd.DA_THRESHOLD_FIRM2,
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE3,
+        ),
         # Test that it works with xr.Datasets as inputs
         (
             mtd.DS_FCST_FIRM,
@@ -269,11 +285,24 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE7,
+        ),
+        # Tests when return_components is False
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            mtd.DA_THRESHOLD_FIRM,
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            False,
+            mtd.EXP_FIRM_CASE3.sel(components="firm_score").drop("components"),
         ),
     ],
 )
-
 # pylint: disable=too-many-positional-arguments
 def test_firm(
     fcst,
@@ -284,6 +313,7 @@ def test_firm(
     reduce_dims,
     preserve_dims,
     discount_distance,
+    return_components,
     expected,
 ):
     """Tests firm"""
@@ -296,13 +326,13 @@ def test_firm(
         discount_distance=discount_distance,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
+        return_components=return_components,
     )
     if isinstance(calculated, xr.Dataset):
         for var in calculated.data_vars:
             calculated[var] = calculated[var].transpose(*expected[var].dims)
     else:
         calculated = calculated.transpose(*expected.dims)
-
     xr.testing.assert_allclose(
         calculated,
         expected,
