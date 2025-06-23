@@ -63,8 +63,7 @@ def generate_qq_plot_data(
         preserve_dims: Dimensions to preserve when calculating quantiles.
 
     Returns:
-        A dictionary with keys 'fcst_q' and 'obs_q', containing the quantiles
-        of the forecast and observation data, respectively.
+        An xarray object with a new dimension called "data_source".
 
     Raises:
         ValueError: If the interpolation method is invalid.
