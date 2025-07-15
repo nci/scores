@@ -9,6 +9,9 @@ Information relevant for package maintenance
 2. In the full changelog URL, change “develop” to the correct version number, i.e (https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z)
 3. Delete any unused headers
 
+### Immediately before making a release, validate the .zenodo.json file
+1. Run the .zenodo.json file contents through a JSON validator 
+
 ### On the pre-release branch
 1. Run through some of the notebooks manually
 2. Run the unit tests
@@ -48,9 +51,10 @@ Information relevant for package maintenance
 ### Confirm Zenodo correctness
 
 Link to Zenodo archive: [https://doi.org/10.5281/zenodo.12697241](https://doi.org/10.5281/zenodo.12697241)
-1. Confirm license
-2. Confirm authors
+1. Confirm license is correct
+2. Confirm author list is correct
 3. Scan everything else
+4. Edit the metadata - add the introductory paragraph describing `scores`, and the links to the documentation, source code and journal article.
 
 ## This section covers how to format and prepare release notes
 
@@ -61,9 +65,9 @@ Link to Zenodo archive: [https://doi.org/10.5281/zenodo.12697241](https://doi.or
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of.
 
-### Features
 ### Breaking Changes
 ### Deprecations
+### Features
 ### Bug Fixes
 ### Documentation
 ### Internal Changes
@@ -97,6 +101,8 @@ In .zenodo.json, please add your details at the bottom of the “creators” sec
 2. “affiliation”. Options include: the institution you are affiliated with, “Independent Researcher” or “Independent Contributor”.
 3. “name”. Format: surname, given name(s).
 ```
+
+Each time the .zenodo.json file is updated, run the file contents through a JSON validator.
 
 ## This section gives guidance for maintaining compatibility with old versions of Python and packages
 
