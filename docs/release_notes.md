@@ -1,5 +1,43 @@
 # Release Notes (What's New)
 
+## Version 2.2.0 (Upcoming Release)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.1.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Breaking Changes
+
+Nil currently.
+
+### Deprecations
+
+Nil currently.
+
+### Features
+
+- Added a new metric:
+	- Spearman’s correlation coefficient: `scores.continuous.correlation.spearmanr`. See [PR #773](https://github.com/nci/scores/pull/773).
+- The FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) now has support for xr.Datasets in addition to the existing support for xr.DataArrays. See [PR #853](https://github.com/nci/scores/pull/853).
+
+### Bug Fixes
+
+Nil currently.
+
+### Documentation
+
+- Added "Spearman’s Correlation Coefficient" tutorial. See [PR #773](https://github.com/nci/scores/pull/773).
+- Substantially updated "The FIxed Risk Multicategorical (FIRM) Score" tutorial. See [PR #853](https://github.com/nci/scores/pull/853).
+- Updated the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) docstring, including adding an example. See [PR #853](https://github.com/nci/scores/pull/853). 	
+- Fixed an error in the formula in the docstring for the quantile interval score (`scores.continuous.quantile_interval_score`). (*Note:* this error was only present in the docstring - the code implemenation of the function was correct and the tutorial listed the correct formula.) See [PR #851](https://github.com/nci/scores/pull/851).
+- Updated several "full changelog" URLs in the release notes. See [PR #859](https://github.com/nci/scores/pull/859).
+
+### Internal Changes
+
+- Improved the efficiency of the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) by moving the call to gather dimensions to earlier within the method. See [PR #853](https://github.com/nci/scores/pull/853).
+
+### Contributors to this Release
+
+Liam Bluett ([@lbluett](https://github.com/lbluett)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)).
+
 ## Version 2.1.0 (April 30, 2025)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.0.0...2.1.0). Below are the changes we think users may wish to be aware of.
