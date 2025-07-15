@@ -285,25 +285,25 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ## Version 0.7 (May 8, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.6...0.7). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.6...0.7). 
 
 ## Version 0.6 (April 6, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.5...v0.6). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.5...0.6). 
 
 Note: version 0.6 was initially tagged as "v0.6" and released on 6th April 2024. On 7th April 2024, an identical version was released with the tag "0.6" (i.e. with the "v" ommitted from the tag).
 
 ## Version 0.5 (April 6, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.4...v0.5). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.4...0.5). 
 
 ## Version 0.4 (September 15, 2023)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/v0.0.2...v0.4). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.0.2...0.4). 
 
 ## Version 0.0.2 (June 9, 2023)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/commits/v0.0.2/). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/commits/0.0.2).
 
 ## Version 0.0.1 (January 16, 2023)
 
