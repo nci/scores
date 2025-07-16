@@ -28,6 +28,16 @@ from tests.probabilty import roc_test_data as rtd
             None,
             rtd.EXP_ROC_LEADDAY,
         ),
+        # check behaviour when 0 is not supplied as a threshold
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [0.3, 1],
+            ["lead_day"],
+            None,
+            None,
+            rtd.EXP_ROC_LEADDAY,
+        ),
         # reduce_dims=['letter', 'pet']
         (
             rtd.FCST_2X3X2_WITH_NAN,
