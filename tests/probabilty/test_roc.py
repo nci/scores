@@ -169,11 +169,20 @@ def test_roc_curve_data_dask():
             ValueError,
             "'threshold' must not be in the supplied data object dimensions",
         ),
+        # put an -np.inf in the thresholds
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [-np.inf, 0, 0.3, 1],
+            None,
+            ValueError,
+            "`thresholds` contains values outside of the range [0, 1]",
+        ),
         # put an np.inf in the thresholds
         (
             rtd.FCST_2X3X2_WITH_NAN,
             rtd.OBS_3X3_WITH_NAN,
-            [-np.inf, 0, 0.3, 1, np.inf],
+            [0, 0.3, 1, np.inf],
             None,
             ValueError,
             "`thresholds` contains values outside of the range [0, 1]",
