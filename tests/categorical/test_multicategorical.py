@@ -56,6 +56,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
         categorical_threshold,
         discount_distance=discount_distance,
         threshold_assignment=threshold_assignment,
+        include_components=True,
     )
     xr.testing.assert_allclose(calculated, expected)
 
@@ -70,7 +71,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
         "reduce_dims",
         "preserve_dims",
         "discount_distance",
-        "return_components",
+        "include_components",
         "expected",
     ),
     [
@@ -288,7 +289,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             True,
             mtd.EXP_FIRM_CASE7,
         ),
-        # Tests when return_components is False
+        # Tests when include_components is False
         (
             mtd.DA_FCST_FIRM,
             mtd.DA_OBS_FIRM,
@@ -299,7 +300,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             ["i", "j", "k"],
             0,
             False,
-            mtd.EXP_FIRM_CASE3.sel(components="firm_score").drop("components"),
+            mtd.EXP_FIRM_CASE3.sel(components="firm_score").drop_vars("components"),
         ),
     ],
 )
@@ -313,7 +314,7 @@ def test_firm(
     reduce_dims,
     preserve_dims,
     discount_distance,
-    return_components,
+    include_components,
     expected,
 ):
     """Tests firm"""
@@ -326,7 +327,7 @@ def test_firm(
         discount_distance=discount_distance,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
-        return_components=return_components,
+        include_components=include_components,
     )
     if isinstance(calculated, xr.Dataset):
         for var in calculated.data_vars:
@@ -355,6 +356,7 @@ def test_firm_dask():
         discount_distance=0,
         reduce_dims=None,
         preserve_dims=["i", "j", "k"],
+        include_components=True,
     )
 
     assert isinstance(calculated.data, dask.array.Array)

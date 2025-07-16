@@ -27,7 +27,7 @@ def firm(  # pylint: disable=too-many-arguments
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     threshold_assignment: Optional[str] = "lower",
-    return_components: bool = True,
+    include_components: bool = False,
 ) -> XarrayLike:
     """
     Calculates the FIxed Risk Multicategorical (FIRM) score including the
@@ -78,7 +78,7 @@ def firm(  # pylint: disable=too-many-arguments
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
 
     Returns:
-        An xarray object with the FIRM score. If `return_components` is true, then
+        An xarray object with the FIRM score. If `include_components` is true, then
         a new dimension called "components" is created that contains the following coordinates:
 
         * firm_score: A score for a single category for each coord based on
@@ -138,7 +138,7 @@ def firm(  # pylint: disable=too-many-arguments
             categorical_threshold,  # type: ignore
             discount_distance=discount_distance,
             threshold_assignment=threshold_assignment,
-            return_components=return_components,
+            include_components=include_components,
         )
         total_score.append(score)
     summed_score = sum(total_score)
@@ -195,7 +195,7 @@ def _single_category_score(
     *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = None,
     threshold_assignment: Optional[str] = "lower",
-    return_components: bool = True,
+    include_components: bool = False,
 ) -> XarrayLike:
     """
     Calculates the score for a single category for the `firm` metric at each
@@ -217,12 +217,12 @@ def _single_category_score(
         threshold_assignment: Specifies whether the intervals defining the categories are
             left or right closed. That is whether the decision threshold is included in
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
-        return_components: If True, then the function returns the FIRM score
+        include_components: If True, then the function returns the FIRM score
             along with the overforecast and underforecast penalties as a new dimension
             called "components". If False, then only the FIRM score is returned.
 
     Returns:
-        An xarray object with the FIRM score for a single category. If `return_components` is true, then
+        An xarray object with the FIRM score for a single category. If `include_components` is true, then
         a new dimension called "components" is created that contains the following coordinates:
 
         * firm_score: A score for a single category for each coord based on
@@ -263,7 +263,7 @@ def _single_category_score(
     underforecast_penalty = risk_parameter * scale_2 * condition2
     firm_score = overforecast_penalty + underforecast_penalty
 
-    if return_components:
+    if include_components:
         firm_score = xr.concat(
             [firm_score, overforecast_penalty, underforecast_penalty],
             dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
