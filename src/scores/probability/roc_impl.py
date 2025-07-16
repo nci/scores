@@ -88,7 +88,9 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         'forecast event' (fcst = 1), and a 'forecast non-event' (fcst = 0)
         otherwise. The probability of detection (POD) and probability of false
         detection (POFD) are calculated for the converted forecast. From the
-        POD and POFD data, the area under the ROC curve is calculated.
+        POD and POFD data, the area under the ROC curve is calculated. An additional
+        threshold of `np.inf` is added to the end of `thresholds` so that it always
+        has a value when POD=0 and POFD=0.
 
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
@@ -103,6 +105,10 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
 
         if not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
+
+    # Add an Inf value to ensure that the full curve is produced
+    thresholds = np.array(thresholds)
+    thresholds = np.append(thresholds, np.inf)
 
     # make a discrete forecast for each threshold in thresholds
     # discrete_fcst has an extra dimension 'threshold'
