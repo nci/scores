@@ -43,7 +43,7 @@ jobs:
         # package rather than the local files creating a coverage report of 0%
         pip install -e .
         pip uninstall dask -y
-        pytest tests/ --cov=src/                
+        pytest tests/ 
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.3.0
       with:
