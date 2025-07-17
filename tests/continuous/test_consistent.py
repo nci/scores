@@ -128,6 +128,10 @@ def test_expectile_score_with_dask():
     """
     Tests that the consistent expectile scores work with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     result = consistent_expectile_score(
         DA_FCST.chunk(),
         DA_OBS.chunk(),
@@ -184,6 +188,10 @@ def test_huber_score_with_dask():
     """
     Tests that the consistent huber scores work with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     result = consistent_huber_score(
         DA_FCST.chunk(),
         DA_OBS.chunk(),
@@ -226,6 +234,10 @@ def test_quantile_score_with_dask():
     """
     Tests that the consistent quantile scores work with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     result = consistent_quantile_score(
         DA_FCST.chunk(),
         DA_OBS.chunk(),

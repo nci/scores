@@ -101,14 +101,17 @@ def test_risk_matrix_score_datasets():
     xr.testing.assert_allclose(calculated, expected)
 
 
-@pytest.mark.parametrize(
-    ("fcst", "obs"),
-    [
+scenarios_risk_matrix_score_dask = []
+
+if not dask == "Unavailable":
+    scenarios_risk_matrix_score_dask = [
         (mtd.DA_RMS_FCST1.chunk(), mtd.DA_RMS_OBS1.chunk()),
         (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1.chunk()),
         (mtd.DA_RMS_FCST1.chunk(), mtd.DA_RMS_OBS1),
-    ],
-)
+    ]
+
+
+@pytest.mark.parametrize(("fcst", "obs"), scenarios_risk_matrix_score_dask)
 def test_risk_matrix_score_dask(fcst, obs):
     """Tests `risk_matrix_score` works with dask."""
 
