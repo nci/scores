@@ -42,7 +42,10 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         fcst: An array of probabilistic forecasts for a binary event in the range [0, 1].
         obs: An array of binary values where 1 is an event and 0 is a non-event.
         thresholds: Monotonic increasing values between 0 and 1, the thresholds at and
-          above which to convert the probabilistic forecast to a value of 1 (an 'event')
+          above which to convert the probabilistic forecast to a value of 1 (an 'event').
+          Np.inf is added automatically to the end of the thresholds to ensure that
+          the full ROC curve is produced. Similarly, if 0 is not included, it will be
+          added automatically to ensure the full ROC curve is produced.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the ROC curve data. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
@@ -88,12 +91,24 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
         'forecast event' (fcst = 1), and a 'forecast non-event' (fcst = 0)
         otherwise. The probability of detection (POD) and probability of false
         detection (POFD) are calculated for the converted forecast. From the
-        POD and POFD data, the area under the ROC curve is calculated.
+        POD and POFD data, the area under the ROC curve is calculated. An additional
+        threshold of `np.inf` is added to the end of `thresholds` so that it always
+        has a value when POD=0 and POFD=0.
 
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
 
+    Example:
+        >>> import xarray as xr
+        >>> import numpy as np
+        >>> from scores.probability import roc_curve_data
+        >>> fcst = xr.DataArray(np.random.rand(3, 4), dims=["time", "location"])
+        >>> obs = xr.DataArray(np.random.randint(0, 2, size=(3, 4)), dims=["time", "location"])
+        >>> thresholds = np.arange(0, 1.01, 0.01)
+        >>> result = roc_curve_data(fcst, obs, thresholds)
     """
+    # If a slight performance improvement is needed, the checks can be skipped
+    # when `check_args` is False.
     if check_args:
         if fcst.max().item() > 1 or fcst.min().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
@@ -103,6 +118,12 @@ def roc_curve_data(  # pylint: disable=too-many-arguments
 
         if not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
+
+    # Add an Inf (and 0 value if necessary to ensure that the full curve is produced
+    thresholds = np.array(thresholds)
+    thresholds = np.append(thresholds, np.inf)
+    if np.min(thresholds) > 0:
+        thresholds = np.append(np.array(0), thresholds)
 
     # make a discrete forecast for each threshold in thresholds
     # discrete_fcst has an extra dimension 'threshold'

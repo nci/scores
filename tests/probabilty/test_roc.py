@@ -28,6 +28,16 @@ from tests.probabilty import roc_test_data as rtd
             None,
             rtd.EXP_ROC_LEADDAY,
         ),
+        # check behaviour when 0 is not supplied as a threshold
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [0.3, 1],
+            ["lead_day"],
+            None,
+            None,
+            rtd.EXP_ROC_LEADDAY,
+        ),
         # reduce_dims=['letter', 'pet']
         (
             rtd.FCST_2X3X2_WITH_NAN,
@@ -100,6 +110,20 @@ def test_roc_curve_data(fcst, obs, thresholds, preserve_dims, reduce_dims, weigh
     result.broadcast_equals(expected)
 
 
+def test_roc_curve_auc():
+    """
+    Tests that the bug highlighted in issue #857 is fixed.
+    """
+    fcst1 = xr.DataArray(data=[0.3, 0.5, 0.7, 0.9, 0.9], dims="time")
+    fcst2 = xr.DataArray(data=[0.3, 0.5, 0.7, 1, 1], dims="time")
+    obs = xr.DataArray(data=[0, 0, 1, 1, 0], dims="time")
+
+    result_a = roc_curve_data(fcst1, obs, np.arange(0, 1.05, 0.1))
+    result_b = roc_curve_data(fcst2, obs, np.arange(0, 1.05, 0.1))
+    xr.testing.assert_allclose(result_a.AUC, xr.DataArray(0.75))
+    xr.testing.assert_allclose(result_b.AUC, xr.DataArray(0.75))
+
+
 def test_roc_curve_data_dask():
     """tests that roc_curve_data works with dask"""
 
@@ -155,11 +179,20 @@ def test_roc_curve_data_dask():
             ValueError,
             "'threshold' must not be in the supplied data object dimensions",
         ),
+        # put an -np.inf in the thresholds
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [-np.inf, 0, 0.3, 1],
+            None,
+            ValueError,
+            "`thresholds` contains values outside of the range [0, 1]",
+        ),
         # put an np.inf in the thresholds
         (
             rtd.FCST_2X3X2_WITH_NAN,
             rtd.OBS_3X3_WITH_NAN,
-            [-np.inf, 0, 0.3, 1, np.inf],
+            [0, 0.3, 1, np.inf],
             None,
             ValueError,
             "`thresholds` contains values outside of the range [0, 1]",
