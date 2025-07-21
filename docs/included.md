@@ -45,8 +45,8 @@
     [Tutorial](project:./tutorials/Flip_Flop_Index.md)
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
-* - Generate Q-Q Plot data
-  - [API](api.md#scores.continuous.generate_qq_plot_data)
+* - QQ
+  - [API](api.md#scores.continuous.qq)
   - [Tutorial](project:./tutorials/Q-Q_plots.md)
   - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
 * - Interval Score
@@ -768,7 +768,7 @@
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
-* - Generate Q-Q Plot data
+* - QQ
   - [API](api.md#scores.plotdata.qq)
   - [Tutorial](project:./tutorials/Q-Q_plots.md)
   - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
