@@ -9,6 +9,7 @@ import scores.continuous
 import scores.emerging
 import scores.functions
 import scores.pandas
+import scores.plotdata
 import scores.probability
 import scores.processing
 import scores.sample_data
