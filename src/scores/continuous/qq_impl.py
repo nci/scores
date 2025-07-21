@@ -34,6 +34,7 @@ def generate_qq_plot_data(
     *,
     quantiles: Iterable[float],
     interpolation_method: str = "linear",
+    data_source_dim: str = "data_source",
     reduce_dims: FlexibleDimensionTypes | None = None,
     preserve_dims: FlexibleDimensionTypes | None = None,
 ) -> XarrayLike:
@@ -59,6 +60,9 @@ def generate_qq_plot_data(
             'weibull', 'linear', 'median_unbiased', 'normal_unbiased',
             'lower', 'higher', 'midpoint', and 'nearest'. See :py:func:`numpy.quantile`
             for more information on interpolation method options.
+        data_source_dim: Name of the new dimension to be created for the data source,
+            default is 'data_source'. This dimension will contain two values: 'fcst' and
+            'obs', representing the forecast and observation data, respectively.
         reduce_dims: Dimensions to reduce over when calculating quantiles.
         preserve_dims: Dimensions to preserve when calculating quantiles.
 
@@ -68,15 +72,15 @@ def generate_qq_plot_data(
     Raises:
         ValueError: If the interpolation method is invalid.
         ValueError: if quantiles are not between 0 and 1.
-        ValueError: If dimensions named 'data_source' are present in the input data.
+        ValueError: If a dimension in the input data has the same name as `data_source_dim`
         ValueError: If fcst and obs are Datasets with different data variables.
         ValueError: If a user tries to preserve all dimensions.
         TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
 
     References:
-        Déqué, M. (2012). Deterministic forecasts of continuous variables. In I. T.
+        Déqué, M. (2011). Deterministic forecasts of continuous variables. In I. T.
         Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner’s
-        guide in atmospheric science (2nd ed., pp. 77–94). Wiley. https://doi.org/10.1002/9781119960003
+        guide in atmospheric science (2nd ed., pp. 77–94). Wiley. https://doi.org/10.1002/9781119960003.ch5
 
     Example:
         >>> import xarray as xr
@@ -97,8 +101,8 @@ def generate_qq_plot_data(
         raise ValueError("Quantiles must be in the range [0, 1]")
 
     # Check that there isn't a dimension called 'data_source' in either fcst or obs
-    if "data_source" in fcst.dims or "data_source" in obs.dims:
-        raise ValueError("Dimensions named 'data_source' are not allowed in the input data.")
+    if data_source_dim in fcst.dims or data_source_dim in obs.dims:
+        raise ValueError(f"Dimensions named '{data_source_dim}' are not allowed in the input data.")
     # Check if fcst and obs are both the same type (xarray.DataArray or xarray.Dataset)
     if not all_same_xarraylike([fcst, obs]):
         raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
@@ -130,5 +134,5 @@ def generate_qq_plot_data(
         method=interpolation_method,
     )
 
-    result = xr.concat([fcst_quantiles, obs_quantiles], dim=xr.DataArray(["fcst", "obs"], dims=["data_source"]))
+    result = xr.concat([fcst_quantiles, obs_quantiles], dim=xr.DataArray(["fcst", "obs"], dims=[data_source_dim]))
     return result
