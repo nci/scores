@@ -45,10 +45,6 @@
     [Tutorial](project:./tutorials/Flip_Flop_Index.md)
   - 
     [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
-* - QQ
-  - [API](api.md#scores.continuous.qq)
-  - [Tutorial](project:./tutorials/Q-Q_plots.md)
-  - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
 * - Interval Score
   - [API](api.md#scores.continuous.interval_score)
   - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Score.md)
@@ -133,6 +129,10 @@
   - &mdash;
   - &mdash;
   - &mdash;
+* - QQ
+  - [API](api.md#scores.continuous.qq)
+  - [Tutorial](project:./tutorials/Q-Q_plots.md)
+  - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
