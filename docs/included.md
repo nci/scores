@@ -125,14 +125,14 @@
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
+* - Quantile-Quantile (QQ) Plots
+  - [API](api.md#scores.continuous.qq)
+  - [Tutorial](project:./tutorials/Q-Q_plots.md)
+  - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
 * - Quantile Score, *see Quantile Loss*
   - &mdash;
   - &mdash;
   - &mdash;
-* - Quantile-Quantile (QQ) plots
-  - [API](api.md#scores.continuous.qq)
-  - [Tutorial](project:./tutorials/Q-Q_plots.md)
-  - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -748,14 +748,14 @@
   - API
   - Tutorial
   - Reference(s)
-* - Murphy Diagrams (Plots Of The Murphy Score)
+* - Murphy Diagrams (Plots of the Murphy Score)
   - 
   - 
   - 
 * -  
     - Murphy Score (Mean Elementary Score)
   -
-    [API](api.md#scores.continuous.murphy_score)
+    [API](api.md#scores.plotdata.murphy_score)
   - 
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   - 
@@ -763,12 +763,12 @@
 * -  
     - Murphy Score (Mean Elementary Score) - Theta Values
   -
-    [API](api.md#scores.continuous.murphy_thetas)
+    [API](api.md#scores.plotdata.murphy_thetas)
   - 
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   - 
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
-* - Quantile-Quantile (QQ) plots
+* - Quantile-Quantile (QQ) Plots
   - [API](api.md#scores.plotdata.qq)
   - [Tutorial](project:./tutorials/Q-Q_plots.md)
   - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
