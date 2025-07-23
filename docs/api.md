@@ -24,6 +24,7 @@
 .. autofunction:: scores.continuous.correlation.spearmanr
 .. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.pbias
+.. autofunction:: scores.continuous.pwithin
 .. autofunction:: scores.continuous.kge
 .. autofunction:: scores.continuous.nse
 .. autofunction:: scores.continuous.isotonic_fit

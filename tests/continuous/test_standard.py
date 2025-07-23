@@ -689,6 +689,39 @@ EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
 
 EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
 
+
+
+## for pwithin
+EXP_PWITHIN1 = xr.DataArray(
+    np.array([100, 100/3, 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_PWITHIN2 = xr.DataArray(
+    np.array([100, 100/3, 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PWITHIN3 = xr.DataArray(
+    np.array([100, 100/3, 2*100/3]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PWITHIN4 = xr.DataArray(np.array(100*3/4))
+
+EXP_PWITHIN5 = xr.DataArray(np.array(100*3/4))
+EXP_PWITHIN6 = xr.DataArray(np.array(100*1/4))
+
+EXP_DS_PWITHIN1 = xr.Dataset({"a": EXP_PWITHIN1, "b": EXP_PWITHIN2})
+
 ## for KGE
 DA1_KGE = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
@@ -898,6 +931,82 @@ def test_pbias_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PBIAS3)
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", 
+     "is_angular", "threshold", "rounded_digits", "is_inclusive", "expected"),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", False, 1.0, 7, True, EXP_PWITHIN1),
+        (DA1_BIAS, DA3_BIAS, None, "space", False, 1.0, 7, True,  EXP_PWITHIN3),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, False, 1.0, 7, True, EXP_PWITHIN1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, 7, True,  EXP_PWITHIN4),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", False, 1.0, 7, True, EXP_DS_PWITHIN1),
+        # Testing angular results
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, 7, True, EXP_PWITHIN5),
+        # Testing angular results with inclusive false
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, 7, False, EXP_PWITHIN6),
+    ],
+)
+
+def test_pwithin(fcst, obs, reduce_dims, preserve_dims, 
+                 is_angular, threshold, rounded_digits, is_inclusive, expected):
+    """
+    Tests continuous.pwithin
+    """
+    result = scores.continuous.pwithin(fcst, obs, reduce_dims=reduce_dims, 
+                                       preserve_dims=preserve_dims,
+                                       is_angular=is_angular,
+                                       threshold=threshold,
+                                       rounded_digits=rounded_digits,
+                                       is_inclusive=is_inclusive
+                                       )
+    # xr.testing.assert_equal(result, expected)
+
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "reduce_dims", "preserve_dims", 
+     "is_angular", "threshold", "rounded_digits", "is_inclusive", "expected"),
+    [
+        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, 2, True, 100*6/8),
+        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, 7, True, 100*4/8),
+    ],
+)
+def test_pwithin_tolerance(fcst, obs, reduce_dims, preserve_dims, 
+                 is_angular, threshold, rounded_digits, is_inclusive, expected):
+    """
+    Tests continuous.pwithin for threshold rounding to control for precision issues
+    """
+    fcst = fcst + 0.0001
+
+    result = scores.continuous.pwithin(fcst, obs, reduce_dims=reduce_dims, 
+                                       preserve_dims=preserve_dims,
+                                       is_angular=is_angular,
+                                       threshold=threshold,
+                                       rounded_digits=rounded_digits,
+                                       is_inclusive=is_inclusive
+                                       )
+
+    assert(result == expected)
+
+
+
+def test_pwithin_dask():
+    """
+    Tests that continuous.within works with Dask
+    """
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    result = scores.continuous.pwithin(fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, rounded_digits=7, is_inclusive=True)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_PWITHIN3)
 
 
 @pytest.mark.parametrize(

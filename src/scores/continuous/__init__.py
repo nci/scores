@@ -24,6 +24,7 @@ from scores.continuous.standard_impl import (
     mse,
     multiplicative_bias,
     pbias,
+    pwithin,
     rmse,
 )
 from scores.continuous.threshold_weighted_impl import (
@@ -49,6 +50,7 @@ __all__ = [
     "mean_error",
     "multiplicative_bias",
     "pbias",
+    "pwithin",
     "kge",
     "nse",
     "isotonic_fit",
