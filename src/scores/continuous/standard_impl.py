@@ -496,10 +496,8 @@ def pwithin(
 
     if is_inclusive:
         condition = abs_error <= threshold
-        print("is inclusive")
     else:
         condition = abs_error < threshold
-        print("not inclusive")
 
     count_within = condition.sum(dim=reduce_dims)
 
