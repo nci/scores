@@ -457,29 +457,26 @@ def pwithin(
         fcst: Forecast or predicted variables.
         obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating the percent within. All other dimensions will be 
+            calculating the percent within. All other dimensions will be
             preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the percent within. All other dimensions will be 
-            reduced. As a special case, 'all' will allow all dimensions to 
-            be preserved. In this case, the result will be in the same 
-            shape/dimensionality as the forecast, and the errors will be 
-            the error at each point (i.e. single-value comparison against 
-            observed), and the forecast and observed dimensions must 
+            calculating the percent within. All other dimensions will be
+            reduced. As a special case, 'all' will allow all dimensions to
+            be preserved. In this case, the result will be in the same
+            shape/dimensionality as the forecast, and the errors will be
+            the error at each point (i.e. single-value comparison against
+            observed), and the forecast and observed dimensions must
             match precisely.
         is_angular: If True, uses angular distance in degrees.
         threshold: The main threshold to test closeness against.
         rounded_digits: A way to avoid floating-point precision issues.
-            Absolute errors are rounded to this many digits before threshold 
+            Absolute errors are rounded to this many digits before threshold
             calculations.
-        is_inclusive: Whether to treat the condition as inclusive (<=) 
+        is_inclusive: Whether to treat the condition as inclusive (<=)
             or exclusive (<).
-            
+
     Returns:
         An xarray object with the percent within a given level of error.
-
-    References: 
-        TBD
 
 
     """
@@ -502,12 +499,13 @@ def pwithin(
     count_within = condition.sum(dim=reduce_dims)
 
     valid_mask = fcst.notnull() & obs.notnull()
-    
+
     total = valid_mask.sum(dim=reduce_dims)
 
-    _pwithin = 100*count_within / total
+    _pwithin = 100 * count_within / total
 
     return _pwithin
+
 
 def kge(
     fcst: xr.DataArray,
