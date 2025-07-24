@@ -16,11 +16,13 @@ Nil currently.
 
 - Added a new metric:
 	- Spearman’s correlation coefficient: `scores.continuous.correlation.spearmanr`. See [PR #773](https://github.com/nci/scores/pull/773).
+- Added a new function for generating data for diagrams
+    - Quantile-Quantile (qq) plots: `scores.plotdata.qq`. See [PR #852](https://github.com/nci/scores/pull/852)
 - The FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) now has support for xr.Datasets in addition to the existing support for xr.DataArrays. See [PR #853](https://github.com/nci/scores/pull/853).
 
 ### Bug Fixes
 
-Nil currently.
+- Fixed an issue where the `scores.plotdata.roc` doesn't add the point (0, 0) in some instances. See [PR #863](https://github.com/nci/scores/pull/863)
 
 ### Documentation
 
@@ -33,6 +35,7 @@ Nil currently.
 ### Internal Changes
 
 - Improved the efficiency of the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) by moving the call to gather dimensions to earlier within the method. See [PR #853](https://github.com/nci/scores/pull/853).
+- Added `scores.plotdata` for functions that generate data for verification plots. `scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`. `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas` were also moved to `scores.plotdata.murphy_score` and `scores.plotdata.murphy_thetas`respectively, but can still be imported as `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas`.
 
 ### Contributors to this Release
 

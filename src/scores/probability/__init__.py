@@ -17,6 +17,10 @@ from scores.probability.crps_impl import (
 )
 from scores.processing.isoreg_impl import isotonic_fit
 
+roc_curve_data.__doc__ = roc_curve_data.__doc__.replace(
+    "from scores.plotdata import roc", "from scores.probablity import roc_curve_data"
+)
+
 __all__ = [
     "murphy_score",
     "murphy_thetas",
