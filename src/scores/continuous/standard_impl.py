@@ -484,10 +484,11 @@ def pwithin(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
 
+
     if is_angular:
-        error = (fcst - obs + 180) % 360 - 180
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        error = fcst - obs
+        error = fcst - obs  # type: ignore
 
     abs_error = abs(error).round(rounded_digits)
 
@@ -503,6 +504,7 @@ def pwithin(
     total = valid_mask.sum(dim=reduce_dims)
 
     _pwithin = 100 * count_within / total
+
 
     return _pwithin
 

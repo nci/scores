@@ -944,6 +944,27 @@ def test_pbias_dask():
     xr.testing.assert_equal(result, EXP_PBIAS3)
 
 
+def test_within_no_data():
+
+    fcst = xr.DataArray(
+    np.array([np.nan]),
+    dims=("space"),
+    coords=[("space", ["x"])])
+
+    obs = xr.DataArray(
+    np.array([np.nan]),
+    dims=("space"),
+    coords=[("space", ["x"])])
+
+    result = scores.continuous.pwithin(
+        fcst,
+        obs,
+    )
+
+    assert result.ndim == 0
+    assert np.isnan(result.item())
+
+
 @pytest.mark.parametrize(
     (
         "fcst",
@@ -986,9 +1007,10 @@ def test_pwithin(fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, r
         rounded_digits=rounded_digits,
         is_inclusive=is_inclusive,
     )
-    # xr.testing.assert_equal(result, expected)
 
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
 
 
 @pytest.mark.parametrize(
@@ -1034,6 +1056,10 @@ def test_pwithin_dask():
     """
     Tests that continuous.within works with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     result = scores.continuous.pwithin(
