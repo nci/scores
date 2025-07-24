@@ -841,6 +841,10 @@ def test_additive_bias_dask():
     """
     Tests that continuous.additive_bias works with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     fcst = DA1_BIAS.chunk()
     obs = DA2_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
@@ -882,6 +886,10 @@ def test_multiplicative_bias_dask():
     """
     Tests that continuous.multiplicative_bias works with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
@@ -922,6 +930,10 @@ def test_pbias_dask():
     """
     Tests that continuous.pbias works with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
@@ -1069,6 +1081,10 @@ def test_kge_dask():
     """
     Tests that continuous.kge works with Dask
     """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     fcst = DA3_KGE.chunk()
     obs = DA2_KGE.chunk()
     result = scores.continuous.kge(fcst, obs)

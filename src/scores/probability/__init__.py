@@ -2,7 +2,8 @@
 Import the functions from the implementations into the public API
 """
 
-from scores.continuous.murphy_impl import murphy_score, murphy_thetas
+from scores.plotdata.murphy_impl import murphy_score, murphy_thetas
+from scores.plotdata.roc_impl import roc as roc_curve_data
 from scores.probability.brier_impl import brier_score, brier_score_for_ensemble
 from scores.probability.crps_impl import (
     adjust_fcst_for_crps,
@@ -14,8 +15,11 @@ from scores.probability.crps_impl import (
     tail_tw_crps_for_ensemble,
     tw_crps_for_ensemble,
 )
-from scores.probability.roc_impl import roc_curve_data
 from scores.processing.isoreg_impl import isotonic_fit
+
+roc_curve_data.__doc__ = roc_curve_data.__doc__.replace(
+    "from scores.plotdata import roc", "from scores.probablity import roc_curve_data"
+)
 
 __all__ = [
     "murphy_score",

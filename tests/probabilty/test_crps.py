@@ -709,14 +709,16 @@ def test_crps_for_ensemble_raises():
     assert "`method` must be one of 'ecdf' or 'fair'" in str(excinfo.value)
 
 
-@pytest.mark.parametrize(
-    ("fcst", "obs"),
-    [
+scenarios_crps_ensemble_dask = [[None, None]]
+if not dask == "Unavailable":
+    scenarios_crps_ensemble_dask = [
         (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk()),
         (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk()),
         (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS),
-    ],
-)
+    ]
+
+
+@pytest.mark.parametrize(("fcst", "obs"), scenarios_crps_ensemble_dask)
 def test_crps_for_ensemble_dask(fcst, obs):
     """Tests `crps_for_ensemble` works with dask."""
 
@@ -1147,6 +1149,10 @@ def test_tw_crps_for_ensemble(
 
 def test_tw_crps_for_ensemble_dask():
     """Tests `tw_crps_for_ensemble` works with dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     result = tw_crps_for_ensemble(
         fcst=crps_test_data.DA_FCST_CRPSENS.chunk(),
         obs=crps_test_data.DA_OBS_CRPSENS.chunk(),

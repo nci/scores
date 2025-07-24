@@ -20,7 +20,7 @@ if not hasattr(np, "trapezoid"):
     np.trapezoid = np.trapz  # type: ignore # pragma: no cover  # tested manually
 
 
-def roc_curve_data(  # pylint: disable=too-many-arguments
+def roc(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     thresholds: Iterable[float],
