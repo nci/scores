@@ -35,7 +35,10 @@ Nil currently.
 ### Internal Changes
 
 - Improved the efficiency of the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) by moving the call to gather dimensions to earlier within the method. See [PR #853](https://github.com/nci/scores/pull/853).
-- Added `scores.plotdata` for functions that generate data for verification plots. `scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`. `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas` were also moved to `scores.plotdata.murphy_score` and `scores.plotdata.murphy_thetas`respectively, but can still be imported as `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas`.
+- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. The following internal changes were made:
+	- Receiver (Relative) Operating Characteristic (ROC):`scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`.
+	- Murphy Score: `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas` were moved to `scores.plotdata.murphy_score` and `scores.plotdata.murphy_thetas`respectively, but can still be imported as `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas`.  
+	See [PR #852](https://github.com/nci/scores/pull/852)
 
 ### Contributors to this Release
 
