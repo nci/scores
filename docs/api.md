@@ -37,6 +37,7 @@
 .. autofunction:: scores.continuous.tw_expectile_score
 .. autofunction:: scores.continuous.quantile_interval_score
 .. autofunction:: scores.continuous.interval_score
+.. autofunction:: scores.continuous.qq
 ```
 
 ## scores.probability
@@ -105,6 +106,14 @@
 .. autofunction:: scores.processing.cdf.fill_cdf
 .. autofunction:: scores.processing.cdf.decreasing_cdfs
 .. autofunction:: scores.processing.cdf.cdf_envelope
+```
+
+## scores.plotdata
+```{eval-rst}
+.. autofunction:: scores.plotdata.murphy_score
+.. autofunction:: scores.plotdata.murphy_thetas
+.. autofunction:: scores.plotdata.qq
+.. autofunction:: scores.plotdata.roc
 ```
 
 ## scores.pandas

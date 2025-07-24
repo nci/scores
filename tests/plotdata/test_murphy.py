@@ -15,9 +15,9 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.continuous import murphy_impl as murphy
-from scores.continuous import murphy_thetas
-from scores.continuous.murphy_impl import (
+from scores.plotdata import murphy_impl as murphy
+from scores.plotdata import murphy_thetas
+from scores.plotdata.murphy_impl import (
     _expectile_thetas,
     _huber_thetas,
     _quantile_thetas,
@@ -448,9 +448,9 @@ def test_murphy_thetas(functional, left_limit_delta, expected):
     ("functional"),
     [murphy.QUANTILE, murphy.HUBER, murphy.EXPECTILE],
 )
-@patch("scores.continuous.murphy_impl._quantile_thetas", autospec=True)
-@patch("scores.continuous.murphy_impl._huber_thetas", autospec=True)
-@patch("scores.continuous.murphy_impl._expectile_thetas", autospec=True)
+@patch("scores.plotdata.murphy_impl._quantile_thetas", autospec=True)
+@patch("scores.plotdata.murphy_impl._huber_thetas", autospec=True)
+@patch("scores.plotdata.murphy_impl._expectile_thetas", autospec=True)
 def test_murphy_thetas_calls(mock__expectile_thetas, mock__huber_thetas, mock__quantile_thetas, functional):
     """murphy_thetas makes the expected function call."""
     result = murphy_thetas(

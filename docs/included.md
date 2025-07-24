@@ -125,6 +125,10 @@
   - [API](api.md#scores.continuous.quantile_score)
   - [Tutorial](project:./tutorials/Quantile_Loss.md)
   - [Gneiting (2011) - Theorem 9](https://doi.org/10.1198/jasa.2011.r10138)
+* - Quantile-Quantile (QQ) Plots
+  - [API](api.md#scores.continuous.qq)
+  - [Tutorial](project:./tutorials/Q-Q_plots.md)
+  - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
 * - Quantile Score, *see Quantile Loss*
   - &mdash;
   - &mdash;
@@ -735,6 +739,44 @@
   - &mdash;   
 ```
 
+## Plotting Data
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Murphy Diagrams (Plots of the Murphy Score)
+  - 
+  - 
+  - 
+* -  
+    - Murphy Score (Mean Elementary Score)
+  -
+    [API](api.md#scores.plotdata.murphy_score)
+  - 
+    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - 
+    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+* -  
+    - Murphy Score (Mean Elementary Score) - Theta Values
+  -
+    [API](api.md#scores.plotdata.murphy_thetas)
+  - 
+    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - 
+    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* - Quantile-Quantile (QQ) Plots
+  - [API](api.md#scores.plotdata.qq)
+  - [Tutorial](project:./tutorials/Q-Q_plots.md)
+  - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
+* - Receiver (Relative) Operating Characteristic (ROC)
+  - [API](api.md#scores.plotdata.roc)   
+  - [Tutorial](project:./tutorials/ROC.md)
+  - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
+```
 ## Pandas
 
 ```{list-table}
