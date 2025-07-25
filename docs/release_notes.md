@@ -23,6 +23,7 @@ Nil currently.
 ### Bug Fixes
 
 - Fixed an issue where the `scores.plotdata.roc` doesn't add the point (0, 0) in some instances. See [PR #863](https://github.com/nci/scores/pull/863)
+- Fixed an issue in `scores.continuous.quantile_interval_score` where broadcasting wasn't being done correctly in some places. See [PR #866](https://github.com/nci/scores/issues/866)
 
 ### Documentation
 
