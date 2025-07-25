@@ -4,6 +4,7 @@ scores.continuous.interval_score
 """
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 ERROR_MESSAGE_QTILE = (
@@ -133,4 +134,61 @@ EXPECTED_2D_WITH_WEIGHTS_INTERVAL = xr.Dataset(
         "total": (["time", "station"], [[0, 13.33333333, 16.66666667], [4.33333333, 2, 0]]),
     },
     coords={"station": np.arange(3), "time": np.arange(2)},
+)
+
+COORDS = {
+    "valid_15z_date": {
+        "dims": ("valid_15z_date",),
+        "data": pd.date_range(start="2021-03-18", end="2021-03-23", freq="D"),
+    },
+    "station_number": {
+        "dims": ("station_number",),
+        "data": [46012, 46126, 46128],
+    },
+    "lead_day": {
+        "dims": ("lead_day",),
+        "data": [1, 2],
+    },
+}
+FCST_LOWER_QTILE1 = xr.DataArray.from_dict(
+    {
+        "dims": COORDS.keys(),
+        "data": [
+            [[np.nan, 0.0], [1.2, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.1], [0.0, 0.0]],
+            [[4.8, 0.1], [12.6, 7.3], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+        ],
+        "coords": COORDS,
+    }
+)
+FCST_UPPER_QTILE1 = xr.DataArray.from_dict(
+    {
+        "dims": COORDS.keys(),
+        "data": [
+            [[2.4, 3.8], [2.0, 1.5], [0.0, 0.0]],
+            [[2.5, 0.0], [0.8, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            [[0.0, 0.1], [11.4, 16.2], [0.0, 0.0]],
+            [[41.2, 45.5], [61.3, 63.8], [16.0, 32.7]],
+            [[1.3, 0.0], [0.9, 0.0], [0.0, np.nan]],
+        ],
+        "coords": COORDS,
+    }
+)
+OBS1 = xr.DataArray.from_dict(
+    {
+        "dims": COORDS.keys(),
+        "data": [
+            [[0.6, 0.6], [1.0, 1.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            [[2.2, 2.2], [6.4, 6.4], [2.4, 2.4]],
+            [[39.4, 39.4], [137.4, 137.4], [18.8, 18.8]],
+            [[0.0, 0.0], [0.2, 0.2], [0.0, 0.0]],
+        ],
+        "coords": COORDS,
+    }
 )
