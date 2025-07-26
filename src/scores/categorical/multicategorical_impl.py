@@ -11,13 +11,13 @@ import xarray as xr
 
 from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import check_dims, gather_dimensions
 
 
 def firm(  # pylint: disable=too-many-arguments
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     risk_parameter: float,
     categorical_thresholds: Union[Sequence[float], Sequence[xr.DataArray]],
     threshold_weights: Sequence[Union[float, xr.DataArray]],
@@ -27,7 +27,8 @@ def firm(  # pylint: disable=too-many-arguments
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     threshold_assignment: Optional[str] = "lower",
-) -> xr.Dataset:
+    include_components: bool = False,
+) -> XarrayLike:
     """
     Calculates the FIxed Risk Multicategorical (FIRM) score including the
     underforecast and overforecast penalties.
@@ -75,9 +76,13 @@ def firm(  # pylint: disable=too-many-arguments
         threshold_assignment: Specifies whether the intervals defining the categories are
             left or right closed. That is whether the decision threshold is included in
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
+        include_components: If True, then the function returns the FIRM score
+            along with the overforecast and underforecast penalties as a new dimension
+            called "components". If False (default), then only the FIRM score is returned.
 
     Returns:
-        An xarray Dataset with data vars:
+        An xarray object with the FIRM score. If `include_components` is true, then
+        a new dimension called "components" is created that contains the following coordinates:
 
         * firm_score: A score for a single category for each coord based on
           the FIRM framework.
@@ -93,6 +98,9 @@ def firm(  # pylint: disable=too-many-arguments
         ValueError: if `discount_distance` is not None and < 0.
         scores.utils.DimensionError: if `threshold_weights` is a list of xr.DataArrays
             and if the dimensions of these xr.DataArrays is not a subset of the `obs` dims.
+        ValueError: if `threshold_assignment` is not "upper" or "lower".
+        ValueError: if the dimension name "components" is used in `fcst` or `obs`.
+        TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
 
     Note:
         Setting `discount distance` to None or 0, will mean that no
@@ -103,29 +111,41 @@ def firm(  # pylint: disable=too-many-arguments
         is always proportional to the distance of the observation from the
         threshold, and similarly for false alarms.
 
+    Example:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.categorical import firm
+        >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
+        >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
+        >>> categorical_thresholds = [0.2, 0.5, 0.8]
+        >>> risk_parameter = 0.1
+        >>> firm_score = firm(fcst, obs, risk_parameter, categorical_thresholds)
+
     References:
         Taggart, R., Loveday, N. and Griffiths, D., 2022. A scoring framework for tiered
         warnings and multicategorical forecasts based on fixed risk measures. Quarterly
         Journal of the Royal Meteorological Society, 148(744), pp.1389-1406.
     """
     _check_firm_inputs(
-        obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
+        fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
     )
+    reduce_dims = gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )  # type: ignore[assignment]
     total_score = []
-    for categorical_threshold, weight in zip(categorical_thresholds, threshold_weights):
-        score = weight * _single_category_score(
+    for categorical_threshold, threshold_weight in zip(categorical_thresholds, threshold_weights):
+        score = threshold_weight * _single_category_score(
             fcst,
             obs,
             risk_parameter,
             categorical_threshold,  # type: ignore
             discount_distance=discount_distance,
             threshold_assignment=threshold_assignment,
+            include_components=include_components,
         )
         total_score.append(score)
     summed_score = sum(total_score)
-    reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )  # type: ignore[assignment]
+
     summed_score = apply_weights(summed_score, weights=weights)  # type: ignore
     score = summed_score.mean(dim=reduce_dims)  # type: ignore
 
@@ -133,11 +153,15 @@ def firm(  # pylint: disable=too-many-arguments
 
 
 def _check_firm_inputs(
-    obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
+    fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
 ):
     """
     Checks that the FIRM inputs are suitable
     """
+    if "components" in obs.dims or "components" in fcst.dims:
+        raise ValueError("The dimension name 'components' is reserved and cannot be used in `fcst` or `obs`.")
+    if not all_same_xarraylike([fcst, obs]):
+        raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
     if len(categorical_thresholds) < 1:
         raise ValueError("`categorical_thresholds` must have at least one threshold")
 
@@ -167,14 +191,15 @@ def _check_firm_inputs(
 
 
 def _single_category_score(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     risk_parameter: float,
     categorical_threshold: Union[float, xr.DataArray],
     *,  # Force keywords arguments to be keyword-only
     discount_distance: Optional[float] = None,
     threshold_assignment: Optional[str] = "lower",
-) -> xr.Dataset:
+    include_components: bool = False,
+) -> XarrayLike:
     """
     Calculates the score for a single category for the `firm` metric at each
     coord. Under-forecast and over-forecast penalties are also calculated
@@ -195,14 +220,18 @@ def _single_category_score(
         threshold_assignment: Specifies whether the intervals defining the categories are
             left or right closed. That is whether the decision threshold is included in
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
+        include_components: If True, then the function returns the FIRM score
+            along with the overforecast and underforecast penalties as a new dimension
+            called "components". If False, then only the FIRM score is returned.
 
     Returns:
-        An xarray Dataset with data vars:
+        An xarray object with the FIRM score for a single category. If `include_components` is true, then
+        a new dimension called "components" is created that contains the following coordinates:
 
-            * firm_score: a score for a single category for each coord
-              based on the FIRM framework. All dimensions are preserved.
-            * overforecast_penalty: Penalty for False Alarms.
-            * underforecast_penalty: Penalty for Misses.
+        * firm_score: A score for a single category for each coord based on
+          the FIRM framework.
+        * overforecast_penalty: Penalty for False Alarms.
+        * underforecast_penalty: Penalty for Misses.
     """
     # pylint: disable=unbalanced-tuple-unpacking
     fcst, obs = xr.align(fcst, obs)
@@ -237,15 +266,13 @@ def _single_category_score(
     underforecast_penalty = risk_parameter * scale_2 * condition2
     firm_score = overforecast_penalty + underforecast_penalty
 
-    score = xr.Dataset(
-        {
-            "firm_score": firm_score,
-            "overforecast_penalty": overforecast_penalty,
-            "underforecast_penalty": underforecast_penalty,
-        }
-    )
-    score = score.transpose(*fcst.dims)
-    return score
+    if include_components:
+        firm_score = xr.concat(
+            [firm_score, overforecast_penalty, underforecast_penalty],
+            dim=xr.DataArray(["firm_score", "overforecast_penalty", "underforecast_penalty"], dims="components"),
+        )
+        firm_score = firm_score.transpose("components", *fcst.dims)
+    return firm_score
 
 
 def seeps(  # pylint: disable=too-many-arguments, too-many-locals
@@ -269,14 +296,14 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     performance of a forecast across three categories:
 
     - Dry weather (e.g., less than or equal to 0.2mm),
-    - Light precipitation (the climatological lower two-thirds of 
+    - Light precipitation (the climatological lower two-thirds of
       rainfall conditioned on it raining),
-    - Heavy precipitation (the climatological upper one-third of rainfall 
+    - Heavy precipitation (the climatological upper one-third of rainfall
       conditioned on it raining).
 
     The SEEPS penalty matrix is defined as
 
-    
+
     .. math::
         s = \frac{1}{2} \left(
         \begin{matrix}
@@ -286,35 +313,35 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         \end{matrix}
         \right)
 
-        
-    where 
+
+    where
         - :math:`p_1` is the climatological probability of the dry weather category,
         - :math:`p_3` is the climatological probability of the heavy precipitation category,
         - The rows correspond to the forecast category (dry, light, heavy),
         - The columns correspond to the observation category (dry, light, heavy),
-    
+
     as defined in Eq 15 in Rodwell et al. (2010).
 
     Let :math:`p_2` denote the climatological probability of light precipitation occuring.
     Note that since :math:`p_2 = 2p_3` and :math:`p_1 + p_2 + p_3 = 1`, then :math:`p_3 = (1 - p_1) / 3`
     can be substituted into the penalty matrix. In this implementation, the user only provides
-    :math:`p_1` with the ``prob_dry`` arg and the function calculates :math:`p_3` internally. 
-    Additionally, this  implementation of the score is negatively oriented, meaning that 
-    lower scores are better. 
-    
+    :math:`p_1` with the ``prob_dry`` arg and the function calculates :math:`p_3` internally.
+    Additionally, this  implementation of the score is negatively oriented, meaning that
+    lower scores are better.
+
     Sometimes in the literature, a positively oriented version of SEEPS is used,
     which is defined as :math:`1 - \mathrm{SEEPS}`.
 
-    By default, the scores are only calculated for points where :math:`p_1 \in [0.1, 0.85]` 
+    By default, the scores are only calculated for points where :math:`p_1 \in [0.1, 0.85]`
     as per Rodwell et al. (2010). This can be changed by setting ``mask_clim_extremes`` to ``False`` or
     by changing the ``lower_masked_value`` and ``upper_masked_value`` parameters.
 
     Args:
         fcst: An array of real-valued forecasts (e.g., precipitation forecasts in mm).
         obs: An array of real-valued observations (e.g., precipitation forecasts in mm).
-        prob_dry: The climatological probability of the dry weather category. This is 
+        prob_dry: The climatological probability of the dry weather category. This is
             called :math:`p_1` in the SEEPS penalty matrix. Must be in the range [0, 1].
-        light_heavy_threshold: An array of the rainfall thresholds (e.g., in mm) that separates 
+        light_heavy_threshold: An array of the rainfall thresholds (e.g., in mm) that separates
             light and heavy precipitation. The threshold itself is included in the light
             precipitation category.
         dry_light_threshold: The threshold (e.g., in mm) that separates dry weather from light precipitation.
@@ -322,9 +349,9 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         mask_clim_extremes: If True, mask out the score at points where
             :math:`p_1` is less than ``lower_masked_value`` or greater than ``upper_masked_value``.
             Instead a NaN is returned at these points. Defaults to True.
-        lower_masked_value: The SEEPS score is masked at points where ``prob_dry`` is 
+        lower_masked_value: The SEEPS score is masked at points where ``prob_dry`` is
             less than this value. Defaults to 0.1.
-        upper_masked_value: The SEEPS score is masked at points where ``prob_dry`` is 
+        upper_masked_value: The SEEPS score is masked at points where ``prob_dry`` is
             greater than this value. Defaults to 0.85.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the SEEPS score. All other dimensions will be preserved. As a
@@ -350,11 +377,11 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
 
     Warning:
         This function raises a warning if any values in `prob_dry` are exactly equal to 0 or 1.
-    
+
     References:
-        Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010). 
-        A new equitable score suitable for verifying precipitation in numerical 
-        weather prediction. Quarterly Journal of the Royal Meteorological Society, 
+        Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010).
+        A new equitable score suitable for verifying precipitation in numerical
+        weather prediction. Quarterly Journal of the Royal Meteorological Society,
         136(650), 1344–1363. https://doi.org/10.1002/qj.656
 
     Examples:

@@ -282,9 +282,9 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
         assert result.shape == expected_shape
 
 
-@pytest.mark.parametrize(
-    "objects, blocks, n_iteration, exclude_dims, circular, expected_shape",
-    [
+dask_bb_scenarios = [[None, None, None, None, None, None]]
+if not dask == "Unavailable":
+    dask_bb_scenarios = [
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]).chunk()],
             {"dim1": 2, "dim2": 2},
@@ -331,8 +331,10 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
             True,
             (30, 100, 100, 3),
         ),
-    ],
-)
+    ]
+
+
+@pytest.mark.parametrize("objects, blocks, n_iteration, exclude_dims, circular, expected_shape", dask_bb_scenarios)
 def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test block_bootstrap can work with dask arrays"""
     if dask == "Unavailable":  # pragma: no cover

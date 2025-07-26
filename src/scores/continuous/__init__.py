@@ -13,7 +13,6 @@ from scores.continuous.flip_flop_impl import (
     flip_flop_index_proportion_exceeding,
 )
 from scores.continuous.interval_impl import interval_score, quantile_interval_score
-from scores.continuous.murphy_impl import murphy_score, murphy_thetas
 from scores.continuous.nse_impl import nse
 from scores.continuous.quantile_loss_impl import quantile_score
 from scores.continuous.standard_impl import (
@@ -33,6 +32,8 @@ from scores.continuous.threshold_weighted_impl import (
     tw_quantile_score,
     tw_squared_error,
 )
+from scores.plotdata.murphy_impl import murphy_score, murphy_thetas
+from scores.plotdata.qq_impl import qq
 from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
@@ -62,4 +63,5 @@ __all__ = [
     "tw_squared_error",
     "quantile_interval_score",
     "interval_score",
+    "qq",
 ]

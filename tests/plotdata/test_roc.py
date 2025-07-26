@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.probability import roc_curve_data
-from tests.probabilty import roc_test_data as rtd
+from scores.plotdata import roc
+from tests.plotdata import roc_test_data as rtd
 
 
 @pytest.mark.parametrize(
@@ -23,6 +23,16 @@ from tests.probabilty import roc_test_data as rtd
             rtd.FCST_2X3X2_WITH_NAN,
             rtd.OBS_3X3_WITH_NAN,
             [0, 0.3, 1],
+            ["lead_day"],
+            None,
+            None,
+            rtd.EXP_ROC_LEADDAY,
+        ),
+        # check behaviour when 0 is not supplied as a threshold
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [0.3, 1],
             ["lead_day"],
             None,
             None,
@@ -90,23 +100,35 @@ from tests.probabilty import roc_test_data as rtd
         ),
     ],
 )
-def test_roc_curve_data(fcst, obs, thresholds, preserve_dims, reduce_dims, weights, expected):
+def test_roc(fcst, obs, thresholds, preserve_dims, reduce_dims, weights, expected):
     """
-    Tests the roc_curve_data
+    Tests the roc
     """
-    result = roc_curve_data(
-        fcst, obs, thresholds, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights
-    )
+    result = roc(fcst, obs, thresholds, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
     result.broadcast_equals(expected)
 
 
-def test_roc_curve_data_dask():
-    """tests that roc_curve_data works with dask"""
+def test_roc_curve_auc():
+    """
+    Tests that the bug highlighted in issue #857 is fixed.
+    """
+    fcst1 = xr.DataArray(data=[0.3, 0.5, 0.7, 0.9, 0.9], dims="time")
+    fcst2 = xr.DataArray(data=[0.3, 0.5, 0.7, 1, 1], dims="time")
+    obs = xr.DataArray(data=[0, 0, 1, 1, 0], dims="time")
+
+    result_a = roc(fcst1, obs, np.arange(0, 1.05, 0.1))
+    result_b = roc(fcst2, obs, np.arange(0, 1.05, 0.1))
+    xr.testing.assert_allclose(result_a.AUC, xr.DataArray(0.75))
+    xr.testing.assert_allclose(result_b.AUC, xr.DataArray(0.75))
+
+
+def test_roc_dask():
+    """tests that roc works with dask"""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = roc_curve_data(
+    result = roc(
         rtd.FCST_2X3X2_WITH_NAN.chunk(),
         rtd.OBS_3X3_WITH_NAN.chunk(),
         [0, 0.3, 1],
@@ -155,11 +177,20 @@ def test_roc_curve_data_dask():
             ValueError,
             "'threshold' must not be in the supplied data object dimensions",
         ),
+        # put an -np.inf in the thresholds
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [-np.inf, 0, 0.3, 1],
+            None,
+            ValueError,
+            "`thresholds` contains values outside of the range [0, 1]",
+        ),
         # put an np.inf in the thresholds
         (
             rtd.FCST_2X3X2_WITH_NAN,
             rtd.OBS_3X3_WITH_NAN,
-            [-np.inf, 0, 0.3, 1, np.inf],
+            [0, 0.3, 1, np.inf],
             None,
             ValueError,
             "`thresholds` contains values outside of the range [0, 1]",
@@ -175,10 +206,10 @@ def test_roc_curve_data_dask():
         ),
     ],
 )
-def test_roc_curve_data_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet):
+def test_roc_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet):
     """
-    Tests that roc_curve_data raises the correct error
+    Tests that roc raises the correct error
     """
     with pytest.raises(error_class) as exc:
-        roc_curve_data(fcst, obs, thresholds, preserve_dims=preserve_dims)
+        roc(fcst, obs, thresholds, preserve_dims=preserve_dims)
     assert error_msg_snippet in str(exc.value)

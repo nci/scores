@@ -7,6 +7,7 @@ from typing import Optional
 import xarray as xr
 
 from scores.functions import apply_weights
+from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
 
@@ -29,7 +30,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     .. math::
         \\text{quantile interval score} = \\underbrace{(q_{u} - q_{l})}_{\\text{interval width penalty}} +
         \\underbrace{\\frac{1}{\\alpha_l} \\cdot (q_{l} - y) \\cdot \\mathbb{1}(y < q_{l})}_{\\text{over-prediction penalty}} +
-        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y < q_{u})}_{\\text{under-prediction penalty}}
+        \\underbrace{\\frac{1}{1 - \\alpha_u} \\cdot (y - q_{u}) \\cdot \\mathbb{1}(y > q_{u})}_{\\text{under-prediction penalty}}
 
     where
         - :math:`q_u` is the forecast at the upper quantile
@@ -91,7 +92,6 @@ def quantile_interval_score(  # pylint: disable=R0914
         >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
         >>> quantile_interval_score(fcst_lower_level, fcst_upper_level, obs, 0.1, 0.6)
     """
-
     if not 0 < lower_qtile_level < upper_qtile_level < 1:
         raise ValueError(
             "Expected 0 < lower_qtile_level < upper_qtile_level < 1. But got "
@@ -107,6 +107,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     check_dims(xr_data=obs, expected_dims=fcst_lower_qtile.dims, mode="subset")  # type: ignore
     if (fcst_lower_qtile > fcst_upper_qtile).any():
         raise ValueError("Input does not satisfy fcst_lower_qtile < fcst_upper_qtile condition.")
+    fcst_lower_qtile, fcst_upper_qtile, obs = broadcast_and_match_nan(fcst_lower_qtile, fcst_upper_qtile, obs)
     interval_width = fcst_upper_qtile - fcst_lower_qtile
     lower_diff = (1 / lower_qtile_level) * (fcst_lower_qtile - obs)
     lower_diff = lower_diff.clip(min=0.0)

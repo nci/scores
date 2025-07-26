@@ -9,12 +9,13 @@ import scores.continuous
 import scores.emerging
 import scores.functions
 import scores.pandas
+import scores.plotdata
 import scores.probability
 import scores.processing
 import scores.sample_data
 import scores.stats.statistical_tests  # noqa: F401
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 __all__ = [
     "scores.categorical",

@@ -39,6 +39,8 @@ from tests.categorical import multicategorical_test_data as mtd
         (mtd.DA_FCST_SC2, mtd.DA_OBS_SC2, 2, None, "upper", mtd.EXP_SC_CASE5),
         # Threshold xr.Datarray, discount = 0, preserve all dims
         (mtd.DA_FCST_SC, mtd.DA_OBS_SC, mtd.DA_THRESHOLD_SC, 0, "lower", mtd.EXP_SC_CASE6),
+        # Test with xr.Datasets as inputs
+        (mtd.DS_FCST_SC, mtd.DS_OBS_SC, 5, 0, "lower", mtd.EXP_SC_CASE7),
     ],
 )
 
@@ -54,6 +56,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
         categorical_threshold,
         discount_distance=discount_distance,
         threshold_assignment=threshold_assignment,
+        include_components=True,
     )
     xr.testing.assert_allclose(calculated, expected)
 
@@ -68,6 +71,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
         "reduce_dims",
         "preserve_dims",
         "discount_distance",
+        "include_components",
         "expected",
     ),
     [
@@ -82,6 +86,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0.0,
+            True,
             mtd.EXP_SC_CASE0,
         ),
         # Test for single category with discount distance. Identical to CASE3
@@ -95,6 +100,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0.5,
+            True,
             mtd.EXP_SC_CASE3,
         ),
         # Test for single category case on slightly bigger dataset
@@ -108,6 +114,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE0,
         ),
         # Single category, only keep one dimension
@@ -120,6 +127,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i"],
             0,
+            True,
             mtd.EXP_FIRM_CASE1,
         ),
         # Single category, no dimensions
@@ -132,6 +140,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             None,
             0,
+            True,
             mtd.EXP_FIRM_CASE2,
         ),
         # Single category, no dimensions
@@ -144,6 +153,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             "all",
             None,
             0,
+            True,
             mtd.EXP_FIRM_CASE2,
         ),
         # 2 categories, same weight
@@ -156,6 +166,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE3,
         ),
         # 3 categories, same weight
@@ -168,6 +179,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE4,
         ),
         # 2 categories, 2 weights
@@ -180,6 +192,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE4,
         ),
         # 2 categories, 2 weights that are xr.DataArrays
@@ -192,6 +205,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE4,
         ),
         # 2 categories, 2 weights with the first a xr.DataArray and the second
@@ -205,6 +219,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE4,
         ),
         # 2 categories, 2 weights that are xr.DataArrays with different values
@@ -218,6 +233,7 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE5,
         ),
         # 2 categories, 2 weights that are xr.DataArrays with different values
@@ -231,9 +247,10 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE6,
         ),
-        # 2 categories defined with xr.DataArrays for threhsolds that don't vary by coord
+        # 2 categories defined with xr.DataArrays for thresholds that don't vary by coord
         (
             mtd.DA_FCST_FIRM,
             mtd.DA_OBS_FIRM,
@@ -243,9 +260,10 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE3,
         ),
-        # 2 categories defined with xr.DataArrays for threhsolds that do vary
+        # 2 categories defined with xr.DataArrays for thresholds that do vary
         (
             mtd.DA_FCST_FIRM,
             mtd.DA_OBS_FIRM,
@@ -255,11 +273,37 @@ def test__single_category_score(fcst, obs, categorical_threshold, discount_dista
             None,
             ["i", "j", "k"],
             0,
+            True,
             mtd.EXP_FIRM_CASE3,
+        ),
+        # Test that it works with xr.Datasets as inputs
+        (
+            mtd.DS_FCST_FIRM,
+            mtd.DS_OBS_FIRM,
+            0.7,
+            [0, 5],
+            mtd.LIST_WEIGHTS_FIRM1,
+            None,
+            ["i", "j", "k"],
+            0,
+            True,
+            mtd.EXP_FIRM_CASE7,
+        ),
+        # Tests when include_components is False
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM,
+            0.7,
+            mtd.DA_THRESHOLD_FIRM,
+            [1, 1],
+            None,
+            ["i", "j", "k"],
+            0,
+            False,
+            mtd.EXP_FIRM_CASE3.sel(components="firm_score").drop_vars("components"),
         ),
     ],
 )
-
 # pylint: disable=too-many-positional-arguments
 def test_firm(
     fcst,
@@ -270,6 +314,7 @@ def test_firm(
     reduce_dims,
     preserve_dims,
     discount_distance,
+    include_components,
     expected,
 ):
     """Tests firm"""
@@ -282,9 +327,13 @@ def test_firm(
         discount_distance=discount_distance,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
+        include_components=include_components,
     )
-    if preserve_dims is not None:
-        calculated = calculated.transpose(*preserve_dims)
+    if isinstance(calculated, xr.Dataset):
+        for var in calculated.data_vars:
+            calculated[var] = calculated[var].transpose(*expected[var].dims)
+    else:
+        calculated = calculated.transpose(*expected.dims)
     xr.testing.assert_allclose(
         calculated,
         expected,
@@ -307,13 +356,13 @@ def test_firm_dask():
         discount_distance=0,
         reduce_dims=None,
         preserve_dims=["i", "j", "k"],
+        include_components=True,
     )
 
-    calculated = calculated.transpose("i", "j", "k")
-
-    assert isinstance(calculated.firm_score.data, dask.array.Array)
+    assert isinstance(calculated.data, dask.array.Array)
     calculated = calculated.compute()
-    assert isinstance(calculated.firm_score.data, np.ndarray)
+    calculated = calculated.transpose("components", "i", "j", "k")
+    assert isinstance(calculated.data, np.ndarray)
     xr.testing.assert_allclose(
         calculated,
         mtd.EXP_FIRM_CASE6,
@@ -478,9 +527,47 @@ def test_firm_dask():
             ValueError,
             """ `threshold_assignment` must be either \"upper\" or \"lower\" """,
         ),
+        # "components" is a dim name in fcst
+        (
+            mtd.DA_FCST_FIRM1,
+            mtd.DA_OBS_FIRM,
+            0.5,
+            [5],
+            [1],
+            None,
+            0.0,
+            "upper",
+            ValueError,
+            "The dimension name 'components' is reserved ",
+        ),
+        # "components" is a dim name in obs
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DA_OBS_FIRM1,
+            0.5,
+            [5],
+            [1],
+            None,
+            0.0,
+            "upper",
+            ValueError,
+            "The dimension name 'components' is reserved ",
+        ),
+        # fcst and obs are not both xarray DataArrays or Datasets
+        (
+            mtd.DA_FCST_FIRM,
+            mtd.DS_OBS_FIRM,
+            0.5,
+            [5],
+            [1],
+            None,
+            0.0,
+            "upper",
+            TypeError,
+            "Both fcst and obs must be either xarray DataArrays or xarray Datasets",
+        ),
     ],
 )
-
 # pylint: disable=too-many-positional-arguments
 def test_firm_raises(
     fcst,

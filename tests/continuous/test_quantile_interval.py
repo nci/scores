@@ -253,3 +253,23 @@ def test_is_calculations(lower_fcst, upper_fcst, obs, interval_range, preserve_d
         weights=weights,
     )
     xr.testing.assert_allclose(result, expected)
+
+
+def test_quantile_interval_score_mean():
+    """This tests that broadcasting works correctly in quantile_interval_score."""
+    result = quantile_interval_score(
+        fcst_lower_qtile=qistd.FCST_LOWER_QTILE1,
+        fcst_upper_qtile=qistd.FCST_UPPER_QTILE1,
+        obs=qistd.OBS1,
+        lower_qtile_level=0.25,
+        upper_qtile_level=0.75,
+    )
+    expected = xr.Dataset(
+        data_vars={
+            "interval_width_penalty": 8.085294117647058,
+            "overprediction_penalty": 0.02352941176470588,
+            "underprediction_penalty": 19.035294117647055,
+            "total": 27.144117647058824,
+        },
+    )
+    xr.testing.assert_allclose(result, expected, atol=1e-2)
