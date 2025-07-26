@@ -4,42 +4,42 @@
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.1.0...develop). Below are the changes we think users may wish to be aware of.
 
-### Breaking Changes
-
-Nil currently.
-
-### Deprecations
-
-Nil currently.
-
 ### Features
 
 - Added a new metric:
 	- Spearman’s correlation coefficient: `scores.continuous.correlation.spearmanr`. See [PR #773](https://github.com/nci/scores/pull/773).
-- Added a new function for generating data for diagrams
-    - Quantile-Quantile (qq) plots: `scores.plotdata.qq`. See [PR #852](https://github.com/nci/scores/pull/852)
-- The FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) now has support for xr.Datasets in addition to the existing support for xr.DataArrays. See [PR #853](https://github.com/nci/scores/pull/853).
+- Added a new function for generating data for diagrams:
+    - Quantile-Quantile (QQ) plots: `scores.plotdata.qq`. See [PR #852](https://github.com/nci/scores/pull/852).
+- Added new features to the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`):
+	- Added support for xr.Datasets in addition to the existing support for xr.DataArrays. See [PR #853](https://github.com/nci/scores/pull/853).
+	- Added the optional argument `include_components`. If `include_components` is set to `True` the function will return the overforecast and underforecast penalties along with the FIRM score.
+	See See [PR #853](https://github.com/nci/scores/pull/853) and [PR #864](https://github.com/nci/scores/pull/864).
+- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. See [PR #852](https://github.com/nci/scores/pull/852). 
 
 ### Bug Fixes
 
-- Fixed an issue where the `scores.plotdata.roc` doesn't add the point (0, 0) in some instances. See [PR #863](https://github.com/nci/scores/pull/863)
-- Fixed an issue in `scores.continuous.quantile_interval_score` where broadcasting wasn't being done correctly in some places. See [PR #866](https://github.com/nci/scores/issues/866)
+- Fixed an issue where `scores.plotdata.roc` didn't add the point (0, 0) in some instances. See [PR #863](https://github.com/nci/scores/pull/863).
+- Fixed an issue in `scores.continuous.quantile_interval_score` where broadcasting wasn't being done correctly in some cases. See [PR #867](https://github.com/nci/scores/pull/867).
 
 ### Documentation
 
-- Added "Spearman’s Correlation Coefficient" tutorial. See [PR #773](https://github.com/nci/scores/pull/773).
+- Added two new tutorials:
+	- "Spearman’s Correlation Coefficient". See [PR #773](https://github.com/nci/scores/pull/773).
+	- "Quantile-Quantile (Q-Q) Plots for Comparing Forecasts and Observations". See [PR #852](https://github.com/nci/scores/pull/852).
 - Substantially updated "The FIxed Risk Multicategorical (FIRM) Score" tutorial. See [PR #853](https://github.com/nci/scores/pull/853).
-- Updated the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) docstring, including adding an example. See [PR #853](https://github.com/nci/scores/pull/853). 	
 - Fixed an error in the formula in the docstring for the quantile interval score (`scores.continuous.quantile_interval_score`). (*Note:* this error was only present in the docstring - the code implemenation of the function was correct and the tutorial listed the correct formula.) See [PR #851](https://github.com/nci/scores/pull/851).
 - Updated several "full changelog" URLs in the release notes. See [PR #859](https://github.com/nci/scores/pull/859).
 
 ### Internal Changes
 
 - Improved the efficiency of the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) by moving the call to gather dimensions to earlier within the method. See [PR #853](https://github.com/nci/scores/pull/853).
-- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. The following internal changes were made:
-	- Receiver (Relative) Operating Characteristic (ROC):`scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`.
-	- Murphy Score: `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas` were moved to `scores.plotdata.murphy_score` and `scores.plotdata.murphy_thetas`respectively, but can still be imported as `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas`.  
-	See [PR #852](https://github.com/nci/scores/pull/852)
+- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. See [PR #852](https://github.com/nci/scores/pull/852). The following internal changes were made:
+	- Receiver (Relative) Operating Characteristic (ROC):
+		- `scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`.
+	- Murphy Score: 
+		- `scores.continuous.murphy_score` was moved to `scores.plotdata.murphy_score`, but can still be imported as `scores.continuous.murphy_score` and  `scores.probability.murphy_score`.
+		- `scores.continuous.murphy_thetas` was moved to `scores.plotdata.murphy_thetas`, but can still be imported as `scores.continuous.murphy_thetas` and `scores.probability.murphy_thetas`.  
+- Added an additional CI/CD pipeline for testing without Dask. See [PR #856](https://github.com/nci/scores/pull/856).
 
 ### Contributors to this Release
 
