@@ -48,7 +48,8 @@ autodoc_typehints = "description"
 nbsphinx_thumbnails = {
     'tutorials/Risk_Matrix_Score': '_images/risk_matrix.png',
     'tutorials/Block_Bootstrapping': '_images/block_bootstrapping.png',
-    'tutorials/Isotonic_Regression_And_Reliability_Diagrams': '_images/isotonic_regression2.png'
+    'tutorials/Isotonic_Regression_And_Reliability_Diagrams': '_images/isotonic_regression2.png',
+    'tutorials/Binary_Contingency_Scores': '_images/binary_contingency.png'
 }
 
 # This is needed to allow linking into auto-generated API documentation
