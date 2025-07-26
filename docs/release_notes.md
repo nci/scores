@@ -1,6 +1,6 @@
 # Release Notes (What's New)
 
-## Version 2.2.0
+## Version 2.2.0 (July 26, 2025)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.1.0...2.2.0). Below are the changes we think users may wish to be aware of.
 
