@@ -41,15 +41,21 @@ html_theme_options = {
     "use_repository_button": True,
     "show_toc_level": 3,
 }
+
 html_baseurl = "https://scores.readthedocs.io/en/stable/"
 autodoc_typehints = "description"
+
+nbsphinx_thumbnails = {
+    'tutorials/Risk_Matrix_Score': '_images/risk_matrix.png',
+    'tutorials/Block_Bootstrapping': '_images/block_bootstrapping.png',
+    'tutorials/Isotonic_Regression_And_Reliability_Diagrams': '_images/isotonic_regression2.png'
+}
 
 # This is needed to allow linking into auto-generated API documentation
 # It means there is a risk that genuine cross-referencing errors will be
 # suppressed. Perhaps some way around this could be found in future.
 # Uncomment this during testing to reveal potential errors
 suppress_warnings = ["myst.xref_missing"]
-
 
 # -- nbsphinx ---------------------------------------------------------------
 # This is processed by Jinja2 and inserted after each notebook
