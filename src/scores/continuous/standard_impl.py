@@ -443,15 +443,23 @@ def pwithin(
 
     .. math::
 
-        \text{Percent within (exclusive)} = 100 \cdot \frac{\sum_{i=1}^{N} \mathbf{1}\left(|x_i - y_i| < \tau\right)}{\sum_{i=1}^{N} \mathbf{1}_{\text{valid}}}
-        \text{Percent within (inclusive)} = 100 \cdot \frac{\sum_{i=1}^{N} \mathbf{1}\left(|x_i - y_i| \leq \tau\right)}{\sum_{i=1}^{N} \mathbf{1}_{\text{valid}}}
+    .. math::
+
+    \\text{Percent within (exclusive)} = 100 \\cdot
+    \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}%
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}} \\
+
+    \\text{Percent within (inclusive)} = 100 \\cdot
+    \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}%
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
     where:
         - :math:`x_i` is the forecast value at index :math:`i`
         - :math:`y_i` is the observed value at index :math:`i`
-        - :math:`\tau` is the absolute error threshold
-        - :math:`\mathbf{1}(\cdot)` is the indicator function
-        - :math:`\mathbf{1}_{\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not missing (NaN), 0 otherwise
+        - :math:`\\tau` is the absolute error threshold
+        - :math:`\\mathbf{1}(\\cdot)` is the indicator function
+        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and 
+            :math:`y_i` are not missing (NaN), 0 otherwise
 
     Args:
         fcst: Forecast or predicted variables.
@@ -535,7 +543,8 @@ def kge(
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
     where:
-        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as defined in :py:func:`scores.continuous.correlation.pearsonr`
+        - :math:`\\rho`  = Pearson's correlation coefficient between observed and
+        forecast values as defined in :py:func:`scores.continuous.correlation.pearsonr`
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
