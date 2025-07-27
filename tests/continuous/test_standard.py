@@ -946,15 +946,9 @@ def test_pbias_dask():
 
 def test_within_no_data():
 
-    fcst = xr.DataArray(
-    np.array([np.nan]),
-    dims=("space"),
-    coords=[("space", ["x"])])
+    fcst = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
 
-    obs = xr.DataArray(
-    np.array([np.nan]),
-    dims=("space"),
-    coords=[("space", ["x"])])
+    obs = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
 
     result = scores.continuous.pwithin(
         fcst,
@@ -1009,8 +1003,6 @@ def test_pwithin(fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, r
     )
 
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
-
-
 
 
 @pytest.mark.parametrize(
