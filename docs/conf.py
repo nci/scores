@@ -53,6 +53,9 @@ nbsphinx_thumbnails = {
     "tutorials/Dimension_Handling": "_images/dimension_handling_thumbnail.png",
     "tutorials/Angular_data": "_images/angular_data_thumbnail.png",
     "tutorials/Q-Q_plots": "_images/qq_thumbnail.png",
+    "tutorials/NSE": "_images/NSE_thumbnail.png",
+    "tutorials/Quantile_Loss": "_images/quantile_loss_thumbnail.png",
+    "tutorials/Threshold_Weighted_Scores": "_images/threshold_weighted_scores_thumbnail.png",
 }
 
 # This is needed to allow linking into auto-generated API documentation
