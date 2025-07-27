@@ -421,7 +421,7 @@ def pbias(
     return _pbias
 
 
-def pwithin(
+def percent_within_x(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,
@@ -510,9 +510,9 @@ def pwithin(
 
     total = valid_mask.sum(dim=reduce_dims)
 
-    _pwithin = 100 * count_within / total
+    _percent_within_x = 100 * count_within / total
 
-    return _pwithin
+    return _percent_within_x
 
 
 def kge(
