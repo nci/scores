@@ -57,6 +57,7 @@ nbsphinx_thumbnails = {
     "tutorials/Quantile_Loss": "_images/quantile_loss_thumbnail.png",
     "tutorials/Threshold_Weighted_Scores": "_images/threshold_weighted_scores_thumbnail.png",
     "tutorials/Threshold_Weighted_CRPS_for_Ensembles": "_images/twCRPS_for_ensembles_thumbnail.png",
+    "tutorials/Brier_Score": "_images/brier_thumbnail.png",
 }
 
 # This is needed to allow linking into auto-generated API documentation
