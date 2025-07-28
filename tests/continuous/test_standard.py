@@ -944,7 +944,7 @@ def test_pbias_dask():
     xr.testing.assert_equal(result, EXP_PBIAS3)
 
 
-def test_within_no_data():
+def test_percent_within_x_no_data():
 
     fcst = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
 
@@ -959,6 +959,34 @@ def test_within_no_data():
     assert np.isnan(result.item())
 
 
+def test_percent_within_x_broadcasting():
+
+    fcst = xr.DataArray(
+        np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
+        dims=("space", "lead"),
+        coords=[
+            ("space", ["w", "x", "y"]),
+            ("lead", [1, 2, 3]),
+        ],
+    )
+
+    obs = xr.DataArray(
+        np.array([1, 1, 1]),
+        dims=("space"),
+        coords=[("space", ["w", "x", "y"])],
+    )
+
+    result = scores.continuous.percent_within_x(fcst, obs, preserve_dims="lead")
+
+    expected = xr.DataArray(
+        np.array([100 * 1 / 3, 100 * 1 / 3, 0]),
+        dims=("lead"),
+        coords=[("lead", [1, 2, 3])],
+    )
+
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
 @pytest.mark.parametrize(
     (
         "fcst",
@@ -967,32 +995,31 @@ def test_within_no_data():
         "preserve_dims",
         "is_angular",
         "threshold",
-        "rounded_digits",
         "is_inclusive",
         "expected",
     ),
     [
         # Check reduce dim arg
-        (DA1_BIAS, DA2_BIAS, None, "space", False, 1.0, 7, True, EXP_PERCENT_WITHIN_X1),
-        (DA1_BIAS, DA3_BIAS, None, "space", False, 1.0, 7, True, EXP_PERCENT_WITHIN_X3),
+        (DA1_BIAS, DA2_BIAS, None, "space", False, 1.0, True, EXP_PERCENT_WITHIN_X1),
+        (DA1_BIAS, DA3_BIAS, None, "space", False, 1.0, True, EXP_PERCENT_WITHIN_X3),
         # # Check preserve dim arg
-        (DA1_BIAS, DA2_BIAS, "time", None, False, 1.0, 7, True, EXP_PERCENT_WITHIN_X1),
+        (DA1_BIAS, DA2_BIAS, "time", None, False, 1.0, True, EXP_PERCENT_WITHIN_X1),
         # Reduce all
-        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, 7, True, EXP_PERCENT_WITHIN_X4),
+        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, True, EXP_PERCENT_WITHIN_X4),
         # Test with Dataset
-        (DS_BIAS1, DS_BIAS2, None, "space", False, 1.0, 7, True, EXP_DS_PERCENT_WITHIN_X1),
+        (DS_BIAS1, DS_BIAS2, None, "space", False, 1.0, True, EXP_DS_PERCENT_WITHIN_X1),
         # Testing angular results
-        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, 7, True, EXP_PERCENT_WITHIN_X5),
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, True, EXP_PERCENT_WITHIN_X5),
         # Testing angular results with inclusive false
-        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, 7, False, EXP_PERCENT_WITHIN_X6),
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, False, EXP_PERCENT_WITHIN_X6),
     ],
 )
-def test_percent_within_x(
-    fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, rounded_digits, is_inclusive, expected
-):
+def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, is_inclusive, expected):
     """
     Tests continuous.percent_within_x
     """
+
+    rounded_digits = 7
     result = scores.continuous.percent_within_x(
         fcst,
         obs,
@@ -1009,28 +1036,25 @@ def test_percent_within_x(
 
 @pytest.mark.parametrize(
     (
-        "fcst",
-        "obs",
-        "reduce_dims",
-        "preserve_dims",
-        "is_angular",
-        "threshold",
         "rounded_digits",
-        "is_inclusive",
         "expected",
     ),
     [
-        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, 2, True, 100 * 6 / 8),
-        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, 7, True, 100 * 4 / 8),
+        (2, 100 * 6 / 8),
+        (7, 100 * 4 / 8),
     ],
 )
-def test_percent_within_x_tolerance(
-    fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, rounded_digits, is_inclusive, expected
-):
+def test_percent_within_x_tolerance(rounded_digits, expected):
     """
     Tests continuous.percent_within_x for threshold rounding to control for precision issues
     """
-    fcst = fcst + 0.0001
+    fcst = DA1_BIAS + 0.0001
+    obs = DA2_BIAS
+    reduce_dims = None
+    preserve_dims = None
+    is_angular = False
+    threshold = 1
+    is_inclusive = True
 
     result = scores.continuous.percent_within_x(
         fcst,

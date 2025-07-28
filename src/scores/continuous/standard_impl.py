@@ -443,8 +443,6 @@ def percent_within_x(
 
     .. math::
 
-    .. math::
-
     \\text{Percent within (exclusive)} = 100 \\cdot
     \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}%
          {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}} \\
@@ -487,6 +485,18 @@ def percent_within_x(
         An xarray object with the percent within a given level of error.
 
 
+    Examples:
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, preserve_dims='lat')  
+            # if data is of dimension {lat,lon,time}, the percent within X value is computed across the time dimension
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, reduce_dims=['lat','lon'])  
+            # if data is of dimension {lat,lon,time}, the percent within X value is computed across the lat and lon dimensions
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = True)  
+            # The percent within X value is computed across all dimensions, resulting in a single value. 
+            # Success is if the error is less than or equal to 2.0. 
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = False)  
+            # The percent within X value is computed across all dimensions, resulting in a single value. 
+            # Success is if the error is less than 2.0. 
+        
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
