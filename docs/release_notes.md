@@ -1,44 +1,45 @@
 # Release Notes (What's New)
 
-## Version 2.2.0 (Upcoming Release)
+## Version 2.2.0 (July 26, 2025)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.1.0...develop). Below are the changes we think users may wish to be aware of.
-
-### Breaking Changes
-
-Nil currently.
-
-### Deprecations
-
-Nil currently.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.1.0...2.2.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
 - Added a new metric:
 	- Spearman’s correlation coefficient: `scores.continuous.correlation.spearmanr`. See [PR #773](https://github.com/nci/scores/pull/773).
-- Added a new function for generating data for diagrams
-    - Quantile-Quantile (qq) plots: `scores.plotdata.qq`. See [PR #852](https://github.com/nci/scores/pull/852)
-- The FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) now has support for xr.Datasets in addition to the existing support for xr.DataArrays. See [PR #853](https://github.com/nci/scores/pull/853).
+- Added a new function for generating data for diagrams:
+    - Quantile-Quantile (QQ) plots: `scores.plotdata.qq`. See [PR #852](https://github.com/nci/scores/pull/852).
+- Added new features to the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`):
+	- Added support for xr.Datasets in addition to the existing support for xr.DataArrays. See [PR #853](https://github.com/nci/scores/pull/853).
+	- Added the optional argument `include_components`. If `include_components` is set to `True` the function will return the overforecast and underforecast penalties along with the FIRM score.
+	See See [PR #853](https://github.com/nci/scores/pull/853) and [PR #864](https://github.com/nci/scores/pull/864).
+- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. See [PR #852](https://github.com/nci/scores/pull/852).
 
 ### Bug Fixes
 
-- Fixed an issue where the `scores.plotdata.roc` doesn't add the point (0, 0) in some instances. See [PR #863](https://github.com/nci/scores/pull/863)
+- Fixed an issue where `scores.plotdata.roc` didn't add the point (0, 0) in some instances. See [PR #863](https://github.com/nci/scores/pull/863).
+- Fixed an issue in `scores.continuous.quantile_interval_score` where broadcasting wasn't being done correctly in some cases. See [PR #867](https://github.com/nci/scores/pull/867).
 
 ### Documentation
 
-- Added "Spearman’s Correlation Coefficient" tutorial. See [PR #773](https://github.com/nci/scores/pull/773).
+- Added two new tutorials:
+	- "Spearman’s Correlation Coefficient". See [PR #773](https://github.com/nci/scores/pull/773).
+	- "Quantile-Quantile (Q-Q) Plots for Comparing Forecasts and Observations". See [PR #852](https://github.com/nci/scores/pull/852).
 - Substantially updated "The FIxed Risk Multicategorical (FIRM) Score" tutorial. See [PR #853](https://github.com/nci/scores/pull/853).
-- Updated the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) docstring, including adding an example. See [PR #853](https://github.com/nci/scores/pull/853). 	
 - Fixed an error in the formula in the docstring for the quantile interval score (`scores.continuous.quantile_interval_score`). (*Note:* this error was only present in the docstring - the code implemenation of the function was correct and the tutorial listed the correct formula.) See [PR #851](https://github.com/nci/scores/pull/851).
 - Updated several "full changelog" URLs in the release notes. See [PR #859](https://github.com/nci/scores/pull/859).
 
 ### Internal Changes
 
 - Improved the efficiency of the FIxed Risk Multicategorical (FIRM) score (`scores.categorical.firm`) by moving the call to gather dimensions to earlier within the method. See [PR #853](https://github.com/nci/scores/pull/853).
-- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. The following internal changes were made:
-	- Receiver (Relative) Operating Characteristic (ROC):`scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`.
-	- Murphy Score: `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas` were moved to `scores.plotdata.murphy_score` and `scores.plotdata.murphy_thetas`respectively, but can still be imported as `scores.continuous.murphy_score` and `scores.continuous.murphy_thetas`.  
-	See [PR #852](https://github.com/nci/scores/pull/852)
+- Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. See [PR #852](https://github.com/nci/scores/pull/852). The following internal changes were made:
+	- Receiver (Relative) Operating Characteristic (ROC):
+		- `scores.probability.roc_curve_data` was moved to `scores.plotdata.roc`, but can still be imported as `scores.probability.roc_curve_data`.
+	- Murphy Score:
+		- `scores.continuous.murphy_score` was moved to `scores.plotdata.murphy_score`, but can still be imported as `scores.continuous.murphy_score` and  `scores.probability.murphy_score`.
+		- `scores.continuous.murphy_thetas` was moved to `scores.plotdata.murphy_thetas`, but can still be imported as `scores.continuous.murphy_thetas` and `scores.probability.murphy_thetas`.
+- Added an additional CI/CD pipeline for testing without Dask. See [PR #856](https://github.com/nci/scores/pull/856).
 
 ### Contributors to this Release
 
@@ -58,30 +59,30 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
-- Added "Block Bootstrapping" tutorial. See [PR #418](https://github.com/nci/scores/pull/418). 
+- Added "Block Bootstrapping" tutorial. See [PR #418](https://github.com/nci/scores/pull/418).
 - Added "Stable Equitable Error in Probability Space (SEEPS)" tutorial. See [PR #809](https://github.com/nci/scores/pull/809).
 - Added "Nash-Sutcliffe Efficiency (NSE)" tutorial. See [PR #815](https://github.com/nci/scores/pull/815).
 - Updated the "Continuous Ranked Probability Score (CRPS) for Ensembles" tutorial:
 	- Labelled dimensions in fcst/obs data.
 	- Updated description of the plot to say the area squared corresponds to the CRPS.
-	- Added an example with multiple coordinates along a dimension.  
+	- Added an example with multiple coordinates along a dimension.
 	See [PR #805](https://github.com/nci/scores/pull/805).
 - Updated "Data Sources":
 	- Added links to two additional datasets for gridded global numerical weather prediction.
-	- Added links to several additional datasets for point-based data.  
-	See [PR #823](https://github.com/nci/scores/pull/823) and [PR #831](https://github.com/nci/scores/pull/831). 
+	- Added links to several additional datasets for point-based data.
+	See [PR #823](https://github.com/nci/scores/pull/823) and [PR #831](https://github.com/nci/scores/pull/831).
 - Updated references in several sections of the documentation, following the publication of a [preprint](https://doi.org/10.48550/arXiv.2502.08891) for the risk matrix score. See [PR #827](https://github.com/nci/scores/pull/827).
 
 ### Internal Changes
 
 - Tested and added compatibility for recent Xarray versions (2025 and onwards) and adjusted dependency specification so new year "major version" rollovers will be permitted by default in future. See [commit #f109f2f](https://github.com/nci/scores/commit/f109f2f434ac684b3d54f447c330466d33703279) and [commit #8428d64](https://github.com/nci/scores/commit/8428d64dcf2a5f5480c61b266284260d4b5078d2).
-- In `scores.emerging.weights_from_warning_scaling`, changed the name of the argument `assessment_weights` to  `evaluation_weights`. See [PR #806](https://github.com/nci/scores/issues/806).  
+- In `scores.emerging.weights_from_warning_scaling`, changed the name of the argument `assessment_weights` to  `evaluation_weights`. See [PR #806](https://github.com/nci/scores/issues/806).
 ***Note:** This is technically a breaking change, but does not trigger a major release as it is contained within the "emerging" section of the API. This area of the API is designated for metrics which are still undergoing peer review and as such are expected to undergo change. Once peer review is concluded, the implementation will be finalised and moved.*
 - Add support for developers of `scores` who choose to use the `pixi` tool for environment management. See [PR #835](https://github.com/nci/scores/pull/835), [PR #839](https://github.com/nci/scores/pull/839) and [PR #840](https://github.com/nci/scores/pull/840).
 
 ### Contributors to this Release
 
-Dougal T. Squire* ([@dougiesquire](https://github.com/dougiesquire)), Mohammad Mahadi Hasan* ([@engrmahadi](https://github.com/engrmahadi)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)), Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)) Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), 
+Dougal T. Squire* ([@dougiesquire](https://github.com/dougiesquire)), Mohammad Mahadi Hasan* ([@engrmahadi](https://github.com/engrmahadi)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)), Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)) Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)),
 Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Durga Shrestha ([@durgals](https://github.com/durgals)) and Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)).
 
 \* indicates that this release contains their first contribution to `scores`.
@@ -104,25 +105,25 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Also added one new emerging metric and two supporting functions:
 	- Risk matrix score: `scores.emerging.risk_matrix_scores`.
 	- Risk matrix score - matrix weights to array: `scores.emerging.matrix_weights_to_array`.
-	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.  
-	See [PR #724](https://github.com/nci/scores/pull/724) and [PR #794](https://github.com/nci/scores/pull/794).  
+	- Risk matrix score - warning scaling to weight array: `scores.emerging.weights_from_warning_scaling`.
+	See [PR #724](https://github.com/nci/scores/pull/724) and [PR #794](https://github.com/nci/scores/pull/794).
 - A new method called `format_table` was added to the class `BasicContingencyManager` to improve visualisation of 2x2 contingency tables. The tutorial `Binary_Contingency_Scores` was updated to demonstrate the use of this function. See [PR #775](https://github.com/nci/scores/pull/775).
 - The functions `scores.processing.comparative_discretise`, `scores.processing.binary_discretise` and `scores.processing.binary_discretise_proportion` now accept either a string indicating the choice of operator to be used, or an operator from the [Python core library `operator` module](https://docs.python.org/3/library/operator.html). Using one of the operators from the Python core module is recommended, as doing so is more reliable for a variety of reasons. Support for the use of a string may be removed in future. See [PR #740](https://github.com/nci/scores/pull/740) and [PR #758](https://github.com/nci/scores/pull/758).
 
 ### Documentation
 
-- Added "The Risk Matrix Score" tutorial. See [PR #724](https://github.com/nci/scores/pull/724) and [PR #794](https://github.com/nci/scores/pull/794). 
+- Added "The Risk Matrix Score" tutorial. See [PR #724](https://github.com/nci/scores/pull/724) and [PR #794](https://github.com/nci/scores/pull/794).
 - Updated the "Brier Score" tutorial to include a new section about the Brier score for ensembles. See [PR #735](https://github.com/nci/scores/pull/735).
-- Updated the "Binary Categorical Scores and Binary Contingency Tables (Confusion Matrices)" 
+- Updated the "Binary Categorical Scores and Binary Contingency Tables (Confusion Matrices)"
   tutorial:
   - Included "positive predictive value" in the list of binary categorical scores.
   - Included "negative predictive value" in the list of binary categorical scores.
-  - Demonstrated the use of the new `format_table` method for visualising 2x2 contingency tables.  
-  See [PR #759](https://github.com/nci/scores/pull/759) and [PR #775](https://github.com/nci/scores/pull/775). 
+  - Demonstrated the use of the new `format_table` method for visualising 2x2 contingency tables.
+  See [PR #759](https://github.com/nci/scores/pull/759) and [PR #775](https://github.com/nci/scores/pull/775).
 - Updated the “Contributing Guide”:
 	- Added a new section: "Creating Your Own Fork of `scores` for the First Time".
 	- Updated the section: "Workflow for Submitting Pull Requests".
-	- Added a new section: "Pull Request Etiquette".  
+	- Added a new section: "Pull Request Etiquette".
 	See [PR #787](https://github.com/nci/scores/pull/787).
 - Updated the README:
 	- Added a link to a video of a PyCon AU 2024 conference presentation about `scores`. See [PR #783](https://github.com/nci/scores/pull/783).
@@ -136,18 +137,18 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Contributors to this Release
 
-Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Liam Bluett* ([@lbluett](https://github.com/lbluett)), Jinghan Fu* ([@JinghanFu](https://github.com/JinghanFu)), Sam Bishop* ([@techdragon](https://github.com/techdragon)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and 
-Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).    
+Arshia Sharma* ([@arshiaar](https://github.com/arshiaar)), A.J. Fisher* ([@AJTheDataGuy](https://github.com/AJTheDataGuy)), Liam Bluett* ([@lbluett](https://github.com/lbluett)), Jinghan Fu* ([@JinghanFu](https://github.com/JinghanFu)), Sam Bishop* ([@techdragon](https://github.com/techdragon)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and
+Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
 
 \* indicates that this release contains their first contribution to `scores`.
- 
+
 ## Version 1.3.0 (November 15, 2024)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.2.0...1.3.0). Below are the changes we think users may wish to be aware of.
 
 ### Introduced Support for Python 3.13 and Dropped Support for Python 3.9
 
-- In line with other scientific Python packages, `scores` has dropped support for Python 3.9 in this release. 
+- In line with other scientific Python packages, `scores` has dropped support for Python 3.9 in this release.
   `scores` has added support for Python 3.13. See [PR #710](https://github.com/nci/scores/pull/710).
 
 ### Features
@@ -155,15 +156,15 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Added four new metrics:
 	- Quantile Interval Score: `scores.continuous.quantile_interval_score`. See [PR #704](https://github.com/nci/scores/pull/704), [PR #733](https://github.com/nci/scores/pull/733) and [PR #738](https://github.com/nci/scores/pull/738).
 	- Interval Score: `scores.continuous.interval_score`. See [PR #704](https://github.com/nci/scores/pull/704), [PR #733](https://github.com/nci/scores/pull/733) and [PR #738](https://github.com/nci/scores/pull/738).
-	- Kling-Gupta Efficiency (KGE): `scores.continuous.kge`. See [PR #679](https://github.com/nci/scores/pull/679), [PR #700](https://github.com/nci/scores/pull/700) and [PR #734](https://github.com/nci/scores/pull/734). 
+	- Kling-Gupta Efficiency (KGE): `scores.continuous.kge`. See [PR #679](https://github.com/nci/scores/pull/679), [PR #700](https://github.com/nci/scores/pull/700) and [PR #734](https://github.com/nci/scores/pull/734).
 	- Interval threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.interval_tw_crps_for_ensemble`. See [PR #682](https://github.com/nci/scores/pull/682) and [PR #734](https://github.com/nci/scores/pull/734).
 - Added an optional `include_components` argument to several continuous ranked probability score (CRPS) functions for ensembles. If supplied, the `include_components` argument will return the underforecast penalty, the overforecast penalty and the forecast spread term, in addition to the overall CRPS value. This applies to the following CRPS functions:
 	- continuous ranked probability score (CRPS) for ensembles: `scores.probability.crps_for_ensemble`
 	- threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tw_crps_for_ensemble`
 	- tail threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.tail_tw_crps_for_ensemble`
-	- interval threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.interval_tw_crps_for_ensemble`)  
+	- interval threshold weighted continuous ranked probability score (twCRPS) for ensembles: `scores.probability.interval_tw_crps_for_ensemble`)
 	See [PR #708](https://github.com/nci/scores/pull/708) and [PR #734](https://github.com/nci/scores/pull/734).
-	
+
 ### Documentation
 
 - Added "Kling–Gupta Efficiency (KGE)" tutorial. See [PR #679](https://github.com/nci/scores/pull/679), [PR #700](https://github.com/nci/scores/pull/700) and [PR #734](https://github.com/nci/scores/pull/734).
@@ -180,7 +181,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Durga Shrestha ([@durgals](https://github.com/durgals)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
-## Version 1.2.0 (September 13, 2024) 
+## Version 1.2.0 (September 13, 2024)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.1.0...1.2.0). Below are the changes we think users may wish to be aware of.
 
@@ -194,9 +195,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
-- Added information about percent bias to the "Additive Bias and Multiplicative Bias" tutorial. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #656](https://github.com/nci/scores/pull/656). 
+- Added information about percent bias to the "Additive Bias and Multiplicative Bias" tutorial. See [PR #639](https://github.com/nci/scores/pull/639) and [PR #656](https://github.com/nci/scores/pull/656).
 - Updated documentation to say there are now over 60 metrics, statistical techniques and data processing tools contained in `scores`. See [PR #659](https://github.com/nci/scores/pull/659).
-- In  the "Contributing Guide", updated instructions for installing a conda-based virtual environment. See [PR #654](https://github.com/nci/scores/pull/654). 
+- In  the "Contributing Guide", updated instructions for installing a conda-based virtual environment. See [PR #654](https://github.com/nci/scores/pull/654).
 
 ### Internal Changes
 
@@ -204,23 +205,23 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Contributors to this Release
 
-Durga Shrestha* ([@durgals](https://github.com/durgals)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)). 
+Durga Shrestha* ([@durgals](https://github.com/durgals)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
-## Version 1.1.0 (August 9, 2024) 
+## Version 1.1.0 (August 9, 2024)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/1.0.0...1.1.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
 - `scores` is now available on [conda-forge](https://anaconda.org/conda-forge/scores).
-- Added five new metrics 
+- Added five new metrics
 	- threshold weighted squared error: ` scores.continuous.tw_squared_error`
 	- threshold weighted absolute error: `scores.continuous.tw_absolute_error`
 	- threshold weighted quantile score: `scores.continuous.tw_quantile_score`
 	- threshold weighted expectile score: `scores.continuous.tw_expectile_score`
-	- threshold weighted Huber loss: `scores.continuous.tw_huber_loss`.  
+	- threshold weighted Huber loss: `scores.continuous.tw_huber_loss`.
 See [PR #609](https://github.com/nci/scores/pull/609).
 
 ### Documentation
@@ -234,13 +235,13 @@ See [PR #609](https://github.com/nci/scores/pull/609).
 
 ### Contributors to this Release
 
-Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)). 
+Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
 ## Version 1.0.0 (July 10, 2024)
 
 We are happy to have reached the point of releasing “Version 1.0.0” of `scores`. While we look forward to many version increments to come, version 1.0.0 represents a milestone. It signifies a stabilisation of the API, and marks a turning point from the initial construction period. We have also published a [paper](https://doi.org/10.21105/joss.06889) in the Journal of Open Source Software (see citation further below).
 
-From this point forward, `scores` will be following the [Semantic Versioning Specification](https://semver.org/) (SemVer) in its release management. 
+From this point forward, `scores` will be following the [Semantic Versioning Specification](https://semver.org/) (SemVer) in its release management.
 
 This is a good moment to acknowledge and thank the contributors that helped us reach this point. They are: Tennessee Leeuwenburg, Nicholas Loveday, Elizabeth E. Ebert, Harrison Cook, Mohammadreza Khanarmuei, Robert J. Taggart, Nikeeth Ramanathan, Maree Carroll, Stephanie Chong, Aidan Griffiths and John Sharples.
 
@@ -264,7 +265,7 @@ year = {2024}
 }
 ```
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.3...1.0.0). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.3...1.0.0).
 
 ## Version 0.9.3 (July 9, 2024)
 
@@ -289,61 +290,61 @@ Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong 
 
 ## Version 0.9.2 (June 26, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.1...0.9.2). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.1...0.9.2).
 
 ## Version 0.9.1 (June 14, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.0...0.9.1). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.9.0...0.9.1).
 
 ## Version 0.9.0 (June 12, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.6...0.9.0). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.6...0.9.0).
 
 ## Version 0.8.6 (June 11, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.5...0.8.6). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.5...0.8.6).
 
 ## Version 0.8.5 (June 9, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.4...0.8.5). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.4...0.8.5).
 
 ## Version 0.8.4 (June 3, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.3...0.8.4). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.3...0.8.4).
 
 ## Version 0.8.3 (June 2, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.2...0.8.3). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.2...0.8.3).
 
 ## Version 0.8.2 (May 21, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.1...0.8.2). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8.1...0.8.2).
 
 ## Version 0.8.1 (May 16, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8...0.8.1). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.8...0.8.1).
 
 ## Version 0.8 (May 14, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.7...0.8). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.7...0.8).
 
 ## Version 0.7 (May 8, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.6...0.7). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.6...0.7).
 
 ## Version 0.6 (April 6, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.5...0.6). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.5...0.6).
 
 Note: version 0.6 was initially tagged as "v0.6" and released on 6th April 2024. On 7th April 2024, an identical version was released with the tag "0.6" (i.e. with the "v" ommitted from the tag).
 
 ## Version 0.5 (April 6, 2024)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.4...0.5). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.4...0.5).
 
 ## Version 0.4 (September 15, 2023)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.0.2...0.4). 
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/0.0.2...0.4).
 
 ## Version 0.0.2 (June 9, 2023)
 
@@ -352,4 +353,3 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ## Version 0.0.1 (January 16, 2023)
 
 Version 0.0.1 was released on PyPI as a placeholder, while very early development and package design was being undertaken.
-
