@@ -122,6 +122,13 @@ def test_roc_curve_auc():
     xr.testing.assert_allclose(result_b.AUC, xr.DataArray(0.75))
 
 
+def test_roc_auto_threshold():
+    fcst = xr.DataArray(data=[0.1, 0.4, 0.3, 0.9], dims="time")
+    obs = xr.DataArray(data=[0, 0, 1, 1], dims="time")
+    result = roc(fcst, obs)
+    xr.testing.assert_equal(result, rtd.EXP_ROC_AUTO)
+
+
 def test_roc_dask():
     """tests that roc works with dask"""
 
@@ -203,6 +210,15 @@ def test_roc_dask():
             None,
             ValueError,
             "`thresholds` is not monotonic increasing between 0 and 1",
+        ),
+        # threshold arg is a str that is not "auto"
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            "manual",
+            None,
+            ValueError,
+            "If `thresholds` is a str, then it must be set to 'auto'",
         ),
     ],
 )
