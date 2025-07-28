@@ -945,6 +945,9 @@ def test_pbias_dask():
 
 
 def test_percent_within_x_no_data():
+    """
+    Tests that continuous.percent_within_x works with no data
+    """
 
     fcst = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
 
@@ -960,6 +963,9 @@ def test_percent_within_x_no_data():
 
 
 def test_percent_within_x_broadcasting():
+    """
+    Tests that continuous.percent_within_x works broadcasting data with mismatched dimensions
+    """
 
     fcst = xr.DataArray(
         np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
