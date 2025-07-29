@@ -3,6 +3,7 @@ Implementation of Reciever Operating Characteristic (ROC) calculations
 """
 
 import operator
+import warnings
 from collections.abc import Iterable, Sequence
 from typing import Optional
 
@@ -45,6 +46,9 @@ def roc(  # pylint: disable=too-many-arguments
           automatically generated. Otherwise, you can supply an iterable of floats with
           monotonic increasing values between 0 and 1, which are the thresholds at and
           above which to convert the probabilistic forecast to a value of 1 (an 'event').
+          If there are many unique forecast values, this can lead to a very large number
+          of automatically generated thresholds. If performance is slow, consider
+          supplying thresholds manually as an iterable of floats.
           Np.inf is added automatically to the end of the thresholds to ensure that
           the full ROC curve is produced. Similarly, if 0 is not included, it will be
           added automatically to ensure the full ROC curve is produced.
@@ -87,6 +91,10 @@ def roc(  # pylint: disable=too-many-arguments
         ValueError: if ``thresholds`` is a string that is not "auto".
         ValueError: if ``thresholds`` is an empty iterable.
 
+    Warnings:
+        If the number of automatically generated thresholds is very large (>1000),
+        a warning is raised suggesting that the user supply thresholds manually as an
+        iterable of floats if performance is slow.
 
     Notes:
         If ``thresholds`` is an iterable of floats, the probabilistic ``fcst``
@@ -132,6 +140,13 @@ def roc(  # pylint: disable=too-many-arguments
     if isinstance(thresholds, str):
         if thresholds == "auto":
             thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
+            if len(thresholds) > 1000:  # type: ignore
+                warnings.warn(
+                    "Number of automatically generated thresholds is very large (>1000). "
+                    "If performance is slow, consider supplying thresholds manually as an "
+                    "iterable of floats.",
+                    UserWarning,
+                )
         else:
             # This is the one check that occurs when `check_args` is False to make
             # the logic simpler

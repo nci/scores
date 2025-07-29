@@ -242,3 +242,20 @@ def test_roc_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg
     with pytest.raises(error_class) as exc:
         roc(fcst, obs, thresholds, preserve_dims=preserve_dims)
     assert error_msg_snippet in str(exc.value)
+
+
+def test_roc_warns():
+    """
+    Tests that roc raises the correct warning when thresholds are automatically
+    generated and the number of thresholds is large.
+    """
+    fcst = xr.DataArray(data=np.linspace(0, 1, 1001), dims="time")
+    obs = fcst * 0
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "Number of automatically generated thresholds is very large \\(>1000\\). "
+            "If performance is slow, consider supplying thresholds manually as an iterable of floats."
+        ),
+    ):
+        roc(fcst, obs)
