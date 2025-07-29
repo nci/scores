@@ -433,13 +433,14 @@ def percent_within_x(
     is_inclusive: Optional[bool] = True,
 ) -> XarrayLike:
     """
+
     Computes the proportion of forecasts within a specified absolute tolerance of the observations.
 
     This score calculates the percentage of forecast values that are within a specified threshold
     (plus an optional tolerance) of the observed values. This metric is particularly useful when
     evaluating how often a forecast falls within an acceptable error band, regardless of direction.
 
-    The general formulation is as follows:
+    The general formulations are:
 
     .. math::
 
@@ -465,15 +466,10 @@ def percent_within_x(
         obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the percent within. All other dimensions will be
-            preserved.
+            preserved. Only one of reduce_dims and preserve_dims can be specified.
         preserve_dims: Optionally specify which dimensions to preserve when
             calculating the percent within. All other dimensions will be
-            reduced. As a special case, 'all' will allow all dimensions to
-            be preserved. In this case, the result will be in the same
-            shape/dimensionality as the forecast, and the errors will be
-            the error at each point (i.e. single-value comparison against
-            observed), and the forecast and observed dimensions must
-            match precisely.
+            reduced. Only one of reduce_dims and preserve_dims can be specified.
         is_angular: If True, uses angular distance in degrees.
         threshold: The main threshold to test closeness against.
         rounded_digits: A way to avoid floating-point precision issues.
@@ -483,8 +479,16 @@ def percent_within_x(
             or exclusive (<).
 
     Returns:
-        An xarray object with the percent within a given level of error.
+        ``xr.DataArray`` or ``xr.Dataset``:
+            Percent of forecasts within tolerance for each preserved dimension.
 
+    .. important::
+        This metric can incentivise hedging (such as introducing biases to maximise one's score).
+
+    .. note::
+        - The result is bounded in `[0, 100]`.
+        - NaNs in forecasts or observations are excluded.
+        - If total valid forecast-observation pairs are zero, output is `NaN`.
 
     Examples:
         >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, preserve_dims='lat')
