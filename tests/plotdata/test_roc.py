@@ -125,8 +125,12 @@ def test_roc_curve_auc():
 def test_roc_auto_threshold():
     fcst = xr.DataArray(data=[0.1, 0.4, 0.3, 0.9], dims="time")
     obs = xr.DataArray(data=[0, 0, 1, 1], dims="time")
-    result = roc(fcst, obs)
-    xr.testing.assert_equal(result, rtd.EXP_ROC_AUTO)
+    # Test with check_args=False
+    result_no_check = roc(fcst, obs, check_args=False)
+    xr.testing.assert_equal(result_no_check, rtd.EXP_ROC_AUTO)
+    # Test with check_args=True
+    result_check = roc(fcst, obs, check_args=True)
+    xr.testing.assert_equal(result_check, rtd.EXP_ROC_AUTO)
 
 
 def test_roc_dask():
@@ -219,6 +223,15 @@ def test_roc_dask():
             None,
             ValueError,
             "If `thresholds` is a str, then it must be set to 'auto'",
+        ),
+        # threshold arg is an empty iterable
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [],
+            None,
+            ValueError,
+            "`thresholds` must not be empty",
         ),
     ],
 )

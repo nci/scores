@@ -85,6 +85,7 @@ def roc(  # pylint: disable=too-many-arguments
         ValueError: if values in `thresholds` are not monotonic increasing or are outside
           the range [0, 1].
         ValueError: if ``thresholds`` is a string that is not "auto".
+        ValueError: if ``thresholds`` is an empty iterable.
 
 
     Notes:
@@ -119,17 +120,22 @@ def roc(  # pylint: disable=too-many-arguments
         if fcst.max().item() > 1 or fcst.min().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
-        if isinstance(thresholds, str):
-            if thresholds == "auto":
-                thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
-            else:
-                raise ValueError("If `thresholds` is a str, then it must be set to 'auto'")
+        if len(thresholds) == 0:  # type: ignore
+            raise ValueError("`thresholds` must not be empty")
 
-        elif np.max(thresholds) > 1 or np.min(thresholds) < 0:  # type: ignore
+        if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):  # type: ignore
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
-        if not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
+        if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
+
+    if isinstance(thresholds, str):
+        if thresholds == "auto":
+            thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
+        else:
+            # This is the one check that occurs when `check_args` is False to make
+            # the logic simpler
+            raise ValueError("If `thresholds` is a str, then it must be set to 'auto'")
 
     # Add an Inf (and 0 value if necessary to ensure that the full curve is produced
     thresholds = np.array(thresholds)
