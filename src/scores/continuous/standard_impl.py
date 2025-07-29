@@ -443,12 +443,14 @@ def percent_within_x(
 
     .. math::
 
-    \\text{Percent within (exclusive)} = 100 \\cdot
-    \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}%
-         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}} \\
+        \\text{Percent within (exclusive)} = 100 \\cdot
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}%
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
-    \\text{Percent within (inclusive)} = 100 \\cdot
-    \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}%
+    .. math::
+
+        \\text{Percent within (inclusive)} = 100 \\cdot
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}%
          {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
     where:
@@ -456,8 +458,7 @@ def percent_within_x(
         - :math:`y_i` is the observed value at index :math:`i`
         - :math:`\\tau` is the absolute error threshold
         - :math:`\\mathbf{1}(\\cdot)` is the indicator function
-        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and 
-            :math:`y_i` are not missing (NaN), 0 otherwise
+        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not missing (NaN), 0 otherwise
 
     Args:
         fcst: Forecast or predicted variables.
@@ -486,17 +487,17 @@ def percent_within_x(
 
 
     Examples:
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, preserve_dims='lat')  
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, preserve_dims='lat')
             # if data is of dimension {lat,lon,time}, the percent within X value is computed across the time dimension
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, reduce_dims=['lat','lon'])  
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, reduce_dims=['lat','lon'])
             # if data is of dimension {lat,lon,time}, the percent within X value is computed across the lat and lon dimensions
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = True)  
-            # The percent within X value is computed across all dimensions, resulting in a single value. 
-            # Success is if the error is less than or equal to 2.0. 
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = False)  
-            # The percent within X value is computed across all dimensions, resulting in a single value. 
-            # Success is if the error is less than 2.0. 
-        
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = True)
+            # The percent within X value is computed across all dimensions, resulting in a single value.
+            # Success is if the error is less than or equal to 2.0.
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = False)
+            # The percent within X value is computed across all dimensions, resulting in a single value.
+            # Success is if the error is less than 2.0.
+
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -561,7 +562,7 @@ def kge(
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
         - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
-            the variability term :math:`\\alpha` and the bias term :math:`\\beta`
+        the variability term :math:`\\alpha` and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.

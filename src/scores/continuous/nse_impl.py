@@ -62,7 +62,7 @@ def nse(
 
         \\text{NSE} = 1 - \\frac{\\sum_i{(O_i - S_i)^2}}{\\sum_i{(O_i - \\bar{O})^2}}
 
-    where
+    where:
         - :math:`i` is a generic "indexer" representing the set of datapoints
           along the dimensions being reduced e.g. time (:math:`t`) or
           xy-coordinates (:math:`(x, y)`). The latter represents reduction over
