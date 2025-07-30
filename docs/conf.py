@@ -60,6 +60,7 @@ nbsphinx_thumbnails = {
     "tutorials/Brier_Score": "_images/brier_thumbnail.png",
     "tutorials/Quantile_Interval_And_Interval_Score": "_images/quantile_interval_score_and_interval_score_thumbnail.png",
     "tutorials/Fractions_Skill_Score": "_images/fss_thumbnail.png",
+    "tutorials/Diebold_Mariano_Test_Statistic": "_images/diebold_mariano_thumbnail.png",
 }
 
 # This is needed to allow linking into auto-generated API documentation
