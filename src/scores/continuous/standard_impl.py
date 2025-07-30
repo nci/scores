@@ -421,6 +421,115 @@ def pbias(
     return _pbias
 
 
+def percent_within_x(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    is_angular: Optional[bool] = False,
+    threshold: Optional[float] = 0.0,
+    rounded_digits: Optional[int] = 7,
+    is_inclusive: Optional[bool] = True,
+) -> XarrayLike:
+    """
+
+    Computes the proportion of forecasts within a specified absolute tolerance of the observations.
+
+    This score calculates the percentage of forecast values that are within a specified threshold
+    (plus an optional tolerance) of the observed values. This metric is particularly useful when
+    evaluating how often a forecast falls within an acceptable error band, regardless of direction.
+
+    The general formulations are:
+
+    .. math::
+
+        \\text{Percent within (exclusive)} = 100 \\cdot
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}%
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
+
+    .. math::
+
+        \\text{Percent within (inclusive)} = 100 \\cdot
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}%
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
+
+    where:
+        - :math:`x_i` is the forecast value at index :math:`i`
+        - :math:`y_i` is the observed value at index :math:`i`
+        - :math:`\\tau` is the absolute error threshold
+        - :math:`\\mathbf{1}(\\cdot)` is the indicator function
+        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not missing (NaN), 0 otherwise
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the percent within. All other dimensions will be
+            preserved. Only one of reduce_dims and preserve_dims can be specified.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the percent within. All other dimensions will be
+            reduced. Only one of reduce_dims and preserve_dims can be specified.
+        is_angular: If True, uses angular distance in degrees.
+        threshold: The main threshold to test closeness against.
+        rounded_digits: A way to avoid floating-point precision issues.
+            Absolute errors are rounded to this many digits before threshold
+            calculations.
+        is_inclusive: Whether to treat the condition as inclusive (<=)
+            or exclusive (<).
+
+    Returns:
+        ``xr.DataArray`` or ``xr.Dataset``:
+            Percent of forecasts within tolerance for each preserved dimension.
+
+    .. important::
+        This metric can incentivise hedging (such as introducing biases to maximise one's score).
+
+    .. note::
+        - The result is bounded in `[0, 100]`.
+        - NaNs in forecasts or observations are excluded.
+        - If total valid forecast-observation pairs are zero, output is `NaN`.
+
+    Examples:
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, preserve_dims='lat')
+            # if data is of dimension {lat,lon,time}, the percent within X value is computed across the time dimension
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, reduce_dims=['lat','lon'])
+            # if data is of dimension {lat,lon,time}, the percent within X value is computed across the lat and lon dimensions
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = True)
+            # The percent within X value is computed across all dimensions, resulting in a single value.
+            # Success is if the error is less than or equal to 2.0.
+        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = False)
+            # The percent within X value is computed across all dimensions, resulting in a single value.
+            # Success is if the error is less than 2.0.
+
+    """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+
+    if is_angular:
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+    else:
+        error = fcst - obs  # type: ignore
+
+    abs_error = abs(error).round(rounded_digits)
+
+    if is_inclusive:
+        condition = abs_error <= threshold
+    else:
+        condition = abs_error < threshold
+
+    count_within = condition.sum(dim=reduce_dims)
+
+    valid_mask = fcst.notnull() & obs.notnull()
+
+    total = valid_mask.sum(dim=reduce_dims)
+
+    _percent_within_x = 100 * count_within / total
+
+    return _percent_within_x
+
+
 def kge(
     fcst: xr.DataArray,
     obs: xr.DataArray,
@@ -449,14 +558,15 @@ def kge(
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
     where:
-        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as defined in :py:func:`scores.continuous.correlation.pearsonr`
+        - :math:`\\rho`  = Pearson's correlation coefficient between observed and
+        forecast values as defined in :py:func:`scores.continuous.correlation.pearsonr`
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
         - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
-            the variability term :math:`\\alpha` and the bias term :math:`\\beta`
+        the variability term :math:`\\alpha` and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.
