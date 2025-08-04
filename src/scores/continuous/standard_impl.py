@@ -491,16 +491,59 @@ def percent_within_x(
         - If total valid forecast-observation pairs are zero, output is `NaN`.
 
     Examples:
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, preserve_dims='lat')
-            # if data is of dimension {lat,lon,time}, the percent within X value is computed across the time dimension
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, reduce_dims=['lat','lon'])
-            # if data is of dimension {lat,lon,time}, the percent within X value is computed across the lat and lon dimensions
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = True)
-            # The percent within X value is computed across all dimensions, resulting in a single value.
-            # Success is if the error is less than or equal to 2.0.
-        >>> pwithin_s = percent_within_x(fcst, obs, threshold = 2.0, is_inclusive = False)
-            # The percent within X value is computed across all dimensions, resulting in a single value.
-            # Success is if the error is less than 2.0.
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.standard_impl import percent_within_x
+        >>> obs_raw = np.array(
+        ...     [
+        ...         [[1,2,3], [4,5,6]],
+        ...         [[3,2,1], [6,5,4]],
+        ...         [[3,2,5], [2,2,6]],
+        ...         [[5,2,3], [4,-1,4]],
+        ...     ]
+        ...
+        ... )  # dimension lengths: x=4, y=2, t=3
+        >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
+        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
+        >>> # Example 1:
+        >>> # percent of forecasts with less than or equal to 0.5 absolute error
+        >>> # reduce over t - time - should produce a xy-grid (4 by 2)
+        >>> percent_within_x(obs, fcst, threshold = 0.5, is_inclusive=True, reduce_dims=["t"])
+        <xarray.DataArray (x: 4, y: 2)> Size: 64B
+        array([[66.66666667,  0.        ],
+               [66.66666667,  0.        ],
+               [33.33333333, 66.66666667],
+               [33.33333333, 33.33333333]])
+        Dimensions without coordinates: x, y
+        >>> # Example 2:
+        >>> # percent of forecasts with less than or equal to 0.5 absolute error
+        >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
+        >>> percent_within_x(obs, fcst, threshold = 0.5, is_inclusive=True, reduce_dims=["x","y"])
+        <xarray.DataArray (t: 3)> Size: 24B
+        array([25., 75., 12.5])
+        Dimensions without coordinates: t
+        >>> # Example 3:
+        >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
+        >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
+        >>> percent_within_x(obs, fcst, threshold = 0.5, is_inclusive=False, reduce_dims=["x","y"])
+        <xarray.DataArray (t: 3)> Size: 24B
+        array([12.5., 12.5., 12.5])
+        Dimensions without coordinates: t
+        >>> # Example 4:
+        >>> # Controlling floating-point precision issues
+        >>> np.set_printoptions(precision=17) # make floating-point precision issues visible
+        >>> obs = xr.DataArray([0.1 + 0.2], dims=["t"])
+        >>> print(f'obs {obs.values}')
+        obs [0.30000000000000004]
+        >>> fcst = obs + 0.3
+        >>> print(f'fcst {fcst.values}')
+        fcst [0.6000000000000001]
+        >>> unrounded = percent_within_x(obs, fcst, threshold=0.3, is_inclusive=True, rounded_digits=20)
+        >>> print(f'incorrectly creating a penalty: {unrounded.values}')
+        incorrectly ignoring a success: 0.0
+        >>> rounded = percent_within_x(obs, fcst, threshold=0.3, is_inclusive=True, rounded_digits=5)
+        >>> print(f'correctly recognising a success: {rounded.values}')
+        correctly recognising a success: 100.0
 
     """
     reduce_dims = scores.utils.gather_dimensions(
