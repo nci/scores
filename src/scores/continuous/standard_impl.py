@@ -445,13 +445,13 @@ def percent_within_x(
     .. math::
 
         \\text{Percent within (exclusive)} = 100 \\cdot
-        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}%
          {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
     .. math::
 
         \\text{Percent within (inclusive)} = 100 \\cdot
-        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}%
          {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
     where:
