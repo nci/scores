@@ -1,5 +1,9 @@
 # Index of Metrics, Statistical Techniques and Data Processing Tools Included in `scores` 
 
+This page lists all the metrics, statistical techniques and data processing tools included in `scores`.
+
+It is divided into the following sections: [continuous](#continuous), [probability](#probability), [categorical](#categorical), [spatial](#spatial), [statistical tests](#statistical-tests), [processing (tools for preparing data)](#processing-tools-for-preparing-data), [plotting data](#plotting-data), [pandas](#pandas) and [emerging](#emerging).
+
 ## Continuous
 
 ```{list-table} 
