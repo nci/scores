@@ -108,6 +108,15 @@ EXPECTED_2D_WITH_WEIGHTS = xr.Dataset(
     },
     coords={"station": np.arange(3), "time": np.arange(2)},
 )
+EXPECTED_2D_WITH_PRESERVED_ALL_DIMS = xr.Dataset(
+    data_vars={
+        "interval_width_penalty": (["time", "station"], [[10, 10, 10], [1, 2, 4]]),
+        "overprediction_penalty": (["time", "station"], [[0, 10, 0], [10, 0, 0]]),
+        "underprediction_penalty": (["time", "station"], [[0, 0, 20], [0, 0, 20]]),
+        "total": (["time", "station"], [[10, 20, 30], [11, 2, 24]]),
+    },
+    coords={"station": np.arange(3), "time": np.arange(2)},
+)
 EXPECTED_2D_INTERVAL = xr.Dataset(
     data_vars={
         "interval_width_penalty": (["time", "station"], [[10, 10, 10], [1, 2, 4]]),
@@ -116,6 +125,14 @@ EXPECTED_2D_INTERVAL = xr.Dataset(
         "total": (["time", "station"], [[10, 14, 18], [5, 2, 12]]),
     },
     coords={"station": np.arange(3), "time": np.arange(2)},
+)
+EXPECTED_2D_INTERVAL_REDUCED_ALL_DIMS = xr.Dataset(
+    data_vars={
+        "interval_width_penalty": xr.DataArray(6.16666667),
+        "overprediction_penalty": xr.DataArray(1.111111),
+        "underprediction_penalty": xr.DataArray(2.222222),
+        "total": xr.DataArray(9.5),
+    }
 )
 EXPECTED_2D_WITHOUT_TIME_INTERVAL = xr.Dataset(
     data_vars={

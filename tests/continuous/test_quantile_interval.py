@@ -145,6 +145,18 @@ def test_qis_exceptions(obs, lower_fcst, upper_fcst, reduce_dims, preserve_dims)
             qistd.WEIGHTS,
             qistd.EXPECTED_2D_WITH_WEIGHTS,
         ),
+        # To test it handles dimensions when preserve_dims='all'
+        (
+            qistd.FCST_LOWER_2D,
+            qistd.FCST_UPPER_2D,
+            qistd.OBS_2D,
+            0.1,
+            0.9,
+            "all",
+            None,
+            None,
+            qistd.EXPECTED_2D_WITH_PRESERVED_ALL_DIMS,
+        ),
     ],
 )
 def test_qsf_calculations(
@@ -238,6 +250,17 @@ def test_is_value_errors(interval_range, lower_fcst, upper_fcst, error_message):
             None,
             qistd.WEIGHTS,
             qistd.EXPECTED_2D_WITH_WEIGHTS_INTERVAL,
+        ),
+        # To test reduce_dims='all'
+        (
+            qistd.FCST_LOWER_2D,
+            qistd.FCST_UPPER_2D,
+            qistd.OBS_2D,
+            0.4,
+            None,
+            "all",
+            None,
+            qistd.EXPECTED_2D_INTERVAL_REDUCED_ALL_DIMS,
         ),
     ],
 )

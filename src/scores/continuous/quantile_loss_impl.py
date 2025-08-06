@@ -73,7 +73,7 @@ def quantile_score(
     """
     specified_dims = reduce_dims or preserve_dims
     # check requested dims are a subset of fcst dimensions
-    if specified_dims is not None:
+    if specified_dims is not None and specified_dims != "all":
         check_dims(xr_data=fcst, expected_dims=specified_dims, mode="superset")
     # check obs dimensions are a subset of fcst dimensions
     check_dims(xr_data=obs, expected_dims=fcst.dims, mode="subset")  # type: ignore

@@ -120,6 +120,16 @@ def test_qsf_exceptions(obs, reduce_dims, preserve_dims):
             qltd.WEIGHTS_DS,
             qltd.EXPECTED_DS2,
         ),
+        # To test function handles reduce_dims='all'
+        (
+            qltd.FCST_DS,
+            qltd.OBS_DS,
+            0.1,
+            None,
+            "all",
+            None,
+            qltd.EXPECTED_DS3,
+        ),
     ],
 )
 def test_qsf_calculations(fcst, obs, alpha, preserve_dims, reduce_dims, weights, expected):
