@@ -424,12 +424,12 @@ def pbias(
 def percent_within_x(
     fcst: XarrayLike,
     obs: XarrayLike,
+    threshold: float,
     *,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     is_angular: Optional[bool] = False,
-    threshold: Optional[float] = 0.0,
-    rounded_digits: Optional[int] = 7,
+    rounded_digits: Optional[int] = None,
     is_inclusive: Optional[bool] = True,
 ) -> XarrayLike:
     """
@@ -464,6 +464,7 @@ def percent_within_x(
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
+        threshold: The main threshold to test closeness against.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the percent within. All other dimensions will be
             preserved. Only one of reduce_dims and preserve_dims can be specified.
@@ -471,7 +472,6 @@ def percent_within_x(
             calculating the percent within. All other dimensions will be
             reduced. Only one of reduce_dims and preserve_dims can be specified.
         is_angular: If True, uses angular distance in degrees.
-        threshold: The main threshold to test closeness against.
         rounded_digits: A way to avoid floating-point precision issues.
             Absolute errors are rounded to this many digits before threshold
             calculations.
@@ -555,7 +555,9 @@ def percent_within_x(
     else:
         error = fcst - obs  # type: ignore
 
-    abs_error = abs(error).round(rounded_digits)
+    abs_error = abs(error)
+    if rounded_digits:
+        abs_error = abs_error.round(rounded_digits)
 
     if is_inclusive:
         condition = abs_error <= threshold

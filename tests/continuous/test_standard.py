@@ -953,10 +953,7 @@ def test_percent_within_x_no_data():
 
     obs = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
 
-    result = scores.continuous.percent_within_x(
-        fcst,
-        obs,
-    )
+    result = scores.continuous.percent_within_x(fcst, obs, threshold=0)
 
     assert result.ndim == 0
     assert np.isnan(result.item())
@@ -982,7 +979,7 @@ def test_percent_within_x_broadcasting():
         coords=[("space", ["w", "x", "y"])],
     )
 
-    result = scores.continuous.percent_within_x(fcst, obs, preserve_dims="lead")
+    result = scores.continuous.percent_within_x(fcst, obs, threshold=0, preserve_dims="lead")
 
     expected = xr.DataArray(
         np.array([100 * 1 / 3, 100 * 1 / 3, 0]),
