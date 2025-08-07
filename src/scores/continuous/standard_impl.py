@@ -508,7 +508,7 @@ def percent_within_x(
         >>> # Example 1:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over t - time - should produce a xy-grid (4 by 2)
-        >>> percent_within_x(obs, fcst, threshold = 0.5, is_inclusive=True, reduce_dims=["t"])
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["t"])
         <xarray.DataArray (x: 4, y: 2)> Size: 64B
         array([[66.66666667,  0.        ],
                [66.66666667,  0.        ],
@@ -518,14 +518,14 @@ def percent_within_x(
         >>> # Example 2:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
-        >>> percent_within_x(obs, fcst, threshold = 0.5, is_inclusive=True, reduce_dims=["x","y"])
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["x","y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([25., 75., 12.5])
         Dimensions without coordinates: t
         >>> # Example 3:
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
         >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
-        >>> percent_within_x(obs, fcst, threshold = 0.5, is_inclusive=False, reduce_dims=["x","y"])
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=False, reduce_dims=["x","y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([12.5., 12.5., 12.5])
         Dimensions without coordinates: t
@@ -538,10 +538,10 @@ def percent_within_x(
         >>> fcst = obs + 0.3
         >>> print(f'fcst {fcst.values}')
         fcst [0.6000000000000001]
-        >>> unrounded = percent_within_x(obs, fcst, threshold=0.3, is_inclusive=True, rounded_digits=20)
+        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, rounded_digits=20)
         >>> print(f'incorrectly creating a penalty: {unrounded.values}')
         incorrectly ignoring a success: 0.0
-        >>> rounded = percent_within_x(obs, fcst, threshold=0.3, is_inclusive=True, rounded_digits=5)
+        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, rounded_digits=5)
         >>> print(f'correctly recognising a success: {rounded.values}')
         correctly recognising a success: 100.0
 
