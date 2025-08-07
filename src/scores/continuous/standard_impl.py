@@ -611,7 +611,7 @@ def kge(
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
         - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
-        the variability term :math:`\\alpha` and the bias term :math:`\\beta`
+          the variability term :math:`\\alpha` and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.
