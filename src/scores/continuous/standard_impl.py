@@ -505,9 +505,10 @@ def percent_within_x(
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
         >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
+
         >>> # Example 1:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
-        >>> # reduce over t - time - should produce a xy-grid (4 by 2)
+        >>> # reduce over t - time - should produce an xy-grid (4 by 2)
         >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["t"])
         <xarray.DataArray (x: 4, y: 2)> Size: 64B
         array([[66.66666667,  0.        ],
@@ -515,6 +516,7 @@ def percent_within_x(
                [33.33333333, 66.66666667],
                [33.33333333, 33.33333333]])
         Dimensions without coordinates: x, y
+
         >>> # Example 2:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
@@ -522,6 +524,7 @@ def percent_within_x(
         <xarray.DataArray (t: 3)> Size: 24B
         array([25., 75., 12.5])
         Dimensions without coordinates: t
+
         >>> # Example 3:
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
         >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
@@ -529,6 +532,7 @@ def percent_within_x(
         <xarray.DataArray (t: 3)> Size: 24B
         array([12.5., 12.5., 12.5])
         Dimensions without coordinates: t
+
         >>> # Example 4:
         >>> # Controlling floating-point precision issues
         >>> np.set_printoptions(precision=17) # make floating-point precision issues visible
