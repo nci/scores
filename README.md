@@ -2,14 +2,14 @@
 
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.06889/status.svg)](https://doi.org/10.21105/joss.06889) [![CodeQL](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nci/scores/actions/workflows/github-code-scanning/codeql) [![Coverage Status](https://coveralls.io/repos/github/nci/scores/badge.svg)](https://coveralls.io/github/nci/scores) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nci/scores/main?labpath=tutorials%2FTutorial_Gallery.ipynb) [![PyPI Version](https://img.shields.io/pypi/v/scores.svg)](https://pypi.org/project/scores/) [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scores.svg)](https://anaconda.org/conda-forge/scores)
 
-> 
+>
 > **A list of over 60 metrics, statistical techniques and data processing tools contained in `scores` is [available here](https://scores.readthedocs.io/en/stable/included.html).**
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It supports labelled n-dimensional (multidimensional) data, which is used in many scientific fields and in machine learning. At present, `scores` primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities.
 
-Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
-Source code: [github.com/nci/scores](https://github.com/nci/scores)  
-Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
+Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)
+Source code: [github.com/nci/scores](https://github.com/nci/scores)
+Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)
 Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
 
 ## Overview
@@ -18,8 +18,8 @@ Below is a **curated selection** of the metrics, tools and statistical tests inc
 
 |                       	| **Description** 	| **Selection of Included Functions** 	|
 |-----------------------	|-----------------	|--------------	|
-| **[Continuous](https://scores.readthedocs.io/en/stable/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts.                  	|E.g. MAE, MSE, RMSE, Additive Bias, Multiplicative Bias, Percent Bias, Pearson's Correlation Coefficient, Spearman's Correlation Coefficient, Kling-Gupta Efficiency, Flip-Flop Index, Quantile Loss, Quantile Interval Score, Interval Score, and threshold weighted scores for expectiles, quantiles and Huber Loss. [See all.](https://scores.readthedocs.io/en/stable/included.html#continuous)             	|
-| **[Probability](https://scores.readthedocs.io/en/stable/included.html#probability)**        |Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                   |E.g. Brier Score, Continuous Ranked Probability Score (CRPS) for Cumulative Density Functions (CDF) and ensembles (including threshold weighted versions), and Isotonic Regression (reliability diagrams). [See all.](https://scores.readthedocs.io/en/stable/included.html#probability)               |
+| **[Continuous](https://scores.readthedocs.io/en/stable/included.html#continuous)**        	|Scores for evaluating single-valued continuous forecasts.                  	|E.g. MAE, MSE, RMSE, Bias, Pearson's Correlation Coefficient, Kling-Gupta Efficiency, NSE, Flip-Flop Index, Quantile Loss, Quantile Interval Score, Interval Score, and threshold weighted scores for expectiles, quantiles and Huber Loss. [See all.](https://scores.readthedocs.io/en/stable/included.html#continuous)             	|
+| **[Probability](https://scores.readthedocs.io/en/stable/included.html#probability)**        |Scores for evaluating forecasts that are expressed as predictive distributions, ensembles, and probabilities of binary events.                   |E.g. Brier Score, CRPS for CDFs and ensembles (including threshold weighted versions), and Isotonic Regression (reliability diagrams). [See all.](https://scores.readthedocs.io/en/stable/included.html#probability)               |
 | **[Categorical](https://scores.readthedocs.io/en/stable/included.html#categorical)**       	|Scores for evaluating forecasts of categories.                	|E.g. 18 binary contingency table (confusion matrix) metrics, the FIxed Risk Multicategorical (FIRM) Score, and the SEEPS score. [See all.](https://scores.readthedocs.io/en/stable/included.html#categorical)               	|
 | **[Spatial](https://scores.readthedocs.io/en/stable/included.html#spatial)** 	|Scores that take into account spatial structure.                 	|Fractions Skill Score. [See all.](https://scores.readthedocs.io/en/stable/included.html#spatial)              	|
 | **[Statistical Tests](https://scores.readthedocs.io/en/stable/included.html#statistical-tests)** 	|Tools to conduct statistical tests and generate confidence intervals.                 	|Diebold Mariano. [See all.](https://scores.readthedocs.io/en/stable/included.html#statistical-tests)             	|
@@ -29,7 +29,7 @@ Below is a **curated selection** of the metrics, tools and statistical tests inc
 
 `scores` not only includes common scores (e.g., MAE, RMSE), it also includes novel scores not commonly found elsewhere (e.g., FIRM, Flip-Flop Index), complex scores (e.g., threshold weighted CRPS), and statistical tests (e.g., the Diebold Mariano test). Additionally, it provides pre-processing tools for preparing data for scores in a variety of formats including cumulative distribution functions (CDF). `scores` provides its own implementations where relevant to avoid extensive dependencies.
 
-`scores` primarily supports xarray datatypes for Earth system data allowing it to work with NetCDF4, HDF5, Zarr and GRIB data formats among others. `scores` uses Dask for scaling and performance. Some metrics work with pandas and we aim to expand this capability. 
+`scores` primarily supports xarray datatypes for Earth system data allowing it to work with NetCDF4, HDF5, Zarr and GRIB data formats among others. `scores` uses Dask for scaling and performance. Some metrics work with pandas and we aim to expand this capability.
 
 All of the scores and metrics in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
@@ -73,7 +73,7 @@ Here is a short example of the use of `scores`:
 <xarray.DataArray ()>
 array(2.)
 ```
-[Jupyter Notebook tutorials](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html) are provided for each metric and statistical test in `scores`, as well as for some of the key features of `scores` (e.g., [dimension handling](https://scores.readthedocs.io/en/stable/tutorials/Dimension_Handling.html) and [weighting results](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html)). 
+[Jupyter Notebook tutorials](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html) are provided for each metric and statistical test in `scores`, as well as for some of the key features of `scores` (e.g., [dimension handling](https://scores.readthedocs.io/en/stable/tutorials/Dimension_Handling.html) and [weighting results](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html)).
 
 To watch a PyCon AU 2024 conference presentation about `scores` [click here](https://youtu.be/jyq2jOqtXe0?si=HYoW1cNiplbb3R0c).
 
