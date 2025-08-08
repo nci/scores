@@ -7,10 +7,10 @@
 
 `scores` is a Python package containing mathematical functions for the verification, evaluation and optimisation of forecasts, predictions or models. It supports labelled n-dimensional (multidimensional) data, which is used in many scientific fields and in machine learning. At present, `scores` primarily supports the geoscience communities; in particular, the meteorological, climatological and oceanographic communities.
 
-Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)
-Source code: [github.com/nci/scores](https://github.com/nci/scores)
-Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)
-Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)
+Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
+Source code: [github.com/nci/scores](https://github.com/nci/scores)  
+Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
+Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)  
 
 ## Overview
 
