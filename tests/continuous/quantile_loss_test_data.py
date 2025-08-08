@@ -65,6 +65,12 @@ EXPECTED_DS2 = xr.Dataset(
     },
     coords={"lead_time": [15, 39, 63, 87]},
 )
+EXPECTED_DS3 = xr.Dataset(
+    data_vars={
+        "temperature_1": xr.DataArray(0.0625),
+        "temperature_2": xr.DataArray(0.0625),
+    }
+)
 WEIGHTS_ARRAY1 = [
     [[0, 0, 0], [0, 0, 0]],
     [[0, 0, 0], [0, 0, 0]],
