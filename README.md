@@ -10,7 +10,10 @@
 Documentation: [scores.readthedocs.io](https://scores.readthedocs.io)  
 Source code: [github.com/nci/scores](https://github.com/nci/scores)  
 Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
-Journal article: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)  
+Journal paper: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)  
+
+**If you use `scores` for your work, [please cite](https://scores.readthedocs.io/en/stable/#acknowledging-or-citing-scores)
+our [paper](https://doi.org/10.21105/joss.06889).**
 
 ## Overview
 
@@ -34,7 +37,8 @@ Below is a **curated selection** of the metrics, tools and statistical tests inc
 All of the scores and metrics in this package have undergone a thorough scientific and software review. Every score has a companion Jupyter Notebook tutorial that demonstrates its use in practice.
 
 ## Contributing
-To find out more about contributing, see our [contributing guide](https://scores.readthedocs.io/en/stable/contributing.html).
+
+Contributions from the community are warmly welcomed. To find out more, see our [contributing guide](https://scores.readthedocs.io/en/stable/contributing.html).
 
 All interactions in discussions, issues, emails and code (e.g., pull requests, code comments) will be managed according to the expectations outlined in the [ code of conduct ](https://github.com/nci/scores/blob/main/CODE_OF_CONDUCT.md) and in accordance with all relevant laws and obligations. This project is an inclusive, respectful and open project with high standards for respectful behaviour and language. The code of conduct is the Contributor Covenant, adopted by over 40,000 open source projects. Any concerns will be dealt with fairly and respectfully, with the processes described in the code of conduct.
 
