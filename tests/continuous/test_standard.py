@@ -1022,7 +1022,7 @@ def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, thr
     Tests continuous.percent_within_x
     """
 
-    rounded_digits = 7
+    decimals = 7
     result = scores.continuous.percent_within_x(
         fcst,
         obs,
@@ -1030,7 +1030,7 @@ def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, thr
         preserve_dims=preserve_dims,
         is_angular=is_angular,
         threshold=threshold,
-        rounded_digits=rounded_digits,
+        decimals=decimals,
         is_inclusive=is_inclusive,
     )
 
@@ -1039,7 +1039,7 @@ def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, thr
 
 @pytest.mark.parametrize(
     (
-        "rounded_digits",
+        "decimals",
         "expected",
     ),
     [
@@ -1047,7 +1047,7 @@ def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, thr
         (7, 100 * 4 / 8),
     ],
 )
-def test_percent_within_x_tolerance(rounded_digits, expected):
+def test_percent_within_x_tolerance(decimals, expected):
     """
     Tests continuous.percent_within_x for threshold rounding to control for precision issues
     """
@@ -1066,7 +1066,7 @@ def test_percent_within_x_tolerance(rounded_digits, expected):
         preserve_dims=preserve_dims,
         is_angular=is_angular,
         threshold=threshold,
-        rounded_digits=rounded_digits,
+        decimals=decimals,
         is_inclusive=is_inclusive,
     )
 
@@ -1084,7 +1084,7 @@ def test_percent_within_x_dask():
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     result = scores.continuous.percent_within_x(
-        fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, rounded_digits=7, is_inclusive=True
+        fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, decimals=7, is_inclusive=True
     )
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()

@@ -429,7 +429,7 @@ def percent_within_x(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     is_angular: Optional[bool] = False,
-    rounded_digits: Optional[int] = None,
+    decimals: Optional[int] = None,
     is_inclusive: Optional[bool] = True,
 ) -> XarrayLike:
     """
@@ -472,7 +472,7 @@ def percent_within_x(
             calculating the percent within. All other dimensions will be
             reduced. Only one of reduce_dims and preserve_dims can be specified.
         is_angular: If True, uses angular distance in degrees.
-        rounded_digits: A way to avoid floating-point precision issues.
+        decimals: A way to avoid floating-point precision issues.
             Absolute errors are rounded to this many digits before threshold
             calculations.
         is_inclusive: Whether to treat the condition as inclusive (<=)
@@ -542,10 +542,10 @@ def percent_within_x(
         >>> fcst = obs + 0.3
         >>> print(f'fcst {fcst.values}')
         fcst [0.6000000000000001]
-        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, rounded_digits=20)
+        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=20)
         >>> print(f'incorrectly creating a penalty: {unrounded.values}')
         incorrectly ignoring a success: 0.0
-        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, rounded_digits=5)
+        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=5)
         >>> print(f'correctly recognising a success: {rounded.values}')
         correctly recognising a success: 100.0
 
@@ -560,8 +560,8 @@ def percent_within_x(
         error = fcst - obs  # type: ignore
 
     abs_error = abs(error)
-    if rounded_digits:
-        abs_error = abs_error.round(rounded_digits)
+    if decimals:
+        abs_error = abs_error.round(decimals=decimals)
 
     if is_inclusive:
         condition = abs_error <= threshold
