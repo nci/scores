@@ -157,6 +157,18 @@ def test_qis_exceptions(obs, lower_fcst, upper_fcst, reduce_dims, preserve_dims)
             None,
             qistd.EXPECTED_2D_WITH_PRESERVED_ALL_DIMS,
         ),
+        # To test it handles dimensions when reduce_dims='all'
+        (
+            qistd.FCST_LOWER_2D,
+            qistd.FCST_UPPER_2D,
+            qistd.OBS_2D,
+            0.1,
+            0.9,
+            None,
+            "all",
+            None,
+            qistd.EXPECTED_2D_REDUCED_ALL_DIMS,
+        ),
     ],
 )
 def test_qsf_calculations(

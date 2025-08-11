@@ -117,6 +117,14 @@ EXPECTED_2D_WITH_PRESERVED_ALL_DIMS = xr.Dataset(
     },
     coords={"station": np.arange(3), "time": np.arange(2)},
 )
+EXPECTED_2D_REDUCED_ALL_DIMS = xr.Dataset(
+    data_vars={
+        "interval_width_penalty": xr.DataArray(6.16666667),
+        "overprediction_penalty": xr.DataArray(3.33333333),
+        "underprediction_penalty": xr.DataArray(6.66666667),
+        "total": xr.DataArray(16.16666667),
+    }
+)
 EXPECTED_2D_INTERVAL = xr.Dataset(
     data_vars={
         "interval_width_penalty": (["time", "station"], [[10, 10, 10], [1, 2, 4]]),
