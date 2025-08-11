@@ -34,11 +34,15 @@ def apply_weights(values, *, weights: Optional[XarrayLike] = None):
     return values
 
 
-def apply_weighted_mean(
-    values: XarrayLike, *, reduce_dims: Optional[FlexibleDimensionTypes] = None, weights: Optional[XarrayLike] = None
+def apply_weighted_agg(
+    values: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+    method: str = "mean",
 ) -> XarrayLike:
     """
-    Computes a weighted or unweighted mean of the input data across specified dimensions.
+    Computes a weighted or unweighted aggregation of the input data across specified dimensions.
     The input data is typically the "score" at each point.
 
     This function applies a mean reduction over the dimensions given by ``reduce_dims`` on
@@ -61,6 +65,7 @@ def apply_weighted_mean(
         weights: Weights to apply for weighted averaging.
             Must be broadcastable to `values` and contain no negative values. If None,
             an unweighted mean is calculated. Defaults to None.
+        method: Aggregation method to use. Either "mean" or "sum". Defaults to "mean".
 
     Returns:
         An xarray object (same type as the input) with (un)weighted mean of ``values``
@@ -83,6 +88,9 @@ def apply_weighted_mean(
         Dimensions without coordinates: y
 
     """
+    if method not in ["mean", "sum"]:
+        raise ValueError(f"Method must be either 'mean' or 'sum', got '{method}'")
+
     if weights is not None:
         if (weights < 0).any():
             raise ValueError("Weights must not contain negative values.")
@@ -98,7 +106,11 @@ def apply_weighted_mean(
         if weights is not None:
             weights = weights.fillna(0)
             values = values.weighted(weights)
-        values = values.mean(reduce_dims)
+
+        if method == "mean":
+            values = values.mean(reduce_dims)
+        else:
+            values = values.sum(reduce_dims)
     return values
 
 
