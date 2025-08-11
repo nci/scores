@@ -72,13 +72,8 @@ def mse(
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
-
-    if reduce_dims is not None:
-        _mse = squared.mean(dim=reduce_dims)  # type: ignore
-    else:
-        _mse = squared.mean()
-
-    return _mse
+    result = scores.functions.apply_weighted_agg(squared, reduce_dims=reduce_dims, weights=weights)
+    return result
 
 
 def rmse(
