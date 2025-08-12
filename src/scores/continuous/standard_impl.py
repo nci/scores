@@ -444,13 +444,13 @@ def percent_within_x(
 
     .. math::
 
-        \\text{Percent within (exclusive)} = 100 \\cdot
+        \\text{Percent within X (exclusive)} = 100 \\cdot
         \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}
          {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
     .. math::
 
-        \\text{Percent within (inclusive)} = 100 \\cdot
+        \\text{Percent within X (inclusive)} = 100 \\cdot
         \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}
          {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
 
@@ -466,10 +466,10 @@ def percent_within_x(
         obs: Observed variables.
         threshold: The main threshold to test closeness against.
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating the percent within. All other dimensions will be
+            calculating the percent within X . All other dimensions will be
             preserved. Only one of reduce_dims and preserve_dims can be specified.
         preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the percent within. All other dimensions will be
+            calculating the percent within X. All other dimensions will be
             reduced. Only one of reduce_dims and preserve_dims can be specified.
         is_angular: If True, uses angular distance in degrees.
         decimals: A way to avoid floating-point precision issues.
@@ -479,11 +479,11 @@ def percent_within_x(
             or exclusive (<).
 
     Returns:
-        ``xr.DataArray`` or ``xr.Dataset``:
-            Percent of forecasts within tolerance for each preserved dimension.
+        Percent of forecasts within tolerance for each preserved dimension.
 
     .. important::
         This metric can incentivise hedging (such as introducing biases to maximise one's score).
+        See the tutorial for more information.
 
     .. note::
         - The result is bounded in `[0, 100]`.
@@ -519,7 +519,7 @@ def percent_within_x(
 
         >>> # Example 2:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
-        >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
+        >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["x","y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([25., 75., 12.5])
@@ -527,7 +527,7 @@ def percent_within_x(
 
         >>> # Example 3:
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
-        >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
+        >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=False, reduce_dims=["x","y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([12.5., 12.5., 12.5])
