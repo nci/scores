@@ -62,7 +62,7 @@ def nse(
 
         \\text{NSE} = 1 - \\frac{\\sum_i{(O_i - S_i)^2}}{\\sum_i{(O_i - \\bar{O})^2}}
 
-    where
+    where:
         - :math:`i` is a generic "indexer" representing the set of datapoints
           along the dimensions being reduced e.g. time (:math:`t`) or
           xy-coordinates (:math:`(x, y)`). The latter represents reduction over
@@ -258,7 +258,7 @@ def nse(
                [ 0.70982143,  0.93208333]])
         Dimensions without coordinates: x, y
         >>> # Example 2:
-        >>> # reduce over (x, y) - space - should a t-vector (3 by 1)
+        >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> nse(obs, fcst, reduce_dims=["x", "y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([0.77469136, 0.90123457, 0.74722222])
