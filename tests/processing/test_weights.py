@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import scores.continuous
-import scores.functions
+from scores.processing import weighted_agg
 
 # Tests for apply_weighted_mean
 
@@ -54,21 +53,32 @@ WEIGHTS1 = xr.DataArray(
     coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
 WEIGHTS2 = WEIGHTS1 * 0
-WEIGHTS3 = WEIGHTS1 * np.nan
-WEIGHTS4 = xr.DataArray(
-    [[1, 2, 3], [3, 2, 1], [0, np.nan, np.nan]],
+WEIGHTS3 = xr.DataArray(
+    [[1, 2, 3], [3, 2, 1], [0, 0, 0]],
     dims=["x", "y"],
     coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
-WEIGHTS5 = xr.DataArray(
+WEIGHTS4 = xr.DataArray(
     [1, 2],
     dims=["z"],
     coords={"z": [0, 1]},
 )
-WEIGHTS6 = xr.DataArray(
-    [1, 2, np.nan],
+WEIGHTS5 = xr.DataArray(
+    [1, 2, 0],
     dims=["y"],
     coords={"y": [0, 1, 3]},
+)
+
+NEGATIVE_WEIGHTS = xr.DataArray(
+    [[1, -1, 1], [1, 1, 1], [1, 1, 1]],
+    dims=["x", "y"],
+    coords={"x": [0, 1, 2], "y": [0, 1, 2]},
+)
+
+NAN_WEIGHTS = xr.DataArray(
+    [[2, 2, 2], [2, 2, 2], [2, np.nan, 2]],
+    dims=["x", "y"],
+    coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
 
 
@@ -85,18 +95,16 @@ WEIGHTS6 = xr.DataArray(
         (DA_3x3, ["y"], WEIGHTS1, EXP_DA_Y),
         # Zero weights over y
         (DA_3x3, ["y"], WEIGHTS2, EXP_DA_NAN),
-        # NaN weights over y
-        (DA_3x3, ["y"], WEIGHTS3, EXP_DA_NAN),
         # Varying weights over y
-        (DA_3x3, ["y"], WEIGHTS4, EXP_DA_VARY),
+        (DA_3x3, ["y"], WEIGHTS3, EXP_DA_VARY),
         # Extra dim in weights
-        (DA_3x3, ["x"], WEIGHTS5, EXP_DA_NEW_DIM),
+        (DA_3x3, ["x"], WEIGHTS4, EXP_DA_NEW_DIM),
         # Weights only for 1 dim to test broadcasting, with NaN
-        (DA_3x3, ["y"], WEIGHTS6, EXP_DA_Y_BROADCAST),
+        (DA_3x3, ["y"], WEIGHTS5, EXP_DA_Y_BROADCAST),
         # Varying weights over x and y
-        (DA_3x3, ["x", "y"], WEIGHTS4, EXP_DA_VARY_XY),
+        (DA_3x3, ["x", "y"], WEIGHTS3, EXP_DA_VARY_XY),
         # Varying weights over y, but input error is NaN
-        (DA_3x3 * np.nan, ["y"], WEIGHTS4, EXP_DA_VARY * np.nan),
+        (DA_3x3 * np.nan, ["y"], WEIGHTS3, EXP_DA_VARY * np.nan),
     ],
 )
 def test_apply_weighted_agg(values, reduce_dims, weights, expected):
@@ -104,12 +112,12 @@ def test_apply_weighted_agg(values, reduce_dims, weights, expected):
     Tests scores.functions.apply_weighted_agg
     #"""
     # Check with xr.DataArray
-    result = scores.functions.apply_weighted_agg(values, reduce_dims=reduce_dims, weights=weights)
+    result = weighted_agg(values, reduce_dims=reduce_dims, weights=weights)
     xr.testing.assert_equal(result, expected)
 
     # Check with xr.Dataset
     values_ds = xr.Dataset(({"var1": values, "var2": values}))
-    result_ds = scores.functions.apply_weighted_agg(values_ds, reduce_dims=reduce_dims, weights=weights)
+    result_ds = weighted_agg(values_ds, reduce_dims=reduce_dims, weights=weights)
     expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
     xr.testing.assert_equal(result_ds, expected_ds)
 
@@ -119,22 +127,25 @@ def test_apply_weighted_agg_warns():
     Test that a warning is raised if weights are provided but reduce_dims is None.
     """
     with pytest.warns(UserWarning):
-        result = scores.functions.apply_weighted_agg(DA_3x3, reduce_dims=None, weights=WEIGHTS1)
+        result = weighted_agg(DA_3x3, reduce_dims=None, weights=WEIGHTS1)
     xr.testing.assert_equal(DA_3x3, result)
 
 
-def test_apply_weighted_agg_raises():
+@pytest.mark.parametrize(
+    ("weights", "method", "msg"),
+    [
+        # Negative weights
+        (NEGATIVE_WEIGHTS, "mean", "Weights must not contain negative values."),
+        # NaN weights
+        (NAN_WEIGHTS, "mean", "Weights must not contain NaN values."),
+        # Wrong method
+        (None, "agg", "Method must be either 'mean' or 'sum', got 'agg'"),
+    ],
+)
+def test_apply_weighted_agg_raises(weights, method, msg):
     """
     Test that a Value error is raised if there are negative weights
     """
-    negative_weights = xr.DataArray(
-        [[1, -1, 1], [1, 1, 1], [1, 1, 1]],
-        dims=["x", "y"],
-        coords={"x": [0, 1, 2], "y": [0, 1, 2]},
-    )
 
-    with pytest.raises(ValueError, match="Weights must not contain negative values."):
-        scores.functions.apply_weighted_agg(DA_3x3, reduce_dims=["x"], weights=negative_weights)
-
-    with pytest.raises(ValueError, match="Method must be either 'mean' or 'sum', got 'agg'"):
-        scores.functions.apply_weighted_agg(DA_3x3, reduce_dims=["x"], method="agg")
+    with pytest.raises(ValueError, match=msg):
+        weighted_agg(DA_3x3, reduce_dims=["x"], weights=weights, method=method)
