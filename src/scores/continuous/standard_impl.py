@@ -9,7 +9,7 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.processing import broadcast_and_match_nan
+from scores.processing import broadcast_and_match_nan, weighted_agg
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 
@@ -72,7 +72,7 @@ def mse(
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
-    result = scores.functions.apply_weighted_agg(squared, reduce_dims=reduce_dims, weights=weights)
+    result = weighted_agg(squared, reduce_dims=reduce_dims, weights=weights)
     return result
 
 

@@ -11,6 +11,7 @@ from scores.processing.discretise import (
 )
 from scores.processing.isoreg_impl import isotonic_fit
 from scores.processing.matching import broadcast_and_match_nan
+from scores.processing.weighting import weighted_agg
 
 __all__ = [
     "comparative_discretise",
@@ -20,4 +21,5 @@ __all__ = [
     "binary_discretise_proportion",
     "isotonic_fit",
     "block_bootstrap",
+    "weighted_agg",
 ]
