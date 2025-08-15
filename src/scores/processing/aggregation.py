@@ -5,13 +5,15 @@ Functions related to aggregating data
 import warnings
 from typing import Optional
 
+import xarray as xr
+
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 
 def agg(
     values: XarrayLike,
     *,
-    reduce_dims: FlexibleDimensionTypes,
+    reduce_dims: FlexibleDimensionTypes | None,
     weights: Optional[XarrayLike] = None,
     method: str = "mean",
 ) -> XarrayLike:
@@ -71,15 +73,27 @@ def agg(
         raise ValueError(f"Method must be either 'mean' or 'sum', got '{method}'")
 
     if weights is not None:
-        if (weights < 0).any():
-            raise ValueError("Weights must not contain negative values.")
-        if weights.isnull().any():
-            raise ValueError(
-                """
-                Weights must not contain NaN values. If appropriate consider 
-                filling missing data with `weights.fillna(0)`
-                """
-            )
+        if isinstance(weights, xr.DataArray):
+            if (weights < 0).any().item():
+                raise ValueError("Weights must not contain negative values.")
+            if weights.isnull().any():
+                raise ValueError(
+                    """
+                        Weights must not contain NaN values. If appropriate consider 
+                        filling missing data with `weights.fillna(0)`
+                        """
+                )
+        elif isinstance(weights, xr.Dataset):
+            if xr.concat([(weights[var] < 0).any() for var in weights.data_vars], dim="vars").any():
+                raise ValueError("Weights must not contain negative values.")
+            if xr.concat([(weights[var] < 0).any() for var in weights.data_vars], dim="vars").any():
+                raise ValueError(
+                    """
+                        Weights must not contain NaN values. If appropriate consider 
+                        filling missing data with `weights.fillna(0)`
+                        """
+                )
+
     if reduce_dims is None and weights is not None:
         warnings.warn(
             """
@@ -90,6 +104,21 @@ def agg(
         )
     if reduce_dims is not None:
         if weights is not None:
+            # xarray doesn't allow .weighted to take xr.Dataset as weights, so we need to do it ourselves
+            if isinstance(weights, xr.Dataset):
+                if isinstance(values, xr.DataArray):
+                    raise ValueError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray`")
+                w_results = {}
+                for name, da in values.data_vars.items():
+                    if name not in weights:
+                        raise KeyError(f"No weights provided for variable '{name}'")
+
+                    w = weights[name]
+                    da_aligned, w_aligned = xr.broadcast(da, w)
+                    w_results[name] = (da_aligned * w_aligned).sum(dim=reduce_dims) / w_aligned.sum(dim=reduce_dims)
+
+                    return xr.Dataset(w_results)
+
             values = values.weighted(weights)
 
         match method:
