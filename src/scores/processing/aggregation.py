@@ -1,5 +1,5 @@
 """
-Functions related to weighted aggregations
+Functions related to aggregating data
 """
 
 import warnings
@@ -8,10 +8,10 @@ from typing import Optional
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 
-def weighted_agg(
+def agg(
     values: XarrayLike,
     *,
-    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    reduce_dims: FlexibleDimensionTypes,
     weights: Optional[XarrayLike] = None,
     method: str = "mean",
 ) -> XarrayLike:
