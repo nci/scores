@@ -9,7 +9,7 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.processing import broadcast_and_match_nan, weighted_agg
+from scores.processing import agg, broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 
@@ -73,7 +73,7 @@ def mse(
     squared = error * error
 
     if isinstance(squared, XarrayLike):
-        result = weighted_agg(squared, reduce_dims=reduce_dims, weights=weights)
+        result = agg(squared, reduce_dims=reduce_dims, weights=weights)
     else:
         result = squared.mean()
 

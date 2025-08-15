@@ -2,6 +2,7 @@
 Import the functions from the implementations into the public API
 """
 
+from scores.processing.aggregation import agg
 from scores.processing.block_bootstrap_impl import block_bootstrap
 from scores.processing.discretise import (
     binary_discretise,
@@ -11,7 +12,6 @@ from scores.processing.discretise import (
 )
 from scores.processing.isoreg_impl import isotonic_fit
 from scores.processing.matching import broadcast_and_match_nan
-from scores.processing.weighting import weighted_agg
 
 __all__ = [
     "comparative_discretise",
