@@ -9,7 +9,7 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.processing import broadcast_and_match_nan
+from scores.processing import agg, broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 
@@ -61,24 +61,23 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
+    if isinstance(fcst, XarrayLike):
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
 
-    if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
-
-    if reduce_dims is not None:
-        _mse = squared.mean(dim=reduce_dims)  # type: ignore
+    if isinstance(squared, XarrayLike):
+        result = agg(squared, reduce_dims=reduce_dims, weights=weights)
     else:
-        _mse = squared.mean()
+        result = squared.mean()
 
-    return _mse
+    return result
 
 
 def rmse(
@@ -179,25 +178,22 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-    if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
-    else:
-        error = fcst - obs  # type: ignore
-    ae = abs(error)
-    ae = scores.functions.apply_weights(ae, weights=weights)  # type: ignore
-
-    if preserve_dims is not None or reduce_dims is not None:
+    if isinstance(fcst, XarrayLike):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
 
-    if reduce_dims is not None:
-        _ae = ae.mean(dim=reduce_dims)
+    if is_angular:
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        _ae = ae.mean()
+        error = abs(fcst - obs)  # type: ignore
 
-    # Returns unhinted types if nonstandard types passed in, but this is useful
-    return _ae  # type: ignore
+    if isinstance(error, XarrayLike):
+        result = agg(error, reduce_dims=reduce_dims, weights=weights)
+    else:
+        result = error.mean()
+
+    return result
 
 
 def mean_error(
@@ -282,12 +278,12 @@ def additive_bias(
 
     """
     # Note - mean error call this function
-    error = fcst - obs
-    score = scores.functions.apply_weights(error, weights=weights)
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    score = score.mean(dim=reduce_dims)
+    error = fcst - obs
+
+    score = agg(error, reduce_dims=reduce_dims, weights=weights)
     return score  # type: ignore
 
 
@@ -334,13 +330,13 @@ def multiplicative_bias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
-    multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    multi_bias = agg(fcst, reduce_dims=reduce_dims, weights=weights) / agg(
+        obs, reduce_dims=reduce_dims, weights=weights
+    )
+
     return multi_bias
 
 
@@ -409,15 +405,14 @@ def pbias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     error = fcst - obs
 
-    _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    _pbias = (
+        100 * agg(error, reduce_dims=reduce_dims, weights=weights) / agg(obs, reduce_dims=reduce_dims, weights=weights)
+    )
     return _pbias
 
 
