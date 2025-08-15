@@ -7,8 +7,8 @@ from typing import Optional
 
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.processing.matching import broadcast_and_match_nan
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 
 def agg(
@@ -87,10 +87,10 @@ def agg(
                         filling missing data with `weights.fillna(0)`
                         """
                 )
-        elif isinstance(weights, xr.Dataset):
+        else:
             if xr.concat([(weights[var] < 0).any() for var in weights.data_vars], dim="vars").any():
                 raise ValueError("Weights must not contain negative values.")
-            if xr.concat([(weights[var] < 0).any() for var in weights.data_vars], dim="vars").any():
+            if xr.concat([(weights[var].isnull()).any() for var in weights.data_vars], dim="vars").any():
                 raise ValueError(
                     """
                     Weights must not contain NaN values. If appropriate consider 
@@ -110,8 +110,8 @@ def agg(
         if weights is not None:
             # xarray doesn't allow .weighted to take xr.Dataset as weights, so we need to do it ourselves
             if isinstance(weights, xr.Dataset):
-                if method == "match":
-                    NotImplementedError(
+                if method == "sum":
+                    raise NotImplementedError(
                         "using the method 'sum' with weights that are xr.Datasets is not currently supported"
                     )
                 if isinstance(values, xr.DataArray):

@@ -204,7 +204,7 @@ def test_agg_warns():
     [
         # Negative weights, DA values
         (DA_3x3, NEGATIVE_WEIGHTS, "mean", "Weights must not contain negative values.", ValueError),
-        # Negative weights, DS values
+        # Negative weights, DS values, DA weights
         (
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
             NEGATIVE_WEIGHTS,
@@ -212,12 +212,28 @@ def test_agg_warns():
             "Weights must not contain negative values.",
             ValueError,
         ),
+        # Negative weights, DS values, DS weights
+        (
+            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
+            xr.Dataset(({"var1": NEGATIVE_WEIGHTS, "var2": NEGATIVE_WEIGHTS})),
+            "mean",
+            "Weights must not contain negative values.",
+            ValueError,
+        ),
         # NaN weights, DA values
         (DA_3x3, NAN_WEIGHTS, "mean", "Weights must not contain NaN values.", ValueError),
-        # NaN weights, DS values
+        # NaN weights, DS values, DA weights
         (
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
             NAN_WEIGHTS,
+            "mean",
+            "Weights must not contain NaN values.",
+            ValueError,
+        ),
+        # NaN weights, DS values, DS weights
+        (
+            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
+            xr.Dataset(({"var1": NAN_WEIGHTS, "var2": NAN_WEIGHTS})),
             "mean",
             "Weights must not contain NaN values.",
             ValueError,
@@ -231,6 +247,22 @@ def test_agg_warns():
             "mean",
             "No weights provided for variable 'var2'",
             KeyError,
+        ),
+        # DS weights and method=sum
+        (
+            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
+            xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1})),
+            "sum",
+            "using the method 'sum' with weights that are xr.Datasets is not currently supported",
+            NotImplementedError,
+        ),
+        # DA values, DS weights
+        (
+            DA_3x3,
+            xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1})),
+            "mean",
+            "`weights` cannot be an xr.Dataset when `values` is an xr.DataArray",
+            ValueError,
         ),
     ],
 )
