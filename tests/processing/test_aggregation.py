@@ -65,11 +65,14 @@ EXP_DA_Y_BROADCAST = xr.DataArray(
     coords={"x": [0, 1, 2]},
 )
 EXP_DA_VARY_XY = xr.DataArray(1.1)
+
+EXP_DS_Y = xr.Dataset(({"var1": EXP_DA_Y, "var2": EXP_DA_Y}))
 WEIGHTS1 = xr.DataArray(
     [[2, 2, 2], [2, 2, 2], [2, 2, 2]],
     dims=["x", "y"],
     coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
+WEIGHTS1_DS = xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1}))
 WEIGHTS2 = WEIGHTS1 * 0
 WEIGHTS3 = xr.DataArray(
     [[1, 2, 3], [3, 2, 1], [0, 0, 0]],
@@ -133,11 +136,18 @@ def test_agg_mean(values, reduce_dims, weights, expected):
     result = agg(values, reduce_dims=reduce_dims, weights=weights)
     xr.testing.assert_equal(result, expected)
 
-    # Check with xr.Dataset
+    # Check with xr.Dataset for values, but xr.DataArray for weights
     values_ds = xr.Dataset(({"var1": values, "var2": values}))
     result_ds = agg(values_ds, reduce_dims=reduce_dims, weights=weights)
     expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
     xr.testing.assert_equal(result_ds, expected_ds)
+
+    # Check with xr.Dataset for both values and weights
+    if weights is not None:
+        weights_ds = xr.Dataset(({"var1": weights, "var2": weights}))
+        result_ds = agg(values_ds, reduce_dims=reduce_dims, weights=weights_ds)
+        expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
+        xr.testing.assert_equal(result_ds, expected_ds)
 
 
 @pytest.mark.parametrize(
@@ -190,20 +200,44 @@ def test_agg_warns():
 
 
 @pytest.mark.parametrize(
-    ("weights", "method", "msg"),
+    ("values", "weights", "method", "msg", "err_type"),
     [
-        # Negative weights
-        (NEGATIVE_WEIGHTS, "mean", "Weights must not contain negative values."),
-        # NaN weights
-        (NAN_WEIGHTS, "mean", "Weights must not contain NaN values."),
+        # Negative weights, DA values
+        (DA_3x3, NEGATIVE_WEIGHTS, "mean", "Weights must not contain negative values.", ValueError),
+        # Negative weights, DS values
+        (
+            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
+            NEGATIVE_WEIGHTS,
+            "mean",
+            "Weights must not contain negative values.",
+            ValueError,
+        ),
+        # NaN weights, DA values
+        (DA_3x3, NAN_WEIGHTS, "mean", "Weights must not contain NaN values.", ValueError),
+        # NaN weights, DS values
+        (
+            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
+            NAN_WEIGHTS,
+            "mean",
+            "Weights must not contain NaN values.",
+            ValueError,
+        ),
         # Wrong method
-        (None, "agg", "Method must be either 'mean' or 'sum', got 'agg'"),
+        (DA_3x3, None, "agg", "Method must be either 'mean' or 'sum', got 'agg'", ValueError),
+        # DS weights missing data var
+        (
+            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
+            xr.Dataset(({"var1": WEIGHTS1})),
+            "mean",
+            "No weights provided for variable 'var2'",
+            KeyError,
+        ),
     ],
 )
-def test_agg_raises(weights, method, msg):
+def test_agg_raises(values, weights, method, msg, err_type):
     """
     Test that a Value error is raised if there are negative weights
     """
 
-    with pytest.raises(ValueError, match=msg):
-        agg(DA_3x3, reduce_dims=["x"], weights=weights, method=method)
+    with pytest.raises(err_type, match=msg):
+        agg(values, reduce_dims=["x"], weights=weights, method=method)
