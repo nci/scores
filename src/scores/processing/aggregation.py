@@ -132,6 +132,6 @@ def agg(
         match method:
             case "mean":
                 values = values.mean(reduce_dims)
-            case "sum":
+            case "sum":  # pragma: no cover (we explicitly check the case where the method doesn't match earlier)
                 values = values.sum(reduce_dims)
     return values
