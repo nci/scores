@@ -8,6 +8,7 @@ from typing import Optional
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.processing.matching import broadcast_and_match_nan
 
 
 def agg(
@@ -21,9 +22,10 @@ def agg(
     Computes a weighted or unweighted aggregation of the input data across specified dimensions.
     The input data is typically the "score" at each point.
 
-    This function applies a mean reduction over the dimensions given by ``reduce_dims`` on
+    This function applies a mean reduction or a sum over the dimensions given by ``reduce_dims`` on
     the input ``values``, optionally using weights to compute a weighted mean. Weighting
-    is performed using xarray's `.weighted()` method.
+    is performed using xarray's `.weighted()` method. The `method` arg specifies if you
+    want to produce a weighted mean or weighted sum.
 
     If `reduce_dims` is None, no reduction is performed and the original `values` are
     returned unchanged.
@@ -40,19 +42,21 @@ def agg(
     Args:
         values: Input data to be reduced. Typically an `xr.DataArray` or `xr.Dataset`.
         reduce_dims: Dimensions over which to apply the mean. Can be a string, list of
-            strings, or None. If None, no reduction is performed. Defaults to None.
+            strings, or None. If None, no reduction is performed.ß
         weights: Weights to apply for weighted averaging.
             Must be broadcastable to `values` and contain no negative values. If None,
             an unweighted mean is calculated. Defaults to None.
         method: Aggregation method to use. Either "mean" or "sum". Defaults to "mean".
 
     Returns:
-        An xarray object (same type as the input) with (un)weighted mean of ``values``
+        An xarray object (same type as the input) with (un)weighted mean or sum of ``values``
 
     Raises:
         ValueError: If `weights` contains any negative values.
         ValueError: if `weights` contains any NaN values
         ValueError: if `method` is not 'mean' or 'sum'
+        ValueError: if `weights` is an xr.Dataset when `values` is an xr.DataArray
+        NotImplementedError: if `method` is sum and weights is an xr.Dataset
 
     Warnings:
         UserWarning: If weights are provided but no reduction is performed (`reduce_dims` is None),
@@ -89,15 +93,15 @@ def agg(
             if xr.concat([(weights[var] < 0).any() for var in weights.data_vars], dim="vars").any():
                 raise ValueError(
                     """
-                        Weights must not contain NaN values. If appropriate consider 
-                        filling missing data with `weights.fillna(0)`
-                        """
+                    Weights must not contain NaN values. If appropriate consider 
+                    filling missing data with `weights.fillna(0)`
+                    """
                 )
 
     if reduce_dims is None and weights is not None:
         warnings.warn(
             """
-            Weights were provided but all the score across all dimensions is being preserved. 
+            Weights were provided but the point-wise score across all dimensions is being preserved. 
             Weights will be ignored.
             """,
             UserWarning,
@@ -106,15 +110,19 @@ def agg(
         if weights is not None:
             # xarray doesn't allow .weighted to take xr.Dataset as weights, so we need to do it ourselves
             if isinstance(weights, xr.Dataset):
+                if method == "match":
+                    NotImplementedError(
+                        "using the method 'sum' with weights that are xr.Datasets is not currently supported"
+                    )
                 if isinstance(values, xr.DataArray):
-                    raise ValueError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray`")
+                    raise ValueError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray")
                 w_results = {}
                 for name, da in values.data_vars.items():
                     if name not in weights:
                         raise KeyError(f"No weights provided for variable '{name}'")
 
                     w = weights[name]
-                    da_aligned, w_aligned = xr.broadcast(da, w)
+                    da_aligned, w_aligned = broadcast_and_match_nan(da, w)
                     w_results[name] = (da_aligned * w_aligned).sum(dim=reduce_dims) / w_aligned.sum(dim=reduce_dims)
 
                 return xr.Dataset(w_results)
