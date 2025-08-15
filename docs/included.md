@@ -638,6 +638,15 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
   - 
     [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
+* -  
+    - CRA
+  -
+    [API](api.md#scores.spatial.cra)
+  - 
+    [Tutorial](project:./tutorials/Contiguos_Rain_Area.md)
+  - 
+    [Ebert and McBride (2000)](https://doi.org/10.1016/S0022-1694(00)00343-7); 
+    [Ebert and Gallus (2009)](https://doi.org/10.1175/2009WAF2222252.1)  
 ```
 
 ## Statistical Tests
