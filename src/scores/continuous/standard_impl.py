@@ -330,13 +330,13 @@ def multiplicative_bias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
-    multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    multi_bias = agg(fcst, reduce_dims=reduce_dims, weights=weights) / agg(
+        obs, reduce_dims=reduce_dims, weights=weights
+    )
+
     return multi_bias
 
 
@@ -405,15 +405,14 @@ def pbias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     error = fcst - obs
 
-    _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    _pbias = (
+        100 * agg(error, reduce_dims=reduce_dims, weights=weights) / agg(obs, reduce_dims=reduce_dims, weights=weights)
+    )
     return _pbias
 
 
