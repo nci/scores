@@ -117,7 +117,7 @@ def agg(
                     da_aligned, w_aligned = xr.broadcast(da, w)
                     w_results[name] = (da_aligned * w_aligned).sum(dim=reduce_dims) / w_aligned.sum(dim=reduce_dims)
 
-                    return xr.Dataset(w_results)
+                return xr.Dataset(w_results)
 
             values = values.weighted(weights)
 
