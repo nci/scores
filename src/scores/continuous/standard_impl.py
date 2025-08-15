@@ -61,18 +61,22 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
+    if isinstance(fcst, XarrayLike):
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
 
-    if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
-    result = weighted_agg(squared, reduce_dims=reduce_dims, weights=weights)
+    if isinstance(squared, XarrayLike):
+        result = weighted_agg(squared, reduce_dims=reduce_dims, weights=weights)
+    else:
+        result = squared.mean()
+
     return result
 
 

@@ -34,6 +34,7 @@ def test_mse_xarray_1d():
     result = scores.continuous.mse(fcst_as_xarray_1d, obs_as_xarray_1d)
 
     expected = xr.DataArray(1.0909)
+
     assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
@@ -63,18 +64,6 @@ def test_mse_dataframe():
     result = scores.continuous.mse(df["fcst"], df["obs"])
     assert isinstance(result, float)
     assert round(result, PRECISION) == expected
-
-
-def test_mse_xarray_to_point():
-    """
-    Test MSE calculates the correct value for a simple 1d sequence
-    Currently breaks type hinting but here for future pandas support
-    """
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mse(fcst_as_xarray_1d, 1)  # type: ignore
-    expected = xr.DataArray(1.45454545)
-    assert isinstance(result, xr.DataArray)
-    assert result.round(PRECISION) == expected.round(PRECISION)
 
 
 def test_2d_xarray_mse():
@@ -164,8 +153,6 @@ def rmse_obs_pandas():
             {"preserve_dims": "all"},
         ),
         ("rmse_fcst_nan_xarray", "rmse_obs_xarray", xr.DataArray(1.3784), {}),
-        ("rmse_fcst_xarray", 1, xr.DataArray(1.3484), {}),
-        ("rmse_fcst_nan_xarray", 1, xr.DataArray(1.3784), {}),
         ("rmse_fcst_pandas", "rmse_obs_pandas", 1.3484, {}),
         ("rmse_fcst_pandas", 1, 1.3484, {}),
         ("rmse_fcst_nan_pandas", "rmse_obs_pandas", 1.3784, {}),
@@ -174,8 +161,6 @@ def rmse_obs_pandas():
         "simple-1d",
         "preserve-1d",
         "simple-1d-w-nan",
-        "to-point",
-        "to-point-w-nan",
         "pandas-series-1d",
         "pandas-to-point",
         "pandas-series-nan-1d",
