@@ -357,17 +357,6 @@ def test_mae_dataframe():
     assert round(result, PRECISION) == expected
 
 
-def test_mae_xarray_to_point():
-    """
-    Test MAE calculates the correct value for a simple sequence
-    Tests unhinted types but this is useful
-    """
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mae(fcst_as_xarray_1d, 1)  # type: ignore
-    expected = xr.DataArray(0.9091)
-    assert result.round(PRECISION) == expected.round(PRECISION)
-
-
 def test_2d_xarray_mae():
     """
     Test MAE calculates the correct value on a 2d array

@@ -78,7 +78,7 @@ def agg(
 
     if weights is not None:
         if isinstance(weights, xr.DataArray):
-            if (weights < 0).any().item():
+            if bool((weights < 0).any()):
                 raise ValueError("Weights must not contain negative values.")
             if weights.isnull().any():
                 raise ValueError(

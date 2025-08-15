@@ -178,25 +178,22 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-    if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
-    else:
-        error = fcst - obs  # type: ignore
-    ae = abs(error)
-    ae = scores.functions.apply_weights(ae, weights=weights)  # type: ignore
-
-    if preserve_dims is not None or reduce_dims is not None:
+    if isinstance(fcst, XarrayLike):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
 
-    if reduce_dims is not None:
-        _ae = ae.mean(dim=reduce_dims)
+    if is_angular:
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        _ae = ae.mean()
+        error = abs(fcst - obs)  # type: ignore
 
-    # Returns unhinted types if nonstandard types passed in, but this is useful
-    return _ae  # type: ignore
+    if isinstance(error, XarrayLike):
+        result = agg(error, reduce_dims=reduce_dims, weights=weights)
+    else:
+        result = error.mean()
+
+    return result
 
 
 def mean_error(
@@ -281,12 +278,12 @@ def additive_bias(
 
     """
     # Note - mean error call this function
-    error = fcst - obs
-    score = scores.functions.apply_weights(error, weights=weights)
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    score = score.mean(dim=reduce_dims)
+    error = fcst - obs
+
+    score = agg(error, reduce_dims=reduce_dims, weights=weights)
     return score  # type: ignore
 
 
