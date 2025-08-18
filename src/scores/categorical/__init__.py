@@ -13,6 +13,11 @@ from scores.categorical.contingency_impl import (
     ThresholdEventOperator,
 )
 from scores.categorical.multicategorical_impl import firm, seeps
+from scores.categorical.risk_matrix_impl import (
+    matrix_weights_to_array,
+    risk_matrix_score,
+    weights_from_warning_scaling,
+)
 
 __all__ = [
     "probability_of_detection",
