@@ -689,6 +689,38 @@ EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
 
 EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
 
+
+## for percent_within_x
+EXP_PERCENT_WITHIN_X1 = xr.DataArray(
+    np.array([100, 100 / 3, 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_PERCENT_WITHIN_X2 = xr.DataArray(
+    np.array([100, 100 / 3, 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PERCENT_WITHIN_X3 = xr.DataArray(
+    np.array([100, 100 / 3, 2 * 100 / 3]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PERCENT_WITHIN_X4 = xr.DataArray(np.array(100 * 3 / 4))
+
+EXP_PERCENT_WITHIN_X5 = xr.DataArray(np.array(100 * 3 / 4))
+EXP_PERCENT_WITHIN_X6 = xr.DataArray(np.array(100 * 1 / 4))
+
+EXP_DS_PERCENT_WITHIN_X1 = xr.Dataset({"a": EXP_PERCENT_WITHIN_X1, "b": EXP_PERCENT_WITHIN_X2})
+
 ## for KGE
 DA1_KGE = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
@@ -910,6 +942,154 @@ def test_pbias_dask():
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PBIAS3)
+
+
+def test_percent_within_x_no_data():
+    """
+    Tests that continuous.percent_within_x works with no data
+    """
+
+    fcst = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
+
+    obs = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
+
+    result = scores.continuous.percent_within_x(fcst, obs, threshold=0)
+
+    assert result.ndim == 0
+    assert np.isnan(result.item())
+
+
+def test_percent_within_x_broadcasting():
+    """
+    Tests that continuous.percent_within_x works broadcasting data with mismatched dimensions
+    """
+
+    fcst = xr.DataArray(
+        np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
+        dims=("space", "lead"),
+        coords=[
+            ("space", ["w", "x", "y"]),
+            ("lead", [1, 2, 3]),
+        ],
+    )
+
+    obs = xr.DataArray(
+        np.array([1, 1, 1]),
+        dims=("space"),
+        coords=[("space", ["w", "x", "y"])],
+    )
+
+    result = scores.continuous.percent_within_x(fcst, obs, threshold=0, preserve_dims="lead")
+
+    expected = xr.DataArray(
+        np.array([100 * 1 / 3, 100 * 1 / 3, 0]),
+        dims=("lead"),
+        coords=[("lead", [1, 2, 3])],
+    )
+
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "reduce_dims",
+        "preserve_dims",
+        "is_angular",
+        "threshold",
+        "is_inclusive",
+        "expected",
+    ),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", False, 1.0, True, EXP_PERCENT_WITHIN_X1),
+        (DA1_BIAS, DA3_BIAS, None, "space", False, 1.0, True, EXP_PERCENT_WITHIN_X3),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, False, 1.0, True, EXP_PERCENT_WITHIN_X1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, True, EXP_PERCENT_WITHIN_X4),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", False, 1.0, True, EXP_DS_PERCENT_WITHIN_X1),
+        # Testing angular results
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, True, EXP_PERCENT_WITHIN_X5),
+        # Testing angular results with inclusive false
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, False, EXP_PERCENT_WITHIN_X6),
+    ],
+)
+def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, is_inclusive, expected):
+    """
+    Tests continuous.percent_within_x
+    """
+
+    decimals = 7
+    result = scores.continuous.percent_within_x(
+        fcst,
+        obs,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        is_angular=is_angular,
+        threshold=threshold,
+        decimals=decimals,
+        is_inclusive=is_inclusive,
+    )
+
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    (
+        "decimals",
+        "expected",
+    ),
+    [
+        (2, 100 * 6 / 8),
+        (7, 100 * 4 / 8),
+    ],
+)
+def test_percent_within_x_tolerance(decimals, expected):
+    """
+    Tests continuous.percent_within_x for threshold rounding to control for precision issues
+    """
+    fcst = DA1_BIAS + 0.0001
+    obs = DA2_BIAS
+    reduce_dims = None
+    preserve_dims = None
+    is_angular = False
+    threshold = 1
+    is_inclusive = True
+
+    result = scores.continuous.percent_within_x(
+        fcst,
+        obs,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        is_angular=is_angular,
+        threshold=threshold,
+        decimals=decimals,
+        is_inclusive=is_inclusive,
+    )
+
+    assert result == expected
+
+
+def test_percent_within_x_dask():
+    """
+    Tests that continuous.within works with Dask
+    """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    result = scores.continuous.percent_within_x(
+        fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, decimals=7, is_inclusive=True
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_PERCENT_WITHIN_X3)
 
 
 @pytest.mark.parametrize(
