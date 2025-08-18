@@ -2,10 +2,11 @@
 Unit tests for scopres.probability.pit_impl.py
 """
 
+import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.probability.pit_impl import _pit_values_for_ensemble
+from scores.probability.pit_impl import _get_pit_x_values, _pit_values_for_ensemble
 
 
 def test__pit_values_for_ensemble():
@@ -47,4 +48,27 @@ def test__pit_values_for_ensemble():
         coords={"uniform_endpoint": ["lower", "upper"], "stn": stns, "lead_day": [0, 1]},
     )
     result = _pit_values_for_ensemble(fcst, obs, "member")
+    xr.testing.assert_equal(expected, result)
+
+
+DA_GPV = xr.DataArray(
+    data=[[0.1, nan, 0.5], [0.8, nan, 0.5]],
+    dims=["uniform_endpoint", "stn"],
+    coords={"uniform_endpoint": ["lower", "upper"], "stn": [101, 102, 103]},
+)
+EXP_GPV = xr.DataArray(
+    data=[0, 0.1, 0.5, 0.8, 1], dims=["pit_x_values"], coords={"pit_x_values": [0, 0.1, 0.5, 0.8, 1]}
+)
+
+
+@pytest.mark.parametrize(
+    ("pit_values", "expected"),
+    [
+        (DA_GPV, EXP_GPV),  # data array input
+        (xr.merge([DA_GPV.rename("a"), DA_GPV.rename("b")]), EXP_GPV),  # dataset input
+    ],
+)
+def test__get_pit_x_values(pit_values, expected):
+    """Tests that `_get_pit_x_values` returns as expected."""
+    result = _get_pit_x_values(pit_values)
     xr.testing.assert_equal(expected, result)
