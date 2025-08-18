@@ -6,7 +6,11 @@ import pytest
 import xarray as xr
 from numpy import nan
 
-from scores.probability.pit_impl import _get_pit_x_values, _pit_values_for_ensemble
+from scores.probability.pit_impl import (
+    _get_pit_x_values,
+    _pit_cdfvalues_for_jumps,
+    _pit_values_for_ensemble,
+)
 
 
 def test__pit_values_for_ensemble():
@@ -56,6 +60,7 @@ DA_GPV = xr.DataArray(
     dims=["uniform_endpoint", "stn"],
     coords={"uniform_endpoint": ["lower", "upper"], "stn": [101, 102, 103]},
 )
+DS_GPV = xr.merge([DA_GPV.rename("a"), DA_GPV.rename("b")])
 EXP_GPV = xr.DataArray(
     data=[0, 0.1, 0.5, 0.8, 1], dims=["pit_x_values"], coords={"pit_x_values": [0, 0.1, 0.5, 0.8, 1]}
 )
@@ -65,10 +70,39 @@ EXP_GPV = xr.DataArray(
     ("pit_values", "expected"),
     [
         (DA_GPV, EXP_GPV),  # data array input
-        (xr.merge([DA_GPV.rename("a"), DA_GPV.rename("b")]), EXP_GPV),  # dataset input
+        (DS_GPV, EXP_GPV),  # dataset input
     ],
 )
 def test__get_pit_x_values(pit_values, expected):
     """Tests that `_get_pit_x_values` returns as expected."""
     result = _get_pit_x_values(pit_values)
     xr.testing.assert_equal(expected, result)
+
+
+EXP_PCVFJ_LEFT = xr.DataArray(
+    data=[[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan], [0.0, 0, 0, 1, 1]],
+    dims=["stn", "pit_x_values"],
+    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+)
+EXP_PCVFJ_RIGHT = xr.DataArray(
+    data=[[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan], [0.0, 0, 1, 1, 1]],
+    dims=["stn", "pit_x_values"],
+    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+)
+EXP_PCVFJ = {"left": EXP_PCVFJ_LEFT, "right": EXP_PCVFJ_RIGHT}
+EXP_PCVFJ2 = {
+    "left": xr.merge([EXP_PCVFJ_LEFT.rename("a"), EXP_PCVFJ_LEFT.rename("b")]),
+    "right": xr.merge([EXP_PCVFJ_RIGHT.rename("a"), EXP_PCVFJ_RIGHT.rename("b")]),
+}
+
+
+@pytest.mark.parametrize(
+    ("pit_values", "expected"),
+    [(DA_GPV, EXP_PCVFJ), (DS_GPV, EXP_PCVFJ2)],  # data array input  # dataset input
+)
+def test__pit_cdfvalues_for_jumps(pit_values, expected):
+    """Tests that `_pit_cdfvalues_for_jumps` returns as expected."""
+    result = _pit_cdfvalues_for_jumps(pit_values, EXP_GPV)
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_equal(expected[key], result[key])

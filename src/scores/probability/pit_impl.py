@@ -62,3 +62,33 @@ def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
     x_values = x_values[~np.isnan(x_values)]
     x_values = xr.DataArray(data=x_values, dims=["pit_x_values"], coords={"pit_x_values": x_values})
     return x_values
+
+
+def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> dict:
+    """
+    Gives the values F(x) where F is the CDF for a pit value,
+    and x comes from `x_values`, given that the CDF jumps at x. This occurs precisely
+    when upper == lower in the [lower, upper] representation of the PIT value.
+    If this condition fails, NaNs are returned.
+
+    It is assumed that `x_values` contains all the values in `pit_values`.
+
+    Args:
+        pit_values: xarray object output from `_pit_values_for_ensemble`
+        x_values: xr.DataArray of x values, with dimension 'pit_x_values', output from
+            `_get_pit_x_values`
+
+    Returns:
+        dictionary of cdf values, with keys 'left' and 'right',
+        representing the left and right hand limits of the cdf values F(x).
+        Each value in the dictionary is an xarray object representing limits of F(x),
+        where x is represented by values in the 'pit_x_values' dimension.
+    """
+    lower_values = pit_values.sel(uniform_endpoint="lower").drop_vars("uniform_endpoint")
+    upper_values = pit_values.sel(uniform_endpoint="upper").drop_vars("uniform_endpoint")
+    # get the cases where jumps occur
+    pit_jumps = upper_values.where(upper_values == lower_values)
+    # pit_jumps, xs = xr.broadcast(pit_jumps, xs)
+    cdf_left = xr.zeros_like(pit_jumps).where(x_values <= pit_jumps, 1).where(pit_jumps.notnull())
+    cdf_right = xr.zeros_like(pit_jumps).where(x_values < pit_jumps, 1).where(pit_jumps.notnull())
+    return {"left": cdf_left, "right": cdf_right}
