@@ -37,7 +37,7 @@ def risk_matrix_score(
     the observation lies in severity category :math:`S_i`.
     A corresponding observation :math:`y` is given by :math:`y=(y_1,\\ldots,y_m)` where
     :math:`y_i` is 1 if the observation lies in severity category :math:`S_i` and 0 otherwise.
-    Then the risk matrix score :math:`\\text{RMS}` is given by the formula
+    Then the risk matrix score :math:`\\text{RMaS}` is given by the formula
 
     .. math::
         \\text{RMaS}(F,y) = \\sum_{i=1}^m\\sum_{j=1}^n w_{i,j} \\, s_j(f_i, y_i),

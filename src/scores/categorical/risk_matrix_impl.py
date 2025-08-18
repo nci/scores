@@ -1,5 +1,5 @@
 """
-This module contains methods which for emerging scores.
+This module contains methods which for related to the risk matrix score.
 """
 
 from typing import Iterable, Optional
@@ -37,7 +37,7 @@ def risk_matrix_score(
     the observation lies in severity category :math:`S_i`.
     A corresponding observation :math:`y` is given by :math:`y=(y_1,\\ldots,y_m)` where
     :math:`y_i` is 1 if the observation lies in severity category :math:`S_i` and 0 otherwise.
-    Then the risk matrix score :math:`\\text{RMS}` is given by the formula
+    Then the risk matrix score :math:`\\text{RMaS}` is given by the formula
 
     .. math::
         \\text{RMaS}(F,y) = \\sum_{i=1}^m\\sum_{j=1}^n w_{i,j} \\, s_j(f_i, y_i),
@@ -105,8 +105,8 @@ def risk_matrix_score(
           https://doi.org/10.5194/nhess-25-2657-2025
 
     See also:
-        :py:func:`scores.emerging.matrix_weights_to_array`
-        :py:func:`scores.emerging.weights_from_warning_scaling`
+        :py:func:`scores.categorical.matrix_weights_to_array`
+        :py:func:`scores.categorical.weights_from_warning_scaling`
 
     Examples:
         Calculate the risk matrix score where the risk matrix has three nested severity
@@ -114,7 +114,7 @@ def risk_matrix_score(
         The decision weights place greater emphasis on higher end severity.
 
         >>> import xarray as xr
-        >>> from scores.emerging import risk_matrix_score
+        >>> from scores.categorical import risk_matrix_score
         >>> decision_weights = xr.DataArray(
         >>>     data=[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
         >>>     dims=["probability_threshold", "severity"],
@@ -263,12 +263,8 @@ def matrix_weights_to_array(
     prob_threshold_coords: Iterable,
 ) -> xr.DataArray:
     """
-    Caution:
-        This function is part of an implementation of a novel metric that is still undergoing
-        mathematical peer review. This implementation may change in line with the peer review process.
-
     Generates a 2-dimensional xr.DataArray of weights for each decision point, which is used for
-    the :py:func:`scores.emerging.risk_matrix_score` calculation.
+    the :py:func:`scores.categorical.risk_matrix_score` calculation.
     Assumes that values toward the left in ``matrix_weights`` correspond
     to less severe categories, while values towards the top in ``matrix_weights`` correspond
     to higher probability thresholds.
@@ -300,12 +296,16 @@ def matrix_weights_to_array(
           with consistent evaluation. Nat. Hazards Earth Syst. Sci., 25, 2657–2677.
           https://doi.org/10.5194/nhess-25-2657-2025
 
+    See also:
+        :py:func:`scores.categorical.risk_matrix_score`
+        :py:func:`scores.categorical.weights_from_warning_scaling`
+
     Examples:
         Returns weights for each risk matrix decision point, where weights increase with increasing
         severity category and decrease with increasing probability threshold.
 
         >>> import numpy as np
-        >>> from scores.emerging import matrix_weights_to_array
+        >>> from scores.categorical import matrix_weights_to_array
         >>> matrix_weights = np.array([
         >>>     [1, 2, 3],
         >>>     [2, 4, 6],
@@ -350,13 +350,9 @@ def weights_from_warning_scaling(
     prob_threshold_coords: Iterable,
 ) -> xr.DataArray:
     """
-    Caution:
-        This function is part of an implementation of a novel metric that is still undergoing
-        mathematical peer review. This implementation may change in line with the peer review process.
-
     Given a warning scaling matrix, evaluation weights and other inputs,
     returns the weights for each risk matrix decision point as an xarray data array. The returned
-    data array is designed to be used for the :py:func:`scores.emerging.risk_matrix_score` calculation.
+    data array is designed to be used for the :py:func:`scores.categorical.risk_matrix_score` calculation.
 
     Comprehensive checks are made on ``scaling_matrix`` to ensure it satisfies the properties
     of warning scaling in Table 1 of Taggart & Wilke (2025).
@@ -399,12 +395,16 @@ def weights_from_warning_scaling(
           with consistent evaluation. Nat. Hazards Earth Syst. Sci., 25, 2657–2677.
           https://doi.org/10.5194/nhess-25-2657-2025
 
+    See also:
+        :py:func:`scores.categorical.matrix_weights_to_array`
+        :py:func:`scores.categorical.risk_matrix_score`
+
     Examples:
         Returns weights for each risk matrix decision point, for the SHORT-RANGE scaling matrix of
         Taggart & Wilke (2025), with ESCALATION evaluation weights.
 
         >>> import numpy as np
-        >>> from scores.emerging import weights_from_warning_scaling
+        >>> from scores.categorical import weights_from_warning_scaling
         >>> scaling = np.array([
         >>>     [0, 2, 3, 3],
         >>>     [0, 1, 2, 3],

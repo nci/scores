@@ -71,6 +71,9 @@
     :members:
 .. autoclass:: scores.categorical.EventOperator
     :members:
+.. autofunction:: scores.categorical.risk_matrix_score
+.. autofunction:: scores.categorical.matrix_weights_to_array
+.. autofunction:: scores.categorical.weights_from_warning_scaling
 .. autofunction:: scores.categorical.seeps
 ```
 
