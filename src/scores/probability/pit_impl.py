@@ -2,9 +2,10 @@
 Methods for the probability integral transform (PIT) class
 """
 
+import xarray as xr
+
 from scores.typing import XarrayLike
 
-import xarray as xr
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
@@ -31,7 +32,7 @@ def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: 
     pit_lower = (fcst < obs).sum(ens_member_dim) / ensemble_size
     pit_upper = (fcst <= obs).sum(ens_member_dim) / ensemble_size
 
-    pit_lower = pit_lower.assign_coords(uniform_endpoint='lower').expand_dims('uniform_endpoint')
-    pit_upper = pit_upper.assign_coords(uniform_endpoint='upper').expand_dims('uniform_endpoint')
+    pit_lower = pit_lower.assign_coords(uniform_endpoint="lower").expand_dims("uniform_endpoint")
+    pit_upper = pit_upper.assign_coords(uniform_endpoint="upper").expand_dims("uniform_endpoint")
 
-    return xr.concat([pit_lower, pit_upper], 'uniform_endpoint')
+    return xr.concat([pit_lower, pit_upper], "uniform_endpoint")
