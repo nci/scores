@@ -8,6 +8,7 @@ from numpy import nan
 
 from scores.probability.pit_impl import (
     _get_pit_x_values,
+    _pit_cdfvalues,
     _pit_cdfvalues_for_jumps,
     _pit_cdfvalues_for_unif,
     _pit_values_for_ensemble,
@@ -103,6 +104,22 @@ EXP_PCVFJ2 = {
     "right": xr.merge([EXP_PCVFJ_RIGHT.rename("tas"), EXP_PCVFJ_RIGHT.rename("pr")]),
 }
 
+EXP_PCV_LEFT = xr.DataArray(
+    data=[[0.0, 0, 4 / 7, 1, 1], [nan, nan, nan, nan, nan], [0.0, 0, 0, 1, 1]],
+    dims=["stn", "pit_x_values"],
+    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+)
+EXP_PCV_RIGHT = xr.DataArray(
+    data=[[0.0, 0, 4 / 7, 1, 1], [nan, nan, nan, nan, nan], [0.0, 0, 1, 1, 1]],
+    dims=["stn", "pit_x_values"],
+    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+)
+EXP_PCV = {"left": EXP_PCV_LEFT, "right": EXP_PCV_RIGHT}
+EXP_PCV2 = {
+    "left": xr.merge([EXP_PCV_LEFT.rename("tas"), EXP_PCV_LEFT.rename("pr")]),
+    "right": xr.merge([EXP_PCV_RIGHT.rename("tas"), EXP_PCV_RIGHT.rename("pr")]),
+}
+
 
 @pytest.mark.parametrize(
     ("pit_values", "expected"),
@@ -130,3 +147,18 @@ def test__pit_cdfvalues_for_unif(pit_values, expected):
     """Tests that `_pit_cdfvalues_for_unif` returns as expected."""
     result = _pit_cdfvalues_for_unif(pit_values, EXP_GPV)
     xr.testing.assert_equal(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("pit_values", "expected"),
+    [
+        (DA_GPV, EXP_PCV),  # data array input
+        (DS_GPV, EXP_PCV2),  # dataset input
+    ],
+)
+def test__pit_cdfvalues(pit_values, expected):
+    """Tests that `_pit_cdfvalues` returns as expected."""
+    result = _pit_cdfvalues(pit_values)
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_equal(expected[key], result[key])

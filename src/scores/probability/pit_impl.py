@@ -130,3 +130,36 @@ def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> d
         .where(unif_cases)  # preserve nans where appropriate
     )
     return pit_unif
+
+
+def _pit_cdfvalues(pit_values):
+    """
+    Calculates F(x) for each CDF F representing the PIT value for a forecast
+    case. The x values used are all values where there is a non-linear change
+    at least one F from the collection of Fs. Intermediate values of F can be recovered
+    using linear interpolation.
+
+    The values are output as a dictionary of two xarray object representing left hand
+    and right hand limits of F at the point x.
+
+    Args:
+        pit_values: xarray object output from `_pit_values_for_ensemble`
+
+    Returns:
+        dictionary of cdf values, with keys 'left' and 'right',
+        representing the left and right hand limits of the cdf values F(x).
+        Each value in the dictionary is an xarray object representing limits of F(x),
+        where x is represented by values in the 'pit_x_values' dimension.
+    """
+    # get the x values
+    x_values = _get_pit_x_values(pit_values)
+
+    # get cdf values where the pit cdf jumps
+    cdf_at_jump_cases = _pit_cdfvalues_for_jumps(pit_values, x_values)
+    # get the cdf values where the pit is uniform
+    cdf_at_unif_cases = _pit_cdfvalues_for_unif(pit_values, x_values)
+    # combine
+    cdf_right = cdf_at_jump_cases["right"].combine_first(cdf_at_unif_cases)
+    cdf_left = cdf_at_jump_cases["left"].combine_first(cdf_at_unif_cases)
+
+    return {"left": cdf_left, "right": cdf_right}
