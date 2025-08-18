@@ -92,3 +92,41 @@ def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> 
     cdf_left = xr.zeros_like(pit_jumps).where(x_values <= pit_jumps, 1).where(pit_jumps.notnull())
     cdf_right = xr.zeros_like(pit_jumps).where(x_values < pit_jumps, 1).where(pit_jumps.notnull())
     return {"left": cdf_left, "right": cdf_right}
+
+
+def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> dict:
+    """
+    Gives the values F(x) where F is the CDF for a pit value,
+    and x comes from `x_values`, given that the CDF is uniform. This occurs precisely
+    when upper > lower in the [lower, upper] representation of the PIT value.
+    If this condition fails, NaNs are returned.
+
+    Left-hand and right-hand limits of F(x) are equal in this case.
+
+    It is assumed that `x_values` containes all the values in `pit_values`.
+
+    Args:
+        pit_values: xarray object output from `_pit_values_for_ensemble`
+        x_values: xr.DataArray of x values, with dimension 'pit_x_values', output from
+            `_get_pit_x_values`
+
+    Returns:
+        An xarray object representing values of F(x), where x is represented by values
+        in the 'pit_x_values' dimension.
+    """
+    lower_values = pit_values.sel(uniform_endpoint="lower").drop_vars("uniform_endpoint")
+    upper_values = pit_values.sel(uniform_endpoint="upper").drop_vars("uniform_endpoint")
+    # get the cases where the cdf is a uniform distribution over [a,b], a < b
+    unif_cases = upper_values > lower_values
+    # get the upper and lower values: these correspond to a, b
+    pit_unif_upper = upper_values.where(unif_cases)  # the b
+    pit_unif_lower = lower_values.where(unif_cases)  # the a
+    # calculate the cdf of Unif(a,b) at the values in x
+    pit_unif = (
+        xr.zeros_like(pit_unif_upper)
+        .where(x_values <= pit_unif_lower)  # 0 for x <= a
+        .where(x_values < pit_unif_upper, 1)  # 1 for x >= b
+        .interpolate_na("pit_x_values")  # interpolate in between
+        .where(unif_cases)  # preserve nans where appropriate
+    )
+    return pit_unif

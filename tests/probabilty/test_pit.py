@@ -9,6 +9,7 @@ from numpy import nan
 from scores.probability.pit_impl import (
     _get_pit_x_values,
     _pit_cdfvalues_for_jumps,
+    _pit_cdfvalues_for_unif,
     _pit_values_for_ensemble,
 )
 
@@ -60,10 +61,17 @@ DA_GPV = xr.DataArray(
     dims=["uniform_endpoint", "stn"],
     coords={"uniform_endpoint": ["lower", "upper"], "stn": [101, 102, 103]},
 )
-DS_GPV = xr.merge([DA_GPV.rename("a"), DA_GPV.rename("b")])
+DS_GPV = xr.merge([DA_GPV.rename("tas"), DA_GPV.rename("pr")])
 EXP_GPV = xr.DataArray(
     data=[0, 0.1, 0.5, 0.8, 1], dims=["pit_x_values"], coords={"pit_x_values": [0, 0.1, 0.5, 0.8, 1]}
 )
+
+EXP_PCVFU = xr.DataArray(
+    data=[[0.0, 0, 4 / 7, 1, 1], [nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
+    dims=["stn", "pit_x_values"],
+    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+)
+EXP_PCVFU2 = xr.merge([EXP_PCVFU.rename("tas"), EXP_PCVFU.rename("pr")])
 
 
 @pytest.mark.parametrize(
@@ -91,14 +99,17 @@ EXP_PCVFJ_RIGHT = xr.DataArray(
 )
 EXP_PCVFJ = {"left": EXP_PCVFJ_LEFT, "right": EXP_PCVFJ_RIGHT}
 EXP_PCVFJ2 = {
-    "left": xr.merge([EXP_PCVFJ_LEFT.rename("a"), EXP_PCVFJ_LEFT.rename("b")]),
-    "right": xr.merge([EXP_PCVFJ_RIGHT.rename("a"), EXP_PCVFJ_RIGHT.rename("b")]),
+    "left": xr.merge([EXP_PCVFJ_LEFT.rename("tas"), EXP_PCVFJ_LEFT.rename("pr")]),
+    "right": xr.merge([EXP_PCVFJ_RIGHT.rename("tas"), EXP_PCVFJ_RIGHT.rename("pr")]),
 }
 
 
 @pytest.mark.parametrize(
     ("pit_values", "expected"),
-    [(DA_GPV, EXP_PCVFJ), (DS_GPV, EXP_PCVFJ2)],  # data array input  # dataset input
+    [
+        (DA_GPV, EXP_PCVFJ),  # data array input
+        (DS_GPV, EXP_PCVFJ2),  # dataset input
+    ],
 )
 def test__pit_cdfvalues_for_jumps(pit_values, expected):
     """Tests that `_pit_cdfvalues_for_jumps` returns as expected."""
@@ -106,3 +117,16 @@ def test__pit_cdfvalues_for_jumps(pit_values, expected):
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
+
+
+@pytest.mark.parametrize(
+    ("pit_values", "expected"),
+    [
+        (DA_GPV, EXP_PCVFU),  # data array input
+        (DS_GPV, EXP_PCVFU2),  # dataset input
+    ],
+)
+def test__pit_cdfvalues_for_unif(pit_values, expected):
+    """Tests that `_pit_cdfvalues_for_unif` returns as expected."""
+    result = _pit_cdfvalues_for_unif(pit_values, EXP_GPV)
+    xr.testing.assert_equal(expected, result)
