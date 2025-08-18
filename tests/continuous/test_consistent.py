@@ -34,7 +34,11 @@ DA_OBS = xr.DataArray(
     coords={"date": ["1", "2", "3"], "station": [100, 101, 102]},
 )
 
-WEIGHTS = DA_FCST * 0 + 2
+WEIGHTS = xr.DataArray(
+    data=[[0, 1.0, 0, 0], [0, 0.0, 0, 0]],
+    dims=["date", "station"],
+    coords={"date": ["1", "2"], "station": [100, 101, 102, 104]},
+)
 
 ALPHA = 0.3
 
@@ -44,12 +48,15 @@ EXP_EXPECTILE_SCORE1 = xr.DataArray(
     coords={"date": ["1", "2"], "station": [100, 101, 102]},
 )
 
+
 EXP_EXPECTILE_SCORE2 = xr.DataArray(
     data=[0.0, ALPHA * (4 + 100) / 2, (1 - ALPHA) * 4],
     dims=["station"],
     coords={"station": [100, 101, 102]},
 )
 EXP_EXPECTILE_SCORE3 = xr.DataArray((ALPHA * 4.0 + ALPHA * 100 + (1 - ALPHA) * 4) / 4)
+
+EXP_EXPECTILE_SCORE4 = xr.DataArray(ALPHA * 4.0)
 
 TUNING_PARAM = 2.0
 
@@ -68,6 +75,7 @@ EXP_HUBER_SCORE2 = xr.DataArray(
 EXP_HUBER_SCORE3 = xr.DataArray(
     data=22 / 4,
 )
+EXP_HUBER_SCORE4 = xr.DataArray(data=2)
 
 EXP_QUANTILE_SCORE1 = xr.DataArray(
     data=[[nan, ALPHA * 2.0, nan], [0.0, ALPHA * 10, (1 - ALPHA) * 2]],
@@ -82,6 +90,8 @@ EXP_QUANTILE_SCORE2 = xr.DataArray(
 )
 
 EXP_QUANTILE_SCORE3 = xr.DataArray((ALPHA * 2.0 + ALPHA * 10 + (1 - ALPHA) * 2) / 4)
+
+EXP_QUANTILE_SCORE4 = xr.DataArray((ALPHA * 2.0))
 
 
 def squared_loss(x):
@@ -103,10 +113,10 @@ def simple_linear(x):
     ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
         (["date", "station"], None, None, EXP_EXPECTILE_SCORE1),
-        (["date", "station"], None, WEIGHTS, 2 * EXP_EXPECTILE_SCORE1),
         (["station"], None, None, EXP_EXPECTILE_SCORE2),
         (None, ["date"], None, EXP_EXPECTILE_SCORE2),
         (None, None, None, EXP_EXPECTILE_SCORE3),
+        (None, None, WEIGHTS, EXP_EXPECTILE_SCORE4),
     ],
 )
 def test_consistent_expectile_score(preserve_dims, reduce_dims, weights, expected):
@@ -163,10 +173,10 @@ def test_check_huber_param():
     ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
         (["date", "station"], None, None, EXP_HUBER_SCORE1),
-        (["date", "station"], None, WEIGHTS, 2 * EXP_HUBER_SCORE1),
         (["date"], None, None, EXP_HUBER_SCORE2),
         (None, ["station"], None, EXP_HUBER_SCORE2),
         (None, None, None, EXP_HUBER_SCORE3),
+        (None, None, WEIGHTS, EXP_HUBER_SCORE4),
     ],
 )
 def test_consistent_huber_score(preserve_dims, reduce_dims, weights, expected):
@@ -210,10 +220,10 @@ def test_huber_score_with_dask():
     ("preserve_dims", "reduce_dims", "weights", "expected"),
     [
         (["date", "station"], None, None, EXP_QUANTILE_SCORE1),
-        (["date", "station"], None, WEIGHTS, 2 * EXP_QUANTILE_SCORE1),
         (["date"], None, None, EXP_QUANTILE_SCORE2),
         (None, ["station"], None, EXP_QUANTILE_SCORE2),
         (None, None, None, EXP_QUANTILE_SCORE3),
+        (None, None, WEIGHTS, EXP_QUANTILE_SCORE4),
     ],
 )
 def test_consistent_quantile_score(preserve_dims, reduce_dims, weights, expected):

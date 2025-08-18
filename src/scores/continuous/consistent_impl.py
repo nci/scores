@@ -7,7 +7,7 @@ from typing import Callable, Optional
 
 import xarray as xr
 
-from scores.functions import apply_weights
+from scores.processing import agg
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import gather_dimensions
 
@@ -98,8 +98,7 @@ def consistent_expectile_score(
     score_overfcst = (1 - alpha) * (phi(obs) - phi(fcst) - phi_prime(fcst) * (obs - fcst))
     score_underfcst = alpha * (phi(obs) - phi(fcst) - phi_prime(fcst) * (obs - fcst))
     result = score_overfcst.where(obs < fcst, score_underfcst)
-    result = apply_weights(result, weights=weights)
-    result = result.mean(dim=reduce_dims)
+    result = agg(result, reduce_dims=reduce_dims, weights=weights)
 
     return result
 
@@ -183,8 +182,7 @@ def consistent_huber_score(
 
     kappa = (fcst - obs).clip(min=-huber_param, max=huber_param)
     result = 0.5 * (phi(obs) - phi(kappa + obs) + kappa * phi_prime(fcst))
-    result = apply_weights(result, weights=weights)
-    result = result.mean(dim=reduce_dims)
+    result = agg(result, reduce_dims=reduce_dims, weights=weights)
 
     return result
 
@@ -267,8 +265,7 @@ def consistent_quantile_score(
     score_overfcst = (1 - alpha) * (g(fcst) - g(obs))
     score_underfcst = -alpha * (g(fcst) - g(obs))
     result = score_overfcst.where(obs < fcst, score_underfcst)
-    result = apply_weights(result, weights=weights)
-    result = result.mean(dim=reduce_dims)
+    result = agg(result, reduce_dims=reduce_dims, weights=weights)
 
     return result
 
