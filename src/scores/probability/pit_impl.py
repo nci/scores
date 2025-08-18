@@ -1,7 +1,11 @@
 """
-Methods for the probability integral transform (PIT) class
+Methods for the probability integral transform (PIT) class.
+
+Reserved dimension names:
+- 'uniform_endpoint', 'pit_x_values'
 """
 
+import numpy as np
 import xarray as xr
 
 from scores.typing import XarrayLike
@@ -36,3 +40,25 @@ def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: 
     pit_upper = pit_upper.assign_coords(uniform_endpoint="upper").expand_dims("uniform_endpoint")
 
     return xr.concat([pit_lower, pit_upper], "uniform_endpoint")
+
+
+def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
+    """
+    Returns a data array of consisting of exactly those x-axis values needed for
+    constructing a unifornm PIT probability plot for the given array of `pit_values`.
+
+    Args:
+        pit_values: output from `_pit_values_for_ensemble`
+
+    Returns:
+        xarray data array of x-axis values, indexed by the same values on the dimension
+        'pit_x_values'
+    """
+    if isinstance(pit_values, xr.Dataset):
+        pit_values = pit_values.to_dataarray()
+
+    x_values = np.unique(pit_values)
+    x_values = np.unique(np.concatenate((np.array([0, 1]), x_values)))
+    x_values = x_values[~np.isnan(x_values)]
+    x_values = xr.DataArray(data=x_values, dims=["pit_x_values"], coords={"pit_x_values": x_values})
+    return x_values
