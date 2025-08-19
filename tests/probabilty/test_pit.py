@@ -9,6 +9,7 @@ from numpy import nan
 from scores.probability.pit_impl import (
     Pit_for_ensemble,
     _get_pit_x_values,
+    _get_plotting_points,
     _pit_cdfvalues,
     _pit_cdfvalues_for_jumps,
     _pit_cdfvalues_for_unif,
@@ -66,14 +67,12 @@ DA_GPV = xr.DataArray(
     coords={"uniform_endpoint": ["lower", "upper"], "stn": [101, 102, 103]},
 )
 DS_GPV = xr.merge([DA_GPV.rename("tas"), DA_GPV.rename("pr")])
-EXP_GPV = xr.DataArray(
-    data=[0, 0.1, 0.5, 0.8, 1], dims=["pit_x_values"], coords={"pit_x_values": [0, 0.1, 0.5, 0.8, 1]}
-)
+EXP_GPV = xr.DataArray(data=[0, 0.1, 0.5, 0.8, 1], dims=["pit_x_value"], coords={"pit_x_value": [0, 0.1, 0.5, 0.8, 1]})
 
 EXP_PCVFU = xr.DataArray(
     data=[[0.0, 0, 4 / 7, 1, 1], [nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
-    dims=["stn", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0, 0.1, 0.5, 0.8, 1]},
 )
 EXP_PCVFU2 = xr.merge([EXP_PCVFU.rename("tas"), EXP_PCVFU.rename("pr")])
 
@@ -93,13 +92,13 @@ def test__get_pit_x_values(pit_values, expected):
 
 EXP_PCVFJ_LEFT = xr.DataArray(
     data=[[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan], [0.0, 0, 0, 1, 1]],
-    dims=["stn", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0, 0.1, 0.5, 0.8, 1]},
 )
 EXP_PCVFJ_RIGHT = xr.DataArray(
     data=[[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan], [0.0, 0, 1, 1, 1]],
-    dims=["stn", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0, 0.1, 0.5, 0.8, 1]},
 )
 EXP_PCVFJ = {"left": EXP_PCVFJ_LEFT, "right": EXP_PCVFJ_RIGHT}
 EXP_PCVFJ2 = {
@@ -109,13 +108,13 @@ EXP_PCVFJ2 = {
 
 EXP_PCV_LEFT = xr.DataArray(
     data=[[0.0, 0, 4 / 7, 1, 1], [nan, nan, nan, nan, nan], [0.0, 0, 0, 1, 1]],
-    dims=["stn", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0, 0.1, 0.5, 0.8, 1]},
 )
 EXP_PCV_RIGHT = xr.DataArray(
     data=[[0.0, 0, 4 / 7, 1, 1], [nan, nan, nan, nan, nan], [0.0, 0, 1, 1, 1]],
-    dims=["stn", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "pit_x_values": [0, 0.1, 0.5, 0.8, 1]},
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0, 0.1, 0.5, 0.8, 1]},
 )
 EXP_PCV = {"left": EXP_PCV_LEFT, "right": EXP_PCV_RIGHT}
 EXP_PCV2 = {
@@ -176,20 +175,30 @@ def test__pit_cdfvalues(pit_values, expected):
             None,
         ),
         (
+            xr.DataArray(data=[0], dims=["x_plotting_position"], coords={"x_plotting_position": [1]}),
+            xr.DataArray(data=[1], dims=["stn"], coords={"stn": [2]}),
+            None,
+        ),
+        (
             xr.DataArray(data=[0], dims=["lead_day"], coords={"lead_day": [1]}),
-            xr.DataArray(data=[1], dims=["pit_x_values"], coords={"pit_x_values": [2]}),
+            xr.DataArray(data=[1], dims=["pit_x_value"], coords={"pit_x_value": [2]}),
             None,
         ),
         (
             xr.DataArray(data=[0], dims=["lead_day"], coords={"lead_day": [1]}),
             xr.DataArray(data=[1], dims=["stn"], coords={"stn": [2]}),
-            xr.DataArray(data=[3], dims=["pit_x_values"], coords={"pit_x_values": [5]}),
+            xr.DataArray(data=[3], dims=["y_plotting_position"], coords={"y_plotting_position": [5]}),
+        ),
+        (
+            xr.DataArray(data=[0], dims=["lead_day"], coords={"lead_day": [1]}),
+            xr.DataArray(data=[1], dims=["stn"], coords={"stn": [2]}),
+            xr.DataArray(data=[3], dims=["plotting_point"], coords={"plotting_point": [5]}),
         ),
     ],
 )
 def test__pit_dimension_checks_raises(fcst, obs, weights):
     """Test that `_pit_dimension_checks` raises as expected."""
-    with pytest.raises(ValueError, match="'uniform_endpoint' or 'pit_x_values' are"):
+    with pytest.raises(ValueError, match="are reserved and should not be among"):
         _pit_dimension_checks(fcst, obs, weights)
 
 
@@ -210,8 +219,8 @@ EXP_PITCDF_LEFT1 = xr.DataArray(
         [[0, 0, 0, 1, 1], [nan, nan, nan, nan, nan]],  # Unif[0.6, 0.6], nan
         [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
     ],
-    dims=["stn", "lead_day", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF_RIGHT1 = xr.DataArray(
     data=[
@@ -219,45 +228,45 @@ EXP_PITCDF_RIGHT1 = xr.DataArray(
         [[0, 0, 1, 1, 1], [nan, nan, nan, nan, nan]],  # Unif[0.6, 0.6], nan
         [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
     ],
-    dims=["stn", "lead_day", "pit_x_values"],
-    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF1 = {"left": EXP_PITCDF_LEFT1, "right": EXP_PITCDF_RIGHT1}
 # preserve lead day, weights=None
 EXP_PITCDF_LEFT2 = xr.DataArray(
     data=[[0, 0.5, 0.5, 1, 1], [0, 0.5, 0.75, 1, 1]],
-    dims=["lead_day", "pit_x_values"],
-    coords={"lead_day": [0, 1], "pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF_RIGHT2 = xr.DataArray(
     data=[[0, 0.5, 1, 1, 1], [0, 0.5, 0.75, 1, 1]],
-    dims=["lead_day", "pit_x_values"],
-    coords={"lead_day": [0, 1], "pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF2 = {"left": EXP_PITCDF_LEFT2, "right": EXP_PITCDF_RIGHT2}
 # preserve lead day, station weights = [1, 2, 3]
 WTS_STN = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords={"stn": [101, 102, 103]})
 EXP_PITCDF_LEFT3 = xr.DataArray(
     data=[[0, 1 / 3, 1 / 3, 1, 1], [0, 0.5, 0.75, 1, 1]],
-    dims=["lead_day", "pit_x_values"],
-    coords={"lead_day": [0, 1], "pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF_RIGHT3 = xr.DataArray(
     data=[[0, 1 / 3, 1, 1, 1], [0, 0.5, 0.75, 1, 1]],
-    dims=["lead_day", "pit_x_values"],
-    coords={"lead_day": [0, 1], "pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF3 = {"left": EXP_PITCDF_LEFT3, "right": EXP_PITCDF_RIGHT3}
 # reduce all dims, no weights
 EXP_PITCDF_LEFT4 = xr.DataArray(
     data=[0, 0.5, 1.75 / 3, 1, 1],
-    dims=["pit_x_values"],
-    coords={"pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["pit_x_value"],
+    coords={"pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF_RIGHT4 = xr.DataArray(
     data=[0, 0.5, 2.75 / 3, 1, 1],
-    dims=["pit_x_values"],
-    coords={"pit_x_values": [0.0, 0.4, 0.6, 0.8, 1]},
+    dims=["pit_x_value"],
+    coords={"pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
 EXP_PITCDF4 = {"left": EXP_PITCDF_LEFT4, "right": EXP_PITCDF_RIGHT4}
 # data set example
@@ -304,3 +313,102 @@ def test___init__(fcst, obs, preserve_dims, expected_left, expected_right):
     result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims=preserve_dims)
     xr.testing.assert_equal(result.left, expected_left)
     xr.testing.assert_equal(result.right, expected_right)
+
+
+EXP_PLOTTING_POINTS2 = xr.DataArray(
+    data=[0, 0, 0.5, 0.5, 1.75 / 3, 2.75 / 3, 1, 1, 1, 1],
+    dims=["pit_x_value"],
+    coords={"pit_x_value": [0, 0, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1, 1]},
+)
+
+# @pytest.mark.parametrize(
+#     ("fcst", "obs", "preserve_dims", "expected"),
+#     [
+#         # (DA_FCST, DA_OBS, "all", ),
+#         (DA_FCST, DA_OBS, None, EXP_PLOTTING_POINTS2),
+#         # (DS_FCST, DS_OBS, None, ),  # data set example
+#     ],
+# )
+# def test_plotting_points(fcst, obs, preserve_dims, expected):
+#     """Tests that `Pit_for_ensemble.plotting_points` returns as expected."""
+#     result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims=preserve_dims).plotting_points()
+#     xr.testing.assert_equal(result, expected)
+
+# case with several dimensions; left and right equal when pit_x_value is 0 or 3, NaNs involved
+DA_GPP_LEFT1 = xr.DataArray(
+    data=[[[1, 2, 2, 5], [0, 0, 3, 6], [1, 1, 2, 3]], [[1, 2, 2, 5], [0, 0, 3, 6], [nan, nan, nan, nan]]],
+    dims=["lead_day", "stn", "pit_x_value"],
+    coords={"lead_day": [0, 1], "stn": [101, 102, 103], "pit_x_value": [0, 1, 2, 3]},
+)
+DA_GPP_RIGHT1 = xr.DataArray(
+    data=[[[1, 2, 3, 5], [0, 1, 3, 6], [1, 1, 2, 3]], [[1, 2, 3, 5], [0, 1, 3, 6], [nan, nan, nan, nan]]],
+    dims=["lead_day", "stn", "pit_x_value"],
+    coords={"lead_day": [0, 1], "stn": [101, 102, 103], "pit_x_value": [0, 1, 2, 3]},
+)
+EXP_GPP_X1 = xr.DataArray(
+    data=[0, 1, 1, 2, 2, 3], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+)
+EXP_GPP_Y1 = xr.DataArray(
+    data=[
+        [[1, 2, 2, 2, 3, 5], [0, 0, 1, 3, 3, 6], [1, 1, 1, 2, 2, 3]],
+        [[1, 2, 2, 2, 3, 5], [0, 0, 1, 3, 3, 6], [nan, nan, nan, nan, nan, nan]],
+    ],
+    dims=["lead_day", "stn", "plotting_point"],
+    coords={"lead_day": [0, 1], "stn": [101, 102, 103], "plotting_point": [0, 1, 2, 3, 4, 5]},
+)
+EXP_GPP1 = {"x_plotting_position": EXP_GPP_X1, "y_plotting_position": EXP_GPP_Y1}
+# case with only one dimension; left and right equal when pit_x_value is 2 or 3
+DA_GPP_LEFT2 = xr.DataArray(data=[1, 2, 2, 5], dims=["pit_x_value"], coords={"pit_x_value": [0, 1, 2, 3]})
+DA_GPP_RIGHT2 = xr.DataArray(data=[2, 2, 3, 5], dims=["pit_x_value"], coords={"pit_x_value": [0, 1, 2, 3]})
+EXP_GPP_X2 = xr.DataArray(
+    data=[0, 0, 1, 2, 2, 3], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+)
+EXP_GPP_Y2 = xr.DataArray(
+    data=[1, 2, 2, 2, 3, 5], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+)
+EXP_GPP2 = {"x_plotting_position": EXP_GPP_X2, "y_plotting_position": EXP_GPP_Y2}
+# when left and right always equal
+EXP_GPP_X3 = xr.DataArray(data=[0, 1, 2, 3], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3]})
+EXP_GPP_Y3 = xr.DataArray(data=[1, 2, 2, 5], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3]})
+EXP_GPP3 = {"x_plotting_position": EXP_GPP_X3, "y_plotting_position": EXP_GPP_Y3}
+# dataset
+DS_GPP_LEFT4 = xr.merge([DA_GPP_LEFT2.rename("tas"), DA_GPP_LEFT2.rename("pr")])
+DS_GPP_RIGHT4 = xr.merge([DA_GPP_RIGHT2.rename("tas"), DA_GPP_RIGHT2.rename("pr")])
+EXP_GPP_X4 = xr.merge([EXP_GPP_X2.rename("tas"), EXP_GPP_X2.rename("pr")])
+EXP_GPP_Y4 = xr.merge([EXP_GPP_Y2.rename("tas"), EXP_GPP_Y2.rename("pr")])
+EXP_GPP4 = {"x_plotting_position": EXP_GPP_X4, "y_plotting_position": EXP_GPP_Y4}
+
+
+@pytest.mark.parametrize(
+    ("left", "right", "expected"),
+    [
+        (DA_GPP_LEFT1, DA_GPP_RIGHT1, EXP_GPP1),  # several dimensions, NaN handling
+        (DA_GPP_LEFT2, DA_GPP_RIGHT2, EXP_GPP2),  # one dimension
+        (DA_GPP_LEFT2, DA_GPP_LEFT2, EXP_GPP3),  # left always equals right
+        (DS_GPP_LEFT4, DS_GPP_RIGHT4, EXP_GPP4),  # datasets
+    ],
+)
+def test__get_plotting_points(left, right, expected):
+    """Tests that `_get_plotting_points` returns as expected."""
+    result = _get_plotting_points(left, right)
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_equal(expected[key], result[key])
+
+
+def test_plotting_points():
+    """Tests that `Pit_for_ensemble().plotting_points()` returns as expected."""
+    result = Pit_for_ensemble(DA_FCST, DA_OBS, "ens_member").plotting_points()
+    expected = {
+        "x_plotting_position": xr.DataArray(
+            data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+        ),
+        "y_plotting_position": xr.DataArray(
+            data=[0, 0.5, 1.75 / 3, 2.75 / 3, 1, 1],
+            dims=["plotting_point"],
+            coords={"plotting_point": [0, 1, 2, 3, 4, 5]},
+        ),
+    }
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_equal(expected[key], result[key])
