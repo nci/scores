@@ -2,7 +2,7 @@
 Methods for the probability integral transform (PIT) class.
 
 Reserved dimension names:
-- 'uniform_endpoint', 'pit_x_values'
+- 'uniform_endpoint', 'pit_x_value'
 """
 
 from typing import Optional
@@ -13,6 +13,8 @@ import xarray as xr
 from scores.functions import apply_weights
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
+
+RESERVED_NAMES = {"uniform_endpoint", "pit_x_value", "x_plotting_position", "y_plotting_position", "plotting_point"}
 
 
 class Pit_for_ensemble:
@@ -64,7 +66,7 @@ class Pit_for_ensemble:
 
         The CDF :math:`F` is completely determined by its values :math:`F(x)` and left-hand limits
         :math:`F(x-)` at a minimal set of points :math:`x` that are output as part of this
-        calculation in the dimension "pit_x_values". All other values may be obtained via
+        calculation in the dimension "pit_x_value". All other values may be obtained via
         interpolation whenever :math:`0 < x < 1` or the fact that :math:`F(x) = 0` when
         :math:`x < 1` and :math:`F(x) = 1` when :math:`x > 1`.
 
@@ -94,13 +96,14 @@ class Pit_for_ensemble:
         Attributes:
             left: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
                 and evaluated as left-hand limits at the points :math:`x` in the dimension
-                "pit_x_values". That is, values in the array or dataset are of the form :math:`F(x-)`.
+                "pit_x_value". That is, values in the array or dataset are of the form :math:`F(x-)`.
             right: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
-                and evaluated as at the points :math:`x` in the dimension "pit_x_values".
+                and evaluated as at the points :math:`x` in the dimension "pit_x_value".
                 That is, values in the array or dataset are of the form :math:`F(x)`.
 
         Raises:
-            ValueError if 'uniform_endpoint' or 'pit_x_values' are dimenions of ``fcst``, ``obs`` or ``weights``
+            ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+                'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
         """
         pit_cdf = pit_cdfvalues(
             fcst,
@@ -112,6 +115,23 @@ class Pit_for_ensemble:
         )
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
+
+    def plotting_points(self) -> XarrayLike:
+        """
+        Returns the plotting points for PIT-uniform probability plots, or equivalently,
+        the plotting points for the PIT CDF. The returned output is a dictionary with
+        two keys "x_plotting_position" and "y_plotting_position", and values being xarray
+        objects with plotting position data.
+
+        Points on the plot are given by :math:`(x(t),y(t))`, where :math:`x(t)` is a value from
+        the "x_plotting_position" output, :math:`y(t)` is a corresponding value from
+        the "y_plotting_position" output, and :math:`t` is one of the coordinates from the
+        "plotting_point" dimension.
+
+        To construct PIT-uniform probability plots, plot the points :math:`(x(t),y(t))`
+        for increasing :math:`y(t)` and fill the remaining gaps using linear interpolation.
+        """
+        return _get_plotting_points(self.left, self.right)
 
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
@@ -155,7 +175,7 @@ def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
 
     Returns:
         xarray data array of x-axis values, indexed by the same values on the dimension
-        'pit_x_values'
+        'pit_x_value'
     """
     if isinstance(pit_values, xr.Dataset):
         pit_values = pit_values.to_dataarray()
@@ -163,7 +183,7 @@ def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
     x_values = np.unique(pit_values)
     x_values = np.unique(np.concatenate((np.array([0, 1]), x_values)))
     x_values = x_values[~np.isnan(x_values)]
-    x_values = xr.DataArray(data=x_values, dims=["pit_x_values"], coords={"pit_x_values": x_values})
+    x_values = xr.DataArray(data=x_values, dims=["pit_x_value"], coords={"pit_x_value": x_values})
     return x_values
 
 
@@ -178,14 +198,14 @@ def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> 
 
     Args:
         pit_values: xarray object output from `_pit_values_for_ensemble`
-        x_values: xr.DataArray of x values, with dimension 'pit_x_values', output from
+        x_values: xr.DataArray of x values, with dimension 'pit_x_value', output from
             `_get_pit_x_values`
 
     Returns:
         dictionary of cdf values, with keys 'left' and 'right',
         representing the left and right hand limits of the cdf values F(x).
         Each value in the dictionary is an xarray object representing limits of F(x),
-        where x is represented by values in the 'pit_x_values' dimension.
+        where x is represented by values in the 'pit_x_value' dimension.
     """
     lower_values = pit_values.sel(uniform_endpoint="lower").drop_vars("uniform_endpoint")
     upper_values = pit_values.sel(uniform_endpoint="upper").drop_vars("uniform_endpoint")
@@ -210,12 +230,12 @@ def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> X
 
     Args:
         pit_values: xarray object output from `_pit_values_for_ensemble`
-        x_values: xr.DataArray of x values, with dimension 'pit_x_values', output from
+        x_values: xr.DataArray of x values, with dimension 'pit_x_value', output from
             `_get_pit_x_values`
 
     Returns:
         An xarray object representing values of F(x), where x is represented by values
-        in the 'pit_x_values' dimension.
+        in the 'pit_x_value' dimension.
     """
     lower_values = pit_values.sel(uniform_endpoint="lower").drop_vars("uniform_endpoint")
     upper_values = pit_values.sel(uniform_endpoint="upper").drop_vars("uniform_endpoint")
@@ -229,7 +249,7 @@ def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> X
         xr.zeros_like(pit_unif_upper)
         .where(x_values <= pit_unif_lower)  # 0 for x <= a
         .where(x_values < pit_unif_upper, 1)  # 1 for x >= b
-        .interpolate_na("pit_x_values")  # interpolate in between
+        .interpolate_na("pit_x_value")  # interpolate in between
         .where(unif_cases)  # preserve nans where appropriate
     )
     return pit_unif
@@ -252,7 +272,7 @@ def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
         dictionary of cdf values, with keys 'left' and 'right',
         representing the left and right hand limits of the cdf values F(x).
         Each value in the dictionary is an xarray object representing limits of F(x),
-        where x is represented by values in the 'pit_x_values' dimension.
+        where x is represented by values in the 'pit_x_value' dimension.
     """
     # get the x values
     x_values = _get_pit_x_values(pit_values)
@@ -271,14 +291,15 @@ def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
 def _pit_dimension_checks(fcst: XarrayLike, obs: XarrayLike, weights: Optional[XarrayLike] = None):
     """
     Checks the dimensions of inputs to `pit_cdfvalues` to ensure that reserved names
-    "uniform_endpoint" and "pit_x_values" are not used.
+    "uniform_endpoint" and "pit_x_value" are not used.
     """
     all_dims = set(fcst.dims).union(obs.dims)
     if weights is not None:
         all_dims = all_dims.union(weights.dims)
-    if "uniform_endpoint" in all_dims or "pit_x_values" in all_dims:
+    if len([dim for dim in RESERVED_NAMES if dim in all_dims]) > 0:
         raise ValueError(
-            "'uniform_endpoint' or 'pit_x_values' are reserved and should not be among the dimensions of `fcst`, `obs` or `weight`"
+            "'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point' \
+            are reserved and should not be among the dimensions of `fcst`, `obs` or `weight`"
         )
 
 
@@ -335,7 +356,8 @@ def pit_cdfvalues(
         - "right": an xarray object containing the values :math:`F(x)` of the PIT CDF values
 
     Raises:
-        ValueError if 'uniform_endpoint' or 'pit_x_values' are dimenions of ``fcst``, ``obs`` or ``weights``
+        ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+                'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
     """
     _pit_dimension_checks(fcst, obs, weights)
 
@@ -362,8 +384,49 @@ def pit_cdfvalues(
 
     # rescale CDFs so that their max value is 1.
     # This corrects for weights that don't sum to 1.
-    cdf_right_max = cdf_right.max("pit_x_values")
+    cdf_right_max = cdf_right.max("pit_x_value")
     cdf_right = cdf_right / cdf_right_max
     cdf_left = cdf_left / cdf_right_max
 
     return {"left": cdf_left, "right": cdf_right}
+
+
+def _get_plotting_points(left: XarrayLike, right: XarrayLike) -> dict:
+    """
+    Given outputs left and right from `pit_cdfvalues`, calculates the plotting positions
+    for the PIT CDF (equivalently PIT-uniform probability plot).
+
+    Args:
+        left: "left" output from `pit_cdfvalues`, namely the left-hand limits of the PIT CDF
+        right: "right" output from `pit_cdfvalues`, namely values of the PIT CDF
+
+    Returns:
+        dictionary with following keys and values:
+            'x_plotting_position': xarray object with the x-axis plotting positions for each
+                point, indexed by 'plotting_point'
+            'y_plotting_position': xarray object with the y-axis plotting positions for each
+                point, indexed by 'plotting_point'
+    """
+    # only keep coordinates in left where (left != right) every and where left is not NaN.
+    # (We can assume that if one value is NaN for any particular forecast case than all values
+    # are NaN for `left` and `right` in that forecast case)
+    dims_for_any = [dim for dim in left.dims if dim != "pit_x_value"]
+    different = ((left != right) & ~np.isnan(left)).any(dims_for_any)
+    left_reduced = left.where(different).dropna("pit_x_value", how="all")
+
+    # combine points from left and right
+    y_values = xr.concat([left_reduced, right], "pit_x_value").sortby("pit_x_value")
+    if isinstance(y_values, xr.Dataset):
+        x_values = xr.merge([y_values[var]["pit_x_value"].rename(var) for var in y_values.data_vars])
+    else:
+        x_values = y_values["pit_x_value"]
+
+    # refactor 'pit_x_value' dimension to ensure coordinates are unique
+    y_values = y_values.assign_coords(pit_x_value=range(len(y_values["pit_x_value"]))).rename(
+        {"pit_x_value": "plotting_point"}
+    )
+    x_values = x_values.assign_coords(pit_x_value=range(len(x_values["pit_x_value"]))).rename(
+        {"pit_x_value": "plotting_point"}
+    )
+
+    return {"x_plotting_position": x_values, "y_plotting_position": y_values}
