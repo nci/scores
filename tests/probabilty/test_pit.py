@@ -263,10 +263,9 @@ EXP_PITCDF4 = {"left": EXP_PITCDF_LEFT4, "right": EXP_PITCDF_RIGHT4}
 # data set example
 DS_FCST = xr.merge([DA_FCST.rename("tas"), DA_FCST.rename("pr")])
 DS_OBS = xr.merge([DA_OBS.rename("tas"), DA_OBS.rename("pr")])
-EXP_PITCDF5 = {
-    "left": xr.merge([EXP_PITCDF_LEFT4.rename("tas"), EXP_PITCDF_LEFT4.rename("pr")]),
-    "right": xr.merge([EXP_PITCDF_RIGHT4.rename("tas"), EXP_PITCDF_RIGHT4.rename("pr")]),
-}
+EXP_PITCDF_LEFT5 = xr.merge([EXP_PITCDF_LEFT4.rename("tas"), EXP_PITCDF_LEFT4.rename("pr")])
+EXP_PITCDF_RIGHT5 = xr.merge([EXP_PITCDF_RIGHT4.rename("tas"), EXP_PITCDF_RIGHT4.rename("pr")])
+EXP_PITCDF5 = {"left": EXP_PITCDF_LEFT5, "right": EXP_PITCDF_RIGHT5}
 
 
 @pytest.mark.parametrize(
@@ -292,10 +291,16 @@ def test_pit_cdfvalues(fcst, obs, preserve_dims, reduce_dims, weights, expected)
         xr.testing.assert_equal(expected[key], result[key])
 
 
-PIT_OBJECT = Pit_for_ensemble(DA_FCST, DA_OBS, "ens_member", preserve_dims="all")
-
-
-def test___init__():
+@pytest.mark.parametrize(
+    ("fcst", "obs", "preserve_dims", "expected_left", "expected_right"),
+    [
+        (DA_FCST, DA_OBS, "all", EXP_PITCDF_LEFT1, EXP_PITCDF_RIGHT1),
+        (DA_FCST, DA_OBS, None, EXP_PITCDF_LEFT4, EXP_PITCDF_RIGHT4),
+        (DS_FCST, DS_OBS, None, EXP_PITCDF_LEFT5, EXP_PITCDF_RIGHT5),  # data set example
+    ],
+)
+def test___init__(fcst, obs, preserve_dims, expected_left, expected_right):
     """Tests that `Pit_for_ensemble.__init__` returns as expected."""
-    xr.testing.assert_equal(PIT_OBJECT.left, EXP_PITCDF_LEFT1)
-    xr.testing.assert_equal(PIT_OBJECT.right, EXP_PITCDF_RIGHT1)
+    result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims=preserve_dims)
+    xr.testing.assert_equal(result.left, expected_left)
+    xr.testing.assert_equal(result.right, expected_right)
