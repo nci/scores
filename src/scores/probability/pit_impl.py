@@ -5,10 +5,14 @@ Reserved dimension names:
 - 'uniform_endpoint', 'pit_x_values'
 """
 
+from typing import Optional
+
 import numpy as np
 import xarray as xr
 
-from scores.typing import XarrayLike
+from scores.functions import apply_weights
+from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import gather_dimensions
 
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
@@ -161,5 +165,106 @@ def _pit_cdfvalues(pit_values):
     # combine
     cdf_right = cdf_at_jump_cases["right"].combine_first(cdf_at_unif_cases)
     cdf_left = cdf_at_jump_cases["left"].combine_first(cdf_at_unif_cases)
+
+    return {"left": cdf_left, "right": cdf_right}
+
+
+def _pit_dimension_checks(fcst: XarrayLike, obs: XarrayLike, weights: Optional[XarrayLike] = None):
+    """
+    Checks the dimensions of inputs to `pit_cdfvalues` to ensure that reserved names
+    "uniform_endpoint" and "pit_x_values" are not used.
+    """
+    all_dims = set(fcst.dims).union(obs.dims)
+    if weights is not None:
+        all_dims = all_dims.union(weights.dims)
+    if "uniform_endpoint" in all_dims or "pit_x_values" in all_dims:
+        raise ValueError(
+            "'uniform_endpoint' or 'pit_x_values' are reserved and should not be among the dimensions of `fcst`, `obs` or `weight`"
+        )
+
+
+def pit_cdfvalues(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    ens_member_dim: str,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+):
+    """
+    Each forecast case (i.e., an ensemble of forecasts) is interpreted as an empirical
+    cumulative distribution function (CDF) :math:`G`. Given any observation :math:`y`,
+    the probability intergral transform (PIT) value at :math:`G` is a uniform distribution
+    on the closed interval :math:`[G(y-), G(y)]`, where :math:`G(y-)` denotes the left-hand
+    limit of :math:`G` at :math:`y`.
+
+    This function outputs values of PIT by representing each uniform distribution on
+    :math:`[G(y-), G(y)]` as the corresponding uniform CDF :math:`F`. We call :math:`F`
+    the 'PIT CDF' for the forecast-observation pair :math:`(G,y)`. Values :math:`F(x-)`
+    and :math:`F(x)` are given for an optimal set of points :math:`x` satisfying
+    :math:`0 <= x <= 1`. The set is optimal in the sense that the value of :math:`F`
+    elswhere can be determined via linear interpolation, whilst no smaller set of values
+    has this property.
+
+    Dimensions are be reduced by taking (possibly weighted) means of the CDF values
+    :math:`F(x)`. The weighted means can still be interpreted a values of CDFs, and
+    intermediate values still attained via linear interpolation.
+
+    Args:
+        fcst: an xarray object of ensemble forecasts, containing the dimension
+            `ens_member_dim`.
+        obs: an xarray object of observations.
+        ens_member_dim: name of the ensemble member dimension in ``fcst``.
+        reduce_dims: Optionally specify which dimensions to reduce when calculating the
+            PIT CDF values, where the mean is taken over all forecast cases.
+            All other dimensions will be preserved. As a special case, 'all' will allow
+            all dimensions to be reduced. Only one of ``reduce_dims`` and ``preserve_dims``
+            can be supplied. The default behaviour if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating the
+            PIT CDF values, where the mean is taken over all forecast cases.
+            All other dimensions will be reduced. As a special case, 'all' will allow
+            all dimensions to be preserved, apart from ``severity_dim`` and ``prob_threshold_dim``.
+            Only one of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default
+            behaviour if neither are supplied is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom) of PIT CDF values across all forecast cases.
+
+    Returns:
+        a dictionary with the following keys and values:
+        - "left": an xarray object containing the left-hand limits :math:`F(x-)` of the PIT CDF values
+        - "right": an xarray object containing the values :math:`F(x)` of the PIT CDF values
+
+    Raises:
+        ValueError if 'uniform_endpoint' or 'pit_x_values' are dimenions of ``fcst``, ``obs`` or ``weights``
+    """
+    _pit_dimension_checks(fcst, obs, weights)
+
+    weights_dims = None
+    if weights is not None:
+        weights_dims = weights.dims
+
+    dims_for_mean = gather_dimensions(
+        fcst.dims,
+        obs.dims,
+        weights_dims=weights_dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        score_specific_fcst_dims=ens_member_dim,
+    )
+
+    # PIT values in [G(y-), G(y)] format
+    pit_values = _pit_values_for_ensemble(fcst, obs, ens_member_dim)
+    # convert to F(x-), F(x) format
+    cdf = _pit_cdfvalues(pit_values)
+
+    cdf_left = apply_weights(cdf["left"], weights=weights).mean(dim=dims_for_mean)
+    cdf_right = apply_weights(cdf["right"], weights=weights).mean(dim=dims_for_mean)
+
+    # rescale CDFs so that their max value is 1.
+    # This corrects for weights that don't sum to 1.
+    cdf_right_max = cdf_right.max("pit_x_values")
+    cdf_right = cdf_right / cdf_right_max
+    cdf_left = cdf_left / cdf_right_max
 
     return {"left": cdf_left, "right": cdf_right}
