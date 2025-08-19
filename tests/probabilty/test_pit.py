@@ -7,6 +7,7 @@ import xarray as xr
 from numpy import nan
 
 from scores.probability.pit_impl import (
+    Pit_for_ensemble,
     _get_pit_x_values,
     _pit_cdfvalues,
     _pit_cdfvalues_for_jumps,
@@ -289,3 +290,12 @@ def test_pit_cdfvalues(fcst, obs, preserve_dims, reduce_dims, weights, expected)
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
+
+
+PIT_OBJECT = Pit_for_ensemble(DA_FCST, DA_OBS, "ens_member", preserve_dims="all")
+
+
+def test___init__():
+    """Tests that `Pit_for_ensemble.__init__` returns as expected."""
+    xr.testing.assert_equal(PIT_OBJECT.left, EXP_PITCDF_LEFT1)
+    xr.testing.assert_equal(PIT_OBJECT.right, EXP_PITCDF_RIGHT1)
