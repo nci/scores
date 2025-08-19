@@ -2,7 +2,6 @@
 Contains unit tests for scores.categorical.risk_matrix_impl functions
 """
 
-
 try:
     import dask
     import dask.array
@@ -20,7 +19,6 @@ from scores.categorical.risk_matrix_impl import (
     risk_matrix_score,
     weights_from_warning_scaling,
 )
-
 from tests.categorical import risk_matrix_test_data as mtd
 
 
