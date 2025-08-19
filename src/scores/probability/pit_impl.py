@@ -15,6 +15,105 @@ from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
 
+class Pit_for_ensemble:
+    """
+    Given ensemble forecasts and corresponding observations, calculates the probability
+    intergral transform (PIT) for the set of forecast cases. The calculated PIT can be a
+    (possibly weighted) average over specified dimensions. Calculations are performed and
+    interpreted as follows.
+
+    Each forecast case (i.e., an ensemble of forecasts) is interpreted as an empirical
+    cumulative distribution function (CDF) :math:`G`. Given any observation :math:`y`,
+    the PIT value at :math:`G` is a uniform distribution on the closed interval
+    :math:`[G(y-), G(y)]`, where :math:`G(y-)` denotes the left-hand limit of :math:`G`
+    at :math:`y`. This is the most general form of PIT and handles cases where the
+    observation :math:`y` coincides with a point of discontinuity of a predictive CDF
+    :math:`G`. See Gneiting and Ranjan (2013) and Taggart (2022).
+
+    The (possibly weighted) mean over a specified set of dimensions is the weighted mean
+    of all the PIT values (each interpreted as a uniform distribution), with weighting
+    rescaled if necessary so that the weighted mean is also a distribution.
+
+    Attributes:
+        left: values for the left-hand limit of the PIT (represented as a CDF)
+        right: values for the PIT (represented as a CDF), which also equals the right-hand limit
+
+    Methods:
+        attribute_name (type): Description of the attribute.
+
+    References:
+        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
+            https://doi.org/10.1214/13-EJS823
+        - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
+            Bureau Research Report 64, http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
+    """
+
+    def __init__(
+        self,
+        fcst: XarrayLike,
+        obs: XarrayLike,
+        ens_member_dim: str,
+        *,  # Force keywords arguments to be keyword-only
+        reduce_dims: Optional[FlexibleDimensionTypes] = None,
+        preserve_dims: Optional[FlexibleDimensionTypes] = None,
+        weights: Optional[XarrayLike] = None,
+    ):
+        """
+        Calculates the mean PIT :math:`F`, interpreted as a CDF, given the set of forecast and
+        observations pairs.
+
+        The CDF :math:`F` is completely determined by its values :math:`F(x)` and left-hand limits
+        :math:`F(x-)` at a minimal set of points :math:`x` that are output as part of this
+        calculation in the dimension "pit_x_values". All other values may be obtained via
+        interpolation whenever :math:`0 < x < 1` or the fact that :math:`F(x) = 0` when
+        :math:`x < 1` and :math:`F(x) = 1` when :math:`x > 1`.
+
+        The outputs in the ``left`` and ``right`` attributes are sufficient to calculate
+        precise statistics for the PIT for the set of forecasts and observations, as
+        provided by ``Pit_for_ensemble`` methods.
+
+        Args:
+            fcst: an xarray object of ensemble forecasts, containing the dimension
+                `ens_member_dim`.
+            obs: an xarray object of observations.
+            ens_member_dim: name of the ensemble member dimension in ``fcst``.
+            reduce_dims: Optionally specify which dimensions to reduce when calculating the
+                PIT CDF values, where the mean is taken over all forecast cases.
+                All other dimensions will be preserved. As a special case, 'all' will allow
+                all dimensions to be reduced. Only one of ``reduce_dims`` and ``preserve_dims``
+                can be supplied. The default behaviour if neither are supplied is to reduce all dims.
+            preserve_dims: Optionally specify which dimensions to preserve when calculating the
+                PIT CDF values, where the mean is taken over all forecast cases.
+                All other dimensions will be reduced. As a special case, 'all' will allow
+                all dimensions to be preserved, apart from ``severity_dim`` and ``prob_threshold_dim``.
+                Only one of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default
+                behaviour if neither are supplied is to reduce all dims.
+            weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+                by population, custom) of PIT CDF values across all forecast cases.
+
+        Attributes:
+            left: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
+                and evaluated as left-hand limits at the points :math:`x` in the dimension
+                "pit_x_values". That is, values in the array or dataset are of the form :math:`F(x-)`.
+            right: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
+                and evaluated as at the points :math:`x` in the dimension "pit_x_values".
+                That is, values in the array or dataset are of the form :math:`F(x)`.
+
+        Raises:
+            ValueError if 'uniform_endpoint' or 'pit_x_values' are dimenions of ``fcst``, ``obs`` or ``weights``
+        """
+        pit_cdf = pit_cdfvalues(
+            fcst,
+            obs,
+            ens_member_dim,
+            reduce_dims=reduce_dims,
+            preserve_dims=preserve_dims,
+            weights=weights,
+        )
+        self.left = pit_cdf["left"]
+        self.right = pit_cdf["right"]
+
+
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
     For each forecast case in the form of an ensemble, the PIT value of the ensemble for
@@ -98,7 +197,7 @@ def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> 
     return {"left": cdf_left, "right": cdf_right}
 
 
-def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> dict:
+def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> XarrayLike:
     """
     Gives the values F(x) where F is the CDF for a pit value,
     and x comes from `x_values`, given that the CDF is uniform. This occurs precisely
@@ -136,7 +235,7 @@ def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> d
     return pit_unif
 
 
-def _pit_cdfvalues(pit_values):
+def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
     """
     Calculates F(x) for each CDF F representing the PIT value for a forecast
     case. The x values used are all values where there is a non-linear change
@@ -191,7 +290,7 @@ def pit_cdfvalues(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[XarrayLike] = None,
-):
+) -> dict:
     """
     Each forecast case (i.e., an ensemble of forecasts) is interpreted as an empirical
     cumulative distribution function (CDF) :math:`G`. Given any observation :math:`y`,
