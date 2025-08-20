@@ -11,7 +11,7 @@ from scores.probability.pit_impl import (
     Pit_for_ensemble,
     _construct_hist_values,
     _get_pit_x_values,
-    _get_plotting_points,
+    _get_plotting_points_dict,
     _pit_cdfvalues,
     _pit_cdfvalues_for_jumps,
     _pit_cdfvalues_for_unif,
@@ -22,6 +22,28 @@ from scores.probability.pit_impl import (
     _value_at_pit_cdf,
     pit_cdfvalues,
 )
+
+
+def create_dataset(dataarray):
+    """
+    Creates a dataset with two variables from a data array.
+    Used for tests where a dataset is required.
+    """
+    return xr.merge([dataarray.rename("tas"), dataarray.rename("pr")])
+
+
+def test_create_dataset():
+    """Tests that `create_dataset` returns as expected."""
+    da = xr.DataArray(data=[1, 2], dims=["time"], coords={"time": [10, 11]})
+    result = create_dataset(da)
+    expected = xr.Dataset(
+        data_vars={
+            "tas": (["time"], [1, 2]),
+            "pr": (["time"], [1, 2]),
+        },
+        coords={"time": [10, 11]},
+    )
+    xr.testing.assert_equal(expected, result)
 
 
 def test__pit_values_for_ensemble():
@@ -385,17 +407,56 @@ EXP_GPP4 = {"x_plotting_position": EXP_GPP_X4, "y_plotting_position": EXP_GPP_Y4
         (DS_GPP_LEFT4, DS_GPP_RIGHT4, EXP_GPP4),  # datasets
     ],
 )
-def test__get_plotting_points(left, right, expected):
-    """Tests that `_get_plotting_points` returns as expected."""
-    result = _get_plotting_points(left, right)
+def test__get_plotting_points_dict(left, right, expected):
+    """Tests that `_get_plotting_points_dict` returns as expected."""
+    result = _get_plotting_points_dict(left, right)
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
 
 
-def test_plotting_points():
+EXP_PITCDF_LEFT1 = xr.DataArray(
+    data=[
+        [[0, 1, 1, 1, 1], [0, 0.5, 0.75, 1, 1]],  # Unif[0, 0.4], Unif[0, 0.8]
+        [[0, 0, 0, 1, 1], [nan, nan, nan, nan, nan]],  # Unif[0.6, 0.6], nan
+        [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
+    ],
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
+)
+EXP_PITCDF_RIGHT1 = xr.DataArray(
+    data=[
+        [[0, 1, 1, 1, 1], [0, 0.5, 0.75, 1, 1]],  # Unif[0, 0.4], Unif[0, 0.8]
+        [[0, 0, 1, 1, 1], [nan, nan, nan, nan, nan]],  # Unif[0.6, 0.6], nan
+        [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
+    ],
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
+)
+
+EXP_PP1 = xr.DataArray(  # uses EXP_PITCDF_LEFT2, EXP_PITCDF_RIGHT2
+    data=[[0, 0, 0.5, 0.5, 0.5, 1, 1, 1, 1, 1], [0, 0, 0.5, 0.5, 0.75, 0.75, 1, 1, 1, 1]],
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0, 0, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1, 1]},
+)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        (DA_FCST, DA_OBS, EXP_PP1),
+        (DS_FCST, DS_OBS, create_dataset(EXP_PP1)),
+    ],
+)
+def test_plotting_points(fcst, obs, expected):
     """Tests that `Pit_for_ensemble().plotting_points()` returns as expected."""
-    result = Pit_for_ensemble(DA_FCST, DA_OBS, "ens_member").plotting_points()
+    result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims="lead_day").plotting_points()
+    xr.testing.assert_equal(expected, result)
+
+
+def test_plotting_points_parametric():
+    """Tests that `Pit_for_ensemble().plotting_points_parametric()` returns as expected."""
+    result = Pit_for_ensemble(DA_FCST, DA_OBS, "ens_member").plotting_points_parametric()
     expected = {
         "x_plotting_position": xr.DataArray(
             data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}

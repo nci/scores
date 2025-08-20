@@ -112,7 +112,7 @@ class Pit_for_ensemble:
                 That is, values in the array or dataset are of the form :math:`F(x)`.
 
         Methods:
-            plotting_points: generate plotting points for PIT-uniform probability plots.
+            plotting_points: generate plotting points for PIT-uniform probability plots
 
         Raises:
             ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
@@ -129,7 +129,16 @@ class Pit_for_ensemble:
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
 
-    def plotting_points(self) -> XarrayLike:
+    def plotting_points(self):
+        """
+        Returns an xarray object with the plotting points for PIT-uniform probability plots.
+        Note that coordinates in the "pit_x_value" dimension will have duplicate values.
+        For a parametric approach to plotting points without duplicate coordinate values, see the
+        ``plotting_points_parametric`` method.
+        """
+        return xr.concat([self.left, self.right], "pit_x_value").sortby("pit_x_value")
+
+    def plotting_points_parametric(self) -> dict:
         """
         Returns the plotting points for PIT-uniform probability plots, or equivalently,
         the plotting points for the PIT CDF. The returned output is a dictionary with
@@ -144,7 +153,7 @@ class Pit_for_ensemble:
         To construct PIT-uniform probability plots, plot the points :math:`(x(t),y(t))`
         for increasing :math:`y(t)` and fill the remaining gaps using linear interpolation.
         """
-        return _get_plotting_points(self.left, self.right)
+        return _get_plotting_points_dict(self.left, self.right)
 
     def hist_values(self, bins: int, right: bool = True) -> XarrayLike:
         """
@@ -417,7 +426,7 @@ def pit_cdfvalues(
     return {"left": cdf_left, "right": cdf_right}
 
 
-def _get_plotting_points(left: XarrayLike, right: XarrayLike) -> dict:
+def _get_plotting_points_dict(left: XarrayLike, right: XarrayLike) -> dict:
     """
     Given outputs left and right from `pit_cdfvalues`, calculates the plotting positions
     for the PIT CDF (equivalently PIT-uniform probability plot).
