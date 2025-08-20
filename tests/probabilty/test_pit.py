@@ -520,15 +520,14 @@ EXP_CHV1 = xr.DataArray(
         "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
     },
 )
-LIST_CHV2 = [xr.merge([da.rename("tas"), da.rename("pr")]) for da in LIST_CHV1]
-EXP_CHV2 = xr.merge([EXP_CHV1.rename("tas"), EXP_CHV1.rename("pr")])
+LIST_CHV2 = [create_dataset(da) for da in LIST_CHV1]
 
 
 @pytest.mark.parametrize(
     ("cdf_at_endpoints", "expected"),
     [
         (LIST_CHV1, EXP_CHV1),  # data arrays
-        (LIST_CHV2, EXP_CHV2),  # datasets
+        (LIST_CHV2, create_dataset(EXP_CHV1)),  # datasets
     ],
 )
 def test__construct_hist_values(cdf_at_endpoints, expected):
@@ -567,17 +566,15 @@ EXP_PHR1 = xr.DataArray(  # right endpoints of bins included
         "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
     },
 )
-DS_PH_LEFT = xr.merge([DA_PH_LEFT.rename("tas"), DA_PH_LEFT.rename("pr")])
-DS_PH_RIGHT = xr.merge([DA_PH_RIGHT.rename("tas"), DA_PH_RIGHT.rename("pr")])
-EXP_PHL2 = xr.merge([EXP_PHL1.rename("tas"), EXP_PHL1.rename("pr")])
-EXP_PHR2 = xr.merge([EXP_PHR1.rename("tas"), EXP_PHR1.rename("pr")])
+DS_PH_LEFT = create_dataset(DA_PH_LEFT)
+DS_PH_RIGHT = create_dataset(DA_PH_RIGHT)
 
 
 @pytest.mark.parametrize(
     ("pit_left", "pit_right", "expected"),
     [
         (DA_PH_LEFT, DA_PH_RIGHT, EXP_PHL1),  # data arrays
-        (DS_PH_LEFT, DS_PH_RIGHT, EXP_PHL2),  # datasets
+        (DS_PH_LEFT, DS_PH_RIGHT, create_dataset(EXP_PHL1)),
     ],
 )
 def test__pit_hist_left(pit_left, pit_right, expected):
@@ -590,7 +587,7 @@ def test__pit_hist_left(pit_left, pit_right, expected):
     ("pit_left", "pit_right", "expected"),
     [
         (DA_PH_LEFT, DA_PH_RIGHT, EXP_PHR1),  # data arrays
-        (DS_PH_LEFT, DS_PH_RIGHT, EXP_PHR2),  # datasets
+        (DS_PH_LEFT, DS_PH_RIGHT, create_dataset(EXP_PHR1)),  # datasets
     ],
 )
 def test__pit_hist_right(pit_left, pit_right, expected):
