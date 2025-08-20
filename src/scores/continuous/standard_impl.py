@@ -61,9 +61,11 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
+    if preserve_dims or reduce_dims:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
@@ -71,7 +73,10 @@ def mse(
     squared = error * error
     squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
 
-    _mse = squared.mean(dim=reduce_dims)  # type: ignore
+    if reduce_dims is not None:
+        _mse = squared.mean(dim=reduce_dims)  # type: ignore
+    else:
+        _mse = squared.mean()
 
     return _mse
 
@@ -174,9 +179,11 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
+    if preserve_dims is not None or reduce_dims is not None:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
