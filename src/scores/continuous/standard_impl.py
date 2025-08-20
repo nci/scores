@@ -10,12 +10,7 @@ import xarray as xr
 import scores.functions
 import scores.utils
 from scores.processing import aggregate, broadcast_and_match_nan
-from scores.typing import (
-    FlexibleArrayType,
-    FlexibleDimensionTypes,
-    XarrayLike,
-    is_xarraylike,
-)
+from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike, is_xarraylike
 
 
 def mse(
@@ -443,11 +438,9 @@ def pbias(
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     error = fcst - obs
 
-    _pbias = (
-        100
-        * aggregate(error, reduce_dims=reduce_dims, weights=weights)
-        / aggregate(obs, reduce_dims=reduce_dims, weights=weights)
-    )
+    numerator = 100 * aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    denominator = aggregate(obs, reduce_dims=reduce_dims, weights=weights)
+    _pbias = numerator / denominator
     return _pbias
 
 
