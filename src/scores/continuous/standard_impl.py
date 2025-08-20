@@ -10,7 +10,12 @@ import xarray as xr
 import scores.functions
 import scores.utils
 from scores.processing import aggregate, broadcast_and_match_nan
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
+from scores.typing import (
+    FlexibleArrayType,
+    FlexibleDimensionTypes,
+    XarrayLike,
+    is_xarraylike,
+)
 
 
 def mse(
@@ -65,7 +70,7 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
-    if isinstance(fcst, XarrayLike):
+    if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
@@ -190,7 +195,7 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
-    if isinstance(fcst, XarrayLike):
+    if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
