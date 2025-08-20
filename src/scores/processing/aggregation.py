@@ -74,6 +74,43 @@ def aggregate(
         Dimensions without coordinates: y
 
     """
+    _check_aggregate_inputs(values, reduce_dims, weights, method)
+
+    if reduce_dims is not None:
+        if weights is not None:
+            # xarray doesn't allow .weighted to take xr.Dataset as weights, so we need to do it ourselves
+            if isinstance(weights, xr.Dataset):
+                w_results = {}
+                for name, da in values.data_vars.items():
+                    if name not in weights:
+                        raise KeyError(f"No weights provided for variable '{name}'")
+
+                    w = weights[name]
+                    da_aligned, w_aligned = broadcast_and_match_nan(da, w)
+
+                    # check_weights ensures that `weights` has at least one positive value and will raise an error.
+                    # However, if a value in w_aligned.sum(dim=reduce_dims) is zero, a NaN will be produced for that point.
+                    w_results[name] = (da_aligned * w_aligned).sum(dim=reduce_dims) / w_aligned.sum(dim=reduce_dims)
+
+                return xr.Dataset(w_results)
+
+            values = values.weighted(weights)
+
+        match method:
+            case "mean":
+                values = values.mean(reduce_dims)
+            case "sum":  # pragma: no cover (we explicitly check the case where the method doesn't match earlier)
+                values = values.sum(reduce_dims)
+    return values
+
+def _check_aggregate_inputs(
+    values: XarrayLike,
+    reduce_dims: FlexibleDimensionTypes | None,
+    weights: XarrayLike | None,
+    method: str):
+    """
+    This function checks the inputs to the aggregate function.
+    """
     if method not in ["mean", "sum"]:
         raise ValueError(f"Method must be either 'mean' or 'sum', got '{method}'")
 
@@ -96,24 +133,8 @@ def aggregate(
                     raise NotImplementedError(
                         "using the method 'sum' with weights that are xr.Datasets is not currently supported"
                     )
+
                 if isinstance(values, xr.DataArray):
                     raise ValueError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray")
-                w_results = {}
-                for name, da in values.data_vars.items():
-                    if name not in weights:
-                        raise KeyError(f"No weights provided for variable '{name}'")
-
-                    w = weights[name]
-                    da_aligned, w_aligned = broadcast_and_match_nan(da, w)
-                    w_results[name] = (da_aligned * w_aligned).sum(dim=reduce_dims) / w_aligned.sum(dim=reduce_dims)
-
-                return xr.Dataset(w_results)
-
-            values = values.weighted(weights)
-
-        match method:
-            case "mean":
-                values = values.mean(reduce_dims)
-            case "sum":  # pragma: no cover (we explicitly check the case where the method doesn't match earlier)
-                values = values.sum(reduce_dims)
-    return values
+                
+            
