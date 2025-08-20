@@ -15,7 +15,16 @@ from scores.processing.cdf import add_thresholds
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
-RESERVED_NAMES = {"uniform_endpoint", "pit_x_value", "x_plotting_position", "y_plotting_position", "plotting_point"}
+RESERVED_NAMES = {
+    "uniform_endpoint",
+    "pit_x_value",
+    "x_plotting_position",
+    "y_plotting_position",
+    "plotting_point",
+    "bin_left_endpoint",
+    "bin_right_endpoint",
+    "bin_centre",
+}
 
 
 class Pit_for_ensemble:
@@ -302,8 +311,8 @@ def _pit_dimension_checks(fcst: XarrayLike, obs: XarrayLike, weights: Optional[X
         all_dims = all_dims.union(weights.dims)
     if len([dim for dim in RESERVED_NAMES if dim in all_dims]) > 0:
         raise ValueError(
-            "'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point' \
-            are reserved and should not be among the dimensions of `fcst`, `obs` or `weight`"
+            f'The following names are reserved and should not be among the dimensions of \
+            `fcst`, `obs` or `weight`: {", ".join(RESERVED_NAMES)}'
         )
 
 
@@ -440,15 +449,15 @@ def _value_at_pit_cdf(pit_left: XarrayLike, pit_right: XarrayLike, point: float)
     """
     Given mean PIT CDF `F`, with left-hand limit values `pit_left` and right-hand limit values
     `pit_right`, finds the value `F(point)` under the assumption that `point` is not in
-    `pit_right["pit_x_value"]`.
+    `pit_left["pit_x_value"]`.
 
     The result is attained via linear interpolation between the known values at the
     nearest right-hand limit (less than `point`) and the nearest left-hand limit
     (greater than `point`).
 
     Args:
-        pit_left: left attribute of a `Pit_for_ensemble` object
-        pit_right: right attribute of a `Pit_for_ensemble` object
+        pit_left: `left` attribute of a `Pit_for_ensemble` object
+        pit_right: `right` attribute of a `Pit_for_ensemble` object
         point: a float strictly between 0 and 1
 
     Returns:
@@ -467,3 +476,33 @@ def _value_at_pit_cdf(pit_left: XarrayLike, pit_right: XarrayLike, point: float)
     # value at newpoint is attained via linear interpolation
     value = add_thresholds(value, "pit_x_value", [point], "linear").sel(pit_x_value=slice(point, point))
     return value
+
+
+def _construct_hist_values(cdf_at_endpoints: list[XarrayLike], bin_width: float) -> XarrayLike:
+    """
+    Calculates the PIT histogram values given values of the PIT CDF at the endpoint of
+    every histogram bin.
+
+    Args:
+        cdf_at_endpoints: a list of xarray objects with dimension "pit_x_value",
+            each giving the value of the PIT CDF at an endpoint of one of the histogram bins.
+        bin_width: width of each bin in the histogram.
+
+    Returns:
+        xarray object including dim 'bin_centre' and coordinates 'bin_left_endpoint',
+        'bin_right_endpoint', with values the hight of each bar in the histogram.
+    """
+    # cdf values at all histogram bin endpoints
+    cdf_at_endpoints = xr.concat(cdf_at_endpoints, "pit_x_value").sortby("pit_x_value")
+
+    # calculate the histogram values
+    histogram_values = cdf_at_endpoints.diff("pit_x_value")
+
+    histogram_values = histogram_values.assign_coords(
+        {
+            "pit_x_value": histogram_values["pit_x_value"] - bin_width / 2,
+            "bin_left_endpoint": histogram_values["pit_x_value"] - bin_width,
+            "bin_right_endpoint": histogram_values["pit_x_value"],
+        }
+    ).rename({"pit_x_value": "bin_centre"})
+    return histogram_values
