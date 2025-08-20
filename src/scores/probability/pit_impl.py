@@ -146,6 +146,19 @@ class Pit_for_ensemble:
         """
         return _get_plotting_points(self.left, self.right)
 
+    def hist_values(self, bins: int, right: bool = True) -> XarrayLike:
+        """
+        Returns an xarray object with the PIT histogram values.
+
+        Args:
+            bins: the number of bins in the histogram.
+            right: If True, histogram bins always include the rightmost edge. If False,
+                bins always include the leftmost edge.
+        """
+        if right:
+            return _pit_hist_right(self.left, self.right, bins)
+        return _pit_hist_left(self.left, self.right, bins)
+
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
@@ -478,7 +491,7 @@ def _value_at_pit_cdf(pit_left: XarrayLike, pit_right: XarrayLike, point: float)
     return value
 
 
-def _construct_hist_values(cdf_at_endpoints: list[XarrayLike], bin_width: float) -> XarrayLike:
+def _construct_hist_values(cdf_at_endpoints: list[XarrayLike], bins: int) -> XarrayLike:
     """
     Calculates the PIT histogram values given values of the PIT CDF at the endpoint of
     every histogram bin.
@@ -486,7 +499,7 @@ def _construct_hist_values(cdf_at_endpoints: list[XarrayLike], bin_width: float)
     Args:
         cdf_at_endpoints: a list of xarray objects with dimension "pit_x_value",
             each giving the value of the PIT CDF at an endpoint of one of the histogram bins.
-        bin_width: width of each bin in the histogram.
+        bins: number of bins in the histogram.
 
     Returns:
         xarray object including dim 'bin_centre' and coordinates 'bin_left_endpoint',
@@ -500,8 +513,8 @@ def _construct_hist_values(cdf_at_endpoints: list[XarrayLike], bin_width: float)
 
     histogram_values = histogram_values.assign_coords(
         {
-            "pit_x_value": histogram_values["pit_x_value"] - bin_width / 2,
-            "bin_left_endpoint": histogram_values["pit_x_value"] - bin_width,
+            "pit_x_value": histogram_values["pit_x_value"] - 1 / (2 * bins),
+            "bin_left_endpoint": histogram_values["pit_x_value"] - 1 / bins,
             "bin_right_endpoint": histogram_values["pit_x_value"],
         }
     ).rename({"pit_x_value": "bin_centre"})
@@ -522,8 +535,7 @@ def _pit_hist_left(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> Xa
         xarray object including dim 'bin_centre' and coordinates 'bin_left_endpoint',
         'bin_right_endpoint', with values the hight of each bar in the histogram.
     """
-    bin_width = 1 / bins
-    left_endpoints = [k * bin_width for k in range(bins)]
+    left_endpoints = np.arange(bins) / bins
 
     # the value of the mean PIT CDF at 1 is 1
     # using .sel is safe because the value 1.0 is guaranteed to be in pit_x_value (see _get_pit_x_values)
@@ -544,7 +556,7 @@ def _pit_hist_left(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> Xa
         value = _value_at_pit_cdf(pit_left, pit_right, new_point)
         cdf_at_endpoints.append(value)
 
-    histogram_values = _construct_hist_values(cdf_at_endpoints, bin_width)
+    histogram_values = _construct_hist_values(cdf_at_endpoints, bins)
     return histogram_values
 
 
@@ -562,8 +574,7 @@ def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> X
         xarray object including dim 'bin_centre' and coordinates 'bin_left_endpoint',
         'bin_right_endpoint', with values the hight of each bar in the histogram.
     """
-    bin_width = 1 / bins
-    right_endpoints = [k * bin_width for k in range(1, bins + 1)]
+    right_endpoints = np.arange(1, bins + 1) / bins
 
     # the value of the mean PIT CDF at 0 is 0, except where NaNs
     # using .sel is safe because the value 0.0 is guaranteed to be in pit_x_value (see _get_pit_x_values)
@@ -583,6 +594,6 @@ def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> X
         value = _value_at_pit_cdf(pit_left, pit_right, new_point)
         cdf_at_endpoints.append(value)
 
-    histogram_values = _construct_hist_values(cdf_at_endpoints, bin_width)
+    histogram_values = _construct_hist_values(cdf_at_endpoints, bins)
 
     return histogram_values
