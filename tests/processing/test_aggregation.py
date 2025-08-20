@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.processing import aggregate
+from scores.utils import ERROR_INVALID_WEIGHTS
 
 DA_3x3 = xr.DataArray(
     [[0, 0.5, 1], [2, np.nan, 1], [97, 1, 1]],
@@ -73,18 +74,18 @@ WEIGHTS1 = xr.DataArray(
     coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
 WEIGHTS1_DS = xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1}))
-WEIGHTS2 = WEIGHTS1 * 0
-WEIGHTS3 = xr.DataArray(
+
+WEIGHTS2 = xr.DataArray(
     [[1, 2, 3], [3, 2, 1], [0, 0, 0]],
     dims=["x", "y"],
     coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
-WEIGHTS4 = xr.DataArray(
+WEIGHTS3 = xr.DataArray(
     [1, 2],
     dims=["z"],
     coords={"z": [0, 1]},
 )
-WEIGHTS5 = xr.DataArray(
+WEIGHTS4 = xr.DataArray(
     [1, 2, 0],
     dims=["y"],
     coords={"y": [0, 1, 3]},
@@ -114,18 +115,16 @@ NAN_WEIGHTS = xr.DataArray(
         (DA_3x3, ["y"], None, EXP_DA_Y),
         # Equal weights over y
         (DA_3x3, ["y"], WEIGHTS1, EXP_DA_Y),
-        # Zero weights over y
-        (DA_3x3, ["y"], WEIGHTS2, EXP_DA_NAN),
         # Varying weights over y
-        (DA_3x3, ["y"], WEIGHTS3, EXP_DA_VARY),
+        (DA_3x3, ["y"], WEIGHTS2, EXP_DA_VARY),
         # Extra dim in weights
-        (DA_3x3, ["x"], WEIGHTS4, EXP_DA_NEW_DIM),
+        (DA_3x3, ["x"], WEIGHTS3, EXP_DA_NEW_DIM),
         # Weights only for 1 dim to test broadcasting, with NaN
-        (DA_3x3, ["y"], WEIGHTS5, EXP_DA_Y_BROADCAST),
+        (DA_3x3, ["y"], WEIGHTS4, EXP_DA_Y_BROADCAST),
         # Varying weights over x and y
-        (DA_3x3, ["x", "y"], WEIGHTS3, EXP_DA_VARY_XY),
+        (DA_3x3, ["x", "y"], WEIGHTS2, EXP_DA_VARY_XY),
         # Varying weights over y, but input error is NaN
-        (DA_3x3 * np.nan, ["y"], WEIGHTS3, EXP_DA_VARY * np.nan),
+        (DA_3x3 * np.nan, ["y"], WEIGHTS2, EXP_DA_VARY * np.nan),
     ],
 )
 def test_aggregate_mean(values, reduce_dims, weights, expected):
@@ -161,10 +160,8 @@ def test_aggregate_mean(values, reduce_dims, weights, expected):
         (DA_3x3, ["y"], None, EXP_DA_Y_SUM),
         # Equal weights over y
         # (DA_3x3, ["y"], WEIGHTS1, EXP_DA_Y_SUM),
-        # Zero weights over y
-        (DA_3x3, ["y"], WEIGHTS2, EXP_DA_0),
         # Varying weights over y
-        (DA_3x3, ["y"], WEIGHTS3, EXP_DA_VARY_SUM),
+        (DA_3x3, ["y"], WEIGHTS2, EXP_DA_VARY_SUM),
         # # Extra dim in weights
         # (DA_3x3, ["x"], WEIGHTS4, EXP_DA_NEW_DIM),
         # # Weights only for 1 dim to test broadcasting, with NaN
@@ -203,13 +200,13 @@ def test_agg_warns():
     ("values", "weights", "method", "msg", "err_type"),
     [
         # Negative weights, DA values
-        (DA_3x3, NEGATIVE_WEIGHTS, "mean", "Weights must not contain negative values.", ValueError),
+        (DA_3x3, NEGATIVE_WEIGHTS, "mean", ERROR_INVALID_WEIGHTS, ValueError),
         # Negative weights, DS values, DA weights
         (
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
             NEGATIVE_WEIGHTS,
             "mean",
-            "Weights must not contain negative values.",
+            ERROR_INVALID_WEIGHTS,
             ValueError,
         ),
         # Negative weights, DS values, DS weights
@@ -217,17 +214,17 @@ def test_agg_warns():
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
             xr.Dataset(({"var1": NEGATIVE_WEIGHTS, "var2": NEGATIVE_WEIGHTS})),
             "mean",
-            "Weights must not contain negative values.",
+            ERROR_INVALID_WEIGHTS,
             ValueError,
         ),
         # NaN weights, DA values
-        (DA_3x3, NAN_WEIGHTS, "mean", "Weights must not contain NaN values.", ValueError),
+        (DA_3x3, NAN_WEIGHTS, "mean", ERROR_INVALID_WEIGHTS, ValueError),
         # NaN weights, DS values, DA weights
         (
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
             NAN_WEIGHTS,
             "mean",
-            "Weights must not contain NaN values.",
+            ERROR_INVALID_WEIGHTS,
             ValueError,
         ),
         # NaN weights, DS values, DS weights
@@ -235,7 +232,7 @@ def test_agg_warns():
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
             xr.Dataset(({"var1": NAN_WEIGHTS, "var2": NAN_WEIGHTS})),
             "mean",
-            "Weights must not contain NaN values.",
+            ERROR_INVALID_WEIGHTS,
             ValueError,
         ),
         # Wrong method

@@ -10,7 +10,12 @@ import xarray as xr
 import scores.functions
 import scores.utils
 from scores.processing import aggregate, broadcast_and_match_nan
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike, is_xarraylike
+from scores.typing import (
+    FlexibleArrayType,
+    FlexibleDimensionTypes,
+    XarrayLike,
+    is_xarraylike,
+)
 
 
 def mse(

@@ -9,6 +9,7 @@ import xarray as xr
 
 from scores.processing.matching import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.utils import check_weights
 
 
 def aggregate(
@@ -77,26 +78,7 @@ def aggregate(
         raise ValueError(f"Method must be either 'mean' or 'sum', got '{method}'")
 
     if weights is not None:
-        if isinstance(weights, xr.DataArray):
-            if bool((weights < 0).any()):
-                raise ValueError("Weights must not contain negative values.")
-            if weights.isnull().any():
-                raise ValueError(
-                    """
-                        Weights must not contain NaN values. If appropriate consider 
-                        filling missing data with `weights.fillna(0)`
-                        """
-                )
-        else:
-            if xr.concat([(weights[var] < 0).any() for var in weights.data_vars], dim="vars").any():
-                raise ValueError("Weights must not contain negative values.")
-            if xr.concat([(weights[var].isnull()).any() for var in weights.data_vars], dim="vars").any():
-                raise ValueError(
-                    """
-                    Weights must not contain NaN values. If appropriate consider 
-                    filling missing data with `weights.fillna(0)`
-                    """
-                )
+        check_weights(weights)
 
     if reduce_dims is None and weights is not None:
         warnings.warn(
