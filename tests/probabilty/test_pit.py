@@ -16,6 +16,7 @@ from scores.probability.pit_impl import (
     _pit_cdfvalues_for_jumps,
     _pit_cdfvalues_for_unif,
     _pit_dimension_checks,
+    _pit_hist_left,
     _pit_values_for_ensemble,
     _value_at_pit_cdf,
     pit_cdfvalues,
@@ -471,4 +472,42 @@ EXP_CHV2 = xr.merge([EXP_CHV1.rename("tas"), EXP_CHV1.rename("pr")])
 def test__construct_hist_values(cdf_at_endpoints, expected):
     """Tests that `_construct_hist_values` returns as expected"""
     result = _construct_hist_values(cdf_at_endpoints, 0.5)
+    xr.testing.assert_allclose(expected, result)
+
+
+DA_PH_LEFT = xr.DataArray(
+    data=[[0, 0.2, 0.7, 1], [nan, nan, nan, nan]],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [10, 11], "pit_x_value": [0, 0.5, 0.8, 1]},
+)
+DA_PH_RIGHT = xr.DataArray(
+    data=[[0, 0.4, 0.7, 1], [nan, nan, nan, nan]],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [10, 11], "pit_x_value": [0, 0.5, 0.8, 1]},
+)
+EXP_PHL1 = xr.DataArray(  # left endpoints of bins included
+    data=[[0.2, 0.8], [nan, nan]],
+    dims=["stn", "bin_centre"],
+    coords={
+        "stn": [10, 11],
+        "bin_centre": [0.25, 0.75],
+        "bin_left_endpoint": (["bin_centre"], [0, 0.5]),
+        "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
+    },
+)
+DS_PH_LEFT = xr.merge([DA_PH_LEFT.rename("tas"), DA_PH_LEFT.rename("pr")])
+DS_PH_RIGHT = xr.merge([DA_PH_RIGHT.rename("tas"), DA_PH_RIGHT.rename("pr")])
+EXP_PHL2 = xr.merge([EXP_PHL1.rename("tas"), EXP_PHL1.rename("pr")])
+
+
+@pytest.mark.parametrize(
+    ("pit_left", "pit_right", "expected"),
+    [
+        (DA_PH_LEFT, DA_PH_RIGHT, EXP_PHL1),  # data arrays
+        (DS_PH_LEFT, DS_PH_RIGHT, EXP_PHL2),  # datasets
+    ],
+)
+def test__pit_hist_left(pit_left, pit_right, expected):
+    """Tests that `_pit_hist_left` returns as expected"""
+    result = _pit_hist_left(pit_left, pit_right, 2)
     xr.testing.assert_allclose(expected, result)
