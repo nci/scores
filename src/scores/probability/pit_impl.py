@@ -525,9 +525,6 @@ def _pit_hist_left(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> Xa
     bin_width = 1 / bins
     left_endpoints = [k * bin_width for k in range(bins)]
 
-    # import pdb
-
-    # pdb.set_trace()
     # the value of the mean PIT CDF at 1 is 1
     # using .sel is safe because the value 1.0 is guaranteed to be in pit_x_value (see _get_pit_x_values)
     value_at_1 = pit_right.sel(pit_x_value=slice(1.0, 1.0))
@@ -548,4 +545,44 @@ def _pit_hist_left(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> Xa
         cdf_at_endpoints.append(value)
 
     histogram_values = _construct_hist_values(cdf_at_endpoints, bin_width)
+    return histogram_values
+
+
+def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> XarrayLike:
+    """
+    Gets the pit histogram values, with right endpoints included in every bin.
+    e.g. if bins=5, the bins are [0, 0.2], (0.2, 0.4], ..., (0.8, 1]
+
+    Args:
+        pit_left: `left` attribute of a `Pit_for_ensemble` object
+        pit_right: `right` attribute of a `Pit_for_ensemble` object
+        bins: the number of bins in the histogram
+
+    Returns:
+        xarray object including dim 'bin_centre' and coordinates 'bin_left_endpoint',
+        'bin_right_endpoint', with values the hight of each bar in the histogram.
+    """
+    bin_width = 1 / bins
+    right_endpoints = [k * bin_width for k in range(1, bins + 1)]
+
+    # the value of the mean PIT CDF at 0 is 0, except where NaNs
+    # using .sel is safe because the value 0.0 is guaranteed to be in pit_x_value (see _get_pit_x_values)
+    value_at_0 = pit_left.sel(pit_x_value=slice(0.0, 0.0))
+
+    cdf_at_endpoints = [value_at_0]
+
+    # get values of the PIT CDF that are aleady available in pit
+    common_points = [x for x in right_endpoints if x in pit_right["pit_x_value"]]
+    if len(common_points) > 0:
+        cdf_at_common_points = pit_right.sel(pit_x_value=common_points)
+        cdf_at_endpoints.append(cdf_at_common_points)
+
+    # get values of the PIT CDF that are not available in pit
+    new_points = [x for x in right_endpoints if x not in pit_right["pit_x_value"]]
+    for new_point in new_points:
+        value = _value_at_pit_cdf(pit_left, pit_right, new_point)
+        cdf_at_endpoints.append(value)
+
+    histogram_values = _construct_hist_values(cdf_at_endpoints, bin_width)
+
     return histogram_values
