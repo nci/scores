@@ -76,7 +76,7 @@ def mse(
         error = fcst - obs  # type: ignore
     squared = error * error
 
-    if isinstance(squared, XarrayLike):
+    if is_xarraylike(squared):
         result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
     else:
         result = squared.mean()
@@ -200,7 +200,7 @@ def mae(
     else:
         error = abs(fcst - obs)  # type: ignore
 
-    if isinstance(error, XarrayLike):
+    if is_xarraylike(error):
         result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
     else:
         result = error.mean()
