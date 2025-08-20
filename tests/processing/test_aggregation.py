@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.processing import agg
+from scores.processing import aggregate
 
 DA_3x3 = xr.DataArray(
     [[0, 0.5, 1], [2, np.nan, 1], [97, 1, 1]],
@@ -128,24 +128,24 @@ NAN_WEIGHTS = xr.DataArray(
         (DA_3x3 * np.nan, ["y"], WEIGHTS3, EXP_DA_VARY * np.nan),
     ],
 )
-def test_agg_mean(values, reduce_dims, weights, expected):
+def test_aggregate_mean(values, reduce_dims, weights, expected):
     """
-    Tests scores.functions.agg with method=mean
+    Tests scores.functions.aggregate with method=mean
     """
     # Check with xr.DataArray
-    result = agg(values, reduce_dims=reduce_dims, weights=weights)
+    result = aggregate(values, reduce_dims=reduce_dims, weights=weights)
     xr.testing.assert_equal(result, expected)
 
     # Check with xr.Dataset for values, but xr.DataArray for weights
     values_ds = xr.Dataset(({"var1": values, "var2": values}))
-    result_ds = agg(values_ds, reduce_dims=reduce_dims, weights=weights)
+    result_ds = aggregate(values_ds, reduce_dims=reduce_dims, weights=weights)
     expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
     xr.testing.assert_equal(result_ds, expected_ds)
 
     # Check with xr.Dataset for both values and weights
     if weights is not None:
         weights_ds = xr.Dataset(({"var1": weights, "var2": weights}))
-        result_ds = agg(values_ds, reduce_dims=reduce_dims, weights=weights_ds)
+        result_ds = aggregate(values_ds, reduce_dims=reduce_dims, weights=weights_ds)
         expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
         xr.testing.assert_equal(result_ds, expected_ds)
 
@@ -175,17 +175,17 @@ def test_agg_mean(values, reduce_dims, weights, expected):
         # (DA_3x3 * np.nan, ["y"], WEIGHTS3, EXP_DA_VARY * np.nan),
     ],
 )
-def test_agg_sum(values, reduce_dims, weights, expected):
+def test_aggregate_sum(values, reduce_dims, weights, expected):
     """
-    Tests scores.functions.weighted_agg with method=sum
+    Tests scores.functions.aggregate with method=sum
     """
     # Check with xr.DataArray
-    result = agg(values, reduce_dims=reduce_dims, weights=weights, method="sum")
+    result = aggregate(values, reduce_dims=reduce_dims, weights=weights, method="sum")
     xr.testing.assert_equal(result, expected)
 
     # Check with xr.Dataset
     values_ds = xr.Dataset(({"var1": values, "var2": values}))
-    result_ds = agg(values_ds, reduce_dims=reduce_dims, weights=weights, method="sum")
+    result_ds = aggregate(values_ds, reduce_dims=reduce_dims, weights=weights, method="sum")
     expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
     xr.testing.assert_equal(result_ds, expected_ds)
 
@@ -195,7 +195,7 @@ def test_agg_warns():
     Test that a warning is raised if weights are provided but reduce_dims is None.
     """
     with pytest.warns(UserWarning):
-        result = agg(DA_3x3, reduce_dims=None, weights=WEIGHTS1)
+        result = aggregate(DA_3x3, reduce_dims=None, weights=WEIGHTS1)
     xr.testing.assert_equal(DA_3x3, result)
 
 
@@ -266,10 +266,10 @@ def test_agg_warns():
         ),
     ],
 )
-def test_agg_raises(values, weights, method, msg, err_type):
+def test_aggregate_raises(values, weights, method, msg, err_type):
     """
     Test that a Value error is raised if there are negative weights
     """
 
     with pytest.raises(err_type, match=msg):
-        agg(values, reduce_dims=["x"], weights=weights, method=method)
+        aggregate(values, reduce_dims=["x"], weights=weights, method=method)

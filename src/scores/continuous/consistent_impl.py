@@ -7,7 +7,7 @@ from typing import Callable, Optional
 
 import xarray as xr
 
-from scores.processing import agg
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import gather_dimensions
 
@@ -71,8 +71,12 @@ def consistent_expectile_score(
             forecast and observed dimensions must match precisely. Only one of `reduce_dims`
             and `preserve_dims` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         array of (mean) scores that is consistent for alpha-expectile functional,
@@ -98,7 +102,7 @@ def consistent_expectile_score(
     score_overfcst = (1 - alpha) * (phi(obs) - phi(fcst) - phi_prime(fcst) * (obs - fcst))
     score_underfcst = alpha * (phi(obs) - phi(fcst) - phi_prime(fcst) * (obs - fcst))
     result = score_overfcst.where(obs < fcst, score_underfcst)
-    result = agg(result, reduce_dims=reduce_dims, weights=weights)
+    result = aggregate(result, reduce_dims=reduce_dims, weights=weights)
 
     return result
 
@@ -158,8 +162,12 @@ def consistent_huber_score(
             forecast and observed dimensions must match precisely. Only one of `reduce_dims`
             and `preserve_dims` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         array of (mean) scores that is consistent for Huber mean functional,
@@ -182,7 +190,7 @@ def consistent_huber_score(
 
     kappa = (fcst - obs).clip(min=-huber_param, max=huber_param)
     result = 0.5 * (phi(obs) - phi(kappa + obs) + kappa * phi_prime(fcst))
-    result = agg(result, reduce_dims=reduce_dims, weights=weights)
+    result = aggregate(result, reduce_dims=reduce_dims, weights=weights)
 
     return result
 
@@ -240,8 +248,12 @@ def consistent_quantile_score(
             forecast and observed dimensions must match precisely. Only one of `reduce_dims`
             and `preserve_dims` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         array of (mean) scores that are consistent for alpha-quantile functional,
@@ -265,7 +277,7 @@ def consistent_quantile_score(
     score_overfcst = (1 - alpha) * (g(fcst) - g(obs))
     score_underfcst = -alpha * (g(fcst) - g(obs))
     result = score_overfcst.where(obs < fcst, score_underfcst)
-    result = agg(result, reduce_dims=reduce_dims, weights=weights)
+    result = aggregate(result, reduce_dims=reduce_dims, weights=weights)
 
     return result
 

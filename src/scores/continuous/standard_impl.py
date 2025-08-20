@@ -9,7 +9,7 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.processing import agg, broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
 
 
@@ -77,7 +77,7 @@ def mse(
     squared = error * error
 
     if isinstance(squared, XarrayLike):
-        result = agg(squared, reduce_dims=reduce_dims, weights=weights)
+        result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
     else:
         result = squared.mean()
 
@@ -201,7 +201,7 @@ def mae(
         error = abs(fcst - obs)  # type: ignore
 
     if isinstance(error, XarrayLike):
-        result = agg(error, reduce_dims=reduce_dims, weights=weights)
+        result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
     else:
         result = error.mean()
 
@@ -303,7 +303,7 @@ def additive_bias(
     )
     error = fcst - obs
 
-    score = agg(error, reduce_dims=reduce_dims, weights=weights)
+    score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
     return score  # type: ignore
 
 
@@ -357,7 +357,7 @@ def multiplicative_bias(
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
-    multi_bias = agg(fcst, reduce_dims=reduce_dims, weights=weights) / agg(
+    multi_bias = aggregate(fcst, reduce_dims=reduce_dims, weights=weights) / aggregate(
         obs, reduce_dims=reduce_dims, weights=weights
     )
 
@@ -439,7 +439,9 @@ def pbias(
     error = fcst - obs
 
     _pbias = (
-        100 * agg(error, reduce_dims=reduce_dims, weights=weights) / agg(obs, reduce_dims=reduce_dims, weights=weights)
+        100
+        * aggregate(error, reduce_dims=reduce_dims, weights=weights)
+        / aggregate(obs, reduce_dims=reduce_dims, weights=weights)
     )
     return _pbias
 

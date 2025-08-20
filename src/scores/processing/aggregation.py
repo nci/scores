@@ -11,7 +11,7 @@ from scores.processing.matching import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 
-def agg(
+def aggregate(
     values: XarrayLike,
     *,
     reduce_dims: FlexibleDimensionTypes | None,
