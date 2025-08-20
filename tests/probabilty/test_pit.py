@@ -2,12 +2,14 @@
 Unit tests for scopres.probability.pit_impl.py
 """
 
+import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
 
 from scores.probability.pit_impl import (
     Pit_for_ensemble,
+    _construct_hist_values,
     _get_pit_x_values,
     _get_plotting_points,
     _pit_cdfvalues,
@@ -195,11 +197,16 @@ def test__pit_cdfvalues(pit_values, expected):
             xr.DataArray(data=[1], dims=["stn"], coords={"stn": [2]}),
             xr.DataArray(data=[3], dims=["plotting_point"], coords={"plotting_point": [5]}),
         ),
+        (
+            xr.DataArray(data=[0], dims=["bin_left_endpoint"], coords={"bin_left_endpoint": [1]}),
+            xr.DataArray(data=[1], dims=["stn"], coords={"stn": [2]}),
+            None,
+        ),
     ],
 )
 def test__pit_dimension_checks_raises(fcst, obs, weights):
     """Test that `_pit_dimension_checks` raises as expected."""
-    with pytest.raises(ValueError, match="are reserved and should not be among"):
+    with pytest.raises(ValueError, match="The following names are reserved and"):
         _pit_dimension_checks(fcst, obs, weights)
 
 
@@ -433,3 +440,35 @@ def test_value_at_pit_cdf_raises():
     """Tests that `_value_at_pit_cdf` raises as expected."""
     with pytest.raises(ValueError, match="`point` must not be a value in"):
         _value_at_pit_cdf(EXP_PITCDF_LEFT4, EXP_PITCDF_RIGHT4, 0.4)
+
+
+DATA_CHV = [np.array([[0, 0, nan]]), np.array([[0.4, 0.7, nan]]), np.array([[1, 1, nan]])]
+LIST_CHV1 = [
+    xr.DataArray(data=dat, dims=["pit_x_value", "stn"], coords={"stn": [10, 11, 12], "pit_x_value": [x]})
+    for dat, x in zip(DATA_CHV, [0, 0.5, 1])
+]
+EXP_CHV1 = xr.DataArray(
+    data=[[0.4, 0.7, nan], [0.6, 0.3, nan]],
+    dims=["bin_centre", "stn"],
+    coords={
+        "stn": [10, 11, 12],
+        "bin_centre": [0.25, 0.75],
+        "bin_left_endpoint": (["bin_centre"], [0, 0.5]),
+        "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
+    },
+)
+LIST_CHV2 = [xr.merge([da.rename("tas"), da.rename("pr")]) for da in LIST_CHV1]
+EXP_CHV2 = xr.merge([EXP_CHV1.rename("tas"), EXP_CHV1.rename("pr")])
+
+
+@pytest.mark.parametrize(
+    ("cdf_at_endpoints", "expected"),
+    [
+        (LIST_CHV1, EXP_CHV1),  # data arrays
+        (LIST_CHV2, EXP_CHV2),  # datasets
+    ],
+)
+def test__construct_hist_values(cdf_at_endpoints, expected):
+    """Tests that `_construct_hist_values` returns as expected"""
+    result = _construct_hist_values(cdf_at_endpoints, 0.5)
+    xr.testing.assert_allclose(expected, result)
