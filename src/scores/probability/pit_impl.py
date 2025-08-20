@@ -11,6 +11,7 @@ import numpy as np
 import xarray as xr
 
 from scores.functions import apply_weights
+from scores.processing.cdf import add_thresholds
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
@@ -100,6 +101,9 @@ class Pit_for_ensemble:
             right: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
                 and evaluated as at the points :math:`x` in the dimension "pit_x_value".
                 That is, values in the array or dataset are of the form :math:`F(x)`.
+
+        Methods:
+            plotting_points: generate plotting points for PIT-uniform probability plots.
 
         Raises:
             ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
@@ -430,3 +434,36 @@ def _get_plotting_points(left: XarrayLike, right: XarrayLike) -> dict:
     )
 
     return {"x_plotting_position": x_values, "y_plotting_position": y_values}
+
+
+def _value_at_pit_cdf(pit_left: XarrayLike, pit_right: XarrayLike, point: float) -> XarrayLike:
+    """
+    Given mean PIT CDF `F`, with left-hand limit values `pit_left` and right-hand limit values
+    `pit_right`, finds the value `F(point)` under the assumption that `point` is not in
+    `pit_right["pit_x_value"]`.
+
+    The result is attained via linear interpolation between the known values at the
+    nearest right-hand limit (less than `point`) and the nearest left-hand limit
+    (greater than `point`).
+
+    Args:
+        pit_left: left attribute of a `Pit_for_ensemble` object
+        pit_right: right attribute of a `Pit_for_ensemble` object
+        point: a float strictly between 0 and 1
+
+    Returns:
+        xarray object containing values of the CDF `F` at `point`, with same dimensions
+        as `pit_left`
+
+    Raises:
+        ValueError if `point` is in `pit_left["pit_x_value"].values`
+    """
+    if point in pit_left["pit_x_value"].values:
+        raise ValueError('`point` must not be a value in `pit_left["pit_x_value"]`')
+    upper = np.min([x for x in pit_left["pit_x_value"].values if x > point])
+    lower = np.max([x for x in pit_right["pit_x_value"].values if x < point])
+    # get the values at upper and lower
+    value = xr.concat([pit_right.sel(pit_x_value=lower), pit_left.sel(pit_x_value=upper)], "pit_x_value")
+    # value at newpoint is attained via linear interpolation
+    value = add_thresholds(value, "pit_x_value", [point], "linear").sel(pit_x_value=slice(point, point))
+    return value

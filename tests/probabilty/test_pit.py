@@ -15,6 +15,7 @@ from scores.probability.pit_impl import (
     _pit_cdfvalues_for_unif,
     _pit_dimension_checks,
     _pit_values_for_ensemble,
+    _value_at_pit_cdf,
     pit_cdfvalues,
 )
 
@@ -321,19 +322,6 @@ EXP_PLOTTING_POINTS2 = xr.DataArray(
     coords={"pit_x_value": [0, 0, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1, 1]},
 )
 
-# @pytest.mark.parametrize(
-#     ("fcst", "obs", "preserve_dims", "expected"),
-#     [
-#         # (DA_FCST, DA_OBS, "all", ),
-#         (DA_FCST, DA_OBS, None, EXP_PLOTTING_POINTS2),
-#         # (DS_FCST, DS_OBS, None, ),  # data set example
-#     ],
-# )
-# def test_plotting_points(fcst, obs, preserve_dims, expected):
-#     """Tests that `Pit_for_ensemble.plotting_points` returns as expected."""
-#     result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims=preserve_dims).plotting_points()
-#     xr.testing.assert_equal(result, expected)
-
 # case with several dimensions; left and right equal when pit_x_value is 0 or 3, NaNs involved
 DA_GPP_LEFT1 = xr.DataArray(
     data=[[[1, 2, 2, 5], [0, 0, 3, 6], [1, 1, 2, 3]], [[1, 2, 2, 5], [0, 0, 3, 6], [nan, nan, nan, nan]]],
@@ -412,3 +400,36 @@ def test_plotting_points():
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
+
+
+EXP_VAPC1 = xr.DataArray(
+    data=[(0.5 + 1.75 / 3) / 2],
+    dims=["pit_x_value"],
+    coords={"pit_x_value": [0.5]},
+)
+EXP_VAPC2 = xr.DataArray(
+    data=[[(4 / 7 + 1) / 2, nan, 1]],
+    dims=["pit_x_value", "stn"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0.65]},
+)
+EXP_VAPC3 = xr.merge([EXP_VAPC1.rename("tas"), EXP_VAPC1.rename("pr")])
+
+
+@pytest.mark.parametrize(
+    ("left", "right", "point", "expected"),
+    [
+        (EXP_PITCDF_LEFT4, EXP_PITCDF_RIGHT4, 0.5, EXP_VAPC1),  # one dimension only
+        (EXP_PCV_LEFT, EXP_PCV_RIGHT, 0.65, EXP_VAPC2),  # several dimensions, nans
+        (EXP_PITCDF_LEFT5, EXP_PITCDF_RIGHT5, 0.5, EXP_VAPC3),  # data sets
+    ],
+)
+def test__value_at_pit_cdf(left, right, point, expected):
+    """Tests that `_value_at_pit_cdf` returns as expected."""
+    result = _value_at_pit_cdf(left, right, point)
+    xr.testing.assert_equal(expected, result)
+
+
+def test_value_at_pit_cdf_raises():
+    """Tests that `_value_at_pit_cdf` raises as expected."""
+    with pytest.raises(ValueError, match="`point` must not be a value in"):
+        _value_at_pit_cdf(EXP_PITCDF_LEFT4, EXP_PITCDF_RIGHT4, 0.4)
