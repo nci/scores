@@ -45,8 +45,12 @@ def mse(
             the squared error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -111,8 +115,12 @@ def rmse(
             the absolute error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -162,8 +170,12 @@ def mae(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -228,8 +240,12 @@ def mean_error(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the mean error of a forecast.
@@ -270,8 +286,12 @@ def additive_bias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the additive bias of a forecast.
@@ -320,8 +340,12 @@ def multiplicative_bias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the multiplicative bias of a forecast.
@@ -377,8 +401,12 @@ def pbias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the percent bias of a forecast.
