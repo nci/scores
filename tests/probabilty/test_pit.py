@@ -472,7 +472,7 @@ EXP_CHV2 = xr.merge([EXP_CHV1.rename("tas"), EXP_CHV1.rename("pr")])
 )
 def test__construct_hist_values(cdf_at_endpoints, expected):
     """Tests that `_construct_hist_values` returns as expected"""
-    result = _construct_hist_values(cdf_at_endpoints, 0.5)
+    result = _construct_hist_values(cdf_at_endpoints, 2)
     xr.testing.assert_allclose(expected, result)
 
 
@@ -533,6 +533,44 @@ def test__pit_hist_left(pit_left, pit_right, expected):
     ],
 )
 def test__pit_hist_right(pit_left, pit_right, expected):
-    """Tests that `_pit_hist_left` returns as expected"""
+    """Tests that `_pit_hist_right` returns as expected"""
     result = _pit_hist_right(pit_left, pit_right, 2)
+    xr.testing.assert_allclose(expected, result)
+
+
+# right endpoints of bins included; use EXP_PITCDF_LEFT4, EXP_PITCDF_RIGHT4
+EXP_HV1 = xr.DataArray(
+    data=[0.25, 0.25, 2.75 / 3 - 0.5, 1 - 2.75 / 3, 0],
+    dims=["bin_centre"],
+    coords={
+        "bin_centre": [0.1, 0.3, 0.5, 0.7, 0.9],
+        "bin_left_endpoint": (["bin_centre"], [0.0, 0.2, 0.4, 0.6, 0.8]),
+        "bin_right_endpoint": (["bin_centre"], [0.2, 0.4, 0.6, 0.8, 1]),
+    },
+)
+# left endpoints of bins included; use EXP_PITCDF_LEFT4, EXP_PITCDF_RIGHT4
+EXP_HV2 = xr.DataArray(
+    data=[0.25, 0.25, 1.75 / 3 - 0.5, 1 - 1.75 / 3, 0],
+    dims=["bin_centre"],
+    coords={
+        "bin_centre": [0.1, 0.3, 0.5, 0.7, 0.9],
+        "bin_left_endpoint": (["bin_centre"], [0.0, 0.2, 0.4, 0.6, 0.8]),
+        "bin_right_endpoint": (["bin_centre"], [0.2, 0.4, 0.6, 0.8, 1]),
+    },
+)
+# dataset
+EXP_HV3 = xr.merge([EXP_HV2.rename("tas"), EXP_HV2.rename("pr")])
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "right", "expected"),
+    [
+        (DA_FCST, DA_OBS, True, EXP_HV1),  # data arrays
+        (DA_FCST, DA_OBS, False, EXP_HV2),  # data arrays
+        (DS_FCST, DS_OBS, False, EXP_HV3),  # datasets
+    ],
+)
+def test_hist_values(fcst, obs, right, expected):
+    """Tests that `hist_values` method of Pit_for_ensemble returns as expected"""
+    result = Pit_for_ensemble(fcst, obs, "ens_member").hist_values(5, right=right)
     xr.testing.assert_allclose(expected, result)
