@@ -347,11 +347,12 @@ def binary_discretise_proportion(
         :py:func:`scores.processing.binary_discretise`
 
     """
+    dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+
     # values are 1 when (data {mode} threshold), and 0 when ~(data {mode} threshold).
     discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)  # type: ignore
 
     # The proportion in each category
-    dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     proportion = discrete_data.mean(dim=dims)
 
     # attach attributes

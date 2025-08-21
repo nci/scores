@@ -137,6 +137,8 @@ def roc(  # pylint: disable=too-many-arguments
         if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
 
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+
     if isinstance(thresholds, str):
         if thresholds == "auto":
             thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
@@ -163,8 +165,7 @@ def roc(  # pylint: disable=too-many-arguments
     discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)  # type: ignore
 
     all_dims = set(fcst.dims).union(set(obs.dims))
-    final_reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
-    final_preserve_dims = all_dims - set(final_reduce_dims)  # type: ignore
+    final_preserve_dims = all_dims - set(reduce_dims)  # type: ignore
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
     final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
 

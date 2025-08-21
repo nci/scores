@@ -61,17 +61,17 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
+    if preserve_dims or reduce_dims:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore
     squared = error * error
     squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
-
-    if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
 
     if reduce_dims is not None:
         _mse = squared.mean(dim=reduce_dims)  # type: ignore
@@ -179,17 +179,17 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
+    if preserve_dims is not None or reduce_dims is not None:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore
     ae = abs(error)
     ae = scores.functions.apply_weights(ae, weights=weights)  # type: ignore
-
-    if preserve_dims is not None or reduce_dims is not None:
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
 
     if reduce_dims is not None:
         _ae = ae.mean(dim=reduce_dims)
@@ -282,11 +282,11 @@ def additive_bias(
 
     """
     # Note - mean error call this function
-    error = fcst - obs
-    score = scores.functions.apply_weights(error, weights=weights)
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
+    error = fcst - obs
+    score = scores.functions.apply_weights(error, weights=weights)
     score = score.mean(dim=reduce_dims)
     return score  # type: ignore
 

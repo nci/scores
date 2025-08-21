@@ -102,6 +102,7 @@ def murphy_score(  # pylint: disable=R0914
     """
     functional_lower = functional.lower()
     _check_murphy_inputs(alpha=alpha, functional=functional_lower, huber_a=huber_a)
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     if isinstance(thetas, xr.DataArray):
         theta1 = thetas
     else:
@@ -127,7 +128,6 @@ def murphy_score(  # pylint: disable=R0914
     for source, name in zip(sources, names):
         source.name = name
     result = xr.merge(sources)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     result = result.mean(dim=reduce_dims)
     return result
 

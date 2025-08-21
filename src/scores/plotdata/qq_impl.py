@@ -90,6 +90,16 @@ def qq(
         >>> obs = xr.DataArray(np.random.rand(100), dims='time')
         >>> result = qq(fcst, obs, quantiles=[0.1, 0.5, 0.9])
     """
+    reduce_dims = gather_dimensions(
+        fcst_dims=fcst.dims,
+        obs_dims=obs.dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+    )
+
+    if len(reduce_dims) == 0:
+        raise ValueError("You cannot preserve all dimensions with qq.")
+
     if interpolation_method not in NP_INTERP_METHODS:
         raise ValueError(
             f"Invalid interpolation method: {interpolation_method}. "
@@ -110,16 +120,6 @@ def qq(
     if isinstance(fcst, xr.Dataset):
         if set(fcst.data_vars) != set(obs.data_vars):
             raise ValueError("Both xr.Datasets must contain the same variables.")
-
-    reduce_dims = gather_dimensions(
-        fcst_dims=fcst.dims,
-        obs_dims=obs.dims,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-    )
-
-    if len(reduce_dims) == 0:
-        raise ValueError("You cannot preserve all dimensions with qq.")
 
     fcst, obs = broadcast_and_match_nan(fcst, obs)
 
