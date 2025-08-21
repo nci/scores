@@ -9,6 +9,7 @@ from numpy import nan
 
 from scores.probability.pit_impl import (
     Pit_for_ensemble,
+    _alpha_score,
     _construct_hist_values,
     _get_pit_x_values,
     _get_plotting_points_dict,
@@ -408,4 +409,26 @@ def test__pit_hist_right(pit_left, pit_right, expected):
 def test_hist_values(fcst, obs, right, expected):
     """Tests that `hist_values` method of Pit_for_ensemble returns as expected"""
     result = Pit_for_ensemble(fcst, obs, "ens_member").hist_values(5, right=right)
+    xr.testing.assert_allclose(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("plotting_points", "expected"),
+    [
+        (ptd.DA_AS, ptd.EXP_AS),  # data arrays
+        (create_dataset(ptd.DA_AS), create_dataset(ptd.EXP_AS)),
+    ],
+)
+def test__alpha_score(plotting_points, expected):
+    """Tests that `_alpha_score` returns as expected."""
+    result = _alpha_score(plotting_points)
+    xr.testing.assert_allclose(expected, result)
+
+
+def test_alpha_score():
+    """Tests that the `.alpha_score` method returns as expected."""
+    result = Pit_for_ensemble(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score()
+    # uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
+    expected = (0.4 * 0.1 + 0.2 * (0.1 + 0.6 - 1.75 / 3) + 0.2 * (2.75 / 3 - 0.6 + 0.2) + 0.2 * 0.2) / 2
+    expected = xr.DataArray(data=[expected], dims=["blah"], coords={"blah": [1]}).mean("blah")
     xr.testing.assert_allclose(expected, result)
