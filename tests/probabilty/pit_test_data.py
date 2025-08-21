@@ -246,3 +246,31 @@ EXP_EV = xr.DataArray(
     dims=["stn"],
     coords={"stn": [3, 4, 5]},
 )
+
+# test data for _variance_integral_term
+DA_VIT = xr.DataArray(
+    data=[
+        [0, 0, 0.4, 0.4, 1, 1],  # integral(x(1-x))
+        [0, 1, 1, 1, 1, 1],  # integral(x(1-1))
+        [0, 0, 0, 0, 0, 1],  # integral(x(1-0))
+        [0, 0, 0, 1, 1, 1],  # integral(x(1-0) on [0, 0.4]) + integral(x(1-1) on [0.4, 1])
+        [0, 0, 1, 1, 1, 1],  # integral(x(1-5x/2) on [0, 0.4]) + integral(x(1-1) on [0.4, 1])
+        [0, 0, 0.8, 0.8, 1, 1],  # integral(x(1-2x) on [0, 0.4]) + integral(x(1-((x-0.4)/3 + 0.8)) on [0.4, 1])
+        [nan, nan, nan, nan, nan, nan],
+    ],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [3, 4, 5, 6, 7, 8, 9], "pit_x_value": [0, 0, 0.4, 0.4, 1, 1]},
+)
+EXP_VIT = xr.DataArray(
+    data=[
+        1 / 6,
+        0,
+        0.5,
+        (0.4**2) / 2,
+        (0.4**2) / 2 - 5 * (0.4**3) / 6,
+        (0.4**2) / 2 - 2 * (0.4**3) / 3 + (1 + 0.4 / 3 - 0.8) * (1 - 0.4**2) / 2 - (1 - 0.4**3) / 9,
+        nan,
+    ],
+    dims=["stn"],
+    coords={"stn": [3, 4, 5, 6, 7, 8, 9]},
+)
