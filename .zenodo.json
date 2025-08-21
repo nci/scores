@@ -79,11 +79,15 @@
             "orcid": "https://orcid.org/0000-0003-3271-6874",
             "affiliation": "Australian National University, Australia",
             "name": "Squire, Dougal T."
-        }
+        },
         {
             "orcid": "https://orcid.org/0009-0003-0771-4671",
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Pagano, Thomas C."
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Smith, Paul R."
         }
  
 
