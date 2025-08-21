@@ -231,3 +231,11 @@ EXP_HV2 = xr.DataArray(
         "bin_right_endpoint": (["bin_centre"], [0.2, 0.4, 0.6, 0.8, 1]),
     },
 )
+
+# test data for alpha score
+DA_AS = xr.DataArray(
+    data=[[0, 0, 0.3, 0.7, 1, 1], [0, 0, 0.6, 0.6, 1, 1], [nan, nan, nan, nan, nan, nan]],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [3, 4, 5], "pit_x_value": [0, 0, 0.4, 0.4, 1, 1]},
+)
+EXP_AS = xr.DataArray(data=[(0.1 * 0.4 + 0.3 * 0.6) / 2, 0.2 / 2, nan], dims=["stn"], coords={"stn": [3, 4, 5]})

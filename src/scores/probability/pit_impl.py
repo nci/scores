@@ -113,6 +113,12 @@ class Pit_for_ensemble:
 
         Methods:
             plotting_points: generate plotting points for PIT-uniform probability plots
+            plotting_points_parametric: generate plotting points for PIT-uniform probability plots
+                in parametric format
+            hist_values: generate values for the PIT histogram
+            alpha_score: calculates the 'alpha score', which is the absolute area between
+                the diagonal and PIT curve of the PIT-uniform probability plot
+
 
         Raises:
             ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
@@ -167,6 +173,15 @@ class Pit_for_ensemble:
         if right:
             return _pit_hist_right(self.left, self.right, bins)
         return _pit_hist_left(self.left, self.right, bins)
+
+    def alpha_score(self):
+        """
+        Calculates the so-called 'alpha score', which is a measure of how close the PIT distribution
+        is to the uniform distribution. If the PIT CDF is :math:`F`, then the alpha score :math:`S`
+        is given by
+            :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x}`
+        """
+        return _alpha_score(self.plotting_points())
 
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
@@ -606,3 +621,18 @@ def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> X
     histogram_values = _construct_hist_values(cdf_at_endpoints, bins)
 
     return histogram_values
+
+
+def _alpha_score(plotting_points: XarrayLike) -> XarrayLike:
+    """
+    Given output of plotting ploints from `Pit_for_ensemble.plotting_points`,
+    calculates the alpha score.
+
+    Args:
+        plotting_points: xarray object of plotting points, indexed by non-decreasing values
+            (with duplicates) along the 'pit_x_value' dimension.
+
+    Returns:
+        xarray object with alpha score, and 'pit_x_value' dimension collapsed
+    """
+    return np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
