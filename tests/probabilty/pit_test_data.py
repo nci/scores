@@ -239,3 +239,10 @@ DA_AS = xr.DataArray(
     coords={"stn": [3, 4, 5], "pit_x_value": [0, 0, 0.4, 0.4, 1, 1]},
 )
 EXP_AS = xr.DataArray(data=[(0.1 * 0.4 + 0.3 * 0.6) / 2, 0.2 / 2, nan], dims=["stn"], coords={"stn": [3, 4, 5]})
+
+# test data for expected value
+EXP_EV = xr.DataArray(
+    data=[1 - (0.3 * 0.4 + 0.6 * (0.7 + 1)) / 2, 1 - (0.6 * 0.4 + 0.6 * (0.6 + 1)) / 2, nan],
+    dims=["stn"],
+    coords={"stn": [3, 4, 5]},
+)

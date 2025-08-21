@@ -183,6 +183,14 @@ class Pit_for_ensemble:
         """
         return _alpha_score(self.plotting_points())
 
+    def expected_value(self):
+        """
+        Calculates the expected value of the PIT distribution.
+        An expected value greater than 0.5 indicates an under-prediction tendency.
+        An expected value less than 0.5 indicates an over-prediction tendency.
+        """
+        return _expected_value(self.plotting_points())
+
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
@@ -636,3 +644,19 @@ def _alpha_score(plotting_points: XarrayLike) -> XarrayLike:
         xarray object with alpha score, and 'pit_x_value' dimension collapsed
     """
     return np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
+
+
+def _expected_value(plotting_points: XarrayLike) -> XarrayLike:
+    """
+    Calculates the expected value of the PIT distribution, given plotting points for the
+    CDF of that distribution. Uses the well-known formula that the expected value of a
+    non-negative random variable is the integral of 1 - CDF.
+
+    Args:
+        plotting_points: xarray object of plotting points, indexed by non-decreasing values
+            (with duplicates) along the 'pit_x_value' dimension.
+
+    Returns:
+        xarray object with expected value, and 'pit_x_value' dimension collapsed
+    """
+    return (1 - plotting_points).integrate("pit_x_value")
