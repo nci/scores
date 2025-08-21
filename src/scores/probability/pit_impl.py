@@ -174,7 +174,7 @@ class Pit_for_ensemble:
             return _pit_hist_right(self.left, self.right, bins)
         return _pit_hist_left(self.left, self.right, bins)
 
-    def alpha_score(self):
+    def alpha_score(self) -> XarrayLike:
         """
         Calculates the so-called 'alpha score', which is a measure of how close the PIT distribution
         is to the uniform distribution. If the PIT CDF is :math:`F`, then the alpha score :math:`S`
@@ -183,13 +183,21 @@ class Pit_for_ensemble:
         """
         return _alpha_score(self.plotting_points())
 
-    def expected_value(self):
+    def expected_value(self) -> XarrayLike:
         """
         Calculates the expected value of the PIT distribution.
         An expected value greater than 0.5 indicates an under-prediction tendency.
         An expected value less than 0.5 indicates an over-prediction tendency.
         """
         return _expected_value(self.plotting_points())
+
+    def variance(self) -> XarrayLike:
+        """
+        Calculates the variance of the PIT distribution.
+        A variance greater than 1/12 indicates predictive under-dispersion.
+        A variance less than 1/12 indicates predictive over-dispersion.
+        """
+        return _variance(self.plotting_points())
 
 
 def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:

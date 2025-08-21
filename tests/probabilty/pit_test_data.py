@@ -274,3 +274,23 @@ EXP_VIT = xr.DataArray(
     dims=["stn"],
     coords={"stn": [3, 4, 5, 6, 7, 8, 9]},
 )
+
+# test data for _variance; uniform distribution, nans, point mass at 0, point mass at 1
+DA_VAR = xr.DataArray(
+    data=[[0, 0, 1, 1], [nan, nan, nan, nan], [0, 1, 1, 1], [0, 0, 0, 1]],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [3, 4, 5, 6], "pit_x_value": [0, 0, 1, 1]},
+)
+EXP__VAR = xr.DataArray([1 / 12, nan, 0, 0], dims=["stn"], coords={"stn": [3, 4, 5, 6]})
+# simple forecast/obs example for .variance
+DA_FCST_VAR = xr.DataArray(
+    data=[
+        [0, 0, 0, 0, 0],
+        [0, 2, 5, 3, 7],
+        [nan, nan, nan, nan, nan],
+    ],
+    dims=["stn", "member"],
+    coords={"stn": [101, 102, 103], "member": [1, 2, 3, 4, 5]},
+)
+DA_OBS_VAR = xr.DataArray(data=[0, 4, 10], dims=["stn"], coords={"stn": [101, 102, 103]})
+EXP_VAR = xr.DataArray(data=[1 / 12, 0, nan], dims=["stn"], coords={"stn": [101, 102, 103]})

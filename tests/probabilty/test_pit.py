@@ -22,6 +22,7 @@ from scores.probability.pit_impl import (
     _pit_hist_right,
     _pit_values_for_ensemble,
     _value_at_pit_cdf,
+    _variance,
     _variance_integral_term,
     pit_cdfvalues,
 )
@@ -468,4 +469,30 @@ def test_expected_value():
 def test__variance_integral_term(plotting_points, expected):
     """Tests that `_expected_value` returns as expected."""
     result = _variance_integral_term(plotting_points)
+    xr.testing.assert_allclose(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("plotting_points", "expected"),
+    [
+        (ptd.DA_VAR, ptd.EXP__VAR),  # data arrays
+        (create_dataset(ptd.DA_VAR), create_dataset(ptd.EXP__VAR)),
+    ],
+)
+def test__variance(plotting_points, expected):
+    """Tests that `_variance` returns as expected."""
+    result = _variance(plotting_points)
+    xr.testing.assert_allclose(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        (ptd.DA_FCST_VAR, ptd.DA_OBS_VAR, ptd.EXP_VAR),  # data arrays
+        (create_dataset(ptd.DA_FCST_VAR), create_dataset(ptd.DA_OBS_VAR), create_dataset(ptd.EXP_VAR)),
+    ],
+)
+def test_variance(fcst, obs, expected):
+    """Tests that the `.variance` method returns as expected."""
+    result = Pit_for_ensemble(fcst, obs, "member", preserve_dims="all").variance()
     xr.testing.assert_allclose(expected, result)
