@@ -652,6 +652,9 @@ def _expected_value(plotting_points: XarrayLike) -> XarrayLike:
     CDF of that distribution. Uses the well-known formula that the expected value of a
     non-negative random variable is the integral of 1 - CDF.
 
+    Here, `plotting_points`, with linear interpolation, fully describes the CDF of the
+    PIT distribution.
+
     Args:
         plotting_points: xarray object of plotting points, indexed by non-decreasing values
             (with duplicates) along the 'pit_x_value' dimension.
@@ -660,3 +663,66 @@ def _expected_value(plotting_points: XarrayLike) -> XarrayLike:
         xarray object with expected value, and 'pit_x_value' dimension collapsed
     """
     return (1 - plotting_points).integrate("pit_x_value")
+
+
+def _variance(plotting_points: XarrayLike) -> XarrayLike:
+    """
+    Calculates the variance of the PIT distribution using the formula
+        Var(Y) = 2 * integral(x * (1 - F(x)), x >= 0) + E(Y)^2,
+    for a non-negative random variable Y, where F is the CDF of Y.
+
+    Here, `plotting_points`, with linear interpolation, fully describes the CDF of the
+    PIT distribution.
+
+    Args:
+        plotting_points: xarray object of plotting points, indexed by non-decreasing values
+            (with duplicates) along the 'pit_x_value' dimension.
+
+    Returns:
+        xarray object with the variance, and 'pit_x_value' dimension collapsed
+    """
+    expected_value = _expected_value(plotting_points)
+    integral_term = 2 * _variance_integral_term(plotting_points)
+    return integral_term - expected_value**2
+
+
+def _variance_integral_term(plotting_points: XarrayLike) -> XarrayLike:
+    """
+    Calculates
+        integral(x * (1 - F(x)), x >= 0)
+    where F is a CDF.
+
+    Here, `plotting_points`, with linear interpolation, fully describes the CDF of the
+    PIT distribution F. It is assumed coordinates in `plotting_points['pit_x_value']`
+    come in duplicate pairs (e.g. [0, 0, 0.1, 0.1, 0.15, 0.15, ...]), to describe
+    left-hand and right-hand limits at each point. This assumption holds with output
+    from the `.plotting_points` method.
+
+    Args:
+        plotting_points: xarray object of plotting points, indexed by non-decreasing values
+            (with duplicates) along the 'pit_x_value' dimension.
+
+    Returns:
+        xarray object with the integral values, and 'pit_x_value' dimension collapsed
+    """
+    # notation: F_i(t) = m_i * t + b_i whenever x[i-1] <= t <= x[i]
+    # and x[i] is a value in `function_values[threshold_dim]`.
+
+    x_values = plotting_points["pit_x_value"]
+    x_shifted = plotting_points["pit_x_value"].shift(pit_x_value=1)
+    # difference in x values
+    diff_xs = x_values - x_shifted
+    # difference in function values y_i = F(x[i])
+    diff_ys = plotting_points - plotting_points.shift(pit_x_value=1)
+    # gradients m
+    m_values = diff_ys / diff_xs
+    # intercepts b_i
+    b_values = plotting_points - m_values * x_values
+    # integral(t * (1 - F(t))) on the interval (x[i-1], x[i]), for each i, using calculus:
+    integral_i = (1 - b_values) * (x_values**2 - x_shifted**2) / 2 - m_values * (x_values**3 - x_shifted**3) / 3
+
+    integral = integral_i.sum("pit_x_value")
+    # return NaN if NaN in function_values
+    integral = integral.where(~np.isnan(plotting_points).any("pit_x_value"))
+
+    return integral

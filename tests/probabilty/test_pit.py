@@ -22,6 +22,7 @@ from scores.probability.pit_impl import (
     _pit_hist_right,
     _pit_values_for_ensemble,
     _value_at_pit_cdf,
+    _variance_integral_term,
     pit_cdfvalues,
 )
 from tests.probabilty import pit_test_data as ptd
@@ -454,4 +455,17 @@ def test_expected_value():
     # uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
     expected = (0.4 * 0.5 + 0.2 * (0.5 + 1.75 / 3) + 0.2 * (2.75 / 3 + 1) + 0.2 * (1 + 1)) / 2
     expected = xr.DataArray(data=[1 - expected], dims=["blah"], coords={"blah": [1]}).mean("blah")
+    xr.testing.assert_allclose(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("plotting_points", "expected"),
+    [
+        (ptd.DA_VIT, ptd.EXP_VIT),  # data arrays
+        (create_dataset(ptd.DA_VIT), create_dataset(ptd.EXP_VIT)),
+    ],
+)
+def test__variance_integral_term(plotting_points, expected):
+    """Tests that `_expected_value` returns as expected."""
+    result = _variance_integral_term(plotting_points)
     xr.testing.assert_allclose(expected, result)
