@@ -6,7 +6,6 @@ from typing import Optional
 
 import xarray as xr
 
-from scores.functions import apply_weights
 from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions

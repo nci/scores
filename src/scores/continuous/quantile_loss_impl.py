@@ -6,9 +6,9 @@ from typing import Optional
 
 import xarray as xr
 
-from scores.functions import apply_weights
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, gather_dimensions
+from scores.processing import aggregate
 
 
 def quantile_score(
@@ -42,8 +42,12 @@ def quantile_score(
             forecast and observed dimensions must match precisely. Only one of `reduce_dims`
             and `preserve_dims` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         A DataArray with values being the mean generalised piecewise linear (GPL)
@@ -94,7 +98,6 @@ def quantile_score(
     result = xr.where(diff > 0, score_fcst_ge_obs, score_fcst_lte_obs)
 
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
-    results = apply_weights(result, weights=weights)
-    score = results.mean(dim=reduce_dims)
+    score = aggregate(result, weights=weights, reduce_dims=reduce_dims)
 
     return score  # type: ignore
