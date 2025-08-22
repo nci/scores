@@ -10,7 +10,7 @@ from typing import Callable, Optional
 import xarray as xr
 
 from scores.continuous import mse
-from scores.processing import binary_discretise, aggregate
+from scores.processing import aggregate, binary_discretise
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_binary, gather_dimensions
 
