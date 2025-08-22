@@ -5,10 +5,12 @@ Reserved dimension names:
 - 'uniform_endpoint', 'pit_x_value'
 """
 
-from typing import Optional
+import warnings
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
+from scipy.interpolate import interp1d
 
 from scores.functions import apply_weights
 from scores.processing.cdf import add_thresholds
@@ -27,7 +29,7 @@ RESERVED_NAMES = {
 }
 
 
-class Pit_for_ensemble:
+class Pit:
     """
     Given ensemble forecasts and corresponding observations, calculates the probability
     intergral transform (PIT) for the set of forecast cases. The calculated PIT can be a
@@ -64,8 +66,9 @@ class Pit_for_ensemble:
         self,
         fcst: XarrayLike,
         obs: XarrayLike,
-        ens_member_dim: str,
+        special_fcst_dim: str,
         *,  # Force keywords arguments to be keyword-only
+        fcst_type: str = "ensemble",
         reduce_dims: Optional[FlexibleDimensionTypes] = None,
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
         weights: Optional[XarrayLike] = None,
@@ -86,9 +89,11 @@ class Pit_for_ensemble:
 
         Args:
             fcst: an xarray object of ensemble forecasts, containing the dimension
-                `ens_member_dim`.
+                `special_fcst_dim`.
             obs: an xarray object of observations.
-            ens_member_dim: name of the ensemble member dimension in ``fcst``.
+            special_fcst_dim: name of the ensemble member dimension in ``fcst`` if ``fcst_type='ensemble'``
+                or of the CDF threshold dimension in ``fcst`` if ``fcst_type='cdf'``.
+            fcst_type: either "ensemble" or "cdf".
             reduce_dims: Optionally specify which dimensions to reduce when calculating the
                 PIT CDF values, where the mean is taken over all forecast cases.
                 All other dimensions will be preserved. As a special case, 'all' will allow
@@ -124,14 +129,27 @@ class Pit_for_ensemble:
             ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
                 'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
         """
-        pit_cdf = pit_cdfvalues(
-            fcst,
-            obs,
-            ens_member_dim,
-            reduce_dims=reduce_dims,
-            preserve_dims=preserve_dims,
-            weights=weights,
-        )
+        if fcst_type not in ["ensemble", "cdf"]:
+            raise ValueError('`fcst_type` must be one of "ensemble" or "cdf"')
+
+        if fcst_type == "ensemble":
+            pit_cdf = pit_distribution_for_ens(
+                fcst,
+                obs,
+                special_fcst_dim,
+                reduce_dims=reduce_dims,
+                preserve_dims=preserve_dims,
+                weights=weights,
+            )
+        else:
+            pit_cdf = pit_distribution_for_cdf(
+                fcst,
+                obs,
+                special_fcst_dim,
+                reduce_dims=reduce_dims,
+                preserve_dims=preserve_dims,
+                weights=weights,
+            )
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
 
@@ -200,7 +218,7 @@ class Pit_for_ensemble:
         return _variance(self.plotting_points())
 
 
-def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
+def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
     For each forecast case in the form of an ensemble, the PIT value of the ensemble for
     the corresponding observation is a uniform distribution over the closed interval
@@ -231,13 +249,254 @@ def _pit_values_for_ensemble(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: 
     return xr.concat([pit_lower, pit_upper], "uniform_endpoint")
 
 
+def pit_distribution_for_cdf(
+    fcst: Union[dict, XarrayLike],
+    obs: XarrayLike,
+    threshold_dim: str,
+    *,  # Force keywords arguments to be keyword-only
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> dict:
+    """
+    Each forecast case is an array of cumulative distribution function (CDF) values :math:`G(x)`,
+    which is the probability that the random variable being forecast does not exceed :math:`x`.
+    Given any observation :math:`y`, the probability intergral transform (PIT) value at :math:`G`
+    is a uniform distribution on the closed interval :math:`[G(y-), G(y)]`, where :math:`G(y-)`
+    denotes the left-hand limit of :math:`G` at :math:`y`.
+
+    This function outputs values of PIT by representing each uniform distribution on
+    :math:`[G(y-), G(y)]` as the corresponding uniform CDF :math:`F`. We call :math:`F`
+    the 'PIT distribution' for the forecast-observation pair :math:`(G,y)`. Values :math:`F(x-)`
+    and :math:`F(x)` are given for an optimal set of points :math:`x` satisfying
+    :math:`0 <= x <= 1`. The set is optimal in the sense that the value of :math:`F`
+    elswhere can be determined via linear interpolation, whilst no smaller set of values
+    has this property.
+
+    Dimensions are be reduced by taking (possibly weighted) means of the PIT distribution
+    :math:`F(x)`. The weighted means can also be interpreted a values of CDFs, and exact
+    intermediate values also attained via linear interpolation.
+
+    Args:
+        fcst: either an xarray object of CDF forecast values, containing the dimension `threshold_dim`,
+            or a dictionary containing the keys "left" and "right", with corresponding values
+            xarray objects giving the left-hand and right-hand limits of the fcst CDF
+            along the dimension `threshold_dim`.
+        obs: an xarray object of observations.
+        threshold_dim: name of the threshold dimension in ``fcst``, such that the probability
+            of not exceeding a particular threshold is one of the corresponding values of ``fcst``.
+        reduce_dims: Optionally specify which dimensions to reduce when calculating the
+            PIT distribution, where the mean is taken over all forecast cases.
+            All other dimensions will be preserved. As a special case, 'all' will allow
+            all dimensions to be reduced. Only one of ``reduce_dims`` and ``preserve_dims``
+            can be supplied. The default behaviour if neither are supplied is to reduce all dims.
+        preserve_dims: Optionally specify which dimensions to preserve when calculating the
+            PIT distribution, where the mean is taken over all forecast cases.
+            All other dimensions will be reduced. As a special case, 'all' will allow
+            all dimensions to be preserved, apart from ``severity_dim`` and ``prob_threshold_dim``.
+            Only one of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default
+            behaviour if neither are supplied is to reduce all dims.
+        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+            by population, custom) of PIT CDF values across all forecast cases.
+
+    Returns:
+        a dictionary with the following keys and values:
+        - "left": an xarray object containing the left-hand limits :math:`F(x-)` of the PIT CDF values
+        - "right": an xarray object containing the values :math:`F(x)` of the PIT CDF values
+
+    Raises:
+        ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+            'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
+        ValueError if, when ``fcst`` is a dictionary, ``fcst['left']`` and ``fcst['right']`` do not have the same
+            shape, dimensions and coordinates.
+
+    Warns:
+        - if any values in ``obs`` lie outside the range of values in the forecast ``threshold_dim`` dimension.
+        - if any forecast values have NaN
+    """
+    if isinstance(fcst, dict):
+        fcst_left = fcst["left"]
+        fcst_right = fcst["right"]
+        # check that both have same shape, coords and dims
+        if not xr.ones_like(fcst_left).equals(xr.ones_like(fcst_right)):
+            raise ValueError("left and right must have same shape, dimensions and coordinates")
+    else:
+        fcst_left = fcst.copy()
+        fcst_right = fcst.copy()
+
+    _pit_dimension_checks(fcst_left, obs, weights)
+
+    weights_dims = None
+    if weights is not None:
+        weights_dims = weights.dims
+
+    dims_for_mean = gather_dimensions(
+        fcst_left.dims,
+        obs.dims,
+        weights_dims=weights_dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        score_specific_fcst_dims=threshold_dim,
+    )
+
+    # PIT values in [G(y-), G(y)] format
+    pit_values = _pit_values_for_cdf(fcst_left, fcst_right, obs, threshold_dim)
+
+    # convert to CDF format, take weighted means, and output dictionary
+    result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
+
+    return result
+
+
+def _pit_values_final_processing(pit_values, weights, dims_for_mean):
+    """
+    Given
+    """
+    # convert to F(x-), F(x) format
+    pit_cdf = _pit_cdfvalues(pit_values)
+
+    pit_cdf_left = apply_weights(pit_cdf["left"], weights=weights).mean(dim=dims_for_mean)
+    pit_cdf_right = apply_weights(pit_cdf["right"], weights=weights).mean(dim=dims_for_mean)
+
+    # rescale CDFs so that their max value is 1.
+    # This corrects for weights that don't sum to 1.
+    cdf_right_max = pit_cdf_right.max("pit_x_value")
+    pit_cdf_right = pit_cdf_right / cdf_right_max
+    pit_cdf_left = pit_cdf_left / cdf_right_max
+
+    return {"left": pit_cdf_left, "right": pit_cdf_right}
+
+
+def _pit_values_for_cdf(
+    fcst_left: XarrayLike, fcst_right: XarrayLike, obs: XarrayLike, threshold_dim: str
+) -> XarrayLike:
+    """
+    For each forecast case in the form of an CDF F (in xarray format), the PIT value of F
+    for the corresponding observation y is a uniform distribution over the closed
+    interval [lower,upper], where
+        lower = F(y-)
+        upper = F(y)
+    and F(y-) denotes the left-hand limit of F at y.
+
+    Returns an array of [lower,upper] values in the dimension 'uniform_endpoint'.
+
+    It is assumed that `fcst_left` and `fcst_right` have the same shape, dims and coords.
+
+    Args:
+        fcst: array of forecast CDF values, including dimension `threshold_dim`
+        obs: array of forecast values, excluding `threshold_dim`
+        threshold_dim: name of the threshold dimension in `fcst`
+
+    Returns:
+        array of PIT values in the form [lower,upper], with dimensions
+        'uniform_endpoint', all dimensions in `obs` and all dimensions in `fcst`
+        excluding `ens_member_dim`.
+    """
+    # check whether observations are in the threshold_dim range, if not issue a warning
+    max_obs = float(obs.max())
+    min_obs = float(obs.min())
+    max_thld = float(fcst_left[threshold_dim].max())
+    min_thld = float(fcst_left[threshold_dim].min())
+
+    if max_obs > max_thld:
+        warnings.warn(
+            "Some observations were greater than the maximum `threshold_dim` value in your `fcst`. \
+            The value of the fcst CDF at these observations will be set to 1."
+        )
+    if min_obs < min_thld:
+        warnings.warn(
+            "Some observations were less than the minimum `threshold_dim` value in your `fcst`. \
+            The value of the fcst CDF at these observations will be set to 0."
+        )
+
+    # check whether fcst values are NaN, if so issue a warning
+    if bool(fcst_left.isnull().any()) or bool(fcst_right.isnull().any()):
+        warnings.warn(
+            "Some forecast CDF values are NaN. In such cases, the entire forecast CDF will be treated as NaN. \
+            To avoid this, you can fill NaNs using `scores.processing.cdf.fill_cdf`."
+        )
+
+    flatten_obs = np.unique(obs.values.flatten())
+    flatten_obs = flatten_obs[~np.isnan(flatten_obs)]
+
+    # classify the observations
+    obs_in_thlds = [x for x in flatten_obs if x in fcst_right[threshold_dim]]
+    obs_gt_thlds = [x for x in flatten_obs if x > max_thld]
+    obs_lt_thlds = [x for x in flatten_obs if x < min_thld]
+    obs_between_thlds = [
+        x for x in flatten_obs if x not in set(obs_in_thlds).union(set(obs_gt_thlds)).union(set(obs_lt_thlds))
+    ]
+
+    # extend the fcst CDF values so they can be evaluated at obs
+    fcst_left_at_obs = []
+    fcst_right_at_obs = []
+
+    # start with the original forecast
+    if len(obs_in_thlds) > 0:
+        fcst_left_at_obs.append(fcst_left.sel({threshold_dim: obs_in_thlds}))
+        fcst_right_at_obs.append(fcst_right.sel({threshold_dim: obs_in_thlds}))
+
+    # calculate the interpolated values using interp1d
+    # (xarray interpolate_na not suitable as it cannot handle duplicate x values)
+    if len(obs_between_thlds) > 0:
+        plotting_points = xr.concat([fcst_left, fcst_right], threshold_dim).sortby(threshold_dim)
+        threshold_axis = plotting_points.get_axis_num(threshold_dim)
+        y_values = plotting_points.values
+        x_values = plotting_points[threshold_dim].values
+
+        interpolated_values = interp1d(x_values, y_values, axis=threshold_axis, kind="linear")(obs_between_thlds)
+
+        # turn the numpy array into an xarray array
+        interpolated_coords = dict(fcst_left.coords)
+        interpolated_coords[threshold_dim] = obs_between_thlds
+        interpolated_values = xr.DataArray(data=interpolated_values, dims=fcst_left.dims, coords=interpolated_coords)
+
+        fcst_left_at_obs.append(interpolated_values)
+        fcst_right_at_obs.append(interpolated_values)
+
+    # add the extrapolated values, with values of either 0 or 1
+    if len(obs_gt_thlds) > 0:
+        high_thld = xr.DataArray(data=obs_gt_thlds, dims=[threshold_dim], coords={threshold_dim: obs_gt_thlds})
+        high_thld = xr.broadcast(high_thld, fcst_left)[0].sel({threshold_dim: obs_gt_thlds})
+        high_thld = xr.ones_like(high_thld)
+        fcst_left_at_obs.append(high_thld)
+        fcst_right_at_obs.append(high_thld)
+
+    if len(obs_lt_thlds) > 0:
+        low_thld = xr.DataArray(data=obs_gt_thlds, dims=[threshold_dim], coords={threshold_dim: obs_gt_thlds})
+        low_thld = xr.broadcast(low_thld, fcst_left)[0].sel({threshold_dim: obs_gt_thlds})
+        low_thld = xr.zeros_like(low_thld)
+        fcst_left_at_obs.append(low_thld)
+        fcst_right_at_obs.append(low_thld)
+
+    # combine the data
+    no_nans = (fcst_right.notnull() & fcst_left.notnull()).any(threshold_dim)
+    fcst_left_at_obs = xr.concat(fcst_left_at_obs, threshold_dim).where(no_nans)
+    fcst_right_at_obs = xr.concat(fcst_right_at_obs, threshold_dim).where(no_nans)
+
+    pit_cdf_left = (
+        fcst_left_at_obs.where(fcst_left_at_obs[threshold_dim] == obs)
+        .mean(threshold_dim)
+        .assign_coords(uniform_endpoint="lower")
+        .expand_dims("uniform_endpoint")
+    )
+    pit_cdf_right = (
+        fcst_right_at_obs.where(fcst_right_at_obs[threshold_dim] == obs)
+        .mean(threshold_dim)
+        .assign_coords(uniform_endpoint="lower")
+        .expand_dims("uniform_endpoint")
+    )
+    return xr.concat([pit_cdf_left, pit_cdf_right], "uniform_endpoint")
+
+
 def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
     """
     Returns a data array of consisting of exactly those x-axis values needed for
     constructing a unifornm PIT probability plot for the given array of `pit_values`.
 
     Args:
-        pit_values: output from `_pit_values_for_ensemble`
+        pit_values: output from `_pit_values_for_ens` or `_pit_values_for_cdf`, containing
+            dimension 'uniform_endpoint' with coordinates ['lower', 'upper']
 
     Returns:
         xarray data array of x-axis values, indexed by the same values on the dimension
@@ -253,7 +512,7 @@ def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
     return x_values
 
 
-def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> dict:
+def _pit_distribution_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> dict:
     """
     Gives the values F(x) where F is the CDF for a pit value,
     and x comes from `x_values`, given that the CDF jumps at x. This occurs precisely
@@ -263,7 +522,8 @@ def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> 
     It is assumed that `x_values` contains all the values in `pit_values`.
 
     Args:
-        pit_values: xarray object output from `_pit_values_for_ensemble`
+        pit_values: output from `_pit_values_for_ens` or `_pit_values_for_cdf`, containing
+            dimension 'uniform_endpoint' with coordinates ['lower', 'upper']
         x_values: xr.DataArray of x values, with dimension 'pit_x_value', output from
             `_get_pit_x_values`
 
@@ -283,9 +543,9 @@ def _pit_cdfvalues_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) -> 
     return {"left": cdf_left, "right": cdf_right}
 
 
-def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> XarrayLike:
+def _pit_distribution_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> XarrayLike:
     """
-    Gives the values F(x) where F is the CDF for a pit value,
+    Gives the values F(x) where F is the CDF for the PIT of a particular forcast--observation case,
     and x comes from `x_values`, given that the CDF is uniform. This occurs precisely
     when upper > lower in the [lower, upper] representation of the PIT value.
     If this condition fails, NaNs are returned.
@@ -295,7 +555,8 @@ def _pit_cdfvalues_for_unif(pit_values: XarrayLike, x_values: xr.DataArray) -> X
     It is assumed that `x_values` containes all the values in `pit_values`.
 
     Args:
-        pit_values: xarray object output from `_pit_values_for_ensemble`
+        pit_values: output from `_pit_values_for_ens` or `_pit_values_for_cdf`, containing
+            dimension 'uniform_endpoint' with coordinates ['lower', 'upper']
         x_values: xr.DataArray of x values, with dimension 'pit_x_value', output from
             `_get_pit_x_values`
 
@@ -332,7 +593,8 @@ def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
     and right hand limits of F at the point x.
 
     Args:
-        pit_values: xarray object output from `_pit_values_for_ensemble`
+        pit_values: output from `_pit_values_for_ens` or `_pit_values_for_cdf`, containing
+            dimension 'uniform_endpoint' with coordinates ['lower', 'upper']
 
     Returns:
         dictionary of cdf values, with keys 'left' and 'right',
@@ -344,9 +606,9 @@ def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
     x_values = _get_pit_x_values(pit_values)
 
     # get cdf values where the pit cdf jumps
-    cdf_at_jump_cases = _pit_cdfvalues_for_jumps(pit_values, x_values)
+    cdf_at_jump_cases = _pit_distribution_for_jumps(pit_values, x_values)
     # get the cdf values where the pit is uniform
-    cdf_at_unif_cases = _pit_cdfvalues_for_unif(pit_values, x_values)
+    cdf_at_unif_cases = _pit_distribution_for_unif(pit_values, x_values)
     # combine
     cdf_right = cdf_at_jump_cases["right"].combine_first(cdf_at_unif_cases)
     cdf_left = cdf_at_jump_cases["left"].combine_first(cdf_at_unif_cases)
@@ -369,7 +631,7 @@ def _pit_dimension_checks(fcst: XarrayLike, obs: XarrayLike, weights: Optional[X
         )
 
 
-def pit_cdfvalues(
+def pit_distribution_for_ens(
     fcst: XarrayLike,
     obs: XarrayLike,
     ens_member_dim: str,
@@ -441,20 +703,11 @@ def pit_cdfvalues(
     )
 
     # PIT values in [G(y-), G(y)] format
-    pit_values = _pit_values_for_ensemble(fcst, obs, ens_member_dim)
-    # convert to F(x-), F(x) format
-    cdf = _pit_cdfvalues(pit_values)
+    pit_values = _pit_values_for_ens(fcst, obs, ens_member_dim)
+    # convert to CDF format, take weighted means, and output dictionary
+    result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
 
-    cdf_left = apply_weights(cdf["left"], weights=weights).mean(dim=dims_for_mean)
-    cdf_right = apply_weights(cdf["right"], weights=weights).mean(dim=dims_for_mean)
-
-    # rescale CDFs so that their max value is 1.
-    # This corrects for weights that don't sum to 1.
-    cdf_right_max = cdf_right.max("pit_x_value")
-    cdf_right = cdf_right / cdf_right_max
-    cdf_left = cdf_left / cdf_right_max
-
-    return {"left": cdf_left, "right": cdf_right}
+    return result
 
 
 def _get_plotting_points_dict(left: XarrayLike, right: XarrayLike) -> dict:

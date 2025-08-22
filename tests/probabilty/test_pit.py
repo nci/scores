@@ -1,5 +1,11 @@
 """
 Unit tests for scores.probability.pit_impl.py
+
+Functions to test:
+    _pit_values_final_processing
+    _pit_values_for_cdf
+    pit_distribution_for_cdf
+    Pit - method argument
 """
 
 import numpy as np
@@ -8,23 +14,23 @@ import xarray as xr
 from numpy import nan
 
 from scores.probability.pit_impl import (
-    Pit_for_ensemble,
+    Pit,
     _alpha_score,
     _construct_hist_values,
     _expected_value,
     _get_pit_x_values,
     _get_plotting_points_dict,
     _pit_cdfvalues,
-    _pit_cdfvalues_for_jumps,
-    _pit_cdfvalues_for_unif,
     _pit_dimension_checks,
+    _pit_distribution_for_jumps,
+    _pit_distribution_for_unif,
     _pit_hist_left,
     _pit_hist_right,
-    _pit_values_for_ensemble,
+    _pit_values_for_ens,
     _value_at_pit_cdf,
     _variance,
     _variance_integral_term,
-    pit_cdfvalues,
+    pit_distribution_for_ens,
 )
 from tests.probabilty import pit_test_data as ptd
 
@@ -72,8 +78,8 @@ DS_PH_RIGHT = create_dataset(ptd.DA_PH_RIGHT)
 EXP_HV3 = create_dataset(ptd.EXP_HV2)
 
 
-def test__pit_values_for_ensemble():
-    """Tests that `_pit_values_for_ensemble` returns as expected."""
+def test__pit_values_for_ens():
+    """Tests that `_pit_values_for_ens` returns as expected."""
     stns = [100, 101, 102, 103, 104]
     fcst = xr.DataArray(
         data=[
@@ -110,7 +116,7 @@ def test__pit_values_for_ensemble():
         dims=["uniform_endpoint", "lead_day", "stn"],
         coords={"uniform_endpoint": ["lower", "upper"], "stn": stns, "lead_day": [0, 1]},
     )
-    result = _pit_values_for_ensemble(fcst, obs, "member")
+    result = _pit_values_for_ens(fcst, obs, "member")
     xr.testing.assert_equal(expected, result)
 
 
@@ -134,9 +140,9 @@ def test__get_pit_x_values(pit_values, expected):
         (create_dataset(ptd.DA_GPV), EXP_PCVFJ2),
     ],  # data array input  # dataset input
 )
-def test__pit_cdfvalues_for_jumps(pit_values, expected):
-    """Tests that `_pit_cdfvalues_for_jumps` returns as expected."""
-    result = _pit_cdfvalues_for_jumps(pit_values, ptd.EXP_GPV)
+def test__pit_distribution_for_jumps(pit_values, expected):
+    """Tests that `_pit_distribution_for_jumps` returns as expected."""
+    result = _pit_distribution_for_jumps(pit_values, ptd.EXP_GPV)
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
@@ -149,9 +155,9 @@ def test__pit_cdfvalues_for_jumps(pit_values, expected):
         (create_dataset(ptd.DA_GPV), create_dataset(ptd.EXP_PCVFU)),  # dataset input
     ],
 )
-def test__pit_cdfvalues_for_unif(pit_values, expected):
-    """Tests that `_pit_cdfvalues_for_unif` returns as expected."""
-    result = _pit_cdfvalues_for_unif(pit_values, ptd.EXP_GPV)
+def test__pit_distribution_for_unif(pit_values, expected):
+    """Tests that `_pit_distribution_for_unif` returns as expected."""
+    result = _pit_distribution_for_unif(pit_values, ptd.EXP_GPV)
     xr.testing.assert_equal(expected, result)
 
 
@@ -224,9 +230,9 @@ def test__pit_dimension_checks_raises(fcst, obs, weights):
         (DS_FCST, ptd.DA_OBS, None, "all", None, EXP_PITCDF5),  # data set/array mix
     ],
 )
-def test_pit_cdfvalues(fcst, obs, preserve_dims, reduce_dims, weights, expected):
-    """Tests that `_pit_cdfvalues` returns as expected."""
-    result = pit_cdfvalues(
+def test_pit_distribution_for_ens(fcst, obs, preserve_dims, reduce_dims, weights, expected):
+    """Tests that `pit_distribution_for_ens` returns as expected."""
+    result = pit_distribution_for_ens(
         fcst, obs, "ens_member", preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights
     )
     assert expected.keys() == result.keys()
@@ -249,8 +255,8 @@ def test_pit_cdfvalues(fcst, obs, preserve_dims, reduce_dims, weights, expected)
     ],
 )
 def test___init__(fcst, obs, preserve_dims, expected_left, expected_right):
-    """Tests that `Pit_for_ensemble.__init__` returns as expected."""
-    result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims=preserve_dims)
+    """Tests that `Pit.__init__` returns as expected."""
+    result = Pit(fcst, obs, "ens_member", preserve_dims=preserve_dims)
     xr.testing.assert_equal(result.left, expected_left)
     xr.testing.assert_equal(result.right, expected_right)
 
@@ -306,14 +312,14 @@ EXP_PP1 = xr.DataArray(  # uses EXP_PITCDF_LEFT2, EXP_PITCDF_RIGHT2
     ],
 )
 def test_plotting_points(fcst, obs, expected):
-    """Tests that `Pit_for_ensemble().plotting_points()` returns as expected."""
-    result = Pit_for_ensemble(fcst, obs, "ens_member", preserve_dims="lead_day").plotting_points()
+    """Tests that `Pit().plotting_points()` returns as expected."""
+    result = Pit(fcst, obs, "ens_member", preserve_dims="lead_day").plotting_points()
     xr.testing.assert_equal(expected, result)
 
 
 def test_plotting_points_parametric():
-    """Tests that `Pit_for_ensemble().plotting_points_parametric()` returns as expected."""
-    result = Pit_for_ensemble(ptd.DA_FCST, ptd.DA_OBS, "ens_member").plotting_points_parametric()
+    """Tests that `Pit().plotting_points_parametric()` returns as expected."""
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").plotting_points_parametric()
     expected = {
         "x_plotting_position": xr.DataArray(
             data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
@@ -411,7 +417,7 @@ def test__pit_hist_right(pit_left, pit_right, expected):
 )
 def test_hist_values(fcst, obs, right, expected):
     """Tests that `hist_values` method of Pit_for_ensemble returns as expected"""
-    result = Pit_for_ensemble(fcst, obs, "ens_member").hist_values(5, right=right)
+    result = Pit(fcst, obs, "ens_member").hist_values(5, right=right)
     xr.testing.assert_allclose(expected, result)
 
 
@@ -430,7 +436,7 @@ def test__alpha_score(plotting_points, expected):
 
 def test_alpha_score():
     """Tests that the `.alpha_score` method returns as expected."""
-    result = Pit_for_ensemble(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score()
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score()
     # uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
     expected = (0.4 * 0.1 + 0.2 * (0.1 + 0.6 - 1.75 / 3) + 0.2 * (2.75 / 3 - 0.6 + 0.2) + 0.2 * 0.2) / 2
     expected = xr.DataArray(data=[expected], dims=["blah"], coords={"blah": [1]}).mean("blah")
@@ -452,7 +458,7 @@ def test__expected_value(plotting_points, expected):
 
 def test_expected_value():
     """Tests that the `.expected_value` method returns as expected."""
-    result = Pit_for_ensemble(ptd.DA_FCST, ptd.DA_OBS, "ens_member").expected_value()
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").expected_value()
     # uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
     expected = (0.4 * 0.5 + 0.2 * (0.5 + 1.75 / 3) + 0.2 * (2.75 / 3 + 1) + 0.2 * (1 + 1)) / 2
     expected = xr.DataArray(data=[1 - expected], dims=["blah"], coords={"blah": [1]}).mean("blah")
@@ -494,5 +500,5 @@ def test__variance(plotting_points, expected):
 )
 def test_variance(fcst, obs, expected):
     """Tests that the `.variance` method returns as expected."""
-    result = Pit_for_ensemble(fcst, obs, "member", preserve_dims="all").variance()
+    result = Pit(fcst, obs, "member", preserve_dims="all").variance()
     xr.testing.assert_allclose(expected, result)
