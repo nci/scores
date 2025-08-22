@@ -3,6 +3,10 @@ Methods for the probability integral transform (PIT) class.
 
 Reserved dimension names:
 - 'uniform_endpoint', 'pit_x_value'
+
+Write checks for fcst cdf: between 0, 1, threshold dim increasing, cdf increasing???
+
+_pit_values_for_cdf - only works for array so far, not dataset
 """
 
 import warnings
@@ -393,10 +397,10 @@ def _pit_values_for_cdf(
         excluding `ens_member_dim`.
     """
     # check whether observations are in the threshold_dim range, if not issue a warning
-    max_obs = float(obs.max())
-    min_obs = float(obs.min())
-    max_thld = float(fcst_left[threshold_dim].max())
-    min_thld = float(fcst_left[threshold_dim].min())
+    max_obs = obs.max()
+    min_obs = obs.min()
+    max_thld = fcst_left[threshold_dim].max()
+    min_thld = fcst_left[threshold_dim].min()
 
     if max_obs > max_thld:
         warnings.warn(
@@ -416,13 +420,17 @@ def _pit_values_for_cdf(
             To avoid this, you can fill NaNs using `scores.processing.cdf.fill_cdf`."
         )
 
-    flatten_obs = np.unique(obs.values.flatten())
+    if isinstance(obs, xr.Dataset):
+        flatten_obs = np.unique(obs.to_dataarray().values.flatten())
+    else:
+        flatten_obs = np.unique(obs.values.flatten())
+
     flatten_obs = flatten_obs[~np.isnan(flatten_obs)]
 
     # classify the observations
     obs_in_thlds = [x for x in flatten_obs if x in fcst_right[threshold_dim]]
     obs_gt_thlds = [x for x in flatten_obs if x > max_thld]
-    obs_lt_thlds = [x for x in flatten_obs if x < min_thld]
+    obs_lt_thlds = np.array([x for x in flatten_obs if x < min_thld])
     obs_between_thlds = [
         x for x in flatten_obs if x not in set(obs_in_thlds).union(set(obs_gt_thlds)).union(set(obs_lt_thlds))
     ]
@@ -463,28 +471,33 @@ def _pit_values_for_cdf(
         fcst_right_at_obs.append(high_thld)
 
     if len(obs_lt_thlds) > 0:
-        low_thld = xr.DataArray(data=obs_gt_thlds, dims=[threshold_dim], coords={threshold_dim: obs_gt_thlds})
-        low_thld = xr.broadcast(low_thld, fcst_left)[0].sel({threshold_dim: obs_gt_thlds})
+        low_thld = xr.DataArray(data=obs_lt_thlds, dims=[threshold_dim], coords={threshold_dim: obs_lt_thlds})
+        low_thld = xr.broadcast(low_thld, fcst_left)[0].sel({threshold_dim: obs_lt_thlds})
         low_thld = xr.zeros_like(low_thld)
         fcst_left_at_obs.append(low_thld)
         fcst_right_at_obs.append(low_thld)
 
     # combine the data
-    no_nans = (fcst_right.notnull() & fcst_left.notnull()).any(threshold_dim)
-    fcst_left_at_obs = xr.concat(fcst_left_at_obs, threshold_dim).where(no_nans)
-    fcst_right_at_obs = xr.concat(fcst_right_at_obs, threshold_dim).where(no_nans)
+    no_nans = (fcst_right.notnull() & fcst_left.notnull()).all(threshold_dim)
+    fcst_left_at_obs = xr.concat(fcst_left_at_obs, threshold_dim)
+    fcst_right_at_obs = xr.concat(fcst_right_at_obs, threshold_dim)
 
+    # import pdb
+
+    # pdb.set_trace()
     pit_cdf_left = (
         fcst_left_at_obs.where(fcst_left_at_obs[threshold_dim] == obs)
         .mean(threshold_dim)
         .assign_coords(uniform_endpoint="lower")
         .expand_dims("uniform_endpoint")
+        .where(no_nans)
     )
     pit_cdf_right = (
         fcst_right_at_obs.where(fcst_right_at_obs[threshold_dim] == obs)
         .mean(threshold_dim)
-        .assign_coords(uniform_endpoint="lower")
+        .assign_coords(uniform_endpoint="upper")
         .expand_dims("uniform_endpoint")
+        .where(no_nans)
     )
     return xr.concat([pit_cdf_left, pit_cdf_right], "uniform_endpoint")
 
