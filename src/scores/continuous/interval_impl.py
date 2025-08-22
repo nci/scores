@@ -6,10 +6,9 @@ from typing import Optional
 
 import xarray as xr
 
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
-from scores.processing import aggregate
 
 
 def quantile_interval_score(  # pylint: disable=R0914

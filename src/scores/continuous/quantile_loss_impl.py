@@ -6,9 +6,9 @@ from typing import Optional
 
 import xarray as xr
 
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_dims, gather_dimensions
-from scores.processing import aggregate
 
 
 def quantile_score(
