@@ -50,7 +50,7 @@ EXPECTED1 = xr.DataArray(
 )
 EXPECTED2 = xr.DataArray([0.0, 0.05, 0.1, 0.1], coords=[[15, 39, 63, 87]], dims=["lead_time"])
 EXPECTED3 = xr.DataArray([0.0, 0, 0, np.nan], coords=[[15, 39, 63, 87]], dims=["lead_time"])
-EXPECTED4 = xr.DataArray([0.0, 0.0, 0.1, 0.1], coords=[[15, 39, 63, 87]], dims=["lead_time"])
+EXPECTED4 = xr.DataArray(0.1)
 EXPECTED_DS1 = xr.Dataset(
     data_vars={
         "temperature_1": (["lead_time"], [0.0, 0.05, 0.1, 0.1]),
@@ -60,10 +60,9 @@ EXPECTED_DS1 = xr.Dataset(
 )
 EXPECTED_DS2 = xr.Dataset(
     data_vars={
-        "temperature_1": (["lead_time"], [0.0, 0.0, 0.1, 0.1]),
-        "temperature_2": (["lead_time"], [0.0, 0.05, 0.1, 0.1]),
+        "temperature_1": (0.1),
+        "temperature_2": (0),
     },
-    coords={"lead_time": [15, 39, 63, 87]},
 )
 EXPECTED_DS3 = xr.Dataset(
     data_vars={
@@ -74,14 +73,14 @@ EXPECTED_DS3 = xr.Dataset(
 WEIGHTS_ARRAY1 = [
     [[0, 0, 0], [0, 0, 0]],
     [[0, 0, 0], [0, 0, 0]],
-    [[1, 1, 1], [1, 1, 1]],
-    [[1, 1, 1], [1, 1, 1]],
+    [[0, 0, 0], [0, 0, 0]],
+    [[0, 0, 0], [0, 0, 1]],
 ]
 WEIGHTS_ARRAY2 = [
-    [[1, 1, 1], [1, 1, 0]],
-    [[1, 1, 1], [1, 1, 1]],
-    [[1, 1, 1], [1, 1, 1]],
-    [[1, 1, 1], [1, 1, 1]],
+    [[0, 0, 0], [0, 0, 1]],
+    [[0, 0, 0], [0, 0, 0]],
+    [[0, 0, 0], [0, 0, 0]],
+    [[0, 0, 0], [0, 0, 0]],
 ]
 WEIGHTS = xr.DataArray(data=WEIGHTS_ARRAY1, coords=FCST_COORDS)
 WEIGHTS_DS = xr.Dataset(

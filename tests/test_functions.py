@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.functions import angular_difference
+from scores.functions import angular_difference, create_latitude_weights
 
 DA_DIR_A = xr.DataArray(
     data=[[[0, 50], [340, 100]], [[300, np.nan], [90, 0]]],  # include nan
@@ -50,3 +50,13 @@ def test_angular_difference(source_a, source_b, expected):
     """Tests that angular_difference returns correct values"""
     output = angular_difference(source_a, source_b)
     output.broadcast_equals(expected)
+
+
+def test_create_latitude_weights():
+    """
+    Tests that create_latitude_weights returns correct values
+    """
+    latitudes = xr.DataArray([-90, -60, 0, 60, 90], dims=["lat"], coords={"lat": [-90, -30, 0, 30, 90]})
+    expected_weights = xr.DataArray([0, 0.5, 1, 0.5, 0], dims=["lat"], coords={"lat": [-90, -30, 0, 30, 90]})
+    weights = create_latitude_weights(latitudes)
+    xr.testing.assert_allclose(weights, expected_weights)

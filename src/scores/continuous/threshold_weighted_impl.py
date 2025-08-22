@@ -362,9 +362,12 @@ def tw_squared_error(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom). Note that these weights are different to threshold weighting
-            which is done by decision threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         xarray data array of the threshold weighted squared error
@@ -443,9 +446,12 @@ def tw_absolute_error(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom). Note that these weights are different to threshold weighting
-            which is done by decision threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         xarray data array of the threshold weighted absolute error
@@ -527,9 +533,12 @@ def tw_quantile_score(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom). Note that these weights are different to threshold weighting
-            which is done by decision threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         xarray data array of the threshold weighted quantile error
@@ -613,9 +622,12 @@ def tw_expectile_score(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom). Note that these weights are different to threshold weighting
-            which is done by decision threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         xarray data array of the threshold weighted expectile error
@@ -699,9 +711,12 @@ def tw_huber_loss(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom). Note that these weights are different to threshold weighting
-            which is done by decision threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         xarray data array of the threshold weighted expectile error

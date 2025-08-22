@@ -1027,6 +1027,7 @@ class TestNseScore(NseSetup):
         if use_weights:
             res = self.nse_score_weights.components.fcst_error
             exp = self.exp_fcst_error_weights
+
         xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
     def test_nse_score(self, var_, use_weights):

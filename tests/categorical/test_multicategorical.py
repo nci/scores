@@ -691,7 +691,7 @@ def test_firm_raises(
         ),
         # Test weighting
         (
-            mtd.DA_FCST2_SEEPS,
+            mtd.DA_FCST_SEEPS,
             mtd.DA_OBS_SEEPS,
             mtd.DA_P1_SEEPS,
             mtd.DA_LIGHT_HEAVY_THRESHOLD_SEEPS,
@@ -700,7 +700,7 @@ def test_firm_raises(
             0.1,
             0.85,
             None,
-            "all",
+            None,
             mtd.DA_SEEPS_WEIGHTS,
             mtd.EXP_SEEPS_CASE5,
         ),
@@ -824,7 +824,6 @@ def test_seeps(  # pylint: disable=too-many-arguments
         preserve_dims=preserve_dims,
         weights=weights,
     )
-
     xr.testing.assert_allclose(
         calculated,
         expected,
