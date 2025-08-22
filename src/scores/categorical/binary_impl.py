@@ -7,10 +7,9 @@ from typing import Optional
 import numpy as np
 import xarray as xr
 
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_binary, gather_dimensions
-
-from scores.processing import aggregate
 
 
 def probability_of_detection(

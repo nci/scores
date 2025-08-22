@@ -51,7 +51,7 @@ EXP_DA_VARY = xr.DataArray(
     coords={"x": [0, 1, 2]},
 )
 EXP_DA_VARY_SUM = xr.DataArray(
-    [4, 7, 0],
+    [4, 7, np.nan],
     dims=["x"],
     coords={"x": [0, 1, 2]},
 )
