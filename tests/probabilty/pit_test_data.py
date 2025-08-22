@@ -294,3 +294,33 @@ DA_FCST_VAR = xr.DataArray(
 )
 DA_OBS_VAR = xr.DataArray(data=[0, 4, 10], dims=["stn"], coords={"stn": [101, 102, 103]})
 EXP_VAR = xr.DataArray(data=[1 / 12, 0, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
+
+
+# test data for _pit_values_for_cdf
+DA_FCST_CDF_LEFT = xr.DataArray(
+    data=[[0, 0.2, 0.5, 0.8, 1], [0, 0.1, 0.1, 0.9, 1], [0, 0, nan, 0.5, 0.9]],
+    dims=["stn", "thld"],
+    coords={"stn": [101, 102, 103], "thld": [0.0, 1, 2, 3, 4]},
+)
+DA_FCST_CDF_RIGHT = xr.DataArray(
+    data=[[0, 0.2, 0.7, 0.8, 1], [0.1, 0.1, 0.1, 0.9, 1], [0, 0, nan, 0.5, 0.9]],
+    dims=["stn", "thld"],
+    coords={"stn": [101, 102, 103], "thld": [0.0, 1, 2, 3, 4]},
+)
+DA_OBS_PVCDF = xr.DataArray(
+    data=[
+        [1, 2, 2.5, 1.5],  # two obs between thresholds, two at thresholds
+        [0, nan, -1, 5],  # nan obs, obs < thresholds, obs > thresholds
+        [0, 0, 0, 0],
+    ],
+    dims=["stn", "instrument"],
+    coords={"stn": [101, 102, 103], "instrument": [0, 1, 2, 4]},
+)
+EXP_PVCDF = xr.DataArray(
+    data=[
+        [[0.2, 0.5, 0.75, 0.35], [0, nan, 0, 1], [nan, nan, nan, nan]],  # lower
+        [[0.2, 0.7, 0.75, 0.35], [0.1, nan, 0, 1], [nan, nan, nan, nan]],  # upper
+    ],
+    dims=["uniform_endpoint", "stn", "instrument"],
+    coords={"stn": [101, 102, 103], "instrument": [0, 1, 2, 4], "uniform_endpoint": ["lower", "upper"]},
+)
