@@ -84,7 +84,7 @@ def aggregate(
             if weights is not None:
                 return _weighted_mean(values, weights, reduce_dims)
             return values.mean(reduce_dims)
-        case "sum":
+        case "sum":  # pragma: no cover - invalid method is checked in `_check_aggregate_inputs`
             if weights is not None:
                 return _weighted_sum(values, weights, reduce_dims)
             return values.sum(reduce_dims)
