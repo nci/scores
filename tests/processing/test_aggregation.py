@@ -55,6 +55,11 @@ EXP_DA_VARY_SUM = xr.DataArray(
     dims=["x"],
     coords={"x": [0, 1, 2]},
 )
+EXP_DA_SUM_NEW_DIM = xr.DataArray(
+    [[99, 198], [1.5, 3], [3, 6]],
+    dims=["y", "z"],
+    coords={"z": [0, 1], "y": [0, 1, 2]},
+)
 EXP_DA_NEW_DIM = xr.DataArray(
     [[33.0, 33.0], [0.75, 0.75], [1.0, 1.0]],
     dims=["y", "z"],
@@ -65,8 +70,13 @@ EXP_DA_Y_BROADCAST = xr.DataArray(
     dims=["x"],
     coords={"x": [0, 1, 2]},
 )
+EXP_DA_Y_SUM_BROADCAST = xr.DataArray(
+    [1, 2, 99],
+    dims=["x"],
+    coords={"x": [0, 1, 2]},
+)
 EXP_DA_VARY_XY = xr.DataArray(1.1)
-
+EXP_DA_SUM_VARY_XY = xr.DataArray(11)
 EXP_DS_Y = xr.Dataset(({"var1": EXP_DA_Y, "var2": EXP_DA_Y}))
 WEIGHTS1 = xr.DataArray(
     [[2, 2, 2], [2, 2, 2], [2, 2, 2]],
@@ -119,7 +129,7 @@ NAN_WEIGHTS = xr.DataArray(
         (DA_3x3, ["y"], WEIGHTS2, EXP_DA_VARY),
         # Extra dim in weights
         (DA_3x3, ["x"], WEIGHTS3, EXP_DA_NEW_DIM),
-        # Weights only for 1 dim to test broadcasting, with NaN
+        # Weights only for 1 dim to test broadcasting,
         (DA_3x3, ["y"], WEIGHTS4, EXP_DA_Y_BROADCAST),
         # Varying weights over x and y
         (DA_3x3, ["x", "y"], WEIGHTS2, EXP_DA_VARY_XY),
@@ -159,17 +169,17 @@ def test_aggregate_mean(values, reduce_dims, weights, expected):
         # Unweighted sum over y
         (DA_3x3, ["y"], None, EXP_DA_Y_SUM),
         # Equal weights over y
-        # (DA_3x3, ["y"], WEIGHTS1, EXP_DA_Y_SUM),
+        (DA_3x3, ["y"], WEIGHTS1, 2 * EXP_DA_Y_SUM),
         # Varying weights over y
         (DA_3x3, ["y"], WEIGHTS2, EXP_DA_VARY_SUM),
-        # # Extra dim in weights
-        # (DA_3x3, ["x"], WEIGHTS4, EXP_DA_NEW_DIM),
-        # # Weights only for 1 dim to test broadcasting, with NaN
-        # (DA_3x3, ["y"], WEIGHTS5, EXP_DA_Y_BROADCAST),
-        # # Varying weights over x and y
-        # (DA_3x3, ["x", "y"], WEIGHTS3, EXP_DA_VARY_XY),
-        # # Varying weights over y, but input error is NaN
-        # (DA_3x3 * np.nan, ["y"], WEIGHTS3, EXP_DA_VARY * np.nan),
+        # Extra dim in weights
+        (DA_3x3, ["x"], WEIGHTS3, EXP_DA_SUM_NEW_DIM),
+        # Weights only for 1 dim to test broadcasting
+        (DA_3x3, ["y"], WEIGHTS4, EXP_DA_Y_SUM_BROADCAST),
+        # Varying weights over x and y
+        (DA_3x3, ["x", "y"], WEIGHTS2, EXP_DA_SUM_VARY_XY),
+        # Varying weights over y, but input error is NaN
+        (DA_3x3 * np.nan, ["y"], WEIGHTS2, EXP_DA_VARY * np.nan),
     ],
 )
 def test_aggregate_sum(values, reduce_dims, weights, expected):

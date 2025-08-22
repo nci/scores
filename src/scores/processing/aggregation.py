@@ -128,7 +128,10 @@ def _weighted_sum(
     Calculated the weighted sum of `values` using `weights` over specified dimensions.
     """
     values = values.weighted(weights)
-    return values.sum(reduce_dims)
+    summed_values = values.sum(reduce_dims)
+    # Handle NaNs in `values`
+    summed_values = summed_values.where(~xr.ufuncs.isnan(values.mean(reduce_dims)))
+    return summed_values
 
 
 def _check_aggregate_inputs(
