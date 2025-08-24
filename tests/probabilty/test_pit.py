@@ -26,7 +26,8 @@ from scores.probability.pit_impl import (
     _pit_distribution_for_unif,
     _pit_hist_left,
     _pit_hist_right,
-    _pit_values_for_cdf,
+    _pit_values_for_cdf_array,
+    _pit_values_for_cdf_dataset,
     _pit_values_for_ens,
     _value_at_pit_cdf,
     _variance,
@@ -505,19 +506,36 @@ def test_variance(fcst, obs, expected):
     xr.testing.assert_allclose(expected, result)
 
 
+def test__pit_values_for_cdf_array():
+    """Tests that `_pit_values_for_cdf_array` returns as expected."""
+    result = _pit_values_for_cdf_array(ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, ptd.DA_OBS_PVCDF, "thld")
+    xr.testing.assert_allclose(ptd.EXP_PVCDF, result)
+
+
 @pytest.mark.parametrize(
     ("fcst_left", "fcst_right", "obs", "expected"),
     [
-        (ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, ptd.DA_OBS_PVCDF, ptd.EXP_PVCDF),
         (
             create_dataset(ptd.DA_FCST_CDF_LEFT),
             create_dataset(ptd.DA_FCST_CDF_RIGHT),
             create_dataset(ptd.DA_OBS_PVCDF),
             create_dataset(ptd.EXP_PVCDF),
         ),
+        (
+            ptd.DA_FCST_CDF_LEFT,
+            ptd.DA_FCST_CDF_RIGHT,
+            create_dataset(ptd.DA_OBS_PVCDF),
+            create_dataset(ptd.EXP_PVCDF),
+        ),
+        (
+            create_dataset(ptd.DA_FCST_CDF_LEFT),
+            create_dataset(ptd.DA_FCST_CDF_RIGHT),
+            ptd.DA_OBS_PVCDF,
+            create_dataset(ptd.EXP_PVCDF),
+        ),
     ],
 )
-def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
-    """Tests that `_pit_values_for_cdf` returns as expected."""
-    result = _pit_values_for_cdf(fcst_left, fcst_right, obs, "thld")
+def test__pit_values_for_cdf_dataset(fcst_left, fcst_right, obs, expected):
+    """Tests that `_pit_values_for_cdf_dataset` returns as expected."""
+    result = _pit_values_for_cdf_dataset(fcst_left, fcst_right, obs, "thld")
     xr.testing.assert_allclose(expected, result)

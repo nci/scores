@@ -371,11 +371,11 @@ def _pit_values_final_processing(pit_values, weights, dims_for_mean):
     return {"left": pit_cdf_left, "right": pit_cdf_right}
 
 
-def _pit_values_for_cdf(
-    fcst_left: XarrayLike, fcst_right: XarrayLike, obs: XarrayLike, threshold_dim: str
-) -> XarrayLike:
+def _pit_values_for_cdf_array(
+    fcst_left: xr.DataArray, fcst_right: xr.DataArray, obs: xr.DataArray, threshold_dim: str
+) -> xr.DataArray:
     """
-    For each forecast case in the form of an CDF F (in xarray format), the PIT value of F
+    For each forecast case in the form of an CDF F (in xr.DataArray format), the PIT value of F
     for the corresponding observation y is a uniform distribution over the closed
     interval [lower,upper], where
         lower = F(y-)
@@ -387,7 +387,9 @@ def _pit_values_for_cdf(
     It is assumed that `fcst_left` and `fcst_right` have the same shape, dims and coords.
 
     Args:
-        fcst: array of forecast CDF values, including dimension `threshold_dim`
+        fcst_left: array of forecast CDF left-limit values, including dimension `threshold_dim`
+        fcst_right: array of forecast CDF left-right values, including dimension `threshold_dim`.
+            Assumed to have same shape and dimensions at `fcst_left`
         obs: array of forecast values, excluding `threshold_dim`
         threshold_dim: name of the threshold dimension in `fcst`
 
@@ -404,27 +406,23 @@ def _pit_values_for_cdf(
 
     if max_obs > max_thld:
         warnings.warn(
-            "Some observations were greater than the maximum `threshold_dim` value in your `fcst`. \
-            The value of the fcst CDF at these observations will be set to 1."
+            "Some observations were greater than the maximum `threshold_dim` value in your `fcst`. "
+            "The value of the fcst CDF at these observations will be set to 1."
         )
     if min_obs < min_thld:
         warnings.warn(
-            "Some observations were less than the minimum `threshold_dim` value in your `fcst`. \
-            The value of the fcst CDF at these observations will be set to 0."
+            "Some observations were less than the minimum `threshold_dim` value in your `fcst`. "
+            "The value of the fcst CDF at these observations will be set to 0."
         )
 
     # check whether fcst values are NaN, if so issue a warning
     if bool(fcst_left.isnull().any()) or bool(fcst_right.isnull().any()):
         warnings.warn(
-            "Some forecast CDF values are NaN. In such cases, the entire forecast CDF will be treated as NaN. \
-            To avoid this, you can fill NaNs using `scores.processing.cdf.fill_cdf`."
+            "Some forecast CDF values are NaN. In such cases, the entire forecast CDF will be treated as NaN. "
+            "To avoid this, you can fill NaNs using `scores.processing.cdf.fill_cdf`."
         )
 
-    if isinstance(obs, xr.Dataset):
-        flatten_obs = np.unique(obs.to_dataarray().values.flatten())
-    else:
-        flatten_obs = np.unique(obs.values.flatten())
-
+    flatten_obs = np.unique(obs.values.flatten())
     flatten_obs = flatten_obs[~np.isnan(flatten_obs)]
 
     # classify the observations
@@ -482,9 +480,6 @@ def _pit_values_for_cdf(
     fcst_left_at_obs = xr.concat(fcst_left_at_obs, threshold_dim)
     fcst_right_at_obs = xr.concat(fcst_right_at_obs, threshold_dim)
 
-    # import pdb
-
-    # pdb.set_trace()
     pit_cdf_left = (
         fcst_left_at_obs.where(fcst_left_at_obs[threshold_dim] == obs)
         .mean(threshold_dim)
@@ -499,7 +494,51 @@ def _pit_values_for_cdf(
         .expand_dims("uniform_endpoint")
         .where(no_nans)
     )
-    return xr.concat([pit_cdf_left, pit_cdf_right], "uniform_endpoint")
+    result = xr.concat([pit_cdf_left, pit_cdf_right], "uniform_endpoint")
+
+    return result
+
+
+def _pit_values_for_cdf_dataset(
+    fcst_left: XarrayLike, fcst_right: XarrayLike, obs: XarrayLike, threshold_dim: str
+) -> xr.Dataset:
+    """
+    Does the same as `_pit_values_for_cdf_array` but where at least one of the xarray
+    inputs is a dataset.
+
+    Args:
+        fcst_left: xarray object forecast CDF left-limit values, including dimension `threshold_dim`
+        fcst_right: xarray object forecast CDF right-limit values, including dimension `threshold_dim`.
+            Assumed to have same shape, variabes, coords, etc as fcst_right
+        obs: array of forecast values, excluding `threshold_dim`
+        threshold_dim: name of the threshold dimension in `fcst`
+
+    Returns:
+        array of PIT values in the form [lower,upper], with dimensions
+        'uniform_endpoint', all dimensions in `obs` and all dimensions in `fcst`
+        excluding `ens_member_dim`.
+    """
+    if isinstance(fcst_left, xr.Dataset) and isinstance(obs, xr.DataArray):
+        return xr.merge(
+            [
+                _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs, threshold_dim)
+                for var in fcst_left.data_vars
+            ]
+        )
+    elif isinstance(fcst_left, xr.DataArray):
+        return xr.merge(
+            [
+                _pit_values_for_cdf_array(fcst_left, fcst_right, obs[var], threshold_dim).rename(var)
+                for var in obs.data_vars
+            ]
+        )
+    else:
+        return xr.merge(
+            [
+                _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs[var], threshold_dim)
+                for var in obs.data_vars
+            ]
+        )
 
 
 def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
