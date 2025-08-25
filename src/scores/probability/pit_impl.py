@@ -314,6 +314,8 @@ def pit_distribution_for_cdf(
             'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
         ValueError if, when ``fcst`` is a dictionary, ``fcst['left']`` and ``fcst['right']`` do not have the same
             shape, dimensions and coordinates.
+        ValueError if values in ``fcst`` arrays or sets are less than 0 or greater than 1, ignoriong NaNs.
+        ValueError if coordinates in the ``fcst`` ``threshold_dim`` dimension are not increasing.
 
     Warns:
         - if any values in ``obs`` lie outside the range of values in the forecast ``threshold_dim`` dimension.
@@ -325,13 +327,14 @@ def pit_distribution_for_cdf(
         # check that both have same shape, coords and dims
         if not xr.ones_like(fcst_left).equals(xr.ones_like(fcst_right)):
             raise ValueError("left and right must have same shape, dimensions and coordinates")
+        _cdf_checks(fcst_left, threshold_dim)
+        _cdf_checks(fcst_right, threshold_dim)
     else:
+        _cdf_checks(fcst, threshold_dim)
         fcst_left = fcst.copy()
         fcst_right = fcst.copy()
 
     _pit_dimension_checks(fcst_left, obs, weights)
-
-    _cdf_checks([fcst_left, fcst_right], threshold_dim)
 
     weights_dims = None
     if weights is not None:
@@ -355,7 +358,7 @@ def pit_distribution_for_cdf(
     return result
 
 
-def _cdf_checks(cdf_list: list[XarrayLike], threshold_dim: str):
+def _cdf_checks(cdf: XarrayLike, threshold_dim: str):
     """
     For each CDF in `cdf_list`, checks that
         - coords in `threshold_dim` are increasing
@@ -363,18 +366,22 @@ def _cdf_checks(cdf_list: list[XarrayLike], threshold_dim: str):
     Does not check that the CDF is increasing. This is left to the user.
 
     Args:
-        cdf_list: list of xarray objects
+        cdf: xarray object
         threshold_dim: name of the threshold dimension in the object
 
     Raises:
         ValueError if coords in `threshold_dim` not increasing
-        ValueError if any values in cdf_list objects are outside [0, 1] (NaNs are ignored)
+        ValueError if any values in `cdf` are outside [0, 1] (NaNs are ignored)
     """
-    for cdf in cdf_list:
-        if not coords_increasing(cdf, threshold_dim):
-            raise ValueError("coordinates along `fcst[threshold_dim]` are not strictly increasing")
+    if not coords_increasing(cdf, threshold_dim):
+        raise ValueError("coordinates along `fcst[threshold_dim]` are not strictly increasing")
+    if isinstance(cdf, xr.DataArray):
         if not cdf_values_within_bounds(cdf):
             raise ValueError("`fcst` values must be between 0 and 1 inclusive.")
+    else:
+        for var in cdf.data_vars:
+            if not cdf_values_within_bounds(cdf[var]):
+                raise ValueError("`fcst` values must be between 0 and 1 inclusive.")
 
 
 def _pit_values_final_processing(pit_values, weights, dims_for_mean):

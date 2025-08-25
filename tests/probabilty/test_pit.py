@@ -686,13 +686,15 @@ def test_Pit__init__(
 
 
 @pytest.mark.parametrize(
-    ("cdf_list", "error_msg"),
+    ("cdf", "error_msg"),
     [
-        ([ptd.DA_FCST_CDF_LEFT, ptd.DA_CDF_CHECKS], "are not strictly increasing"),
-        ([ptd.DA_FCST_CDF_LEFT, 2 * ptd.DA_FCST_CDF_LEFT], "`fcst` values must be between 0 and 1 inclusive."),
+        (ptd.DA_CDF_CHECKS, "are not strictly increasing"),
+        (create_dataset(ptd.DA_CDF_CHECKS), "are not strictly increasing"),
+        (2 * ptd.DA_FCST_CDF_LEFT, "`fcst` values must be between 0 and 1 inclusive."),
+        (create_dataset(2 * ptd.DA_FCST_CDF_LEFT), "`fcst` values must be between 0 and 1 inclusive."),
     ],
 )
-def test__cdf_checks_raises(cdf_list, error_msg):
+def test__cdf_checks_raises(cdf, error_msg):
     """Tests that _cdf_checks raises as expected."""
     with pytest.raises(ValueError, match=error_msg):
-        _cdf_checks(cdf_list, "thld")
+        _cdf_checks(cdf, "thld")
