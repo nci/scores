@@ -324,6 +324,19 @@ EXP__PVCDF = xr.DataArray(  # uniform distribution format
     dims=["uniform_endpoint", "stn", "instrument"],
     coords={"stn": [101, 102, 103], "instrument": [0, 1, 2, 4], "uniform_endpoint": ["lower", "upper"]},
 )
+# test data for _pit_values_for_cdf_array warning tests
+DA_FCST_WARN1 = xr.DataArray(
+    data=[[0, 0.2, 0.5, 0.8, 1], [0, 0.1, 0.1, 0.9, 1], [0, 0, 1, 0.5, 0.9]],
+    dims=["stn", "thld"],
+    coords={"stn": [101, 102, 103], "thld": [0.0, 1, 2, 3, 4]},
+)
+DA_FCST_WARN2 = xr.DataArray(
+    data=[[0, 0.2, 0.5, 0.8, 1], [0, nan, 0.1, 0.9, 1], [0, 0, 1, 0.5, 0.9]],
+    dims=["stn", "thld"],
+    coords={"stn": [101, 102, 103], "thld": [-1, 1, 2, 3, 4.5]},
+)
+DA_OBS_WARN1 = xr.DataArray(data=[1, 2, 4.1], dims=["stn"], coords={"stn": [101, 102, 103]})
+DA_OBS_WARN2 = xr.DataArray(data=[-0.1, 2, 4], dims=["stn"], coords={"stn": [101, 102, 103]})
 
 # data data for pit_distribution_for_cdf
 DA_FCST_CDF_LEFT1 = xr.DataArray(
@@ -344,7 +357,7 @@ DA_FCST_CDF_RIGHT1 = xr.DataArray(
     dims=["stn", "lead_day", "thld"],
     coords={"stn": [101, 102, 103], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
 )
-DA_PBS_PDCDF = xr.DataArray(data=[2.0, 1, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
+DA_OBS_PDCDF = xr.DataArray(data=[2.0, 1, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
 EXP_PDCDF_LEFT1 = xr.DataArray(
     data=[
         [[0, 0, 1, 1, 1], [0, 0, 0, 1, 1]],
@@ -398,3 +411,6 @@ DA_FCST_CDF_LEFT_RAISES = xr.DataArray(
     dims=["stn", "lead_day", "thld"],
     coords={"stn": [101, 102], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
 )
+
+# test data for _cdf_checks
+DA_CDF_CHECKS = xr.DataArray(data=[0, 4, 2, 6, 4], dims=["thld"], coords={"thld": [1, 3, 2, 5, 3]})
