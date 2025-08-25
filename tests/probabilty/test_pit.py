@@ -3,10 +3,9 @@ Unit tests for scores.probability.pit_impl.py
 
 Functions to test:
     _pit_values_final_processing
-    _pit_values_for_cdf - only works for array so far, not dataset
-    pit_distribution_for_cdf
-    Pit - method argument
 """
+
+import warnings
 
 import numpy as np
 import pytest
@@ -16,6 +15,7 @@ from numpy import nan
 from scores.probability.pit_impl import (
     Pit,
     _alpha_score,
+    _cdf_checks,
     _construct_hist_values,
     _expected_value,
     _get_pit_x_values,
@@ -514,6 +514,20 @@ def test__pit_values_for_cdf_array():
 
 
 @pytest.mark.parametrize(
+    ("fcst_left", "obs", "warning_msg"),
+    [
+        (ptd.DA_FCST_WARN1, ptd.DA_OBS_WARN1, "greater than the maximum"),
+        (ptd.DA_FCST_WARN1, ptd.DA_OBS_WARN2, "less than the minimum"),
+        (ptd.DA_FCST_WARN2, ptd.DA_OBS_WARN1, "Some forecast CDF values are NaN"),
+    ],
+)
+def test__pit_values_for_cdf_array_warns(fcst_left, obs, warning_msg):
+    """Tests that _pit_values_for_cdf_array warns as expected."""
+    with pytest.warns(UserWarning, match=warning_msg):
+        _pit_values_for_cdf_array(fcst_left, fcst_left, obs, "thld")
+
+
+@pytest.mark.parametrize(
     ("fcst_left", "fcst_right", "obs", "expected"),
     [
         (
@@ -546,12 +560,18 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
 @pytest.mark.parametrize(
     ("fcst", "obs", "preserve_dims", "expected"),
     [
-        ({"left": ptd.DA_FCST_CDF_LEFT1, "right": ptd.DA_FCST_CDF_RIGHT1}, ptd.DA_PBS_PDCDF, "all", ptd.EXP_PDCDF1),
-        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_PBS_PDCDF, "all", ptd.EXP_PDCDF2),
-        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_PBS_PDCDF, None, ptd.EXP_PDCDF3),
+        ({"left": ptd.DA_FCST_CDF_LEFT1, "right": ptd.DA_FCST_CDF_RIGHT1}, ptd.DA_OBS_PDCDF, "all", ptd.EXP_PDCDF1),
+        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_OBS_PDCDF, "all", ptd.EXP_PDCDF2),
+        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_OBS_PDCDF, None, ptd.EXP_PDCDF3),
         (
             create_dataset(ptd.DA_FCST_CDF_LEFT1),
-            ptd.DA_PBS_PDCDF,
+            ptd.DA_OBS_PDCDF,
+            None,
+            {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
+        ),
+        (
+            create_dataset(ptd.DA_FCST_CDF_LEFT1),
+            create_dataset(ptd.DA_OBS_PDCDF),
             None,
             {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
         ),
@@ -581,3 +601,98 @@ def test_pit_distribution_for_cdf_raises(fcst):
     """Tests that `pit_distribution_for_cdf` raises as expected."""
     with pytest.raises(ValueError, match="left and right must have same shape, dimensions and coordinates"):
         pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld")
+
+
+def test_Pit__init___raises():
+    """Tests that `Pit.__init__` raises as expected."""
+    with pytest.raises(ValueError, match='`fcst_type` must be one of "ensemble" or "cdf"'):
+        Pit(ptd.DA_FCST, ptd.DA_OBS, "member", fcst_type="PDF")
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "special_fcst_dim",
+        "fcst_type",
+        "reduce_dims",
+        "preserve_dims",
+        "weights",
+        "expected_left",
+        "expected_right",
+    ),
+    [
+        (
+            ptd.DA_FCST_CDF_LEFT1,
+            ptd.DA_OBS_PDCDF,
+            "thld",
+            "cdf",
+            "all",
+            None,
+            None,
+            ptd.EXP_PDCDF_LEFT3,
+            ptd.EXP_PDCDF_RIGHT3,
+        ),
+        (
+            ptd.DA_FCST_CDF_LEFT1,
+            ptd.DA_OBS_PDCDF,
+            "thld",
+            "cdf",
+            None,
+            "all",
+            None,
+            ptd.EXP_PDCDF_LEFT2,
+            ptd.EXP_PDCDF_RIGHT2,
+        ),
+        (
+            ptd.DA_FCST,
+            ptd.DA_OBS,
+            "ens_member",
+            "ensemble",
+            None,
+            "all",
+            None,
+            ptd.EXP_PITCDF_LEFT1,
+            ptd.EXP_PITCDF_RIGHT1,
+        ),
+        (
+            ptd.DA_FCST,
+            ptd.DA_OBS,
+            "ens_member",
+            "ensemble",
+            None,
+            "lead_day",
+            ptd.WTS_STN,
+            ptd.EXP_PITCDF_LEFT3,
+            ptd.EXP_PITCDF_RIGHT3,
+        ),
+    ],
+)
+def test_Pit__init__(
+    fcst, obs, special_fcst_dim, fcst_type, reduce_dims, preserve_dims, weights, expected_left, expected_right
+):
+    """Tests that `Pit.__init__` returns as expected."""
+    result = Pit(
+        fcst,
+        obs,
+        special_fcst_dim,
+        fcst_type=fcst_type,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+    xr.testing.assert_equal(expected_left, result.left)
+    xr.testing.assert_equal(expected_right, result.right)
+
+
+@pytest.mark.parametrize(
+    ("cdf_list", "error_msg"),
+    [
+        ([ptd.DA_FCST_CDF_LEFT, ptd.DA_CDF_CHECKS], "are not strictly increasing"),
+        ([ptd.DA_FCST_CDF_LEFT, 2 * ptd.DA_FCST_CDF_LEFT], "`fcst` values must be between 0 and 1 inclusive."),
+    ],
+)
+def test__cdf_checks_raises(cdf_list, error_msg):
+    """Tests that _cdf_checks raises as expected."""
+    with pytest.raises(ValueError, match=error_msg):
+        _cdf_checks(cdf_list, "thld")

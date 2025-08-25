@@ -17,6 +17,7 @@ import xarray as xr
 from scipy.interpolate import interp1d
 
 from scores.functions import apply_weights
+from scores.probability.checks import cdf_values_within_bounds, coords_increasing
 from scores.processing.cdf import add_thresholds
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
@@ -53,8 +54,8 @@ class Pit:
     rescaled if necessary so that the weighted mean is also a distribution.
 
     Attributes:
-        left: values for the left-hand limit of the PIT (represented as a CDF)
-        right: values for the PIT (represented as a CDF), which also equals the right-hand limit
+        left: values for the left-hand limit of the PIT distribution (represented as a CDF)
+        right: values for the PIT distribution (represented as a CDF), which also equals the right-hand limit
 
     Methods:
         attribute_name (type): Description of the attribute.
@@ -330,6 +331,8 @@ def pit_distribution_for_cdf(
 
     _pit_dimension_checks(fcst_left, obs, weights)
 
+    _cdf_checks([fcst_left, fcst_right], threshold_dim)
+
     weights_dims = None
     if weights is not None:
         weights_dims = weights.dims
@@ -350,6 +353,28 @@ def pit_distribution_for_cdf(
     result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
 
     return result
+
+
+def _cdf_checks(cdf_list: list[XarrayLike], threshold_dim: str):
+    """
+    For each CDF in `cdf_list`, checks that
+        - coords in `threshold_dim` are increasing
+        - cdf takes values in the unit interval [0,1]
+    Does not check that the CDF is increasing. This is left to the user.
+
+    Args:
+        cdf_list: list of xarray objects
+        threshold_dim: name of the threshold dimension in the object
+
+    Raises:
+        ValueError if coords in `threshold_dim` not increasing
+        ValueError if any values in cdf_list objects are outside [0, 1] (NaNs are ignored)
+    """
+    for cdf in cdf_list:
+        if not coords_increasing(cdf, threshold_dim):
+            raise ValueError("coordinates along `fcst[threshold_dim]` are not strictly increasing")
+        if not cdf_values_within_bounds(cdf):
+            raise ValueError("`fcst` values must be between 0 and 1 inclusive.")
 
 
 def _pit_values_final_processing(pit_values, weights, dims_for_mean):
@@ -407,19 +432,22 @@ def _pit_values_for_cdf_array(
     if max_obs > max_thld:
         warnings.warn(
             "Some observations were greater than the maximum `threshold_dim` value in your `fcst`. "
-            "The value of the fcst CDF at these observations will be set to 1."
+            "The value of the fcst CDF at these observations will be set to 1.",
+            UserWarning,
         )
     if min_obs < min_thld:
         warnings.warn(
             "Some observations were less than the minimum `threshold_dim` value in your `fcst`. "
-            "The value of the fcst CDF at these observations will be set to 0."
+            "The value of the fcst CDF at these observations will be set to 0.",
+            UserWarning,
         )
 
     # check whether fcst values are NaN, if so issue a warning
     if bool(fcst_left.isnull().any()) or bool(fcst_right.isnull().any()):
         warnings.warn(
             "Some forecast CDF values are NaN. In such cases, the entire forecast CDF will be treated as NaN. "
-            "To avoid this, you can fill NaNs using `scores.processing.cdf.fill_cdf`."
+            "To avoid this, you can fill NaNs using `scores.processing.cdf.fill_cdf`.",
+            UserWarning,
         )
 
     flatten_obs = np.unique(obs.values.flatten())
