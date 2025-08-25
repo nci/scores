@@ -296,7 +296,7 @@ DA_OBS_VAR = xr.DataArray(data=[0, 4, 10], dims=["stn"], coords={"stn": [101, 10
 EXP_VAR = xr.DataArray(data=[1 / 12, 0, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
 
 
-# test data for _pit_values_for_cdf
+# test data for _pit_values_for_cdf, _pit_values_for_cdf_array
 DA_FCST_CDF_LEFT = xr.DataArray(
     data=[[0, 0.2, 0.5, 0.8, 1], [0, 0.1, 0.1, 0.9, 1], [0, 0, nan, 0.5, 0.9]],
     dims=["stn", "thld"],
@@ -316,11 +316,85 @@ DA_OBS_PVCDF = xr.DataArray(
     dims=["stn", "instrument"],
     coords={"stn": [101, 102, 103], "instrument": [0, 1, 2, 4]},
 )
-EXP_PVCDF = xr.DataArray(
+EXP__PVCDF = xr.DataArray(  # uniform distribution format
     data=[
         [[0.2, 0.5, 0.75, 0.35], [0, nan, 0, 1], [nan, nan, nan, nan]],  # lower
         [[0.2, 0.7, 0.75, 0.35], [0.1, nan, 0, 1], [nan, nan, nan, nan]],  # upper
     ],
     dims=["uniform_endpoint", "stn", "instrument"],
     coords={"stn": [101, 102, 103], "instrument": [0, 1, 2, 4], "uniform_endpoint": ["lower", "upper"]},
+)
+
+# data data for pit_distribution_for_cdf
+DA_FCST_CDF_LEFT1 = xr.DataArray(
+    data=[
+        [[0, 0.2, 0.5, 1], [0, 0, 0.6, 1]],
+        [[0, 0, 0, 1], [nan, nan, 1, nan]],
+        [[0, 0.8, 1, 1], [0, 0.5, 0.9, 1]],
+    ],
+    dims=["stn", "lead_day", "thld"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
+)
+DA_FCST_CDF_RIGHT1 = xr.DataArray(
+    data=[
+        [[0, 0.2, 0.5, 1], [0, 0, 0.8, 1]],  # obs=2: uniform [0.5, 0.5], [0.6, 0.8]
+        [[0, 0, 1, 1], [0, 0, 1, 1]],  # obs=1: uniform [0, 0], nan
+        [[0, 0.8, 1, 1], [0, 0.5, 0.9, 1]],  # obs is nan
+    ],
+    dims=["stn", "lead_day", "thld"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
+)
+DA_PBS_PDCDF = xr.DataArray(data=[2.0, 1, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
+EXP_PDCDF_LEFT1 = xr.DataArray(
+    data=[
+        [[0, 0, 1, 1, 1], [0, 0, 0, 1, 1]],
+        [[0, 1, 1, 1, 1], [nan, nan, nan, nan, nan]],
+        [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
+    ],
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "pit_x_value": [0, 0.5, 0.6, 0.8, 1]},
+)
+EXP_PDCDF_RIGHT1 = xr.DataArray(
+    data=[
+        [[0, 1, 1, 1, 1], [0, 0, 0, 1, 1]],
+        [[1, 1, 1, 1, 1], [nan, nan, nan, nan, nan]],
+        [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
+    ],
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "pit_x_value": [0, 0.5, 0.6, 0.8, 1]},
+)
+EXP_PDCDF1 = {"left": EXP_PDCDF_LEFT1, "right": EXP_PDCDF_RIGHT1}
+EXP_PDCDF_LEFT2 = xr.DataArray(
+    data=[
+        [[0, 0, 1, 1], [0, 0, 0, 1]],
+        [[0, 1, 1, 1], [nan, nan, nan, nan]],
+        [[nan, nan, nan, nan], [nan, nan, nan, nan]],
+    ],
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "pit_x_value": [0, 0.5, 0.6, 1]},
+)
+EXP_PDCDF_RIGHT2 = xr.DataArray(
+    data=[
+        [[0, 1, 1, 1], [0, 0, 1, 1]],
+        [[1, 1, 1, 1], [nan, nan, nan, nan]],
+        [[nan, nan, nan, nan], [nan, nan, nan, nan]],
+    ],
+    dims=["stn", "lead_day", "pit_x_value"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "pit_x_value": [0, 0.5, 0.6, 1]},
+)
+EXP_PDCDF2 = {"left": EXP_PDCDF_LEFT2, "right": EXP_PDCDF_RIGHT2}
+EXP_PDCDF_LEFT3 = xr.DataArray(
+    data=[0, 1 / 3, 2 / 3, 1], dims=["pit_x_value"], coords={"pit_x_value": [0, 0.5, 0.6, 1]}
+)
+EXP_PDCDF_RIGHT3 = xr.DataArray(
+    data=[1 / 3, 2 / 3, 1, 1], dims=["pit_x_value"], coords={"pit_x_value": [0, 0.5, 0.6, 1]}
+)
+EXP_PDCDF3 = {"left": EXP_PDCDF_LEFT3, "right": EXP_PDCDF_RIGHT3}
+DA_FCST_CDF_LEFT_RAISES = xr.DataArray(
+    data=[
+        [[0, 0.2, 0.5, 1], [0, 0, 0.6, 1]],
+        [[0, 0, 0, 1], [nan, nan, 1, nan]],
+    ],
+    dims=["stn", "lead_day", "thld"],
+    coords={"stn": [101, 102], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
 )

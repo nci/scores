@@ -499,7 +499,7 @@ def _pit_values_for_cdf_array(
     return result
 
 
-def _pit_values_for_cdf_dataset(
+def _pit_values_for_cdf(
     fcst_left: XarrayLike, fcst_right: XarrayLike, obs: XarrayLike, threshold_dim: str
 ) -> xr.Dataset:
     """
@@ -518,7 +518,9 @@ def _pit_values_for_cdf_dataset(
         'uniform_endpoint', all dimensions in `obs` and all dimensions in `fcst`
         excluding `ens_member_dim`.
     """
-    if isinstance(fcst_left, xr.Dataset) and isinstance(obs, xr.DataArray):
+    if isinstance(fcst_left, xr.DataArray) and isinstance(obs, xr.DataArray):
+        return _pit_values_for_cdf_array(fcst_left, fcst_right, obs, threshold_dim)
+    elif isinstance(fcst_left, xr.Dataset) and isinstance(obs, xr.DataArray):
         return xr.merge(
             [
                 _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs, threshold_dim)
