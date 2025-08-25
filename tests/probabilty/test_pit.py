@@ -26,12 +26,13 @@ from scores.probability.pit_impl import (
     _pit_distribution_for_unif,
     _pit_hist_left,
     _pit_hist_right,
+    _pit_values_for_cdf,
     _pit_values_for_cdf_array,
-    _pit_values_for_cdf_dataset,
     _pit_values_for_ens,
     _value_at_pit_cdf,
     _variance,
     _variance_integral_term,
+    pit_distribution_for_cdf,
     pit_distribution_for_ens,
 )
 from tests.probabilty import pit_test_data as ptd
@@ -509,7 +510,7 @@ def test_variance(fcst, obs, expected):
 def test__pit_values_for_cdf_array():
     """Tests that `_pit_values_for_cdf_array` returns as expected."""
     result = _pit_values_for_cdf_array(ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, ptd.DA_OBS_PVCDF, "thld")
-    xr.testing.assert_allclose(ptd.EXP_PVCDF, result)
+    xr.testing.assert_allclose(ptd.EXP__PVCDF, result)
 
 
 @pytest.mark.parametrize(
@@ -519,23 +520,64 @@ def test__pit_values_for_cdf_array():
             create_dataset(ptd.DA_FCST_CDF_LEFT),
             create_dataset(ptd.DA_FCST_CDF_RIGHT),
             create_dataset(ptd.DA_OBS_PVCDF),
-            create_dataset(ptd.EXP_PVCDF),
+            create_dataset(ptd.EXP__PVCDF),
         ),
+        (ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, ptd.DA_OBS_PVCDF, ptd.EXP__PVCDF),
         (
             ptd.DA_FCST_CDF_LEFT,
             ptd.DA_FCST_CDF_RIGHT,
             create_dataset(ptd.DA_OBS_PVCDF),
-            create_dataset(ptd.EXP_PVCDF),
+            create_dataset(ptd.EXP__PVCDF),
         ),
         (
             create_dataset(ptd.DA_FCST_CDF_LEFT),
             create_dataset(ptd.DA_FCST_CDF_RIGHT),
             ptd.DA_OBS_PVCDF,
-            create_dataset(ptd.EXP_PVCDF),
+            create_dataset(ptd.EXP__PVCDF),
         ),
     ],
 )
-def test__pit_values_for_cdf_dataset(fcst_left, fcst_right, obs, expected):
+def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
     """Tests that `_pit_values_for_cdf_dataset` returns as expected."""
-    result = _pit_values_for_cdf_dataset(fcst_left, fcst_right, obs, "thld")
+    result = _pit_values_for_cdf(fcst_left, fcst_right, obs, "thld")
     xr.testing.assert_allclose(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "preserve_dims", "expected"),
+    [
+        ({"left": ptd.DA_FCST_CDF_LEFT1, "right": ptd.DA_FCST_CDF_RIGHT1}, ptd.DA_PBS_PDCDF, "all", ptd.EXP_PDCDF1),
+        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_PBS_PDCDF, "all", ptd.EXP_PDCDF2),
+        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_PBS_PDCDF, None, ptd.EXP_PDCDF3),
+        (
+            create_dataset(ptd.DA_FCST_CDF_LEFT1),
+            ptd.DA_PBS_PDCDF,
+            None,
+            {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
+        ),
+    ],
+)
+def test_pit_distribution_for_cdf(fcst, obs, preserve_dims, expected):
+    """Tests that `pit_distribution_for_cdf` returns as expected."""
+    result = pit_distribution_for_cdf(fcst, obs, "thld", preserve_dims=preserve_dims)
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_equal(expected[key], result[key])
+
+
+@pytest.mark.parametrize(
+    ("fcst"),
+    [
+        ({"left": ptd.DA_FCST_CDF_LEFT_RAISES, "right": ptd.DA_FCST_CDF_RIGHT1}),
+        (
+            {
+                "left": create_dataset(ptd.DA_FCST_CDF_LEFT1).rename({"tas": "rd"}),
+                "right": create_dataset(ptd.DA_FCST_CDF_RIGHT1),
+            }
+        ),
+    ],
+)
+def test_pit_distribution_for_cdf_raises(fcst):
+    """Tests that `pit_distribution_for_cdf` raises as expected."""
+    with pytest.raises(ValueError, match="left and right must have same shape, dimensions and coordinates"):
+        pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld")
