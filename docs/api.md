@@ -72,6 +72,9 @@
     :members:
 .. autoclass:: scores.categorical.EventOperator
     :members:
+.. autofunction:: scores.categorical.risk_matrix_score
+.. autofunction:: scores.categorical.matrix_weights_to_array
+.. autofunction:: scores.categorical.weights_from_warning_scaling
 .. autofunction:: scores.categorical.seeps
 ```
 
@@ -124,9 +127,9 @@
 .. autofunction:: scores.pandas.continuous.mae
 ```
 
+<!--
 ## scores.emerging
 ```{eval-rst}
-.. autofunction:: scores.emerging.risk_matrix_score
-.. autofunction:: scores.emerging.matrix_weights_to_array
-.. autofunction:: scores.emerging.weights_from_warning_scaling
+.. autofunction:: scores.emerging.name_of_emerging_score
 ```
+-->

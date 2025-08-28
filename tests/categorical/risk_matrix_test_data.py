@@ -1,5 +1,5 @@
 """
-Test data for testing scores.emerging functions
+Test data for testing scores.categorical.risk_matrix_impl functions
 """
 
 import numpy as np
