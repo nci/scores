@@ -1,5 +1,5 @@
 """
-This module contains methods which for related to the risk matrix score.
+This module contains methods which are related to the risk matrix score.
 """
 
 from typing import Iterable, Optional
