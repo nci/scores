@@ -100,7 +100,7 @@ def risk_matrix_score(
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
     References:
-        - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: a coherent framework
+        - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
           with consistent evaluation. Nat. Hazards Earth Syst. Sci., 25, 2657–2677.
           https://doi.org/10.5194/nhess-25-2657-2025
 
