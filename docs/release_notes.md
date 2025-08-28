@@ -15,9 +15,6 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Added the optional argument `include_components`. If `include_components` is set to `True` the function will return the overforecast and underforecast penalties along with the FIRM score.
 	See See [PR #853](https://github.com/nci/scores/pull/853) and [PR #864](https://github.com/nci/scores/pull/864).
 - Added a new `scores.plotdata` section to the API for functions that generate data for verification plots. See [PR #852](https://github.com/nci/scores/pull/852).
-- Moved the three functions associated with the Risk Matrix Score from `scores.emerging` to `scores.categorical` with the publication of
-	[Taggart & Wilke (2025)](https://doi.org/10.5194/nhess-25-2657-2025). These are `scores.categorical.risk_matrix_score`,
-	`scores.categorical.matrix_weights_to_array` and `scores.categorical.weights_from_warning_scaling`. See [PR #904](https://github.com/nci/scores/pull/904)
 
 ### Bug Fixes
 
