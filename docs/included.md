@@ -589,7 +589,6 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.categorical.matrix_weights_to_array)
   - [Tutorial](project:./tutorials/Risk_Matrix_Score.md)
   - [Taggart and Wilke (2025)](https://doi.org/10.5194/nhess-25-2657-2025)
-
 * -
     - Risk Matrix Score - Warning Scaling to Weight Array
   - [API](api.md#scores.categorical.weights_from_warning_scaling)
