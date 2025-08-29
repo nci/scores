@@ -158,6 +158,14 @@ def _fss_2d_without_ref(  # pylint: disable=too-many-locals,too-many-arguments
             and len(spatial_dims) == 2  # all spatial dims present  # number of spatial dims = 2
         )
 
+    # gather additional dimensions to aggregate over.
+    dims = gather_dimensions(
+        fcst.dims,
+        obs.dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+    )
+
     if not _spatial_dims_exist(fcst.dims):
         raise DimensionError(f"missing spatial dims {spatial_dims} in fcst")
     if not _spatial_dims_exist(obs.dims):
@@ -190,14 +198,6 @@ def _fss_2d_without_ref(  # pylint: disable=too-many-locals,too-many-arguments
         input_core_dims=[list(spatial_dims), list(spatial_dims)],
         vectorize=True,
         dask=dask,  # type: ignore # pragma: no cover
-    )
-
-    # gather additional dimensions to aggregate over.
-    dims = gather_dimensions(
-        fcst.dims,
-        obs.dims,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
     )
 
     if not (spatial_dims[0] in dims and spatial_dims[1] in dims):

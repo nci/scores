@@ -7,15 +7,3 @@ To propose a metric for inclusion in this API, please either get in touch throug
 "Discussions" area of the github page (https://github.com/nci/scores/discussions) or
 raise a new issue (https://github.com/nci/scores/issues)
 """
-
-from scores.emerging.risk_matrix import (
-    matrix_weights_to_array,
-    risk_matrix_score,
-    weights_from_warning_scaling,
-)
-
-__all__ = [
-    "risk_matrix_score",
-    "matrix_weights_to_array",
-    "weights_from_warning_scaling",
-]
