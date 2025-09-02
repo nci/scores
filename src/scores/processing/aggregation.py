@@ -41,7 +41,7 @@ def aggregate(
     if you would like to assign a weight of zero to those points (e.g., masking).
 
     Args:
-        values: Input data to be aggregated. 
+        values: Input data to be aggregated.
         reduce_dims: Dimensions over which to apply the mean. Can be a string, list of
             strings, or None. If None, no reduction is performed.
         weights: Weights to apply for weighted averaging.
