@@ -95,6 +95,7 @@
 
 ## scores.processing
 ```{eval-rst}
+.. autofunction:: scores.processing.aggregate
 .. autofunction:: scores.processing.block_bootstrap
 .. autofunction:: scores.processing.isotonic_fit
 .. autofunction:: scores.processing.broadcast_and_match_nan
