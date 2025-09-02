@@ -82,7 +82,6 @@ def mse(
         error = fcst - obs  # type: ignore
     squared = error * error
 
-
     if is_xarraylike(squared):
         result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
     else:
