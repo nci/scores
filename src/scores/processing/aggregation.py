@@ -25,27 +25,27 @@ def aggregate(
 
     This function applies a mean reduction or a sum over the dimensions given by ``reduce_dims`` on
     the input ``values``, optionally using weights to compute a weighted mean. Weighting
-    is performed using xarray's `.weighted()` method when weights are an xr.Dataset.
-    The `method` arg specifies if you want to produce a weighted mean or weighted sum.
+    is performed using xarray's ``.weighted()`` method when weights are an xr.Dataset.
+    The ``method`` arg specifies if you want to produce a weighted mean or weighted sum.
 
-    If `reduce_dims` is None, no aggregation is performed and the original `values` are
+    If `reduce_dims` is None, no aggregation is performed and the original ``values`` are
     returned unchanged.
 
-    If `weights` is None, an unweighted mean is computed. If weights are provided, negative
-    weights are not allowed and will raise a `ValueError`.
+    If ``weights`` is None, an unweighted mean is computed. If weights are provided, negative
+    weights are not allowed and will raise a ``ValueError``.
 
-    If weights are provided but `reduce_dims` is None (i.e., no reduction), a `UserWarning`
+    If weights are provided but ``reduce_dims`` is None (i.e., no reduction), a ``UserWarning``
     is emitted since the weights will be ignored.
 
     Weights must not contain NaN values. Missing values can be filled by ``weights.fillna(0)``
     if you would like to assign a weight of zero to those points (e.g., masking).
 
     Args:
-        values: Input data to be reduced. Typically an `xr.DataArray` or `xr.Dataset`.
+        values: Input data to be aggregated. 
         reduce_dims: Dimensions over which to apply the mean. Can be a string, list of
             strings, or None. If None, no reduction is performed.
         weights: Weights to apply for weighted averaging.
-            Must be broadcastable to `values` and contain no negative values. If None,
+            Must be broadcastable to ``values`` and contain no negative values. If None,
             an unweighted mean is calculated. Defaults to None.
         method: Aggregation method to use. Either "mean" or "sum". Defaults to "mean".
 
@@ -53,13 +53,13 @@ def aggregate(
         An xarray object (same type as the input) with (un)weighted mean or sum of ``values``
 
     Raises:
-        ValueError: If `weights` contains any negative values.
-        ValueError: if `weights` contains any NaN values
-        ValueError: if `method` is not 'mean' or 'sum'
-        ValueError: if `weights` is an xr.Dataset when `values` is an xr.DataArray
+        ValueError: If ``weights`` contains any negative values.
+        ValueError: if ``weights`` contains any NaN values
+        ValueError: if ``method`` is not 'mean' or 'sum'
+        ValueError: if ``weights`` is an xr.Dataset when ``values`` is an xr.DataArray
 
     Warnings:
-        UserWarning: If weights are provided but no reduction is performed (`reduce_dims` is None),
+        UserWarning: If weights are provided but no reduction is performed (``reduce_dims`` is None),
         a warning is issued since weights are ignored.
 
     Examples:
