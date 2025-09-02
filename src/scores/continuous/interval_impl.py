@@ -124,8 +124,6 @@ def quantile_interval_score(  # pylint: disable=R0914
         "total": total_score,
     }
     result = xr.Dataset(components)
-
-    reduce_dims = gather_dimensions(fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
     score = aggregate(result, weights=weights, reduce_dims=reduce_dims)
 
     return score  # type: ignore
