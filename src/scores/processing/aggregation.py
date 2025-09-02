@@ -25,8 +25,8 @@ def aggregate(
 
     This function applies a mean reduction or a sum over the dimensions given by ``reduce_dims`` on
     the input ``values``, optionally using weights to compute a weighted mean. Weighting
-    is performed using xarray's `.weighted()` method. The `method` arg specifies if you
-    want to produce a weighted mean or weighted sum.
+    is performed using xarray's `.weighted()` method when weights are an xr.Dataset.
+    The `method` arg specifies if you want to produce a weighted mean or weighted sum.
 
     If `reduce_dims` is None, no aggregation is performed and the original `values` are
     returned unchanged.
@@ -57,7 +57,6 @@ def aggregate(
         ValueError: if `weights` contains any NaN values
         ValueError: if `method` is not 'mean' or 'sum'
         ValueError: if `weights` is an xr.Dataset when `values` is an xr.DataArray
-        NotImplementedError: if `method` is sum and weights is an xr.Dataset
 
     Warnings:
         UserWarning: If weights are provided but no reduction is performed (`reduce_dims` is None),
@@ -127,6 +126,18 @@ def _weighted_sum(
     """
     Calculated the weighted sum of `values` using `weights` over specified dimensions.
     """
+    if isinstance(weights, xr.Dataset):
+        w_results = {}
+        for name, da in values.data_vars.items():
+            w = weights[name]
+            da_aligned, w_aligned = broadcast_and_match_nan(da, w)
+            summed = (da_aligned * w_aligned).sum(dim=reduce_dims)
+            # If weights sum to zero for a point that has been aggregated over reduce_dims,
+            # we want the result to be NaN, not zero.
+            summed = summed.where(w_aligned.sum(dim=reduce_dims) != 0)
+            w_results[name] = summed
+
+        return xr.Dataset(w_results)
     values = values.weighted(weights)
     summed_values = values.sum(reduce_dims)
     # Handle NaNs in `values`
@@ -173,10 +184,6 @@ def _check_aggregate_inputs(
         if weights is not None:
             # xarray doesn't allow .weighted to take xr.Dataset as weights, so we need to do it ourselves
             if isinstance(weights, xr.Dataset):
-                if method == "sum":
-                    raise NotImplementedError(
-                        "using the method 'sum' with weights that are xr.Datasets is not currently supported"
-                    )
                 if isinstance(values, xr.DataArray):
                     raise ValueError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray")
                 for name in values.data_vars:

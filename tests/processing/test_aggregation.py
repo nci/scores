@@ -196,6 +196,13 @@ def test_aggregate_sum(values, reduce_dims, weights, expected):
     expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
     xr.testing.assert_equal(result_ds, expected_ds)
 
+    # Check with xr.Dataset for both values and weights
+    if weights is not None:
+        weights_ds = xr.Dataset(({"var1": weights, "var2": weights}))
+        result_ds = aggregate(values_ds, reduce_dims=reduce_dims, weights=weights_ds, method="sum")
+        expected_ds = xr.Dataset(({"var1": expected, "var2": expected}))
+        xr.testing.assert_equal(result_ds, expected_ds)
+
 
 def test_agg_warns():
     """
@@ -254,14 +261,6 @@ def test_agg_warns():
             "mean",
             "No weights provided for variable 'var2'",
             KeyError,
-        ),
-        # DS weights and method=sum
-        (
-            xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
-            xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1})),
-            "sum",
-            "using the method 'sum' with weights that are xr.Datasets is not currently supported",
-            NotImplementedError,
         ),
         # DA values, DS weights
         (
