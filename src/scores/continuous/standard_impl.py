@@ -70,6 +70,7 @@ def mse(
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
     """
+
     if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -80,6 +81,7 @@ def mse(
     else:
         error = fcst - obs  # type: ignore
     squared = error * error
+
 
     if is_xarraylike(squared):
         result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
@@ -195,6 +197,7 @@ def mae(
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
     """
+
     if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -309,6 +312,7 @@ def additive_bias(
     error = fcst - obs
 
     score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+
     return score  # type: ignore
 
 
