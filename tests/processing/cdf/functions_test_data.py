@@ -1,5 +1,5 @@
 """
-Data for probability tests. 
+Data for probability tests.
 """
 
 import numpy as np
