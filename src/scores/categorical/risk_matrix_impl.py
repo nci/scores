@@ -7,7 +7,7 @@ from typing import Iterable, Optional
 import numpy as np
 import xarray as xr
 
-from scores.functions import apply_weights
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
@@ -150,7 +150,7 @@ def risk_matrix_score(
         fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment=threshold_assignment
     )
 
-    result = apply_weights(result, weights=weights).mean(dim=reduce_dims)
+    result = aggregate(result, weights=weights, reduce_dims=reduce_dims)
 
     return result
 

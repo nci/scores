@@ -151,8 +151,8 @@ EXP_RMS_CASE3B = xr.DataArray(  # Sydney example, wts escalate, unweighted mean
 )
 EXP_RMS_CASE3C = xr.DataArray(  # Sydney example, wts escalate, unweighted mean
     data=[  # written as sum of column scores
-        (0.8 + 2 * 4.5 + 3 * 0.3) / 3,
-        (1.5 + 2 * 7.2 + 0.0) / 3,
+        (0.8 + 2 * 4.5 + 3 * 0.3) / 6,
+        (1.5 + 2 * 7.2 + 0.0) / 6,
     ],
     dims=["forecaster"],
     coords={"forecaster": ["first", "second"]},
