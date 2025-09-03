@@ -558,7 +558,7 @@ def _pit_values_for_cdf(
     elif isinstance(fcst_left, xr.Dataset) and isinstance(obs, xr.DataArray):
         return xr.merge(
             [
-                _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs, threshold_dim)
+                _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs, threshold_dim).rename(var)
                 for var in fcst_left.data_vars
             ]
         )
@@ -572,7 +572,7 @@ def _pit_values_for_cdf(
     else:
         return xr.merge(
             [
-                _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs[var], threshold_dim)
+                _pit_values_for_cdf_array(fcst_left[var], fcst_right[var], obs[var], threshold_dim).rename(var)
                 for var in obs.data_vars
             ]
         )
