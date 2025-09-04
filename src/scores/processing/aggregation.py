@@ -24,14 +24,13 @@ def aggregate(
     The input data is typically the "score" at each point.
 
     This function applies a mean reduction or a sum over the dimensions given by ``reduce_dims`` on
-    the input ``values``, optionally using weights to compute a weighted mean. Weighting
-    is performed using xarray's ``.weighted()`` method when weights are an xr.Dataset.
+    the input ``values``, optionally using weights to compute a weighted mean or sum. 
     The ``method`` arg specifies if you want to produce a weighted mean or weighted sum.
 
     If `reduce_dims` is None, no aggregation is performed and the original ``values`` are
     returned unchanged.
 
-    If ``weights`` is None, an unweighted mean is computed. If weights are provided, negative
+    If ``weights`` is None, an unweighted mean or sum is computed. If weights are provided, negative
     weights are not allowed and will raise a ``ValueError``.
 
     If weights are provided but ``reduce_dims`` is None (i.e., no reduction), a ``UserWarning``
@@ -83,10 +82,12 @@ def aggregate(
             if weights is not None:
                 return _weighted_mean(values, weights, reduce_dims)
             return values.mean(reduce_dims)
-        case "sum":  # pragma: no cover - invalid method is checked in `_check_aggregate_inputs`
+        case "sum":  
             if weights is not None:
                 return _weighted_sum(values, weights, reduce_dims)
             return values.sum(reduce_dims)
+        case _: # pragma: no cover - invalid method is checked in `_check_aggregate_inputs`
+            raise ValueError(f"Unsupported method {method}. Expected 'mean' or 'sum'.")
 
 
 def _weighted_mean(

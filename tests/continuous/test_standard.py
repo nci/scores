@@ -1136,3 +1136,39 @@ def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_mes
     """
     with pytest.raises(expected_exception, match=expected_message):
         scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)  # type: ignore
+
+
+def test_mse_raises():
+    """
+    Assert that mse raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.mse(fcst, obs, weights=weights)
+
+
+def test_rmse_raises():
+    """
+    Assert that rmse raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.rmse(fcst, obs, weights=weights)
+
+
+def test_mae_raises():
+    """
+    Assert that mae raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.mae(fcst, obs, weights=weights)

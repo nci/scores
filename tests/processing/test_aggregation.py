@@ -83,7 +83,6 @@ WEIGHTS1 = xr.DataArray(
     dims=["x", "y"],
     coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
-WEIGHTS1_DS = xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1}))
 
 WEIGHTS2 = xr.DataArray(
     [[1, 2, 3], [3, 2, 1], [0, 0, 0]],
@@ -99,6 +98,11 @@ WEIGHTS4 = xr.DataArray(
     [1, 2, 0],
     dims=["y"],
     coords={"y": [0, 1, 3]},
+)
+WEIGHTS5 = xr.DataArray(
+    [[2, 2, 2], [2, 0, 2], [2, 2, 2]],
+    dims=["x", "y"],
+    coords={"x": [0, 1, 2], "y": [0, 1, 2]},
 )
 
 NEGATIVE_WEIGHTS = xr.DataArray(
@@ -135,6 +139,8 @@ NAN_WEIGHTS = xr.DataArray(
         (DA_3x3, ["x", "y"], WEIGHTS2, EXP_DA_VARY_XY),
         # Varying weights over y, but input error is NaN
         (DA_3x3 * np.nan, ["y"], WEIGHTS2, EXP_DA_VARY * np.nan),
+        # Equal weights over y, with a 0 weight at the same point that there is a NaN in values
+        (DA_3x3, ["y"], WEIGHTS5, EXP_DA_Y),
     ],
 )
 def test_aggregate_mean(values, reduce_dims, weights, expected):

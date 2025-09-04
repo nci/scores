@@ -69,6 +69,8 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
     """
 
     if is_xarraylike(fcst):
@@ -84,6 +86,8 @@ def mse(
 
     if is_xarraylike(squared):
         result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
+    elif weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
     else:
         result = squared.mean()
 
@@ -139,6 +143,8 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the root mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
@@ -195,6 +201,9 @@ def mae(
 
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
+
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
     """
 
     if is_xarraylike(fcst):
@@ -209,6 +218,8 @@ def mae(
 
     if is_xarraylike(error):
         result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    elif weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
     else:
         result = error.mean()
 
