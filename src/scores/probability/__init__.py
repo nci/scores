@@ -16,6 +16,7 @@ from scores.probability.crps_impl import (
     tw_crps_for_ensemble,
 )
 from scores.probability.pit_impl import Pit
+from scores.probability.rank_hist_impl import rank_histogram
 from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
@@ -34,4 +35,5 @@ __all__ = [
     "tail_tw_crps_for_ensemble",
     "interval_tw_crps_for_ensemble",
     "Pit",
+    "rank_histogram",
 ]

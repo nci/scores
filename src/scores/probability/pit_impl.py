@@ -133,6 +133,9 @@ class Pit:
         Raises:
             ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
                 'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
+
+        See also:
+            - scores.probability.rank_histogram
         """
         if fcst_type not in ["ensemble", "cdf"]:
             raise ValueError('`fcst_type` must be one of "ensemble" or "cdf"')
