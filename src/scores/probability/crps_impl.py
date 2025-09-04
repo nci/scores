@@ -277,7 +277,7 @@ def crps_cdf(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         include_components (bool): if True, include the under and over forecast components of
@@ -847,7 +847,7 @@ def crps_for_ensemble(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the CRPS with underforecast and overforecast
@@ -992,7 +992,7 @@ def tw_crps_for_ensemble(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the twCRPS with underforecast and overforecast
@@ -1098,7 +1098,7 @@ def tail_tw_crps_for_ensemble(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the twCRPS with underforecast and overforecast
@@ -1209,7 +1209,7 @@ def interval_tw_crps_for_ensemble(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the twCRPS with underforecast and overforecast

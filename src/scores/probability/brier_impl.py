@@ -48,7 +48,7 @@ def brier_score(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         check_args: will perform some tests on the data if set to True.
@@ -144,7 +144,7 @@ def brier_score_for_ensemble(
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
-            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
             See the scores weighting tutorial for more information on how to use weights.
         fair_correction: Whether or not to apply the fair Brier score correction. Default is True.
