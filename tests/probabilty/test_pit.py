@@ -3,6 +3,11 @@ Unit tests for scores.probability.pit_impl.py
 
 Functions to test:
     _pit_values_final_processing
+
+
+Issues:
+    test_plotting_points_parametric_dask, second assertion fails
+    test_hist_values_dask
 """
 
 
@@ -327,22 +332,51 @@ def test_plotting_points(fcst, obs, expected):
     xr.testing.assert_equal(expected, result)
 
 
+def test_plotting_points_dask():
+    """Tests that the `.plotting_points` method works with dask."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member", preserve_dims="lead_day").plotting_points()
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_allclose(result, EXP_PP1)
+
+
+EXP_PPP = {
+    "x_plotting_position": xr.DataArray(
+        data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+    ),
+    "y_plotting_position": xr.DataArray(
+        data=[0, 0.5, 1.75 / 3, 2.75 / 3, 1, 1],
+        dims=["plotting_point"],
+        coords={"plotting_point": [0, 1, 2, 3, 4, 5]},
+    ),
+}
+
+
 def test_plotting_points_parametric():
     """Tests that `Pit().plotting_points_parametric()` returns as expected."""
     result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").plotting_points_parametric()
-    expected = {
-        "x_plotting_position": xr.DataArray(
-            data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
-        ),
-        "y_plotting_position": xr.DataArray(
-            data=[0, 0.5, 1.75 / 3, 2.75 / 3, 1, 1],
-            dims=["plotting_point"],
-            coords={"plotting_point": [0, 1, 2, 3, 4, 5]},
-        ),
-    }
+    expected = EXP_PPP
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
+
+
+def test_plotting_points_parametric_dask():
+    """Tests that the `.plotting_points_parametric` method works with dask."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").plotting_points_parametric()
+    assert EXP_PPP.keys() == result.keys()
+    for key in result.keys():
+        # assert isinstance(result[key].data, dask.array.Array)
+        computed_result = result[key].compute()
+        assert isinstance(computed_result.data, (np.ndarray, np.generic))
+        xr.testing.assert_allclose(computed_result, EXP_PPP[key])
 
 
 EXP_VAPC1 = xr.DataArray(
@@ -431,6 +465,18 @@ def test_hist_values(fcst, obs, right, expected):
     xr.testing.assert_allclose(expected, result)
 
 
+# def test_hist_values_dask():
+#     """Tests that the `.hist_values` method works with dask."""
+#     if dask == "Unavailable":  # pragma: no cover
+#         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+#     result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").hist_values(5, right=True)
+#     assert isinstance(result.data, dask.array.Array)
+#     result = result.compute()
+#     assert isinstance(result.data, (np.ndarray, np.generic))
+#     xr.testing.assert_allclose(result, ptd.EXP_HV1)
+
+
 @pytest.mark.parametrize(
     ("plotting_points", "expected"),
     [
@@ -447,10 +493,19 @@ def test__alpha_score(plotting_points, expected):
 def test_alpha_score():
     """Tests that the `.alpha_score` method returns as expected."""
     result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score()
-    # uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
-    expected = (0.4 * 0.1 + 0.2 * (0.1 + 0.6 - 1.75 / 3) + 0.2 * (2.75 / 3 - 0.6 + 0.2) + 0.2 * 0.2) / 2
-    expected = xr.DataArray(data=[expected], dims=["blah"], coords={"blah": [1]}).mean("blah")
-    xr.testing.assert_allclose(expected, result)
+    xr.testing.assert_allclose(ptd.EXP_AS1, result)
+
+
+def test_alpha_score_dask():
+    """Tests that the `.alpha_score` method works with dask."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").alpha_score()
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_allclose(result, ptd.EXP_AS1)
 
 
 @pytest.mark.parametrize(
@@ -469,10 +524,19 @@ def test__expected_value(plotting_points, expected):
 def test_expected_value():
     """Tests that the `.expected_value` method returns as expected."""
     result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").expected_value()
-    # uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
-    expected = (0.4 * 0.5 + 0.2 * (0.5 + 1.75 / 3) + 0.2 * (2.75 / 3 + 1) + 0.2 * (1 + 1)) / 2
-    expected = xr.DataArray(data=[1 - expected], dims=["blah"], coords={"blah": [1]}).mean("blah")
-    xr.testing.assert_allclose(expected, result)
+    xr.testing.assert_allclose(ptd.EXP_EXPVAL, result)
+
+
+def test_expected_value_dask():
+    """Tests that the `.expected_value` method works with dask."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").expected_value()
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_allclose(result, ptd.EXP_EXPVAL)
 
 
 @pytest.mark.parametrize(
@@ -512,6 +576,18 @@ def test_variance(fcst, obs, expected):
     """Tests that the `.variance` method returns as expected."""
     result = Pit(fcst, obs, "member", preserve_dims="all").variance()
     xr.testing.assert_allclose(expected, result)
+
+
+def test_variance_dask():
+    """Tests that the `.variance` method works with dask."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = Pit(ptd.DA_FCST_VAR.chunk(), ptd.DA_OBS_VAR.chunk(), "member", preserve_dims="all").variance()
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_allclose(result, ptd.EXP_VAR)
 
 
 def test__pit_values_for_cdf_array():
