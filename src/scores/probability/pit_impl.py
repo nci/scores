@@ -74,6 +74,7 @@ class Pit:
         special_fcst_dim: str,
         *,  # Force keywords arguments to be keyword-only
         fcst_type: str = "ensemble",
+        fcst_left: Optional[XarrayLike] = None,
         reduce_dims: Optional[FlexibleDimensionTypes] = None,
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
         weights: Optional[XarrayLike] = None,
@@ -93,12 +94,16 @@ class Pit:
         provided by ``Pit_for_ensemble`` methods.
 
         Args:
-            fcst: an xarray object of ensemble forecasts, containing the dimension
-                `special_fcst_dim`.
+            fcst: an xarray object of forecasts, containing the dimension `special_fcst_dim`.
+                The values of ``fcst`` are the values of the ensemble if ``fcst_type='ensemble'``,
+                or the values of the predictive CDF if ``fcst_type='cdf'``
             obs: an xarray object of observations.
             special_fcst_dim: name of the ensemble member dimension in ``fcst`` if ``fcst_type='ensemble'``
                 or of the CDF threshold dimension in ``fcst`` if ``fcst_type='cdf'``.
             fcst_type: either "ensemble" or "cdf".
+            fcst_left: The values of the left-hand limits of the predictive CDF. Must have the same
+                shape and dimensions as ``fcst``.
+                Only required when ``fcst_type='cdf'`` and the predictive CDF is discontinuous.
             reduce_dims: Optionally specify which dimensions to reduce when calculating the
                 PIT CDF values, where the mean is taken over all forecast cases.
                 All other dimensions will be preserved. As a special case, 'all' will allow
@@ -154,6 +159,7 @@ class Pit:
                 fcst,
                 obs,
                 special_fcst_dim,
+                fcst_left=fcst_left,
                 reduce_dims=reduce_dims,
                 preserve_dims=preserve_dims,
                 weights=weights,
@@ -258,10 +264,11 @@ def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) 
 
 
 def pit_distribution_for_cdf(
-    fcst: Union[dict, XarrayLike],
+    fcst: XarrayLike,
     obs: XarrayLike,
     threshold_dim: str,
     *,  # Force keywords arguments to be keyword-only
+    fcst_left: Optional[XarrayLike] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[XarrayLike] = None,
@@ -286,13 +293,15 @@ def pit_distribution_for_cdf(
     intermediate values also attained via linear interpolation.
 
     Args:
-        fcst: either an xarray object of CDF forecast values, containing the dimension `threshold_dim`,
+        fcst: xarray object of CDF forecast values, containing the dimension `threshold_dim`,
             or a dictionary containing the keys "left" and "right", with corresponding values
             xarray objects giving the left-hand and right-hand limits of the fcst CDF
             along the dimension `threshold_dim`.
         obs: an xarray object of observations.
         threshold_dim: name of the threshold dimension in ``fcst``, such that the probability
             of not exceeding a particular threshold is one of the corresponding values of ``fcst``.
+        fcst_left: xarray object of forecast CDF left-handed limit values. If None, it is
+            assumed that the forecast CDF is continuous.
         reduce_dims: Optionally specify which dimensions to reduce when calculating the
             PIT distribution, where the mean is taken over all forecast cases.
             All other dimensions will be preserved. As a special case, 'all' will allow
@@ -324,27 +333,26 @@ def pit_distribution_for_cdf(
         - if any values in ``obs`` lie outside the range of values in the forecast ``threshold_dim`` dimension.
         - if any forecast values have NaN
     """
-    if isinstance(fcst, dict):
-        fcst_left = fcst["left"]
-        fcst_right = fcst["right"]
-        # check that both have same shape, coords and dims
-        if not xr.ones_like(fcst_left).equals(xr.ones_like(fcst_right)):
-            raise ValueError("left and right must have same shape, dimensions and coordinates")
+    if fcst_left is not None:
+        # check that both fcst and fcst_left have same shape, coords and dims
+        if not xr.ones_like(fcst).equals(xr.ones_like(fcst_left)):
+            raise ValueError(
+                "If `fcst_left` is not `None, `fcst` and `fcst_left` must have same shape, dimensions and coordinates"
+            )
         _cdf_checks(fcst_left, threshold_dim)
-        _cdf_checks(fcst_right, threshold_dim)
+        _cdf_checks(fcst, threshold_dim)
     else:
         _cdf_checks(fcst, threshold_dim)
         fcst_left = fcst.copy()
-        fcst_right = fcst.copy()
 
-    _pit_dimension_checks(fcst_left, obs, weights)
+    _pit_dimension_checks(fcst, obs, weights)
 
     weights_dims = None
     if weights is not None:
         weights_dims = weights.dims
 
     dims_for_mean = gather_dimensions(
-        fcst_left.dims,
+        fcst.dims,
         obs.dims,
         weights_dims=weights_dims,
         reduce_dims=reduce_dims,
@@ -353,7 +361,7 @@ def pit_distribution_for_cdf(
     )
 
     # PIT values in [G(y-), G(y)] format
-    pit_values = _pit_values_for_cdf(fcst_left, fcst_right, obs, threshold_dim)
+    pit_values = _pit_values_for_cdf(fcst_left, fcst, obs, threshold_dim)
 
     # convert to CDF format, take weighted means, and output dictionary
     result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
