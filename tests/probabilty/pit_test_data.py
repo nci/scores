@@ -239,6 +239,12 @@ DA_AS = xr.DataArray(
     coords={"stn": [3, 4, 5], "pit_x_value": [0, 0, 0.4, 0.4, 1, 1]},
 )
 EXP_AS = xr.DataArray(data=[(0.1 * 0.4 + 0.3 * 0.6) / 2, 0.2 / 2, nan], dims=["stn"], coords={"stn": [3, 4, 5]})
+# uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
+EXP_AS1 = xr.DataArray(
+    data=[(0.4 * 0.1 + 0.2 * (0.1 + 0.6 - 1.75 / 3) + 0.2 * (2.75 / 3 - 0.6 + 0.2) + 0.2 * 0.2) / 2],
+    dims=["blah"],
+    coords={"blah": [1]},
+).mean("blah")
 
 # test data for expected value
 EXP_EV = xr.DataArray(
@@ -246,6 +252,12 @@ EXP_EV = xr.DataArray(
     dims=["stn"],
     coords={"stn": [3, 4, 5]},
 )
+# uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
+EXP_EXPVAL = xr.DataArray(
+    data=[1 - (0.4 * 0.5 + 0.2 * (0.5 + 1.75 / 3) + 0.2 * (2.75 / 3 + 1) + 0.2 * (1 + 1)) / 2],
+    dims=["blah"],
+    coords={"blah": [1]},
+).mean("blah")
 
 # test data for _variance_integral_term
 DA_VIT = xr.DataArray(
