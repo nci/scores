@@ -5,6 +5,13 @@ Functions to test:
     _pit_values_final_processing
 """
 
+
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+
 import warnings
 
 import numpy as np
@@ -558,14 +565,15 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "preserve_dims", "expected"),
+    ("fcst", "obs", "fcst_left", "preserve_dims", "expected"),
     [
-        ({"left": ptd.DA_FCST_CDF_LEFT1, "right": ptd.DA_FCST_CDF_RIGHT1}, ptd.DA_OBS_PDCDF, "all", ptd.EXP_PDCDF1),
-        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_OBS_PDCDF, "all", ptd.EXP_PDCDF2),
-        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_OBS_PDCDF, None, ptd.EXP_PDCDF3),
+        (ptd.DA_FCST_CDF_RIGHT1, ptd.DA_OBS_PDCDF, ptd.DA_FCST_CDF_LEFT1, "all", ptd.EXP_PDCDF1),
+        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_OBS_PDCDF, None, "all", ptd.EXP_PDCDF2),
+        (ptd.DA_FCST_CDF_LEFT1, ptd.DA_OBS_PDCDF, None, None, ptd.EXP_PDCDF3),
         (
             create_dataset(ptd.DA_FCST_CDF_LEFT1),
             ptd.DA_OBS_PDCDF,
+            None,
             None,
             {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
         ),
@@ -573,34 +581,30 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
             create_dataset(ptd.DA_FCST_CDF_LEFT1),
             create_dataset(ptd.DA_OBS_PDCDF),
             None,
+            None,
             {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
         ),
     ],
 )
-def test_pit_distribution_for_cdf(fcst, obs, preserve_dims, expected):
+def test_pit_distribution_for_cdf(fcst, obs, fcst_left, preserve_dims, expected):
     """Tests that `pit_distribution_for_cdf` returns as expected."""
-    result = pit_distribution_for_cdf(fcst, obs, "thld", preserve_dims=preserve_dims)
+    result = pit_distribution_for_cdf(fcst, obs, "thld", fcst_left=fcst_left, preserve_dims=preserve_dims)
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
 
 
 @pytest.mark.parametrize(
-    ("fcst"),
+    ("fcst", "fcst_left"),
     [
-        ({"left": ptd.DA_FCST_CDF_LEFT_RAISES, "right": ptd.DA_FCST_CDF_RIGHT1}),
-        (
-            {
-                "left": create_dataset(ptd.DA_FCST_CDF_LEFT1).rename({"tas": "rd"}),
-                "right": create_dataset(ptd.DA_FCST_CDF_RIGHT1),
-            }
-        ),
+        (ptd.DA_FCST_CDF_RIGHT1, ptd.DA_FCST_CDF_LEFT_RAISES),
+        (create_dataset(ptd.DA_FCST_CDF_RIGHT1), create_dataset(ptd.DA_FCST_CDF_LEFT1).rename({"tas": "rd"})),
     ],
 )
-def test_pit_distribution_for_cdf_raises(fcst):
+def test_pit_distribution_for_cdf_raises(fcst, fcst_left):
     """Tests that `pit_distribution_for_cdf` raises as expected."""
-    with pytest.raises(ValueError, match="left and right must have same shape, dimensions and coordinates"):
-        pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld")
+    with pytest.raises(ValueError, match="`fcst` and `fcst_left` must have same shape"):
+        pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld", fcst_left=fcst_left)
 
 
 def test_Pit__init___raises():
@@ -615,6 +619,7 @@ def test_Pit__init___raises():
         "obs",
         "special_fcst_dim",
         "fcst_type",
+        "fcst_left",
         "reduce_dims",
         "preserve_dims",
         "weights",
@@ -627,6 +632,7 @@ def test_Pit__init___raises():
             ptd.DA_OBS_PDCDF,
             "thld",
             "cdf",
+            None,
             "all",
             None,
             None,
@@ -639,16 +645,30 @@ def test_Pit__init___raises():
             "thld",
             "cdf",
             None,
+            None,
             "all",
             None,
             ptd.EXP_PDCDF_LEFT2,
             ptd.EXP_PDCDF_RIGHT2,
         ),
         (
+            ptd.DA_FCST_CDF_RIGHT1,
+            ptd.DA_OBS_PDCDF,
+            "thld",
+            "cdf",
+            ptd.DA_FCST_CDF_LEFT1,
+            None,
+            "all",
+            None,
+            ptd.EXP_PDCDF_LEFT1,
+            ptd.EXP_PDCDF_RIGHT1,
+        ),
+        (
             ptd.DA_FCST,
             ptd.DA_OBS,
             "ens_member",
             "ensemble",
+            None,
             None,
             "all",
             None,
@@ -661,6 +681,7 @@ def test_Pit__init___raises():
             "ens_member",
             "ensemble",
             None,
+            None,
             "lead_day",
             ptd.WTS_STN,
             ptd.EXP_PITCDF_LEFT3,
@@ -669,7 +690,16 @@ def test_Pit__init___raises():
     ],
 )
 def test_Pit__init__(
-    fcst, obs, special_fcst_dim, fcst_type, reduce_dims, preserve_dims, weights, expected_left, expected_right
+    fcst,
+    obs,
+    special_fcst_dim,
+    fcst_type,
+    fcst_left,
+    reduce_dims,
+    preserve_dims,
+    weights,
+    expected_left,
+    expected_right,
 ):
     """Tests that `Pit.__init__` returns as expected."""
     result = Pit(
@@ -677,6 +707,7 @@ def test_Pit__init__(
         obs,
         special_fcst_dim,
         fcst_type=fcst_type,
+        fcst_left=fcst_left,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
@@ -698,3 +729,46 @@ def test__cdf_checks_raises(cdf, error_msg):
     """Tests that _cdf_checks raises as expected."""
     with pytest.raises(ValueError, match=error_msg):
         _cdf_checks(cdf, "thld")
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "special_fcst_dim", "fcst_type", "fcst_left", "preserve_dims", "exp_left", "exp_right"),
+    [
+        (ptd.DA_FCST, ptd.DA_OBS, "ens_member", "ensemble", None, None, ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4),
+        (
+            ptd.DA_FCST_CDF_RIGHT1,
+            ptd.DA_OBS_PDCDF,
+            "thld",
+            "cdf",
+            ptd.DA_FCST_CDF_LEFT1,
+            "all",
+            ptd.EXP_PDCDF_LEFT1,
+            ptd.EXP_PDCDF_RIGHT1,
+        ),
+    ],
+)
+def test_pit__left_right_dask(fcst, obs, special_fcst_dim, fcst_type, fcst_left, preserve_dims, exp_left, exp_right):
+    """
+    Tests that Pit works with dask. The test is done against Pit().left and Pit().right
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    pit = Pit(
+        fcst.chunk(),
+        obs.chunk(),
+        special_fcst_dim,
+        fcst_type=fcst_type,
+        fcst_left=fcst_left,
+        preserve_dims=preserve_dims,
+    )
+    left = pit.left
+    right = pit.right
+    assert isinstance(left.data, dask.array.Array)
+    assert isinstance(right.data, dask.array.Array)
+    left = left.compute()
+    right = right.compute()
+    assert isinstance(left.data, (np.ndarray, np.generic))
+    assert isinstance(right.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(left, exp_left)
+    xr.testing.assert_equal(right, exp_right)
