@@ -7,7 +7,6 @@ Functions to test:
 
 Issues:
     test_plotting_points_parametric_dask, second assertion fails
-    test_hist_values_dask
 """
 
 
@@ -366,17 +365,17 @@ def test_plotting_points_parametric():
 
 
 def test_plotting_points_parametric_dask():
-    """Tests that the `.plotting_points_parametric` method works with dask."""
+    """
+    Tests that the `.plotting_points_parametric` method works with dask.
+    Note that dask is used for calculating Pit().left and Pit(),right, but not thereafter.
+    """
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").plotting_points_parametric()
     assert EXP_PPP.keys() == result.keys()
     for key in result.keys():
-        # assert isinstance(result[key].data, dask.array.Array)
-        computed_result = result[key].compute()
-        assert isinstance(computed_result.data, (np.ndarray, np.generic))
-        xr.testing.assert_allclose(computed_result, EXP_PPP[key])
+        xr.testing.assert_allclose(result[key], EXP_PPP[key])
 
 
 EXP_VAPC1 = xr.DataArray(
@@ -465,16 +464,16 @@ def test_hist_values(fcst, obs, right, expected):
     xr.testing.assert_allclose(expected, result)
 
 
-# def test_hist_values_dask():
-#     """Tests that the `.hist_values` method works with dask."""
-#     if dask == "Unavailable":  # pragma: no cover
-#         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+def test_hist_values_dask():
+    """
+    Tests that the `.hist_values` method works with dask.
+    Note that dask is used for the Pit() calculation but not for .hist_values
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-#     result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").hist_values(5, right=True)
-#     assert isinstance(result.data, dask.array.Array)
-#     result = result.compute()
-#     assert isinstance(result.data, (np.ndarray, np.generic))
-#     xr.testing.assert_allclose(result, ptd.EXP_HV1)
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").hist_values(5, right=True)
+    xr.testing.assert_allclose(result, ptd.EXP_HV1)
 
 
 @pytest.mark.parametrize(

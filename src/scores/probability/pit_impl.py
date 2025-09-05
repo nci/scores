@@ -202,6 +202,14 @@ class Pit:
             right: If True, histogram bins always include the rightmost edge. If False,
                 bins always include the leftmost edge.
         """
+        # calculting _pit_hist_right or _pit_hist_left does not work with chunks,
+        # because dask wants to chunk over the 'pit_x_value' dimension, but
+        # _pit_hist_right and _pit_hist_left merely wants to sample a small number of points
+        # from the 'pit_x_value'. So compute chunks at this stage.
+        if self.left.chunks is not None:
+            self.left = self.left.compute()
+            self.right = self.right.compute()
+
         if right:
             return _pit_hist_right(self.left, self.right, bins)
         return _pit_hist_left(self.left, self.right, bins)
@@ -826,6 +834,11 @@ def _get_plotting_points_dict(left: XarrayLike, right: XarrayLike) -> dict:
             'y_plotting_position': xarray object with the y-axis plotting positions for each
                 point, indexed by 'plotting_point'
     """
+    # the remainder of this function does not work with dask, so compute any chunks straight away
+    if left.chunks is not None:
+        left = left.compute()
+        right = right.compute()
+
     # only keep coordinates in left where (left != right) every and where left is not NaN.
     # (We can assume that if one value is NaN for any particular forecast case than all values
     # are NaN for `left` and `right` in that forecast case)
