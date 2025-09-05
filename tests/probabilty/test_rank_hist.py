@@ -1,11 +1,22 @@
 """
 Unit tests for scores.probability.rank_hist_impl.py
 """
+
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+
+
 import pytest
 import xarray as xr
 from numpy import nan
+import numpy as np
 
 import scores.probability.rank_hist_impl as rh
+
+
 
 DA_FCST = xr.DataArray(
     data=[
@@ -108,3 +119,18 @@ def test_rank_histogram_warns(fcst):
     """Tests that rank_histogram warns as expected."""
     with pytest.warns(UserWarning, match="Encountered a NaN in"):
         rh.rank_histogram(fcst, DA_OBS, "ens_member")
+
+
+def test_rank_histogram_dask():
+    """
+    Tests that rank_histogram works with dask
+    """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = rh.rank_histogram(DA_FCST.chunk(), DA_OBS.chunk(), "ens_member")
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(result, EXP_RH1)
