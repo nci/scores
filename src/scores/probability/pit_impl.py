@@ -6,11 +6,12 @@ Reserved dimension names:
 
 Write checks for fcst cdf: between 0, 1, threshold dim increasing, cdf increasing???
 
-_pit_values_for_cdf - only works for array so far, not dataset
+TO DO:
+    - all methods for Pit_fcst_at_obs
 """
 
 import warnings
-from typing import Optional, Union
+from typing import Hashable, Optional
 
 import numpy as np
 import xarray as xr
@@ -32,6 +33,10 @@ RESERVED_NAMES = {
     "bin_right_endpoint",
     "bin_centre",
 }
+
+################################################
+# The two classes: `Pit`` and `Pit_obs_at_fcst`
+################################################
 
 
 class Pit:
@@ -240,13 +245,76 @@ class Pit:
         return _variance(self.plotting_points())
 
 
+class Pit_obs_at_fcst:
+    """
+    Same as Pit but inputs are the observations evuated at the forecast CDF.
+    """
+
+    def __init__(
+        self,
+        fcst_at_obs: XarrayLike,
+        *,  # Force keywords arguments to be keyword-only
+        fcst_at_obs_left: Optional[XarrayLike] = None,
+        reduce_dims: Optional[FlexibleDimensionTypes] = None,
+        preserve_dims: Optional[FlexibleDimensionTypes] = None,
+        weights: Optional[XarrayLike] = None,
+    ):
+        """
+        Blah
+        """
+
+
+#####################################################
+# Functions for calculating __init__ of both classes
+#####################################################
+
+
+def _dims_for_mean_with_checks(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    special_fcst_dim: Optional[str],
+    weights: Optional[XarrayLike],
+    reduce_dims: Optional[FlexibleDimensionTypes],
+    preserve_dims: Optional[FlexibleDimensionTypes],
+) -> set[Hashable]:
+    """
+    Given inputs for Pit or Pit_obs_at_fcst, checks that XarrayLike inputs don't use
+    RESERVES_NAMES and then gathers dimensions, returning the set of dimensions for
+    calculating the mean.
+
+    When applying to `Pit_obs_at_fcst` inputs, use `fcst=obs=obs_at_fcst`.
+    """
+    all_dims = set(fcst.dims).union(obs.dims)
+
+    weights_dims = None
+    if weights is not None:
+        weights_dims = weights.dims
+        all_dims = all_dims.union(weights_dims)
+
+    if len([dim for dim in RESERVED_NAMES if dim in all_dims]) > 0:
+        raise ValueError(
+            f'The following names are reserved and should not be among the dimensions of \
+            xarray inputs: {", ".join(RESERVED_NAMES)}'
+        )
+
+    dims_for_mean = gather_dimensions(
+        fcst.dims,
+        obs.dims,
+        weights_dims=weights_dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        score_specific_fcst_dims=special_fcst_dim,
+    )
+    return dims_for_mean
+
+
 def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
     For each forecast case in the form of an ensemble, the PIT value of the ensemble for
     the corresponding observation is a uniform distribution over the closed interval
     [lower,upper], where
         lower = (count of ensemble members strictly less than the observation) / n
-        upper = (cont of ensemble members not exceeding the observation) / n
+        upper = (count of ensemble members not exceeding the observation) / n
         n = size of the ensemble.
 
     Returns an array of [lower,upper] values in the dimension 'uniform_endpoint'.
@@ -353,20 +421,7 @@ def pit_distribution_for_cdf(
         _cdf_checks(fcst, threshold_dim)
         fcst_left = fcst.copy()
 
-    _pit_dimension_checks(fcst, obs, weights)
-
-    weights_dims = None
-    if weights is not None:
-        weights_dims = weights.dims
-
-    dims_for_mean = gather_dimensions(
-        fcst.dims,
-        obs.dims,
-        weights_dims=weights_dims,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        score_specific_fcst_dims=threshold_dim,
-    )
+    dims_for_mean = _dims_for_mean_with_checks(fcst, obs, threshold_dim, weights, reduce_dims, preserve_dims)
 
     # PIT values in [G(y-), G(y)] format
     pit_values = _pit_values_for_cdf(fcst_left, fcst, obs, threshold_dim)
@@ -724,21 +779,6 @@ def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
     return {"left": cdf_left, "right": cdf_right}
 
 
-def _pit_dimension_checks(fcst: XarrayLike, obs: XarrayLike, weights: Optional[XarrayLike] = None):
-    """
-    Checks the dimensions of inputs to `pit_cdfvalues` to ensure that reserved names
-    "uniform_endpoint" and "pit_x_value" are not used.
-    """
-    all_dims = set(fcst.dims).union(obs.dims)
-    if weights is not None:
-        all_dims = all_dims.union(weights.dims)
-    if len([dim for dim in RESERVED_NAMES if dim in all_dims]) > 0:
-        raise ValueError(
-            f'The following names are reserved and should not be among the dimensions of \
-            `fcst`, `obs` or `weight`: {", ".join(RESERVED_NAMES)}'
-        )
-
-
 def pit_distribution_for_ens(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -795,20 +835,8 @@ def pit_distribution_for_ens(
         ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
                 'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
     """
-    _pit_dimension_checks(fcst, obs, weights)
 
-    weights_dims = None
-    if weights is not None:
-        weights_dims = weights.dims
-
-    dims_for_mean = gather_dimensions(
-        fcst.dims,
-        obs.dims,
-        weights_dims=weights_dims,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        score_specific_fcst_dims=ens_member_dim,
-    )
+    dims_for_mean = _dims_for_mean_with_checks(fcst, obs, ens_member_dim, weights, reduce_dims, preserve_dims)
 
     # PIT values in [G(y-), G(y)] format
     pit_values = _pit_values_for_ens(fcst, obs, ens_member_dim)
