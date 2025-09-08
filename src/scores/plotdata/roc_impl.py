@@ -66,8 +66,12 @@ def roc(  # pylint: disable=too-many-arguments
             against observed) for each threshold, and the forecast and observed dimensions
             must match precisely. Only one of ``reduce_dims`` and ``preserve_dims`` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom).
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         check_args: Checks if ``obs`` data only contains values in the set
             {0, 1, np.nan}. You may want to skip this check if you are sure about your
             input data and want to improve the performance when working with dask.

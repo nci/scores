@@ -873,13 +873,22 @@ class TestNseScore(NseSetup):
         # - NOTE:
         #    we will have two different values for weights, repeated at specific positions because
         #    of the way it is reduced.
-
         # temperature
+        # --- IMPORTANT ---
+        # [NR: 2025-09-02]
+        # These values have been modified due to recent changes in weight logic.
+        # They have to be scaled in terms of weight sum rather than count
+        # reference PR: 887-improve-weighting.
+        # ---
         te1 = 4.0 / 3.0
+        te1 = te1 / (4 / 3.0)  # [887-improve-weighting] invert scale from population to weights
         tv1 = 10.0 / 3.0
+        tv1 = tv1 / (4 / 3.0)  # [887-improve-weighting] invert scale from population to weights
         ts1 = 3.0 / 5.0
         te2 = 3.0
+        te2 = te2 / (9 / 3.0)  # [887-improve-weighting] invert scale from population to weights
         tv2 = 186.0 / 24.0
+        tv2 = tv2 / (9 / 3.0)  # [887-improve-weighting] invert scale from population to weights
         ts2 = 114.0 / 186.0
 
         # result depends on x axis, and must be 2*4
@@ -899,6 +908,7 @@ class TestNseScore(NseSetup):
         # precipitation - note precipitation only has one value for weights
         pe1 = 0.0
         pv1 = 61.0 / 24.0
+        pv1 = pv1 / (5 / 6.0)  # [887-improve-weighting] invert scale from population to weights
         ps1 = 1.0
         exp_precip_fcst_err_weights = _build_exp_output_da(pe1, "precipitation")
         exp_precip_obs_var_weights = _build_exp_output_da(pv1, "precipitation")
@@ -1027,6 +1037,7 @@ class TestNseScore(NseSetup):
         if use_weights:
             res = self.nse_score_weights.components.fcst_error
             exp = self.exp_fcst_error_weights
+
         xr.testing.assert_allclose(res.data_vars[var_], exp[var_])
 
     def test_nse_score(self, var_, use_weights):

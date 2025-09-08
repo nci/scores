@@ -6,8 +6,7 @@ from typing import Optional
 
 import xarray as xr
 
-from scores.functions import apply_weights
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
 
@@ -59,9 +58,12 @@ def quantile_interval_score(  # pylint: disable=R0914
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom) when aggregating the mean score across dimensions. Alternatively,
-            it could be used for masking data.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         A Dataset with the dimensions specified in ``dims``.
@@ -122,8 +124,8 @@ def quantile_interval_score(  # pylint: disable=R0914
         "total": total_score,
     }
     result = xr.Dataset(components)
-    results = apply_weights(result, weights=weights)
-    score = results.mean(dim=reduce_dims)
+    score = aggregate(result, weights=weights, reduce_dims=reduce_dims)
+
     return score  # type: ignore
 
 
@@ -175,9 +177,12 @@ def interval_score(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom) when aggregating the mean score across dimensions. Alternatively,
-            it could be used for masking data.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         A Dataset with the dimensions specified in ``dims``.

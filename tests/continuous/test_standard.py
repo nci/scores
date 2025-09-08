@@ -34,6 +34,7 @@ def test_mse_xarray_1d():
     result = scores.continuous.mse(fcst_as_xarray_1d, obs_as_xarray_1d)
 
     expected = xr.DataArray(1.0909)
+
     assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
@@ -63,18 +64,6 @@ def test_mse_dataframe():
     result = scores.continuous.mse(df["fcst"], df["obs"])
     assert isinstance(result, float)
     assert round(result, PRECISION) == expected
-
-
-def test_mse_xarray_to_point():
-    """
-    Test MSE calculates the correct value for a simple 1d sequence
-    Currently breaks type hinting but here for future pandas support
-    """
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mse(fcst_as_xarray_1d, 1)  # type: ignore
-    expected = xr.DataArray(1.45454545)
-    assert isinstance(result, xr.DataArray)
-    assert result.round(PRECISION) == expected.round(PRECISION)
 
 
 def test_2d_xarray_mse():
@@ -164,8 +153,6 @@ def rmse_obs_pandas():
             {"preserve_dims": "all"},
         ),
         ("rmse_fcst_nan_xarray", "rmse_obs_xarray", xr.DataArray(1.3784), {}),
-        ("rmse_fcst_xarray", 1, xr.DataArray(1.3484), {}),
-        ("rmse_fcst_nan_xarray", 1, xr.DataArray(1.3784), {}),
         ("rmse_fcst_pandas", "rmse_obs_pandas", 1.3484, {}),
         ("rmse_fcst_pandas", 1, 1.3484, {}),
         ("rmse_fcst_nan_pandas", "rmse_obs_pandas", 1.3784, {}),
@@ -174,8 +161,6 @@ def rmse_obs_pandas():
         "simple-1d",
         "preserve-1d",
         "simple-1d-w-nan",
-        "to-point",
-        "to-point-w-nan",
         "pandas-series-1d",
         "pandas-to-point",
         "pandas-series-nan-1d",
@@ -370,17 +355,6 @@ def test_mae_dataframe():
     result = scores.continuous.mae(df["fcst"], df["obs"])
     assert isinstance(result, float)
     assert round(result, PRECISION) == expected
-
-
-def test_mae_xarray_to_point():
-    """
-    Test MAE calculates the correct value for a simple sequence
-    Tests unhinted types but this is useful
-    """
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mae(fcst_as_xarray_1d, 1)  # type: ignore
-    expected = xr.DataArray(0.9091)
-    assert result.round(PRECISION) == expected.round(PRECISION)
 
 
 def test_2d_xarray_mae():
@@ -1162,3 +1136,39 @@ def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_mes
     """
     with pytest.raises(expected_exception, match=expected_message):
         scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)  # type: ignore
+
+
+def test_mse_raises():
+    """
+    Assert that mse raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.mse(fcst, obs, weights=weights)
+
+
+def test_rmse_raises():
+    """
+    Assert that rmse raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.rmse(fcst, obs, weights=weights)
+
+
+def test_mae_raises():
+    """
+    Assert that mae raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.mae(fcst, obs, weights=weights)

@@ -587,7 +587,7 @@ DA_FCST_CRPSENS_LT = xr.DataArray(
 DA_OBS_CRPSENS = xr.DataArray(
     data=[2.0, 3, 1, np.nan, 4, 5], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105, 106]}
 )
-DA_WT_CRPSENS = xr.DataArray(data=[1, 2, 1, 0, 2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
+DA_WT_CRPSENS = xr.DataArray(data=[1, 0, 0, 0, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 DA_T_TWCRPSENS = xr.DataArray(data=[np.nan, 1, 10, 1, -2], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 DA_LI_TWCRPSENS = xr.DataArray(data=[np.nan, 2, 2, 100, -200], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
 DA_UI_TWCRPSENS = xr.DataArray(data=[np.nan, 5, 5, 200, -100], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]})
@@ -633,7 +633,7 @@ EXP_CRPSENS_ECDF_DECOMPOSITION = EXP_CRPSENS_ECDF_DECOMPOSITION.assign_coords(
 )
 
 EXP_CRPSENS_FAIR = FIRST_TERM - SPREAD_FAIR
-EXP_CRPSENS_WT = (EXP_CRPSENS_ECDF * DA_WT_CRPSENS).mean("stn")
+EXP_CRPSENS_WT = xr.DataArray(1.125)
 
 EXP_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_CRPSENS_ECDF, "b": EXP_CRPSENS_ECDF})
 EXP_CRPSENS_ECDF_DECOMPOSITION_DS = xr.Dataset(

@@ -41,7 +41,7 @@ to properly interpret that, therefore an exception has been raised.
 """
 
 ERROR_INVALID_WEIGHTS = """
-You have specified invalid weights. The weights (excluding NaNs) must be >= 0, with at least one
+You have specified invalid weights. The weights must be >= 0, with at least one
 strictly positive weight.
 """
 
@@ -458,8 +458,8 @@ def check_binary(data: XarrayLike, name: str):
 
 def check_weights(weights: XarrayLike, *, raise_error=True):
     """
-    This is a check that requires weights to be non-negative (NaN values are excluded from the check
-    since they are used as masks). At least one of the weights must be strictly positive.
+    This is a check that requires weights to be non-negative.
+    At least one of the weights must be strictly positive.
 
     .. note::
 
@@ -490,14 +490,13 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
     def _check_single_array(_da_weights: xr.DataArray):
         # type safety: dev/test only
         assert isinstance(_da_weights, xr.DataArray)
-        # ignore NaNs - they are used for exclusion
-        weights_masked = np.ma.array(_da_weights, mask=np.isnan(_da_weights))
-        # however, still check that we have at least one proper number.
-        checks_passed = np.any(~np.isnan(_da_weights))
-        # the rest (non-NaN) should all be non-negative ...
-        checks_passed = checks_passed and np.ma.all(weights_masked >= 0)
+
+        # don't allow NaNs
+        checks_passed = ~_da_weights.isnull().any()
+        # Don't allow negative weights
+        checks_passed = checks_passed and not bool((_da_weights < 0).any())
         # ... and at least one number must be strictly positive.
-        checks_passed = checks_passed and np.ma.any(weights_masked > 0)
+        checks_passed = checks_passed and bool((_da_weights > 0).any())
 
         if not checks_passed:
             if raise_error:

@@ -9,8 +9,13 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
+from scores.processing import aggregate, broadcast_and_match_nan
+from scores.typing import (
+    FlexibleArrayType,
+    FlexibleDimensionTypes,
+    XarrayLike,
+    is_xarraylike,
+)
 
 
 def mse(
@@ -45,8 +50,12 @@ def mse(
             the squared error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -60,8 +69,11 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
     """
-    if preserve_dims or reduce_dims:
+
+    if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
@@ -71,14 +83,15 @@ def mse(
     else:
         error = fcst - obs  # type: ignore
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
 
-    if reduce_dims is not None:
-        _mse = squared.mean(dim=reduce_dims)  # type: ignore
+    if is_xarraylike(squared):
+        result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
+    elif weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
     else:
-        _mse = squared.mean()
+        result = squared.mean()
 
-    return _mse
+    return result
 
 
 def rmse(
@@ -112,8 +125,12 @@ def rmse(
             the absolute error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -126,6 +143,8 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the root mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
@@ -163,8 +182,12 @@ def mae(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -178,8 +201,12 @@ def mae(
 
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
+
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
     """
-    if preserve_dims is not None or reduce_dims is not None:
+
+    if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
@@ -187,17 +214,16 @@ def mae(
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        error = fcst - obs  # type: ignore
-    ae = abs(error)
-    ae = scores.functions.apply_weights(ae, weights=weights)  # type: ignore
+        error = abs(fcst - obs)  # type: ignore
 
-    if reduce_dims is not None:
-        _ae = ae.mean(dim=reduce_dims)
+    if is_xarraylike(error):
+        result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    elif weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
     else:
-        _ae = ae.mean()
+        result = error.mean()
 
-    # Returns unhinted types if nonstandard types passed in, but this is useful
-    return _ae  # type: ignore
+    return result
 
 
 def mean_error(
@@ -232,8 +258,12 @@ def mean_error(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the mean error of a forecast.
@@ -274,8 +304,12 @@ def additive_bias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the additive bias of a forecast.
@@ -286,8 +320,9 @@ def additive_bias(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
     error = fcst - obs
-    score = scores.functions.apply_weights(error, weights=weights)
-    score = score.mean(dim=reduce_dims)
+
+    score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+
     return score  # type: ignore
 
 
@@ -324,8 +359,12 @@ def multiplicative_bias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the multiplicative bias of a forecast.
@@ -334,13 +373,13 @@ def multiplicative_bias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
-    multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    multi_bias = aggregate(fcst, reduce_dims=reduce_dims, weights=weights) / aggregate(
+        obs, reduce_dims=reduce_dims, weights=weights
+    )
+
     return multi_bias
 
 
@@ -381,8 +420,12 @@ def pbias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the percent bias of a forecast.
@@ -409,15 +452,14 @@ def pbias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     error = fcst - obs
 
-    _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    numerator = 100 * aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    denominator = aggregate(obs, reduce_dims=reduce_dims, weights=weights)
+    _pbias = numerator / denominator
     return _pbias
 
 

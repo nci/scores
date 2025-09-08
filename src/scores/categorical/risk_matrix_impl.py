@@ -7,7 +7,7 @@ from typing import Iterable, Optional
 import numpy as np
 import xarray as xr
 
-from scores.functions import apply_weights
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
@@ -80,8 +80,12 @@ def risk_matrix_score(
             all dimensions to be preserved, apart from ``severity_dim`` and ``prob_threshold_dim``.
             Only one of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default
             behaviour if neither are supplied is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom) of scores across all forecast cases.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object of risk matrix scores, averaged according to specified weights
@@ -150,7 +154,7 @@ def risk_matrix_score(
         fcst, obs, decision_weights, severity_dim, prob_threshold_dim, threshold_assignment=threshold_assignment
     )
 
-    result = apply_weights(result, weights=weights).mean(dim=reduce_dims)
+    result = aggregate(result, weights=weights, reduce_dims=reduce_dims)
 
     return result
 
