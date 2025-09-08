@@ -32,7 +32,6 @@ from scores.probability.pit_impl import (
     _get_pit_x_values,
     _get_plotting_points_dict,
     _pit_cdfvalues,
-    _pit_dimension_checks,
     _pit_distribution_for_jumps,
     _pit_distribution_for_unif,
     _pit_hist_left,
@@ -45,6 +44,7 @@ from scores.probability.pit_impl import (
     _variance_integral_term,
     pit_distribution_for_cdf,
     pit_distribution_for_ens,
+    _dims_for_mean_with_checks,
 )
 from tests.probabilty import pit_test_data as ptd
 
@@ -191,6 +191,19 @@ def test__pit_cdfvalues(pit_values, expected):
 
 
 @pytest.mark.parametrize(
+    ("weights", "expected"),
+    [
+        (None, {"stn", "lead_day", "instrument"}),
+        (xr.DataArray([2, 3], dims=["test"], coords={"test": [1, 2]}), {"stn", "lead_day", "instrument", "test"}),
+    ],
+)
+def test__dims_for_mean_with_checks(weights, expected):
+    """Tests that `_dims_for_mean_with_checks` returns as expected."""
+    result = _dims_for_mean_with_checks(ptd.DA_FCST, ptd.DA_OBS_PVCDF, "ens_member", weights, None, None)
+    assert expected == result
+
+
+@pytest.mark.parametrize(
     ("fcst", "obs", "weights"),
     [
         (
@@ -225,10 +238,10 @@ def test__pit_cdfvalues(pit_values, expected):
         ),
     ],
 )
-def test__pit_dimension_checks_raises(fcst, obs, weights):
-    """Test that `_pit_dimension_checks` raises as expected."""
+def test__dims_for_mean_with_checks_raises(fcst, obs, weights):
+    """Test that `_dims_for_mean_with_checks` raises as expected."""
     with pytest.raises(ValueError, match="The following names are reserved and"):
-        _pit_dimension_checks(fcst, obs, weights)
+        _dims_for_mean_with_checks(fcst, obs, None, weights, None, None)
 
 
 @pytest.mark.parametrize(
