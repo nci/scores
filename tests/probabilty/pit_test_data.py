@@ -424,5 +424,7 @@ DA_FCST_CDF_LEFT_RAISES = xr.DataArray(
     coords={"stn": [101, 102], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
 )
 
-# test data for _cdf_checks
-DA_CDF_CHECKS = xr.DataArray(data=[0, 4, 2, 6, 4], dims=["thld"], coords={"thld": [1, 3, 2, 5, 3]})
+# test data for _right_left_checks
+DA_RLC1 = xr.DataArray(data=[0, 0.4, 0.2, np.nan, 0.4], dims=["thld"], coords={"thld": [1, 3, 2, 5, 3]})
+DA_RLC2 = xr.DataArray(data=[0, 0.4, np.nan, 0.6, 0.4], dims=["thld"], coords={"thld": [1, 2, 3, 4, 5]})
+DA_RLC3 = xr.DataArray(data=[0, 0.2, 0.8, np.nan, 0.41], dims=["thld"], coords={"thld": [1, 2, 3, 4, 5]})
