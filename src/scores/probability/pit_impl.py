@@ -308,6 +308,48 @@ def _dims_for_mean_with_checks(
     return dims_for_mean
 
 
+def _right_left_checks(
+    right: XarrayLike, left: Optional[XarrayLike], threshold_dim: Optional[str], right_arg_name: str, left_arg_name: str
+):
+    """
+    Raises:
+        - if `right` or `left` have values less than 0 or greater than 1
+        - if `right[threshold_dim]` is not strictly increasing
+        - if, when `left` is not None, `right` and `left` don't have the same shape, dims or coords
+        - if, when `left` is not None, `right < left` at some point
+    """
+    # first check right
+    if isinstance(right, xr.DataArray):
+        if not cdf_values_within_bounds(right):
+            raise ValueError(f"`{right_arg_name}` values must be between 0 and 1 inclusive.")
+    else:
+        for var in right.data_vars:
+            if not cdf_values_within_bounds(right[var]):
+                raise ValueError(f"`{right_arg_name}` values must be between 0 and 1 inclusive.")
+    if (threshold_dim is not None) and (not coords_increasing(right, threshold_dim)):
+        raise ValueError(f"coordinates along `{right_arg_name}[threshold_dim]` are not strictly increasing")
+
+    # then check left if appropriate
+    if left is not None:
+        # check that both fcst and fcst_left have same shape, coords and dims
+        if not xr.ones_like(right).equals(xr.ones_like(left)):
+            raise ValueError(
+                f"If `{left_arg_name}` is not `None`, `{right_arg_name}` and `{left_arg_name}` "
+                "must have same shape, dimensions and coordinates"
+            )
+        if isinstance(right, xr.DataArray):
+            if not cdf_values_within_bounds(left):
+                raise ValueError(f"`{left_arg_name}` values must be between 0 and 1 inclusive.")
+            if (left > right).any():
+                raise ValueError(f"`{left_arg_name}` must not exceed `{right_arg_name}`")
+        else:
+            for var in left.data_vars:
+                if not cdf_values_within_bounds(left[var]):
+                    raise ValueError(f"`{left_arg_name}` values must be between 0 and 1 inclusive.")
+                if (left > right).any():
+                    raise ValueError(f"`{left_arg_name}` must not exceed `{right_arg_name}`")
+
+
 def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
     For each forecast case in the form of an ensemble, the PIT value of the ensemble for
@@ -409,16 +451,8 @@ def pit_distribution_for_cdf(
         - if any values in ``obs`` lie outside the range of values in the forecast ``threshold_dim`` dimension.
         - if any forecast values have NaN
     """
-    if fcst_left is not None:
-        # check that both fcst and fcst_left have same shape, coords and dims
-        if not xr.ones_like(fcst).equals(xr.ones_like(fcst_left)):
-            raise ValueError(
-                "If `fcst_left` is not `None, `fcst` and `fcst_left` must have same shape, dimensions and coordinates"
-            )
-        _cdf_checks(fcst_left, threshold_dim)
-        _cdf_checks(fcst, threshold_dim)
-    else:
-        _cdf_checks(fcst, threshold_dim)
+    _right_left_checks(fcst, fcst_left, threshold_dim, "fcst", "fcst_left")
+    if fcst_left is None:
         fcst_left = fcst.copy()
 
     dims_for_mean = _dims_for_mean_with_checks(fcst, obs, threshold_dim, weights, reduce_dims, preserve_dims)
@@ -430,32 +464,6 @@ def pit_distribution_for_cdf(
     result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
 
     return result
-
-
-def _cdf_checks(cdf: XarrayLike, threshold_dim: str):
-    """
-    For each CDF in `cdf_list`, checks that
-        - coords in `threshold_dim` are increasing
-        - cdf takes values in the unit interval [0,1]
-    Does not check that the CDF is increasing. This is left to the user.
-
-    Args:
-        cdf: xarray object
-        threshold_dim: name of the threshold dimension in the object
-
-    Raises:
-        ValueError if coords in `threshold_dim` not increasing
-        ValueError if any values in `cdf` are outside [0, 1] (NaNs are ignored)
-    """
-    if not coords_increasing(cdf, threshold_dim):
-        raise ValueError("coordinates along `fcst[threshold_dim]` are not strictly increasing")
-    if isinstance(cdf, xr.DataArray):
-        if not cdf_values_within_bounds(cdf):
-            raise ValueError("`fcst` values must be between 0 and 1 inclusive.")
-    else:
-        for var in cdf.data_vars:
-            if not cdf_values_within_bounds(cdf[var]):
-                raise ValueError("`fcst` values must be between 0 and 1 inclusive.")
 
 
 def _pit_values_final_processing(pit_values, weights, dims_for_mean):

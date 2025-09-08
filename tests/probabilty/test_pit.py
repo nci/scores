@@ -18,6 +18,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 
 import warnings
 
+import re
 import numpy as np
 import pytest
 import xarray as xr
@@ -26,7 +27,7 @@ from numpy import nan
 from scores.probability.pit_impl import (
     Pit,
     _alpha_score,
-    _cdf_checks,
+    _right_left_checks,
     _construct_hist_values,
     _expected_value,
     _get_pit_x_values,
@@ -805,18 +806,48 @@ def test_Pit__init__(
 
 
 @pytest.mark.parametrize(
-    ("cdf", "error_msg"),
+    ("right", "left", "threshold_dim", "error_msg"),
     [
-        (ptd.DA_CDF_CHECKS, "are not strictly increasing"),
-        (create_dataset(ptd.DA_CDF_CHECKS), "are not strictly increasing"),
-        (2 * ptd.DA_FCST_CDF_LEFT, "`fcst` values must be between 0 and 1 inclusive."),
-        (create_dataset(2 * ptd.DA_FCST_CDF_LEFT), "`fcst` values must be between 0 and 1 inclusive."),
+        (3 * ptd.DA_RLC1, None, "thld", re.escape("`xr_right` values must be between 0 and 1 inclusive.")),
+        (
+            create_dataset(3 * ptd.DA_RLC1),
+            None,
+            "thld",
+            re.escape("`xr_right` values must be between 0 and 1 inclusive."),
+        ),
+        (
+            ptd.DA_RLC1,
+            None,
+            "thld",
+            re.escape("coordinates along `xr_right[threshold_dim]` are not strictly increasing"),
+        ),
+        (
+            create_dataset(ptd.DA_RLC1),
+            None,
+            "thld",
+            re.escape("coordinates along `xr_right[threshold_dim]` are not strictly increasing"),
+        ),
+        (ptd.DA_RLC2, ptd.DA_RLC1, None, re.escape("`xr_right` and `xr_left` must have same shape")),
+        (ptd.DA_RLC2, 3 * ptd.DA_RLC2, None, re.escape("`xr_left` values must be between 0 and 1 inclusive.")),
+        (ptd.DA_RLC2, ptd.DA_RLC3, None, re.escape("`xr_left` must not exceed `xr_right`")),
+        (
+            create_dataset(ptd.DA_RLC2),
+            create_dataset(3 * ptd.DA_RLC2),
+            None,
+            re.escape("`xr_left` values must be between 0 and 1 inclusive."),
+        ),
+        (
+            create_dataset(ptd.DA_RLC2),
+            create_dataset(ptd.DA_RLC3),
+            None,
+            re.escape("`xr_left` must not exceed `xr_right`"),
+        ),
     ],
 )
-def test__cdf_checks_raises(cdf, error_msg):
-    """Tests that _cdf_checks raises as expected."""
+def test__right_left_checks(right, left, threshold_dim, error_msg):
+    """Tests that _right_left_checks raises as expected."""
     with pytest.raises(ValueError, match=error_msg):
-        _cdf_checks(cdf, "thld")
+        _right_left_checks(right, left, threshold_dim, "xr_right", "xr_left")
 
 
 @pytest.mark.parametrize(
