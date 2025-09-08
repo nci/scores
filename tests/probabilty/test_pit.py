@@ -3,10 +3,7 @@ Unit tests for scores.probability.pit_impl.py
 
 Functions to test:
     _pit_values_final_processing
-
-
-Issues:
-    test_plotting_points_parametric_dask, second assertion fails
+    Pit_fcst_at_obs, with dask (left/right is sufficient)
 """
 
 
@@ -16,9 +13,9 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
+import re
 import warnings
 
-import re
 import numpy as np
 import pytest
 import xarray as xr
@@ -27,8 +24,8 @@ from numpy import nan
 from scores.probability.pit_impl import (
     Pit,
     _alpha_score,
-    _right_left_checks,
     _construct_hist_values,
+    _dims_for_mean_with_checks,
     _expected_value,
     _get_pit_x_values,
     _get_plotting_points_dict,
@@ -40,12 +37,13 @@ from scores.probability.pit_impl import (
     _pit_values_for_cdf,
     _pit_values_for_cdf_array,
     _pit_values_for_ens,
+    _pit_values_for_fcst_at_obs,
+    _right_left_checks,
     _value_at_pit_cdf,
     _variance,
     _variance_integral_term,
     pit_distribution_for_cdf,
     pit_distribution_for_ens,
-    _dims_for_mean_with_checks,
 )
 from tests.probabilty import pit_test_data as ptd
 
@@ -80,6 +78,7 @@ DS_OBS = create_dataset(ptd.DA_OBS)
 EXP_PITCDF_LEFT5 = create_dataset(ptd.EXP_PITCDF_LEFT4)
 EXP_PITCDF_RIGHT5 = create_dataset(ptd.EXP_PITCDF_RIGHT4)
 EXP_PITCDF5 = {"left": EXP_PITCDF_LEFT5, "right": EXP_PITCDF_RIGHT5}
+EXP_PVFAO3 = {"left": create_dataset(ptd.EXP_PVFAO_LEFT0), "right": create_dataset(ptd.EXP_PVFAO_RIGHT0)}
 # test data sets for plotting point functions
 DS_GPP_LEFT4 = create_dataset(ptd.DA_GPP_LEFT2)
 DS_GPP_RIGHT4 = create_dataset(ptd.DA_GPP_RIGHT2)
@@ -91,6 +90,24 @@ LIST_CHV2 = [create_dataset(da) for da in ptd.LIST_CHV1]
 DS_PH_LEFT = create_dataset(ptd.DA_PH_LEFT)
 DS_PH_RIGHT = create_dataset(ptd.DA_PH_RIGHT)
 EXP_HV3 = create_dataset(ptd.EXP_HV2)
+
+
+@pytest.mark.parametrize(
+    ("fcst_at_obs", "fcst_at_obs_left", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        (ptd.DA_FAO, ptd.DA_FAO_LEFT, None, "all", None, ptd.EXP_PVFAO0),
+        (ptd.DA_FAO, None, None, "all", None, ptd.EXP_PVFAO1),
+        (ptd.DA_FAO, None, None, "lead_day", ptd.DA_WT, ptd.EXP_PVFAO2),
+        (ptd.DA_FAO, None, "stn", None, ptd.DA_WT, ptd.EXP_PVFAO2),
+        (create_dataset(ptd.DA_FAO), create_dataset(ptd.DA_FAO_LEFT), None, "all", None, EXP_PVFAO3),
+    ],
+)
+def test__pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights, expected):
+    """Tests that `_pit_values_for_fcst_at_obs` returns as expected."""
+    result = _pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights)
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_allclose(expected[key], result[key])
 
 
 def test__pit_values_for_ens():
