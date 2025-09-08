@@ -19,6 +19,7 @@ from scipy.interpolate import interp1d
 
 from scores.functions import apply_weights
 from scores.probability.checks import cdf_values_within_bounds, coords_increasing
+from scores.processing import broadcast_and_match_nan
 from scores.processing.cdf import add_thresholds
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
@@ -245,7 +246,7 @@ class Pit:
         return _variance(self.plotting_points())
 
 
-class Pit_obs_at_fcst:
+class Pit_fcst_at_obs:
     """
     Same as Pit but inputs are the observations evuated at the forecast CDF.
     """
@@ -262,6 +263,9 @@ class Pit_obs_at_fcst:
         """
         Blah
         """
+        pit_cdf = _pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights)
+        self.left = pit_cdf["left"]
+        self.right = pit_cdf["right"]
 
 
 #####################################################
@@ -278,11 +282,11 @@ def _dims_for_mean_with_checks(
     preserve_dims: Optional[FlexibleDimensionTypes],
 ) -> set[Hashable]:
     """
-    Given inputs for Pit or Pit_obs_at_fcst, checks that XarrayLike inputs don't use
+    Given inputs for Pit or Pit_fcst_at_obs, checks that XarrayLike inputs don't use
     RESERVES_NAMES and then gathers dimensions, returning the set of dimensions for
     calculating the mean.
 
-    When applying to `Pit_obs_at_fcst` inputs, use `fcst=obs=obs_at_fcst`.
+    When applying to `Pit_fcst_at_obs` inputs, use `fcst=obs=fcst_at_obs`.
     """
     all_dims = set(fcst.dims).union(obs.dims)
 
@@ -346,8 +350,45 @@ def _right_left_checks(
             for var in left.data_vars:
                 if not cdf_values_within_bounds(left[var]):
                     raise ValueError(f"`{left_arg_name}` values must be between 0 and 1 inclusive.")
-                if (left > right).any():
+                if (left[var] > right[var]).any():
                     raise ValueError(f"`{left_arg_name}` must not exceed `{right_arg_name}`")
+
+
+def _pit_values_for_fcst_at_obs(
+    fcst_at_obs: XarrayLike,
+    fcst_at_obs_left: Optional[XarrayLike],
+    reduce_dims: Optional[FlexibleDimensionTypes],
+    preserve_dims: Optional[FlexibleDimensionTypes],
+    weights: Optional[XarrayLike],
+) -> dict:
+    """
+    A private function to compute `Pit_fcst_at_obs.__init__`.
+    Returns `Pit_fcst_at_obs().left` and `Pit_fcst_at_obs().right` in the form of a dictionary
+    with keys 'left' and 'right'.
+
+    See docstring `Pit_fcst_at_obs.__init__` for details.
+    """
+    _right_left_checks(fcst_at_obs, fcst_at_obs_left, None, "fcst_at_obs", "fcst_at_obs_left")
+
+    dims_for_mean = _dims_for_mean_with_checks(fcst_at_obs, fcst_at_obs, None, weights, reduce_dims, preserve_dims)
+
+    if fcst_at_obs_left is None:
+        fcst_at_obs_left = fcst_at_obs.copy()
+    else:
+        fcst_at_obs, fcst_at_obs_left = broadcast_and_match_nan(fcst_at_obs, fcst_at_obs_left)
+
+    pit_values = xr.concat(
+        [
+            fcst_at_obs_left.assign_coords(uniform_endpoint="lower").expand_dims("uniform_endpoint"),
+            fcst_at_obs.assign_coords(uniform_endpoint="upper").expand_dims("uniform_endpoint"),
+        ],
+        "uniform_endpoint",
+    )
+
+    # convert to CDF format, take weighted means, and output dictionary
+    result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
+
+    return result
 
 
 def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
@@ -452,10 +493,11 @@ def pit_distribution_for_cdf(
         - if any forecast values have NaN
     """
     _right_left_checks(fcst, fcst_left, threshold_dim, "fcst", "fcst_left")
-    if fcst_left is None:
-        fcst_left = fcst.copy()
 
     dims_for_mean = _dims_for_mean_with_checks(fcst, obs, threshold_dim, weights, reduce_dims, preserve_dims)
+
+    if fcst_left is None:
+        fcst_left = fcst.copy()
 
     # PIT values in [G(y-), G(y)] format
     pit_values = _pit_values_for_cdf(fcst_left, fcst, obs, threshold_dim)
