@@ -508,13 +508,30 @@ def pit_distribution_for_cdf(
     return result
 
 
-def _pit_values_final_processing(pit_values, weights, dims_for_mean):
+def _pit_values_final_processing(
+    pit_values: XarrayLike, weights: Optional[XarrayLike], dims_for_mean: set[Hashable]
+) -> dict:
     """
-    Given
+    Given PIT values in the format [lower,upper], representing the uniform distribution
+    on the closed interval [lower,upper], converts to CDF format, with output 'left' giving
+    the left limit of the CDF and 'right' giving the value at the CDF. Weighted means are then
+    taken across all the CDFs. The output is scaled so that it is in CDF format (i.e., max value is 1)
+
+    Args:
+        pit_values: values of the PIT in [upper, lower] format, including dimension 'uniform_endpoint'
+            that has two coordinates "upper" and "lower"
+        weights: optional array of weights when calculating the weighted mean
+        dims_for_mean: list, set etc of dimensions over which to apply the mean.
+
+    Returns:
+        dictionary of two xarray objects, with keys 'left' and 'right', containing values of the
+            left-hand and right-hand limits of the mean weighted PIT in CDF format.
     """
     # convert to F(x-), F(x) format
     pit_cdf = _pit_cdfvalues(pit_values)
+    # import pdb
 
+    # pdb.set_trace()
     pit_cdf_left = apply_weights(pit_cdf["left"], weights=weights).mean(dim=dims_for_mean)
     pit_cdf_right = apply_weights(pit_cdf["right"], weights=weights).mean(dim=dims_for_mean)
 

@@ -486,3 +486,38 @@ EXP_PVFAO_RIGHT2 = xr.DataArray(
     coords={"lead_day": [0, 1, 2], "pit_x_value": [0, 0.2, 0.4, 0.6, 1]},
 )
 EXP_PVFAO2 = {"left": EXP_PVFAO_LEFT2, "right": EXP_PVFAO_RIGHT2}
+
+
+# test data for _pit_values_final_processing
+DA_PVFP = xr.DataArray(
+    data=[
+        [[1, 1], [nan, nan]],
+        [[0.2, 0.2], [0, 0]],
+        [[nan, nan], [0, 0.2]],
+    ],
+    dims=["stn", "lead_day", "uniform_endpoint"],
+    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "uniform_endpoint": ["lower", "upper"]},
+)
+DA_PVPF_WTS = xr.DataArray(data=[1, 4, 2], dims=["stn"], coords={"stn": [101, 102, 103]})
+# results with weights
+EXP_PVFP_LEFT = xr.DataArray(
+    data=[[0, 0, 0.8], [0, 1, 1]],
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0, 0.2, 1]},
+)
+EXP_PVFP_RIGHT = xr.DataArray(
+    data=[[0, 0.8, 1], [2 / 3, 1, 1]],
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0, 0.2, 1]},
+)
+# results with weights None
+EXP_PVFP_LEFT1 = xr.DataArray(
+    data=[[0, 0, 0.5], [0, 1, 1]],
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0, 0.2, 1]},
+)
+EXP_PVFP_RIGHT1 = xr.DataArray(
+    data=[[0, 0.5, 1], [0.5, 1, 1]],
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0, 0.2, 1]},
+)
