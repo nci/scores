@@ -1,13 +1,38 @@
 """
-Methods for the probability integral transform (PIT) class.
+Methods for the probability integral transform (PIT) classes Pit and Pit_fcst_at_obs.
 
-Reserved dimension names:
-- 'uniform_endpoint', 'pit_x_value'
+The basic approach follows Taggart (2023) and Gneiting and Ranjan (2013); see
+http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
 
-Write checks for fcst cdf: between 0, 1, threshold dim increasing, cdf increasing???
+For a forecast--observation pair (F,y), where F is a CDF,
+the corresponding PIT value is the uniform distribution on the closed interval
+[F(y-), F(y)], where F(y-) denotes the left-hand limit.
+So if F(y-)=F(y), the PIT value is the distribution concentrated at the point F(y).
+PIT values for particular forecast cases can be represented in the form
+    lower = F(y-), upper = F(y)
+or can be described by the CDF of the uniform distribution on the interval [F(y-), F(y)].
 
-TO DO:
-    - all methods for Pit_fcst_at_obs
+The code here first converts inputs to the [lower, upper] representation.
+Then it converts this representation to the uniform CDF representation, with CDF values
+stored at a minimal number of points (the remaining values obtained exactly when required
+via linear interpolation).
+
+Once each forecast case has a PIT value in CDF representation, the (possibly weighted)
+mean PIT value across all forecast cases is the weighted mean across all the CDF representations.
+We call this the PIT distribution (or PIT CDF) for all the forecast cases.
+
+The PIT distribution is always piecewise linear and right-continuous. It can be represented
+using "left" and "right" values, respectively representing the left-hand limit of the PIT CDF
+and the value (which equals the right-hand limit) of the CDF. All standard statistics of
+PIT for the set of forecast cases, such as PIT histogram bar hieghts and alpha scores,
+can be calculated exactly from this representation.
+
+The code here is structured as follows:
+1. The two classes `Pit` and `Pit_fcst_at_obs` are introduced
+2. Private functions that calculate the PIT distribution are then given
+3. Private functions that calculate the PIT statistics from the PIT distribution are then presented.
+
+The tutorial is a good place to start to understand the big picture.
 """
 
 import warnings
@@ -36,7 +61,7 @@ RESERVED_NAMES = {
 }
 
 ################################################
-# The two classes: `Pit`` and `Pit_obs_at_fcst`
+# The two classes: `Pit`` and `Pit_fcst_at_obs`
 ################################################
 
 
@@ -201,7 +226,7 @@ class Pit:
             raise ValueError('`fcst_type` must be one of "ensemble" or "cdf"')
 
         if fcst_type == "ensemble":
-            pit_cdf = pit_distribution_for_ens(
+            pit_cdf = _pit_distribution_for_ens(
                 fcst,
                 obs,
                 special_fcst_dim,
@@ -210,7 +235,7 @@ class Pit:
                 weights=weights,
             )
         else:
-            pit_cdf = pit_distribution_for_cdf(
+            pit_cdf = _pit_distribution_for_cdf(
                 fcst,
                 obs,
                 special_fcst_dim,
@@ -282,8 +307,9 @@ class Pit:
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x}`
 
         References:
-            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
-                Understanding predictive uncertainty in hydrologic modeling: The challenge of identifying input and structural errors.
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
+                Understanding predictive uncertainty in hydrologic modeling: \
+                The challenge of identifying input and structural errors. \
                 Water Resources Research, 46(5).
         """
         return _alpha_score(self.plotting_points())
@@ -498,8 +524,9 @@ class Pit_fcst_at_obs:
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x}`
 
         References:
-            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
-                Understanding predictive uncertainty in hydrologic modeling: The challenge of identifying input and structural errors.
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
+                Understanding predictive uncertainty in hydrologic modeling: \
+                The challenge of identifying input and structural errors. \
                 Water Resources Research, 46(5).
         """
         return _alpha_score(self.plotting_points())
@@ -644,6 +671,40 @@ def _pit_values_for_fcst_at_obs(
     return result
 
 
+def _pit_values_final_processing(
+    pit_values: XarrayLike, weights: Optional[XarrayLike], dims_for_mean: set[Hashable]
+) -> dict:
+    """
+    Given PIT values in the format [lower,upper], representing the uniform distribution
+    on the closed interval [lower,upper], converts to CDF format, with output 'left' giving
+    the left limit of the CDF and 'right' giving the value at the CDF. Weighted means are then
+    taken across all the CDFs. The output is scaled so that it is in CDF format (i.e., max value is 1)
+
+    Args:
+        pit_values: values of the PIT in [upper, lower] format, including dimension 'uniform_endpoint'
+            that has two coordinates "upper" and "lower"
+        weights: optional array of weights when calculating the weighted mean
+        dims_for_mean: list, set etc of dimensions over which to apply the mean.
+
+    Returns:
+        dictionary of two xarray objects, with keys 'left' and 'right', containing values of the
+            left-hand and right-hand limits of the mean weighted PIT in CDF format.
+    """
+    # convert to F(x-), F(x) format
+    pit_cdf = _pit_cdfvalues(pit_values)
+
+    pit_cdf_left = apply_weights(pit_cdf["left"], weights=weights).mean(dim=dims_for_mean)
+    pit_cdf_right = apply_weights(pit_cdf["right"], weights=weights).mean(dim=dims_for_mean)
+
+    # rescale CDFs so that their max value is 1.
+    # This corrects for weights that don't sum to 1.
+    cdf_right_max = pit_cdf_right.max("pit_x_value")
+    pit_cdf_right = pit_cdf_right / cdf_right_max
+    pit_cdf_left = pit_cdf_left / cdf_right_max
+
+    return {"left": pit_cdf_left, "right": pit_cdf_right}
+
+
 def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
     """
     For each forecast case in the form of an ensemble, the PIT value of the ensemble for
@@ -675,7 +736,7 @@ def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) 
     return xr.concat([pit_lower, pit_upper], "uniform_endpoint")
 
 
-def pit_distribution_for_cdf(
+def _pit_distribution_for_cdf(
     fcst: XarrayLike,
     obs: XarrayLike,
     threshold_dim: str,
@@ -759,40 +820,6 @@ def pit_distribution_for_cdf(
     result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
 
     return result
-
-
-def _pit_values_final_processing(
-    pit_values: XarrayLike, weights: Optional[XarrayLike], dims_for_mean: set[Hashable]
-) -> dict:
-    """
-    Given PIT values in the format [lower,upper], representing the uniform distribution
-    on the closed interval [lower,upper], converts to CDF format, with output 'left' giving
-    the left limit of the CDF and 'right' giving the value at the CDF. Weighted means are then
-    taken across all the CDFs. The output is scaled so that it is in CDF format (i.e., max value is 1)
-
-    Args:
-        pit_values: values of the PIT in [upper, lower] format, including dimension 'uniform_endpoint'
-            that has two coordinates "upper" and "lower"
-        weights: optional array of weights when calculating the weighted mean
-        dims_for_mean: list, set etc of dimensions over which to apply the mean.
-
-    Returns:
-        dictionary of two xarray objects, with keys 'left' and 'right', containing values of the
-            left-hand and right-hand limits of the mean weighted PIT in CDF format.
-    """
-    # convert to F(x-), F(x) format
-    pit_cdf = _pit_cdfvalues(pit_values)
-
-    pit_cdf_left = apply_weights(pit_cdf["left"], weights=weights).mean(dim=dims_for_mean)
-    pit_cdf_right = apply_weights(pit_cdf["right"], weights=weights).mean(dim=dims_for_mean)
-
-    # rescale CDFs so that their max value is 1.
-    # This corrects for weights that don't sum to 1.
-    cdf_right_max = pit_cdf_right.max("pit_x_value")
-    pit_cdf_right = pit_cdf_right / cdf_right_max
-    pit_cdf_left = pit_cdf_left / cdf_right_max
-
-    return {"left": pit_cdf_left, "right": pit_cdf_right}
 
 
 def _pit_values_for_cdf_array(
@@ -1097,7 +1124,7 @@ def _pit_cdfvalues(pit_values: XarrayLike) -> dict:
     return {"left": cdf_left, "right": cdf_right}
 
 
-def pit_distribution_for_ens(
+def _pit_distribution_for_ens(
     fcst: XarrayLike,
     obs: XarrayLike,
     ens_member_dim: str,
@@ -1162,6 +1189,11 @@ def pit_distribution_for_ens(
     result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
 
     return result
+
+
+################################################
+# Functions for Pit and Pit_fcst_at_obs methods
+################################################
 
 
 def _get_plotting_points_dict(left: XarrayLike, right: XarrayLike) -> dict:

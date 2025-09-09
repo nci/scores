@@ -27,6 +27,7 @@ from scores.probability.pit_impl import (
     _get_pit_x_values,
     _get_plotting_points_dict,
     _pit_cdfvalues,
+    _pit_distribution_for_ens,
     _pit_distribution_for_jumps,
     _pit_distribution_for_unif,
     _pit_hist_left,
@@ -40,8 +41,7 @@ from scores.probability.pit_impl import (
     _value_at_pit_cdf,
     _variance,
     _variance_integral_term,
-    pit_distribution_for_cdf,
-    pit_distribution_for_ens,
+    _pit_distribution_for_cdf,
 )
 from tests.probabilty import pit_test_data as ptd
 
@@ -335,9 +335,9 @@ def test__dims_for_mean_with_checks_raises(fcst, obs, weights):
         (DS_FCST, ptd.DA_OBS, None, "all", None, EXP_PITCDF5),  # data set/array mix
     ],
 )
-def test_pit_distribution_for_ens(fcst, obs, preserve_dims, reduce_dims, weights, expected):
-    """Tests that `pit_distribution_for_ens` returns as expected."""
-    result = pit_distribution_for_ens(
+def test__pit_distribution_for_ens(fcst, obs, preserve_dims, reduce_dims, weights, expected):
+    """Tests that `_pit_distribution_for_ens` returns as expected."""
+    result = _pit_distribution_for_ens(
         fcst, obs, "ens_member", preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights
     )
     assert expected.keys() == result.keys()
@@ -752,9 +752,9 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
         ),
     ],
 )
-def test_pit_distribution_for_cdf(fcst, obs, fcst_left, preserve_dims, expected):
-    """Tests that `pit_distribution_for_cdf` returns as expected."""
-    result = pit_distribution_for_cdf(fcst, obs, "thld", fcst_left=fcst_left, preserve_dims=preserve_dims)
+def test__pit_distribution_for_cdf(fcst, obs, fcst_left, preserve_dims, expected):
+    """Tests that `_pit_distribution_for_cdf` returns as expected."""
+    result = _pit_distribution_for_cdf(fcst, obs, "thld", fcst_left=fcst_left, preserve_dims=preserve_dims)
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
@@ -767,10 +767,10 @@ def test_pit_distribution_for_cdf(fcst, obs, fcst_left, preserve_dims, expected)
         (create_dataset(ptd.DA_FCST_CDF_RIGHT1), create_dataset(ptd.DA_FCST_CDF_LEFT1).rename({"tas": "rd"})),
     ],
 )
-def test_pit_distribution_for_cdf_raises(fcst, fcst_left):
-    """Tests that `pit_distribution_for_cdf` raises as expected."""
+def test__pit_distribution_for_cdf_raises(fcst, fcst_left):
+    """Tests that `_pit_distribution_for_cdf` raises as expected."""
     with pytest.raises(ValueError, match="`fcst` and `fcst_left` must have same shape"):
-        pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld", fcst_left=fcst_left)
+        _pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld", fcst_left=fcst_left)
 
 
 def test_Pit__init___raises():
