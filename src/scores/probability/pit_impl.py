@@ -42,35 +42,63 @@ RESERVED_NAMES = {
 
 class Pit:
     """
-    Given ensemble forecasts and corresponding observations, calculates the probability
-    intergral transform (PIT) for the set of forecast cases. The calculated PIT can be a
-    (possibly weighted) average over specified dimensions. Calculations are performed and
-    interpreted as follows.
+    Calculates the probability intergral transform (PIT) for a set of forecast cases and
+    corresponding observations. The calculated PIT can be a (possibly weighted) average
+    over specified dimensions. Calculations are performed and interpreted as follows.
 
-    Each forecast case (i.e., an ensemble of forecasts) is interpreted as an empirical
-    cumulative distribution function (CDF) :math:`G`. Given any observation :math:`y`,
-    the PIT value at :math:`G` is a uniform distribution on the closed interval
-    :math:`[G(y-), G(y)]`, where :math:`G(y-)` denotes the left-hand limit of :math:`G`
-    at :math:`y`. This is the most general form of PIT and handles cases where the
-    observation :math:`y` coincides with a point of discontinuity of a predictive CDF
+    Given a predictive cumulative distribution function (CDF) :math:`G` and corresponding
+    observation :math:`y`, the corresponding PIT value is a uniform distribution on the
+    closed interval :math:`[G(y-), G(y)]`, where :math:`G(y-)` denotes the left-hand
+    limit of :math:`G` at :math:`y`. This is the most general form of PIT and handles cases
+    where the observation :math:`y` coincides with a point of discontinuity of a predictive CDF
     :math:`G`. See Gneiting and Ranjan (2013) and Taggart (2022).
 
-    The (possibly weighted) mean over a specified set of dimensions is the weighted mean
-    of all the PIT values (each interpreted as a uniform distribution), with weighting
-    rescaled if necessary so that the weighted mean is also a distribution.
+    Weighted means of PIT values are simply weighted means of CDFs of those uniform distributions
+    on the closed interval :math:`[G(y-), G(y)]`. The weighted mean is itself a CDF. All
+    statistics related to the collection of PIT values, such as bar heights of PIT histograms, can be
+    calculated from this CDF.
+
+    Forecasts used by the ``Pit`` class can be given in two forms:
+
+    - An ensemble for forecasts, indexed by an ensemble member dimension. In this case,
+        the ensemble is interpreted as empirical cumulative distribution function (CDF)
+        of the ensemble members.
+    - Values of the predictive CDF, indexed by a threshold dimension. Left-hand limits
+        of the predictive CDF can also be specified, allowing for CDFs with discontinuities.
+        Values of the CDF between coordinates along the threshold dimension are determined via
+        linear interpolation, whilst values of the CDF at points outside those coordinates
+        are assigned either 0 or 1 as appropriate. Any predictive CDF with a NaN value
+        will be treated as NaN in its entirety.
+
+    Consider using the ``Pit_fcst_at_obs`` class instead of ``Pit`` when values of the predictive CDFs
+    evaulated at the observations is easy to generate, e.g. when the predictive CDFs are normal
+     distributions with known parameters.
 
     Attributes:
         left: values for the left-hand limit of the PIT distribution (represented as a CDF)
-        right: values for the PIT distribution (represented as a CDF), which also equals the right-hand limit
+        right: values for the PIT distribution (represented as a CDF). Since CDFs are right-continuous,
+            these values also equal values of the right-hand limits.
 
     Methods:
-        attribute_name (type): Description of the attribute.
+            plotting_points: generates plotting points for PIT-uniform probability plots.
+                Indexer along the horizontal dimension will contain duplicate values.
+            plotting_points_parametric: generates plotting points for PIT-uniform probability plots
+                in parametric format. Indexer along the parametrization will not contain duplicate values.
+            hist_values: generates values for the PIT histogram.
+            alpha_score: calculates the 'alpha score', which is the absolute area between
+                the diagonal and PIT graph of the PIT-uniform probability plot.
+            expected_value: calculates the expected value of the PIT CDF.
+            variance: calculates the variance of the PIT CDF.
 
     References:
         - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
             https://doi.org/10.1214/13-EJS823
         - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
             Bureau Research Report 64, http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
+
+    See also:
+            - :py:func:`scores.probability.Pit_fcst_at_obs`
+            - :py:func:`scores.probability.rank_histogram`
     """
 
     def __init__(
@@ -86,18 +114,18 @@ class Pit:
         weights: Optional[XarrayLike] = None,
     ):
         """
-        Calculates the mean PIT :math:`F`, interpreted as a CDF, given the set of forecast and
-        observations pairs.
+        Calculates the mean PIT :math:`F`, interpreted as a cumulative distribution function (CDF),
+        given the set of forecast and observations pairs.
 
         The CDF :math:`F` is completely determined by its values :math:`F(x)` and left-hand limits
-        :math:`F(x-)` at a minimal set of points :math:`x` that are output as part of this
-        calculation in the dimension "pit_x_value". All other values may be obtained via
+        :math:`F(x-)` at a minimal set of points :math:`x`. All other values may be obtained via
         interpolation whenever :math:`0 < x < 1` or the fact that :math:`F(x) = 0` when
         :math:`x < 1` and :math:`F(x) = 1` when :math:`x > 1`.
 
-        The outputs in the ``left`` and ``right`` attributes are sufficient to calculate
-        precise statistics for the PIT for the set of forecasts and observations, as
-        provided by ``Pit_for_ensemble`` methods.
+        The values of :math:`F` at this minimal set of points is accessible via the
+        ``left`` and ``right`` attributes. These values are sufficient to calculate precise
+        statistics for the PIT for the set of forecasts and observations, as provided by
+        ``Pit`` methods.
 
         Args:
             fcst: an xarray object of forecasts, containing the dimension `special_fcst_dim`.
@@ -125,28 +153,49 @@ class Pit:
                 by population, custom) of PIT CDF values across all forecast cases.
 
         Attributes:
-            left: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
-                and evaluated as left-hand limits at the points :math:`x` in the dimension
-                "pit_x_value". That is, values in the array or dataset are of the form :math:`F(x-)`.
-            right: xarray object representing the mean PIT, interpreted as a CDF :math:`F`
-                and evaluated as at the points :math:`x` in the dimension "pit_x_value".
-                That is, values in the array or dataset are of the form :math:`F(x)`.
+            left: xarray object representing the PIT across all forecast cases, interpreted
+                as a CDF :math:`F` and evaluated as left-hand limits at the points :math:`x`
+                in the dimension "pit_x_value". That is, values in the array or dataset
+                are of the form :math:`F(x-)`.
+            right: xarray object representing the PIT across all forecast cases, interpreted
+                as a CDF :math:`F` and evaluated as at the points :math:`x` in the dimension
+                "pit_x_value". That is, values in the array or dataset are of the form :math:`F(x)`.
 
         Methods:
-            plotting_points: generate plotting points for PIT-uniform probability plots
-            plotting_points_parametric: generate plotting points for PIT-uniform probability plots
-                in parametric format
-            hist_values: generate values for the PIT histogram
+            plotting_points: generates plotting points for PIT-uniform probability plots.
+                Indexer along the horizontal dimension will contain duplicate values.
+            plotting_points_parametric: generates plotting points for PIT-uniform probability plots
+                in parametric format. Indexer along the parametrization will not contain duplicate values.
+            hist_values: generates values for the PIT histogram.
             alpha_score: calculates the 'alpha score', which is the absolute area between
-                the diagonal and PIT curve of the PIT-uniform probability plot
-
+                the diagonal and PIT graph of the PIT-uniform probability plot.
+            expected_value: calculates the expected value of the PIT CDF.
+            variance: calculates the variance of the PIT CDF.
 
         Raises:
-            ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
-                'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
+            - ValueError if ``fcst_type`` is not one of "ensemble" or "cdf".
+            - ValueError if dimensions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+                "uniform_endpoint", "pit_x_value", "x_plotting_position", "y_plotting_position", "plotting_point",
+                "bin_left_endpoint", "bin_right_endpoint", "bin_centre".
+            - ValueError if, when ``fcst_left`` is not ``None``, ``fcst_left`` and ``fcst`` do not have identical
+                shape, dimensions and coordinates.
+            - ValueError if, when ``fcst_type='cdf'``, any values of ``fcst`` are less then 0 or greater than 1.
+            - ValueError if, when ``fcst_type='cdf'`` and ``fcst_left`` is not ``None``,
+                any values of ``fcst_left`` are less then 0 or greater than 1.
+            - ValueError if, when ``fcst_type='cdf'`` and ``fcst_left`` is not ``None``,
+                any values of ``fcst_left`` are greater than ``fcst``.
+            - ValueError if, when ``fcst_type='cdf'`` and ``fcst[special_fcst_dim]`` is not increasing.
+
+        Warns:
+            - UserWarning if, when ``fcst_type='cdf'``, any values of ``obs`` are less than
+                the minimum of ``fcst[special_fcst_dim]`` or greater than the maximum of
+                ``fcst[special_fcst_dim]``.
+            - UserWarning if, when ``fcst_type='cdf'``, there are any NaN values in ``fcst`` or
+                ``fcst_left``.
 
         See also:
-            - scores.probability.rank_histogram
+            - :py:func:`scores.probability.Pit_fcst_at_obs`
+            - :py:func:`scores.probability.rank_histogram`
         """
         if fcst_type not in ["ensemble", "cdf"]:
             raise ValueError('`fcst_type` must be one of "ensemble" or "cdf"')
@@ -173,9 +222,13 @@ class Pit:
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
 
-    def plotting_points(self):
+    def plotting_points(self) -> XarrayLike:
         """
-        Returns an xarray object with the plotting points for PIT-uniform probability plots.
+        Returns an xarray object with the plotting points for PIT-uniform probability plots,
+        or equivalently, the plotting points for the PIT CDF. The x (horizontal) plotting
+        positions are values from the "pit_x_value" index, while the
+        y (vertical) plotting positions are values in the output xarray object.
+
         Note that coordinates in the "pit_x_value" dimension will have duplicate values.
         For a parametric approach to plotting points without duplicate coordinate values, see the
         ``plotting_points_parametric`` method.
@@ -201,7 +254,8 @@ class Pit:
 
     def hist_values(self, bins: int, right: bool = True) -> XarrayLike:
         """
-        Returns an xarray object with the PIT histogram values.
+        Returns an xarray object with the PIT histogram values across appropriate dimensions,
+        with additional coordinates "bin_left_endpoint", "bin_right_endpoint" and "bin_centre".
 
         Args:
             bins: the number of bins in the histogram.
@@ -226,6 +280,11 @@ class Pit:
         is to the uniform distribution. If the PIT CDF is :math:`F`, then the alpha score :math:`S`
         is given by
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x}`
+
+        References:
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
+                Understanding predictive uncertainty in hydrologic modeling: The challenge of identifying input and structural errors.
+                Water Resources Research, 46(5).
         """
         return _alpha_score(self.plotting_points())
 
@@ -248,7 +307,52 @@ class Pit:
 
 class Pit_fcst_at_obs:
     """
-    Same as Pit but inputs are the observations evuated at the forecast CDF.
+    Calculates the probability intergral transform (PIT) given for a set of forecast cases
+    evaluated at the corresponding observations. The calculated PIT can be a (possibly weighted) average
+    over specified dimensions. Calculations are performed and interpreted as follows.
+
+    Given a predictive cumulative distribution function (CDF) :math:`G` and corresponding
+    observation :math:`y`, the corresponding PIT value is a uniform distribution on the
+    closed interval :math:`[G(y-), G(y)]`, where :math:`G(y-)` denotes the left-hand
+    limit of :math:`G` at :math:`y`. This is the most general form of PIT and handles cases
+    where the observation :math:`y` coincides with a point of discontinuity of a predictive CDF
+    :math:`G`. See Gneiting and Ranjan (2013) and Taggart (2022).
+
+    In the ``Pit_fcst_at_obs`` implementation of PIT, the user supplies the values :math:`G(y)` and
+    (optionally) :math:`G(y-)`. If the predictive distributions are in the form of an ensemble
+    or of CDFs whose values which are harder to evaluate at the observations, consider using the
+    ``Pit`` implementation instead.
+
+    Weighted means of PIT values are simply weighted means of CDFs of those uniform distributions
+    on the closed interval :math:`[G(y-), G(y)]`. The weighted mean is itself a CDF. All
+    statistics related to the collection of PIT values, such as bar heights of PIT histograms, can be
+    calculated from this CDF.
+
+    Attributes:
+        left: values for the left-hand limit of the PIT distribution (represented as a CDF)
+        right: values for the PIT distribution (represented as a CDF). Since CDFs are right-continuous,
+            these values also equal values of the right-hand limits.
+
+    Methods:
+            plotting_points: generates plotting points for PIT-uniform probability plots.
+                Indexer along the horizontal dimension will contain duplicate values.
+            plotting_points_parametric: generates plotting points for PIT-uniform probability plots
+                in parametric format. Indexer along the parametrization will not contain duplicate values.
+            hist_values: generates values for the PIT histogram.
+            alpha_score: calculates the 'alpha score', which is the absolute area between
+                the diagonal and PIT graph of the PIT-uniform probability plot.
+            expected_value: calculates the expected value of the PIT CDF.
+            variance: calculates the variance of the PIT CDF.
+
+    References:
+        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
+            https://doi.org/10.1214/13-EJS823
+        - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
+            Bureau Research Report 64, http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
+
+    See also:
+            - :py:func:`scores.probability.Pit`
+            - :py:func:`scores.probability.rank_histogram`
     """
 
     def __init__(
@@ -261,11 +365,160 @@ class Pit_fcst_at_obs:
         weights: Optional[XarrayLike] = None,
     ):
         """
-        Blah
+        Calculates the mean PIT :math:`F`, interpreted as a cumulative distribution function (CDF),
+        given the set of forecast CDFs evaluated at the corresponding observations.
+
+        The CDF :math:`F` is completely determined by its values :math:`F(x)` and left-hand limits
+        :math:`F(x-)` at a minimal set of points :math:`x`. All other values may be obtained via
+        interpolation whenever :math:`0 < x < 1` or the fact that :math:`F(x) = 0` when
+        :math:`x < 1` and :math:`F(x) = 1` when :math:`x > 1`.
+
+        The values of :math:`F` at this minimal set of points is accessible via the
+        ``left`` and ``right`` attributes. These values are sufficient to calculate precise
+        statistics for the PIT for the set of forecasts and observations, as provided by
+        ``Pit_fcst_at_obs`` methods.
+
+        Args:
+            fcst_at_obs: an xarray object of values of the forecast CDF evaluated at each
+                corresponding observation.
+            fcst_at_obs_left: an xarray object of left-hand limits of the forecast CDF at each
+                corresponding observation. Only needs to be supplied if there are any cases
+                where the left-hand limit does not equal the value at the forecast CDF.
+            reduce_dims: Optionally specify which dimensions to reduce when calculating the
+                PIT CDF values, where the mean is taken over all forecast cases.
+                All other dimensions will be preserved. As a special case, 'all' will allow
+                all dimensions to be reduced. Only one of ``reduce_dims`` and ``preserve_dims``
+                can be supplied. The default behaviour if neither are supplied is to reduce all dims.
+            preserve_dims: Optionally specify which dimensions to preserve when calculating the
+                PIT CDF values, where the mean is taken over all forecast cases.
+                All other dimensions will be reduced. As a special case, 'all' will allow
+                all dimensions to be preserved, apart from ``severity_dim`` and ``prob_threshold_dim``.
+                Only one of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default
+                behaviour if neither are supplied is to reduce all dims.
+            weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
+                by population, custom) of PIT CDF values across all forecast cases.
+
+        Attributes:
+            left: xarray object representing the PIT across all forecast cases, interpreted
+                as a CDF :math:`F` and evaluated as left-hand limits at the points :math:`x`
+                in the dimension "pit_x_value". That is, values in the array or dataset
+                are of the form :math:`F(x-)`.
+            right: xarray object representing the PIT across all forecast cases, interpreted
+                as a CDF :math:`F` and evaluated as at the points :math:`x` in the dimension
+                "pit_x_value". That is, values in the array or dataset are of the form :math:`F(x)`.
+
+        Methods:
+            plotting_points: generates plotting points for PIT-uniform probability plots.
+                Indexer along the horizontal dimension will contain duplicate values.
+            plotting_points_parametric: generates plotting points for PIT-uniform probability plots
+                in parametric format. Indexer along the parametrization will not contain duplicate values.
+            hist_values: generates values for the PIT histogram.
+            alpha_score: calculates the 'alpha score', which is the absolute area between
+                the diagonal and PIT graph of the PIT-uniform probability plot.
+            expected_value: calculates the expected value of the PIT CDF.
+            variance: calculates the variance of the PIT CDF.
+
+        Raises:
+            - ValueError if dimensions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+                "uniform_endpoint", "pit_x_value", "x_plotting_position", "y_plotting_position", "plotting_point",
+                "bin_left_endpoint", "bin_right_endpoint", "bin_centre",
+            - ValueError if, when ``fcst_at_obs_left`` is not ``None``, ``fcst_at_obs`` and ``fcst_at_obs_left``
+                do not have identical shape, dimensions and coordinates.
+            - ValueError if any values of ``fcst`` are less then 0 or greater than 1.
+            - ValueError if, when ``fcst_at_obs_left`` is not ``None``,
+                any values of ``fcst_at_obs_left`` are less then 0 or greater than 1.
+            - ValueError if, when ``fcst_at_obs_left`` is not ``None``,
+                any values of ``fcst_at_obs_left`` are greater than ``fcst``.
+
+        See also:
+            - :py:func:`scores.probability.Pit_fcst_at_obs`
+            - :py:func:`scores.probability.rank_histogram`lah
         """
         pit_cdf = _pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights)
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
+
+    def plotting_points(self) -> XarrayLike:
+        """
+        Returns an xarray object with the plotting points for PIT-uniform probability plots,
+        or equivalently, the plotting points for the PIT CDF. The x (horizontal) plotting
+        positions are values from the "pit_x_value" index, while the
+        y (vertical) plotting positions are values in the output xarray object.
+
+        Note that coordinates in the "pit_x_value" dimension will have duplicate values.
+        For a parametric approach to plotting points without duplicate coordinate values, see the
+        ``plotting_points_parametric`` method.
+        """
+        return xr.concat([self.left, self.right], "pit_x_value").sortby("pit_x_value")
+
+    def plotting_points_parametric(self) -> dict:
+        """
+        Returns the plotting points for PIT-uniform probability plots, or equivalently,
+        the plotting points for the PIT CDF. The returned output is a dictionary with
+        two keys "x_plotting_position" and "y_plotting_position", and values being xarray
+        objects with plotting position data.
+
+        Points on the plot are given by :math:`(x(t),y(t))`, where :math:`x(t)` is a value from
+        the "x_plotting_position" output, :math:`y(t)` is a corresponding value from
+        the "y_plotting_position" output, and :math:`t` is one of the coordinates from the
+        "plotting_point" dimension.
+
+        To construct PIT-uniform probability plots, plot the points :math:`(x(t),y(t))`
+        for increasing :math:`y(t)` and fill the remaining gaps using linear interpolation.
+        """
+        return _get_plotting_points_dict(self.left, self.right)
+
+    def hist_values(self, bins: int, right: bool = True) -> XarrayLike:
+        """
+        Returns an xarray object with the PIT histogram values across appropriate dimensions,
+        with additional coordinates "bin_left_endpoint", "bin_right_endpoint" and "bin_centre".
+
+        Args:
+            bins: the number of bins in the histogram.
+            right: If True, histogram bins always include the rightmost edge. If False,
+                bins always include the leftmost edge.
+        """
+        # calculting _pit_hist_right or _pit_hist_left does not work with chunks,
+        # because dask wants to chunk over the 'pit_x_value' dimension, but
+        # _pit_hist_right and _pit_hist_left merely wants to sample a small number of points
+        # from the 'pit_x_value'. So compute chunks at this stage.
+        if self.left.chunks is not None:
+            self.left = self.left.compute()
+            self.right = self.right.compute()
+
+        if right:
+            return _pit_hist_right(self.left, self.right, bins)
+        return _pit_hist_left(self.left, self.right, bins)
+
+    def alpha_score(self) -> XarrayLike:
+        """
+        Calculates the so-called 'alpha score', which is a measure of how close the PIT distribution
+        is to the uniform distribution. If the PIT CDF is :math:`F`, then the alpha score :math:`S`
+        is given by
+            :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x}`
+
+        References:
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
+                Understanding predictive uncertainty in hydrologic modeling: The challenge of identifying input and structural errors.
+                Water Resources Research, 46(5).
+        """
+        return _alpha_score(self.plotting_points())
+
+    def expected_value(self) -> XarrayLike:
+        """
+        Calculates the expected value of the PIT distribution.
+        An expected value greater than 0.5 indicates an under-prediction tendency.
+        An expected value less than 0.5 indicates an over-prediction tendency.
+        """
+        return _expected_value(self.plotting_points())
+
+    def variance(self) -> XarrayLike:
+        """
+        Calculates the variance of the PIT distribution.
+        A variance greater than 1/12 indicates predictive under-dispersion.
+        A variance less than 1/12 indicates predictive over-dispersion.
+        """
+        return _variance(self.plotting_points())
 
 
 #####################################################
@@ -529,9 +782,7 @@ def _pit_values_final_processing(
     """
     # convert to F(x-), F(x) format
     pit_cdf = _pit_cdfvalues(pit_values)
-    # import pdb
 
-    # pdb.set_trace()
     pit_cdf_left = apply_weights(pit_cdf["left"], weights=weights).mean(dim=dims_for_mean)
     pit_cdf_right = apply_weights(pit_cdf["right"], weights=weights).mean(dim=dims_for_mean)
 
