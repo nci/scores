@@ -1,9 +1,5 @@
 """
 Unit tests for scores.probability.pit_impl.py
-
-Functions to test:
-    _pit_values_final_processing
-    Pit_fcst_at_obs, with dask (left/right is sufficient)
 """
 
 
@@ -23,6 +19,7 @@ from numpy import nan
 
 from scores.probability.pit_impl import (
     Pit,
+    Pit_fcst_at_obs,
     _alpha_score,
     _construct_hist_values,
     _dims_for_mean_with_checks,
@@ -34,6 +31,7 @@ from scores.probability.pit_impl import (
     _pit_distribution_for_unif,
     _pit_hist_left,
     _pit_hist_right,
+    _pit_values_final_processing,
     _pit_values_for_cdf,
     _pit_values_for_cdf_array,
     _pit_values_for_ens,
@@ -93,6 +91,27 @@ EXP_HV3 = create_dataset(ptd.EXP_HV2)
 
 
 @pytest.mark.parametrize(
+    ("weights", "expected_left", "expected_right"),
+    [
+        (ptd.DA_PVPF_WTS, ptd.EXP_PVFP_LEFT, ptd.EXP_PVFP_RIGHT),
+        (create_dataset(ptd.DA_PVPF_WTS), create_dataset(ptd.EXP_PVFP_LEFT), create_dataset(ptd.EXP_PVFP_RIGHT)),
+        (None, ptd.EXP_PVFP_LEFT1, ptd.EXP_PVFP_RIGHT1),
+    ],
+)
+def test__pit_values_final_processing(weights, expected_left, expected_right):
+    """
+    Tests that `_pit_values_final_processing` returns as expected.
+    This test specifically tests that the weighted means are resaled correctly for left
+    and right
+    """
+    expected = {"left": expected_left, "right": expected_right}
+    result = _pit_values_final_processing(ptd.DA_PVFP, weights, {"stn"})
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_allclose(expected[key], result[key])
+
+
+@pytest.mark.parametrize(
     ("fcst_at_obs", "fcst_at_obs_left", "reduce_dims", "preserve_dims", "weights", "expected"),
     [
         (ptd.DA_FAO, ptd.DA_FAO_LEFT, None, "all", None, ptd.EXP_PVFAO0),
@@ -108,6 +127,47 @@ def test__pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims,
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_allclose(expected[key], result[key])
+
+
+@pytest.mark.parametrize(
+    ("fcst_at_obs", "fcst_at_obs_left", "reduce_dims", "preserve_dims", "weights", "expected"),
+    [
+        (ptd.DA_FAO, ptd.DA_FAO_LEFT, None, "all", None, ptd.EXP_PVFAO0),
+        (ptd.DA_FAO, None, None, "all", None, ptd.EXP_PVFAO1),
+        (ptd.DA_FAO, None, None, "lead_day", ptd.DA_WT, ptd.EXP_PVFAO2),
+        (ptd.DA_FAO, None, "stn", None, ptd.DA_WT, ptd.EXP_PVFAO2),
+        (create_dataset(ptd.DA_FAO), create_dataset(ptd.DA_FAO_LEFT), None, "all", None, EXP_PVFAO3),
+    ],
+)
+def test_Pit_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights, expected):
+    """
+    Tests that `Pit_fcst_at_obs.__init__` returns as expected. The
+    Test is on `.left` and `.right` attributes.
+    """
+    result = Pit_fcst_at_obs(
+        fcst_at_obs,
+        fcst_at_obs_left=fcst_at_obs_left,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        weights=weights,
+    )
+    xr.testing.assert_allclose(expected["left"], result.left)
+    xr.testing.assert_allclose(expected["right"], result.right)
+
+
+def test_Pit_fcst_at_obs_dask():
+    """Tests that dask works for `Pit_fcst_at_obs`."""
+    pit = Pit_fcst_at_obs(ptd.DA_FAO.chunk(), fcst_at_obs_left=ptd.DA_FAO_LEFT.chunk(), preserve_dims="all")
+    left = pit.left
+    right = pit.right
+    assert isinstance(left.data, dask.array.Array)
+    assert isinstance(right.data, dask.array.Array)
+    left = left.compute()
+    right = right.compute()
+    assert isinstance(left.data, (np.ndarray, np.generic))
+    assert isinstance(right.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(left, ptd.EXP_PVFAO0["left"])
+    xr.testing.assert_equal(right, ptd.EXP_PVFAO0["right"])
 
 
 def test__pit_values_for_ens():
