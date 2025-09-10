@@ -521,3 +521,43 @@ EXP_PVFP_RIGHT1 = xr.DataArray(
     dims=["lead_day", "pit_x_value"],
     coords={"lead_day": [0, 1], "pit_x_value": [0, 0.2, 1]},
 )
+
+# test data for simple tests of Pit_fcst_at_obs methods
+DA_FCST_AT_OBS = xr.DataArray(data=[0.4, 0.8], dims=["time"], coords={"time": [10, 11]})
+EXP_FAO_PP = xr.DataArray(
+    data=[0, 0, 0, 0.5, 0.5, 1, 1, 1], dims=["pit_x_value"], coords={"pit_x_value": [0, 0, 0.4, 0.4, 0.8, 0.8, 1, 1]}
+)
+EXP_FAO_PPP = {
+    "x_plotting_position": xr.DataArray(
+        [0, 0.4, 0.4, 0.8, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+    ),
+    "y_plotting_position": xr.DataArray(
+        [0, 0, 0.5, 0.5, 1, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+    ),
+}
+EXP_FAO_HV = xr.DataArray(
+    data=[0.5, 0.5],
+    dims=["bin_centre"],
+    coords={
+        "bin_centre": [0.25, 0.75],
+        "bin_left_endpoint": (["bin_centre"], [0, 0.5]),
+        "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
+    },
+)
+
+# test data for _get_plotting_points, .plotting_points, etc
+EXP_PP1 = xr.DataArray(  # uses EXP_PITCDF_LEFT2, EXP_PITCDF_RIGHT2
+    data=[[0, 0, 0.5, 0.5, 0.5, 1, 1, 1, 1, 1], [0, 0, 0.5, 0.5, 0.75, 0.75, 1, 1, 1, 1]],
+    dims=["lead_day", "pit_x_value"],
+    coords={"lead_day": [0, 1], "pit_x_value": [0, 0, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1, 1]},
+)
+EXP_PPP = {
+    "x_plotting_position": xr.DataArray(
+        data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
+    ),
+    "y_plotting_position": xr.DataArray(
+        data=[0, 0.5, 1.75 / 3, 2.75 / 3, 1, 1],
+        dims=["plotting_point"],
+        coords={"plotting_point": [0, 1, 2, 3, 4, 5]},
+    ),
+}

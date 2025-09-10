@@ -25,8 +25,10 @@ from scores.probability.pit_impl import (
     _dims_for_mean_with_checks,
     _expected_value,
     _get_pit_x_values,
-    _get_plotting_points_dict,
+    _get_plotting_points,
+    _get_plotting_points_param,
     _pit_cdfvalues,
+    _pit_distribution_for_cdf,
     _pit_distribution_for_ens,
     _pit_distribution_for_jumps,
     _pit_distribution_for_unif,
@@ -41,7 +43,6 @@ from scores.probability.pit_impl import (
     _value_at_pit_cdf,
     _variance,
     _variance_integral_term,
-    _pit_distribution_for_cdf,
 )
 from tests.probabilty import pit_test_data as ptd
 
@@ -375,45 +376,32 @@ def test___init__(fcst, obs, preserve_dims, expected_left, expected_right):
         (DS_GPP_LEFT4, DS_GPP_RIGHT4, EXP_GPP4),  # datasets
     ],
 )
-def test__get_plotting_points_dict(left, right, expected):
-    """Tests that `_get_plotting_points_dict` returns as expected."""
-    result = _get_plotting_points_dict(left, right)
+def test__get_plotting_points_param(left, right, expected):
+    """Tests that `_get_plotting_points_param` returns as expected."""
+    result = _get_plotting_points_param(left, right)
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
 
 
-EXP_PITCDF_LEFT1 = xr.DataArray(
-    data=[
-        [[0, 1, 1, 1, 1], [0, 0.5, 0.75, 1, 1]],  # Unif[0, 0.4], Unif[0, 0.8]
-        [[0, 0, 0, 1, 1], [nan, nan, nan, nan, nan]],  # Unif[0.6, 0.6], nan
-        [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
+@pytest.mark.parametrize(
+    ("left", "right", "expected"),
+    [
+        (ptd.EXP_PITCDF_LEFT2, ptd.EXP_PITCDF_RIGHT2, ptd.EXP_PP1),
+        (create_dataset(ptd.EXP_PITCDF_LEFT2), create_dataset(ptd.EXP_PITCDF_RIGHT2), create_dataset(ptd.EXP_PP1)),
     ],
-    dims=["stn", "lead_day", "pit_x_value"],
-    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
-EXP_PITCDF_RIGHT1 = xr.DataArray(
-    data=[
-        [[0, 1, 1, 1, 1], [0, 0.5, 0.75, 1, 1]],  # Unif[0, 0.4], Unif[0, 0.8]
-        [[0, 0, 1, 1, 1], [nan, nan, nan, nan, nan]],  # Unif[0.6, 0.6], nan
-        [[nan, nan, nan, nan, nan], [nan, nan, nan, nan, nan]],
-    ],
-    dims=["stn", "lead_day", "pit_x_value"],
-    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
-)
-
-EXP_PP1 = xr.DataArray(  # uses EXP_PITCDF_LEFT2, EXP_PITCDF_RIGHT2
-    data=[[0, 0, 0.5, 0.5, 0.5, 1, 1, 1, 1, 1], [0, 0, 0.5, 0.5, 0.75, 0.75, 1, 1, 1, 1]],
-    dims=["lead_day", "pit_x_value"],
-    coords={"lead_day": [0, 1], "pit_x_value": [0, 0, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1, 1]},
-)
+def test__get_plotting_points(left, right, expected):
+    """Tests that `_get_plotting_points` returns as expected."""
+    result = _get_plotting_points(left, right)
+    xr.testing.assert_equal(expected, result)
 
 
 @pytest.mark.parametrize(
     ("fcst", "obs", "expected"),
     [
-        (ptd.DA_FCST, ptd.DA_OBS, EXP_PP1),
-        (DS_FCST, DS_OBS, create_dataset(EXP_PP1)),
+        (ptd.DA_FCST, ptd.DA_OBS, ptd.EXP_PP1),
+        (DS_FCST, DS_OBS, create_dataset(ptd.EXP_PP1)),
     ],
 )
 def test_plotting_points(fcst, obs, expected):
@@ -431,25 +419,13 @@ def test_plotting_points_dask():
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
-    xr.testing.assert_allclose(result, EXP_PP1)
-
-
-EXP_PPP = {
-    "x_plotting_position": xr.DataArray(
-        data=[0, 0.4, 0.6, 0.6, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]}
-    ),
-    "y_plotting_position": xr.DataArray(
-        data=[0, 0.5, 1.75 / 3, 2.75 / 3, 1, 1],
-        dims=["plotting_point"],
-        coords={"plotting_point": [0, 1, 2, 3, 4, 5]},
-    ),
-}
+    xr.testing.assert_allclose(result, ptd.EXP_PP1)
 
 
 def test_plotting_points_parametric():
     """Tests that `Pit().plotting_points_parametric()` returns as expected."""
     result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").plotting_points_parametric()
-    expected = EXP_PPP
+    expected = ptd.EXP_PPP
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_equal(expected[key], result[key])
@@ -458,15 +434,18 @@ def test_plotting_points_parametric():
 def test_plotting_points_parametric_dask():
     """
     Tests that the `.plotting_points_parametric` method works with dask.
-    Note that dask is used for calculating Pit().left and Pit(),right, but not thereafter.
     """
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").plotting_points_parametric()
-    assert EXP_PPP.keys() == result.keys()
+    assert ptd.EXP_PPP.keys() == result.keys()
+    assert isinstance(result["y_plotting_position"].data, dask.array.Array)
+    # Note: we don't assert that result["x_plotting_position"] is a dask array, because it is
+    # a copy of an index and dask appears not to chunk the index.
+    result["y_plotting_position"] = result["y_plotting_position"].compute()
     for key in result.keys():
-        xr.testing.assert_allclose(result[key], EXP_PPP[key])
+        xr.testing.assert_allclose(result[key], ptd.EXP_PPP[key])
 
 
 EXP_VAPC1 = xr.DataArray(
@@ -968,3 +947,73 @@ def test_pit__left_right_dask(fcst, obs, special_fcst_dim, fcst_type, fcst_left,
     assert isinstance(right.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(left, exp_left)
     xr.testing.assert_equal(right, exp_right)
+
+
+def test_plotting_points2():
+    """
+    Simple test that `Pit_fcst_at_obs().plotting_points()` returns as expected.
+    Note: `.plotting_points()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    so this test is mainly to identify copy/paste errors and is not as comprehensive
+    as `test_plotting_points`.
+    """
+    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).plotting_points()
+    xr.testing.assert_equal(ptd.EXP_FAO_PP, result)
+
+
+def test_plotting_points_parametric2():
+    """
+    Simple test that `Pit_fcst_at_obs().plotting_points_parametric()` returns as expected.
+    Note: `.plotting_points_parametric()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    so this test is mainly to identify copy/paste errors and is not as comprehensive
+    as `test_plotting_points_parametric`.
+    """
+    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).plotting_points_parametric()
+    expected = ptd.EXP_FAO_PPP
+    assert expected.keys() == result.keys()
+    for key in result.keys():
+        xr.testing.assert_equal(expected[key], result[key])
+
+
+def test_hist_values2():
+    """
+    Simple test that `Pit_fcst_at_obs().hist_values()` returns as expected.
+    Note: `.hist_values()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    so this test is mainly to identify copy/paste errors and is not as comprehensive
+    as `test_hist_values`.
+    """
+    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).hist_values(2)
+    xr.testing.assert_equal(ptd.EXP_FAO_HV, result)
+
+
+# def test_alpha_score2():
+#     """
+#     Simple test that `Pit_fcst_at_obs().alpha_score()` returns as expected.
+#     Note: `.alpha_score()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+#     so this test is mainly to identify copy/paste errors and is not as comprehensive
+#     as `test_alpha_score`.
+#     """
+#     result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).alpha_score()
+#     # xr.testing.assert_equal(xr.DataArray(0.4 ** 2 + 0.1 ** 2 + 0.3 ** 2 + 0.2 ** 2) / 2, result)
+#     xr.testing.assert_allclose(xr.DataArray(0.18), result)
+
+
+def test_expected_value2():
+    """
+    Simple test that `Pit_fcst_at_obs().expected_value()` returns as expected.
+    Note: `.expected_value()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    so this test is mainly to identify copy/paste errors and is not as comprehensive
+    as `test_expected_value`.
+    """
+    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).expected_value()
+    xr.testing.assert_allclose(xr.DataArray(0.6), result)
+
+
+def test_variance2():
+    """
+    Simple test that `Pit_fcst_at_obs().variance()` returns as expected.
+    Note: `.variance()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    so this test is mainly to identify copy/paste errors and is not as comprehensive
+    as `test_variance`.
+    """
+    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).variance()
+    xr.testing.assert_allclose(xr.DataArray(0.04), result)
