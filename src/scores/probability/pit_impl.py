@@ -255,10 +255,10 @@ class Pit:
         y (vertical) plotting positions are values in the output xarray object.
 
         Note that coordinates in the "pit_x_value" dimension will have duplicate values.
-        For a parametric approach to plotting points without duplicate coordinate values, see the
-        ``plotting_points_parametric`` method.
+        For a parametric approach to plotting points without duplicate coordinate values,
+        see the ``plotting_points_parametric`` method.
         """
-        return xr.concat([self.left, self.right], "pit_x_value").sortby("pit_x_value")
+        return _get_plotting_points(self.left, self.right)
 
     def plotting_points_parametric(self) -> dict:
         """
@@ -275,7 +275,7 @@ class Pit:
         To construct PIT-uniform probability plots, plot the points :math:`(x(t),y(t))`
         for increasing :math:`y(t)` and fill the remaining gaps using linear interpolation.
         """
-        return _get_plotting_points_dict(self.left, self.right)
+        return _get_plotting_points_param(self.left, self.right)
 
     def hist_values(self, bins: int, right: bool = True) -> XarrayLike:
         """
@@ -492,7 +492,7 @@ class Pit_fcst_at_obs:
         To construct PIT-uniform probability plots, plot the points :math:`(x(t),y(t))`
         for increasing :math:`y(t)` and fill the remaining gaps using linear interpolation.
         """
-        return _get_plotting_points_dict(self.left, self.right)
+        return _get_plotting_points_param(self.left, self.right)
 
     def hist_values(self, bins: int, right: bool = True) -> XarrayLike:
         """
@@ -1196,7 +1196,17 @@ def _pit_distribution_for_ens(
 ################################################
 
 
-def _get_plotting_points_dict(left: XarrayLike, right: XarrayLike) -> dict:
+def _get_plotting_points(left: XarrayLike, right: XarrayLike) -> XarrayLike:
+    """
+    Given left- and right-hand limiting values of the PIT CDF
+    (e.g. as output by `Pit().left` and `Pit().right`), concatenates these objects along
+    the "pit_x_value" and sorts them along that dimension.
+    The "pit_x_value" index will have duplicate values.
+    """
+    return xr.concat([left, right], "pit_x_value").sortby("pit_x_value")
+
+
+def _get_plotting_points_param(left: XarrayLike, right: XarrayLike) -> dict:
     """
     Given outputs left and right from `pit_cdfvalues`, calculates the plotting positions
     for the PIT CDF (equivalently PIT-uniform probability plot).
@@ -1212,34 +1222,25 @@ def _get_plotting_points_dict(left: XarrayLike, right: XarrayLike) -> dict:
             'y_plotting_position': xarray object with the y-axis plotting positions for each
                 point, indexed by 'plotting_point'
     """
-    # the remainder of this function does not work with dask, so compute any chunks straight away
-    if left.chunks is not None:
-        left = left.compute()
-        right = right.compute()
-
-    # only keep coordinates in left where (left != right) every and where left is not NaN.
-    # (We can assume that if one value is NaN for any particular forecast case than all values
-    # are NaN for `left` and `right` in that forecast case)
-    dims_for_any = [dim for dim in left.dims if dim != "pit_x_value"]
-    different = ((left != right) & ~np.isnan(left)).any(dims_for_any)
+    # only keep coordinates in left where (left != right) everywhere and where left is not NaN.
+    dims_for_any = set(left.dims) - {"pit_x_value"}
+    different = ((left != right) & left.notnull()).any(dims_for_any)
     left_reduced = left.where(different).dropna("pit_x_value", how="all")
 
-    # combine points from left and right
-    y_values = xr.concat([left_reduced, right], "pit_x_value").sortby("pit_x_value")
-    if isinstance(y_values, xr.Dataset):
-        x_values = xr.merge([y_values[var]["pit_x_value"].rename(var) for var in y_values.data_vars])
+    y_points = _get_plotting_points(left_reduced, right)
+
+    if isinstance(y_points, xr.Dataset):
+        x_points = xr.merge([y_points[var]["pit_x_value"].rename(var) for var in y_points.data_vars])
     else:
-        x_values = y_values["pit_x_value"]
-
-    # refactor 'pit_x_value' dimension to ensure coordinates are unique
-    y_values = y_values.assign_coords(pit_x_value=range(len(y_values["pit_x_value"]))).rename(
+        x_points = y_points["pit_x_value"]  # .copy()
+    # reindex with a plotting point index
+    y_points = y_points.assign_coords(pit_x_value=np.arange(len(y_points.pit_x_value))).rename(
         {"pit_x_value": "plotting_point"}
     )
-    x_values = x_values.assign_coords(pit_x_value=range(len(x_values["pit_x_value"]))).rename(
+    x_points = x_points.assign_coords(pit_x_value=np.arange(len(x_points.pit_x_value))).rename(
         {"pit_x_value": "plotting_point"}
     )
-
-    return {"x_plotting_position": x_values, "y_plotting_position": y_values}
+    return {"x_plotting_position": x_points, "y_plotting_position": y_points}
 
 
 def _value_at_pit_cdf(pit_left: XarrayLike, pit_right: XarrayLike, point: float) -> XarrayLike:
@@ -1395,6 +1396,7 @@ def _alpha_score(plotting_points: XarrayLike) -> XarrayLike:
     Returns:
         xarray object with alpha score, and 'pit_x_value' dimension collapsed
     """
+    # need to find where the graph of the CDF crosses the diagonal.
     return np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
 
 
