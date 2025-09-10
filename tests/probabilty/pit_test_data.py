@@ -561,3 +561,71 @@ EXP_PPP = {
         coords={"plotting_point": [0, 1, 2, 3, 4, 5]},
     ),
 }
+
+# test data for _diagonal_intersection_points
+# example testing 5 scenarios
+DA_PPP_Y = xr.DataArray(
+    [
+        [0, 0, 0, 0, 1, 1, 1, 1],  # crosses diagonal from below at 10/35; all continuous
+        [0, 0, 0, 0.6, 0.6, 0.6, 1, 1],  # step function; 1 horizontal crossing at 0.6; 2 vertical
+        [0, 0.3, 0.3, 0.3, 0.4, 0.6, 0.6, 1],  # crosses diagonal from above at 21/60; all continuous
+        [nan, nan, nan, nan, nan, nan, nan, nan],
+    ],
+    dims=["stn", "plotting_point"],
+    coords={"stn": [101, 102, 103, 104], "plotting_point": [0, 1, 2, 3, 4, 5, 6, 7]},
+)
+DA_PPP_X = xr.DataArray(
+    [0, 0, 0.2, 0.2, 0.5, 0.8, 0.8, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5, 6, 7]}
+)
+DICT_DIP = {"x_plotting_position": DA_PPP_X, "y_plotting_position": DA_PPP_Y}
+# example test empty output
+DA_PPP_Y2 = xr.DataArray([0, 0, 0.2, 0.2, 1, 1], dims=["plotting_point"], coords={"plotting_point": [0, 1, 2, 3, 4, 5]})
+DA_PPP_X2 = xr.DataArray(
+    [0, 0, 0.2, 0.2, 1, 1],
+    dims=["plotting_point"],
+    coords={
+        "plotting_point": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+        ]
+    },
+)
+DICT_DIP2 = {"x_plotting_position": DA_PPP_X2, "y_plotting_position": DA_PPP_Y2}
+
+
+# test data alpha_score_array
+# this data has parametric plotting points DICT_DIP
+DA_ASA_LEFT = xr.DataArray(
+    data=[
+        [0, 0, 1, 1, 1],
+        [0, 0, 0.6, 0.6, 1],
+        [0, 0.3, 0.4, 0.6, 1],
+        [nan, nan, nan, nan, nan],
+    ],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103, 104], "pit_x_value": [0, 0.2, 0.5, 0.8, 1]},
+)
+DA_ASA_RIGHT = xr.DataArray(
+    data=[
+        [0, 0, 1, 1, 1],
+        [0, 0.6, 0.6, 1, 1],
+        [0.3, 0.3, 0.4, 0.6, 1],
+        [nan, nan, nan, nan, nan],
+    ],
+    dims=["stn", "pit_x_value"],
+    coords={"stn": [101, 102, 103, 104], "pit_x_value": [0, 0.2, 0.5, 0.8, 1]},
+)
+EXP_ASA = xr.DataArray(
+    data=[
+        (0.2 * (10 / 35) + 0.5 * (1 - 10 / 35)) / 2,
+        (0.2 * 0.2 + 0.4 * 0.4 + 0.2 * 0.2 + 0.2 * 0.2) / 2,
+        ((0.3 + 0.1) * 0.2 + 0.1 * (21 / 60 - 0.2) + (0.5 - 21 / 60) * 0.1 + (0.1 + 0.2) * 0.3 + 0.2 * 0.2) / 2,
+        nan,
+    ],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103, 104]},
+)
