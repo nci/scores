@@ -1,5 +1,11 @@
 """
 Unit tests for scores.probability.pit_impl.py
+
+To do
+    - _alpha_score needs to use _alpha_score_array
+    - update .alpha_score methods to call on left and right
+    - uncomment failed unit tests for alpha score and see if they work
+    - move test data to test data file when appropriate
 """
 
 
@@ -16,12 +22,15 @@ import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
+from scipy.interpolate import interp1d
 
 from scores.probability.pit_impl import (
     Pit,
     Pit_fcst_at_obs,
     _alpha_score,
+    _alpha_score_array,
     _construct_hist_values,
+    _diagonal_intersection_points,
     _dims_for_mean_with_checks,
     _expected_value,
     _get_pit_x_values,
@@ -89,6 +98,23 @@ LIST_CHV2 = [create_dataset(da) for da in ptd.LIST_CHV1]
 DS_PH_LEFT = create_dataset(ptd.DA_PH_LEFT)
 DS_PH_RIGHT = create_dataset(ptd.DA_PH_RIGHT)
 EXP_HV3 = create_dataset(ptd.EXP_HV2)
+
+
+def test_interp1d():
+    """
+    scipy.interpolate.interp1d is used twice in pit_impl.py
+    to interpolate when x has duplicate values.
+    This test ensures that it handles interpolation as is needed for pit_impl.
+    """
+    # x values are sorted, with some duplicates
+    x_vals = [0, 0, 1, 1, 2, 2]
+    # y values are assending, possibly with jumps at common x values
+    y_vals = [0, 2, 2, 4, 5, 6]
+    # evaluated values are with the range of x_vals, but not including x_vals
+    eval_vals = [0.5, 1.2]
+    result = interp1d(x_vals, y_vals, kind="linear")(eval_vals)
+    expected = np.array([2, 4.2])
+    np.testing.assert_allclose(expected, result)
 
 
 @pytest.mark.parametrize(
@@ -544,6 +570,28 @@ def test_hist_values_dask():
 
     result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").hist_values(5, right=True)
     xr.testing.assert_allclose(result, ptd.EXP_HV1)
+
+
+@pytest.mark.parametrize(
+    ("plotting_points_par", "expected"),
+    [(ptd.DICT_DIP, np.array([10 / 35, 21 / 60, 0.6])), (ptd.DICT_DIP2, np.array([]))],
+)
+def test__diagonal_intersection_points(plotting_points_par, expected):
+    """Tests that `_diagonal_intersection_points` returns as expected."""
+    result = _diagonal_intersection_points(plotting_points_par)
+    np.testing.assert_allclose(expected, result)
+
+
+@pytest.mark.parametrize(
+    ("left", "right", "expected"),
+    [
+        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, ptd.EXP_ASA),
+    ],
+)
+def test__alpha_score_array(left, right, expected):
+    """Tests that `_alpha_score_array` returns as expected."""
+    result = _alpha_score_array(left, right)
+    xr.testing.assert_allclose(expected, result)
 
 
 @pytest.mark.parametrize(

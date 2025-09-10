@@ -475,7 +475,7 @@ class Pit_fcst_at_obs:
         For a parametric approach to plotting points without duplicate coordinate values, see the
         ``plotting_points_parametric`` method.
         """
-        return xr.concat([self.left, self.right], "pit_x_value").sortby("pit_x_value")
+        return _get_plotting_points(self.left, self.right)
 
     def plotting_points_parametric(self) -> dict:
         """
@@ -1222,7 +1222,7 @@ def _get_plotting_points_param(left: XarrayLike, right: XarrayLike) -> dict:
             'y_plotting_position': xarray object with the y-axis plotting positions for each
                 point, indexed by 'plotting_point'
     """
-    # only keep coordinates in left where (left != right) everywhere and where left is not NaN.
+    # only keep coordinates in left where (left != right) somewhere and where left is not NaN.
     dims_for_any = set(left.dims) - {"pit_x_value"}
     different = ((left != right) & left.notnull()).any(dims_for_any)
     left_reduced = left.where(different).dropna("pit_x_value", how="all")
@@ -1398,6 +1398,76 @@ def _alpha_score(plotting_points: XarrayLike) -> XarrayLike:
     """
     # need to find where the graph of the CDF crosses the diagonal.
     return np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
+
+
+def _alpha_score_array(left: xr.DataArray, right: xr.DataArray) -> xr.DataArray:
+    """
+    The alpha score is integrated absolute difference between the graph of the PIT CDF and the
+    diagonal. This will be calculated using the trapezoidal rule. For the calculation
+    to be exact, we need to include points where the PIT CDF and diagonal intersect.
+
+    This function does this when the left and right limits of the PIT CDF are data arrays.
+
+    Args:
+        left: left-hand limit of the PIT CDF, indexed by "pit_x_value". Other dimensions possible.
+        left: right-hand limit of the PIT CDF, indexed by "pit_x_value". Other dimensions possible.
+
+    Returns:
+        array of alpha scores, with "pit_x_value" dimension collapsed but other dimensions preserved.
+    """
+    # need to expand plotting_points to include points where the PIT CDF crosses the diagonal.
+    # To do this, use interp1d since xarray via pandas interpolate cannot handle duplicate values in an index
+    param_plotting_points = _get_plotting_points_param(left, right)
+    intersection_points = _diagonal_intersection_points(param_plotting_points)
+    plotting_points = _get_plotting_points(left, right)
+
+    x_axis_num = plotting_points.get_axis_num("pit_x_value")
+    y_values = plotting_points.values
+    x_values = plotting_points["pit_x_value"].values
+    # x_values_extended = np.sort(np.concatenate((x_values, intersection_points)))
+
+    plotting_points_interpolated = interp1d(x_values, y_values, axis=x_axis_num, kind="linear")(intersection_points)
+
+    # turn the numpy array into an xarray array
+    interpolated_coords = dict(plotting_points.coords)
+    interpolated_coords["pit_x_value"] = intersection_points
+    plotting_points_interpolated = xr.DataArray(
+        data=plotting_points_interpolated, dims=plotting_points.dims, coords=interpolated_coords
+    )
+    plotting_points = xr.concat([plotting_points, plotting_points_interpolated], "pit_x_value").sortby("pit_x_value")
+
+    score = np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
+    return score
+
+
+def _diagonal_intersection_points(param_plotting_points: dict) -> np.ndarray:
+    """
+    Gets the x values where the line y = x intersects with the piecewise linear graph
+    y = F(x), where F is the PIT CDF. If the graph of F is discontinuous (vertical)
+    at a point of intersection, or if F is coinncident with the diagonal over an open interval,
+    then the corresponding points of intersection are not returned as they are not needed to
+    calculate the alpha score.
+
+    Only handles param_plotting_points in xarray data array format.
+
+    Args:
+        param_plotting_points: diction consisting of xarray data array output from
+            `_get_plotting_points_param`
+
+    Returns:
+        1-dimenions numpy array of intersection points
+    """
+    x_pos = param_plotting_points["x_plotting_position"]
+    y_pos = param_plotting_points["y_plotting_position"]
+    # gradient of chord AB where A(x_pos[i-1], y_pos[i-1]), B(x_pos[i], y_pos[i])
+    gradient = y_pos.diff("plotting_point") / x_pos.diff("plotting_point")
+    # solution if there is a desired point of intersection, optained by solving
+    # simultaneous equations for equation of line AB with line x = y
+    x_solution = (y_pos - gradient * x_pos) / (1 - gradient)
+    # for x_solution to be of interest, require that  x_pos[i-1] < x_solution[i] < x_pos[i]
+    x_solution = x_solution.where((x_solution < x_pos) & (x_solution > x_pos.shift(plotting_point=1)))
+    x_solution = np.unique(x_solution.values.flatten())
+    return x_solution[~np.isnan(x_solution)]
 
 
 def _expected_value(plotting_points: XarrayLike) -> XarrayLike:
