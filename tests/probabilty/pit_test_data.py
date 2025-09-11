@@ -316,6 +316,18 @@ DA_OBS_VAR = xr.DataArray(data=[0, 4, 10], dims=["stn"], coords={"stn": [101, 10
 EXP_VAR = xr.DataArray(data=[1 / 12, 0, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
 
 
+# test data for _value_at_pit_cdf
+EXP_VAPC1 = xr.DataArray(
+    data=[(0.5 + 1.75 / 3) / 2],
+    dims=["pit_x_value"],
+    coords={"pit_x_value": [0.5]},
+)
+EXP_VAPC2 = xr.DataArray(
+    data=[[(4 / 7 + 1) / 2, nan, 1]],
+    dims=["pit_x_value", "stn"],
+    coords={"stn": [101, 102, 103], "pit_x_value": [0.65]},
+)
+
 # test data for _pit_values_for_cdf, _pit_values_for_cdf_array
 DA_FCST_CDF_LEFT = xr.DataArray(
     data=[[0, 0.2, 0.5, 0.8, 1], [0, 0.1, 0.1, 0.9, 1], [0, 0, nan, 0.5, 0.9]],
