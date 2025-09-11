@@ -1,11 +1,5 @@
 """
 Unit tests for scores.probability.pit_impl.py
-
-To do
-    - _alpha_score needs to use _alpha_score_array
-    - update .alpha_score methods to call on left and right
-    - uncomment failed unit tests for alpha score and see if they work
-    - move test data to test data file when appropriate
 """
 
 
@@ -474,25 +468,12 @@ def test_plotting_points_parametric_dask():
         xr.testing.assert_allclose(result[key], ptd.EXP_PPP[key])
 
 
-EXP_VAPC1 = xr.DataArray(
-    data=[(0.5 + 1.75 / 3) / 2],
-    dims=["pit_x_value"],
-    coords={"pit_x_value": [0.5]},
-)
-EXP_VAPC2 = xr.DataArray(
-    data=[[(4 / 7 + 1) / 2, nan, 1]],
-    dims=["pit_x_value", "stn"],
-    coords={"stn": [101, 102, 103], "pit_x_value": [0.65]},
-)
-EXP_VAPC3 = xr.merge([EXP_VAPC1.rename("tas"), EXP_VAPC1.rename("pr")])
-
-
 @pytest.mark.parametrize(
     ("left", "right", "point", "expected"),
     [
-        (ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4, 0.5, EXP_VAPC1),  # one dimension only
-        (ptd.EXP_PCV_LEFT, ptd.EXP_PCV_RIGHT, 0.65, EXP_VAPC2),  # several dimensions, nans
-        (EXP_PITCDF_LEFT5, EXP_PITCDF_RIGHT5, 0.5, EXP_VAPC3),  # data sets
+        (ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4, 0.5, ptd.EXP_VAPC1),  # one dimension only
+        (ptd.EXP_PCV_LEFT, ptd.EXP_PCV_RIGHT, 0.65, ptd.EXP_VAPC2),  # several dimensions, nans
+        (EXP_PITCDF_LEFT5, EXP_PITCDF_RIGHT5, 0.5, create_dataset(ptd.EXP_VAPC1)),  # data sets
     ],
 )
 def test__value_at_pit_cdf(left, right, point, expected):

@@ -310,7 +310,7 @@ class Pit:
             - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
                 Understanding predictive uncertainty in hydrologic modeling: \
                 The challenge of identifying input and structural errors. \
-                Water Resources Research, 46(5).
+                Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
         return _alpha_score(self.left, self.right)
 
@@ -527,7 +527,7 @@ class Pit_fcst_at_obs:
             - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
                 Understanding predictive uncertainty in hydrologic modeling: \
                 The challenge of identifying input and structural errors. \
-                Water Resources Research, 46(5).
+                Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
         return _alpha_score(self.left, self.right)
 
