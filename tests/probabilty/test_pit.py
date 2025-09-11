@@ -595,15 +595,15 @@ def test__alpha_score_array(left, right, expected):
 
 
 @pytest.mark.parametrize(
-    ("plotting_points", "expected"),
+    ("left", "right", "expected"),
     [
-        (ptd.DA_AS, ptd.EXP_AS),  # data arrays
-        (create_dataset(ptd.DA_AS), create_dataset(ptd.EXP_AS)),
+        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, ptd.EXP_ASA),  # data arrays
+        (create_dataset(ptd.DA_ASA_LEFT), create_dataset(ptd.DA_ASA_RIGHT), create_dataset(ptd.EXP_ASA)),
     ],
 )
-def test__alpha_score(plotting_points, expected):
+def test__alpha_score(left, right, expected):
     """Tests that `_alpha_score` returns as expected."""
-    result = _alpha_score(plotting_points)
+    result = _alpha_score(left, right)
     xr.testing.assert_allclose(expected, result)
 
 
@@ -1033,16 +1033,15 @@ def test_hist_values2():
     xr.testing.assert_equal(ptd.EXP_FAO_HV, result)
 
 
-# def test_alpha_score2():
-#     """
-#     Simple test that `Pit_fcst_at_obs().alpha_score()` returns as expected.
-#     Note: `.alpha_score()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
-#     so this test is mainly to identify copy/paste errors and is not as comprehensive
-#     as `test_alpha_score`.
-#     """
-#     result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).alpha_score()
-#     # xr.testing.assert_equal(xr.DataArray(0.4 ** 2 + 0.1 ** 2 + 0.3 ** 2 + 0.2 ** 2) / 2, result)
-#     xr.testing.assert_allclose(xr.DataArray(0.18), result)
+def test_alpha_score2():
+    """
+    Simple test that `Pit_fcst_at_obs().alpha_score()` returns as expected.
+    Note: `.alpha_score()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    so this test is mainly to identify copy/paste errors and is not as comprehensive
+    as `test_alpha_score`.
+    """
+    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).alpha_score()
+    xr.testing.assert_equal(xr.DataArray(0.4**2 + 0.1**2 + 0.3**2 + 0.2**2) / 2, result)
 
 
 def test_expected_value2():

@@ -312,7 +312,7 @@ class Pit:
                 The challenge of identifying input and structural errors. \
                 Water Resources Research, 46(5).
         """
-        return _alpha_score(self.plotting_points())
+        return _alpha_score(self.left, self.right)
 
     def expected_value(self) -> XarrayLike:
         """
@@ -529,7 +529,7 @@ class Pit_fcst_at_obs:
                 The challenge of identifying input and structural errors. \
                 Water Resources Research, 46(5).
         """
-        return _alpha_score(self.plotting_points())
+        return _alpha_score(self.left, self.right)
 
     def expected_value(self) -> XarrayLike:
         """
@@ -1384,20 +1384,22 @@ def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> X
     return histogram_values
 
 
-def _alpha_score(plotting_points: XarrayLike) -> XarrayLike:
+def _alpha_score(left: XarrayLike, right: XarrayLike) -> XarrayLike:
     """
-    Given output of plotting ploints from `Pit_for_ensemble.plotting_points`,
+    Given left-hand and right-hand limits of the Pit CDF (.left and .right attributes),
     calculates the alpha score.
 
     Args:
-        plotting_points: xarray object of plotting points, indexed by non-decreasing values
-            (with duplicates) along the 'pit_x_value' dimension.
+        left: xarray object of left-hand limits with 'pit_x_value' dimension.
+        right: xarray object of right-hand limits with 'pit_x_value' dimension.
 
     Returns:
         xarray object with alpha score, and 'pit_x_value' dimension collapsed
     """
-    # need to find where the graph of the CDF crosses the diagonal.
-    return np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
+    if isinstance(left, xr.DataArray):
+        return _alpha_score_array(left, right)
+
+    return xr.merge([_alpha_score_array(left[var], right[var]).rename(var) for var in left.data_vars])
 
 
 def _alpha_score_array(left: xr.DataArray, right: xr.DataArray) -> xr.DataArray:
