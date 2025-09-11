@@ -239,12 +239,20 @@ DA_AS = xr.DataArray(
     coords={"stn": [3, 4, 5], "pit_x_value": [0, 0, 0.4, 0.4, 1, 1]},
 )
 EXP_AS = xr.DataArray(data=[(0.1 * 0.4 + 0.3 * 0.6) / 2, 0.2 / 2, nan], dims=["stn"], coords={"stn": [3, 4, 5]})
-# uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
+# The next uses ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4
+# PIT CDF crosses diagonal with the chord joining points (0.4, 0.5), (0.6, 1.75 / 3)
+grad_chord = (1.75 / 3 - 0.5) / 0.2
+intersection_pt = (0.5 - grad_chord * 0.4) / (1 - grad_chord)
 EXP_AS1 = xr.DataArray(
-    data=[(0.4 * 0.1 + 0.2 * (0.1 + 0.6 - 1.75 / 3) + 0.2 * (2.75 / 3 - 0.6 + 0.2) + 0.2 * 0.2) / 2],
-    dims=["blah"],
-    coords={"blah": [1]},
-).mean("blah")
+    (
+        0.1 * 0.4
+        + 0.1 * (intersection_pt - 0.4)
+        + (0.6 - 1.75 / 3) * (0.6 - intersection_pt)
+        + (2.75 / 3 - 0.6 + 0.2) * 0.2
+        + 0.2 * 0.2
+    )
+    / 2
+)
 
 # test data for expected value
 EXP_EV = xr.DataArray(
