@@ -57,6 +57,11 @@
 .. autofunction:: scores.probability.brier_score
 .. autofunction:: scores.probability.brier_score_for_ensemble
 .. autofunction:: scores.probability.isotonic_fit
+.. autoclass:: scores.probability.Pit
+    :members:
+.. autoclass:: scores.probability.Pit_fcst_at_obs
+    :members:
+.. autofunction:: scores.probability.rank_histogram
 ```
 
 ## scores.categorical

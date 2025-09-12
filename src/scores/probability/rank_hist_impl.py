@@ -69,7 +69,7 @@ def rank_histogram(
     Calculates the values of the rank histogram for a set of ensemble forecasts and
     corresponding observations.
 
-    In this case, `rank_histogram` returns the relative frequencies of observations'
+    In this case, ``rank_histogram`` returns the relative frequencies of observations'
     rank against the sorted values of an ensemble forecast. If an ensemble has n members,
     each observation is ranked from 1 to n + 1, assuming that the observation does not
     equal any of the values of the ensemble. For example, if the observation is less than
@@ -84,8 +84,8 @@ def rank_histogram(
     ranks when computing the final relative frequency. This method of dealing with "ties"
     ensures that the expected rank histogram of a probabilistically calibrated ensemble is flat.
 
-    In the case when there is a NaN in one of the ensemble members, the entire ensemble is
-    treates as NaN for this particular forecast case.
+    In the case when there is a ``NaN`` in one of the ensemble members, the entire ensemble is
+    treates as ``NaN`` for this particular forecast case.
 
     Args:
         fcst: forecast of ensemble values, containing the dimension ``ens_member_dim``
@@ -108,21 +108,23 @@ def rank_histogram(
         xarray of rank histogram values, including the dimension 'rank'.
 
     Raises:
-        ValueError if any of the dimensions in the inputs have the name 'rank'.
+        ValueError
+            if any of the dimensions in the inputs have the name 'rank'.
 
     Warns:
-        UserWarning if there are any NaNs in ``fcst``.
+        UserWarning
+            if there are any NaNs in ``fcst``.
 
     References:
-        - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts.
-            Monthly Weather Review, 129(3), 550-560.
+        - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts. \
+            Monthly Weather Review, 129(3), 550-560. \
             https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2
-        - Talagrand, O. (1999). Evaluation of probabilistic prediction systems.
+        - Talagrand, O. (1999). Evaluation of probabilistic prediction systems. \
             In Workshop proceedings "Workshop on predictability", 20-22 October 1997, ECMWF, Reading, UK.
 
     See also:
-        - :py:func:`scores.probability.Pit`
-        - :py:func:`scores.probability.Pit_fcst_at_obs`
+        - :py:class:`scores.probability.Pit`
+        - :py:class:`scores.probability.Pit_fcst_at_obs`
 
     Examples:
         Calculate and plot the rank histogram for an under-dispersive ensemble forecast:
