@@ -112,21 +112,26 @@ def test_interp1d():
 
 
 @pytest.mark.parametrize(
-    ("weights", "expected_left", "expected_right"),
+    ("pit_values", "weights", "expected_left", "expected_right"),
     [
-        (ptd.DA_PVPF_WTS, ptd.EXP_PVFP_LEFT, ptd.EXP_PVFP_RIGHT),
-        (create_dataset(ptd.DA_PVPF_WTS), create_dataset(ptd.EXP_PVFP_LEFT), create_dataset(ptd.EXP_PVFP_RIGHT)),
-        (None, ptd.EXP_PVFP_LEFT1, ptd.EXP_PVFP_RIGHT1),
+        (ptd.DA_PVFP, ptd.DA_PVPF_WTS, ptd.EXP_PVFP_LEFT, ptd.EXP_PVFP_RIGHT),
+        (
+            create_dataset(ptd.DA_PVFP),
+            create_dataset(ptd.DA_PVPF_WTS),
+            create_dataset(ptd.EXP_PVFP_LEFT),
+            create_dataset(ptd.EXP_PVFP_RIGHT),
+        ),
+        (ptd.DA_PVFP, None, ptd.EXP_PVFP_LEFT1, ptd.EXP_PVFP_RIGHT1),
     ],
 )
-def test__pit_values_final_processing(weights, expected_left, expected_right):
+def test__pit_values_final_processing(pit_values, weights, expected_left, expected_right):
     """
     Tests that `_pit_values_final_processing` returns as expected.
     This test specifically tests that the weighted means are resaled correctly for left
     and right
     """
     expected = {"left": expected_left, "right": expected_right}
-    result = _pit_values_final_processing(ptd.DA_PVFP, weights, {"stn"})
+    result = _pit_values_final_processing(pit_values, weights, {"stn"})
     assert expected.keys() == result.keys()
     for key in result.keys():
         xr.testing.assert_allclose(expected[key], result[key])

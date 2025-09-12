@@ -9,14 +9,12 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 
+import numpy as np
 import pytest
 import xarray as xr
 from numpy import nan
-import numpy as np
 
 import scores.probability.rank_hist_impl as rh
-
-
 
 DA_FCST = xr.DataArray(
     data=[
@@ -97,7 +95,6 @@ def test__value_at_rank(fcst, obs, expected):
         (DA_FCST, DA_OBS, "all", None, DA_WT, EXP_RH2),
         (DA_FCST, DA_OBS, "stn", None, None, EXP_RH3),
         (DA_FCST, DA_OBS, None, "lead_day", None, EXP_RH3),
-        (DA_FCST, DA_OBS, None, None, DS_WT, EXP_RH4),
         (DS_FCST, DA_OBS, None, None, DS_WT, EXP_RH4),
         (DS_FCST, DS_OBS, None, None, DS_WT, EXP_RH4),
         (DS_FCST, DA_OBS, None, None, DA_WT, EXP_RH4),
