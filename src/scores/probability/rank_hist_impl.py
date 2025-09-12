@@ -7,7 +7,7 @@ from typing import Optional
 import numpy as np
 import xarray as xr
 
-from scores.functions import apply_weights
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
@@ -158,7 +158,8 @@ def rank_histogram(
         )
 
     result = _value_at_rank(fcst, obs, ens_member_dim)
-    result = apply_weights(result, weights=weights).mean(dim=dims_for_mean)
+    result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
+    # result = apply_weights(result, weights=weights).mean(dim=dims_for_mean)
     # rescale so that the values across the ranks sum to 1
     # may be needed if supplied weights don't sum to 1
     result = result / result.sum("rank")

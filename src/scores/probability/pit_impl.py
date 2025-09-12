@@ -42,9 +42,8 @@ import numpy as np
 import xarray as xr
 from scipy.interpolate import interp1d
 
-from scores.functions import apply_weights
 from scores.probability.checks import cdf_values_within_bounds, coords_increasing
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.processing.cdf import add_thresholds
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
@@ -693,8 +692,8 @@ def _pit_values_final_processing(
     # convert to F(x-), F(x) format
     pit_cdf = _pit_cdfvalues(pit_values)
 
-    pit_cdf_left = apply_weights(pit_cdf["left"], weights=weights).mean(dim=dims_for_mean)
-    pit_cdf_right = apply_weights(pit_cdf["right"], weights=weights).mean(dim=dims_for_mean)
+    pit_cdf_left = aggregate(pit_cdf["left"], reduce_dims=dims_for_mean, weights=weights)
+    pit_cdf_right = aggregate(pit_cdf["right"], reduce_dims=dims_for_mean, weights=weights)
 
     # rescale CDFs so that their max value is 1.
     # This corrects for weights that don't sum to 1.
