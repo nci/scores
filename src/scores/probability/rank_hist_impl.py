@@ -147,7 +147,10 @@ def rank_histogram(
         score_specific_fcst_dims=ens_member_dim,
     )
 
-    if fcst.isnull().any():
+    any_null = fcst.isnull().any()
+    if isinstance(any_null, xr.Dataset):
+        any_null = any([bool(any_null[var]) for var in any_null.data_vars])
+    if any_null:
         warnings.warn(
             "Encountered a NaN in `fcst`. Any forecast case with NaN for one ensemble member "
             "will be treated as NaN for all ensemble members.",
