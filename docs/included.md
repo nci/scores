@@ -272,6 +272,33 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   -
     [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* - Probability Integral Transform (PIT)
+  -
+  -
+  -
+* -
+    - PIT for ensembles or CDFs
+  -
+    [API](api.md#scores.probability.Pit)
+  -
+    [Tutorial](project:./tutorials/PIT.md)
+  -
+    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
+* -
+    - PIT for predictive CDFs evaluated at observations
+  -
+    [API](api.md#scores.probability.Pit_fcst_at_obs)
+  -
+    [Tutorial](project:./tutorials/PIT.md)
+  -
+    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
+* - Rank histogram
+  -
+    [API](api.md#scores.probability.rank_histogram)
+  -
+    [Tutorial](project:./tutorials/Rank_Histogram.md)
+  -
+    [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.probability.roc_curve_data)
   - [Tutorial](project:./tutorials/ROC.md)
