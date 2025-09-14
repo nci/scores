@@ -50,7 +50,7 @@ The [installation guide](https://scores.readthedocs.io/en/stable/installation.ht
 
 ```bash
 # From a local checkout of the Git repository
-pip install -e .[all]
+pip install -e ".[all]"
 ```
 **To install the mathematical functions ONLY** (no tutorial dependencies, no developer libraries), use the default *minimal* installation option. *minimal* is a stable version with limited dependencies. This can be installed from the [Python Package Index (PyPI)](https://pypi.org/project/scores/) or with [conda](https://anaconda.org/conda-forge/scores).
 

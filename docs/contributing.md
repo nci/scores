@@ -91,7 +91,7 @@ Here is a simple setup process for an individual developer, assuming you have cl
 ```bash
 python3 -m venv <specify path to your virtual environment>
 source  source <path to virtual environment>/bin/activate
-pip install -e .[all]
+pip install -e ".[all]"
 pytest
 ```
 ### `conda`-based virtual environment
@@ -100,7 +100,7 @@ pytest
 # overwrite default name `scores` with `-n <new-name>` if desired
 conda env create -f environment.yml
 conda activate scores
-pip install -e .[all]
+pip install -e ".[all]"
 pytest
 ```
 
