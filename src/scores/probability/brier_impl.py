@@ -242,6 +242,6 @@ def brier_score_for_ensemble(
         result -= fair_correction
 
     # apply weights and take means across specified dims
-    result = result = aggregate(result, reduce_dims=reduce_dims, weights=weights)
+    result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
 
     return result  # type: ignore
