@@ -7,6 +7,9 @@ from scipy.optimize import minimize
 
 from scores.continuous.standard_impl import mse, rmse
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def generate_blobs(
     fcst: xr.DataArray, obs: xr.DataArray, threshold: float
@@ -33,7 +36,7 @@ def generate_blobs(
     masked_fcst = fcst.where(fcst > threshold)
 
     if masked_fcst.count() < 10 or masked_obs.count() < 10:
-        print("Less than 10 points meet the condition.")
+        logger.info("Less than 10 points meet the condition.")
         return None, None
 
     # Label connected components in the masked array
@@ -154,7 +157,7 @@ def calc_shifted_forecast(
     fixed_mask = ~np.isnan(obs)
 
     if not fixed_mask.any():
-        print("No valid observation data.")
+        logger.info("No valid observation data.")
         return None, None
 
     # Mask forecast and observation using fixed mask
@@ -186,7 +189,7 @@ def calc_shifted_forecast(
 
     # Fallback to bounding box centre if optimization fails
     if optimal_shift is None:
-        print("Optimization failed. Falling back to bounding box centre alignment.")
+        logger.info("Optimization failed. Falling back to bounding box centre alignment.")
         fcst_bounding_box_centre = calc_bounding_box_centre(fcst)  # [y,x]
         obs_bounding_box_centre = calc_bounding_box_centre(obs)
         optimal_shift = [
@@ -202,7 +205,7 @@ def calc_shifted_forecast(
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
 
     if shift_distance_km > max_distance:
-        print(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
+        logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
         return None, None
 
     shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=spatial_dims)
