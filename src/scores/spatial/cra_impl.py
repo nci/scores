@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def generate_blobs(
+def generate_largest_rain_area_2d(
     fcst: xr.DataArray, obs: xr.DataArray, threshold: float
 ) -> Tuple[Optional[xr.DataArray], Optional[xr.DataArray]]:
     """
@@ -29,7 +29,7 @@ def generate_blobs(
         Tuple[xr.DataArray, xr.DataArray]: Largest contiguous blobs from forecast and observation.
 
     Example:
-        >>> fcst_blob, obs_blob = generate_blobs(fcst, obs, threshold=5.0)
+        >>> fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0)
     """
 
     masked_obs = obs.where(obs > threshold)
@@ -505,7 +505,7 @@ def cra(
         if dim not in obs.dims:
             raise ValueError(f"Spatial dimension '{dim}' not found in observation data")
 
-    [fcst_blob, obs_blob] = generate_blobs(fcst, obs, threshold)
+    [fcst_blob, obs_blob] = generate_largest_rain_area_2d(fcst, obs, threshold)
 
     if fcst_blob is None or obs_blob is None:
         return None
