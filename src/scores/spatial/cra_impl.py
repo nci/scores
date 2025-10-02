@@ -556,3 +556,55 @@ def cra(
         "rmse_shifted": calc_rmse(shifted_fcst, obs_blob),
     }
     return cra_dict
+
+
+def cra_2d(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    threshold: float,
+    spatial_dims: Tuple[str, str],
+    max_distance: float = 300,
+    reduce_dims: Optional[List[str]] = None
+) -> dict:
+
+    if reduce_dims is None:
+        reduce_dims = ['time']  # Default to time if not specified
+
+    # Align forecast and observation
+    fcst, obs = xr.align(fcst, obs)
+
+    # Prepare output dictionary
+    metrics = [
+        "mse_total", "mse_displacement", "mse_volume", "mse_pattern",
+        "optimal_shift",
+        "num_gridpoints_above_threshold_fcst", "num_gridpoints_above_threshold_obs",
+        "avg_fcst", "avg_obs", "max_fcst", "max_obs",
+        "corr_coeff_original", "corr_coeff_shifted",
+        "rmse_original", "rmse_shifted"
+    ]
+    results = {metric: [] for metric in metrics}
+
+    # Iterate over slices
+    for idx in fcst.groupby(reduce_dims):
+        key, fcst_slice = idx
+        obs_slice = obs.sel({dim: fcst_slice.coords[dim].values[0] for dim in reduce_dims}, drop=False)
+        
+        # Remove singleton time dimension
+        fcst_slice = fcst_slice.squeeze(dim=reduce_dims[0])
+
+        # Ensure shapes match
+        if fcst_slice.shape != obs_slice.shape:
+            logger.warning(f"Skipping {key}: shape mismatch between forecast and observation.")
+            for metric in metrics:
+                results[metric].append(np.nan)
+            continue
+
+        cra_result = cra(fcst_slice, obs_slice, threshold, spatial_dims, max_distance)
+        if cra_result is not None:
+            for metric in metrics:
+                results[metric].append(cra_result[metric])
+        else:
+            for metric in metrics:
+                results[metric].append(np.nan)
+
+    return results
