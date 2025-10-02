@@ -129,7 +129,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[float, float]:
 
 
 def calc_shifted_forecast(
-    fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str]
+    fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], max_distance: float
 ) -> Tuple[xr.DataArray, List[int]]:
     """
     Shift the forecast field to best align with the observation field using optimization.
@@ -148,7 +148,7 @@ def calc_shifted_forecast(
         >>> shifted_fcst, shift = calc_shifted_forecast(fcst, obs, ['x', 'y'])
     """
 
-  # Create fixed mask based on observation availability
+    # Create fixed mask based on observation availability
     # Ensure that no matter where the forecast is shifted,
     # the evaluation is always done over the same observation-valid region
     fixed_mask = ~np.isnan(obs)
@@ -176,7 +176,12 @@ def calc_shifted_forecast(
                 best_shift = shift
 
     # Refine with local optimization from brute-force result
-    result = minimize(objective_function, best_shift, args=(fcst, obs, spatial_dims, fixed_mask), method="Nelder-Mead")
+    result = minimize(
+        objective_function,
+        best_shift,
+        args=(fcst, obs, spatial_dims, fixed_mask),
+        method="Nelder-Mead"
+    )
     optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
 
     # Fallback to bounding box centre if optimization fails
@@ -190,20 +195,27 @@ def calc_shifted_forecast(
         ]
 
     # Apply shift
-    dx, dy = int(optimal_shift[0]), int(optimal_shift[1])
+    dx, dy = int(round(optimal_shift[0])), int(round(optimal_shift[1]))
+    
+    # Compute shift distance in km
+    resolution_km = calc_resolution(obs, spatial_dims)
+    shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
+
+    if shift_distance_km > max_distance:
+        print(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
+        return None, None
+
     shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=spatial_dims)
 
 
-    # Fina evaluation using fixed mask
+    # Final evaluation using fixed mask
     shifted_fcst_masked = shifted_fcst.where(fixed_mask)
     mse_shifted = calc_mse(shifted_fcst_masked, obs_masked)
     corr_shifted = calc_corr_coeff(shifted_fcst_masked, obs_masked)
     rmse_shifted = calc_rmse(shifted_fcst_masked, obs_masked)
 
-
     rmse_original = calc_rmse(fcst_masked, obs_masked)
     corr_original = calc_corr_coeff(fcst_masked, obs_masked)
-
 
     if (
         rmse_shifted > rmse_original or
@@ -248,11 +260,12 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
         xr.DataArray: Shifted forecast field.
 
     Example:
-        >>> shifted = shift_fcst(fcst, 2, -1, ['x', 'y'])
+        >>> shifted = shift_fcst(fcst, 2, -1, ['y', 'x'])
     """
+    ydim, xdim = spatial_dims
     shift_kwargs = {
-        spatial_dims[0]: int(shift_x),
-        spatial_dims[1]: int(shift_y),
+        ydim: int(shift_y),  # dy => Y dim
+        xdim: int(shift_x),  # dx => X dim
     }
     return fcst.shift(
         **shift_kwargs,
@@ -410,11 +423,32 @@ def _infer_spatial_dims(dataarray: xr.DataArray) -> List[str]:
     }
     return [dim for dim in dataarray.dims if dim.lower() in spatial_keywords]
 
+def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
+    y_coords = obs.coords[spatial_dims[0]].values
+    x_coords = obs.coords[spatial_dims[1]].values
+
+    # Compute resolution in native units
+    dy = np.mean(np.diff(y_coords))
+    dx = np.mean(np.diff(x_coords))
+
+    # Check if coordinates are in degrees
+    if np.all(np.abs(y_coords) <= 90) and np.all(np.abs(x_coords) <= 180):
+        lat_mean = np.mean(y_coords)
+        dy_km = np.abs(dy) * 111
+        dx_km = np.abs(dx) * 111 * np.cos(np.radians(lat_mean))
+    else:
+        # Assume coordinates are in meters
+        dy_km = np.abs(dy) / 1000
+        dx_km = np.abs(dx) / 1000
+
+    avg_resolution_km = np.mean([dy_km, dx_km])
+    return float(avg_resolution_km)
 
 def cra(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
+    max_distance: float = 300
 ) -> Optional[dict]:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
@@ -506,7 +540,7 @@ def cra(
 
     mse_total = calc_mse(fcst_blob, obs_blob)
 
-    [shifted_fcst, optimal_shift] = calc_shifted_forecast(fcst_blob, obs_blob, spatial_dims)
+    [shifted_fcst, optimal_shift] = calc_shifted_forecast(fcst_blob, obs_blob, spatial_dims, max_distance)
 
     if shifted_fcst is None:
         return None
