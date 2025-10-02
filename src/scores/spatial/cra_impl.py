@@ -512,6 +512,9 @@ def cra(
 
     mse_total = calc_mse(fcst_blob, obs_blob)
 
+    if mse_total is None: # means that original fcst and obs blobs do not overlap
+        return None
+
     [shifted_fcst, optimal_shift] = calc_shifted_forecast(fcst_blob, obs_blob, spatial_dims, max_distance)
 
     if shifted_fcst is None:
@@ -521,16 +524,6 @@ def cra(
     mse_displacement = mse_total - mse_shift
     mse_volume = calc_mse_volume(shifted_fcst, obs_blob)
     mse_pattern = mse_shift - mse_volume
-
-    if (
-        mse_displacement < 0
-        or np.isnan(mse_displacement)
-        or mse_displacement == mse_total
-        or mse_pattern < 0
-        or abs(optimal_shift[0]) > 50
-        or abs(optimal_shift[1]) > 50
-    ):
-        return None
 
     num_gridpoints_above_threshold_fcst = calc_num_points(fcst_blob, threshold)
     num_gridpoints_above_threshold_obs = calc_num_points(obs_blob, threshold)
