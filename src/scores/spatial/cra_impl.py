@@ -148,43 +148,71 @@ def calc_shifted_forecast(
         >>> shifted_fcst, shift = calc_shifted_forecast(fcst, obs, ['x', 'y'])
     """
 
-    # Compute original correlation coefficient
-    valid_mask_orig = ~np.isnan(obs) & ~np.isnan(fcst)
-    if not valid_mask_orig.any():
-        print("No valid overlap in original data.")
+  # Create fixed mask based on observation availability
+    # Ensure that no matter where the forecast is shifted,
+    # the evaluation is always done over the same observation-valid region
+    fixed_mask = ~np.isnan(obs)
+
+    if not fixed_mask.any():
+        print("No valid observation data.")
         return None, None
 
-    cc_orig = np.corrcoef(obs.values[valid_mask_orig], fcst.values[valid_mask_orig])[0, 1]
+    # Mask forecast and observation using fixed mask
+    fcst_masked = fcst.where(fixed_mask)
+    obs_masked = obs.where(fixed_mask)
 
-    if np.isnan(cc_orig):
-        print("Original correlation coefficient is NaN.")
+    original_mse = calc_mse(fcst_masked, obs_masked)
+
+    # Brute-force search
+    best_score = np.inf
+    best_shift = None
+    shift_range = range(-10,11)
+    for dy in shift_range:
+        for dx in shift_range:
+            shift = [dx,dy]
+            mse_score = objective_function(shift, fcst, obs, spatial_dims, fixed_mask)
+            if np.isfinite(mse_score) and mse_score < best_score:
+                best_score = mse_score
+                best_shift = shift
+
+    # Refine with local optimization from brute-force result
+    result = minimize(objective_function, best_shift, args=(fcst, obs, spatial_dims, fixed_mask), method="Nelder-Mead")
+    optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
+
+    # Fallback to bounding box centre if optimization fails
+    if optimal_shift is None:
+        print("Optimization failed. Falling back to bounding box centre alignment.")
+        fcst_bounding_box_centre = calc_bounding_box_centre(fcst)  # [y,x]
+        obs_bounding_box_centre = calc_bounding_box_centre(obs)
+        optimal_shift = [
+            obs_bounding_box_centre[1] - fcst_bounding_box_centre[1],  # x_shift
+            obs_bounding_box_centre[0] - fcst_bounding_box_centre[0],  # y_shift
+        ]
+
+    # Apply shift
+    dx, dy = int(optimal_shift[0]), int(optimal_shift[1])
+    shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=spatial_dims)
+
+
+    # Fina evaluation using fixed mask
+    shifted_fcst_masked = shifted_fcst.where(fixed_mask)
+    mse_shifted = calc_mse(shifted_fcst_masked, obs_masked)
+    corr_shifted = calc_corr_coeff(shifted_fcst_masked, obs_masked)
+    rmse_shifted = calc_rmse(shifted_fcst_masked, obs_masked)
+
+
+    rmse_original = calc_rmse(fcst_masked, obs_masked)
+    corr_original = calc_corr_coeff(fcst_masked, obs_masked)
+
+
+    if (
+        rmse_shifted > rmse_original or
+        corr_shifted < corr_original or
+        mse_shifted > original_mse
+    ):
         return None, None
 
-    fcst_bounding_box_centre = calc_bounding_box_centre(fcst)  # [y,x]
-    obs_bounding_box_centre = calc_bounding_box_centre(obs)
-
-    initial_shift = [
-        obs_bounding_box_centre[1] - fcst_bounding_box_centre[1],  # x_shift
-        obs_bounding_box_centre[0] - fcst_bounding_box_centre[0],  # y_shift
-    ]
-    result = minimize(objective_function, initial_shift, args=(fcst, obs, spatial_dims), method="Nelder-Mead")
-    optimal_shift = result.x
-    if np.any(np.isnan(optimal_shift)) or result.fun == np.inf:
-        # print("Optimization failed: invalid shift or no valid overlap")
-        return None, None
-
-    # Apply the optimal shift
-
-    shift_kwargs = {
-        spatial_dims[0]: int(optimal_shift[1]),  # spatial_dims[0] -> y
-        spatial_dims[1]: int(optimal_shift[0]),  # spatial_dims[1] -> x
-    }
-
-    shifted_fcst_values = fcst.shift(**shift_kwargs, fill_value=np.nan)
-
-    shifted_fcst = xr.DataArray(shifted_fcst_values, dims=fcst.dims, coords=fcst.coords)
-
-    return shifted_fcst, [int(x) for x in optimal_shift]
+    return shifted_fcst, [dx, dy]
 
 
 def calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
@@ -232,7 +260,7 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
     )
 
 
-def objective_function(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str]) -> float:
+def objective_function(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray) -> float:
     """
     Objective function for optimization: computes MSE between shifted forecast and observation.
 
@@ -248,15 +276,35 @@ def objective_function(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray,
     Example:
         >>> error = objective_function([1, -2], fcst, obs, ['x', 'y'])
     """
+    # Validate input
+    if len(shifts) != 2 or np.any(np.isnan(shifts)):
+        return np.inf
 
-    shift_x, shift_y = shifts
+    try:
+        shift_x, shift_y = int(round(shifts[0])), int(round(shifts[1]))
+    except (ValueError, TypeError):
+        return np.inf
+
     shifted_fcst = shift_fcst(fcst, shift_x, shift_y, spatial_dims)
 
-    # Ensure valid comparison
-    valid_mask = ~np.isnan(shifted_fcst) & ~np.isnan(obs)
-    if not valid_mask.any():
-        return np.inf  # No overlap, return large error
-    return calc_mse(shifted_fcst.values[valid_mask], obs.values[valid_mask])
+    # Mask forecast using fixed obs mask
+    fcst_masked = shifted_fcst.where(fixed_mask)
+    obs_masked = obs.where(fixed_mask)
+
+    # To avoid artefacts, we allow shifts as long as the main forecast blob
+    # (at least 80%) stays within the valid observation region
+    valid_fraction = np.sum(~np.isnan(fcst_masked)) / np.sum(~np.isnan(fcst))
+
+    if valid_fraction < 0.8:
+        return np.inf
+
+    mse_val = calc_mse(fcst_masked, obs_masked)
+    corr_val = calc_corr_coeff(fcst_masked, obs_masked)
+
+    # Penalize low correlation
+    penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
+
+    return mse_val+penalty
 
 
 def calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
