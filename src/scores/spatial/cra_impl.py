@@ -397,35 +397,6 @@ def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
     cc = np.corrcoef(data1_clean, data2_clean)[0, 1]
     return float(cc)
 
-
-def _infer_spatial_dims(dataarray: xr.DataArray) -> List[str]:
-    """
-    Infer spatial dimensions from an xarray DataArray based on common naming conventions.
-
-    Args:
-        dataarray (xr.DataArray): Input data array.
-
-    Returns:
-        list[str]: List of inferred spatial dimension names.
-
-    Example:
-        >>> dims = _infer_spatial_dims(data)
-    """
-
-    spatial_keywords = {
-        "x",
-        "y",
-        "lat",
-        "lon",
-        "latitude",
-        "longitude",
-        "projection_x_coordinate",
-        "projection_y_coordinate",
-        "grid_latitude",
-        "grid_longitude",
-    }
-    return [dim for dim in dataarray.dims if dim.lower() in spatial_keywords]
-
 def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
     y_coords = obs.coords[spatial_dims[0]].values
     x_coords = obs.coords[spatial_dims[1]].values
@@ -451,6 +422,7 @@ def cra(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
+    spatial_dims: Tuple[str, str],
     max_distance: float = 300
 ) -> Optional[dict]:
     """
@@ -479,6 +451,8 @@ def cra(
         fcst (xr.DataArray): Forecast field as an xarray DataArray.
         obs (xr.DataArray): Observation field as an xarray DataArray.
         threshold (float): Threshold to define contiguous rain areas.
+        spatial_dims: A pair of dimension names ``(y, x)``
+            E.g. ``('projection_y_coordinate', 'projection_x_coordinate')``, ``("lat","lon")``.
 
     Returns:
         dict: A dictionary containing the following CRA components and diagnostics:
@@ -526,11 +500,6 @@ def cra(
         raise TypeError("obs must be an xarray DataArray")
     if fcst.shape != obs.shape:
         raise ValueError("fcst and obs must have the same shape")
-
-    # Infer spatial dimensions
-    spatial_dims = _infer_spatial_dims(fcst)
-    if len(spatial_dims) != 2:
-        raise ValueError("Could not infer exactly two spatial dimensions from input data")
 
     for dim in spatial_dims:
         if dim not in obs.dims:
