@@ -27,7 +27,7 @@ def generate_largest_rain_area_2d(
         threshold (float): Threshold to define rain blobs.
 
     Returns:
-        Tuple[xr.DataArray, xr.DataArray]: Largest contiguous blobs from forecast and observation.
+        Largest contiguous blobs from forecast and observation.
 
     Example:
         >>> fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0)
@@ -90,7 +90,7 @@ def calc_mse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
         obs (xr.DataArray): Observation field.
 
     Returns:
-        float: Mean squared error value.
+        Mean squared error value.
 
     Example:
         >>> mse = calc_mse(fcst, obs)
@@ -106,7 +106,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[float, float]:
         data_array (xr.DataArray): Input data array.
 
     Returns:
-        Tuple[float, float]: Coordinates of the bounding box centre.
+        Coordinates of the bounding box centre.
 
     Example:
         >>> centre = calc_bounding_box_centre(data)
@@ -146,7 +146,7 @@ def calc_shifted_forecast(
         spatial_dims (list[str]): List of spatial dimension names.
 
     Returns:
-        Tuple[xr.DataArray, list[int]]: Shifted forecast and optimal shift values in grid points.
+        Shifted forecast and optimal shift values in grid points.
 
     Example:
         >>> shifted_fcst, shift = calc_shifted_forecast(fcst, obs, ['x', 'y'])
@@ -242,7 +242,7 @@ def calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
         obs (xr.DataArray): Observation field.
 
     Returns:
-        float: Root mean squared error value.
+        Root mean squared error value.
 
     Example:
         >>> rmse = calc_rmse(fcst, obs)
@@ -261,7 +261,7 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
         spatial_dims (list[str]): List of spatial dimension names.
 
     Returns:
-        xr.DataArray: Shifted forecast field.
+        Shifted forecast field.
 
     Example:
         >>> shifted = shift_fcst(fcst, 2, -1, ['y', 'x'])
@@ -288,7 +288,7 @@ def objective_function(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray,
         spatial_dims (List[str]): List of spatial dimension names.
 
     Returns:
-        float: MSE value for the given shift.
+        MSE value for the given shift.
 
     Example:
         >>> error = objective_function([1, -2], fcst, obs, ['x', 'y'])
@@ -337,7 +337,7 @@ def calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
         obs (xr.DataArray): Observation field.
 
     Returns:
-        float: Volume error.
+        Volume error.
 
     Example:
         >>> volume_error = calc_mse_volume(shifted_fcst, obs)
@@ -357,7 +357,7 @@ def calc_num_points(data: xr.DataArray, threshold: float) -> int:
         threshold (float): Threshold value.
 
     Returns:
-        int: Number of points above the threshold.
+        Number of points above the threshold.
 
     Example:
         >>> count = calc_num_points(data, threshold=5.0)
@@ -376,7 +376,7 @@ def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
         data2 (xr.DataArray): Second data array.
 
     Returns:
-        float: Correlation coefficient.
+        Correlation coefficient.
 
     Example:
         >>> corr = calc_corr_coeff(data1, data2)
@@ -456,7 +456,7 @@ def cra_2d(
             E.g. ``('projection_y_coordinate', 'projection_x_coordinate')``, ``("lat","lon")``.
 
     Returns:
-        dict: A dictionary containing the following CRA components and diagnostics:
+        A dictionary containing the following CRA components and diagnostics:
             - mse_total (float): Total mean squared error between forecast and observed blobs.
             - mse_displacement (float): MSE due to spatial displacement between forecast and observed blobs.
             - mse_volume (float): MSE due to volume differences.
