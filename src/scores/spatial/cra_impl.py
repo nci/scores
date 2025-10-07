@@ -419,7 +419,7 @@ def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
     avg_resolution_km = np.mean([dy_km, dx_km])
     return float(avg_resolution_km)
 
-def cra(
+def cra_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
@@ -552,7 +552,7 @@ def cra(
     return cra_dict
 
 
-def cra_2d(
+def cra(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
@@ -593,7 +593,7 @@ def cra_2d(
                 results[metric].append(np.nan)
             continue
 
-        cra_result = cra(fcst_slice, obs_slice, threshold, spatial_dims, max_distance)
+        cra_result = cra_2d(fcst_slice, obs_slice, threshold, spatial_dims, max_distance)
         if cra_result is not None:
             for metric in metrics:
                 results[metric].append(cra_result[metric])
