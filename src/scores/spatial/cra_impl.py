@@ -47,7 +47,9 @@ def generate_largest_rain_area_2d(
     # in our case, non-NaN values
 
     # Connectivity: how elements are considered connected
-    structure = np.ones((3, 3))  # Define connectivity for the labeling. 3x3 => 8-connected in 2D
+    # Define connectivity for the labeling. 3x3 => 8-connected in 2D
+    # (includes N, NE, E, SE, S, SW, W, W, NW neighbours)
+    structure = np.ones((3, 3))
 
     # Assign a unique label to each connected component. For instance, if there are 3 separate
     # blobs in our array, each blob will be assigned a different label (e.g., 1, 2, 3)
@@ -436,7 +438,9 @@ def cra_2d(
 ) -> Optional[dict]:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
-
+    This function is designed for 2D spatial fields. For time-dependent data, use the `cra` function.
+    For ensemble data, apply this function to each realization individually or compute
+    the ensemble mean beforehand.
 
     The CRA score decomposes the total mean squared error (MSE) into three components:
     displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
