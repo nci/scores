@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 def generate_largest_rain_area_2d(
-    fcst: xr.DataArray, obs: xr.DataArray, threshold: float
+    fcst: xr.DataArray, obs: xr.DataArray, threshold: float, min_points: int
 ) -> Tuple[Optional[xr.DataArray], Optional[xr.DataArray]]:
     """
     Identify and extract the largest contiguous rain blobs from forecast and observation fields.
@@ -25,19 +25,20 @@ def generate_largest_rain_area_2d(
         fcst (xr.DataArray): Forecast field.
         obs (xr.DataArray): Observation field.
         threshold (float): Threshold to define rain blobs.
+        min_points (int): Minimum points in a blob
 
     Returns:
         Largest contiguous blobs from forecast and observation.
 
     Example:
-        >>> fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0)
+        >>> fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
     """
 
     masked_obs = obs.where(obs > threshold)
     masked_fcst = fcst.where(fcst > threshold)
 
-    if masked_fcst.count() < 10 or masked_obs.count() < 10:
-        logger.info("Less than 10 points meet the condition.")
+    if masked_fcst.count() < min_points or masked_obs.count() < min_points:
+        logger.info(f"Less than {min_points} points meet the condition.")
         return None, None
 
     # Label connected components in the masked array
@@ -76,6 +77,12 @@ def generate_largest_rain_area_2d(
 
     fcst_blob = fcst
     obs_blob = obs
+
+    # Apply min_points check to the extracted blobs
+    if fcst_blob.count() < min_points or obs_blob.count() < min_points:
+        logger.info(f"Largest blob has fewer than {min_points} points.")
+        return None, None
+
     return fcst_blob, obs_blob
 
 
@@ -424,7 +431,8 @@ def cra_2d(
     obs: xr.DataArray,
     threshold: float,
     spatial_dims: Tuple[str, str],
-    max_distance: float = 300
+    max_distance: float = 300,
+    min_points: int = 10
 ) -> Optional[dict]:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
@@ -506,7 +514,7 @@ def cra_2d(
         if dim not in obs.dims:
             raise ValueError(f"Spatial dimension '{dim}' not found in observation data")
 
-    [fcst_blob, obs_blob] = generate_largest_rain_area_2d(fcst, obs, threshold)
+    [fcst_blob, obs_blob] = generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
 
     if fcst_blob is None or obs_blob is None:
         return None
@@ -558,6 +566,7 @@ def cra(
     threshold: float,
     spatial_dims: Tuple[str, str],
     max_distance: float = 300,
+    min_points: int = 10,
     reduce_dims: Optional[List[str]] = None
 ) -> dict:
 
@@ -593,7 +602,7 @@ def cra(
                 results[metric].append(np.nan)
             continue
 
-        cra_result = cra_2d(fcst_slice, obs_slice, threshold, spatial_dims, max_distance)
+        cra_result = cra_2d(fcst_slice, obs_slice, threshold, spatial_dims, max_distance, min_points)
         if cra_result is not None:
             for metric in metrics:
                 results[metric].append(cra_result[metric])
