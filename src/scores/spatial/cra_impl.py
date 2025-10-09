@@ -144,7 +144,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
 
 
 def translate_forecast_region(
-    fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], max_distance: float
+    fcst: xr.DataArray, obs: xr.DataArray, y_name: str, x_name: str, max_distance: float
 ) -> Tuple[xr.DataArray, List[int]]:
     """
     Translate the forecast field to best spatially align with the observation field.
@@ -155,13 +155,15 @@ def translate_forecast_region(
     Args:
         fcst (xr.DataArray): Forecast field.
         obs (xr.DataArray): Observation field.
-        spatial_dims (list[str]): List of spatial dimension names.
+        x_name (str): Name of the zonal spatial dimension (e.g., 'x' or 'longitude').
+        y_name (str): Name of the meridional spatial dimension (e.g., 'y' or 'latitude').
+
 
     Returns:
         Translated forecast and optimal shift values in grid points (dx, dy).
 
     Example:
-        >>> shifted_fcst, shift = translate_forecast_region(fcst, obs, ['x', 'y'])
+        >>> shifted_fcst, shift = translate_forecast_region(fcst, obs, 'y', 'x', 300)
     """
 
     # Create fixed mask based on observation availability
@@ -186,7 +188,7 @@ def translate_forecast_region(
     for dy in shift_range:
         for dx in shift_range:
             shift = [dx,dy]
-            mse_score = objective_function(shift, fcst, obs, spatial_dims, fixed_mask)
+            mse_score = objective_function(shift, fcst, obs, [y_name, x_name], fixed_mask)
             if np.isfinite(mse_score) and mse_score < best_score:
                 best_score = mse_score
                 best_shift = shift
@@ -195,7 +197,7 @@ def translate_forecast_region(
     result = minimize(
         objective_function,
         best_shift,
-        args=(fcst, obs, spatial_dims, fixed_mask),
+        args=(fcst, obs, [y_name, x_name], fixed_mask),
         method="Nelder-Mead"
     )
     optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
@@ -214,14 +216,14 @@ def translate_forecast_region(
     dx, dy = int(round(optimal_shift[0])), int(round(optimal_shift[1]))
     
     # Compute shift distance in km
-    resolution_km = calc_resolution(obs, spatial_dims)
+    resolution_km = calc_resolution(obs, [y_name, x_name])
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
 
     if shift_distance_km > max_distance:
         logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
         return None, None
 
-    shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=spatial_dims)
+    shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
 
 
     # Final evaluation using fixed mask
@@ -435,7 +437,8 @@ def cra_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
-    spatial_dims: Tuple[str, str],
+    y_name: str,
+    x_name: str,
     max_distance: float = 300,
     min_points: int = 10
 ) -> Optional[dict]:
@@ -467,8 +470,10 @@ def cra_2d(
         fcst (xr.DataArray): Forecast field as an xarray DataArray.
         obs (xr.DataArray): Observation field as an xarray DataArray.
         threshold (float): Threshold to define contiguous rain areas.
-        spatial_dims: A pair of dimension names ``(y, x)``
-            E.g. ``('projection_y_coordinate', 'projection_x_coordinate')``, ``("lat","lon")``.
+        y_name (str): Name of the vertical spatial dimension (e.g., 'lat', 'projection_y_coordinate').
+        x_name (str): Name of the horizontal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
+        max_distance (float): Maximum allowed translation distance in kilometers.
+        min_points (int): Minimum number of grid points required in a blob.
 
     Returns:
         A dictionary containing the following CRA components and diagnostics:
@@ -517,7 +522,7 @@ def cra_2d(
     if fcst.shape != obs.shape:
         raise ValueError("fcst and obs must have the same shape")
 
-    for dim in spatial_dims:
+    for dim in [y_name, x_name]:
         if dim not in obs.dims:
             raise ValueError(f"Spatial dimension '{dim}' not found in observation data")
 
@@ -531,7 +536,7 @@ def cra_2d(
     if mse_total is None: # means that original fcst and obs blobs do not overlap
         return None
 
-    [shifted_fcst, optimal_shift] = translate_forecast_region(fcst_blob, obs_blob, spatial_dims, max_distance)
+    [shifted_fcst, optimal_shift] = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
 
     if shifted_fcst is None:
         return None
@@ -571,7 +576,8 @@ def cra(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
-    spatial_dims: Tuple[str, str],
+    y_name: str,
+    x_name: str,
     max_distance: float = 300,
     min_points: int = 10,
     reduce_dims: Optional[List[str]] = None
@@ -609,7 +615,7 @@ def cra(
                 results[metric].append(np.nan)
             continue
 
-        cra_result = cra_2d(fcst_slice, obs_slice, threshold, spatial_dims, max_distance, min_points)
+        cra_result = cra_2d(fcst_slice, obs_slice, threshold, y_name, x_name, max_distance, min_points)
         if cra_result is not None:
             for metric in metrics:
                 results[metric].append(cra_result[metric])
