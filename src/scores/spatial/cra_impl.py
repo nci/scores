@@ -145,7 +145,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
 
 def translate_forecast_region(
     fcst: xr.DataArray, obs: xr.DataArray, y_name: str, x_name: str, max_distance: float
-) -> Tuple[xr.DataArray, List[int]]:
+) -> Tuple[xr.DataArray, int, int]:
     """
     Translate the forecast field to best spatially align with the observation field.
 
@@ -163,7 +163,7 @@ def translate_forecast_region(
         Translated forecast and optimal shift values in grid points (dx, dy).
 
     Example:
-        >>> shifted_fcst, shift = translate_forecast_region(fcst, obs, 'y', 'x', 300)
+        >>> shifted_fcst, delta_x, delta_y = translate_forecast_region(fcst, obs, 'y', 'x', 300)
     """
 
     # Create fixed mask based on observation availability
@@ -173,7 +173,7 @@ def translate_forecast_region(
 
     if not fixed_mask.any():
         logger.info("No valid observation data.")
-        return None, None
+        return None, None, None
 
     # Mask forecast and observation using fixed mask
     fcst_masked = fcst.where(fixed_mask)
@@ -221,7 +221,7 @@ def translate_forecast_region(
 
     if shift_distance_km > max_distance:
         logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
-        return None, None
+        return None, None, None
 
     shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
 
@@ -240,9 +240,9 @@ def translate_forecast_region(
         corr_shifted < corr_original or
         mse_shifted > original_mse
     ):
-        return None, None
+        return None, None, None
 
-    return shifted_fcst, [dx, dy]
+    return shifted_fcst, dx, dy
 
 
 def calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
@@ -536,8 +536,8 @@ def cra_2d(
     if mse_total is None: # means that original fcst and obs blobs do not overlap
         return None
 
-    [shifted_fcst, optimal_shift] = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
-
+    [shifted_fcst, delta_x, delta_y] = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
+    optimal_shift = [delta_x, delta_y]
     if shifted_fcst is None:
         return None
 
