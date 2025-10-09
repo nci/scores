@@ -77,6 +77,7 @@ def generate_largest_rain_area_2d(
     else:
         fcst = masked_fcst
 
+    # Retain only the largest contiguous blob in each field; all other values are set to NaN
     fcst_blob = fcst
     obs_blob = obs
 
