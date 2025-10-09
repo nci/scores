@@ -108,15 +108,16 @@ def calc_mse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
     return float(mse(fcst, obs))
 
 
-def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[float, float]:
+def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
     """
-    Compute the centre of the bounding box for valid (non-NaN and non-zero) values in a data array.
-
+    Compute the centre of the bounding box for valid (non-NaN and non-zero) values in a 2D data array.
+    This function assumes the input is a 2D field and is intended for use with a single contiguous
+    region (blob). It computes the geometric centre of the bounding box enclosing all valid points.
     Args:
-        data_array (xr.DataArray): Input data array.
+        data_array (xr.DataArray): Input 2D data array.
 
     Returns:
-        Coordinates of the bounding box centre.
+        (row_index, column_index) of the bounding box centre in array index space.
 
     Example:
         >>> centre = calc_bounding_box_centre(data)
@@ -131,13 +132,13 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[float, float]:
     if valid_indices.size == 0:
         return (np.nan, np.nan)
 
-    # Compute bounding box
+    # Compute bounding box from array indices
     min_y, min_x = valid_indices.min(axis=0)
     max_y, max_x = valid_indices.max(axis=0)
 
-    # Compute centre of bounding box
-    centre_y = (min_y + max_y) / 2
-    centre_x = (min_x + max_x) / 2
+    # Compute centre of bounding box in index space (not coordinate space)
+    centre_y = int((min_y + max_y) / 2)
+    centre_x = int((min_x + max_x) / 2)
 
     return (centre_y, centre_x)
 
