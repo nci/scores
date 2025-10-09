@@ -143,13 +143,14 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
     return (centre_y, centre_x)
 
 
-def calc_shifted_forecast(
+def translate_forecast_region(
     fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], max_distance: float
 ) -> Tuple[xr.DataArray, List[int]]:
     """
-    Shift the forecast field to best align with the observation field using optimization.
+    Translate the forecast field to best spatially align with the observation field.
 
-    This function minimizes the MSE between forecast and observation by shifting the forecast spatially.
+    This function performs a 2D spatial translation (no rotation or scaling) 
+    to minimize the MSE between forecast and observation.
 
     Args:
         fcst (xr.DataArray): Forecast field.
@@ -157,10 +158,10 @@ def calc_shifted_forecast(
         spatial_dims (list[str]): List of spatial dimension names.
 
     Returns:
-        Shifted forecast and optimal shift values in grid points.
+        Translated forecast and optimal shift values in grid points (dx, dy).
 
     Example:
-        >>> shifted_fcst, shift = calc_shifted_forecast(fcst, obs, ['x', 'y'])
+        >>> shifted_fcst, shift = translate_forecast_region(fcst, obs, ['x', 'y'])
     """
 
     # Create fixed mask based on observation availability
@@ -530,7 +531,7 @@ def cra_2d(
     if mse_total is None: # means that original fcst and obs blobs do not overlap
         return None
 
-    [shifted_fcst, optimal_shift] = calc_shifted_forecast(fcst_blob, obs_blob, spatial_dims, max_distance)
+    [shifted_fcst, optimal_shift] = translate_forecast_region(fcst_blob, obs_blob, spatial_dims, max_distance)
 
     if shifted_fcst is None:
         return None
