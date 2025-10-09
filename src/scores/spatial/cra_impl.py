@@ -58,10 +58,10 @@ def generate_largest_rain_area_2d(
     )  # labels the connected components in the masked array where the values are not NaN
     if num_features_obs > 1:
         # Find the largest blob
-        largest_blob_label = np.argmax(np.bincount(labeled_array_obs.flat)[1:]) + 1
+        largest_blob_label_obs = np.argmax(np.bincount(labeled_array_obs.flat)[1:]) + 1
 
         # Create a new masked array with only the largest blob
-        obs = masked_obs.where(labeled_array_obs == largest_blob_label)
+        obs = masked_obs.where(labeled_array_obs == largest_blob_label_obs)
     else:
         obs = masked_obs
 
@@ -70,10 +70,10 @@ def generate_largest_rain_area_2d(
     )  # labels the connected components in the masked array where the values are not NaN
     if num_features_fcst > 1:
         # Find the largest blob
-        largest_blob_label = np.argmax(np.bincount(labeled_array_fcst.flat)[1:]) + 1
+        largest_blob_label_fcst = np.argmax(np.bincount(labeled_array_fcst.flat)[1:]) + 1
 
         # Create a new masked array with only the largest blob
-        fcst = masked_fcst.where(labeled_array_fcst == largest_blob_label)
+        fcst = masked_fcst.where(labeled_array_fcst == largest_blob_label_fcst)
     else:
         fcst = masked_fcst
 
