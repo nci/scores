@@ -266,25 +266,33 @@ def calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
 
 def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: List[str]) -> xr.DataArray:
     """
-    Apply a spatial shift to the forecast field.
+    Apply a spatial shift to a 2D forecast field along specified spatial dimensions.
+
+    This function assumes a 2D spatial field and shifts it along the provided
+    spatial dimensions.
 
     Args:
-        fcst (xr.DataArray): Forecast field.
+        fcst (xr.DataArray): 2D forecast field.
         shift_x (int): Shift along x-dimension.
         shift_y (int): Shift along y-dimension.
-        spatial_dims (list[str]): List of spatial dimension names.
+        spatial_dims (list[str]):Names of the 2 spatial dimensions, ordered as [y_dim, x_dim]
 
     Returns:
-        Shifted forecast field.
+        Forecast field shifted spatially.
 
     Example:
         >>> shifted = shift_fcst(fcst, 2, -1, ['y', 'x'])
     """
+    # Unpack spatial dimension names
     ydim, xdim = spatial_dims
+
+    # Define shift amounts for each dim
     shift_kwargs = {
         ydim: int(shift_y),  # dy => Y dim
         xdim: int(shift_x),  # dx => X dim
     }
+
+    # Apply the shift with NaN fill for out-of-bounds values
     return fcst.shift(
         **shift_kwargs,
         fill_value=np.nan,
