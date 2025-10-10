@@ -586,8 +586,21 @@ def cra(
     reduce_dims: Optional[List[str]] = None,
 ) -> dict:
 
+    """
+    Compute CRA metrics over a specified dimension (e.g., time).
+    """
+
+    # --- Input validation ---
+    if not isinstance(fcst, xr.DataArray):
+        raise TypeError("fcst must be an xarray DataArray")
+    if not isinstance(obs, xr.DataArray):
+        raise TypeError("obs must be an xarray DataArray")
+
     if reduce_dims is None:
         reduce_dims = ["time"]  # Default to time if not specified
+
+    if fcst.shape != obs.shape:
+        raise ValueError("fcst and obs must have the same shape")
 
     # Align forecast and observation
     fcst, obs = xr.align(fcst, obs)
