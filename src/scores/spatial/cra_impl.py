@@ -585,7 +585,6 @@ def cra(
     min_points: int = 10,
     reduce_dims: Optional[List[str]] = None,
 ) -> dict:
-
     """
     Compute CRA metrics over a specified dimension (e.g., time).
     """

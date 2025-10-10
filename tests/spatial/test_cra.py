@@ -25,14 +25,10 @@ def sample_data_2d():
 def sample_data_3d():
     """3D synthetic forecast and analysis fields for cra"""
     forecast = xr.DataArray(
-        np.random.rand(1, 100, 100) * 20,
-        dims=["time", "latitude", "longitude"],
-        coords={"time": [0]}
+        np.random.rand(1, 100, 100) * 20, dims=["time", "latitude", "longitude"], coords={"time": [0]}
     )
     analysis = xr.DataArray(
-        np.random.rand(1, 100, 100) * 20,
-        dims=["time", "latitude", "longitude"],
-        coords={"time": [0]}
+        np.random.rand(1, 100, 100) * 20, dims=["time", "latitude", "longitude"], coords={"time": [0]}
     )
     return forecast, analysis
 
@@ -40,20 +36,22 @@ def sample_data_3d():
 def test_cra_basic_output_type(sample_data_3d):
     """Test that CRA returns a dictionary for valid input."""
     forecast, analysis = sample_data_3d
-    result = cra(forecast, analysis, THRESHOLD, y_name ="latitude", x_name = "longitude")
+    result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
     assert isinstance(result, dict), "CRA output should be a dictionary"
+
 
 def test_cra_2d_basic_output_type(sample_data_2d):
     """Test that CRA returns a dictionary for valid input."""
     forecast, analysis = sample_data_2d
-    result = cra_2d(forecast, analysis, THRESHOLD, y_name ="latitude", x_name = "longitude")
+    result = cra_2d(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
     assert isinstance(result, dict), "CRA output should be a dictionary"
+
 
 def test_cra_with_nans(sample_data_3d):
     """Test CRA handles NaNs in the forecast field ok"""
     forecast, analysis = sample_data_3d
     forecast[0, 0] = np.nan  # Introduce a NaN
-    result = cra(forecast, analysis, THRESHOLD, y_name ="latitude", x_name = "longitude")
+    result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
 
     assert isinstance(result, dict), "CRA output should be a dictionary even with NaNs"
 
@@ -67,7 +65,7 @@ def test_cra_dataset_input(sample_data_2d):
     """Test CRA works with xarray.Dataset input."""
     forecast, analysis = sample_data_2d
     ds = xr.Dataset({"forecast": forecast, "analysis": analysis})
-    result = cra_2d(ds["forecast"], ds["analysis"], THRESHOLD, y_name ="latitude", x_name = "longitude")
+    result = cra_2d(ds["forecast"], ds["analysis"], THRESHOLD, y_name="latitude", x_name="longitude")
     expected_keys = [
         "mse_total",
         "mse_displacement",
@@ -97,14 +95,9 @@ def test_cra_invalid_input():
     with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
         cra("invalid", "input", THRESHOLD, y_name="latitude", x_name="longitude")
 
-    valid_fcst = xr.DataArray(
-        np.random.rand(1, 10, 10),
-        dims=["time", "latitude", "longitude"],
-        coords={"time": [0]}
-    )
+    valid_fcst = xr.DataArray(np.random.rand(1, 10, 10), dims=["time", "latitude", "longitude"], coords={"time": [0]})
     with pytest.raises(TypeError, match="obs must be an xarray DataArray"):
         cra(valid_fcst, "input", THRESHOLD, y_name="latitude", x_name="longitude")
-
 
 
 def test_cra_mismatched_shapes():
@@ -129,7 +122,7 @@ def test_cra_mismatched_shapes_parametrized(fcst_shape, obs_shape):
     fcst = xr.DataArray(np.random.rand(*fcst_shape), dims=["latitude", "longitude"])
     obs = xr.DataArray(np.random.rand(*obs_shape), dims=["latitude", "longitude"])
     with pytest.raises(ValueError, match="fcst and obs must have the same shape"):
-        cra(fcst, obs, THRESHOLD, y_name ="latitude", x_name = "longitude")
+        cra(fcst, obs, THRESHOLD, y_name="latitude", x_name="longitude")
 
 
 @pytest.mark.parametrize(
@@ -148,7 +141,7 @@ def test_cra_mismatched_shapes_parametrized(fcst_shape, obs_shape):
 def test_cra_invalid_inputs(fcst, obs, expected_error, match_text):
     """Test CRA raises appropriate errors for invalid inputs."""
     with pytest.raises(expected_error, match=match_text):
-        cra(fcst, obs, THRESHOLD, y_name ="latitude", x_name = "longitude")
+        cra(fcst, obs, THRESHOLD, y_name="latitude", x_name="longitude")
 
 
 @pytest.mark.parametrize(
