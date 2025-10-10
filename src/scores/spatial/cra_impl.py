@@ -8,8 +8,10 @@ from scipy.optimize import minimize
 from scores.continuous.standard_impl import mse, rmse
 
 import logging
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 def generate_largest_rain_area_2d(
     fcst: xr.DataArray, obs: xr.DataArray, threshold: float, min_points: int
@@ -149,7 +151,7 @@ def translate_forecast_region(
     """
     Translate the forecast field to best spatially align with the observation field.
 
-    This function performs a 2D spatial translation (no rotation or scaling) 
+    This function performs a 2D spatial translation (no rotation or scaling)
     to minimize the MSE between forecast and observation.
 
     Args:
@@ -184,22 +186,17 @@ def translate_forecast_region(
     # Brute-force search
     best_score = np.inf
     best_shift = None
-    shift_range = range(-10,11)
+    shift_range = range(-10, 11)
     for dy in shift_range:
         for dx in shift_range:
-            shift = [dx,dy]
+            shift = [dx, dy]
             mse_score = shifted_mse(shift, fcst, obs, [y_name, x_name], fixed_mask)
             if np.isfinite(mse_score) and mse_score < best_score:
                 best_score = mse_score
                 best_shift = shift
 
     # Refine with local optimization from brute-force result
-    result = minimize(
-        shifted_mse,
-        best_shift,
-        args=(fcst, obs, [y_name, x_name], fixed_mask),
-        method="Nelder-Mead"
-    )
+    result = minimize(shifted_mse, best_shift, args=(fcst, obs, [y_name, x_name], fixed_mask), method="Nelder-Mead")
     optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
 
     # Fallback to bounding box centre if optimization fails
@@ -214,7 +211,7 @@ def translate_forecast_region(
 
     # Apply shift
     dx, dy = int(round(optimal_shift[0])), int(round(optimal_shift[1]))
-    
+
     # Compute shift distance in km
     resolution_km = calc_resolution(obs, [y_name, x_name])
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
@@ -223,8 +220,7 @@ def translate_forecast_region(
         logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
         return None, None, None
 
-    shifted_fcst = shift_fcst(fcst,shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
-
+    shifted_fcst = shift_fcst(fcst, shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
 
     # Final evaluation using fixed mask
     shifted_fcst_masked = shifted_fcst.where(fixed_mask)
@@ -235,11 +231,7 @@ def translate_forecast_region(
     rmse_original = calc_rmse(fcst_masked, obs_masked)
     corr_original = calc_corr_coeff(fcst_masked, obs_masked)
 
-    if (
-        rmse_shifted > rmse_original or
-        corr_shifted < corr_original or
-        mse_shifted > original_mse
-    ):
+    if rmse_shifted > rmse_original or corr_shifted < corr_original or mse_shifted > original_mse:
         return None, None, None
 
     return shifted_fcst, dx, dy
@@ -299,7 +291,9 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
     )
 
 
-def shifted_mse(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray) -> float:
+def shifted_mse(
+    shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray
+) -> float:
     """
     Objective function for optimization: computes MSE between shifted forecast and observation.
 
@@ -343,7 +337,7 @@ def shifted_mse(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatia
     # Penalize low correlation
     penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
 
-    return mse_val+penalty
+    return mse_val + penalty
 
 
 def calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
@@ -420,6 +414,7 @@ def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
     cc = np.corrcoef(data1_clean, data2_clean)[0, 1]
     return float(cc)
 
+
 def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
     y_coords = obs.coords[spatial_dims[0]].values
     x_coords = obs.coords[spatial_dims[1]].values
@@ -441,6 +436,7 @@ def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
     avg_resolution_km = np.mean([dy_km, dx_km])
     return float(avg_resolution_km)
 
+
 def cra_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
@@ -448,7 +444,7 @@ def cra_2d(
     y_name: str,
     x_name: str,
     max_distance: float = 300,
-    min_points: int = 10
+    min_points: int = 10,
 ) -> Optional[dict]:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
@@ -541,7 +537,7 @@ def cra_2d(
 
     mse_total = calc_mse(fcst_blob, obs_blob)
 
-    if mse_total is None: # means that original fcst and obs blobs do not overlap
+    if mse_total is None:  # means that original fcst and obs blobs do not overlap
         return None
 
     [shifted_fcst, delta_x, delta_y] = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
@@ -588,23 +584,32 @@ def cra(
     x_name: str,
     max_distance: float = 300,
     min_points: int = 10,
-    reduce_dims: Optional[List[str]] = None
+    reduce_dims: Optional[List[str]] = None,
 ) -> dict:
 
     if reduce_dims is None:
-        reduce_dims = ['time']  # Default to time if not specified
+        reduce_dims = ["time"]  # Default to time if not specified
 
     # Align forecast and observation
     fcst, obs = xr.align(fcst, obs)
 
     # Prepare output dictionary
     metrics = [
-        "mse_total", "mse_displacement", "mse_volume", "mse_pattern",
+        "mse_total",
+        "mse_displacement",
+        "mse_volume",
+        "mse_pattern",
         "optimal_shift",
-        "num_gridpoints_above_threshold_fcst", "num_gridpoints_above_threshold_obs",
-        "avg_fcst", "avg_obs", "max_fcst", "max_obs",
-        "corr_coeff_original", "corr_coeff_shifted",
-        "rmse_original", "rmse_shifted"
+        "num_gridpoints_above_threshold_fcst",
+        "num_gridpoints_above_threshold_obs",
+        "avg_fcst",
+        "avg_obs",
+        "max_fcst",
+        "max_obs",
+        "corr_coeff_original",
+        "corr_coeff_shifted",
+        "rmse_original",
+        "rmse_shifted",
     ]
     results = {metric: [] for metric in metrics}
 
@@ -612,7 +617,7 @@ def cra(
     for idx in fcst.groupby(reduce_dims):
         key, fcst_slice = idx
         obs_slice = obs.sel({dim: fcst_slice.coords[dim].values[0] for dim in reduce_dims}, drop=False)
-        
+
         # Remove singleton time dimension
         fcst_slice = fcst_slice.squeeze(dim=reduce_dims[0])
 
