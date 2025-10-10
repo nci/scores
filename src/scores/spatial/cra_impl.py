@@ -188,14 +188,14 @@ def translate_forecast_region(
     for dy in shift_range:
         for dx in shift_range:
             shift = [dx,dy]
-            mse_score = objective_function(shift, fcst, obs, [y_name, x_name], fixed_mask)
+            mse_score = shifted_mse(shift, fcst, obs, [y_name, x_name], fixed_mask)
             if np.isfinite(mse_score) and mse_score < best_score:
                 best_score = mse_score
                 best_shift = shift
 
     # Refine with local optimization from brute-force result
     result = minimize(
-        objective_function,
+        shifted_mse,
         best_shift,
         args=(fcst, obs, [y_name, x_name], fixed_mask),
         method="Nelder-Mead"
@@ -299,7 +299,7 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
     )
 
 
-def objective_function(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray) -> float:
+def shifted_mse(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray) -> float:
     """
     Objective function for optimization: computes MSE between shifted forecast and observation.
 
@@ -313,7 +313,7 @@ def objective_function(shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray,
         MSE value for the given shift.
 
     Example:
-        >>> error = objective_function([1, -2], fcst, obs, ['x', 'y'])
+        >>> error = shifted_mse([1, -2], fcst, obs, ['x', 'y'])
     """
     # Validate input
     if len(shifts) != 2 or np.any(np.isnan(shifts)):
