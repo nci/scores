@@ -5,6 +5,7 @@ basic functionality, handling of NaNs, dataset input, and error handling
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -24,20 +25,27 @@ def sample_data_2d():
 @pytest.fixture
 def sample_data_3d():
     """3D synthetic forecast and analysis fields for cra"""
+    time = pd.date_range("2022-07-05", periods=3, freq="D")
+    lat = np.linspace(-40, -10, 10)
+    lon = np.linspace(140, 160, 10)
+
     forecast = xr.DataArray(
-        np.random.rand(1, 100, 100) * 20, dims=["time", "latitude", "longitude"], coords={"time": [0]}
+        np.random.rand(3, 10, 10) * 20,
+        dims=["time", "latitude", "longitude"],
+        coords={"time": ("time", time), "latitude": lat, "longitude": lon},
     )
     analysis = xr.DataArray(
-        np.random.rand(1, 100, 100) * 20, dims=["time", "latitude", "longitude"], coords={"time": [0]}
+        np.random.rand(3, 10, 10) * 20,
+        dims=["time", "latitude", "longitude"],
+        coords={"time": ("time", time), "latitude": lat, "longitude": lon},
     )
     return forecast, analysis
 
 
 def test_cra_basic_output_type(sample_data_3d):
-    """Test that CRA returns a dictionary for valid input."""
     forecast, analysis = sample_data_3d
-    result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
-    assert isinstance(result, dict), "CRA output should be a dictionary"
+    result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude", reduce_dims=["time"])
+    assert isinstance(result, dict)
 
 
 def test_cra_2d_basic_output_type(sample_data_2d):

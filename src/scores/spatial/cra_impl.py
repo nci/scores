@@ -595,8 +595,18 @@ def cra(
     if not isinstance(obs, xr.DataArray):
         raise TypeError("obs must be an xarray DataArray")
 
+    # Normalize reduce_dims
     if reduce_dims is None:
         reduce_dims = ["time"]  # Default to time if not specified
+    elif isinstance(reduce_dims, str):
+        reduce_dims = [reduce_dims]
+    elif isinstance(reduce_dims, list):
+        if len(reduce_dims) != 1:
+            raise ValueError("CRA currently supports grouping by a single dimension only.")
+    else:
+        raise ValueError("reduce_dims must be a string or a list of one string.")
+
+    group_dim = reduce_dims[0]
 
     if fcst.shape != obs.shape:
         raise ValueError("fcst and obs must have the same shape")
@@ -625,12 +635,21 @@ def cra(
     results = {metric: [] for metric in metrics}
 
     # Iterate over slices
-    for idx in fcst.groupby(reduce_dims):
-        key, fcst_slice = idx
-        obs_slice = obs.sel({dim: fcst_slice.coords[dim].values[0] for dim in reduce_dims}, drop=False)
+    for key, fcst_slice in fcst.groupby(group_dim):
+        # Extract matching slice from obs
+        time_val = key  # fcst_slice.coords[group_dim].item()
+
+        # Ensure time_val is a datetime64[ns]
+        if isinstance(time_val, (int, np.integer)):
+            time_val = np.datetime64(time_val, "ns")
+        elif isinstance(time_val, str):
+            time_val = np.datetime64(time_val)
+
+        # time_val = np.datetime64(fcst_slice.coords[group_dim].item(), 'ns')
+        obs_slice = obs.sel({group_dim: time_val}, drop=False)
 
         # Remove singleton time dimension
-        fcst_slice = fcst_slice.squeeze(dim=reduce_dims[0])
+        fcst_slice = fcst_slice.squeeze(drop=True)
 
         # Ensure shapes match
         if fcst_slice.shape != obs_slice.shape:
