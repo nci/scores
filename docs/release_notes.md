@@ -13,13 +13,14 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ### Documentation
 
 - Updated the "Quantile-Quantile (Q-Q) Plots for Comparing Forecasts and Observations" tutorial so that the plots render in Read the Docs. See [PR #883](https://github.com/nci/scores/pull/883).
+- Updated the description of the second figure in the "Threshold Weighted Continuous Ranked Probability Score (twCRPS) for ensembles" tutorial. See [PR #897](https://github.com/nci/scores/pull/897).
 - Added thumbnail images to multiple entries in the tutorial gallery. See [PR #874](https://github.com/nci/scores/pull/874), [PR #875](https://github.com/nci/scores/pull/875), [PR #877](https://github.com/nci/scores/pull/877), [PR #879](https://github.com/nci/scores/pull/879), [PR #880](https://github.com/nci/scores/pull/880), [PR #881](https://github.com/nci/scores/pull/881) and [PR #884](https://github.com/nci/scores/pull/884).
 
 ### Internal Changes
 
 ### Contributors to this Release
 
-Thomas C. Pagano* ([@thomaspagano](https://github.com/thomaspagano)), Paul R. Smith* ([@prs247au](https://github.com/prs247au)), J. Smallwood* ([@jdgsmallwood](https://github.com/jdgsmallwood)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)).
+Thomas C. Pagano* ([@thomaspagano](https://github.com/thomaspagano)), Paul R. Smith* ([@prs247au](https://github.com/prs247au)), J. Smallwood* ([@jdgsmallwood](https://github.com/jdgsmallwood)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)) and Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
