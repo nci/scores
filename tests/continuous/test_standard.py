@@ -34,6 +34,7 @@ def test_mse_xarray_1d():
     result = scores.continuous.mse(fcst_as_xarray_1d, obs_as_xarray_1d)
 
     expected = xr.DataArray(1.0909)
+
     assert isinstance(result, xr.DataArray)
     assert result.round(PRECISION) == expected.round(PRECISION)
 
@@ -63,18 +64,6 @@ def test_mse_dataframe():
     result = scores.continuous.mse(df["fcst"], df["obs"])
     assert isinstance(result, float)
     assert round(result, PRECISION) == expected
-
-
-def test_mse_xarray_to_point():
-    """
-    Test MSE calculates the correct value for a simple 1d sequence
-    Currently breaks type hinting but here for future pandas support
-    """
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mse(fcst_as_xarray_1d, 1)  # type: ignore
-    expected = xr.DataArray(1.45454545)
-    assert isinstance(result, xr.DataArray)
-    assert result.round(PRECISION) == expected.round(PRECISION)
 
 
 def test_2d_xarray_mse():
@@ -164,8 +153,6 @@ def rmse_obs_pandas():
             {"preserve_dims": "all"},
         ),
         ("rmse_fcst_nan_xarray", "rmse_obs_xarray", xr.DataArray(1.3784), {}),
-        ("rmse_fcst_xarray", 1, xr.DataArray(1.3484), {}),
-        ("rmse_fcst_nan_xarray", 1, xr.DataArray(1.3784), {}),
         ("rmse_fcst_pandas", "rmse_obs_pandas", 1.3484, {}),
         ("rmse_fcst_pandas", 1, 1.3484, {}),
         ("rmse_fcst_nan_pandas", "rmse_obs_pandas", 1.3784, {}),
@@ -174,8 +161,6 @@ def rmse_obs_pandas():
         "simple-1d",
         "preserve-1d",
         "simple-1d-w-nan",
-        "to-point",
-        "to-point-w-nan",
         "pandas-series-1d",
         "pandas-to-point",
         "pandas-series-nan-1d",
@@ -370,17 +355,6 @@ def test_mae_dataframe():
     result = scores.continuous.mae(df["fcst"], df["obs"])
     assert isinstance(result, float)
     assert round(result, PRECISION) == expected
-
-
-def test_mae_xarray_to_point():
-    """
-    Test MAE calculates the correct value for a simple sequence
-    Tests unhinted types but this is useful
-    """
-    fcst_as_xarray_1d = xr.DataArray([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
-    result = scores.continuous.mae(fcst_as_xarray_1d, 1)  # type: ignore
-    expected = xr.DataArray(0.9091)
-    assert result.round(PRECISION) == expected.round(PRECISION)
 
 
 def test_2d_xarray_mae():
@@ -689,6 +663,38 @@ EXP_PBIAS4 = xr.DataArray(np.array(-13 / 15.5 * 100))
 
 EXP_DS_PBIAS1 = xr.Dataset({"a": EXP_PBIAS1, "b": EXP_PBIAS2})
 
+
+## for percent_within_x
+EXP_PERCENT_WITHIN_X1 = xr.DataArray(
+    np.array([100, 100 / 3, 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+EXP_PERCENT_WITHIN_X2 = xr.DataArray(
+    np.array([100, 100 / 3, 100]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PERCENT_WITHIN_X3 = xr.DataArray(
+    np.array([100, 100 / 3, 2 * 100 / 3]),
+    dims=("space"),
+    coords=[
+        ("space", ["w", "x", "y"]),
+    ],
+)
+
+EXP_PERCENT_WITHIN_X4 = xr.DataArray(np.array(100 * 3 / 4))
+
+EXP_PERCENT_WITHIN_X5 = xr.DataArray(np.array(100 * 3 / 4))
+EXP_PERCENT_WITHIN_X6 = xr.DataArray(np.array(100 * 1 / 4))
+
+EXP_DS_PERCENT_WITHIN_X1 = xr.Dataset({"a": EXP_PERCENT_WITHIN_X1, "b": EXP_PERCENT_WITHIN_X2})
+
 ## for KGE
 DA1_KGE = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
@@ -912,6 +918,154 @@ def test_pbias_dask():
     xr.testing.assert_equal(result, EXP_PBIAS3)
 
 
+def test_percent_within_x_no_data():
+    """
+    Tests that continuous.percent_within_x works with no data
+    """
+
+    fcst = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
+
+    obs = xr.DataArray(np.array([np.nan]), dims=("space"), coords=[("space", ["x"])])
+
+    result = scores.continuous.percent_within_x(fcst, obs, threshold=0)
+
+    assert result.ndim == 0
+    assert np.isnan(result.item())
+
+
+def test_percent_within_x_broadcasting():
+    """
+    Tests that continuous.percent_within_x works broadcasting data with mismatched dimensions
+    """
+
+    fcst = xr.DataArray(
+        np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
+        dims=("space", "lead"),
+        coords=[
+            ("space", ["w", "x", "y"]),
+            ("lead", [1, 2, 3]),
+        ],
+    )
+
+    obs = xr.DataArray(
+        np.array([1, 1, 1]),
+        dims=("space"),
+        coords=[("space", ["w", "x", "y"])],
+    )
+
+    result = scores.continuous.percent_within_x(fcst, obs, threshold=0, preserve_dims="lead")
+
+    expected = xr.DataArray(
+        np.array([100 * 1 / 3, 100 * 1 / 3, 0]),
+        dims=("lead"),
+        coords=[("lead", [1, 2, 3])],
+    )
+
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    (
+        "fcst",
+        "obs",
+        "reduce_dims",
+        "preserve_dims",
+        "is_angular",
+        "threshold",
+        "is_inclusive",
+        "expected",
+    ),
+    [
+        # Check reduce dim arg
+        (DA1_BIAS, DA2_BIAS, None, "space", False, 1.0, True, EXP_PERCENT_WITHIN_X1),
+        (DA1_BIAS, DA3_BIAS, None, "space", False, 1.0, True, EXP_PERCENT_WITHIN_X3),
+        # # Check preserve dim arg
+        (DA1_BIAS, DA2_BIAS, "time", None, False, 1.0, True, EXP_PERCENT_WITHIN_X1),
+        # Reduce all
+        (DA1_BIAS, DA2_BIAS, None, None, False, 1.0, True, EXP_PERCENT_WITHIN_X4),
+        # Test with Dataset
+        (DS_BIAS1, DS_BIAS2, None, "space", False, 1.0, True, EXP_DS_PERCENT_WITHIN_X1),
+        # Testing angular results
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, True, EXP_PERCENT_WITHIN_X5),
+        # Testing angular results with inclusive false
+        (DA1_ANGULAR, DA2_ANGULAR, None, None, True, 170.0, False, EXP_PERCENT_WITHIN_X6),
+    ],
+)
+def test_percent_within_x(fcst, obs, reduce_dims, preserve_dims, is_angular, threshold, is_inclusive, expected):
+    """
+    Tests continuous.percent_within_x
+    """
+
+    decimals = 7
+    result = scores.continuous.percent_within_x(
+        fcst,
+        obs,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        is_angular=is_angular,
+        threshold=threshold,
+        decimals=decimals,
+        is_inclusive=is_inclusive,
+    )
+
+    xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    (
+        "decimals",
+        "expected",
+    ),
+    [
+        (2, 100 * 6 / 8),
+        (7, 100 * 4 / 8),
+    ],
+)
+def test_percent_within_x_tolerance(decimals, expected):
+    """
+    Tests continuous.percent_within_x for threshold rounding to control for precision issues
+    """
+    fcst = DA1_BIAS + 0.0001
+    obs = DA2_BIAS
+    reduce_dims = None
+    preserve_dims = None
+    is_angular = False
+    threshold = 1
+    is_inclusive = True
+
+    result = scores.continuous.percent_within_x(
+        fcst,
+        obs,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+        is_angular=is_angular,
+        threshold=threshold,
+        decimals=decimals,
+        is_inclusive=is_inclusive,
+    )
+
+    assert result == expected
+
+
+def test_percent_within_x_dask():
+    """
+    Tests that continuous.within works with Dask
+    """
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    fcst = DA1_BIAS.chunk()
+    obs = DA3_BIAS.chunk()
+    result = scores.continuous.percent_within_x(
+        fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, decimals=7, is_inclusive=True
+    )
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_equal(result, EXP_PERCENT_WITHIN_X3)
+
+
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "include_components", "scaling_factors", "expected"),
     [
@@ -982,3 +1136,39 @@ def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_mes
     """
     with pytest.raises(expected_exception, match=expected_message):
         scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)  # type: ignore
+
+
+def test_mse_raises():
+    """
+    Assert that mse raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.mse(fcst, obs, weights=weights)
+
+
+def test_rmse_raises():
+    """
+    Assert that rmse raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.rmse(fcst, obs, weights=weights)
+
+
+def test_mae_raises():
+    """
+    Assert that mae raises a ValueError if weights are provided but fcst and obs are not xarray objects
+    """
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+    weights = pd.Series([1] * len(fcst))
+
+    with pytest.raises(ValueError, match="If `fcst` and `obs` are not xarray objects, `weights` must be None."):
+        scores.continuous.mae(fcst, obs, weights=weights)

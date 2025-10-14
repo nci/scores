@@ -684,9 +684,16 @@ DA_FCST2_SEEPS = xr.DataArray(
     },
 )
 DA_SEEPS_WEIGHTS = xr.DataArray(
-    data=[1, 2],
-    dims=["i"],
-    coords={"i": [1, 2]},
+    data=[
+        [[0, 1, 0, 0, 0], [0, 0, 0, 0, 0]],
+        [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0]],
+    ],
+    dims=["i", "t", "j"],
+    coords={
+        "i": [1, 2],
+        "j": [1, 2, 3, 4, 5],
+        "t": pd.date_range("2020-01-01", periods=2),
+    },
 )
 
 DA_P1_SEEPS = xr.DataArray(0.5)
@@ -740,18 +747,7 @@ EXP_SEEPS_CASE4 = 0.5 * xr.DataArray(
         "t": pd.date_range("2020-01-01", periods=2),
     },
 )
-EXP_SEEPS_CASE5 = 0.5 * xr.DataArray(
-    data=[
-        np.array([[0, np.nan, np.nan, np.nan, 0], [np.nan, np.nan, np.nan, 0, np.nan]]),
-        2 * np.array(ALL_INDEX_ARRAY_RESULT),
-    ],
-    dims=["i", "t", "j"],
-    coords={
-        "i": [1, 2],
-        "j": [1, 2, 3, 4, 5],
-        "t": pd.date_range("2020-01-01", periods=2),
-    },
-)
+EXP_SEEPS_CASE5 = 0.5 * xr.DataArray(data=[1 / (1 - P1), 1 / P3 + 1 / (1 - P1)], dims="i", coords={"i": [1, 2]})
 
 EXP_SEEPS_CASE6 = EXP_SEEPS_CASE0 * 0
 

@@ -3,6 +3,7 @@ Implementation of Reciever Operating Characteristic (ROC) calculations
 """
 
 import operator
+import warnings
 from collections.abc import Iterable, Sequence
 from typing import Optional
 
@@ -23,7 +24,7 @@ if not hasattr(np, "trapezoid"):
 def roc(  # pylint: disable=too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    thresholds: Iterable[float],
+    thresholds: str | Iterable[float] = "auto",
     *,  # Force keywords arguments to be keyword-only
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
@@ -41,15 +42,20 @@ def roc(  # pylint: disable=too-many-arguments
     Args:
         fcst: An array of probabilistic forecasts for a binary event in the range [0, 1].
         obs: An array of binary values where 1 is an event and 0 is a non-event.
-        thresholds: Monotonic increasing values between 0 and 1, the thresholds at and
+        thresholds: By default, when ``thresholds = "auto"``, the ROC thresholds are
+          automatically generated. Otherwise, you can supply an iterable of floats with
+          monotonic increasing values between 0 and 1, which are the thresholds at and
           above which to convert the probabilistic forecast to a value of 1 (an 'event').
+          If there are many unique forecast values, this can lead to a very large number
+          of automatically generated thresholds. If performance is slow, consider
+          supplying thresholds manually as an iterable of floats.
           Np.inf is added automatically to the end of the thresholds to ensure that
           the full ROC curve is produced. Similarly, if 0 is not included, it will be
           added automatically to ensure the full ROC curve is produced.
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the ROC curve data. All other dimensions will be preserved. As a
             special case, 'all' will allow all dimensions to be reduced. Only one
-            of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
+            of ``reduce_dims`` and ``preserve_dims`` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve
             when calculating ROC curve data. All other dimensions will be reduced.
@@ -58,11 +64,15 @@ def roc(  # pylint: disable=too-many-arguments
             shape/dimensionality as the forecast, and the values will be
             the ROC curve at each point (i.e. single-value comparison
             against observed) for each threshold, and the forecast and observed dimensions
-            must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
+            must match precisely. Only one of ``reduce_dims`` and ``preserve_dims`` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom).
-        check_args: Checks if `obs` data only contains values in the set
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
+        check_args: Checks if ``obs`` data only contains values in the set
             {0, 1, np.nan}. You may want to skip this check if you are sure about your
             input data and want to improve the performance when working with dask.
 
@@ -73,27 +83,37 @@ def roc(  # pylint: disable=too-many-arguments
         - 'POFD' (the probability of false detection)
         - 'AUC' (the area under the ROC curve)
 
-        `POD` and `POFD` have dimensions `dims` + 'threshold', while `AUC` has
-        dimensions `dims`.
+        ``POD`` and ``POFD`` have dimensions ``dims`` + 'threshold', while ``AUC`` has
+        dimensions ``dims``.
 
     Raises:
-        ValueError: if `fcst` contains values outside of the range [0, 1]
-        ValueError: if `obs` contains non-nan values not in the set {0, 1}
-        ValueError: if 'threshold' is a dimension in `fcst`.
+        ValueError: if ``fcst`` contains values outside of the range [0, 1].
+        ValueError: if ``obs`` contains non-nan values not in the set {0, 1}.
+        ValueError: if 'threshold' is a dimension in ``fcst``.
         ValueError: if values in `thresholds` are not monotonic increasing or are outside
-          the range [0, 1]
+          the range [0, 1].
+        ValueError: if ``thresholds`` is a string that is not "auto".
+        ValueError: if ``thresholds`` is an empty iterable.
 
+    Warnings:
+        If the number of automatically generated thresholds is very large (>1000),
+        a warning is raised suggesting that the user supply thresholds manually as an
+        iterable of floats if performance is slow.
 
     Notes:
-        The probabilistic `fcst` is converted to a deterministic forecast
-        for each threshold in `thresholds`. If a value in `fcst` is greater
+        If ``thresholds`` is an iterable of floats, the probabilistic ``fcst``
+        is converted to a deterministic forecast
+        for each threshold in ``thresholds``. If a value in ``fcst`` is greater
         than or equal to the threshold, then it is converted into a
         'forecast event' (fcst = 1), and a 'forecast non-event' (fcst = 0)
         otherwise. The probability of detection (POD) and probability of false
         detection (POFD) are calculated for the converted forecast. From the
         POD and POFD data, the area under the ROC curve is calculated. An additional
-        threshold of `np.inf` is added to the end of `thresholds` so that it always
+        threshold of ``np.inf`` is added to the end of ``thresholds`` so that it always
         has a value when POD=0 and POFD=0.
+
+        If ``threshold="auto"`` which is the default, then the thresholds used are the
+        ordered, unique forecast values.
 
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
@@ -104,8 +124,7 @@ def roc(  # pylint: disable=too-many-arguments
         >>> from scores.probability import roc_curve_data
         >>> fcst = xr.DataArray(np.random.rand(3, 4), dims=["time", "location"])
         >>> obs = xr.DataArray(np.random.randint(0, 2, size=(3, 4)), dims=["time", "location"])
-        >>> thresholds = np.arange(0, 1.01, 0.01)
-        >>> result = roc_curve_data(fcst, obs, thresholds)
+        >>> result = roc_curve_data(fcst, obs)
     """
     # If a slight performance improvement is needed, the checks can be skipped
     # when `check_args` is False.
@@ -113,11 +132,31 @@ def roc(  # pylint: disable=too-many-arguments
         if fcst.max().item() > 1 or fcst.min().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
-        if np.max(thresholds) > 1 or np.min(thresholds) < 0:  # type: ignore
+        if len(thresholds) == 0:  # type: ignore
+            raise ValueError("`thresholds` must not be empty")
+
+        if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):  # type: ignore
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
-        if not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
+        if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
+
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+
+    if isinstance(thresholds, str):
+        if thresholds == "auto":
+            thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
+            if len(thresholds) > 1000:  # type: ignore
+                warnings.warn(
+                    "Number of automatically generated thresholds is very large (>1000). "
+                    "If performance is slow, consider supplying thresholds manually as an "
+                    "iterable of floats.",
+                    UserWarning,
+                )
+        else:
+            # This is the one check that occurs when `check_args` is False to make
+            # the logic simpler
+            raise ValueError("If `thresholds` is a str, then it must be set to 'auto'")
 
     # Add an Inf (and 0 value if necessary to ensure that the full curve is produced
     thresholds = np.array(thresholds)
@@ -130,8 +169,7 @@ def roc(  # pylint: disable=too-many-arguments
     discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)  # type: ignore
 
     all_dims = set(fcst.dims).union(set(obs.dims))
-    final_reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
-    final_preserve_dims = all_dims - set(final_reduce_dims)  # type: ignore
+    final_preserve_dims = all_dims - set(reduce_dims)  # type: ignore
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
     final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
 

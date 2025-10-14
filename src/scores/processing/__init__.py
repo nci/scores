@@ -2,6 +2,7 @@
 Import the functions from the implementations into the public API
 """
 
+from scores.processing.aggregation import aggregate
 from scores.processing.block_bootstrap_impl import block_bootstrap
 from scores.processing.discretise import (
     binary_discretise,
@@ -20,4 +21,5 @@ __all__ = [
     "binary_discretise_proportion",
     "isotonic_fit",
     "block_bootstrap",
+    "aggregate",
 ]

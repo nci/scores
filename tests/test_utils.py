@@ -765,13 +765,13 @@ def test_invalid_numpy_operator():
     "weights,expect_error,expect_warning",
     [
         (utils_test_data.DA_WEIGHTS_GOOD, False, False),
-        (utils_test_data.DA_WEIGHTS_GOOD_SOME_NAN, False, False),
+        (utils_test_data.DA_WEIGHTS_GOOD_SOME_NAN, True, False),
         (utils_test_data.DA_WEIGHTS_GOOD_SOME_ZERO, False, False),
         (utils_test_data.DA_WEIGHTS_BAD_ALL_NAN, True, False),
         (utils_test_data.DA_WEIGHTS_BAD_ALL_ZERO, True, False),
         (utils_test_data.DA_WEIGHTS_BAD_ANY_NEG, True, False),
         (utils_test_data.DS_WEIGHTS_GOOD, False, False),
-        (utils_test_data.DS_WEIGHTS_GOOD_SOME_NAN, False, False),
+        (utils_test_data.DS_WEIGHTS_GOOD_SOME_NAN, True, False),
         (utils_test_data.DS_WEIGHTS_GOOD_SOME_ZERO, False, False),
         (utils_test_data.DS_WEIGHTS_BAD_ALL_NAN, True, False),
         (utils_test_data.DS_WEIGHTS_BAD_ALL_ZERO, True, False),
@@ -790,6 +790,7 @@ def test_check_weights(weights, expect_error, expect_warning):
         - conformant weights - at least one positive, rest can be >= 0
         - any one weight negative - should raise error
         - all NaNs - should raise error
+        - some NaNs - should raise error
         - all zeros - should raise error
         - should work for both dataarrays and datasets, with datasets even one weight
           being "bad" should throw an error or warning regardless of the variable.

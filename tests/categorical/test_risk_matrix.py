@@ -1,5 +1,5 @@
 """
-Contains unit tests for scores.emerging
+Contains unit tests for scores.categorical.risk_matrix_impl functions
 """
 
 try:
@@ -12,16 +12,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from scores.emerging.risk_matrix import (
+from scores.categorical.risk_matrix_impl import (
     _risk_matrix_score,
     _scaling_to_weight_matrix,
     matrix_weights_to_array,
     risk_matrix_score,
     weights_from_warning_scaling,
 )
-
-# mtd is used as the abbreviation in preparation for migration to multicategorical_test_data.py
-from tests.emerging import emerging_test_data as mtd
+from tests.categorical import risk_matrix_test_data as mtd
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,6 @@
 """
 This module supports the implementation of the CRPS scoring function, drawing from additional functions.
-The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into 
+The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into
 the probability module to be part of the probability API.
 """
 
@@ -15,6 +15,7 @@ import xarray as xr
 
 import scores.utils
 from scores.probability.checks import coords_increasing
+from scores.processing import aggregate
 from scores.processing.cdf import (
     add_thresholds,
     cdf_envelope,
@@ -273,8 +274,12 @@ def crps_cdf(
             by taking the mean.
         reduce_dims (Tuple[str]): dimensions to reduce in the output by taking the mean. All other dimensions are
             preserved.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         include_components (bool): if True, include the under and over forecast components of
             the score in the returned dataset.
 
@@ -368,12 +373,8 @@ def crps_cdf(
             threshold_dim,
             include_components=include_components,
         )
-
-    weighted = scores.functions.apply_weights(result, weights=weights)
-
     dims.remove(threshold_dim)  # type: ignore
-
-    result = weighted.mean(dim=dims)  # type: ignore
+    result = aggregate(result, reduce_dims=dims, weights=weights)
 
     return result
 
@@ -843,7 +844,12 @@ def crps_for_ensemble(
         method: Either "ecdf" or "fair".
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        weights: Weights for calculating a weighted mean of individual scores.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the CRPS with underforecast and overforecast
             penalties, as well as the forecast spread term (see description above).
 
@@ -908,7 +914,7 @@ def crps_for_ensemble(
         result = result.assign_coords(component=["total", "underforecast_penalty", "overforecast_penalty", "spread"])
 
     # apply weights and take means across specified dims
-    result = scores.functions.apply_weights(result, weights=weights).mean(dim=dims_for_mean)  # type: ignore
+    result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
 
     return result  # type: ignore
 
@@ -983,9 +989,12 @@ def tw_crps_for_ensemble(
         method: Either "ecdf" for the empirical twCRPS or "fair" for the Fair twCRPS.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        weights: Weights for calculating a weighted mean of individual scores. Note that
-            these weights are different to threshold weighting which is done by decision
-            threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the twCRPS with underforecast and overforecast
             penalties, as well as the forecast spread term. See :py:func:`scores.probability.crps_for_ensemble`
             for more details on the decomposition.
@@ -1086,9 +1095,12 @@ def tail_tw_crps_for_ensemble(
             for more details.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        weights: Weights for calculating a weighted mean of individual scores. Note that
-            these weights are different to threshold weighting which is done by decision
-            threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the twCRPS with underforecast and overforecast
             penalties, as well as the forecast spread term. See :py:func:`scores.probability.crps_for_ensemble`
             for more details on the decomposition.
@@ -1194,9 +1206,12 @@ def interval_tw_crps_for_ensemble(
             for more details.
         reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
         preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
-        weights: Weights for calculating a weighted mean of individual scores. Note that
-            these weights are different to threshold weighting which is done by decision
-            threshold.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         include_components: If True, returns the twCRPS with underforecast and overforecast
             penalties, as well as the forecast spread term. See :py:func:`scores.probability.crps_for_ensemble`
             for more details on the decomposition.

@@ -9,8 +9,13 @@ import xarray as xr
 
 import scores.functions
 import scores.utils
-from scores.processing import broadcast_and_match_nan
-from scores.typing import FlexibleArrayType, FlexibleDimensionTypes, XarrayLike
+from scores.processing import aggregate, broadcast_and_match_nan
+from scores.typing import (
+    FlexibleArrayType,
+    FlexibleDimensionTypes,
+    XarrayLike,
+    is_xarraylike,
+)
 
 
 def mse(
@@ -45,8 +50,12 @@ def mse(
             the squared error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -60,25 +69,29 @@ def mse(
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
     """
+
+    if is_xarraylike(fcst):
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
     if is_angular:
         error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
         error = fcst - obs  # type: ignore
     squared = error * error
-    squared = scores.functions.apply_weights(squared, weights=weights)  # type: ignore
 
-    if preserve_dims or reduce_dims:
-        reduce_dims = scores.utils.gather_dimensions(
-            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-        )
-
-    if reduce_dims is not None:
-        _mse = squared.mean(dim=reduce_dims)  # type: ignore
+    if is_xarraylike(squared):
+        result = aggregate(squared, reduce_dims=reduce_dims, weights=weights)
+    elif weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
     else:
-        _mse = squared.mean()
+        result = squared.mean()
 
-    return _mse
+    return result
 
 
 def rmse(
@@ -112,8 +125,12 @@ def rmse(
             the absolute error at each point (i.e. single-value comparison
             against observed), and the forecast and observed dimensions
             must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -126,6 +143,8 @@ def rmse(
             error for the supplied data. All dimensions will be reduced.
             Otherwise: Returns an object representing the root mean squared error,
             reduced along the relevant dimensions and weighted appropriately.
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
@@ -163,8 +182,12 @@ def mae(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
@@ -178,26 +201,29 @@ def mae(
 
         Alternatively, an xarray structure with dimensions preserved as appropriate
         containing the score along reduced dimensions
-    """
-    if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
-    else:
-        error = fcst - obs  # type: ignore
-    ae = abs(error)
-    ae = scores.functions.apply_weights(ae, weights=weights)  # type: ignore
 
-    if preserve_dims is not None or reduce_dims is not None:
+    Raises:
+        ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+    """
+
+    if is_xarraylike(fcst):
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
 
-    if reduce_dims is not None:
-        _ae = ae.mean(dim=reduce_dims)
+    if is_angular:
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
     else:
-        _ae = ae.mean()
+        error = abs(fcst - obs)  # type: ignore
 
-    # Returns unhinted types if nonstandard types passed in, but this is useful
-    return _ae  # type: ignore
+    if is_xarraylike(error):
+        result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    elif weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
+    else:
+        result = error.mean()
+
+    return result
 
 
 def mean_error(
@@ -232,8 +258,12 @@ def mean_error(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the mean error of a forecast.
@@ -274,20 +304,25 @@ def additive_bias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the additive bias of a forecast.
 
     """
     # Note - mean error call this function
-    error = fcst - obs
-    score = scores.functions.apply_weights(error, weights=weights)
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    score = score.mean(dim=reduce_dims)
+    error = fcst - obs
+
+    score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+
     return score  # type: ignore
 
 
@@ -324,8 +359,12 @@ def multiplicative_bias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the multiplicative bias of a forecast.
@@ -334,13 +373,13 @@ def multiplicative_bias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
-    multi_bias = fcst.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    multi_bias = aggregate(fcst, reduce_dims=reduce_dims, weights=weights) / aggregate(
+        obs, reduce_dims=reduce_dims, weights=weights
+    )
+
     return multi_bias
 
 
@@ -381,8 +420,12 @@ def pbias(
             as the forecast, and the errors will be the error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the percent bias of a forecast.
@@ -409,16 +452,173 @@ def pbias(
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    fcst = scores.functions.apply_weights(fcst, weights=weights)
-    obs = scores.functions.apply_weights(obs, weights=weights)
-
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
     error = fcst - obs
 
-    _pbias = 100 * error.mean(dim=reduce_dims) / obs.mean(dim=reduce_dims)
+    numerator = 100 * aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    denominator = aggregate(obs, reduce_dims=reduce_dims, weights=weights)
+    _pbias = numerator / denominator
     return _pbias
+
+
+def percent_within_x(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    threshold: float,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    is_angular: Optional[bool] = False,
+    decimals: Optional[int] = None,
+    is_inclusive: Optional[bool] = True,
+) -> XarrayLike:
+    """
+
+    Computes the proportion of forecasts within a specified absolute tolerance of the observations.
+
+    This score calculates the percentage of forecast values that are within a specified threshold
+    (plus an optional tolerance) of the observed values. This metric is particularly useful when
+    evaluating how often a forecast falls within an acceptable error band, regardless of direction.
+
+    The general formulations are:
+
+    .. math::
+
+        \\text{Percent within X (exclusive)} = 100 \\cdot
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| < \\tau\\right)}
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
+
+    .. math::
+
+        \\text{Percent within X (inclusive)} = 100 \\cdot
+        \\frac{\\sum_{i=1}^{N} \\mathbf{1}\\left(|x_i - y_i| \\leq \\tau\\right)}
+         {\\sum_{i=1}^{N} \\mathbf{1}_{\\text{valid}}}
+
+    where:
+        - :math:`x_i` is the forecast value at index :math:`i`
+        - :math:`y_i` is the observed value at index :math:`i`
+        - :math:`\\tau` is the absolute error threshold
+        - :math:`\\mathbf{1}(\\cdot)` is the indicator function
+        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not missing (NaN), 0 otherwise
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        threshold: The main threshold to test closeness against.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the percent within X . All other dimensions will be
+            preserved. Only one of reduce_dims and preserve_dims can be specified.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the percent within X. All other dimensions will be
+            reduced. Only one of reduce_dims and preserve_dims can be specified.
+        is_angular: If True, uses angular distance in degrees.
+        decimals: A way to avoid floating-point precision issues.
+            Absolute errors are rounded to this many digits before threshold
+            calculations.
+        is_inclusive: Whether to treat the condition as inclusive (<=)
+            or exclusive (<).
+
+    Returns:
+        Percent of forecasts within tolerance for each preserved dimension.
+
+    .. important::
+        This metric can incentivise hedging (such as introducing biases to maximise one's score).
+        See the tutorial for more information.
+
+    .. note::
+        - The result is bounded in `[0, 100]`.
+        - NaNs in forecasts or observations are excluded.
+        - If total valid forecast-observation pairs are zero, output is `NaN`.
+
+    Examples:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.standard_impl import percent_within_x
+        >>> obs_raw = np.array(
+        ...     [
+        ...         [[1,2,3], [4,5,6]],
+        ...         [[3,2,1], [6,5,4]],
+        ...         [[3,2,5], [2,2,6]],
+        ...         [[5,2,3], [4,-1,4]],
+        ...     ]
+        ...
+        ... )  # dimension lengths: x=4, y=2, t=3
+        >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
+        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
+
+        >>> # Example 1:
+        >>> # percent of forecasts with less than or equal to 0.5 absolute error
+        >>> # reduce over t - time - should produce an xy-grid (4 by 2)
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["t"])
+        <xarray.DataArray (x: 4, y: 2)> Size: 64B
+        array([[66.66666667,  0.        ],
+               [66.66666667,  0.        ],
+               [33.33333333, 66.66666667],
+               [33.33333333, 33.33333333]])
+        Dimensions without coordinates: x, y
+
+        >>> # Example 2:
+        >>> # percent of forecasts with less than or equal to 0.5 absolute error
+        >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["x","y"])
+        <xarray.DataArray (t: 3)> Size: 24B
+        array([25., 75., 12.5])
+        Dimensions without coordinates: t
+
+        >>> # Example 3:
+        >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
+        >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=False, reduce_dims=["x","y"])
+        <xarray.DataArray (t: 3)> Size: 24B
+        array([12.5., 12.5., 12.5])
+        Dimensions without coordinates: t
+
+        >>> # Example 4:
+        >>> # Controlling floating-point precision issues
+        >>> np.set_printoptions(precision=17) # make floating-point precision issues visible
+        >>> obs = xr.DataArray([0.1 + 0.2], dims=["t"])
+        >>> print(f'obs {obs.values}')
+        obs [0.30000000000000004]
+        >>> fcst = obs + 0.3
+        >>> print(f'fcst {fcst.values}')
+        fcst [0.6000000000000001]
+        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=20)
+        >>> print(f'incorrectly creating a penalty: {unrounded.values}')
+        incorrectly ignoring a success: 0.0
+        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=5)
+        >>> print(f'correctly recognising a success: {rounded.values}')
+        correctly recognising a success: 100.0
+
+    """
+    reduce_dims = scores.utils.gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
+
+    if is_angular:
+        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+    else:
+        error = fcst - obs  # type: ignore
+
+    abs_error = abs(error)
+    if decimals:
+        abs_error = abs_error.round(decimals=decimals)
+
+    if is_inclusive:
+        condition = abs_error <= threshold
+    else:
+        condition = abs_error < threshold
+
+    count_within = condition.sum(dim=reduce_dims)
+
+    valid_mask = fcst.notnull() & obs.notnull()
+
+    total = valid_mask.sum(dim=reduce_dims)
+
+    _percent_within_x = 100 * count_within / total
+
+    return _percent_within_x
 
 
 def kge(
@@ -449,14 +649,15 @@ def kge(
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
     where:
-        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as defined in :py:func:`scores.continuous.correlation.pearsonr`
+        - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as
+          defined in :py:func:`scores.continuous.correlation.pearsonr`
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
         - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
-            the variability term :math:`\\alpha` and the bias term :math:`\\beta`
+          the variability term :math:`\\alpha` and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.

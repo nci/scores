@@ -5,13 +5,12 @@ This module contains methods related to the Brier score
 import operator
 from collections.abc import Sequence
 from numbers import Real
-from typing import Callable, Optional, cast
+from typing import Callable, Optional
 
 import xarray as xr
 
 from scores.continuous import mse
-from scores.functions import apply_weights
-from scores.processing import binary_discretise
+from scores.processing import aggregate, binary_discretise
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import check_binary, gather_dimensions
 
@@ -46,8 +45,12 @@ def brier_score(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom).
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         check_args: will perform some tests on the data if set to True.
     Raises:
         ValueError: if ``fcst`` contains non-nan values outside of the range [0, 1]
@@ -138,8 +141,12 @@ def brier_score_for_ensemble(
             as the forecast, and the errors will be the absolute error at each
             point (i.e. single-value comparison against observed), and the
             forecast and observed dimensions must match precisely.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude)
-            when calculating the mean score across specified dimensions via ``reduce_dims`` or ``preserve_dims``.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         fair_correction: Whether or not to apply the fair Brier score correction. Default is True.
         event_threshold_operator: The mode to use to define an event relative to a supplied threshold.
             Default is ``operator.ge``, which means that an event occurs
@@ -235,6 +242,6 @@ def brier_score_for_ensemble(
         result -= fair_correction
 
     # apply weights and take means across specified dims
-    result = apply_weights(result, weights=weights).mean(dim=dims_for_mean)
+    result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
 
     return result  # type: ignore

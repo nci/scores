@@ -6,8 +6,7 @@ from typing import Optional
 
 import xarray as xr
 
-from scores.functions import apply_weights
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import check_dims, gather_dimensions
 
@@ -59,9 +58,12 @@ def quantile_interval_score(  # pylint: disable=R0914
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom) when aggregating the mean score across dimensions. Alternatively,
-            it could be used for masking data.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         A Dataset with the dimensions specified in ``dims``.
@@ -101,10 +103,11 @@ def quantile_interval_score(  # pylint: disable=R0914
     check_dims(fcst_upper_qtile, fcst_lower_qtile.dims, mode="equal")
     specified_dims = reduce_dims or preserve_dims
     # check requested dims are a subset of fcst_lower_qtile (or fcst_upper_qtile) dimensions
-    if specified_dims is not None:
+    if specified_dims is not None and specified_dims != "all":
         check_dims(xr_data=fcst_lower_qtile, expected_dims=specified_dims, mode="superset")
     # check obs dimensions are a subset of fcst_lower_qtile (or fcst_upper_qtile) dimensions
     check_dims(xr_data=obs, expected_dims=fcst_lower_qtile.dims, mode="subset")  # type: ignore
+    reduce_dims = gather_dimensions(fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
     if (fcst_lower_qtile > fcst_upper_qtile).any():
         raise ValueError("Input does not satisfy fcst_lower_qtile < fcst_upper_qtile condition.")
     fcst_lower_qtile, fcst_upper_qtile, obs = broadcast_and_match_nan(fcst_lower_qtile, fcst_upper_qtile, obs)
@@ -121,9 +124,8 @@ def quantile_interval_score(  # pylint: disable=R0914
         "total": total_score,
     }
     result = xr.Dataset(components)
-    reduce_dims = gather_dimensions(fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
-    results = apply_weights(result, weights=weights)
-    score = results.mean(dim=reduce_dims)
+    score = aggregate(result, weights=weights, reduce_dims=reduce_dims)
+
     return score  # type: ignore
 
 
@@ -175,9 +177,12 @@ def interval_score(
             forecast and observed dimensions must match precisely. Only one of ``reduce_dims``
             and ``preserve_dims`` can be supplied. The default behaviour if neither are supplied
             is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom) when aggregating the mean score across dimensions. Alternatively,
-            it could be used for masking data.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         A Dataset with the dimensions specified in ``dims``.

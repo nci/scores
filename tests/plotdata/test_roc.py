@@ -122,6 +122,17 @@ def test_roc_curve_auc():
     xr.testing.assert_allclose(result_b.AUC, xr.DataArray(0.75))
 
 
+def test_roc_auto_threshold():
+    fcst = xr.DataArray(data=[0.1, 0.4, 0.3, 0.9], dims="time")
+    obs = xr.DataArray(data=[0, 0, 1, 1], dims="time")
+    # Test with check_args=False
+    result_no_check = roc(fcst, obs, check_args=False)
+    xr.testing.assert_equal(result_no_check, rtd.EXP_ROC_AUTO)
+    # Test with check_args=True
+    result_check = roc(fcst, obs, check_args=True)
+    xr.testing.assert_equal(result_check, rtd.EXP_ROC_AUTO)
+
+
 def test_roc_dask():
     """tests that roc works with dask"""
 
@@ -204,6 +215,24 @@ def test_roc_dask():
             ValueError,
             "`thresholds` is not monotonic increasing between 0 and 1",
         ),
+        # threshold arg is a str that is not "auto"
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            "manual",
+            None,
+            ValueError,
+            "If `thresholds` is a str, then it must be set to 'auto'",
+        ),
+        # threshold arg is an empty iterable
+        (
+            rtd.FCST_2X3X2_WITH_NAN,
+            rtd.OBS_3X3_WITH_NAN,
+            [],
+            None,
+            ValueError,
+            "`thresholds` must not be empty",
+        ),
     ],
 )
 def test_roc_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet):
@@ -213,3 +242,20 @@ def test_roc_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg
     with pytest.raises(error_class) as exc:
         roc(fcst, obs, thresholds, preserve_dims=preserve_dims)
     assert error_msg_snippet in str(exc.value)
+
+
+def test_roc_warns():
+    """
+    Tests that roc raises the correct warning when thresholds are automatically
+    generated and the number of thresholds is large.
+    """
+    fcst = xr.DataArray(data=np.linspace(0, 1, 1001), dims="time")
+    obs = fcst * 0
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "Number of automatically generated thresholds is very large \\(>1000\\). "
+            "If performance is slow, consider supplying thresholds manually as an iterable of floats."
+        ),
+    ):
+        roc(fcst, obs)

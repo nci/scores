@@ -9,8 +9,7 @@ from typing import Optional, Union
 import numpy as np
 import xarray as xr
 
-from scores.functions import apply_weights
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import check_dims, gather_dimensions
 
@@ -71,8 +70,12 @@ def firm(  # pylint: disable=too-many-arguments
             against observed), and the forecast and observed dimensions
             must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area, by latitude,
-            by population, custom)
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
         threshold_assignment: Specifies whether the intervals defining the categories are
             left or right closed. That is whether the decision threshold is included in
             the upper (left closed) or lower (right closed) category. Defaults to "lower".
@@ -146,8 +149,11 @@ def firm(  # pylint: disable=too-many-arguments
         total_score.append(score)
     summed_score = sum(total_score)
 
-    summed_score = apply_weights(summed_score, weights=weights)  # type: ignore
-    score = summed_score.mean(dim=reduce_dims)  # type: ignore
+    score = aggregate(
+        summed_score,
+        reduce_dims=reduce_dims,
+        weights=weights,
+    )
 
     return score  # type: ignore
 
@@ -367,7 +373,12 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
             against observed), and the forecast and observed dimensions
             must match precisely. Only one of `reduce_dims` and `preserve_dims` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
-        weights: Optionally provide an array for weighted averaging (e.g. by area).
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, users can choose to replace NaN values in weights by calling ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray DataArray containing the SEEPS score.
@@ -448,7 +459,6 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     if mask_clim_extremes:
         result = result.where(np.logical_and(prob_dry <= upper_masked_value, prob_dry >= lower_masked_value))
 
-    result = apply_weights(result, weights=weights)
-    result = result.mean(dim=reduce_dims)
+    result = aggregate(result, reduce_dims=reduce_dims, weights=weights)
 
     return result

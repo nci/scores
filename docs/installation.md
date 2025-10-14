@@ -56,7 +56,7 @@ Installs:
 
 ```bash
 # From a local checkout of the Git repository
-pip install -e .[all]
+pip install -e ".[all]"
 ```
 
 ### 2. "Minimal" Dependencies (Mathematical API Functions Only)
@@ -91,7 +91,7 @@ Installs:
 
 ```bash
 # From a local checkout of the Git repository
-pip install .[tutorial]
+pip install ".[tutorial]"
 ```
 
 ### 4. "Maintainer" Dependencies
@@ -106,7 +106,7 @@ Installs:
 
 ```bash
 # From a local checkout of the Git repository
-pip install -e .[maintainer]
+pip install -e ".[maintainer]"
 ```
 
 ## Jupyter Notebook - Advanced Installation Option

@@ -24,6 +24,7 @@
 .. autofunction:: scores.continuous.correlation.spearmanr
 .. autofunction:: scores.continuous.multiplicative_bias
 .. autofunction:: scores.continuous.pbias
+.. autofunction:: scores.continuous.percent_within_x
 .. autofunction:: scores.continuous.kge
 .. autofunction:: scores.continuous.nse
 .. autofunction:: scores.continuous.isotonic_fit
@@ -71,6 +72,9 @@
     :members:
 .. autoclass:: scores.categorical.EventOperator
     :members:
+.. autofunction:: scores.categorical.risk_matrix_score
+.. autofunction:: scores.categorical.matrix_weights_to_array
+.. autofunction:: scores.categorical.weights_from_warning_scaling
 .. autofunction:: scores.categorical.seeps
 ```
 
@@ -91,6 +95,7 @@
 
 ## scores.processing
 ```{eval-rst}
+.. autofunction:: scores.processing.aggregate
 .. autofunction:: scores.processing.block_bootstrap
 .. autofunction:: scores.processing.isotonic_fit
 .. autofunction:: scores.processing.broadcast_and_match_nan
@@ -123,9 +128,9 @@
 .. autofunction:: scores.pandas.continuous.mae
 ```
 
+<!--
 ## scores.emerging
 ```{eval-rst}
-.. autofunction:: scores.emerging.risk_matrix_score
-.. autofunction:: scores.emerging.matrix_weights_to_array
-.. autofunction:: scores.emerging.weights_from_warning_scaling
+.. autofunction:: scores.emerging.name_of_emerging_score
 ```
+-->
