@@ -14,7 +14,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- Risk matrix score - warning scaling to weight array: `scores.categorical.weights_from_warning_scaling`.  
 	***Note:** while removing the functions from `scores.emerging` is technically a breaking change, breaking changes that only impact the "emerging" section of the API do not trigger major releases. This is because the "emerging" section of the API is designed to hold metrics while they are undergoing peer review and it is expected they will be moved out of "emerging" once peer review has concluded.*  
 	See [PR #904](https://github.com/nci/scores/pull/904).
+- Updated the weighting method used by all `scores` functions that allow the user to supply weights. The updated weighting method normalises the user-supplied weights rather than applying them directly. While both approaches can be valid, the revised approach is more in keeping with general expectations and is conistent with the default approach taken by other libraries. As a part of this change, users can no longer supply weights that contain NaNs (zeroes may be used instead where appropriate). The ["Introduction to weighting and masking" tutorial](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html) has been updated and substantially expanded to explain what the weighting does mathematically. See [PR #899](https://github.com/nci/scores/pull/899).
 - Added optional automatic generation of thresholds for the receiver (relative) operating characteristic (ROC) curve (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
+
 
 ### Bug Fixes
 
@@ -23,6 +25,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ### Documentation
 
 - Added "Percent Within X" tutorial. See [PR #865](https://github.com/nci/scores/pull/865). 
+- Substantially updated and expanded the "Introduction to weighting and masking" tutorial, following changes to the weighting method used by all `scores` functions that allow the user to supply weights. The updated and expanded tutorial explains what the weighting does mathematically. See [PR #899](https://github.com/nci/scores/pull/899).
 - Updated the "Quantile-Quantile (Q-Q) Plots for Comparing Forecasts and Observations" tutorial so that the plots render in Read the Docs. See [PR #883](https://github.com/nci/scores/pull/883).
 - Updated the description of the second figure in the "Threshold Weighted Continuous Ranked Probability Score (twCRPS) for ensembles" tutorial. See [PR #897](https://github.com/nci/scores/pull/897).
 - Updated multiple sections of the documentation following the risk matrix score moving from `scores.emerging` to `scores.categorical`, including:
@@ -30,6 +33,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- updating the tutorial with the new `categorical` methods, and
 	- updating references in several sections of the documentation, following the publication of [Taggart & Wilke (2025)](https://doi.org/10.5194/nhess-25-2657-2025).  
 	See [PR #904](https://github.com/nci/scores/pull/904).
+- In the README, "Detailed Installation Guide" and "Contributing Guide", updated pip install commands to use quotation marks where square brackets are used to specify optional dependencies. This is to ensure compatibility with zsh (the default on macOS) while still working as expected on bash. See [PR #917](https://github.com/nci/scores/pull/917).
 - Added thumbnail images to multiple entries in the tutorial gallery. See [PR #874](https://github.com/nci/scores/pull/874), [PR #875](https://github.com/nci/scores/pull/875), [PR #877](https://github.com/nci/scores/pull/877), [PR #879](https://github.com/nci/scores/pull/879), [PR #880](https://github.com/nci/scores/pull/880), [PR #881](https://github.com/nci/scores/pull/881) and [PR #884](https://github.com/nci/scores/pull/884).
 
 ### Internal Changes
