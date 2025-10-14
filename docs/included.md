@@ -841,9 +841,9 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - API
   - Tutorial
   - Reference(s)
-* - Risk Matrix Score has moved to the [categorical](#categorical) area following publication
-  - -
-  - -
-  - -
+* - Risk Matrix Score has moved to the [categorical](#categorical) area following peer-reviewed publication
+  - &mdash;
+  - &mdash;
+  - &mdash;
 ```
 
