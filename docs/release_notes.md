@@ -17,7 +17,6 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Updated the weighting method used by all `scores` functions that allow the user to supply weights. The updated weighting method normalises the user-supplied weights rather than applying them directly. While both approaches can be valid, the revised approach is more in keeping with general expectations and is conistent with the default approach taken by other libraries. As a part of this change, users can no longer supply weights that contain NaNs (zeroes may be used instead where appropriate). The ["Introduction to weighting and masking" tutorial](https://scores.readthedocs.io/en/stable/tutorials/Weighting_Results.html) has been updated and substantially expanded to explain what the weighting does mathematically. See [PR #899](https://github.com/nci/scores/pull/899).
 - Added optional automatic generation of thresholds for the receiver (relative) operating characteristic (ROC) curve (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
 
-
 ### Bug Fixes
 
 - Updated `scores.continuous.quantile_interval_score` so it now recognises `preserve_dims='all'`. Beforehand, it was not recognising the special case of `preserve_dims='all'` and was raising an error unless a list of dimensions was supplied. (*Note:* the score calculations were not incorrect, it was only that `preserve_dims='all'` was not recognised.) See [PR #893](https://github.com/nci/scores/pull/893).
@@ -33,6 +32,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- updating the tutorial with the new `categorical` methods, and
 	- updating references in several sections of the documentation, following the publication of [Taggart & Wilke (2025)](https://doi.org/10.5194/nhess-25-2657-2025).  
 	See [PR #904](https://github.com/nci/scores/pull/904).
+- Updated several tutorials to subtract the `LEAD_TIME` Timedelta from the base times in the forecast data to make the forecast and observation data line up correctly. See [PR #920](https://github.com/nci/scores/pull/920).
 - In the README, "Detailed Installation Guide" and "Contributing Guide", updated pip install commands to use quotation marks where square brackets are used to specify optional dependencies. This is to ensure compatibility with zsh (the default on macOS) while still working as expected on bash. See [PR #917](https://github.com/nci/scores/pull/917).
 - Added thumbnail images to multiple entries in the tutorial gallery. See [PR #874](https://github.com/nci/scores/pull/874), [PR #875](https://github.com/nci/scores/pull/875), [PR #877](https://github.com/nci/scores/pull/877), [PR #879](https://github.com/nci/scores/pull/879), [PR #880](https://github.com/nci/scores/pull/880), [PR #881](https://github.com/nci/scores/pull/881) and [PR #884](https://github.com/nci/scores/pull/884).
 
