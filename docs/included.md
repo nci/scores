@@ -827,7 +827,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
 ```
 
-<!--
+
 ## Emerging
 
 ```{Caution}
@@ -841,9 +841,9 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - API
   - Tutorial
   - Reference(s)
-* - Enter details of emerging score here
-  -
-  -
-  -
+* - Risk Matrix Score has moved to the [categorical](#categorical) area following publication
+  - -
+  - -
+  - -
 ```
--->
+

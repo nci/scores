@@ -198,10 +198,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
             .. code-block :: python
 
-                    Positive  Negative Total
-            Positive       5       1       6
-            Negative       1      11       12
-            Total          6      12       18
+                        Positive  Negative Total
+                Positive       5       1       6
+                Negative       1      11       12
+                Total          6      12       18
+
         """
 
         table = self.xr_table
