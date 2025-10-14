@@ -6,8 +6,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
-- Added automatic generation of thresholds to receiver (relative) operating characteristic (ROC) (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
-- Updated how receiver (relative) operating characteristic (ROC) (`scores.probability.roc_curve_data`) computes thresholds. By default, when `thresholds = "auto"`, the ROC threshholds are automatically generated. Otherwise, you can supply an iterable of floats with monotonic increasing values between 0 and 1, which are the thresholds at and above which to convert the probabilistic forecast to a value of 1 (an 'event'). See [PR #882](https://github.com/nci/scores/pull/882). 
+- Added optional automatic generation of thresholds to receiver (relative) operating characteristic (ROC) (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
 
 ### Bug Fixes
 
