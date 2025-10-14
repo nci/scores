@@ -6,17 +6,24 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
-- Added optional automatic generation of thresholds to receiver (relative) operating characteristic (ROC) (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
+- Added a new metric:
+	- Percent within X: `scores.continuous.percent_within_x`. See [PR #865](https://github.com/nci/scores/pull/865).
+- Added optional automatic generation of thresholds for the receiver (relative) operating characteristic (ROC) curve (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
 
 ### Bug Fixes
 
+- Updated `scores.continuous.quantile_interval_score` so it now recognises `preserve_dims='all'`. Beforehand, it was not recognising the special case of `preserve_dims='all'` and was raising an error unless a list of dimensions was supplied. (*Note:* the score calculations were not incorrect, it was only that 'all' was not recognised.) See [PR #893](https://github.com/nci/scores/pull/893).
+
 ### Documentation
 
+- Added "Percent Within X" tutorial. See [PR #865](https://github.com/nci/scores/pull/865).  
 - Updated the "Quantile-Quantile (Q-Q) Plots for Comparing Forecasts and Observations" tutorial so that the plots render in Read the Docs. See [PR #883](https://github.com/nci/scores/pull/883).
 - Updated the description of the second figure in the "Threshold Weighted Continuous Ranked Probability Score (twCRPS) for ensembles" tutorial. See [PR #897](https://github.com/nci/scores/pull/897).
 - Added thumbnail images to multiple entries in the tutorial gallery. See [PR #874](https://github.com/nci/scores/pull/874), [PR #875](https://github.com/nci/scores/pull/875), [PR #877](https://github.com/nci/scores/pull/877), [PR #879](https://github.com/nci/scores/pull/879), [PR #880](https://github.com/nci/scores/pull/880), [PR #881](https://github.com/nci/scores/pull/881) and [PR #884](https://github.com/nci/scores/pull/884).
 
 ### Internal Changes
+
+- In multiple tutorials, added the keyword argument `decode_timedelta=True` to `xarray.open_dataset` for the downloaded files `forecast_grid.nc` and `analysis_grid.nc`. See [PR #894](https://github.com/nci/scores/pull/894).
 
 ### Contributors to this Release
 
