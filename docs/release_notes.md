@@ -1,5 +1,29 @@
 # Release Notes (What's New)
 
+## Version 2.3.0 (October 14, 2025)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.2.0...2.3.0). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+- Added automatic generation of thresholds to receiver (relative) operating characteristic (ROC) (`scores.probability.roc_curve_data`). See [PR #882](https://github.com/nci/scores/pull/882). 
+- Updated how receiver (relative) operating characteristic (ROC) (`scores.probability.roc_curve_data`) computes thresholds. By default, when `thresholds = "auto"`, the ROC threshholds are automatically generated. Otherwise, you can supply an iterable of floats with monotonic increasing values between 0 and 1, which are the thresholds at and above which to convert the probabilistic forecast to a value of 1 (an 'event'). See [PR #882](https://github.com/nci/scores/pull/882). 
+
+### Bug Fixes
+
+### Documentation
+
+- Updated the "Quantile-Quantile (Q-Q) Plots for Comparing Forecasts and Observations" tutorial so that the plots render in Read the Docs. See [PR #883](https://github.com/nci/scores/pull/883).
+- Added thumbnail images to multiple entries in the tutorial gallery. See [PR #874](https://github.com/nci/scores/pull/874), [PR #875](https://github.com/nci/scores/pull/875), [PR #877](https://github.com/nci/scores/pull/877), [PR #879](https://github.com/nci/scores/pull/879), [PR #880](https://github.com/nci/scores/pull/880), [PR #881](https://github.com/nci/scores/pull/881) and [PR #884](https://github.com/nci/scores/pull/884).
+
+### Internal Changes
+
+### Contributors to this Release
+
+Thomas C. Pagano* ([@thomaspagano](https://github.com/thomaspagano)), Paul R. Smith* ([@prs247au](https://github.com/prs247au)), J. Smallwood* ([@jdgsmallwood](https://github.com/jdgsmallwood)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.2.0 (July 26, 2025)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.1.0...2.2.0). Below are the changes we think users may wish to be aware of.
