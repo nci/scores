@@ -536,7 +536,7 @@ def cra_2d(
 
     mse_total = calc_mse(fcst_blob, obs_blob)
 
-    if mse_total is None:  # means that original fcst and obs blobs do not overlap
+    if np.isnan(mse_total):
         return None
 
     [shifted_fcst, delta_x, delta_y] = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
@@ -635,17 +635,14 @@ def cra(
     results = {metric: [] for metric in metrics}
 
     # Iterate over slices
-    for key, fcst_slice in fcst.groupby(group_dim):
-        # Extract matching slice from obs
-        time_val = key  # fcst_slice.coords[group_dim].item()
+    for key, fcst_slice in fcst.groupby(group_dim, squeeze=False):
+        time_val = key
 
         # Ensure time_val is a datetime64[ns]
         if isinstance(time_val, (int, np.integer)):
-            time_val = np.datetime64(time_val, "ns")
+            time_val = np.datetime64(int(time_val), "ns")
         elif isinstance(time_val, str):
             time_val = np.datetime64(time_val)
-
-        # time_val = np.datetime64(fcst_slice.coords[group_dim].item(), 'ns')
         obs_slice = obs.sel({group_dim: time_val}, drop=False)
 
         # Remove singleton time dimension
