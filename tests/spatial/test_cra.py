@@ -1,3 +1,6 @@
+# pylint: disable=redefined-outer-name
+# pylint: disable=too-many-locals
+# pylint: disable=broad-exception-caught
 """Unit tests for scores.spatial.cra_impl
 
 These tests validate the CRA (Contiguous Rain Area) metric implementation, including
@@ -16,7 +19,6 @@ from scores.spatial.cra_impl import (
     cra,
     cra_2d,
     generate_largest_rain_area_2d,
-    shifted_mse,
     translate_forecast_region,
 )
 from src.scores.spatial import cra_impl
@@ -53,20 +55,21 @@ def sample_data_3d():
 
 
 def test_cra_basic_output_type(sample_data_3d):
+    """Test that CRA returns a dictionary for 3D input."""
     forecast, analysis = sample_data_3d
     result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude", reduce_dims=["time"])
     assert isinstance(result, dict)
 
 
 def test_cra_2d_basic_output_type(sample_data_2d):
-    """Test that CRA returns a dictionary for valid input."""
+    """Test that CRA 2D returns a dictionary for valid input."""
     forecast, analysis = sample_data_2d
     result = cra_2d(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
     assert isinstance(result, dict), "CRA output should be a dictionary"
 
 
 def test_cra_with_nans(sample_data_3d):
-    """Test CRA handles NaNs in the forecast field ok"""
+    """Test CRA handles NaNs in the forecast without errors"""
     forecast, analysis = sample_data_3d
     forecast[0, 0] = np.nan  # Introduce a NaN
     result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
@@ -119,7 +122,7 @@ def test_cra_invalid_input():
 
 
 def test_cra_2d_invalid_input_types():
-    """Test cra_2d raises TypeError for non-xarray input."""
+    """Test CRA 2D raises TypeError for invalid input types."""
     obs = xr.DataArray(np.random.rand(10, 10), dims=["y", "x"])
     with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
         cra_2d("invalid", obs, threshold=5.0, y_name="y", x_name="x")
@@ -136,6 +139,7 @@ def test_cra_mismatched_shapes():
 
     with pytest.raises(ValueError) as excinfo:
         cra_2d(fcst, obs, THRESHOLD, y_name="latitude", x_name="longitude")
+    assert "fcst and obs must have the same shape" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
@@ -191,7 +195,7 @@ def test_cra_invalid_inputs(fcst, obs, expected_error, match_text):
     ],
 )
 def test_cra_all_nan_inputs_warns(fcst, obs, caplog):
-    """Test CRA logs a warning when forecast or observation is all NaNs."""
+    """Test CRA logs warning when forecast or observation is all NaNs."""
     with caplog.at_level("INFO"):
         result = cra_2d(fcst, obs, THRESHOLD, y_name="latitude", x_name="longitude")
     assert "Less than 10 points meet the condition." in caplog.text
@@ -214,13 +218,12 @@ def test_cra_2d_min_points_threshold():
 
 # Helper to create a simple 2D DataArray
 def create_array(shape=(10, 10), value=1.0, dims=("y", "x")):
+    """Create an array"""
     return xr.DataArray(np.full(shape, value), dims=dims)
 
 
-# Test: small blobs below min_points
-
-
 def test_small_blobs():
+    """Test CRA handles small blobs correctly"""
     fcst = xr.DataArray(np.zeros((10, 10), dtype=float), dims=["y", "x"])
     obs = xr.DataArray(np.zeros((10, 10), dtype=float), dims=["y", "x"])
     fcst[0, 0] = 10.0
@@ -234,7 +237,7 @@ def test_small_blobs():
 
 
 def test_largest_blob_too_small_post_extraction():
-
+    """Test CRA returns None when largest blob too small"""
     fcst = xr.DataArray(np.zeros((10, 10), dtype=float), dims=["y", "x"])
     obs = xr.DataArray(np.zeros((10, 10), dtype=float), dims=["y", "x"])
 
@@ -251,6 +254,7 @@ def test_largest_blob_too_small_post_extraction():
 
 
 def test_small_blobs_min_points_filter():
+    """Test CRA filters small blobs below min_points threshold."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     fcst[0:2, 0:2] = 10  # 4 points
@@ -259,15 +263,15 @@ def test_small_blobs_min_points_filter():
     assert fcst_blob is None and obs_blob is None
 
 
-# Test: empty array for bounding box centre
 def test_empty_bounding_box():
+    """Test bounding box center returns NaNs for empty array"""
     arr = create_array(value=0.0)
     centre = calc_bounding_box_centre(arr)
     assert np.isnan(centre[0]) and np.isnan(centre[1])
 
 
-# Test: translate_forecast_region with all NaNs in obs
 def test_translate_with_nan_obs():
+    """Test translate_forecast_region handles NaN obs"""
     fcst = create_array()
     obs = create_array(value=np.nan)
     shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=300)
@@ -275,14 +279,15 @@ def test_translate_with_nan_obs():
 
 
 def test_translate_exceeds_max_distance_strict():
+    """Test translate_forecast_region rejects large shifts"""
     fcst = create_array()
     obs = fcst.copy().shift(x=30)  # large shift
     shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1)
     assert shifted is None and dx is None and dy is None
 
 
-# Test: shift exceeds max_distance
 def test_translate_exceeds_max_distance():
+    """Test translate_forecast_region rejects shift exceeds max_distance"""
     fcst = create_array()
     obs = fcst.copy()
     obs = obs.shift(x=20)  # large shift
@@ -290,16 +295,16 @@ def test_translate_exceeds_max_distance():
     assert shifted is None and dx is None and dy is None
 
 
-# Test: mismatched shapes in cra_2d
 def test_cra_2d_shape_mismatch():
+    """Test CRA 2D raises ValueError for shape mismatch."""
     fcst = create_array()
     obs = create_array(shape=(8, 8))
     with pytest.raises(ValueError):
         cra_2d(fcst, obs, threshold=5.0, y_name="y", x_name="x")
 
 
-# Test: invalid reduce_dims in cra
 def test_invalid_reduce_dims():
+    """Test CRA raises ValueError for invalid reduce_dims."""
     fcst = create_array().expand_dims(time=["2025-01-01"])
     obs = create_array().expand_dims(time=["2025-01-01"])
     with pytest.raises(ValueError):
@@ -307,6 +312,7 @@ def test_invalid_reduce_dims():
 
 
 def test_cra_time_format_valid():
+    """Test CRA handles valid datetime format."""
     time_val = np.datetime64("2025-01-01")
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
@@ -315,6 +321,7 @@ def test_cra_time_format_valid():
 
 
 def test_cra_2d_invalid_blobs():
+    """Test CRA 2D returns None for invalid blobs."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     result = cra_2d(fcst, obs, threshold=5.0, y_name="y", x_name="x")
@@ -322,6 +329,7 @@ def test_cra_2d_invalid_blobs():
 
 
 def test_cra_2d_invalid_blobs_none():
+    """Test CRA 2D returns None when blobs are None."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     result = cra_2d(fcst, obs, threshold=5.0, y_name="y", x_name="x")
@@ -329,6 +337,7 @@ def test_cra_2d_invalid_blobs_none():
 
 
 def test_cra_time_slice_shape_mismatch():
+    """Test CRA raises ValueError for mismatched time slice shapes."""
     time_val = np.datetime64("2025-01-01")
 
     # Forecast: shape (1, 10, 10)
@@ -342,6 +351,7 @@ def test_cra_time_slice_shape_mismatch():
 
 
 def test_largest_blob_too_small():
+    """Test CRA returns None when largest blob too small."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     fcst[0:1, 0:2] = 10  # 2 points
@@ -351,6 +361,7 @@ def test_largest_blob_too_small():
 
 
 def test_cra_2d_no_valid_rain_area():
+    """Test CRA 2D returns None when no valid rain area exists."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     result = cra_2d(fcst, obs, threshold=50.0, y_name="y", x_name="x")
@@ -359,6 +370,7 @@ def test_cra_2d_no_valid_rain_area():
 
 @pytest.mark.parametrize("time_val", [np.datetime64("2025-01-01"), "2025-01-01"])
 def test_cra_time_formats_valid(time_val):
+    """Test CRA handles multiple valid time formats."""
     time_val = np.datetime64(time_val)
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
@@ -366,18 +378,8 @@ def test_cra_time_formats_valid(time_val):
     assert isinstance(result, dict)
 
 
-def test_cra_result_none_due_to_shift():
-    time_val = np.datetime64("2025-01-01")
-    fcst = create_array()
-    obs = fcst.copy().shift(x=20)  # large shift to trigger rejection
-    fcst = fcst.expand_dims(time=[time_val])
-    obs = obs.expand_dims(time=[time_val])
-    result = cra(fcst, obs, threshold=5.0, y_name="y", x_name="x")
-    for metric in result:
-        assert np.isnan(result[metric][0])
-
-
 def test_cra_time_slice_shape_mismatch_error():
+    """Test CRA handles multiple valid time formats."""
     fcst = create_array().expand_dims(time=["2025-01-01"])
     obs = create_array(shape=(8, 8)).expand_dims(time=["2025-01-01"])
     with pytest.raises(ValueError):
@@ -385,6 +387,7 @@ def test_cra_time_slice_shape_mismatch_error():
 
 
 def test_cra_result_none_fallback_nan_fill():
+    """Test CRA fills NaN when CRA returns None for fallback."""
     time_val = np.datetime64("2025-01-01")
     fcst = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"]).expand_dims(time=[time_val])
     obs = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"]).expand_dims(time=[time_val])
@@ -395,6 +398,7 @@ def test_cra_result_none_fallback_nan_fill():
 
 @pytest.mark.parametrize("time_val", ["2025-01-01", "2025-01-02"])
 def test_cra_time_formats(time_val):
+    """Test CRA handles multiple time formats correctly."""
     time_val = np.datetime64(time_val)
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
@@ -403,6 +407,7 @@ def test_cra_time_formats(time_val):
 
 
 def test_cra_invalid_reduce_dims_type():
+    """Test CRA raises ValueError for invalid reduce_dims type."""
     fcst = create_array().expand_dims({"time": ["2025-01-01"]})
     obs = create_array().expand_dims({"time": ["2025-01-01"]})
     with pytest.raises(ValueError, match="reduce_dims must be a string or a list of one string."):
@@ -410,6 +415,7 @@ def test_cra_invalid_reduce_dims_type():
 
 
 def test_calc_corr_coeff_empty_after_nan_removal():
+    """Test correlation returns NaN when one input is all NaNs."""
     # data1 is all NaNs, data2 is valid
     data1 = xr.DataArray(np.full((10, 10), np.nan))
     data2 = xr.DataArray(np.random.rand(10, 10))
@@ -419,6 +425,7 @@ def test_calc_corr_coeff_empty_after_nan_removal():
 
 
 def test_calc_corr_coeff_constant_array():
+    """Test correlation returns NaN for constant array input."""
     data1 = xr.DataArray(np.full((10, 10), 5.0))
     data2 = xr.DataArray(np.random.rand(10, 10))
     result = calc_corr_coeff(data1, data2)
@@ -426,6 +433,7 @@ def test_calc_corr_coeff_constant_array():
 
 
 def test_cra_2d_none_blob():
+    """Test CRA 2D returns None when blob is None."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     result = cra_2d(fcst, obs, threshold=5.0, y_name="y", x_name="x")
@@ -434,6 +442,7 @@ def test_cra_2d_none_blob():
 
 @pytest.mark.parametrize("time_val", ["2025-01-01"])
 def test_cra_time_as_valid_string(time_val):
+    """Test CRA handles time as valid string."""
     time_val = np.datetime64(time_val)
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
@@ -442,6 +451,7 @@ def test_cra_time_as_valid_string(time_val):
 
 
 def test_cra_result_none_due_to_shift():
+    """Test CRA returns NaN metrics when shift causes failure."""
     time_val = np.datetime64("2025-01-01")
     fcst = create_array()
     obs = fcst.copy().shift(x=30)
@@ -453,6 +463,7 @@ def test_cra_result_none_due_to_shift():
 
 
 def test_cra_result_none_triggers_nan_fill():
+    """Test CRA fills NaN when CRA returns None due to shift."""
     time_val = np.datetime64("2025-01-01")
     fcst = create_array()
     obs = fcst.copy().shift(x=30)  # large shift to trigger rejection
@@ -464,6 +475,7 @@ def test_cra_result_none_triggers_nan_fill():
 
 
 def test_cra_fallback_to_bbox_alignment():
+    """Test CRA falls back to bounding box alignment when needed."""
     time_val = np.datetime64("2025-01-01")
     fcst = create_array()
     obs = create_array(value=np.nan)  # all NaNs to force fallback
@@ -475,6 +487,7 @@ def test_cra_fallback_to_bbox_alignment():
 
 
 def test_cra_shift_exceeds_max_distance():
+    """Test CRA returns NaN when shift exceeds max distance."""
     time_val = np.datetime64("2025-01-01")
     fcst = create_array()
     obs = fcst.copy().shift(x=30)
@@ -486,6 +499,7 @@ def test_cra_shift_exceeds_max_distance():
 
 
 def test_cra_skips_time_slice_when_cra_returns_none():
+    """Test CRA skips time slice when CRA returns None for one slice."""
     time_vals = [np.datetime64("2025-01-01"), np.datetime64("2025-01-02")]
 
     # Create base arrays for the first time slice
@@ -531,6 +545,7 @@ def test_cra_skips_time_slice_when_cra_returns_none():
 
 
 def test_cra_2d_returns_none():
+    """Test CRA 2D returns None when blobs do not meet threshold."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
     result = cra_2d(fcst, obs, threshold=50.0, y_name="y", x_name="x")
@@ -538,6 +553,7 @@ def test_cra_2d_returns_none():
 
 
 def test_cra_missing_spatial_dim():
+    """Test CRA raises ValueError for missing spatial dimension."""
     fcst = create_array()
     obs = create_array()
     with pytest.raises(ValueError, match="Spatial dimension 'z' not found in observation data"):
@@ -545,6 +561,7 @@ def test_cra_missing_spatial_dim():
 
 
 def test_cra_invalid_reduce_dims_list():
+    """Test CRA raises ValueError for invalid reduce_dims list."""
     fcst = create_array().expand_dims({"time": ["2025-01-01"]})
     obs = create_array().expand_dims({"time": ["2025-01-01"]})
     with pytest.raises(ValueError, match="CRA currently supports grouping by a single dimension only."):
@@ -552,6 +569,7 @@ def test_cra_invalid_reduce_dims_list():
 
 
 def test_cra_reduce_dims_as_string():
+    """Test CRA handles reduce_dims as string correctly."""
     time_val = np.datetime64("2025-01-01")
     fcst = create_array().expand_dims({"time": [time_val]})
     obs = create_array().expand_dims({"time": [time_val]})
@@ -564,6 +582,7 @@ def test_cra_reduce_dims_as_string():
 
 @pytest.mark.parametrize("time_val", [np.datetime64(1, "ns"), np.datetime64("2025-01-01")])
 def test_cra_time_val_formats(time_val):
+    """Test CRA handles multiple time value formats."""
     fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"]).expand_dims({"time": [time_val]})
     obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"]).expand_dims({"time": [time_val]})
 
@@ -574,6 +593,7 @@ def test_cra_time_val_formats(time_val):
 
 
 def test_cra_mse_total_nan_due_to_no_overlap():
+    """Test CRA returns NaN for mse_total when blobs do not overlap."""
     time_val = np.datetime64("2025-01-01")
 
     # Forecast blob in top-left corner
@@ -595,6 +615,7 @@ def test_cra_mse_total_nan_due_to_no_overlap():
 
 
 def test_cra_2d_missing_spatial_dimension():
+    """Test CRA 2D raises ValueError for missing spatial dimension."""
     fcst = create_array()
     obs = create_array()
     with pytest.raises(ValueError, match="Spatial dimension 'z' not found in observation data"):
@@ -602,6 +623,7 @@ def test_cra_2d_missing_spatial_dimension():
 
 
 def test_cra_triggers_bbox_fallback_alignment():
+    """Test CRA triggers bounding box fallback alignment."""
     time_val = np.datetime64("2025-01-01")
 
     # Forecast blob in top-left
@@ -621,6 +643,7 @@ def test_cra_triggers_bbox_fallback_alignment():
 
 
 def test_cra_2d_no_overlap_blobs():
+    """Test CRA 2D returns None when blobs do not overlap."""
     fcst = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"])
     obs = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"])
     fcst[0:2, 0:2] = 10.0  # top-left
@@ -630,6 +653,7 @@ def test_cra_2d_no_overlap_blobs():
 
 
 def test_cra_handles_string_time_key():
+    """Test CRA handles string time key correctly."""
     time_vals = [np.datetime64("2025-01-01"), np.datetime64("2025-01-02")]
 
     base_fcst = create_array(value=10.0)
@@ -669,6 +693,7 @@ def test_cra_handles_string_time_key():
 
 
 def test_translate_rejects_shift_due_to_max_distance():
+    """Test translate_forecast_region rejects shift due to max distance."""
     y, x = np.ogrid[:100, :100]
     center_y, center_x = 50, 50
 
@@ -687,6 +712,7 @@ def test_translate_rejects_shift_due_to_max_distance():
 
 
 def test_translate_fallback_bbox_with_valid_data():
+    """Test translate_forecast_region falls back to bbox with valid data."""
     # Create a case where optimization might fail but bbox fallback works
     fcst = create_array(value=10.0)
     obs = create_array(value=10.0)
@@ -717,6 +743,7 @@ def test_calc_resolution_with_degree_coordinates():
 
 
 def test_function_returns_none_branch():
+    """Test function returns None branch when input is None."""
     # Try to find a function with a 'return None' branch
     candidate_funcs = [f for f in dir(cra_impl) if callable(getattr(cra_impl, f))]
     for name in candidate_funcs:
