@@ -889,12 +889,40 @@ def crps_for_ensemble(
         preserve_dims=preserve_dims,
         score_specific_fcst_dims=ensemble_member_dim,
     )
-    # Calculate forecast spread term
-    fcst_spread_term = 0
-    for i in range(fcst.sizes[ensemble_member_dim]):
-        fcst_spread_term += abs(fcst - fcst.isel({ensemble_member_dim: i})).sum(dim=ensemble_member_dim)
 
-    ens_count = fcst.count(ensemble_member_dim)
+    # Calculate forecast spread term
+    ens_count = fcst.count(ensemble_member_dim)  # Get M (number of non-NaN members for each point)
+    M_total = fcst.sizes[ensemble_member_dim]  # Get M_total (total dimension size)
+
+    if M_total > 0:
+        # Numerator of the spread term S = ΣᵢΣⱼ |xᵢ − xⱼ|.
+        # For sorted members x_(k′), this becomes:
+        #   S_num = 2 * Σ_{k′=0}^{M−1} rank_weight[k′] * x_(k′)
+        # with rank_weight[k′] = (2k′ − M + 1),
+        # where M = number of valid (non-NaN) ensemble members.
+
+        # Create 0-based ranks k' = 0, ..., M_total-1
+        k_prime = xr.DataArray(np.arange(M_total), dims=[ensemble_member_dim])
+        coeffs = 2 * k_prime - ens_count + 1
+
+        # Sort forecast values along the member dim.
+        fcst_sorted = xr.apply_ufunc(
+            np.sort,
+            fcst,
+            input_core_dims=[[ensemble_member_dim]],
+            output_core_dims=[[ensemble_member_dim]],
+            output_sizes={ensemble_member_dim: M_total},
+            exclude_dims=set((ensemble_member_dim,)),
+            kwargs={"axis": -1},
+            dask="parallelized",
+        )
+
+        fcst_spread_term = 2 * (fcst_sorted * coeffs).sum(dim=ensemble_member_dim, skipna=True)
+    else:
+        # If no members, spread term is 0.
+        # Create a 0-filled array with the member dim removed.
+        fcst_spread_term = fcst.sum(dim=ensemble_member_dim, skipna=True)
+
     if method == "ecdf":
         fcst_spread_term = fcst_spread_term / (2 * ens_count**2)  # type: ignore
     if method == "fair":
