@@ -28,7 +28,7 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from tests.probabilty import crps_test_data
+from tests.probability import crps_test_data
 
 
 @pytest.mark.parametrize(
