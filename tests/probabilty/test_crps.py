@@ -58,7 +58,7 @@ def test_crps_cdf_exact():
     """Tests `crps_cdf_exact`."""
     result = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT,
-        crps_test_data.DA_OBS_CRPS_EXACT,
+        crps_test_data.DA_OBS_CRPS,
         crps_test_data.DA_WT_CRPS_EXACT,
         "x",
         include_components=True,
@@ -67,12 +67,11 @@ def test_crps_cdf_exact():
 
     result2 = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT,
-        crps_test_data.DA_OBS_CRPS_EXACT,
+        crps_test_data.DA_OBS_CRPS,
         crps_test_data.DA_WT_CRPS_EXACT,
         "x",
         include_components=False,
     )
-
     assert list(result2.data_vars) == ["total"]
 
 
@@ -84,7 +83,7 @@ def test_crps_cdf_exact_dask():
 
     result = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
-        crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS.chunk(),
         crps_test_data.DA_WT_CRPS_EXACT,
         "x",
         include_components=True,
@@ -96,7 +95,7 @@ def test_crps_cdf_exact_dask():
 
     result2 = crps_cdf_exact(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
-        crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS.chunk(),
         crps_test_data.DA_WT_CRPS_EXACT.chunk(),
         "x",
         include_components=False,
