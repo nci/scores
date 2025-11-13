@@ -21,7 +21,7 @@ from typing import Any, Callable, Literal, Optional, Sequence, Union
 import numpy as np
 import pandas as pd
 import xarray as xr
-from numba import int64, float64, guvectorize, jit
+from numba import float64, guvectorize, int64, jit
 
 import scores.utils
 from scores.probability.checks import coords_increasing
@@ -36,11 +36,11 @@ from scores.processing.cdf import (
 )
 from scores.typing import XarrayLike
 
-
 # To avoid numerical instability caused by dividing by a very small number,
 # we use a different calculation of the trapezoid volume if the difference
 # in y values is less than EPSILON
 EPSILON = 1e-8
+
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-branches
@@ -128,7 +128,6 @@ def crps_cdf_reformat_inputs(
     # will use all thresholds from fcst, obs and (if applicable) weight
 
     fcst_thresholds = fcst[threshold_dim].values
-    
 
     weight_thresholds = []  # type: ignore
     if threshold_weight is not None:
@@ -143,7 +142,6 @@ def crps_cdf_reformat_inputs(
         thresholds = np.concatenate((thresholds, obs_thresholds))
     thresholds = np.sort(pd.unique(thresholds))
     thresholds = thresholds[~np.isnan(thresholds)]
-
 
     # get fcst with correct thresholds
     fcst = add_thresholds(fcst, threshold_dim, thresholds, fcst_fill_method)
@@ -169,8 +167,6 @@ def crps_cdf_reformat_inputs(
         fcst_cdf, weight_cdf = xr.broadcast(fcst, weight_cdf)
 
     return fcst_cdf, obs, weight_cdf
-
-
 
 
 # pylint: disable=too-many-locals
@@ -368,11 +364,10 @@ def crps_cdf(
         if threshold_weight is not None:
             threshold_weight = propagate_nan(threshold_weight, threshold_dim)  # type: ignore
 
-
     result = None  # Perhaps this should raise an exception if the integration
     # method isn't recognised
-    include_obs_in_thresholds = (integration_method == "trapz")
-    convert_obs_to_cdf = (integration_method == "trapz")
+    include_obs_in_thresholds = integration_method == "trapz"
+    convert_obs_to_cdf = integration_method == "trapz"
     fcst, obs, threshold_weight = crps_cdf_reformat_inputs(
         fcst,
         obs,
@@ -382,8 +377,9 @@ def crps_cdf(
         include_obs_in_thresholds=include_obs_in_thresholds,
         additional_thresholds=additional_thresholds,
         fcst_fill_method=fcst_fill_method,
-        threshold_weight_fill_method=threshold_weight_fill_method,)   
-    if integration_method == "exact":          
+        threshold_weight_fill_method=threshold_weight_fill_method,
+    )
+    if integration_method == "exact":
         result = crps_cdf_exact(
             fcst,
             obs,
@@ -405,7 +401,6 @@ def crps_cdf(
     return result
 
 
-
 @jit
 def integral_below(x0, x1, y0, y1):
     """Volume between line y=0 and straight line joining (x0, y0), (x1, y1)"""
@@ -415,9 +410,7 @@ def integral_below(x0, x1, y0, y1):
         return (x1 - x0) * y0**2
     slope = (y1 - y0) / (x1 - x0)
     intercept = y0 - slope * x0
-    return (1 / (3 * slope)) * (
-        (slope * x1 + intercept) ** 3 - (slope * x0 + intercept) ** 3
-    )
+    return (1 / (3 * slope)) * ((slope * x1 + intercept) ** 3 - (slope * x0 + intercept) ** 3)
 
 
 @jit
@@ -429,17 +422,17 @@ def integral_above(x0, x1, y0, y1):
         return (x1 - x0) * (1 - y0) ** 2
     slope = (y1 - y0) / (x1 - x0)
     intercept = y0 - slope * x0
-    return (-1 / (3 * slope)) * (
-        (1 - slope * x1 - intercept) ** 3 - (1 - slope * x0 - intercept) ** 3
-    )
+    return (-1 / (3 * slope)) * ((1 - slope * x1 - intercept) ** 3 - (1 - slope * x0 - intercept) ** 3)
 
 
-@guvectorize(
-    [(float64, float64[:], float64[:], int64[:], float64[:], float64[:])], "(),(n),(n),(n)->(),()"
-)
+@guvectorize([(float64, float64[:], float64[:], int64[:], float64[:], float64[:])], "(),(n),(n),(n)->(),()")
 def crps_at_point(
-    obs: float, fc: np.ndarray, thresholds: np.ndarray, weights: np.ndarray, 
-    res_over: np.ndarray, res_under: np.ndarray,
+    obs: float,
+    fc: np.ndarray,
+    thresholds: np.ndarray,
+    weights: np.ndarray,
+    res_over: np.ndarray,
+    res_under: np.ndarray,
 ):
     """ "CRPRS at a single point for a thresholded probabilistic forecast.
 
@@ -458,24 +451,18 @@ def crps_at_point(
     if (obs_ind == 0) and (weights[0] == 1):
         over += integral_above(obs, thresholds[0], fc[0], fc[0])
     for i in range(1, obs_ind):
-        if (weights[i - 1] == 1):
+        if weights[i - 1] == 1:
             under += integral_below(thresholds[i - 1], thresholds[i], fc[i - 1], fc[i])
-    if (
-        (obs_ind > 0)
-        and (obs_ind < len(fc))
-        and (weights[obs_ind - 1] == 1)
-    ):
+    if (obs_ind > 0) and (obs_ind < len(fc)) and (weights[obs_ind - 1] == 1):
         prob_at_obs = np.interp(
             obs,
             [thresholds[obs_ind - 1], thresholds[obs_ind]],
             [fc[obs_ind - 1], fc[obs_ind]],
         )
-        under += integral_below(
-            thresholds[obs_ind - 1], obs, fc[obs_ind - 1], prob_at_obs
-        )
+        under += integral_below(thresholds[obs_ind - 1], obs, fc[obs_ind - 1], prob_at_obs)
         over += integral_above(obs, thresholds[obs_ind], prob_at_obs, fc[obs_ind])
     for i in range(obs_ind + 1, len(fc)):
-        if (weights[i - 1] == 1):
+        if weights[i - 1] == 1:
             over += integral_above(thresholds[i - 1], thresholds[i], fc[i - 1], fc[i])
     if (obs_ind == len(fc)) and (weights[-1] == 1):
         under += integral_below(thresholds[-1], obs, fc[-1], fc[-1])
@@ -639,7 +626,7 @@ def crps_cdf_brier_decomposition(
 
     check_crps_cdf_brier_inputs(fcst, obs, threshold_dim, fcst_fill_method, dims)
 
-    fcst = propagate_nan(fcst, threshold_dim)  # type: ignore   
+    fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
     fcst, obs, _ = crps_cdf_reformat_inputs(
         fcst,
         obs,
@@ -647,7 +634,8 @@ def crps_cdf_brier_decomposition(
         threshold_weight=None,
         additional_thresholds=additional_thresholds,
         fcst_fill_method=fcst_fill_method,
-        threshold_weight_fill_method="forward")    
+        threshold_weight_fill_method="forward",
+    )
     dims.remove(threshold_dim)  # type: ignore
 
     # brier score for each forecast case
