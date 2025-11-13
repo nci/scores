@@ -434,7 +434,7 @@ def crps_at_point(
     res_over: np.ndarray,
     res_under: np.ndarray,
 ):
-    """ "CRPRS at a single point for a thresholded probabilistic forecast.
+    """CRPRS at a single point for a thresholded probabilistic forecast.
 
     Args:
         obs: observed value
