@@ -23,7 +23,7 @@ Please submit bug reports, feature requests and feedback as issues in GitHub: [h
 
 ## Handling Security Concerns
 
-Please see the information provided in [SECURITY.md](SECURITY.md)
+Please see the information provided in [SECURITY.md](https://scores.readthedocs.io/en/stable/SECURITY.html)
 
 ## Creating Your Own Fork  of `scores` for the First Time
 
