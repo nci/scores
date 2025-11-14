@@ -33,7 +33,7 @@ jobs:
         # editable is necessary as pytest will run against the installed
         # package rather than the local files creating a coverage report of 0%
         pip install -e .
-        NUMBA_DISABLE_JIT=1 pytest tests/ --cov=src/
+        pytest tests/ --cov=src/
     - name: Test tutorial notebooks with pytest
       run: |
         pytest --nbmake tutorials/

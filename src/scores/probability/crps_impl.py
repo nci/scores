@@ -402,7 +402,7 @@ def crps_cdf(
 
 
 @jit
-def integral_below(x0, x1, y0, y1):
+def integral_below(x0, x1, y0, y1): # pragma: no cover
     """Volume between line y=0 and straight line joining (x0, y0), (x1, y1)"""
     if x1 - x0 < EPSILON:
         return 0
@@ -414,7 +414,7 @@ def integral_below(x0, x1, y0, y1):
 
 
 @jit
-def integral_above(x0, x1, y0, y1):
+def integral_above(x0, x1, y0, y1): # pragma: no cover
     """Volume between line y=1 and straight line joining (x0, y0), (x1, y1)"""
     if x1 - x0 < EPSILON:
         return 0
@@ -425,7 +425,7 @@ def integral_above(x0, x1, y0, y1):
     return (-1 / (3 * slope)) * ((1 - slope * x1 - intercept) ** 3 - (1 - slope * x0 - intercept) ** 3)
 
 
-@guvectorize([(float64, float64[:], float64[:], int64[:], float64[:], float64[:])], "(),(n),(n),(n)->(),()")
+@guvectorize([(float64, float64[:], float64[:], int64[:], float64[:], float64[:])], "(),(n),(n),(n)->(),()") # pragma: no cover
 def crps_at_point(
     obs: float,
     fc: np.ndarray,
