@@ -100,7 +100,7 @@ def relative_economic_value_from_rates(
         ...     pod, pofd, climatology, cost_loss_ratios
         ... )
         >>> rev.dims
-        ('threshold', 'cost_loss_ratio')
+        ('cost_loss_ratio', 'threshold')
 
         Calculate REV values:
 
