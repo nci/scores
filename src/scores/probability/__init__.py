@@ -15,6 +15,11 @@ from scores.probability.crps_impl import (
     tail_tw_crps_for_ensemble,
     tw_crps_for_ensemble,
 )
+from scores.probability.rev_impl import (
+    _calculate_rev_core,
+    relative_economic_value,
+    relative_economic_value_from_rates,
+)
 from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
@@ -26,6 +31,7 @@ __all__ = [
     "crps_cdf",
     "crps_cdf_brier_decomposition",
     "crps_for_ensemble",
+    "relative_economic_value",
     "roc_curve_data",
     "isotonic_fit",
     "crps_step_threshold_weight",
