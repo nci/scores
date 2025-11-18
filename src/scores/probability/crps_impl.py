@@ -931,10 +931,10 @@ def crps_for_ensemble(
         fcst,
         input_core_dims=[[ensemble_member_dim]],
         output_core_dims=[[ensemble_member_dim]],
-        output_sizes={ensemble_member_dim: m_total},
         exclude_dims=set((ensemble_member_dim,)),
         kwargs={"axis": -1},
         dask="parallelized",
+        dask_gufunc_kwargs={"output_sizes": {ensemble_member_dim: m_total}},
     )
 
     i = xr.DataArray(np.arange(m_total), dims=[ensemble_member_dim])
