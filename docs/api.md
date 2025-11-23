@@ -83,6 +83,7 @@
 .. autofunction:: scores.spatial.fss_2d_binary
 .. autofunction:: scores.spatial.fss_2d_single_field
 .. autofunction:: scores.spatial.cra
+.. autofunction:: scores.spatial.cra_2d
 ```
 
 ## scores.stats
