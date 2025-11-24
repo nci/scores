@@ -436,6 +436,41 @@ def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
     return float(avg_resolution_km)
 
 
+def _normalize_single_reduce_dim(data: xr.DataArray, reduce_dims: Optional[list[str] | str]) -> str:
+    """
+    Normalize `reduce_dims` to a single dimension name and validate it exists in `data`.
+
+    CRA supports aggregation by a single dimension only.
+
+    Args:
+        data (xr.DataArray): Input object whose dims are used for validation.
+        reduce_dims (None | str | list[str]): Dimension to group by. Must be exactly one.
+
+    Returns:
+        group_dim(str): The single time dimension name to reduce over.
+
+    """
+    if reduce_dims is None:
+        raise ValueError(
+            "CRA currently supports aggregation by a single dimension only. "
+            "Please specify the dimension to reduce over (e.g., 'time')."
+        )
+
+    if isinstance(reduce_dims, str):
+        group_dim = reduce_dims
+    elif isinstance(reduce_dims, (list, tuple)) and len(reduce_dims) == 1:
+        group_dim = reduce_dims[0]
+    else:
+        raise ValueError("`reduce_dims` must be a string or a list/tuple with exactly one string.")
+
+    # Validate presence in data dims to catch typos early
+    dims = list(data.dims)
+    if group_dim not in dims:
+        raise ValueError(f"Requested reduce dimension '{group_dim}' not found in data dims {dims}.")
+
+    return group_dim
+
+
 def cra_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
@@ -586,73 +621,73 @@ def cra(
     reduce_dims: Optional[List[str]] = None,
 ) -> dict:
     """
-    Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
-observation field.
+        Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
+    observation field.
 
-    This function extends `cra_2d` to handle time series.
+        This function extends `cra_2d` to handle time series.
 
-    It applies CRA decomposition to each slice along the specified `reduce_dims` and
-aggregates results into lists.
+        It applies CRA decomposition to each slice along the specified `reduce_dims` and
+    aggregates results into lists.
 
-    CRA decomposes the total mean squared error (MSE) into:
-        - Displacement: Error reduction due to optimal spatial alignment.
-        - Volume: Error due to intensity differences.
-        - Pattern: Residual error after alignment and volume adjustment.
+        CRA decomposes the total mean squared error (MSE) into:
+            - Displacement: Error reduction due to optimal spatial alignment.
+            - Volume: Error due to intensity differences.
+            - Pattern: Residual error after alignment and volume adjustment.
 
-    For each time, the algorithm:
-        1. Identifies contiguous rain blobs above `threshold`.
-        2. Computes optimal spatial shift within `max_distance`.
-        3. Calculates CRA components and diagnostics.
+        For each time, the algorithm:
+            1. Identifies contiguous rain blobs above `threshold`.
+            2. Computes optimal spatial shift within `max_distance`.
+            3. Calculates CRA components and diagnostics.
 
-    .. math::
-        \text{MSE}_{\text{total}} = \text{MSE}_{\text{displacement}} + \text{MSE}_{\text{pattern}} + \text{MSE}_{\text{volume}}
+        .. math::
+            \text{MSE}_{\text{total}} = \text{MSE}_{\text{displacement}} + \text{MSE}_{\text{pattern}} + \text{MSE}_{\text{volume}}
 
-    Args:
-        fcst (xr.DataArray): Forecast field with at least one grouping dimension (e.g., time).
-        obs (xr.DataArray): Observation field aligned with `fcst`.
-        threshold (float): Threshold to define contiguous rain areas.
-        y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
-        x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometers.
-        min_points (int): Minimum number of grid points required in a blob.
-        reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
+        Args:
+            fcst (xr.DataArray): Forecast field with at least one grouping dimension (e.g., time).
+            obs (xr.DataArray): Observation field aligned with `fcst`.
+            threshold (float): Threshold to define contiguous rain areas.
+            y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
+            x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
+            max_distance (float): Maximum allowed translation distance in kilometers.
+            min_points (int): Minimum number of grid points required in a blob.
+            reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
 
-    Returns:
-        A dictionary where each key corresponds to a CRA metric and maps to a list of
-        values, one for each slice along the specified grouping dimension (e.g. time):
-            - mse_total (list[float]): Total mean squared error between forecast and observed blobs.
-            - mse_displacement (list[float]): MSE due to spatial displacement between forecast and observed blobs.
-            - mse_volume (list[float]): MSE due to volume differences.
-            - mse_pattern (list[float]): MSE due to pattern/structure differences.
-            - optimal_shift (list[list[int]]): Optimal [x, y] shift applied to forecast blob in grid points units.
-            - num_gridpoints_above_threshold_fcst (list[int]): Number of grid points in forecast blob above threshold.
-            - num_gridpoints_above_threshold_obs (list[int]): Number of grid points in observed blob above threshold.
-            - avg_fcst (list[float]): Mean value of the forecast blob.
-            - avg_obs (list[float]): Mean value of the observed blob.
-            - max_fcst (list[float]): Maximum value in the forecast blob.
-            - max_obs (list[float]): Maximum value in the observed blob.
-            - corr_coeff_original (list[float]): Correlation coefficient between original forecast and observed blobs.
-            - corr_coeff_shifted (list[float]): Correlation coefficient between shifted forecast and observed blobs.
-            - rmse_original (list[float]): Root mean square error between original forecast and observed blobs.
-            - rmse_shifted (list[float]): Root mean square error between shifted forecast and observed blobs.
-        Returns None if input data is invalid or CRA computation fails.
+        Returns:
+            A dictionary where each key corresponds to a CRA metric and maps to a list of
+            values, one for each slice along the specified grouping dimension (e.g. time):
+                - mse_total (list[float]): Total mean squared error between forecast and observed blobs.
+                - mse_displacement (list[float]): MSE due to spatial displacement between forecast and observed blobs.
+                - mse_volume (list[float]): MSE due to volume differences.
+                - mse_pattern (list[float]): MSE due to pattern/structure differences.
+                - optimal_shift (list[list[int]]): Optimal [x, y] shift applied to forecast blob in grid points units.
+                - num_gridpoints_above_threshold_fcst (list[int]): Number of grid points in forecast blob above threshold.
+                - num_gridpoints_above_threshold_obs (list[int]): Number of grid points in observed blob above threshold.
+                - avg_fcst (list[float]): Mean value of the forecast blob.
+                - avg_obs (list[float]): Mean value of the observed blob.
+                - max_fcst (list[float]): Maximum value in the forecast blob.
+                - max_obs (list[float]): Maximum value in the observed blob.
+                - corr_coeff_original (list[float]): Correlation coefficient between original forecast and observed blobs.
+                - corr_coeff_shifted (list[float]): Correlation coefficient between shifted forecast and observed blobs.
+                - rmse_original (list[float]): Root mean square error between original forecast and observed blobs.
+                - rmse_shifted (list[float]): Root mean square error between shifted forecast and observed blobs.
+            Returns None if input data is invalid or CRA computation fails.
 
 
-    Raises:
-        ValueError: If input shapes do not match or grouping dimension is invalid.
-        TypeError: If inputs are not xarray DataArrays.
+        Raises:
+            ValueError: If input shapes do not match or grouping dimension is invalid.
+            TypeError: If inputs are not xarray DataArrays.
 
-    References:
-        Ebert, E. E., & McBride, J. L. (2000). Verification of precipitation forecasts from operational numerical weather prediction models.
-        *Weather and Forecasting*, 15(3), 247-263. https://doi.org/10.1016/S0022-1694(00)00343-7
+        References:
+            Ebert, E. E., & McBride, J. L. (2000). Verification of precipitation forecasts from operational numerical weather prediction models.
+            *Weather and Forecasting*, 15(3), 247-263. https://doi.org/10.1016/S0022-1694(00)00343-7
 
-    Example:
-        >>> from scores.spatial import cra
-        >>> import xarray as xr
-        >>> fcst = xr.DataArray(...)  # forecast with time dimension
-        >>> obs = xr.DataArray(...)   # observation with time dimension
-        >>> result = cra(fcst, obs, threshold=5.0, reduce_dims="time")
-        >>> print(result["mse_total"])
+        Example:
+            >>> from scores.spatial import cra
+            >>> import xarray as xr
+            >>> fcst = xr.DataArray(...)  # forecast with time dimension
+            >>> obs = xr.DataArray(...)   # observation with time dimension
+            >>> result = cra(fcst, obs, threshold=5.0, reduce_dims="time")
+            >>> print(result["mse_total"])
     """
 
     # --- Input validation ---
@@ -661,18 +696,12 @@ aggregates results into lists.
     if not isinstance(obs, xr.DataArray):
         raise TypeError("obs must be an xarray DataArray")
 
-    # Normalize reduce_dims
+    # # Normalize reduce_dims
     if reduce_dims is None:
         reduce_dims = ["time"]  # Default to time if not specified
-    elif isinstance(reduce_dims, str):
-        reduce_dims = [reduce_dims]
-    elif isinstance(reduce_dims, list):
-        if len(reduce_dims) != 1:
-            raise ValueError("CRA currently supports grouping by a single dimension only.")
-    else:
-        raise ValueError("reduce_dims must be a string or a list of one string.")
 
-    group_dim = reduce_dims[0]
+    # Require explicit single dimension
+    group_dim = _normalize_single_reduce_dim(fcst, reduce_dims)
 
     if fcst.shape != obs.shape:
         raise ValueError("fcst and obs must have the same shape")
