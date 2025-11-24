@@ -84,6 +84,7 @@
 .. autofunction:: scores.spatial.fss_2d_single_field
 .. autofunction:: scores.spatial.cra
 .. autofunction:: scores.spatial.cra_2d
+.. autofunction:: scores.spatial.cra_core_2d
 ```
 
 ## scores.stats

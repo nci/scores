@@ -730,3 +730,82 @@ aggregates results into lists.
                 results[metric].append(np.nan)
 
     return results
+
+
+def cra_core_2d(
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    threshold: float,
+    y_name: str,
+    x_name: str,
+    max_distance: float = 300,
+    min_points: int = 10,
+) -> Optional[dict]:
+    """
+    Compute the core Contiguous Rain Area (CRA) decomposition between forecast and observation fields.
+
+    This function returns only the essential CRA decomposition components.
+    To obtain all CRA metrics and diagnostics, use `cra_2d`. For time-dependent data, use the `cra` function.
+
+    The core CRA score decomposes the total mean squared error (MSE) into three components:
+    displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
+    shifts the forecast blob to best match the observed blob, and evaluates the error reduction.
+
+    See `cra_2d` for more details.
+
+    Args:
+        fcst (xr.DataArray): Forecast field as an xarray DataArray.
+        obs (xr.DataArray): Observation field as an xarray DataArray.
+        threshold (float): Threshold to define contiguous rain areas.
+        y_name (str): Name of the meridional spatial dimension
+            (e.g., 'lat', 'projection_y_coordinate').
+        x_name (str): Name of the zonal spatial dimension
+            (e.g., 'lon', 'projection_x_coordinate').
+        max_distance (float): Maximum allowed translation distance in kilometers.
+        min_points (int): Minimum number of grid points required in a blob.
+
+    Returns:
+        A dictionary containing the core CRA components:
+            - mse_total (float): Total mean squared error between forecast and observed blobs.
+            - mse_displacement (float): MSE reduction due to spatial displacement after optimal alignment.
+            - mse_volume (float): MSE due to mean intensity (volume) differences.
+            - mse_pattern (float): Residual MSE after displacement and volume adjustment.
+            - optimal_shift (list[int]): Optimal [x, y] shift applied to the forecast blob (grid-point units).
+
+
+    Example:
+        >>> import xarray as xr
+        >>> from scores.spatial import cra_core_2d
+        >>> fcst = xr.DataArray(...)  # 2D forecast
+        >>> obs = xr.DataArray(...)   # 2D observation
+        >>> result = cra_core_2d(fcst, obs, threshold=5.0, y_name="lat", x_name="lon")
+        >>> print(result["mse_total"])
+
+
+    """
+    # Reuse your existing pipeline
+    blobs = generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
+    fcst_blob, obs_blob = blobs
+    if fcst_blob is None or obs_blob is None:
+        return None
+
+    mse_total = calc_mse(fcst_blob, obs_blob)
+    if np.isnan(mse_total):
+        return None
+
+    shifted_fcst, dx, dy = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
+    if shifted_fcst is None:
+        return None
+
+    mse_shift = calc_mse(shifted_fcst, obs_blob)
+    mse_displacement = mse_total - mse_shift
+    mse_volume = calc_mse_volume(shifted_fcst, obs_blob)
+    mse_pattern = mse_shift - mse_volume
+
+    return {
+        "mse_total": mse_total,
+        "mse_displacement": mse_displacement,
+        "mse_volume": mse_volume,
+        "mse_pattern": mse_pattern,
+        "optimal_shift": [dx, dy],
+    }

@@ -639,6 +639,9 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - 
     [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 * -
+- CRA CORE 2D
+  -
+    [API](api.md#scores.spatial.cra_core_2d)
     - CRA 2D
   -
     [API](api.md#scores.spatial.cra_2d)
