@@ -145,7 +145,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
 
 
 def translate_forecast_region(
-    fcst: xr.DataArray, obs: xr.DataArray, y_name: str, x_name: str, max_distance: float
+    fcst: xr.DataArray, obs: xr.DataArray, y_name: str, x_name: str, max_distance: float, coord_units: str
 ) -> Tuple[xr.DataArray, int, int]:
     """
     Translate the forecast field to best spatially align with the observation field.
@@ -158,13 +158,15 @@ def translate_forecast_region(
         obs (xr.DataArray): Observation field.
         x_name (str): Name of the zonal spatial dimension (e.g., 'x' or 'longitude').
         y_name (str): Name of the meridional spatial dimension (e.g., 'y' or 'latitude').
+        max_distance (float) : Maximum distance in km allowed for the shifted blob.
+        coord_units (str) : coordinates units, 'degrees' or 'metres'
 
 
     Returns:
         Translated forecast and optimal shift values in grid points (dx, dy).
 
     Example:
-        >>> shifted_fcst, delta_x, delta_y = translate_forecast_region(fcst, obs, 'y', 'x', 300)
+        >>> shifted_fcst, delta_x, delta_y = translate_forecast_region(fcst, obs, 'y', 'x', 300, 'metres')
     """
 
     # Create fixed mask based on observation availability
@@ -212,7 +214,7 @@ def translate_forecast_region(
     dx, dy = int(round(optimal_shift[0])), int(round(optimal_shift[1]))
 
     # Compute shift distance in km
-    resolution_km = calc_resolution(obs, [y_name, x_name])
+    resolution_km = calc_resolution(obs, [y_name, x_name], coord_units)
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
 
     if shift_distance_km > max_distance:
@@ -414,7 +416,18 @@ def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
     return float(cc)
 
 
-def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
+def calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> float:
+    """
+    Compute average grid resolution in kilometres.
+
+    Args:
+        obs (xr.DataArray): Input data array.
+        spatial_dims (list[str]): Names of spatial dimensions [y_dim, x_dim].
+        units (str): Units of coordinates. Must be 'degrees' or 'metres'.
+
+    Returns:
+        float: Average resolution in kilometres.
+    """
     y_coords = obs.coords[spatial_dims[0]].values
     x_coords = obs.coords[spatial_dims[1]].values
 
@@ -422,15 +435,15 @@ def calc_resolution(obs: xr.DataArray, spatial_dims) -> float:
     dy = np.mean(np.diff(y_coords))
     dx = np.mean(np.diff(x_coords))
 
-    # Check if coordinates are in degrees
-    if np.all(np.abs(y_coords) <= 90) and np.all(np.abs(x_coords) <= 180):
+    if units == "degrees":
         lat_mean = np.mean(y_coords)
         dy_km = np.abs(dy) * 111
         dx_km = np.abs(dx) * 111 * np.cos(np.radians(lat_mean))
-    else:
-        # Assume coordinates are in meters
+    elif units == "metres":
         dy_km = np.abs(dy) / 1000
         dx_km = np.abs(dx) / 1000
+    else:
+        raise ValueError("units must be 'degrees' or 'metres'")
 
     avg_resolution_km = np.mean([dy_km, dx_km])
     return float(avg_resolution_km)
@@ -479,6 +492,7 @@ def cra_2d(
     x_name: str,
     max_distance: float = 300,
     min_points: int = 10,
+    coord_units: str = "metres",
 ) -> Optional[dict]:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
@@ -510,8 +524,9 @@ def cra_2d(
         threshold (float): Threshold to define contiguous rain areas.
         y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometers.
+        max_distance (float): Maximum allowed translation distance in kilometres.
         min_points (int): Minimum number of grid points required in a blob.
+        coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
     Returns:
         A dictionary containing the following CRA components and diagnostics:
@@ -564,6 +579,10 @@ def cra_2d(
         if dim not in obs.dims:
             raise ValueError(f"Spatial dimension '{dim}' not found in observation data")
 
+    allowed_units = ["degrees", "metres"]
+    if coord_units not in allowed_units:
+        raise ValueError(f"Invalid coord_units '{coord_units}'. Must be one of {allowed_units}.")
+
     [fcst_blob, obs_blob] = generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
 
     if fcst_blob is None or obs_blob is None:
@@ -574,7 +593,9 @@ def cra_2d(
     if np.isnan(mse_total):
         return None
 
-    [shifted_fcst, delta_x, delta_y] = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
+    [shifted_fcst, delta_x, delta_y] = translate_forecast_region(
+        fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units
+    )
     optimal_shift = [delta_x, delta_y]
     if shifted_fcst is None:
         return None
@@ -619,6 +640,7 @@ def cra(
     max_distance: float = 300,
     min_points: int = 10,
     reduce_dims: Optional[List[str]] = None,
+    coord_units: str = "metres",
 ) -> dict:
     """
         Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
@@ -648,9 +670,10 @@ def cra(
             threshold (float): Threshold to define contiguous rain areas.
             y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
             x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-            max_distance (float): Maximum allowed translation distance in kilometers.
+            max_distance (float): Maximum allowed translation distance in kilometres.
             min_points (int): Minimum number of grid points required in a blob.
             reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
+            coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
         Returns:
             A dictionary where each key corresponds to a CRA metric and maps to a list of
@@ -750,7 +773,7 @@ def cra(
                 results[metric].append(np.nan)
             continue
 
-        cra_result = cra_2d(fcst_slice, obs_slice, threshold, y_name, x_name, max_distance, min_points)
+        cra_result = cra_2d(fcst_slice, obs_slice, threshold, y_name, x_name, max_distance, min_points, coord_units)
         if cra_result is not None:
             for metric in metrics:
                 results[metric].append(cra_result[metric])
@@ -769,6 +792,7 @@ def cra_core_2d(
     x_name: str,
     max_distance: float = 300,
     min_points: int = 10,
+    coord_units: str = "metres",
 ) -> Optional[dict]:
     """
     Compute the core Contiguous Rain Area (CRA) decomposition between forecast and observation fields.
@@ -790,8 +814,9 @@ def cra_core_2d(
             (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension
             (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometers.
+        max_distance (float): Maximum allowed translation distance in kilometres.
         min_points (int): Minimum number of grid points required in a blob.
+        coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
     Returns:
         A dictionary containing the core CRA components:
@@ -822,7 +847,7 @@ def cra_core_2d(
     if np.isnan(mse_total):
         return None
 
-    shifted_fcst, dx, dy = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance)
+    shifted_fcst, dx, dy = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units)
     if shifted_fcst is None:
         return None
 
