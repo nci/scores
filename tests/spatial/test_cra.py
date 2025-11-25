@@ -11,15 +11,18 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-
+import sys
 from scores.spatial.cra_impl import (
     calc_bounding_box_centre,
     calc_corr_coeff,
     calc_resolution,
     cra,
     cra_2d,
+    cra_core_2d,
     generate_largest_rain_area_2d,
     translate_forecast_region,
+    shifted_mse,
+    _normalize_single_reduce_dim,
 )
 from src.scores.spatial import cra_impl
 
@@ -274,7 +277,7 @@ def test_translate_with_nan_obs():
     """Test translate_forecast_region handles NaN obs"""
     fcst = create_array()
     obs = create_array(value=np.nan)
-    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=300)
+    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=300, coord_units="degrees")
     assert shifted is None and dx is None and dy is None
 
 
@@ -282,7 +285,7 @@ def test_translate_exceeds_max_distance_strict():
     """Test translate_forecast_region rejects large shifts"""
     fcst = create_array()
     obs = fcst.copy().shift(x=30)  # large shift
-    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1)
+    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
     assert shifted is None and dx is None and dy is None
 
 
@@ -291,7 +294,7 @@ def test_translate_exceeds_max_distance():
     fcst = create_array()
     obs = fcst.copy()
     obs = obs.shift(x=20)  # large shift
-    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1)
+    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
     assert shifted is None and dx is None and dy is None
 
 
@@ -704,7 +707,7 @@ def test_translate_rejects_shift_due_to_max_distance():
     obs_da = xr.DataArray(obs_blob, dims=["y", "x"], coords=coords)
     fcst_da = xr.DataArray(fcst_blob, dims=["y", "x"], coords=coords)
 
-    shifted_fcst, dx, dy = translate_forecast_region(fcst_da, obs_da, "y", "x", max_distance=0.1)
+    shifted_fcst, dx, dy = translate_forecast_region(fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees")
 
     assert (
         shifted_fcst is None and dx is None and dy is None
@@ -722,7 +725,7 @@ def test_translate_fallback_bbox_with_valid_data():
     noise = np.random.normal(0, 50, size=(10, 10))
     fcst = fcst + xr.DataArray(noise, dims=["y", "x"])
 
-    shifted_fcst, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=500)
+    shifted_fcst, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=500, coord_units="degrees")
     # Should either succeed or return None, but covers the fallback path
     assert (shifted_fcst is not None) or (shifted_fcst is None)
 
@@ -737,22 +740,594 @@ def test_calc_resolution_with_degree_coordinates():
         np.random.rand(10, 10), dims=["latitude", "longitude"], coords={"latitude": lat, "longitude": lon}
     )
 
-    resolution = calc_resolution(data, ["latitude", "longitude"])
+    resolution = calc_resolution(data, ["latitude", "longitude"], units="degrees")
     assert resolution > 0
     assert np.isfinite(resolution)
 
 
-def test_function_returns_none_branch():
-    """Test function returns None branch when input is None."""
-    # Try to find a function with a 'return None' branch
-    candidate_funcs = [f for f in dir(cra_impl) if callable(getattr(cra_impl, f))]
-    for name in candidate_funcs:
-        func = getattr(cra_impl, name)
-        try:
-            res = func(None)
-            if res is None:
-                assert res is None
-                return
-        except Exception:
-            continue
-    pytest.skip("No function returned None for None input, adjust trigger input.")
+def gaussian_blob(y_size=100, x_size=100, amp=10.0, sigma=10.0, center=(50, 50), spacing_m=1000):
+    """Create a smooth 2D Gaussian blob with metre coordinates (1 km spacing)."""
+    y, x = np.ogrid[:y_size, :x_size]
+    cy, cx = center
+    blob = np.exp(-(((y - cy) ** 2 + (x - cx) ** 2) / (2 * sigma**2))) * amp
+
+    da = xr.DataArray(blob, dims=["y", "x"])
+    da = da.assign_coords(
+        y=np.arange(y_size) * spacing_m,  # metres
+        x=np.arange(x_size) * spacing_m,
+    )
+    return da
+
+
+def test_cra_core_2d_basic_output_type_and_keys():
+    """CRA core should return a dict with core keys for valid overlapping blobs."""
+    fcst = gaussian_blob()
+    obs = gaussian_blob()
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=5.0,
+        y_name="y",
+        x_name="x",
+        max_distance=300,
+        min_points=10,
+        coord_units="degrees",  # explicit for reproducibility
+    )
+    assert isinstance(result, dict)
+
+    expected_keys = {
+        "mse_total",
+        "mse_displacement",
+        "mse_volume",
+        "mse_pattern",
+        "optimal_shift",
+    }
+    for k in expected_keys:
+        assert k in result, f"Missing key in cra_core_2d output: {k}"
+
+    # Basic type checks
+    assert isinstance(result["mse_total"], (float, int, np.number))
+    assert isinstance(result["mse_displacement"], (float, int, np.number))
+    assert isinstance(result["mse_volume"], (float, int, np.number))
+    assert isinstance(result["mse_pattern"], (float, int, np.number))
+    assert isinstance(result["optimal_shift"], (list, tuple))
+    assert len(result["optimal_shift"]) == 2
+
+
+def test_cra_core_2d_returns_none_when_no_valid_rain_area():
+    """Returns None when nothing exceeds threshold or blobs are too small."""
+    fcst = create_array(value=0.0)
+    obs = create_array(value=0.0)
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=50.0,  # too high -> no blobs
+        y_name="y",
+        x_name="x",
+        max_distance=300,
+        min_points=10,
+        coord_units="degrees",
+    )
+    assert result is None
+
+
+def test_cra_core_2d_min_points_filter_returns_none():
+    """Returns None when contiguous area is below min_points."""
+    fcst = create_array(value=0.0)
+    obs = create_array(value=0.0)
+    # small 2x2 patch (4 points) above threshold
+    fcst[0:2, 0:2] = 10.0
+    obs[0:2, 0:2] = 10.0
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=5.0,
+        y_name="y",
+        x_name="x",
+        max_distance=300,
+        min_points=10,  # require at least 10 points -> reject
+        coord_units="degrees",
+    )
+    assert result is None
+
+
+def test_cra_core_2d_shape_mismatch_raises_valueerror():
+    """Shape mismatches should raise ValueError (parity with cra_2d behavior)."""
+    fcst = create_array(shape=(10, 10))
+    obs = create_array(shape=(8, 10))  # mismatched shape
+
+    with pytest.raises(ValueError):
+        cra_core_2d(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+
+
+def test_cra_core_2d_invalid_input_types_raise_typeerror():
+    """Non-xarray inputs should raise TypeError (parity with cra_2d behavior)."""
+    obs = create_array()
+    with pytest.raises(TypeError):
+        cra_core_2d("invalid", obs, threshold=5.0, y_name="y", x_name="x")
+
+    fcst = create_array()
+    with pytest.raises(TypeError):
+        cra_core_2d(fcst, "invalid", threshold=5.0, y_name="y", x_name="x")
+
+
+def test_cra_core_2d_rejects_large_shift_due_to_max_distance():
+    """If the optimal shift exceeds max_distance, cra_core_2d should return None."""
+    base = create_array()
+    base[0:4, 0:4] = 10.0
+
+    fcst = base
+    obs = base.shift(x=30)  # force a large translation
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=5.0,
+        y_name="y",
+        x_name="x",
+        max_distance=1,  # very strict -> reject
+        min_points=4,
+        coord_units="degrees",
+    )
+    assert result is None
+
+
+def test_cra_core_2d_component_relationships_when_overlap():
+    """
+    Check decomposition:
+    - non-negativity for displacement and volume
+    - mse_total = mse_displacement + mse_volume + mse_pattern
+    """
+    fcst = create_array(value=10.0)
+    obs = create_array(value=10.0)
+
+    # add small noise to avoid perfect equality
+    rng = np.random.default_rng(42)
+    noise = xr.DataArray(rng.normal(0, 0.1, size=fcst.shape), dims=fcst.dims)
+    fcst = fcst + noise
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=5.0,
+        y_name="y",
+        x_name="x",
+        max_distance=300,
+        min_points=10,
+        coord_units="degrees",
+    )
+    assert isinstance(result, dict)
+
+    mt = result["mse_total"]
+    md = result["mse_displacement"]
+    mv = result["mse_volume"]
+    mp = result["mse_pattern"]
+
+    # finite values
+    for val in (mt, md, mv, mp):
+        assert np.isfinite(val), f"Expected finite CRA component, got {val}"
+
+    # common CRA properties
+    assert md >= 0.0, "Displacement component should be non-negative"
+    assert mv >= 0.0, "Volume component should be non-negative"
+
+    # decomposition identity within tolerance
+    assert np.isclose(
+        mt, md + mv + mp, rtol=1e-5, atol=1e-6
+    ), "mse_total should equal mse_displacement + mse_volume + mse_pattern"
+
+
+def test_cra_core_2d_optimal_shift_vector_type():
+    """optimal_shift should be a 2-element numeric vector [dx, dy]."""
+    fcst = gaussian_blob(center=(50, 50))  # baseline
+    obs = gaussian_blob(center=(52, 53))  # 2 km (y), 3 km (x) shift
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=5.0,
+        y_name="y",
+        x_name="x",
+        max_distance=300,
+        min_points=10,
+        coord_units="metres",
+    )
+    assert isinstance(result, dict)
+    shift = result["optimal_shift"]
+    assert isinstance(shift, (list, tuple))
+    assert len(shift) == 2
+    assert all(np.isfinite(s) for s in shift)
+
+
+def test_cra_core_2d_mse_total_nan_triggers_none(monkeypatch):
+    """Force calc_mse to return NaN so cra_core_2d returns None and covers the branch."""
+    # Build valid blobs so the pipeline reaches calc_mse
+    fcst = gaussian_blob()  # helper added earlier in this file
+    obs = gaussian_blob()
+
+    # Monkeypatch calc_mse to return NaN
+    def fake_calc_mse(a, b):
+        return np.nan
+
+    # Patch in the module where cra_core_2d resolves calc_mse
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_mse", fake_calc_mse)
+
+    result = cra_core_2d(
+        fcst,
+        obs,
+        threshold=5.0,
+        y_name="y",
+        x_name="x",
+        max_distance=300,
+        min_points=10,
+        coord_units="metres",  # or "degrees" if your gaussian_blob uses degree coords
+    )
+
+    assert result is None, "Expected None when mse_total is NaN"
+
+
+def test_cra_core_2d_invalid_coord_units_raises_valueerror():
+    """Validate coord_units must be one of ['degrees', 'metres']."""
+    # Build minimal valid inputs so validation is the first failure point
+    fcst = create_array(value=10.0)
+    obs = create_array(value=10.0)
+
+    with pytest.raises(ValueError, match=r"coord_units must be one of \['degrees', 'metres'\]"):
+        cra_core_2d(
+            fcst,
+            obs,
+            threshold=5.0,
+            y_name="y",
+            x_name="x",
+            max_distance=300,
+            min_points=10,
+            coord_units="km",  # invalid -> triggers the branch
+        )
+
+
+def test_cra_appends_nans_and_logs_when_time_slice_shape_mismatch(monkeypatch, caplog):
+    """
+    Force a per-slice shape mismatch to cover the branch:
+        if fcst_slice.shape != obs_slice.shape: ... append NaNs ... continue
+    """
+    # Build two time steps with valid blobs so the first slice is valid.
+    time_vals = [np.datetime64("2025-01-01"), np.datetime64("2025-01-02")]
+    fcst1 = gaussian_blob()  # values up to ~10
+    obs1 = gaussian_blob()  # same -> valid overlap for slice 1
+    fcst2 = gaussian_blob(center=(55, 52))
+    obs2 = gaussian_blob(center=(55, 52))  # same shape/data before monkeypatch
+
+    fcst = xr.concat(
+        [fcst1.expand_dims({"time": [time_vals[0]]}), fcst2.expand_dims({"time": [time_vals[1]]})], dim="time"
+    )
+    obs = xr.concat(
+        [obs1.expand_dims({"time": [time_vals[0]]}), obs2.expand_dims({"time": [time_vals[1]]})], dim="time"
+    )
+    assert fcst.shape == obs.shape == (2, 100, 100)
+
+    # Patch DataArray.sel to return a wrong-shaped slice ONLY for the second time.
+    real_sel = xr.DataArray.sel
+
+    def forged_sel(self, indexers=None, **kwargs):
+        if isinstance(indexers, dict) and "time" in indexers:
+            # Normalize the requested time to datetime64[ns] and check against the 2nd time
+            sel_time = np.datetime64(indexers["time"], "ns")
+            if sel_time == np.datetime64(time_vals[1], "ns"):
+                # Return (1, 80, 80) with the selected time coord so squeeze(drop=True) -> (80, 80)
+                wrong = xr.DataArray(np.ones((1, 80, 80)), dims=["time", "y", "x"])
+                wrong = wrong.assign_coords(time=("time", np.array([sel_time])))
+                return wrong
+        return real_sel(self, indexers=indexers, **kwargs)
+
+    monkeypatch.setattr(xr.DataArray, "sel", forged_sel)
+
+    # Run cra; slice 1 should be valid, slice 2 should be NaNs with a warning logged.
+    with caplog.at_level("WARNING"):
+        result = cra(
+            fcst, obs, threshold=5.0, y_name="y", x_name="x", reduce_dims="time"  # Gaussian blobs have ample area > 5
+        )
+
+    # Two results per metric
+    for metric, values in result.items():
+        assert len(values) == 2, f"{metric} should have 2 time entries"
+
+    # First slice: valid (numbers or finite vector)
+    for metric, values in result.items():
+        v0 = values[0]
+        if isinstance(v0, (float, int, np.number)):
+            assert np.isfinite(v0), f"{metric} first slice should be finite"
+        else:
+            # optimal_shift is list-like; ensure all finite
+            arr = np.array(v0, dtype=float)
+            assert np.isfinite(arr).all(), f"{metric} first slice should be finite"
+
+    # Second slice: NaNs due to forced shape mismatch
+    for metric, values in result.items():
+        v1 = values[1]
+        if isinstance(v1, (float, int, np.number)):
+            assert np.isnan(v1), f"{metric} second slice should be NaN due to shape mismatch"
+        else:
+            arr = np.array(v1, dtype=float)
+            assert np.isnan(arr).all(), f"{metric} second slice should be all NaNs due to shape mismatch"
+
+    # Logged warning check
+    assert "shape mismatch between forecast and observation" in caplog.text
+
+
+def test_shifted_mse_returns_inf_on_valueerror_in_int(monkeypatch):
+    """
+    Force ValueError inside the try-block of shifted_mse by monkeypatching `int`.
+    This deterministically covers:
+        except (ValueError, TypeError):
+            return np.inf
+    """
+    # Minimal valid inputs so we reach the try-block
+    fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+    obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+    fixed_mask = xr.DataArray(np.ones((10, 10), dtype=bool), dims=["y", "x"])
+    spatial_dims = ["x", "y"]
+
+    # Valid numeric shifts so len==2 and np.isnan(shifts) is False
+    shifts = [1.0, 2.0]
+
+    # Patch the `int` that shifted_mse resolves in its own globals to raise ValueError
+    def fake_int(*args, **kwargs):
+        raise ValueError("forced int failure")
+
+    monkeypatch.setitem(shifted_mse.__globals__, "int", fake_int)
+
+    out = shifted_mse(shifts, fcst, obs, spatial_dims, fixed_mask)
+    assert out == np.inf, "Expected np.inf when int(round(...)) raises ValueError"
+
+
+def test_shifted_mse_returns_inf_on_typeerror_in_round(monkeypatch):
+    """
+    Alternatively, force TypeError from `round` to hit the same except-path.
+    """
+    fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+    obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+    fixed_mask = xr.DataArray(np.ones((10, 10), dtype=bool), dims=["y", "x"])
+    spatial_dims = ["x", "y"]
+
+    shifts = [1.0, 2.0]
+
+    def fake_round(*args, **kwargs):
+        raise TypeError("forced round failure")
+
+    monkeypatch.setitem(shifted_mse.__globals__, "round", fake_round)
+
+    out = shifted_mse(shifts, fcst, obs, spatial_dims, fixed_mask)
+    assert out == np.inf, "Expected np.inf when round(...) raises TypeError"
+
+
+def test_calc_resolution_invalid_units_raises_valueerror():
+    """calc_resolution should raise ValueError for unsupported units."""
+    # Create a simple DataArray with explicit spatial coords so dy/dx are well-defined
+    y = np.linspace(0, 9_000, 10)  # metres (1 km spacing)
+    x = np.linspace(0, 9_000, 10)  # metres (1 km spacing)
+    data = xr.DataArray(
+        np.random.rand(10, 10),
+        dims=["y", "x"],
+        coords={"y": y, "x": x},
+    )
+
+    # Pass an invalid units string to trigger the else branch
+    with pytest.raises(ValueError, match=r"units must be 'degrees' or 'metres'"):
+        calc_resolution(data, ["y", "x"], units="km")  # invalid
+
+    # Try a different invalid value to be extra sure the branch is covered
+    with pytest.raises(ValueError, match=r"units must be 'degrees' or 'metres'"):
+        calc_resolution(data, ["y", "x"], units="meters")  # invalid spelling if you only accept 'metres'
+
+
+def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatch):
+    """
+    Cover branch:
+        if rmse_shifted > rmse_original or corr_shifted < corr_original or mse_shifted > original_mse:
+            return None, None, None
+    by monkeypatching metric functions to force the condition true.
+    """
+
+    # Minimal valid data with a fully valid mask
+    fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+    obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+
+    # 1) Patch optimizer to return a small valid shift so we reach the final metric check
+    class FakeResult:
+        success = True
+        x = np.array([1.0, 1.0])  # dx, dy
+        fun = 0.1
+
+    def fake_minimize(*args, **kwargs):
+        return FakeResult()
+
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "minimize", fake_minimize)
+
+    # 2) Patch resolution so distance is tiny (1 km/grid), avoiding max_distance rejection
+    def fake_calc_resolution(_obs, _spatial_dims, _units):
+        return 1.0  # km per grid-point
+
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_resolution", fake_calc_resolution)
+
+    # 3) Patch shift to be applied as-is (optional, but keeps data predictable)
+    def fake_shift_fcst(arr, shift_x, shift_y, spatial_dims):
+        # very simple: roll without changing values (still ones)
+        return arr.roll({spatial_dims[1]: shift_x, spatial_dims[0]: shift_y}, roll_coords=False)
+
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "shift_fcst", fake_shift_fcst)
+
+    # 4) Force the final comparison to reject:
+    #    rmse_shifted > rmse_original, corr_shifted < corr_original, mse_shifted > original_mse
+    # We use counters to distinguish "shifted" vs "original" calls.
+    call_state = {"rmse_calls": 0, "corr_calls": 0, "mse_calls": 0}
+
+    def fake_calc_rmse(a, b):
+        call_state["rmse_calls"] += 1
+        # First rmse call in translate_forecast_region is for shifted_fcst_masked
+        return 10.0 if call_state["rmse_calls"] == 1 else 1.0  # shifted > original
+
+    def fake_calc_corr_coeff(a, b):
+        call_state["corr_calls"] += 1
+        # First corr call is for shifted; second for original
+        return 0.1 if call_state["corr_calls"] == 1 else 0.9  # shifted < original
+
+    def fake_calc_mse(a, b):
+        call_state["mse_calls"] += 1
+        # First mse computed before optimization is original_mse
+        # Later mse for shifted is compared against original_mse at the end
+        # We want mse_shifted > original_mse
+        return 100.0 if call_state["mse_calls"] >= 3 else 10.0
+        # Explanation:
+        #   call 1 -> original_mse (before brute-force/opt) = 10.0
+        #   call 2 -> best_score in brute-force (not critical)
+        #   call 3 -> mse_shifted (final check) = 100.0
+
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_rmse", fake_calc_rmse)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_corr_coeff", fake_calc_corr_coeff)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_mse", fake_calc_mse)
+
+    # Run with metres to avoid degree distance surprises
+    shifted, dx, dy = translate_forecast_region(
+        fcst, obs, y_name="y", x_name="x", max_distance=300, coord_units="metres"
+    )
+
+    # Expect rejection due to worsened metrics
+    assert shifted is None and dx is None and dy is None
+
+
+def test__normalize_single_reduce_dim_raises_when_none():
+    """_normalize_single_reduce_dim should raise when reduce_dims is None (explicit message)."""
+    # Minimal valid DataArray with the grouping dim present
+    fcst = create_array().expand_dims({"time": ["2025-01-01"]})
+
+    # Import the helper from the same module used in your code path
+    from scores.spatial.cra_impl import _normalize_single_reduce_dim
+
+    with pytest.raises(
+        ValueError,
+        match=r"CRA currently supports aggregation by a single dimension only\. "
+        r"Please specify the dimension to reduce over \(e\.g\., 'time'\)\.",
+    ):
+        _normalize_single_reduce_dim(fcst, None)
+
+
+def test_normalize_single_reduce_dim_raises_when_missing_dim():
+    """Directly cover branch in _normalize_single_reduce_dim when dim is missing."""
+    data = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+
+    with pytest.raises(ValueError, match=r"Requested reduce dimension 'time' not found in data dims \['y', 'x'\]"):
+        _normalize_single_reduce_dim(data, "time")
+
+
+def test_cra_2d_invalid_coord_units():
+    # Create dummy forecast and observation DataArrays with matching shape
+    data = np.ones((5, 5))
+    fcst = xr.DataArray(data, dims=["lat", "lon"])
+    obs = xr.DataArray(data, dims=["lat", "lon"])
+
+    # Use an invalid coord_units value
+    invalid_units = "kilometers"
+
+    with pytest.raises(ValueError) as excinfo:
+        cra_2d(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units=invalid_units)
+
+    # Assert the error message contains the expected text
+    assert f"Invalid coord_units '{invalid_units}'" in str(excinfo.value)
+
+
+def test_cra_2d_returns_none_when_mse_is_nan(monkeypatch):
+    # Create dummy forecast and observation DataArrays with matching shape
+    data = np.array([[np.nan, np.nan], [np.nan, np.nan]])
+    fcst = xr.DataArray(data, dims=["lat", "lon"])
+    obs = xr.DataArray(data, dims=["lat", "lon"])
+
+    # Monkeypatch generate_largest_rain_area_2d to return blobs with NaNs
+    def fake_generate_largest_rain_area_2d(fcst, obs, threshold, min_points):
+        return fcst, obs
+
+    monkeypatch.setattr(
+        sys.modules["scores.spatial.cra_impl"], "generate_largest_rain_area_2d", fake_generate_largest_rain_area_2d
+    )
+
+    # Monkeypatch calc_mse to return NaN explicitly
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_mse", lambda a, b: np.nan)
+
+    result = cra_2d(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
+
+    assert result is None
+
+
+def test_cra_time_val_conversion_int_and_str(monkeypatch):
+    # Forecast and observation with integer time coordinates
+    fcst_data = np.ones((2, 2, 2))
+    obs_data = np.ones((2, 2, 2))
+    fcst_int = xr.DataArray(fcst_data, dims=["time", "lat", "lon"], coords={"time": [0, 1]})
+    obs_int = xr.DataArray(obs_data, dims=["time", "lat", "lon"], coords={"time": [0, 1]})
+
+    # Monkeypatch .sel to avoid KeyError when datetime64 is passed
+    original_sel = xr.DataArray.sel
+
+    def safe_sel(self, indexers=None, drop=False):
+        # Ignore mismatched type and just return the first slice
+        return original_sel(self, {"time": self.time.values[0]}, drop=drop)
+
+    monkeypatch.setattr(xr.DataArray, "sel", safe_sel)
+
+    # Monkeypatch cra_2d to avoid heavy computation
+    monkeypatch.setattr(
+        "scores.spatial.cra_impl.cra_2d",
+        lambda *a, **k: {
+            m: 0
+            for m in [
+                "mse_total",
+                "mse_displacement",
+                "mse_volume",
+                "mse_pattern",
+                "optimal_shift",
+                "num_gridpoints_above_threshold_fcst",
+                "num_gridpoints_above_threshold_obs",
+                "avg_fcst",
+                "avg_obs",
+                "max_fcst",
+                "max_obs",
+                "corr_coeff_original",
+                "corr_coeff_shifted",
+                "rmse_original",
+                "rmse_shifted",
+            ]
+        },
+    )
+
+    # Run cra with integer time coords (covers int -> datetime64 conversion)
+    result_int = cra(fcst_int, obs_int, threshold=1.0, y_name="lat", x_name="lon", reduce_dims="time")
+    assert all(len(v) == 2 for v in result_int.values())
+
+    # Forecast and observation with string time coordinates (covers str -> datetime64 conversion)
+    fcst_str = xr.DataArray(fcst_data, dims=["time", "lat", "lon"], coords={"time": ["2020-01-01", "2020-01-02"]})
+    obs_str = xr.DataArray(obs_data, dims=["time", "lat", "lon"], coords={"time": ["2020-01-01", "2020-01-02"]})
+
+    result_str = cra(fcst_str, obs_str, threshold=1.0, y_name="lat", x_name="lon", reduce_dims="time")
+    assert all(len(v) == 2 for v in result_str.values())
+
+
+def test_cra_core_2d_returns_none_when_shifted_fcst_is_none(monkeypatch):
+    # Create dummy forecast and observation DataArrays
+    data = np.ones((2, 2))
+    fcst = xr.DataArray(data, dims=["lat", "lon"])
+    obs = xr.DataArray(data, dims=["lat", "lon"])
+
+    # Monkeypatch generate_largest_rain_area_2d to return valid blobs
+    monkeypatch.setattr("scores.spatial.cra_impl.generate_largest_rain_area_2d", lambda *a, **k: (fcst, obs))
+
+    # Monkeypatch calc_mse to return a valid number
+    monkeypatch.setattr("scores.spatial.cra_impl.calc_mse", lambda *a, **k: 1.0)
+
+    # Monkeypatch translate_forecast_region to return None for shifted_fcst
+    monkeypatch.setattr("scores.spatial.cra_impl.translate_forecast_region", lambda *a, **k: (None, 0, 0))
+
+    result = cra_core_2d(fcst, obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
+
+    assert result is None

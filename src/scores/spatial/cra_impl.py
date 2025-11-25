@@ -471,12 +471,14 @@ def _normalize_single_reduce_dim(data: xr.DataArray, reduce_dims: Optional[list[
 
     if isinstance(reduce_dims, str):
         group_dim = reduce_dims
-    elif isinstance(reduce_dims, (list, tuple)) and len(reduce_dims) == 1:
+    elif isinstance(reduce_dims, (list, tuple)):
+        if len(reduce_dims) != 1:
+            raise ValueError("CRA currently supports grouping by a single dimension only.")
         group_dim = reduce_dims[0]
-    else:
-        raise ValueError("`reduce_dims` must be a string or a list/tuple with exactly one string.")
 
-    # Validate presence in data dims to catch typos early
+    else:
+        raise ValueError("reduce_dims must be a string or a list of one string.")
+
     dims = list(data.dims)
     if group_dim not in dims:
         raise ValueError(f"Requested reduce dimension '{group_dim}' not found in data dims {dims}.")
@@ -719,15 +721,15 @@ def cra(
     if not isinstance(obs, xr.DataArray):
         raise TypeError("obs must be an xarray DataArray")
 
-    # # Normalize reduce_dims
+    if fcst.shape != obs.shape:
+        raise ValueError("fcst and obs must have the same shape")
+
+    # Normalize reduce_dims
     if reduce_dims is None:
         reduce_dims = ["time"]  # Default to time if not specified
 
     # Require explicit single dimension
     group_dim = _normalize_single_reduce_dim(fcst, reduce_dims)
-
-    if fcst.shape != obs.shape:
-        raise ValueError("fcst and obs must have the same shape")
 
     # Align forecast and observation
     fcst, obs = xr.align(fcst, obs)
@@ -837,7 +839,18 @@ def cra_core_2d(
 
 
     """
-    # Reuse your existing pipeline
+
+    if not isinstance(fcst, xr.DataArray):
+        raise TypeError("fcst must be an xarray DataArray")
+    if not isinstance(obs, xr.DataArray):
+        raise TypeError("obs must be an xarray DataArray")
+    if fcst.shape != obs.shape:
+        raise ValueError("fcst and obs must have the same shape")
+
+    allowed_units = ["degrees", "metres"]
+    if coord_units not in allowed_units:
+        raise ValueError(f"coord_units must be one of {allowed_units}")
+
     blobs = generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
     fcst_blob, obs_blob = blobs
     if fcst_blob is None or obs_blob is None:
