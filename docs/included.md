@@ -16,7 +16,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Additive Bias (Mean Error)
   - [API](api.md#scores.continuous.additive_bias)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
-  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
+  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#meanerror)
 * - Consistent Expectile Score
   - [API](api.md#scores.continuous.consistent_expectile_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)
@@ -76,7 +76,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Mean Error (Additive Bias)
   - [API](api.md#scores.continuous.mean_error)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
-  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#meanerror)
+  - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#meanerror)
 * - Mean Squared Error (MSE)
   - [API](api.md#scores.continuous.mse)
   - [Tutorial](project:./tutorials/Mean_Squared_Error.md)
@@ -84,7 +84,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Multiplicative Bias
   - [API](api.md#scores.continuous.multiplicative_bias)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
-  - [Multiplicative bias (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#multiplicative_bias)
+  - [Multiplicative bias (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#multiplicative_bias)
 * - Murphy Score (Mean Elementary Score)
   -
   -
@@ -294,7 +294,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Binary Contingency Scores and Binary Contingency Tables
   - [API](api.md#scores.categorical.BinaryContingencyManager); [API](api.md#scores.categorical.BasicContingencyManager)
   - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  - [Methods for dichotomous (yes/no) forecasts](https://www.cawcr.gov.au/projects/verification/#Methods_for_dichotomous_forecasts)
+  - [Methods for dichotomous (yes/no) forecasts](https://jwgfvr.github.io/forecastverification/#Dichotomous)
 * -
     - Accuracy (Fraction Correct)
   -
@@ -302,7 +302,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
+    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ACC)
 * -
     - Base Rate
   -
@@ -318,7 +318,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
+    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#BIAS)
 * -
     - Cohen's Kappa (Heidke Skill Score)
   -
@@ -326,7 +326,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-     [Heidke Skill Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HSS)
+     [Heidke Skill Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HSS)
 * -
     - Critical Success Index (Threat Score)
   -
@@ -334,7 +334,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)
+    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#CSI)
 * -
     - Equitable Threat Score (Gilbert Skill Score)
   -
@@ -342,7 +342,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
+    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ETS)
 * -
     - F1 Score
   -
@@ -358,7 +358,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
 * -
     - False Alarm Ratio (FAR)
   -
