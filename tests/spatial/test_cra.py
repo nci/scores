@@ -7,12 +7,15 @@ These tests validate the CRA (Contiguous Rain Area) metric implementation, inclu
 basic functionality, handling of NaNs, dataset input, and error handling
 """
 
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-import sys
+
 from scores.spatial.cra_impl import (
+    _normalize_single_reduce_dim,
     calc_bounding_box_centre,
     calc_corr_coeff,
     calc_resolution,
@@ -20,11 +23,9 @@ from scores.spatial.cra_impl import (
     cra_2d,
     cra_core_2d,
     generate_largest_rain_area_2d,
-    translate_forecast_region,
     shifted_mse,
-    _normalize_single_reduce_dim,
+    translate_forecast_region,
 )
-from src.scores.spatial import cra_impl
 
 THRESHOLD = 10
 
