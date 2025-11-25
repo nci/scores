@@ -366,7 +366,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#FAR)
+    [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#FAR)
 * -
     - Forecast Rate
   -
@@ -382,7 +382,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ACC)
+    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#ACC)
 * -
     - Frequency Bias (Bias Score)
   -
@@ -390,7 +390,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#BIAS)
+    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#BIAS)
 * -
     - Gilbert Skill Score (Equitable Threat Score)
   -
@@ -398,7 +398,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#ETS)
+    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#ETS)
 * -
     - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
   -
@@ -406,7 +406,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#HK)
 * -
     - Heidke Skill Score (Cohen's Kappa)
   -
@@ -414,7 +414,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-     [Heidke skill score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HSS)
+     [Heidke skill score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#HSS)
 * -
     - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity, Recall)
   -
@@ -422,7 +422,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POD)
 * -
     - Negative Predictive Value
   -
@@ -454,7 +454,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+    [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#HK)
 * -
     - Positive Predictive Value (Success Ratio, Precision)
   -
@@ -462,7 +462,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#SR); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -
     - Precision (Success Ratio, Positive Predictive Value)
   -
@@ -470,7 +470,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#SR)
 * -
     - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity, Recall)
   -
@@ -478,7 +478,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POD)
 * -
     - Probability of False Detection (POFD) (False Alarm Rate)
   -
@@ -486,7 +486,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POFD)
 * -
     - Recall (Hit Rate, Probability of Detection (POD), True Positive Rate, Sensitivity)
   -
@@ -494,7 +494,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POD)
 * -
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
   -
@@ -518,7 +518,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#SR)
+    [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#SR)
 * -
     - Symmetric Extremal Dependence Index (SEDI)
   -
@@ -534,7 +534,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#CSI)
+    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#CSI)
 * -
     - True Negative Rate (Specificity)
   -
@@ -550,7 +550,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POD)
 * -
     - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
   -
@@ -558,7 +558,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
   -
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#HK)
+    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#HK)
 * -
     - Yule's Q (Odds Ratio Skill Score)
   -
@@ -574,11 +574,11 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - POD - implementation as used in ROC (***NOTE:*** **Please use contingency table classes instead, this API may be removed in future**)
   - [API](api.md#scores.categorical.probability_of_detection)
   - [Tutorial](project:./tutorials/ROC.md)
-  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POD)
+  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POD)
 * - POFD - implementation as used in ROC (***NOTE:*** **Please use contingency table classes instead, this API may be removed in future**)
   - [API](api.md#scores.categorical.probability_of_false_detection)
   - [Tutorial](project:./tutorials/ROC.md)
-  - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://www.cawcr.gov.au/projects/verification/#POFD)
+  - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/#POFD)
 * - Risk Matrix Score
   -
   -
