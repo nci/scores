@@ -29,7 +29,7 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    See "Mean squared error" section at https://www.cawcr.gov.au/projects/verification/#MSE for more information
+    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE for more information.
 
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
@@ -55,13 +55,12 @@ def mse(
             to the data dimensions and must not contain negative or NaN values. If
             appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
-            See the scores weighting tutorial for more information on how to use weights.
+            See the ``scores`` weighting tutorial for more information on how to use weights.
         is_angular: specifies whether `fcst` and `obs` are angular
             data (e.g. wind direction). If True, a different function is used
             to calculate the difference between `fcst` and `obs`, which
             accounts for circularity. Angular `fcst` and `obs` data should be in
             degrees rather than radians.
-
 
     Returns:
         Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: An object containing
@@ -71,6 +70,11 @@ def mse(
             reduced along the relevant dimensions and weighted appropriately.
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    References:
+        -   https://jwgfvr.github.io/forecastverification/index.html#MSE
+        -   https://en.wikipedia.org/wiki/Mean_squared_error
+
     """
 
     if is_xarraylike(fcst):
