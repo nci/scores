@@ -10,6 +10,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 try:
     import numba
+    from scores.probability.crps_numba import crps_cdf_exact_fast
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
@@ -32,7 +33,6 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from scores.probability.crps_numba import crps_cdf_exact_fast
 from tests.probabilty import crps_test_data
 
 
