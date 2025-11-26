@@ -248,7 +248,8 @@ def mean_error(
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
 
-    See "Mean error" section at https://www.cawcr.gov.au/projects/verification/ for more information
+    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
+    for more information.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -267,10 +268,13 @@ def mean_error(
             to the data dimensions and must not contain negative or NaN values. If
             appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
-            See the scores weighting tutorial for more information on how to use weights.
+            See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the mean error of a forecast.
+
+    References:
+        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     """
     return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
@@ -294,7 +298,8 @@ def additive_bias(
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
 
-    See "Mean error" section at https://www.cawcr.gov.au/projects/verification/ for more information
+    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
+    for more information.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -313,10 +318,13 @@ def additive_bias(
             to the data dimensions and must not contain negative or NaN values. If
             appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
-            See the scores weighting tutorial for more information on how to use weights.
+            See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the additive bias of a forecast.
+
+    References:
+        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     """
     # Note - mean error call this function
