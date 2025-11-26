@@ -135,12 +135,12 @@ def nse(
             implementation. The user will be prompted to report this as a
             github issue.
 
-    Supplementary details:  
-        - Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the 
-          closer to 1, the more accurate the model is. 
+    Supplementary details:
+        - Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the
+          closer to 1, the more accurate the model is.
 
-          - NSE = 1, corresponds to a perfect match of the model to the obs.  
-          - NSE = 0, indicates that the model is as accurate as the mean obs.  
+          - NSE = 1, corresponds to a perfect match of the model to the obs.
+          - NSE = 0, indicates that the model is as accurate as the mean obs.
           - -Inf < NSE < 0, indicates that the mean obs is better predictor than the model.
 
         - The optional ``weights`` argument can additionally be used to perform
