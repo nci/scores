@@ -357,7 +357,8 @@ def multiplicative_bias(
         \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-    See "(Multiplicative) bias" section at https://www.cawcr.gov.au/projects/verification/ for more information
+    See "(Multiplicative) bias" section at https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
+    for more information.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -376,10 +377,13 @@ def multiplicative_bias(
             to the data dimensions and must not contain negative or NaN values. If
             appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
             The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
-            See the scores weighting tutorial for more information on how to use weights.
+            See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
         An xarray object with the multiplicative bias of a forecast.
+
+    References:
+        -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
 
     """
     reduce_dims = scores.utils.gather_dimensions(
