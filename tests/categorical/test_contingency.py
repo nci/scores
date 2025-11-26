@@ -394,13 +394,13 @@ def test_examples_with_finley():
 
     # Note - the reference in the verification site has 0.36 for the expected
     # result, but presumably this is rounded to two decimal places
-    # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
+    # See https://jwgfvr.github.io/forecastverification/site/Finley/Finley_Tornados.html
     heidke_expected = xr.DataArray(0.355325)
     xr.testing.assert_allclose(heidke, heidke_expected)
 
     # Note - the reference in the verification site has 0.22 for the expected
     # result, but presumably this is rounded to two decimal places
-    # See https://www.cawcr.gov.au/projects/verification/Finley/Finley_Tornados.html
+    # See https://jwgfvr.github.io/forecastverification/site/Finley/Finley_Tornados.html
     gilbert_expected = xr.DataArray(0.216046)
     xr.testing.assert_allclose(gilbert_expected, gilbert)
 
