@@ -59,7 +59,8 @@ maintainer = ["build",
               "pandoc",
               "pip-tools",
 ]
-all = ["scores[dev,tutorial]"]
+fast = ["numba"]
+all = ["scores[dev,tutorial,fast]"]
 
 [project.urls]
 "Repository" = "https://github.com/nci/scores" 

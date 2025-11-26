@@ -8,6 +8,10 @@ try:
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+try:
+    import numba
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -23,11 +27,12 @@ from scores.probability import (
     tw_crps_for_ensemble,
 )
 from scores.probability.crps_impl import (
-    crps_cdf_exact,
+    crps_cdf_exact_slow,
     crps_cdf_reformat_inputs,
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
+from scores.probability.crps_numba import crps_cdf_exact_fast
 from tests.probabilty import crps_test_data
 
 
@@ -54,9 +59,12 @@ def test_crps_stepweight(
     xr.testing.assert_allclose(result, expected)
 
 
-def test_crps_cdf_exact():
-    """Tests `crps_cdf_exact`."""
-    result = crps_cdf_exact(
+def test_crps_cdf_exact_fast():
+    """Tests `crps_cdf_exact_fast`."""
+
+    if numba == "Unavailable":  # pragma: no cover
+        pytest.skip("Numba unavailable, could not run test")  # pragma: no cover
+    result = crps_cdf_exact_fast(
         crps_test_data.DA_FCST_CRPS_EXACT,
         crps_test_data.DA_OBS_CRPS,
         crps_test_data.DA_WT_CRPS_EXACT,
@@ -65,7 +73,7 @@ def test_crps_cdf_exact():
     )
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
-    result2 = crps_cdf_exact(
+    result2 = crps_cdf_exact_fast(
         crps_test_data.DA_FCST_CRPS_EXACT,
         crps_test_data.DA_OBS_CRPS,
         crps_test_data.DA_WT_CRPS_EXACT,
@@ -75,13 +83,37 @@ def test_crps_cdf_exact():
     assert list(result2.data_vars) == ["total"]
 
 
-def test_crps_cdf_exact_dask():
-    """Tests `crps_cdf_exact` works with Dask."""
+def test_crps_cdf_exact_slow():
+    """Tests `crps_cdf_exact_slow`."""
+
+    result = crps_cdf_exact_slow(
+        crps_test_data.DA_FCST_CRPS_EXACT,
+        crps_test_data.DA_OBS_CRPS_EXACT,
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=True,
+    )
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
+
+    result2 = crps_cdf_exact_slow(
+        crps_test_data.DA_FCST_CRPS_EXACT,
+        crps_test_data.DA_OBS_CRPS_EXACT,
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=False,
+    )
+    assert list(result2.data_vars) == ["total"]
+
+
+def test_crps_cdf_exact_fast_dask():
+    """Tests `crps_cdf_exact_fast` works with Dask."""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    if numba == "Unavailable":  # pragma: no cover
+        pytest.skip("Numba unavailable, could not run test")  # pragma: no cover
 
-    result = crps_cdf_exact(
+    result = crps_cdf_exact_fast(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
         crps_test_data.DA_OBS_CRPS.chunk(),
         crps_test_data.DA_WT_CRPS_EXACT,
@@ -93,9 +125,40 @@ def test_crps_cdf_exact_dask():
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
-    result2 = crps_cdf_exact(
+    result2 = crps_cdf_exact_fast(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
         crps_test_data.DA_OBS_CRPS.chunk(),
+        crps_test_data.DA_WT_CRPS_EXACT.chunk(),
+        "x",
+        include_components=False,
+    )
+    assert isinstance(result2.total.data, dask.array.Array)
+    result2 = result2.compute()
+    assert isinstance(result2.total.data, np.ndarray)
+    assert list(result2.data_vars) == ["total"]
+
+
+def test_crps_cdf_exact_slow_dask():
+    """Tests `crps_cdf_exact_slow` works with Dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = crps_cdf_exact_slow(
+        crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=True,
+    )
+    assert isinstance(result.total.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.total.data, np.ndarray)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
+
+    result2 = crps_cdf_exact_slow(
+        crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
         crps_test_data.DA_WT_CRPS_EXACT.chunk(),
         "x",
         include_components=False,
