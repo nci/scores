@@ -18,15 +18,17 @@ def generate_largest_rain_area_2d(
     """
     Identify and extract the largest contiguous rain blobs from forecast and observation fields.
 
-    This function masks values below a given threshold and labels connected components (blobs)
+    This function expects 2-D spatial inputs and operates like an image segmentation on a
+    horizontal grid.
+    It masks values below a given threshold and labels connected components (blobs)
     in the forecast and observation arrays. It retains only the largest blob from each field,
     where "largest" refers to the blob with the greatest number of grid points (i.e., pixel count)
 
     Args:
-        fcst (xr.DataArray): Forecast field.
-        obs (xr.DataArray): Observation field.
-        threshold (float): Threshold to define rain blobs.
-        min_points (int): Minimum points in a blob
+        fcst (xr.DataArray): 2-D forecast field.
+        obs (xr.DataArray): 2-D observation field.
+        threshold (float): Value above which a grid point is considered part of a rain blob.
+        min_points (int): Minimum number of grid points required for a blob to be ratined
 
     Returns:
         Largest contiguous blobs from forecast and observation.
