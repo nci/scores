@@ -27,7 +27,8 @@ def generate_largest_rain_area_2d(
     Args:
         fcst (xr.DataArray): 2-D forecast field.
         obs (xr.DataArray): 2-D observation field.
-        threshold (float): Value above which a grid point is considered part of a rain blob.
+        threshold (float): Minimum value that a grid point must meet or exceed to be considered
+            part of a rain blob.
         min_points (int): Minimum number of grid points required for a blob to be ratined
 
     Returns:
@@ -37,8 +38,8 @@ def generate_largest_rain_area_2d(
         >>> fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
     """
 
-    masked_obs = obs.where(obs > threshold)
-    masked_fcst = fcst.where(fcst > threshold)
+    masked_obs = obs.where(obs >= threshold)
+    masked_fcst = fcst.where(fcst >= threshold)
 
     if masked_fcst.count() < min_points or masked_obs.count() < min_points:
         logger.info(f"Less than {min_points} points meet the condition.")
