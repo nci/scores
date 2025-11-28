@@ -16,15 +16,15 @@ import xarray as xr
 
 from scores.spatial.cra_impl import (
     _normalize_single_reduce_dim,
-    calc_bounding_box_centre,
-    calc_corr_coeff,
-    calc_resolution,
+    _calc_bounding_box_centre,
+    _calc_corr_coeff,
+    _calc_resolution,
     cra,
     cra_2d,
     cra_core_2d,
-    generate_largest_rain_area_2d,
-    shifted_mse,
-    translate_forecast_region,
+    _generate_largest_rain_area_2d,
+    _shifted_mse,
+    _translate_forecast_region,
 )
 
 THRESHOLD = 10
@@ -236,7 +236,7 @@ def test_small_blobs():
     assert fcst.where(fcst > 5.0).count().item() == 1
     assert obs.where(obs > 5.0).count().item() == 1
 
-    fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
     assert fcst_blob is None and obs_blob is None
 
 
@@ -253,7 +253,7 @@ def test_largest_blob_too_small_post_extraction():
     obs[0, 6:11] = 10.0
 
     # This passes the initial count check (10 points), but each blob is only 5 points
-    fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=6)
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=6)
     assert fcst_blob is None and obs_blob is None
 
 
@@ -263,39 +263,39 @@ def test_small_blobs_min_points_filter():
     obs = create_array(value=0.0)
     fcst[0:2, 0:2] = 10  # 4 points
     obs[0:2, 0:2] = 10
-    fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
     assert fcst_blob is None and obs_blob is None
 
 
 def test_empty_bounding_box():
     """Test bounding box center returns NaNs for empty array"""
     arr = create_array(value=0.0)
-    centre = calc_bounding_box_centre(arr)
+    centre = _calc_bounding_box_centre(arr)
     assert np.isnan(centre[0]) and np.isnan(centre[1])
 
 
 def test_translate_with_nan_obs():
-    """Test translate_forecast_region handles NaN obs"""
+    """Test _translate_forecast_region handles NaN obs"""
     fcst = create_array()
     obs = create_array(value=np.nan)
-    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=300, coord_units="degrees")
+    shifted, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=300, coord_units="degrees")
     assert shifted is None and dx is None and dy is None
 
 
 def test_translate_exceeds_max_distance_strict():
-    """Test translate_forecast_region rejects large shifts"""
+    """Test _translate_forecast_region rejects large shifts"""
     fcst = create_array()
     obs = fcst.copy().shift(x=30)  # large shift
-    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
+    shifted, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
     assert shifted is None and dx is None and dy is None
 
 
 def test_translate_exceeds_max_distance():
-    """Test translate_forecast_region rejects shift exceeds max_distance"""
+    """Test _translate_forecast_region rejects shift exceeds max_distance"""
     fcst = create_array()
     obs = fcst.copy()
     obs = obs.shift(x=20)  # large shift
-    shifted, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
+    shifted, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
     assert shifted is None and dx is None and dy is None
 
 
@@ -360,7 +360,7 @@ def test_largest_blob_too_small():
     obs = create_array(value=0.0)
     fcst[0:1, 0:2] = 10  # 2 points
     obs[0:1, 0:2] = 10
-    fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=50)
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=50)
     assert fcst_blob is None and obs_blob is None
 
 
@@ -424,7 +424,7 @@ def test_calc_corr_coeff_empty_after_nan_removal():
     data1 = xr.DataArray(np.full((10, 10), np.nan))
     data2 = xr.DataArray(np.random.rand(10, 10))
 
-    result = calc_corr_coeff(data1, data2)
+    result = _calc_corr_coeff(data1, data2)
     assert np.isnan(result), "Expected NaN when one input is all NaNs"
 
 
@@ -432,7 +432,7 @@ def test_calc_corr_coeff_constant_array():
     """Test correlation returns NaN for constant array input."""
     data1 = xr.DataArray(np.full((10, 10), 5.0))
     data2 = xr.DataArray(np.random.rand(10, 10))
-    result = calc_corr_coeff(data1, data2)
+    result = _calc_corr_coeff(data1, data2)
     assert np.isnan(result), "Expected NaN for constant array input"
 
 
@@ -697,7 +697,7 @@ def test_cra_handles_string_time_key():
 
 
 def test_translate_rejects_shift_due_to_max_distance():
-    """Test translate_forecast_region rejects shift due to max distance."""
+    """Test _translate_forecast_region rejects shift due to max distance."""
     y, x = np.ogrid[:100, :100]
     center_y, center_x = 50, 50
 
@@ -708,7 +708,7 @@ def test_translate_rejects_shift_due_to_max_distance():
     obs_da = xr.DataArray(obs_blob, dims=["y", "x"], coords=coords)
     fcst_da = xr.DataArray(fcst_blob, dims=["y", "x"], coords=coords)
 
-    shifted_fcst, dx, dy = translate_forecast_region(fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees")
+    shifted_fcst, dx, dy = _translate_forecast_region(fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees")
 
     assert (
         shifted_fcst is None and dx is None and dy is None
@@ -716,7 +716,7 @@ def test_translate_rejects_shift_due_to_max_distance():
 
 
 def test_translate_fallback_bbox_with_valid_data():
-    """Test translate_forecast_region falls back to bbox with valid data."""
+    """Test _translate_forecast_region falls back to bbox with valid data."""
     # Create a case where optimization might fail but bbox fallback works
     fcst = create_array(value=10.0)
     obs = create_array(value=10.0)
@@ -726,13 +726,13 @@ def test_translate_fallback_bbox_with_valid_data():
     noise = np.random.normal(0, 50, size=(10, 10))
     fcst = fcst + xr.DataArray(noise, dims=["y", "x"])
 
-    shifted_fcst, dx, dy = translate_forecast_region(fcst, obs, "y", "x", max_distance=500, coord_units="degrees")
+    shifted_fcst, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=500, coord_units="degrees")
     # Should either succeed or return None, but covers the fallback path
     assert (shifted_fcst is not None) or (shifted_fcst is None)
 
 
 def test_calc_resolution_with_degree_coordinates():
-    """Test calc_resolution correctly identifies degree coordinates"""
+    """Test _calc_resolution correctly identifies degree coordinates"""
     # Create data with degree coordinates (lat/lon)
     lat = np.linspace(-40, -10, 10)
     lon = np.linspace(140, 160, 10)
@@ -741,7 +741,7 @@ def test_calc_resolution_with_degree_coordinates():
         np.random.rand(10, 10), dims=["latitude", "longitude"], coords={"latitude": lat, "longitude": lon}
     )
 
-    resolution = calc_resolution(data, ["latitude", "longitude"], units="degrees")
+    resolution = _calc_resolution(data, ["latitude", "longitude"], units="degrees")
     assert resolution > 0
     assert np.isfinite(resolution)
 
@@ -944,8 +944,8 @@ def test_cra_core_2d_optimal_shift_vector_type():
 
 
 def test_cra_core_2d_mse_total_nan_triggers_none(monkeypatch):
-    """Force calc_mse to return NaN so cra_core_2d returns None and covers the branch."""
-    # Build valid blobs so the pipeline reaches calc_mse
+    """Force _calc_mse to return NaN so cra_core_2d returns None and covers the branch."""
+    # Build valid blobs so the pipeline reaches _calc_mse
     fcst = gaussian_blob()  # helper added earlier in this file
     obs = gaussian_blob()
 
@@ -953,8 +953,8 @@ def test_cra_core_2d_mse_total_nan_triggers_none(monkeypatch):
     def fake_calc_mse(a, b):
         return np.nan
 
-    # Patch in the module where cra_core_2d resolves calc_mse
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_mse", fake_calc_mse)
+    # Patch in the module where cra_core_2d resolves _calc_mse
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_mse", fake_calc_mse)
 
     result = cra_core_2d(
         fcst,
@@ -1060,7 +1060,7 @@ def test_cra_appends_nans_and_logs_when_time_slice_shape_mismatch(monkeypatch, c
 
 def test_shifted_mse_returns_inf_on_valueerror_in_int(monkeypatch):
     """
-    Force ValueError inside the try-block of shifted_mse by monkeypatching `int`.
+    Force ValueError inside the try-block of _shifted_mse by monkeypatching `int`.
     This deterministically covers:
         except (ValueError, TypeError):
             return np.inf
@@ -1074,13 +1074,13 @@ def test_shifted_mse_returns_inf_on_valueerror_in_int(monkeypatch):
     # Valid numeric shifts so len==2 and np.isnan(shifts) is False
     shifts = [1.0, 2.0]
 
-    # Patch the `int` that shifted_mse resolves in its own globals to raise ValueError
+    # Patch the `int` that _shifted_mse resolves in its own globals to raise ValueError
     def fake_int(*args, **kwargs):
         raise ValueError("forced int failure")
 
-    monkeypatch.setitem(shifted_mse.__globals__, "int", fake_int)
+    monkeypatch.setitem(_shifted_mse.__globals__, "int", fake_int)
 
-    out = shifted_mse(shifts, fcst, obs, spatial_dims, fixed_mask)
+    out = _shifted_mse(shifts, fcst, obs, spatial_dims, fixed_mask)
     assert out == np.inf, "Expected np.inf when int(round(...)) raises ValueError"
 
 
@@ -1098,14 +1098,14 @@ def test_shifted_mse_returns_inf_on_typeerror_in_round(monkeypatch):
     def fake_round(*args, **kwargs):
         raise TypeError("forced round failure")
 
-    monkeypatch.setitem(shifted_mse.__globals__, "round", fake_round)
+    monkeypatch.setitem(_shifted_mse.__globals__, "round", fake_round)
 
-    out = shifted_mse(shifts, fcst, obs, spatial_dims, fixed_mask)
+    out = _shifted_mse(shifts, fcst, obs, spatial_dims, fixed_mask)
     assert out == np.inf, "Expected np.inf when round(...) raises TypeError"
 
 
 def test_calc_resolution_invalid_units_raises_valueerror():
-    """calc_resolution should raise ValueError for unsupported units."""
+    """_calc_resolution should raise ValueError for unsupported units."""
     # Create a simple DataArray with explicit spatial coords so dy/dx are well-defined
     y = np.linspace(0, 9_000, 10)  # metres (1 km spacing)
     x = np.linspace(0, 9_000, 10)  # metres (1 km spacing)
@@ -1117,11 +1117,11 @@ def test_calc_resolution_invalid_units_raises_valueerror():
 
     # Pass an invalid units string to trigger the else branch
     with pytest.raises(ValueError, match=r"units must be 'degrees' or 'metres'"):
-        calc_resolution(data, ["y", "x"], units="km")  # invalid
+        _calc_resolution(data, ["y", "x"], units="km")  # invalid
 
     # Try a different invalid value to be extra sure the branch is covered
     with pytest.raises(ValueError, match=r"units must be 'degrees' or 'metres'"):
-        calc_resolution(data, ["y", "x"], units="meters")  # invalid spelling if you only accept 'metres'
+        _calc_resolution(data, ["y", "x"], units="meters")  # invalid spelling if you only accept 'metres'
 
 
 def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatch):
@@ -1151,14 +1151,14 @@ def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatc
     def fake_calc_resolution(_obs, _spatial_dims, _units):
         return 1.0  # km per grid-point
 
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_resolution", fake_calc_resolution)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_resolution", fake_calc_resolution)
 
     # 3) Patch shift to be applied as-is (optional, but keeps data predictable)
     def fake_shift_fcst(arr, shift_x, shift_y, spatial_dims):
         # very simple: roll without changing values (still ones)
         return arr.roll({spatial_dims[1]: shift_x, spatial_dims[0]: shift_y}, roll_coords=False)
 
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "shift_fcst", fake_shift_fcst)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_shift_fcst", fake_shift_fcst)
 
     # 4) Force the final comparison to reject:
     #    rmse_shifted > rmse_original, corr_shifted < corr_original, mse_shifted > original_mse
@@ -1167,7 +1167,7 @@ def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatc
 
     def fake_calc_rmse(a, b):
         call_state["rmse_calls"] += 1
-        # First rmse call in translate_forecast_region is for shifted_fcst_masked
+        # First rmse call in _translate_forecast_region is for shifted_fcst_masked
         return 10.0 if call_state["rmse_calls"] == 1 else 1.0  # shifted > original
 
     def fake_calc_corr_coeff(a, b):
@@ -1186,12 +1186,12 @@ def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatc
         #   call 2 -> best_score in brute-force (not critical)
         #   call 3 -> mse_shifted (final check) = 100.0
 
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_rmse", fake_calc_rmse)
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_corr_coeff", fake_calc_corr_coeff)
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_mse", fake_calc_mse)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_rmse", fake_calc_rmse)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_corr_coeff", fake_calc_corr_coeff)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_mse", fake_calc_mse)
 
     # Run with metres to avoid degree distance surprises
-    shifted, dx, dy = translate_forecast_region(
+    shifted, dx, dy = _translate_forecast_region(
         fcst, obs, y_name="y", x_name="x", max_distance=300, coord_units="metres"
     )
 
@@ -1250,11 +1250,11 @@ def test_cra_2d_returns_none_when_mse_is_nan(monkeypatch):
         return fcst, obs
 
     monkeypatch.setattr(
-        sys.modules["scores.spatial.cra_impl"], "generate_largest_rain_area_2d", fake_generate_largest_rain_area_2d
+        sys.modules["scores.spatial.cra_impl"], "_generate_largest_rain_area_2d", fake_generate_largest_rain_area_2d
     )
 
     # Monkeypatch calc_mse to return NaN explicitly
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "calc_mse", lambda a, b: np.nan)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_mse", lambda a, b: np.nan)
 
     result = cra_2d(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
 
@@ -1321,13 +1321,13 @@ def test_cra_core_2d_returns_none_when_shifted_fcst_is_none(monkeypatch):
     obs = xr.DataArray(data, dims=["lat", "lon"])
 
     # Monkeypatch generate_largest_rain_area_2d to return valid blobs
-    monkeypatch.setattr("scores.spatial.cra_impl.generate_largest_rain_area_2d", lambda *a, **k: (fcst, obs))
+    monkeypatch.setattr("scores.spatial.cra_impl._generate_largest_rain_area_2d", lambda *a, **k: (fcst, obs))
 
-    # Monkeypatch calc_mse to return a valid number
-    monkeypatch.setattr("scores.spatial.cra_impl.calc_mse", lambda *a, **k: 1.0)
+    # Monkeypatch _calc_mse to return a valid number
+    monkeypatch.setattr("scores.spatial.cra_impl._calc_mse", lambda *a, **k: 1.0)
 
-    # Monkeypatch translate_forecast_region to return None for shifted_fcst
-    monkeypatch.setattr("scores.spatial.cra_impl.translate_forecast_region", lambda *a, **k: (None, 0, 0))
+    # Monkeypatch _translate_forecast_region to return None for shifted_fcst
+    monkeypatch.setattr("scores.spatial.cra_impl._translate_forecast_region", lambda *a, **k: (None, 0, 0))
 
     result = cra_core_2d(fcst, obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
 

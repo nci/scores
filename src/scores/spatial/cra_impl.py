@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def generate_largest_rain_area_2d(
+def _generate_largest_rain_area_2d(
     fcst: xr.DataArray, obs: xr.DataArray, threshold: float, min_points: int
 ) -> Tuple[Optional[xr.DataArray], Optional[xr.DataArray]]:
     """
@@ -35,7 +35,7 @@ def generate_largest_rain_area_2d(
         Largest contiguous blobs from forecast and observation.
 
     Example:
-        >>> fcst_blob, obs_blob = generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
+        >>> fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
     """
 
     masked_obs = obs.where(obs >= threshold)
@@ -93,7 +93,7 @@ def generate_largest_rain_area_2d(
     return fcst_blob, obs_blob
 
 
-def calc_mse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
+def _calc_mse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
     r"""
     Calculate the Mean Squared Error (MSE) between forecast and observation arrays.
 
@@ -107,12 +107,12 @@ def calc_mse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
         Mean squared error value.
 
     Example:
-        >>> mse = calc_mse(fcst, obs)
+        >>> mse = _calc_mse(fcst, obs)
     """
     return float(mse(fcst, obs))
 
 
-def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
+def _calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
     """
     Compute the centre of the bounding box for valid (non-NaN and non-zero) values in a 2D data array.
     This function assumes the input is a 2D field and is intended for use with a single contiguous
@@ -124,7 +124,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
         (row_index, column_index) of the bounding box centre in array index space.
 
     Example:
-        >>> centre = calc_bounding_box_centre(data)
+        >>> centre = _calc_bounding_box_centre(data)
     """
 
     # Convert to NumPy array and mask NaNs
@@ -147,7 +147,7 @@ def calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
     return (centre_y, centre_x)
 
 
-def translate_forecast_region(
+def _translate_forecast_region(
     fcst: xr.DataArray, obs: xr.DataArray, y_name: str, x_name: str, max_distance: float, coord_units: str
 ) -> Tuple[xr.DataArray, int, int]:
     """
@@ -169,7 +169,7 @@ def translate_forecast_region(
         Translated forecast and optimal shift values in grid points (dx, dy).
 
     Example:
-        >>> shifted_fcst, delta_x, delta_y = translate_forecast_region(fcst, obs, 'y', 'x', 300, 'metres')
+        >>> shifted_fcst, delta_x, delta_y = _translate_forecast_region(fcst, obs, 'y', 'x', 300, 'metres')
     """
 
     # Create fixed mask based on observation availability
@@ -185,7 +185,7 @@ def translate_forecast_region(
     fcst_masked = fcst.where(fixed_mask)
     obs_masked = obs.where(fixed_mask)
 
-    original_mse = calc_mse(fcst_masked, obs_masked)
+    original_mse = _calc_mse(fcst_masked, obs_masked)
 
     # Brute-force search
     best_score = np.inf
@@ -194,20 +194,20 @@ def translate_forecast_region(
     for dy in shift_range:
         for dx in shift_range:
             shift = [dx, dy]
-            mse_score = shifted_mse(shift, fcst, obs, [y_name, x_name], fixed_mask)
+            mse_score = _shifted_mse(shift, fcst, obs, [y_name, x_name], fixed_mask)
             if np.isfinite(mse_score) and mse_score < best_score:
                 best_score = mse_score
                 best_shift = shift
 
     # Refine with local optimization from brute-force result
-    result = minimize(shifted_mse, best_shift, args=(fcst, obs, [y_name, x_name], fixed_mask), method="Nelder-Mead")
+    result = minimize(_shifted_mse, best_shift, args=(fcst, obs, [y_name, x_name], fixed_mask), method="Nelder-Mead")
     optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
 
     # Fallback to bounding box centre if optimization fails
     if optimal_shift is None:
         logger.info("Optimization failed. Falling back to bounding box centre alignment.")
-        fcst_bounding_box_centre = calc_bounding_box_centre(fcst)  # [y,x]
-        obs_bounding_box_centre = calc_bounding_box_centre(obs)
+        fcst_bounding_box_centre = _calc_bounding_box_centre(fcst)  # [y,x]
+        obs_bounding_box_centre = _calc_bounding_box_centre(obs)
         optimal_shift = [
             obs_bounding_box_centre[1] - fcst_bounding_box_centre[1],  # x_shift
             obs_bounding_box_centre[0] - fcst_bounding_box_centre[0],  # y_shift
@@ -217,23 +217,23 @@ def translate_forecast_region(
     dx, dy = int(round(optimal_shift[0])), int(round(optimal_shift[1]))
 
     # Compute shift distance in km
-    resolution_km = calc_resolution(obs, [y_name, x_name], coord_units)
+    resolution_km = _calc_resolution(obs, [y_name, x_name], coord_units)
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
 
     if shift_distance_km > max_distance:
         logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
         return None, None, None
 
-    shifted_fcst = shift_fcst(fcst, shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
+    shifted_fcst = _shift_fcst(fcst, shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
 
     # Final evaluation using fixed mask
     shifted_fcst_masked = shifted_fcst.where(fixed_mask)
-    mse_shifted = calc_mse(shifted_fcst_masked, obs_masked)
-    corr_shifted = calc_corr_coeff(shifted_fcst_masked, obs_masked)
-    rmse_shifted = calc_rmse(shifted_fcst_masked, obs_masked)
+    mse_shifted = _calc_mse(shifted_fcst_masked, obs_masked)
+    corr_shifted = _calc_corr_coeff(shifted_fcst_masked, obs_masked)
+    rmse_shifted = _calc_rmse(shifted_fcst_masked, obs_masked)
 
-    rmse_original = calc_rmse(fcst_masked, obs_masked)
-    corr_original = calc_corr_coeff(fcst_masked, obs_masked)
+    rmse_original = _calc_rmse(fcst_masked, obs_masked)
+    corr_original = _calc_corr_coeff(fcst_masked, obs_masked)
 
     if rmse_shifted > rmse_original or corr_shifted < corr_original or mse_shifted > original_mse:
         return None, None, None
@@ -241,7 +241,7 @@ def translate_forecast_region(
     return shifted_fcst, dx, dy
 
 
-def calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
+def _calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
     r"""
     Calculate the Root Mean Squared Error (RMSE) between forecast and observation arrays.
 
@@ -255,12 +255,12 @@ def calc_rmse(fcst: xr.DataArray, obs: xr.DataArray) -> float:
         Root mean squared error value.
 
     Example:
-        >>> rmse = calc_rmse(fcst, obs)
+        >>> rmse = _calc_rmse(fcst, obs)
     """
     return float(rmse(fcst, obs))
 
 
-def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: List[str]) -> xr.DataArray:
+def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: List[str]) -> xr.DataArray:
     """
     Apply a spatial shift to a 2D forecast field along specified spatial dimensions.
 
@@ -277,7 +277,7 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
         Forecast field shifted spatially.
 
     Example:
-        >>> shifted = shift_fcst(fcst, 2, -1, ['y', 'x'])
+        >>> shifted = _shift_fcst(fcst, 2, -1, ['y', 'x'])
     """
     # Unpack spatial dimension names
     ydim, xdim = spatial_dims
@@ -295,7 +295,7 @@ def shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Lis
     )
 
 
-def shifted_mse(
+def _shifted_mse(
     shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray
 ) -> float:
     """
@@ -311,7 +311,7 @@ def shifted_mse(
         MSE value for the given shift.
 
     Example:
-        >>> error = shifted_mse([1, -2], fcst, obs, ['x', 'y'])
+        >>> error = _shifted_mse([1, -2], fcst, obs, ['x', 'y'])
     """
     # Validate input
     if len(shifts) != 2 or np.any(np.isnan(shifts)):
@@ -322,7 +322,7 @@ def shifted_mse(
     except (ValueError, TypeError):
         return np.inf
 
-    shifted_fcst = shift_fcst(fcst, shift_x, shift_y, spatial_dims)
+    shifted_fcst = _shift_fcst(fcst, shift_x, shift_y, spatial_dims)
 
     # Mask forecast using fixed obs mask
     fcst_masked = shifted_fcst.where(fixed_mask)
@@ -335,8 +335,8 @@ def shifted_mse(
     if valid_fraction < 0.8:
         return np.inf
 
-    mse_val = calc_mse(fcst_masked, obs_masked)
-    corr_val = calc_corr_coeff(fcst_masked, obs_masked)
+    mse_val = _calc_mse(fcst_masked, obs_masked)
+    corr_val = _calc_corr_coeff(fcst_masked, obs_masked)
 
     # Penalize low correlation
     penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
@@ -344,7 +344,7 @@ def shifted_mse(
     return mse_val + penalty
 
 
-def calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
+def _calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
     """
     Calculate the volume error component of CRA score.
 
@@ -360,7 +360,7 @@ def calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
         Volume error.
 
     Example:
-        >>> volume_error = calc_mse_volume(shifted_fcst, obs)
+        >>> volume_error = _calc_mse_volume(shifted_fcst, obs)
     """
     mean_shifted_forecast = float(shifted_fcst.mean(skipna=True).values)
     mean_observed = float(obs.mean(skipna=True).values)
@@ -368,7 +368,7 @@ def calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
     return volume_error
 
 
-def calc_num_points(data: xr.DataArray, threshold: float) -> int:
+def _calc_num_points(data: xr.DataArray, threshold: float) -> int:
     """
     Count the number of grid points in the data above a given threshold.
 
@@ -380,14 +380,14 @@ def calc_num_points(data: xr.DataArray, threshold: float) -> int:
         Number of points above the threshold.
 
     Example:
-        >>> count = calc_num_points(data, threshold=5.0)
+        >>> count = _calc_num_points(data, threshold=5.0)
     """
     mask = data >= threshold
     count_above_threshold = mask.sum().item()
     return count_above_threshold
 
 
-def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
+def _calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
     """
     Calculate the Pearson correlation coefficient between two data arrays.
 
@@ -399,7 +399,7 @@ def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
         Correlation coefficient.
 
     Example:
-        >>> corr = calc_corr_coeff(data1, data2)
+        >>> corr = _calc_corr_coeff(data1, data2)
     """
 
     data1_flat = data1.values.flatten()
@@ -419,7 +419,7 @@ def calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
     return float(cc)
 
 
-def calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> float:
+def _calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> float:
     """
     Compute average grid resolution in kilometres.
 
@@ -588,30 +588,30 @@ def cra_2d(
     if coord_units not in allowed_units:
         raise ValueError(f"Invalid coord_units '{coord_units}'. Must be one of {allowed_units}.")
 
-    [fcst_blob, obs_blob] = generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
+    [fcst_blob, obs_blob] = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
 
     if fcst_blob is None or obs_blob is None:
         return None
 
-    mse_total = calc_mse(fcst_blob, obs_blob)
+    mse_total = _calc_mse(fcst_blob, obs_blob)
 
     if np.isnan(mse_total):
         return None
 
-    [shifted_fcst, delta_x, delta_y] = translate_forecast_region(
+    [shifted_fcst, delta_x, delta_y] = _translate_forecast_region(
         fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units
     )
     optimal_shift = [delta_x, delta_y]
     if shifted_fcst is None:
         return None
 
-    mse_shift = calc_mse(shifted_fcst, obs_blob)
+    mse_shift = _calc_mse(shifted_fcst, obs_blob)
     mse_displacement = mse_total - mse_shift
-    mse_volume = calc_mse_volume(shifted_fcst, obs_blob)
+    mse_volume = _calc_mse_volume(shifted_fcst, obs_blob)
     mse_pattern = mse_shift - mse_volume
 
-    num_gridpoints_above_threshold_fcst = calc_num_points(fcst_blob, threshold)
-    num_gridpoints_above_threshold_obs = calc_num_points(obs_blob, threshold)
+    num_gridpoints_above_threshold_fcst = _calc_num_points(fcst_blob, threshold)
+    num_gridpoints_above_threshold_obs = _calc_num_points(obs_blob, threshold)
 
     cra_dict = {
         "mse_total": mse_total,
@@ -628,10 +628,10 @@ def cra_2d(
         "avg_obs": float(np.mean(obs_blob)),
         "max_fcst": float(np.max(fcst_blob)),
         "max_obs": float(np.max(obs_blob)),
-        "corr_coeff_original": calc_corr_coeff(fcst_blob, obs_blob),
-        "corr_coeff_shifted": calc_corr_coeff(shifted_fcst, obs_blob),
-        "rmse_original": calc_rmse(fcst_blob, obs_blob),
-        "rmse_shifted": calc_rmse(shifted_fcst, obs_blob),
+        "corr_coeff_original": _calc_corr_coeff(fcst_blob, obs_blob),
+        "corr_coeff_shifted": _calc_corr_coeff(shifted_fcst, obs_blob),
+        "rmse_original": _calc_rmse(fcst_blob, obs_blob),
+        "rmse_shifted": _calc_rmse(shifted_fcst, obs_blob),
     }
     return cra_dict
 
@@ -854,22 +854,22 @@ def cra_core_2d(
     if coord_units not in allowed_units:
         raise ValueError(f"coord_units must be one of {allowed_units}")
 
-    blobs = generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
+    blobs = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
     fcst_blob, obs_blob = blobs
     if fcst_blob is None or obs_blob is None:
         return None
 
-    mse_total = calc_mse(fcst_blob, obs_blob)
+    mse_total = _calc_mse(fcst_blob, obs_blob)
     if np.isnan(mse_total):
         return None
 
-    shifted_fcst, dx, dy = translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units)
+    shifted_fcst, dx, dy = _translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units)
     if shifted_fcst is None:
         return None
 
-    mse_shift = calc_mse(shifted_fcst, obs_blob)
+    mse_shift = _calc_mse(shifted_fcst, obs_blob)
     mse_displacement = mse_total - mse_shift
-    mse_volume = calc_mse_volume(shifted_fcst, obs_blob)
+    mse_volume = _calc_mse_volume(shifted_fcst, obs_blob)
     mse_pattern = mse_shift - mse_volume
 
     return {
