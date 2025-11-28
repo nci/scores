@@ -6,7 +6,6 @@
 These tests validate the CRA (Contiguous Rain Area) metric implementation, including
 basic functionality, handling of NaNs, dataset input, and error handling
 """
-
 import sys
 
 import numpy as np
@@ -14,6 +13,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from scores.continuous.standard_impl import mse, rmse
 from scores.spatial.cra_impl import (
     _calc_bounding_box_centre,
     _calc_corr_coeff,
@@ -956,7 +956,7 @@ def test_cra_core_2d_mse_total_nan_triggers_none(monkeypatch):
         return np.nan
 
     # Patch in the module where cra_core_2d resolves _calc_mse
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_mse", fake_calc_mse)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "mse", fake_calc_mse)
 
     result = cra_core_2d(
         fcst,
@@ -1188,9 +1188,9 @@ def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatc
         #   call 2 -> best_score in brute-force (not critical)
         #   call 3 -> mse_shifted (final check) = 100.0
 
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_rmse", fake_calc_rmse)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "rmse", fake_calc_rmse)
     monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_corr_coeff", fake_calc_corr_coeff)
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_mse", fake_calc_mse)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "mse", fake_calc_mse)
 
     # Run with metres to avoid degree distance surprises
     shifted, dx, dy = _translate_forecast_region(
@@ -1256,7 +1256,7 @@ def test_cra_2d_returns_none_when_mse_is_nan(monkeypatch):
     )
 
     # Monkeypatch calc_mse to return NaN explicitly
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_mse", lambda a, b: np.nan)
+    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "mse", lambda a, b: np.nan)
 
     result = cra_2d(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
 
@@ -1325,8 +1325,7 @@ def test_cra_core_2d_returns_none_when_shifted_fcst_is_none(monkeypatch):
     # Monkeypatch generate_largest_rain_area_2d to return valid blobs
     monkeypatch.setattr("scores.spatial.cra_impl._generate_largest_rain_area_2d", lambda *a, **k: (fcst, obs))
 
-    # Monkeypatch _calc_mse to return a valid number
-    monkeypatch.setattr("scores.spatial.cra_impl._calc_mse", lambda *a, **k: 1.0)
+    monkeypatch.setattr("scores.spatial.cra_impl.mse", lambda *a, **k: 1.0)
 
     # Monkeypatch _translate_forecast_region to return None for shifted_fcst
     monkeypatch.setattr("scores.spatial.cra_impl._translate_forecast_region", lambda *a, **k: (None, 0, 0))
