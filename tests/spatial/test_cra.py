@@ -15,16 +15,16 @@ import pytest
 import xarray as xr
 
 from scores.spatial.cra_impl import (
-    _normalize_single_reduce_dim,
     _calc_bounding_box_centre,
     _calc_corr_coeff,
     _calc_resolution,
+    _generate_largest_rain_area_2d,
+    _normalize_single_reduce_dim,
+    _shifted_mse,
+    _translate_forecast_region,
     cra,
     cra_2d,
     cra_core_2d,
-    _generate_largest_rain_area_2d,
-    _shifted_mse,
-    _translate_forecast_region,
 )
 
 THRESHOLD = 10
