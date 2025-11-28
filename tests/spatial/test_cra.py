@@ -708,7 +708,9 @@ def test_translate_rejects_shift_due_to_max_distance():
     obs_da = xr.DataArray(obs_blob, dims=["y", "x"], coords=coords)
     fcst_da = xr.DataArray(fcst_blob, dims=["y", "x"], coords=coords)
 
-    shifted_fcst, dx, dy = _translate_forecast_region(fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees")
+    shifted_fcst, dx, dy = _translate_forecast_region(
+        fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees"
+    )
 
     assert (
         shifted_fcst is None and dx is None and dy is None
