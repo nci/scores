@@ -633,49 +633,62 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - API
   - Tutorial
   - Reference(s)
-* - Fractions Skill Score (FSS)
-  -
-  -
-  -
+* - Contiguous Rain Area (CRA)
+  - 
+  - 
+  - 
 * -
-    - FSS - 2D
-  -
-    [API](api.md#scores.spatial.fss_2d)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
-* -
-    - FSS - 2D Binary
-  -
-    [API](api.md#scores.spatial.fss_2d_binary)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    &mdash;
-* -
-    - FSS - 2D Single Field
-  -
-    [API](api.md#scores.spatial.fss_2d_single_field)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
-* -
-- CRA CORE 2D
-  -
-    [API](api.md#scores.spatial.cra_core_2d)
-    - CRA 2D
-  -
-    [API](api.md#scores.spatial.cra_2d)
     - CRA
   -
     [API](api.md#scores.spatial.cra)
   - 
-    [Tutorial](project:./tutorials/Contiguos_Rain_Area.md)
+    [Tutorial](project:./tutorials/Contiguous_Rain_Area.md)
   - 
-    [Ebert and McBride (2000)](https://doi.org/10.1016/S0022-1694(00)00343-7); 
-    [Ebert and Gallus (2009)](https://doi.org/10.1175/2009WAF2222252.1)  
+    [Ebert and McBride (2000)](https://doi.org/10.1016/S0022-1694(00)00343-7); [Ebert and Gallus (2009)](https://doi.org/10.1175/2009WAF2222252.1)
+* -
+    - CRA - 2D
+  -
+    [API](api.md#scores.spatial.cra_2d)
+  - 
+    [Tutorial](project:./tutorials/Contiguous_Rain_Area.md)
+  -
+    &mdash;
+* - 
+    - CRA - Core 2D
+  -
+    [API](api.md#scores.spatial.cra_core_2d)
+  - 
+    [Tutorial](project:./tutorials/Contiguous_Rain_Area.md)
+  - 
+    &mdash;
+* - Fractions Skill Score (FSS)
+  - 
+  - 
+  - 
+* -  
+    - FSS - 2D
+  -
+    [API](api.md#scores.spatial.fss_2d)
+  - 
+    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
+* -  
+    - FSS - 2D Binary
+  -
+    [API](api.md#scores.spatial.fss_2d_binary)
+  - 
+    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
+  - 
+    &mdash;
+* -  
+    - FSS - 2D Single Field
+  -
+    [API](api.md#scores.spatial.fss_2d_single_field)
+  - 
+    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 ```
 
 ## Statistical Tests
