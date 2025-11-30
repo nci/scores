@@ -477,7 +477,7 @@ class TestREVSpecialFeatures:
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss_ratio",
                 weights=None,
-                special_outputs=None,
+                derived_metrics=None,
                 threshold_outputs=threshold_outputs,
             )
 
@@ -495,7 +495,7 @@ class TestREVSpecialFeatures:
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss_ratio",
                 weights=None,
-                special_outputs=None,
+                derived_metrics=None,
                 threshold_outputs=[0.5],
             )
 
@@ -511,7 +511,7 @@ class TestREVSpecialFeatures:
         actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds)
 
         actual_max_result = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, special_outputs=["maximum"]
+            fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["maximum"]
         )
 
         data = np.array(
@@ -559,7 +559,7 @@ class TestREVSpecialFeatures:
         actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds)
 
         actual_rational_result = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, special_outputs=["rational_user"]
+            fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["rational_user"]
         )
 
         data = np.array(
@@ -587,7 +587,7 @@ class TestREVSpecialFeatures:
         thresholds = [0.1, 0.5]  # must match cost_loss_ratios exactly
 
         result = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, special_outputs=["rational_user"]
+            fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["rational_user"]
         )
 
         # The 'rational_user' DataArray should not contain the threshold_dim anymore
@@ -612,7 +612,7 @@ class TestREVSpecialFeatures:
                 rev=rev,
                 thresholds=[0.1, 0.2],
                 cost_loss_ratios=[0.1, 0.2],
-                special_outputs=["rational_user"],
+                derived_metrics=["rational_user"],
                 threshold_outputs=None,
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss_ratio",
@@ -667,8 +667,8 @@ class TestREVSpecialFeatures:
         assert "threshold" not in result.dims
         assert "cost_loss_ratio" not in result.dims
 
-    def test_custom_dims_with_special_outputs(self):
-        """Test that custom dimension names work with special outputs."""
+    def test_custom_dims_with_derived_metrics(self):
+        """Test that custom dimension names work with derived metrics."""
         fcst = xr.DataArray([0.2, 0.8, 0.6, 0.4], dims=["time"])
         obs = xr.DataArray([0, 1, 1, 0], dims=["time"])
 
@@ -681,7 +681,7 @@ class TestREVSpecialFeatures:
             threshold=matching_values,
             threshold_dim="decision_threshold",
             cost_loss_dim="alpha",
-            special_outputs=["maximum", "rational_user"],
+            derived_metrics=["maximum", "rational_user"],
         )
 
         # Check maximum output
@@ -883,7 +883,7 @@ class TestWeights:
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss",
                 weights=xr.DataArray([1, -1]),
-                special_outputs=None,
+                derived_metrics=None,
                 threshold_outputs=None,
             )
 
@@ -896,7 +896,7 @@ class TestWeights:
             threshold_dim="threshold",
             cost_loss_dim="cost_loss",
             weights=xr.DataArray([0, 1]),
-            special_outputs=None,
+            derived_metrics=None,
             threshold_outputs=None,
         )
 
@@ -1184,26 +1184,26 @@ class TestErrorHandlingGroupB:
         obs = xr.DataArray([0, 1, 1], dims=["time"])
 
         try:
-            relative_economic_value(fcst, obs, [0.3, 0.5], threshold=[0.2, 0.5], special_outputs=["rational_user"])
+            relative_economic_value(fcst, obs, [0.3, 0.5], threshold=[0.2, 0.5], derived_metrics=["rational_user"])
             raise AssertionError("Should have raised ValueError")
         except ValueError as e:
             assert "identical" in str(e)
 
-    def test_invalid_special_outputs(self):
-        """Test validation of special_outputs values"""
+    def test_invalid_derived_metrics(self):
+        """Test validation of derived_metrics values"""
         fcst = xr.DataArray([0.2, 0.8, 0.6], dims=["time"])
         obs = xr.DataArray([0, 1, 1], dims=["time"])
         cost_loss_ratios = [0.5]
-        special_outputs = ["pizza_oven"]
+        derived_metrics = ["pizza_oven"]
 
         try:
-            relative_economic_value(fcst, obs, cost_loss_ratios, threshold=[0.5], special_outputs=special_outputs)
+            relative_economic_value(fcst, obs, cost_loss_ratios, threshold=[0.5], derived_metrics=derived_metrics)
             raise AssertionError("Should have raised ValueError")
         except ValueError as e:
-            assert "Invalid special_outputs" in str(e)
+            assert "Invalid derived_metrics" in str(e)
 
-    def test_create_output_dataset_invalid_special_output(self):
-        """Test that _create_output_dataset raises ValueError for invalid special_outputs."""
+    def test_create_output_dataset_invalid_derived_metrics(self):
+        """Test that _create_output_dataset raises ValueError for invalid derived_metrics."""
 
         rev = xr.DataArray(
             [[0.5, 0.6], [0.7, 0.8]],
@@ -1211,12 +1211,12 @@ class TestErrorHandlingGroupB:
             coords={"threshold": [0.3, 0.7], "cost_loss_ratio": [0.2, 0.5]},
         )
 
-        with pytest.raises(ValueError, match="Invalid special_outputs value: 'invalid'"):
+        with pytest.raises(ValueError, match="Invalid derived_metrics value: 'invalid'"):
             _create_output_dataset(
                 rev=rev,
                 thresholds=[0.3, 0.7],
                 cost_loss_ratios=[0.2, 0.5],
-                special_outputs=["invalid"],
+                derived_metrics=["invalid"],
                 threshold_outputs=None,
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss_ratio",
@@ -1361,18 +1361,18 @@ class TestErrorHandlingGroupB:
         xr.testing.assert_allclose(actual, expected)
 
     def test_rational_user_without_threshold_raises(self):
-        """Test special output 'rational_user' without threshold raises ValueError"""
+        """Test derived metrics 'rational_user' without threshold raises ValueError"""
         fcst = xr.DataArray([0, 1, 0], dims=["time"])
         obs = xr.DataArray([1, 0, 1], dims=["time"])
 
         with pytest.raises(
-            ValueError, match="special_output 'rational_user' can only be used when threshold parameter is provided"
+            ValueError, match="derived_metrics 'rational_user' can only be used when threshold parameter is provided"
         ):
             relative_economic_value(
                 fcst=fcst,
                 obs=obs,
                 cost_loss_ratios=[0.2, 0.5],
-                special_outputs=["rational_user"],
+                derived_metrics=["rational_user"],
             )
 
 

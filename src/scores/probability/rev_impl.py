@@ -174,19 +174,19 @@ def _create_output_dataset(
     rev: xr.DataArray,
     thresholds: Sequence[float],
     cost_loss_ratios: Sequence[float],
-    special_outputs: Optional[Sequence[str]],
+    derived_metrics: Optional[Sequence[str]],
     threshold_outputs: Optional[Sequence[float]],
     threshold_dim: str,
     cost_loss_dim: str,
 ) -> xr.Dataset:
     """
-    Create output Dataset with special aggregations and threshold slices.
+    Create output Dataset with derived metrics and threshold slices.
 
     Args:
         rev: Full REV DataArray with threshold and cost_loss_ratio dimensions
         thresholds: List of threshold values
         cost_loss_ratios: List of cost-loss ratio values
-        special_outputs: Special aggregations to compute
+        derived_metrics: Derived metrics to compute
         threshold_outputs: Specific thresholds to extract
         threshold_dim: Name of threshold dimension
         cost_loss_dim: Name of cost-loss ratio dimension
@@ -195,10 +195,10 @@ def _create_output_dataset(
         Dataset with requested outputs
 
     Raises:
-        ValueError: If invalid special_outputs values provided
+        ValueError: If invalid derived_metrics values provided
         ValueError: If 'rational_user' requested but thresholds don't match cost_loss_ratios
     """
-    special_outputs = [] if special_outputs is None else list(special_outputs)
+    derived_metrics = [] if derived_metrics is None else list(derived_metrics)
     threshold_outputs = [] if threshold_outputs is None else list(threshold_outputs)
 
     # Store original attributes
@@ -208,15 +208,15 @@ def _create_output_dataset(
     result = xr.Dataset()
     result.attrs = attributes
 
-    # Add special outputs
-    for mode in special_outputs:
+    # Add derived metrics
+    for mode in derived_metrics:
         if mode == "maximum":
             result["maximum"] = rev.max(dim=threshold_dim)
         elif mode == "rational_user":
             # Check that thresholds match cost_loss_ratios exactly
             if list(thresholds) != list(cost_loss_ratios):
                 raise ValueError(
-                    "Can only specify special_output 'rational_user' if thresholds and "
+                    "Can only specify derived_metrics 'rational_user' if thresholds and "
                     "cost_loss_ratios are identical"
                 )
             # Extract diagonal where threshold == cost_loss_ratio
@@ -235,7 +235,7 @@ def _create_output_dataset(
 
         else:
             raise ValueError(
-                f"Invalid special_outputs value: '{mode}'. Valid options are " "'maximum' and 'rational_user'"
+                f"Invalid derived_metrics value: '{mode}'. Valid options are " "'maximum' and 'rational_user'"
             )
 
     # Add threshold-specific outputs
@@ -368,21 +368,21 @@ def _validate_forecasts(
             raise ValueError("threshold_outputs can only be used when threshold parameter is provided")
 
 
-def _validate_special_outputs(
-    special_outputs: Optional[Sequence[str]],
+def _validate_derived_metrics(
+    derived_metrics: Optional[Sequence[str]],
     threshold: Optional[Union[float, Sequence[float]]],
 ) -> None:
-    """Validate special output configuration."""
-    if special_outputs is None:
+    """Validate derived metrics configuration."""
+    if derived_metrics is None:
         return
 
     valid_special = {"maximum", "rational_user"}
-    invalid = set(special_outputs) - valid_special
+    invalid = set(derived_metrics) - valid_special
     if invalid:
-        raise ValueError(f"Invalid special_outputs values: {invalid}. Valid options are {valid_special}")
+        raise ValueError(f"Invalid derived_metrics values: {invalid}. Valid options are {valid_special}")
 
-    if "rational_user" in special_outputs and threshold is None:
-        raise ValueError("special_output 'rational_user' can only be used when threshold parameter is provided")
+    if "rational_user" in derived_metrics and threshold is None:
+        raise ValueError("derived_metrics 'rational_user' can only be used when threshold parameter is provided")
 
 
 def _validate_rev_inputs(
@@ -393,7 +393,7 @@ def _validate_rev_inputs(
     threshold_dim: str,
     cost_loss_dim: str,
     weights: Optional[xr.DataArray],
-    special_outputs: Optional[Sequence[str]],
+    derived_metrics: Optional[Sequence[str]],
     threshold_outputs: Optional[Sequence[float]],
 ) -> None:
     """
@@ -411,7 +411,7 @@ def _validate_rev_inputs(
     _validate_cost_loss_ratios(cost_loss_ratios)
     _validate_observations(obs)
     _validate_forecasts(fcst, threshold, threshold_outputs)
-    _validate_special_outputs(special_outputs, threshold)
+    _validate_derived_metrics(derived_metrics, threshold)
 
 
 def _calculate_rev_core(
@@ -556,7 +556,7 @@ def relative_economic_value(
     weights: Optional[xr.DataArray] = None,
     threshold_dim: str = "threshold",
     cost_loss_dim: str = "cost_loss_ratio",
-    special_outputs: Optional[Sequence[str]] = None,
+    derived_metrics: Optional[Sequence[str]] = None,
     threshold_outputs: Optional[Sequence[float]] = None,
     check_args: bool = True,
 ) -> XarrayLike:
@@ -615,7 +615,7 @@ def relative_economic_value(
             Must not exist as a dimension in fcst or obs.
         cost_loss_dim: Name of the cost-loss ratio dimension in output. Default is
             'cost_loss_ratio'. Must not exist as a dimension in fcst or obs.
-        special_outputs: Optional list of special aggregations to compute. Options are:
+        derived_metrics: Optional list of derived metrics to compute. Options are:
             - 'maximum': Maximum REV across all thresholds (envelope of value curves,
               also called "potential value")
             - 'rational_user': REV when threshold equals cost-loss ratio (requires thresholds
@@ -633,7 +633,7 @@ def relative_economic_value(
 
     Returns:
         XarrayLike:
-            - If special_outputs or threshold_outputs is specified: xr.Dataset with data
+            - If derived_metrics or threshold_outputs is specified: xr.Dataset with data
               variables for each requested output
             - If threshold is provided: xr.DataArray with dimensions from
               reduce_dims/preserve_dims, plus cost_loss_dim and threshold_dim
@@ -650,7 +650,7 @@ def relative_economic_value(
         ValueError: If threshold_dim or cost_loss_dim already exist in fcst or obs
         ValueError: If both reduce_dims and preserve_dims are specified
         ValueError: If threshold_outputs values are not in threshold parameter
-        ValueError: If 'rational_user' in special_outputs but thresholds don't match cost_loss_ratios
+        ValueError: If 'rational_user' in derived_metrics but thresholds don't match cost_loss_ratios
 
     Notes:
         - REV = 1 indicates perfect forecast value (as good as perfect information)
@@ -689,7 +689,7 @@ def relative_economic_value(
         >>> result = relative_economic_value(
         ...     fcst_prob, obs, cost_loss_ratios,
         ...     threshold=thresholds,
-        ...     special_outputs=['maximum']
+        ...     derived_metrics=['maximum']
         ... )
         >>> # result is a Dataset with 'maximum' variable
 
@@ -717,7 +717,7 @@ def relative_economic_value(
             threshold_dim,
             cost_loss_dim,
             weights,
-            special_outputs,
+            derived_metrics,
             threshold_outputs,
         )
 
@@ -734,7 +734,7 @@ def relative_economic_value(
                 weights=weights,
                 threshold_dim=threshold_dim,
                 cost_loss_dim=cost_loss_dim,
-                special_outputs=special_outputs,
+                derived_metrics=derived_metrics,
                 threshold_outputs=threshold_outputs,
                 check_args=False,  # Already validated
             )
@@ -753,7 +753,7 @@ def relative_economic_value(
                 weights=weights,
                 threshold_dim=threshold_dim,
                 cost_loss_dim=cost_loss_dim,
-                special_outputs=special_outputs,
+                derived_metrics=derived_metrics,
                 threshold_outputs=threshold_outputs,
                 check_args=False,  # Already validated
             )
@@ -793,10 +793,10 @@ def relative_economic_value(
             binary_fcst, obs, cost_loss_xr, dims_to_reduce=dims_to_reduce, weights=weights, cost_loss_dim=cost_loss_dim
         )
 
-        # Post-process for special outputs or threshold outputs
-        if special_outputs or threshold_outputs:
+        # Post-process for derived metrics or threshold outputs
+        if derived_metrics or threshold_outputs:
             result = _create_output_dataset(
-                rev, threshold, cost_loss_ratios, special_outputs, threshold_outputs, threshold_dim, cost_loss_dim
+                rev, threshold, cost_loss_ratios, derived_metrics, threshold_outputs, threshold_dim, cost_loss_dim
             )
             return result
         return rev
