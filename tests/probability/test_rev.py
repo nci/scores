@@ -1065,85 +1065,52 @@ class TestDatasetInputs:
         xr.testing.assert_allclose(actual["test"], expected_scalar)
 
 
-class TestErrorHandlingGroupA:
-    """Tests that check that error handling is done correctly (batch A)."""
+class TestErrorHandling:
+    """Tests that check that error handling is done correctly"""
 
-    def test_probabilistic_without_threshold(self):
-        """Test that probabilistic forecasts require threshold"""
-        fcst = xr.DataArray([0.2, 0.8, 0.6], dims=["time"])
-        obs = xr.DataArray([0, 1, 1], dims=["time"])
+    @pytest.mark.parametrize(
+        "fcst_data,obs_data,cost_loss_ratios,threshold,expected_error",
+        [
+            # Probabilistic forecasts without threshold
+            ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, "0, 1, or NaN"),
+            # Cost-loss ratios out of range
+            ([0, 1, 1], [0, 1, 0], [-0.1, 0.5, 1.2], None, "between 0 and 1"),
+            # Cost-loss ratios not monotonic
+            ([0, 1, 1], [0, 1, 0], [0.5, 0.3, 0.7], None, "monotonically increasing"),
+            # Threshold values out of range
+            ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], [-0.1, 0.5], "between 0 and 1"),
+            # Threshold values not monotonic
+            ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], [0.7, 0.3], "monotonically increasing"),
+            # Invalid observation values
+            ([0, 1, 1], [0, 1, 2], [0.5], None, "0, 1, or NaN"),
+            # Invalid forecast values
+            ([0, 1, 2], [0, 1, 1], [0.5], None, "0, 1, or NaN"),
+        ],
+        ids=[
+            "probabilistic_without_threshold",
+            "cost_loss_out_of_range",
+            "cost_loss_not_monotonic",
+            "threshold_out_of_range",
+            "threshold_not_monotonic",
+            "invalid_obs_values",
+            "invalid_fcst_values",
+        ],
+    )
+    def test_input_validation(self, fcst_data, obs_data, cost_loss_ratios, threshold, expected_error):
+        """
+        Test that relative_economic_value validates inputs correctly.
 
-        try:
-            relative_economic_value(fcst, obs, [0.5])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "0, 1, or NaN" in str(e)
+        Validates that the function raises ValueError for:
+        - Probabilistic forecasts (values between 0 and 1) without threshold parameter
+        - Cost-loss ratios outside [0, 1] range or not strictly monotonically increasing
+        - Threshold values outside [0, 1] range or not strictly monotonically increasing
+        - Forecast or observation values outside {0, 1, NaN}
+        """
+        fcst = xr.DataArray(fcst_data, dims=["time"])
+        obs = xr.DataArray(obs_data, dims=["time"])
 
-    def test_invalid_cost_loss_ratios_range(self):
-        """Test validation of cost-loss ratios - out of range"""
-        fcst = xr.DataArray([0, 1, 1], dims=["time"])
-        obs = xr.DataArray([0, 1, 0], dims=["time"])
-
-        try:
-            relative_economic_value(fcst, obs, [-0.1, 0.5, 1.2])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "between 0 and 1" in str(e)
-
-    def test_invalid_cost_loss_ratios_monotonic(self):
-        """Test validation of cost-loss ratios - not monotonic"""
-        fcst = xr.DataArray([0, 1, 1], dims=["time"])
-        obs = xr.DataArray([0, 1, 0], dims=["time"])
-
-        try:
-            relative_economic_value(fcst, obs, [0.5, 0.3, 0.7])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "monotonically increasing" in str(e)
-
-    def test_invalid_threshold_values_range(self):
-        """Test validation of threshold values - out of range"""
-        fcst = xr.DataArray([0.2, 0.8, 0.6], dims=["time"])
-        obs = xr.DataArray([0, 1, 1], dims=["time"])
-
-        try:
-            relative_economic_value(fcst, obs, [0.5], threshold=[-0.1, 0.5])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "between 0 and 1" in str(e)
-
-    def test_invalid_threshold_values_monotonic(self):
-        """Test validation of threshold values - not monotonic"""
-        fcst = xr.DataArray([0.2, 0.8, 0.6], dims=["time"])
-        obs = xr.DataArray([0, 1, 1], dims=["time"])
-
-        try:
-            relative_economic_value(fcst, obs, [0.5], threshold=[0.7, 0.3])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "monotonically increasing" in str(e)
-
-    def test_invalid_obs_values(self):
-        """Test validation of observation values"""
-        fcst = xr.DataArray([0, 1, 1], dims=["time"])
-        obs = xr.DataArray([0, 1, 2], dims=["time"])
-
-        try:
-            relative_economic_value(fcst, obs, [0.5])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "0, 1, or NaN" in str(e)
-
-    def test_invalid_fcst_values(self):
-        """Test validation of forecast values"""
-        fcst = xr.DataArray([0, 1, 2], dims=["time"])
-        obs = xr.DataArray([0, 1, 1], dims=["time"])
-
-        try:
-            relative_economic_value(fcst, obs, [0.5])
-            raise AssertionError("Should have raised ValueError")
-        except ValueError as e:
-            assert "0, 1, or NaN" in str(e)
+        with pytest.raises(ValueError, match=expected_error):
+            relative_economic_value(fcst, obs, cost_loss_ratios, threshold=threshold)
 
     @pytest.mark.parametrize(
         "array_name,forbidden_dim",
@@ -1173,10 +1140,6 @@ class TestErrorHandlingGroupA:
 
         with pytest.raises(ValueError, match=f"'{forbidden_dim}' cannot be a dimension in {array_name}"):
             relative_economic_value(fcst, obs, [0.5], weights=weights)
-
-
-class TestErrorHandlingGroupB:
-    """Tests that check that error handling is done correctly (batch B)."""
 
     def test_value_without_matching_thresholds(self):
         """Test that 'rational_user' output requires matching thresholds"""

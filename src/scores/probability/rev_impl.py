@@ -21,7 +21,7 @@ def relative_economic_value_from_rates(
     climatology: XarrayLike,
     cost_loss_ratios: Union[float, Sequence[float]],
     cost_loss_dim: str = "cost_loss_ratio",
-):
+) -> XarrayLike:
     """
     Calculates Relative Economic Value (REV) from pre-computed detection rates.
 
@@ -61,9 +61,10 @@ def relative_economic_value_from_rates(
             'cost_loss_ratio'. Must not exist as a dimension in any input array.
 
     Returns:
-        xarray.DataArray: REV values with dimensions from broadcasting the input
-            arrays, plus an additional 'cost_loss_ratio' dimension with coordinates
-            matching the supplied cost-loss ratios.
+        xarray.DataArray or xarray.Dataset: REV values with dimensions from broadcasting the
+            input arrays, plus an additional 'cost_loss_ratio' dimension with coordinates
+            matching the supplied cost-loss ratios. Returns a Dataset if 'pod' is a Dataset,
+            otherwise returns a DataArray.
 
     Raises:
         ValueError: If cost_loss_ratios is not strictly monotonically increasing,
@@ -154,8 +155,7 @@ def relative_economic_value_from_rates(
     )
 
     obar, alphas = xr.broadcast(climatology, alphas)
-    climatological_term = obar.copy()
-    climatological_term.values = np.minimum(obar.values, alphas.values)
+    climatological_term = xr.where(obar < alphas, obar, alphas)
 
     # calculate the relative economic value (equation 8)
 
@@ -674,7 +674,6 @@ def relative_economic_value(
     Examples:
         Calculate REV for binary forecasts:
 
-        >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import relative_economic_value
         >>> fcst = xr.DataArray([0, 1, 1, 0, 1], dims=['time'])
