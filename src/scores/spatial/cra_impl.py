@@ -462,76 +462,78 @@ def cra_2d(
     coord_units: str = "metres",
 ) -> Optional[dict]:
     """
-    Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
-    This function is designed for 2D spatial fields. For time-dependent data,
-    use the :py:func:`scores.spatial.cra` function.
-    For ensemble data, apply this function to each realization individually or compute
-    the ensemble mean beforehand.
+        Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
+        This function is designed for 2D spatial fields. For time-dependent data,
+        use the :py:func:`scores.spatial.cra` function.
+        For ensemble data, apply this function to each realization individually or compute
+        the ensemble mean beforehand.
 
-    The CRA score decomposes the total mean squared error (MSE) into three components:
-    displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
-    shifts the forecast blob to best match the observed blob, and evaluates the error reduction.
-
-
-    The decomposition is defined as:
+        The CRA score decomposes the total mean squared error (MSE) into three components:
+        displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
+        shifts the forecast blob to best match the observed blob, and evaluates the error reduction.
 
 
-    .. math::
-        \\text{MSE}_{\\text{total}} = \\text{MSE}_{\\text{displacement}} + \\text{MSE}_{\\text{pattern}} + \\text{MSE}_{\text{volume}}
+        The decomposition is defined as:
 
-    where:
-    - ``MSE_displacement`` is the error reduction due to optimal spatial alignment,
-    - ``MSE_volume`` is the error due to differences in blob intensity,
-    - ``MSE_pattern`` is the residual error after alignment and volume adjustment.
 
-    This metric is spatial and blob-based, and does not support ``reduce_dims``, ``preserve_dims``, or ``weights``.
+        .. math::
+            \\text{MSE}_{\\text{total}} = \\text{MSE}_{\\text{displacement}} + \\text{MSE}_{\\text{pattern}} + \\text{MSE}_{\\text{volume}}
 
-    Args:
-        fcst (xr.DataArray): Forecast field as an xarray DataArray.
-        obs (xr.DataArray): Observation field as an xarray DataArray.
-        threshold (float): Threshold to define contiguous rain areas.
-        y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
-        x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometres.
-        min_points (int): Minimum number of grid points required in a blob.
-        coord_units (str) : Coordinate units, 'degrees' or 'metres'
+        where:
+            - ``MSE_displacement`` is the error reduction due to optimal spatial alignment,
+            - ``MSE_volume`` is the error due to differences in blob intensity,
+            - ``MSE_pattern`` is the residual error after alignment and volume adjustment.
 
-    Returns:
-        A dictionary containing the following CRA components and diagnostics:
-            - mse_total (float): Total mean squared error between forecast and observed blobs.
-            - mse_displacement (float): MSE due to spatial displacement between forecast and observed blobs.
-            - mse_volume (float): MSE due to volume differences.
-            - mse_pattern (float): MSE due to pattern/structure differences.
-            - fcst_blob (xr.DataArray): Forecast data blob above the threshold.
-            - obs_blob (xr.DataArray): Observed data blob above the threshold.
-            - shifted_fcst (xr.DataArray): Forecast blob shifted to best align with observed blob.
-            - optimal_shift (list[int]): Optimal [x, y] shift applied to forecast blob in grid points units.
-            - num_gridpoints_above_threshold_fcst (int): Number of grid points in forecast blob above threshold.
-            - num_gridpoints_above_threshold_obs (int): Number of grid points in observed blob above threshold.
-            - avg_fcst (float): Mean value of the forecast blob.
-            - avg_obs (float): Mean value of the observed blob.
-            - max_fcst (float): Maximum value in the forecast blob.
-            - max_obs (float): Maximum value in the observed blob.
-            - corr_coeff_original (float): Correlation coefficient between original forecast and observed blobs.
-            - corr_coeff_shifted (float): Correlation coefficient between shifted forecast and observed blobs.
-            - rmse_original (float): Root mean square error between original forecast and observed blobs.
-            - rmse_shifted (float): Root mean square error between shifted forecast and observed blobs.
-        Returns None if input data is invalid or CRA computation fails.
+        This metric is spatial and blob-based, and does not support ``reduce_dims``, ``preserve_dims``, or ``weights``.
 
-    Raises:
-        ValueError: If input shapes do not match or blobs cannot be computed.
-        TypeError: If inputs are not xarray DataArrays.
+        Args:
+            fcst (xr.DataArray): Forecast field as an xarray DataArray.
+            obs (xr.DataArray): Observation field as an xarray DataArray.
+            threshold (float): Threshold to define contiguous rain areas.
+            y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
+            x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
+            max_distance (float): Maximum allowed translation distance in kilometres.
+            min_points (int): Minimum number of grid points required in a blob.
+            coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
-    References:
-        Ebert, E. E., & McBride, J. L. (2000). Verification of precipitation forecasts from operational numerical weather prediction models. *Weather and Forecasting*, 15(3), 247-263. https://doi.org/10.1016/S0022-1694(00)00343-7
+        Returns:
+            dict: A dictionary containing the following CRA components and diagnostics:
+                - mse_total (float): Total mean squared error between forecast and observed blobs.
+                - mse_displacement (float): MSE due to spatial displacement between forecast and observed blobs.
+                - mse_volume (float): MSE due to volume differences.
+                - mse_pattern (float): MSE due to pattern/structure differences.
+                - fcst_blob (xr.DataArray): Forecast data blob above the threshold.
+                - obs_blob (xr.DataArray): Observed data blob above the threshold.
+                - shifted_fcst (xr.DataArray): Forecast blob shifted to best align with observed blob.
+                - optimal_shift (list[int]): Optimal [x, y] shift applied to forecast blob in grid points units.
+                - num_gridpoints_above_threshold_fcst (int): Number of grid points in forecast blob above threshold.
+                - num_gridpoints_above_threshold_obs (int): Number of grid points in observed blob above threshold.
+                - avg_fcst (float): Mean value of the forecast blob.
+                - avg_obs (float): Mean value of the observed blob.
+                - max_fcst (float): Maximum value in the forecast blob.
+                - max_obs (float): Maximum value in the observed blob.
+                - corr_coeff_original (float): Correlation coefficient between original forecast and observed blobs.
+                - corr_coeff_shifted (float): Correlation coefficient between shifted forecast and observed blobs.
+                - rmse_original (float): Root mean square error between original forecast and observed blobs.
+                - rmse_shifted (float): Root mean square error between shifted forecast and observed blobs.
+            Returns None if input data is invalid or CRA computation fails.
 
-    Example:
-        >>> from scores.spatial import cra
-        >>> import xarray as xr
-        >>> fcst = xr.DataArray(...)  # your forecast data
-        >>> obs = xr.DataArray(...)   # your observation data
-        >>> result = cra(fcst, obs, threshold=5.0)
-        >>> print(result['mse_total'])
+        Raises:
+            ValueError: If input shapes do not match or blobs cannot be computed.
+            TypeError: If inputs are not xarray DataArrays.
+
+        References:
+            Ebert, E. E., & McBride, J. L. (2000). Verification of precipitation forecasts from operational numerical weather prediction models. *Weather and Forecasting*, 15(3), 247-263. https://doi.org/10.1016/S0022-1694(00)00343-7
+            Ebert, E. E., and W. A. Gallus , 2009: Toward Better Understanding of the Contiguous Rain Area (CRA) Method for Spatial Forecast Verification. *Weather and Forecasting*, 24, 1401-1415, https://doi.org/10.1175/200
+    9WAF2222252.1
+
+        Example:
+            >>> from scores.spatial import cra
+            >>> import xarray as xr
+            >>> fcst = xr.DataArray(...)  # your forecast data
+            >>> obs = xr.DataArray(...)   # your observation data
+            >>> result = cra(fcst, obs, threshold=5.0)
+            >>> print(result['mse_total'])
 
     """
 
@@ -611,74 +613,75 @@ def cra(
     coord_units: str = "metres",
 ) -> dict:
     """
-    Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
-    observation field.
+        Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
+        observation field.
 
-    This function extends :py:func:`scores.spatial.cra_2d` to handle time series.
+        This function extends :py:func:`scores.spatial.cra_2d` to handle time series.
 
-    It applies CRA decomposition to each slice along the specified ``reduce_dims`` and
-    aggregates results into lists.
+        It applies CRA decomposition to each slice along the specified ``reduce_dims`` and
+        aggregates results into lists.
 
-    CRA decomposes the total mean squared error (MSE) into:
-        - Displacement: Error reduction due to optimal spatial alignment.
-        - Volume: Error due to intensity differences.
-        - Pattern: Residual error after alignment and volume adjustment.
+        CRA decomposes the total mean squared error (MSE) into:
+            - Displacement: Error reduction due to optimal spatial alignment.
+            - Volume: Error due to intensity differences.
+            - Pattern: Residual error after alignment and volume adjustment.
 
-    For each time, the algorithm:
-        1. Identifies contiguous rain blobs above ``threshold``.
-        2. Computes optimal spatial shift within ``max_distance``.
-        3. Calculates CRA components and diagnostics.
+        For each time, the algorithm:
+            1. Identifies contiguous rain blobs above ``threshold``.
+            2. Computes optimal spatial shift within ``max_distance``.
+            3. Calculates CRA components and diagnostics.
 
-    .. math::
-        \\text{MSE}_{\\text{total}} = \\text{MSE}_{\\text{displacement}} + \\text{MSE}_{\\text{pattern}} + \\text{MSE}_{\\text{volume}}
+        .. math::
+            \\text{MSE}_{\\text{total}} = \\text{MSE}_{\\text{displacement}} + \\text{MSE}_{\\text{pattern}} + \\text{MSE}_{\\text{volume}}
 
-    Args:
-        fcst (xr.DataArray): Forecast field with at least one grouping dimension (e.g., time).
-        obs (xr.DataArray): Observation field aligned with ``fcst``.
-        threshold (float): Threshold to define contiguous rain areas.
-        y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
-        x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometres.
-        min_points (int): Minimum number of grid points required in a blob.
-        reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
-        coord_units (str) : Coordinate units, 'degrees' or 'metres'
+        Args:
+            fcst (xr.DataArray): Forecast field with at least one grouping dimension (e.g., time).
+            obs (xr.DataArray): Observation field aligned with ``fcst``.
+            threshold (float): Threshold to define contiguous rain areas.
+            y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
+            x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
+            max_distance (float): Maximum allowed translation distance in kilometres.
+            min_points (int): Minimum number of grid points required in a blob.
+            reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
+            coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
-    Returns:
-        A dictionary where each key corresponds to a CRA metric and maps to a list of
-        values, one for each slice along the specified grouping dimension (e.g. time):
-            - mse_total (list[float]): Total mean squared error between forecast and observed blobs.
-            - mse_displacement (list[float]): MSE due to spatial displacement between forecast and observed blobs.
-            - mse_volume (list[float]): MSE due to volume differences.
-            - mse_pattern (list[float]): MSE due to pattern/structure differences.
-            - optimal_shift (list[list[int]]): Optimal [x, y] shift applied to forecast blob in grid points units.
-            - num_gridpoints_above_threshold_fcst (list[int]): Number of grid points in forecast blob above threshold.
-            - num_gridpoints_above_threshold_obs (list[int]): Number of grid points in observed blob above threshold.
-            - avg_fcst (list[float]): Mean value of the forecast blob.
-            - avg_obs (list[float]): Mean value of the observed blob.
-            - max_fcst (list[float]): Maximum value in the forecast blob.
-            - max_obs (list[float]): Maximum value in the observed blob.
-            - corr_coeff_original (list[float]): Correlation coefficient between original forecast and observed blobs.
-            - corr_coeff_shifted (list[float]): Correlation coefficient between shifted forecast and observed blobs.
-            - rmse_original (list[float]): Root mean square error between original forecast and observed blobs.
-            - rmse_shifted (list[float]): Root mean square error between shifted forecast and observed blobs.
-        Returns None if input data is invalid or CRA computation fails.
+        Returns:
+            A dictionary where each key corresponds to a CRA metric and maps to a list of
+            values, one for each slice along the specified grouping dimension (e.g. time):
+                - mse_total (list[float]): Total mean squared error between forecast and observed blobs.
+                - mse_displacement (list[float]): MSE due to spatial displacement between forecast and observed blobs.
+                - mse_volume (list[float]): MSE due to volume differences.
+                - mse_pattern (list[float]): MSE due to pattern/structure differences.
+                - optimal_shift (list[list[int]]): Optimal [x, y] shift applied to forecast blob in grid points units.
+                - num_gridpoints_above_threshold_fcst (list[int]): Number of grid points in forecast blob above threshold.
+                - num_gridpoints_above_threshold_obs (list[int]): Number of grid points in observed blob above threshold.
+                - avg_fcst (list[float]): Mean value of the forecast blob.
+                - avg_obs (list[float]): Mean value of the observed blob.
+                - max_fcst (list[float]): Maximum value in the forecast blob.
+                - max_obs (list[float]): Maximum value in the observed blob.
+                - corr_coeff_original (list[float]): Correlation coefficient between original forecast and observed blobs.
+                - corr_coeff_shifted (list[float]): Correlation coefficient between shifted forecast and observed blobs.
+                - rmse_original (list[float]): Root mean square error between original forecast and observed blobs.
+                - rmse_shifted (list[float]): Root mean square error between shifted forecast and observed blobs.
+            Returns None if input data is invalid or CRA computation fails.
 
 
-    Raises:
-        ValueError: If input shapes do not match or grouping dimension is invalid.
-        TypeError: If inputs are not xarray DataArrays.
+        Raises:
+            ValueError: If input shapes do not match or grouping dimension is invalid.
+            TypeError: If inputs are not xarray DataArrays.
 
-    References:
-        Ebert, E. E., & McBride, J. L. (2000). Verification of precipitation forecasts from operational numerical weather prediction models.
-        *Weather and Forecasting*, 15(3), 247-263. https://doi.org/10.1016/S0022-1694(00)00343-7
+        References:
+            Ebert, E. E., & McBride, J. L. (2000). Verification of precipitation forecasts from operational numerical weather prediction models. *Weather and Forecasting*, 15(3), 247-263. https://doi.org/10.1016/S0022-1694(00)00343-7
+            Ebert, E. E., and W. A. Gallus , 2009: Toward Better Understanding of the Contiguous Rain Area (CRA) Method for Spatial Forecast Verification. *Weather and Forecasting*, 24, 1401-1415, https://doi.org/10.1175/200
+    9WAF2222252.1
 
-    Example:
-        >>> from scores.spatial import cra
-        >>> import xarray as xr
-        >>> fcst = xr.DataArray(...)  # forecast with time dimension
-        >>> obs = xr.DataArray(...)   # observation with time dimension
-        >>> result = cra(fcst, obs, threshold=5.0, reduce_dims="time")
-        >>> print(result["mse_total"])
+        Example:
+            >>> from scores.spatial import cra
+            >>> import xarray as xr
+            >>> fcst = xr.DataArray(...)  # forecast with time dimension
+            >>> obs = xr.DataArray(...)   # observation with time dimension
+            >>> result = cra(fcst, obs, threshold=5.0, reduce_dims="time")
+            >>> print(result["mse_total"])
     """
 
     # --- Input validation ---
