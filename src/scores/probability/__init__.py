@@ -16,7 +16,6 @@ from scores.probability.crps_impl import (
     tw_crps_for_ensemble,
 )
 from scores.probability.rev_impl import (
-    _calculate_rev_core,
     relative_economic_value,
     relative_economic_value_from_rates,
 )
@@ -32,6 +31,7 @@ __all__ = [
     "crps_cdf_brier_decomposition",
     "crps_for_ensemble",
     "relative_economic_value",
+    "relative_economic_value_from_rates",
     "roc_curve_data",
     "isotonic_fit",
     "crps_step_threshold_weight",

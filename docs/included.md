@@ -244,7 +244,10 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.probability.relative_economic_value)
   - [Tutorial](project:./tutorials/REV_Score.md)
   - &mdash;
-
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.probability.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/REV_Score.md)
+  - &mdash;
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
