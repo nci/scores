@@ -7,10 +7,12 @@ try:
     import dask.array as da
 
     HAS_DASK = True  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    from dask.base import is_dask_collection
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     HAS_DASK = False  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
 
+import re
 import sys
 import warnings
 from collections import OrderedDict
@@ -31,8 +33,10 @@ from scores.probability.rev_impl import (
     calculate_climatology,
     check_monotonic_array,
 )
+from scores.utils import ERROR_INVALID_WEIGHTS
 
-# Module-level test data
+# Module-level test data ... Preserved as is because these come from Jive and we want to demonstrate
+# that they've been carried over exactly.
 SCALAR_DA = xr.DataArray(np.array([0.5]), dims=("x",), coords={"x": [0]})
 BINARY_DA = xr.DataArray([0, 1, 0], dims=["time"])
 PROB_FCST_DA = xr.DataArray([0.2, 0.8, 0.1], dims=["time"])
@@ -94,104 +98,140 @@ EXP_REV_CASE1 = xr.DataArray(
 )
 
 
+@pytest.fixture(name="make_contingency_data")
+def _make_contingency_data():
+    """
+    Factory to create fcst/obs DataArrays from contingency table counts.
+
+    Returns a function that takes (hits, misses, false_alarms, correct_negatives)
+    and returns (fcst, obs) DataArrays.
+    """
+
+    def _make(hits, misses, false_alarms, correct_negatives):
+        # fcst=1 for hits and false_alarms, fcst=0 for misses and correct_negatives
+        # obs=1 for hits and misses, obs=0 for false_alarms and correct_negatives
+        fcst = [1] * hits + [0] * misses + [1] * false_alarms + [0] * correct_negatives
+        obs = [1] * hits + [1] * misses + [0] * false_alarms + [0] * correct_negatives
+        return (xr.DataArray(fcst, dims=["time"]), xr.DataArray(obs, dims=["time"]))
+
+    return _make
+
+
 class TestBroadcastingAndDimensionHandling:
     """Tests for broadcasting and dimension handling in REV calculations."""
 
     @pytest.mark.parametrize(
-        "fcst_dims,obs_dims,rev_values",
+        "fcst_dims,obs_dims,fcst_data,obs_data,expected_rev",
         [
-            (["time", "space"], ["time"], [[0.0], [-0.5], [-0.75], [0.5], [0.0]]),
-            (["time"], ["time", "space"], [[-0.666667], [-1], [0], [0.5], [-1]]),
+            # obs missing space dimension - broadcasts over space, reduce over time
+            (
+                ["time", "space"],
+                ["time"],
+                [
+                    [1, 0, 1, 1, 0],  # time=0, space=[0,1,2,3,4]
+                    [1, 1, 0, 1, 1],  # time=1
+                    [0, 1, 1, 0, 1],  # time=2
+                    [1, 0, 1, 1, 0],
+                ],  # time=3
+                [1, 1, 0, 1],  # time=[0,1,2,3], broadcasts to all space
+                [[1.0], [-2.0], [-1.0], [1.0], [-2.0]],  # REV for each space point after reducing time
+            ),
+            # fcst missing space dimension - broadcasts over space, reduce over time
+            (
+                ["time"],
+                ["time", "space"],
+                [1, 1, 0, 1],  # time=[0,1,2,3], broadcasts to all space
+                [
+                    [1, 0, 1, 1, 0],  # time=0, space=[0,1,2,3,4]
+                    [1, 1, 0, 1, 1],  # time=1
+                    [0, 1, 1, 0, 1],  # time=2
+                    [1, 0, 1, 1, 0],
+                ],  # time=3
+                [[1.0], [-0.5], [-1], [1.0], [-0.5]],  # REV for each space point after reducing time
+            ),
         ],
         ids=["obs_missing_space", "fcst_missing_space"],
     )
-    def test_broadcasting_reducing(self, fcst_dims, obs_dims, rev_values):
+    def test_broadcasting_reducing(self, fcst_dims, obs_dims, fcst_data, obs_data, expected_rev):
         """Test that broadcasting works when reducing over dimensions."""
-        np.random.seed(42)
+        time_size = 4
+        space_size = 5
 
-        time_coord = np.arange(10)
-        space_coord = np.arange(5)
-
-        fcst_shape = tuple(10 if d == "time" else 5 for d in fcst_dims)
-        obs_shape = tuple(10 if d == "time" else 5 for d in obs_dims)
+        time_coord = list(range(time_size))
+        space_coord = list(range(space_size))
 
         fcst_coords = {d: time_coord if d == "time" else space_coord for d in fcst_dims}
         obs_coords = {d: time_coord if d == "time" else space_coord for d in obs_dims}
 
-        fcst = xr.DataArray(np.random.binomial(1, 0.7, fcst_shape), dims=fcst_dims, coords=fcst_coords)
-        obs = xr.DataArray(np.random.binomial(1, 0.5, obs_shape), dims=obs_dims, coords=obs_coords)
+        fcst = xr.DataArray(fcst_data, dims=fcst_dims, coords=fcst_coords)
+        obs = xr.DataArray(obs_data, dims=obs_dims, coords=obs_coords)
 
         actual = relative_economic_value(fcst, obs, [0.5], reduce_dims="time")
+
         expected = xr.DataArray(
-            rev_values, dims=["space", "cost_loss_ratio"], coords={"space": [0, 1, 2, 3, 4], "cost_loss_ratio": [0.5]}
+            expected_rev, dims=["space", "cost_loss_ratio"], coords={"space": space_coord, "cost_loss_ratio": [0.5]}
         )
 
         xr.testing.assert_allclose(actual, expected)
 
     @pytest.mark.parametrize(
-        "fcst_dims,obs_dims,rev_values",
+        "fcst_dims,obs_dims,fcst_data,obs_data,expected_rev",
         [
-            (["time", "space"], ["time"], [[0.0], [-0.5], [-0.75], [0.5], [0.0]]),
-            (["time"], ["time", "space"], [[-0.666667], [-1], [0], [0.5], [-1]]),
+            # obs missing space dimension - broadcasts over space
+            (
+                ["time", "space"],
+                ["time"],
+                [[1, 0, 1, 1, 0], [1, 1, 0, 1, 1], [0, 1, 1, 0, 1]],  # time=0, space=[0,1,2,3,4]  # time=1  # time=2
+                [1, 1, 0],  # time=[0,1,2]
+                [[1.0], [-1.0], [-1.0], [1.0], [-1.0]],  # REV for each space point
+            ),
+            # fcst missing space dimension - broadcasts over space
+            (
+                ["time"],
+                ["time", "space"],
+                [1, 1, 0],  # time=[0,1,2]
+                [[1, 0, 1, 1, 0], [1, 1, 0, 1, 1], [0, 1, 1, 0, 1]],  # time=0, space=[0,1,2,3,4]  # time=1  # time=2
+                [[1.0], [-1.0], [-1.0], [1.0], [-1.0]],  # REV for each space point
+            ),
         ],
         ids=["obs_missing_space", "fcst_missing_space"],
     )
-    def test_broadcasting_keeping(self, fcst_dims, obs_dims, rev_values):
-        """Test that broadcasting works when keeping dimensions."""
-        np.random.seed(42)
-
-        time_coord = np.arange(10)
-        space_coord = np.arange(5)
-
-        fcst_shape = tuple(10 if d == "time" else 5 for d in fcst_dims)
-        obs_shape = tuple(10 if d == "time" else 5 for d in obs_dims)
+    def test_broadcasting_keeping(self, fcst_dims, obs_dims, fcst_data, obs_data, expected_rev):
+        """Test that broadcasting works correctly when preserving dimensions."""
+        time_coord = [0, 1, 2]
+        space_coord = [0, 1, 2, 3, 4]
 
         fcst_coords = {d: time_coord if d == "time" else space_coord for d in fcst_dims}
         obs_coords = {d: time_coord if d == "time" else space_coord for d in obs_dims}
 
-        fcst = xr.DataArray(np.random.binomial(1, 0.7, fcst_shape), dims=fcst_dims, coords=fcst_coords)
-        obs = xr.DataArray(np.random.binomial(1, 0.5, obs_shape), dims=obs_dims, coords=obs_coords)
+        fcst = xr.DataArray(fcst_data, dims=fcst_dims, coords=fcst_coords)
+        obs = xr.DataArray(obs_data, dims=obs_dims, coords=obs_coords)
 
         actual = relative_economic_value(fcst, obs, [0.5], preserve_dims="space")
+
         expected = xr.DataArray(
-            rev_values, dims=["space", "cost_loss_ratio"], coords={"space": [0, 1, 2, 3, 4], "cost_loss_ratio": [0.5]}
+            expected_rev, dims=["space", "cost_loss_ratio"], coords={"space": space_coord, "cost_loss_ratio": [0.5]}
         )
 
         xr.testing.assert_allclose(actual, expected)
 
-    @pytest.mark.parametrize(
-        "reduce_dims,preserve_dims,final_dims",
-        [
-            (["time"], None, ["lat", "lon", "cost_loss_ratio"]),
-            (["lat"], None, ["time", "lon", "cost_loss_ratio"]),
-            (["lon"], None, ["time", "lat", "cost_loss_ratio"]),
-            (None, ["time"], ["time", "cost_loss_ratio"]),
-            (None, ["lat"], ["lat", "cost_loss_ratio"]),
-            (None, ["lon"], ["lon", "cost_loss_ratio"]),
-            (None, None, ["cost_loss_ratio"]),
-            (None, "all", ["time", "lat", "lon", "cost_loss_ratio"]),  # can't be in list
-        ],
-        ids=[
-            "reduce time",
-            "reduce lat",
-            "reduce lon",
-            "preserve time",
-            "preserve lat",
-            "preserve lon",
-            "reduce all",
-            "reduce none",
-        ],
-    )
-    def test_reduce_preserve_dims(self, reduce_dims, preserve_dims, final_dims):
-        """Test that broadcasting works over a variety of combinations of reducing and preserving."""
+    def test_reduce_preserve_dims_basic(self):
+        """Test that REV respects reduce_dims and preserve_dims."""
+        # Simple, explicit data
+        fcst = xr.DataArray([[[1, 0], [1, 1]], [[0, 1], [1, 0]]], dims=["time", "lat", "lon"])
+        obs = xr.DataArray([[[1, 1], [0, 1]], [[0, 0], [1, 1]]], dims=["time", "lat", "lon"])
 
-        np.random.seed(42)
-        fcst = xr.DataArray(np.random.binomial(1, 0.7, (10, 5, 3)), dims=["time", "lat", "lon"])
-        obs = xr.DataArray(np.random.binomial(1, 0.5, (10, 5, 3)), dims=["time", "lat", "lon"])
+        # Test reduce_dims
+        result = relative_economic_value(fcst, obs, [0.5], reduce_dims=["time"])
+        assert set(result.dims) == {"lat", "lon", "cost_loss_ratio"}
 
-        rev = relative_economic_value(fcst, obs, [0.3, 0.5], reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+        # Test preserve_dims
+        result = relative_economic_value(fcst, obs, [0.5], preserve_dims=["time"])
+        assert set(result.dims) == {"time", "cost_loss_ratio"}
 
-        assert set(rev.dims) == set(final_dims)
+        # Test reduce all (default)
+        result = relative_economic_value(fcst, obs, [0.5])
+        assert set(result.dims) == {"cost_loss_ratio"}
 
 
 class TestCalculateClimatology:
@@ -253,44 +293,6 @@ class TestCalculateClimatology:
         expected = xr.DataArray([0.5, 0.5], dims=["space"])
         xr.testing.assert_allclose(actual, expected)
 
-    def test_negative_weights_raises_error(self):
-        """Test that negative weights raise ValueError when check_args=True."""
-        obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
-        weights = xr.DataArray([1, -2, 1, 2], dims=["time"])
-
-        with pytest.raises(ValueError, match="'weights' contains negative values"):
-            calculate_climatology(obs, weights=weights, check_args=True)
-
-    def test_nan_weights_raises_error(self):
-        """Test that NaN weights raise ValueError when check_args=True."""
-        obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
-        weights = xr.DataArray([1, np.nan, 1, 2], dims=["time"])
-
-        with pytest.raises(ValueError, match="'weights' contains NaN values"):
-            calculate_climatology(obs, weights=weights, check_args=True)
-
-    def test_negative_weights_allowed_when_check_args_false(self):
-        """Test that negative weights don't raise error when check_args=False."""
-        obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
-        weights = xr.DataArray([1, -2, 1, 2], dims=["time"])
-
-        # Should not raise
-        actual = calculate_climatology(obs, weights=weights, check_args=False)
-        expected = xr.DataArray(0.0)
-        xr.testing.assert_allclose(actual, expected)
-
-    def test_nan_weights_allowed_when_check_args_false(self):
-        """Test that NaN weights don't raise error when check_args=False."""
-        obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
-        weights = xr.DataArray([1, np.nan, 1, 1], dims=["time"])
-
-        # Should not raise.
-        # Treats np.nan as 0 weight,
-        # although it's debatable what it should be in this case.
-        actual = calculate_climatology(obs, weights=weights, check_args=False)
-        expected = xr.DataArray(1 / 3)
-        xr.testing.assert_allclose(actual, expected)
-
 
 class TestScienceCalculations:
     """Tests for core scientific calculations in REV."""
@@ -308,86 +310,89 @@ class TestScienceCalculations:
         result = relative_economic_value_from_rates(pod, pofd, climatology, cost_loss_ratios=CL_RATIOS)
         xr.testing.assert_allclose(result, expected)
 
+    def test_perfect_forecast(self, make_contingency_data):
+        """Perfect forecast (all correct) has REV=1 at any cost-loss ratio."""
+        fcst, obs = make_contingency_data(hits=2, misses=0, false_alarms=0, correct_negatives=2)
+
+        for alpha in [0.2, 0.5, 0.8]:
+            result = relative_economic_value(fcst, obs, [alpha])
+            assert result.item() == pytest.approx(1.0)
+
+    def test_always_no_forecast(self, make_contingency_data):
+        """Always predicting 'no' gives REV=0 at alpha=obar, negative otherwise."""
+        # 0 hits, 2 misses, 0 FA, 2 CN -> POD=0, POFD=0, obar=0.5
+        fcst, obs = make_contingency_data(0, 2, 0, 2)
+
+        assert relative_economic_value(fcst, obs, [0.5]).item() == 0.0
+        assert relative_economic_value(fcst, obs, [0.2]).item() == pytest.approx(-3.0)
+
+    def test_always_yes_forecast(self, make_contingency_data):
+        """Always predicting 'yes' gives REV=0 at alpha=obar, negative otherwise."""
+        # 2 hits, 0 misses, 2 FA, 0 CN -> POD=1, POFD=1, obar=0.5
+        fcst, obs = make_contingency_data(2, 0, 2, 0)
+
+        assert relative_economic_value(fcst, obs, [0.5]).item() == 0.0
+        assert relative_economic_value(fcst, obs, [0.8]).item() == pytest.approx(-3.0)
+
+    def test_anti_correlated_forecast(self):
+        """Forecast that's systematically wrong has REV < -1."""
+        # This doesn't fit contingency model - fcst and obs are opposite
+        fcst = xr.DataArray([0, 1, 0, 1], dims=["time"])
+        obs = xr.DataArray([1, 0, 1, 0], dims=["time"])
+
+        # At alpha=0.5: REV = -1.0
+        assert relative_economic_value(fcst, obs, [0.5]).item() == -1.0
+        # At extreme alphas: even worse
+        assert relative_economic_value(fcst, obs, [0.2]).item() == -4.0
+
     @pytest.mark.parametrize(
-        "fcst,obs,cost_loss,expected",
+        "hits,misses,fa,cn,alpha,expected",
         [
-            # Perfect
-            ([0, 1, 0, 1], [0, 1, 0, 1], 0.2, 1.0),
-            ([0, 1, 0, 1], [0, 1, 0, 1], 0.5, 1.0),
-            ([0, 1, 0, 1], [0, 1, 0, 1], 0.8, 1.0),
-            # Bad
-            ([0, 1, 0, 1], [1, 0, 1, 0], 0.2, -4.0),
-            ([0, 1, 0, 1], [1, 0, 1, 0], 0.8, -4.0),
-            ([0, 0, 0, 0], [0, 1, 0, 1], 0.2, -3.0),
-            ([1, 1, 1, 1], [0, 1, 0, 1], 0.8, -3.0),
-            ([0, 1, 0, 1], [1, 0, 1, 0], 0.5, -1.0),
-            ([1, 0, 1, 0], [0, 1, 0, 1], 0.5, -1.0),
-            # No skill
-            ([0, 0, 0, 0], [0, 1, 0, 1], 0.5, 0),
-            ([1, 1, 1, 1], [0, 1, 0, 1], 0.5, 0),
-            ([0, 0, 0, 0], [0, 1, 0, 1], 0.8, 0),
-            ([1, 1, 1, 1], [0, 1, 0, 1], 0.2, 0),
-            # Undefined skill (because obar = 0 or 1)
-            ([1, 1, 1, 1], [1, 1, 1, 1], 0.2, np.nan),
-            ([0, 0, 0, 0], [0, 0, 0, 0], 0.2, np.nan),
-            ([1, 1, 1, 1], [0, 0, 0, 0], 0.2, np.nan),
-            ([0, 0, 0, 0], [1, 1, 1, 1], 0.2, np.nan),
-            ([0, 1, 0, 1], [1, 1, 1, 1], 0.2, np.nan),
-            ([0, 1, 0, 1], [0, 0, 0, 0], 0.2, np.nan),
-            # Undefined skill (because cost loss = 0 or 1)
-            ([0, 1, 0, 1], [0, 1, 0, 1], 0.0, np.nan),
-            ([0, 1, 0, 1], [0, 1, 0, 1], 1.0, np.nan),
-            # Single valued entries (undefined because obar = 0 or 1)
-            ([1], [0], 0.2, np.nan),
-            ([1], [0], 0.2, np.nan),
-            ([0], [1], 0.2, np.nan),
-            ([1], [1], 0.2, np.nan),
-            # Complicated cases
-            ([1] * 5 + [0] * 5 + [1] * 10 + [0] * 80, [1] * 5 + [1] * 5 + [0] * 10 + [0] * 80, 0.2, 0.25),
-            ([1] * 7 + [0] * 3 + [1] * 8 + [0] * 82, [1] * 7 + [1] * 3 + [0] * 8 + [0] * 82, 0.2, 0.5),
-            ([1] * 9 + [0] * 1 + [1] * 6 + [0] * 84, [1] * 9 + [1] * 1 + [0] * 6 + [0] * 84, 0.2, 0.75),
+            (1, 1, 2, 16, 0.2, 0.25),
+            (7, 3, 8, 82, 0.2, 0.5),
+            (9, 1, 6, 84, 0.2, 0.75),
         ],
+        ids=["low_skill", "medium_skill", "high_skill"],
     )
-    def test_rev_combinations(self, fcst, obs, cost_loss, expected):
-        """Tests both the core and wrapper for known cases"""
+    def test_partial_skill_cases(self, make_contingency_data, hits, misses, fa, cn, alpha, expected):
+        """Test cases with varying levels of forecast skill."""
+        fcst, obs = make_contingency_data(hits, misses, fa, cn)
+        result = relative_economic_value(fcst, obs, [alpha])
+        assert result.item() == pytest.approx(expected)
 
-        cost_loss_ratio = [cost_loss]
+    def test_undefined_when_obar_is_zero_or_one(self, make_contingency_data):
+        """REV undefined when climatology is 0 or 1 (no variance in obs)."""
+        # obar = 0: no events
+        fcst, obs = make_contingency_data(0, 0, 2, 2)
+        assert np.isnan(relative_economic_value(fcst, obs, [0.2]).item())
 
-        fcst_xr = xr.DataArray(fcst, dims=["time"])
-        obs_xr = xr.DataArray(obs, dims=["time"])
-        expected_xr = xr.DataArray(expected, dims=["cost_loss_ratio"], coords={"cost_loss_ratio": cost_loss_ratio})
+        # obar = 1: all events
+        fcst, obs = make_contingency_data(2, 2, 0, 0)
+        assert np.isnan(relative_economic_value(fcst, obs, [0.2]).item())
 
-        actual_xr = relative_economic_value(fcst_xr, obs_xr, cost_loss_ratio)
-        xr.testing.assert_allclose(actual_xr, expected_xr)
+    def test_undefined_at_extreme_cost_loss(self, make_contingency_data):
+        """REV undefined at cost_loss_ratio = 0 or 1."""
+        fcst, obs = make_contingency_data(2, 0, 0, 2)  # perfect forecast
 
-        actual_xr = _calculate_rev_core(binary_fcst=fcst_xr, obs=obs_xr, cost_loss_ratios=cost_loss_ratio)
+        assert np.isnan(relative_economic_value(fcst, obs, [0.0]).item())
+        assert np.isnan(relative_economic_value(fcst, obs, [1.0]).item())
 
-        xr.testing.assert_allclose(expected_xr, actual_xr)
+    def test_nan_values_excluded_from_calculation(self):
+        """NaN values in fcst or obs are excluded pairwise."""
+        # After removing NaNs: fcst=[1,1,0,0], obs=[1,0,1,0]
+        # -> H=1, M=1, FA=1, CN=1 -> no skill -> REV=0 at alpha=0.5
+        fcst = xr.DataArray([1, 1, 0, 0, 1, np.nan], dims=["time"])
+        obs = xr.DataArray([1, 0, 1, 0, np.nan, 0], dims=["time"])
 
-    def test_with_nans(self):
-        """Test handling of NaN values in input data."""
-        binary_fcst = xr.DataArray([1, 1, 0, 0, 1, np.nan], dims=["time"], coords={"time": range(6)})
-        obs = xr.DataArray([1, 0, 1, 0, np.nan, 0], dims=["time"], coords={"time": range(6)})
+        result = relative_economic_value(fcst, obs, [0.5])
+        assert result.item() == 0.0
 
-        cost_loss_ratios = [0.5]
-
-        result = _calculate_rev_core(
-            binary_fcst=binary_fcst,
-            obs=obs,
-            cost_loss_ratios=cost_loss_ratios,
-            dims_to_reduce="all",
-            weights=None,
-        )
-
-        expected = xr.DataArray([0.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]})
-
-        xr.testing.assert_identical(result, expected)
-
-    def test_multiple_cost_loss_ratios(self):
+    def test_multiple_cost_loss_ratios(self, make_contingency_data):
         """Test with multiple cost-loss ratios spanning the full range."""
-        np.random.seed(42)
-        binary_fcst = xr.DataArray(np.random.randint(0, 2, size=100), dims=["sample"])
-        obs = xr.DataArray(np.random.randint(0, 2, size=100), dims=["sample"])
+        # Simple, verifiable data:
+        # 10 samples: 6 hits, 2 misses, 1 false alarm, 1 correct negative
+        # POD = 6/8 = 0.75, POFD = 1/2 = 0.5, climatology = 8/10 = 0.8
+        binary_fcst, obs = make_contingency_data(6, 2, 1, 1)
 
         cost_loss_ratios = [0.0, 0.25, 0.5, 0.75, 1.0]
 
@@ -400,7 +405,7 @@ class TestScienceCalculations:
         )
 
         expected = xr.DataArray(
-            [np.nan, -0.57142857, -0.13636364, -1.54545455, np.nan],
+            [np.nan, -2.5, -0.5, 1 / 6, np.nan],
             dims=["cost_loss_ratio"],
             coords={"cost_loss_ratio": cost_loss_ratios},
         )
@@ -514,7 +519,7 @@ class TestREVSpecialFeatures:
             fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["maximum"]
         )
 
-        data = np.array(
+        expected_full_result_values = np.array(
             [
                 [0.0, 0.0, -0.5, -3.0],
                 [0.0, 0.0, -0.5, -3.0],
@@ -529,16 +534,12 @@ class TestREVSpecialFeatures:
         )
 
         expected_full_result = xr.DataArray(
-            data,
+            expected_full_result_values,
             dims=["threshold", "cost_loss_ratio"],
             coords={"threshold": np.arange(0.1, 1.0, 0.1), "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8]},
         )
 
         xr.testing.assert_allclose(expected_full_result, actual_full_result)
-
-        data = np.array(
-            [0.0, 0.3, 0.2, 0.0],
-        )
 
         expected_max_result = xr.Dataset(
             data_vars={"maximum": (["cost_loss_ratio"], [0.0, 0.3, 0.2, 0.0])},
@@ -562,12 +563,12 @@ class TestREVSpecialFeatures:
             fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["rational_user"]
         )
 
-        data = np.array(
+        expected_full_result_values = np.array(
             [[0.0, 0.0, -0.5, -3.0], [-0.2, 0.3, 0.2, -0.8], [-0.2, 0.3, 0.2, -0.8], [-3.0, -0.5, 0.0, 0.0]]
         )
 
         expected_full_result = xr.DataArray(
-            data,
+            expected_full_result_values,
             dims=["threshold", "cost_loss_ratio"],
             coords={"threshold": [0.2, 0.4, 0.6, 0.8], "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8]},
         )
@@ -719,186 +720,179 @@ class TestWeights:
     """Tests for handling of time/spatial weights in REV calculations."""
 
     @pytest.mark.parametrize("weight_value", [0.5, 1, 2])
-    def test_equal_weights_same_as_unweighted(self, weight_value):
+    def test_equal_weights_same_as_unweighted(self, make_contingency_data, weight_value):
         """When all weights are equal, weighted result should match unweighted."""
-        fcst_values = [1] * 7 + [0] * 3 + [1] * 8 + [0] * 82
-        obs_values = [1] * 7 + [1] * 3 + [0] * 8 + [0] * 82
-        weight_values = [weight_value] * 100
+        fcst, obs = make_contingency_data(2, 2, 2, 2)
 
-        fcst = xr.DataArray(fcst_values, dims=["time"])
-        obs = xr.DataArray(obs_values, dims=["time"])
-        weights = xr.DataArray(weight_values, dims=["time"])
+        weights = xr.DataArray([weight_value] * 8, dims=["time"])
 
         rev_weighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.2], weights=weights)
         rev_unweighted = relative_economic_value(fcst, obs, [0.2])
 
         xr.testing.assert_allclose(rev_weighted, rev_unweighted)
 
-    def test_weights_nonuniform(self):
-        """Test when time weights vary"""
-        fcst_values = [1] * 7 + [0] * 3 + [1] * 8 + [0] * 82
-        obs_values = [1] * 7 + [1] * 3 + [0] * 8 + [0] * 82
-        weight_values = [0.5] * 7 + [0.25] * 3 + [0.5] * 8 + [1] * 82
+    def test_weights_nonuniform(self, make_contingency_data):
+        """Test that non-uniform weights correctly adjust REV calculation."""
+        # Samples: 2 of each item on the contingency table
+        fcst, obs = make_contingency_data(2, 2, 2, 2)
+        # Without weights: POD = 2/4 = 0.5, POFD = 2/4 = 0.5, obar = 4/8 = 0.5
+        # REV at alpha=0.5: numerator = min(0.5,0.5) - 0.5*0.5*0.5 + 0.5*0.5*0.5 - 0.5 = 0
+        #                   denominator = min(0.5,0.5) - 0.5*0.5 = 0.25
+        #                   REV = 0/0.25 = 0
+        unweighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5])
+        assert unweighted.item() == 0.0
 
-        fcst = xr.DataArray(fcst_values, dims=["time"])
-        obs = xr.DataArray(obs_values, dims=["time"])
-        weights = xr.DataArray(weight_values, dims=["time"])
+        # Now weight the hits heavily (w=2) and false alarms lightly (w=0.5)
+        weights = xr.DataArray([2, 2, 1, 1, 0.5, 0.5, 1, 1], dims=["time"])
 
-        cost_loss_ratios = [0.2]
-        actual = relative_economic_value(fcst, obs, cost_loss_ratios=cost_loss_ratios, weights=weights)
+        # Weighted counts:
+        #   hits: 2+2 = 4,  misses: 1+1 = 2  -> events_total = 6
+        #   FA: 0.5+0.5 = 1, CN: 1+1 = 2     -> non_events_total = 3
+        # Weighted POD = 4/6 = 0.667, POFD = 1/3 = 0.333
+        # Weighted obar = 6/9 = 0.667
+        #
+        # REV at alpha=0.5:
+        #   num = min(0.5, 0.667) - 0.333*0.5*0.333 + 0.667*0.667*0.5 - 0.667
+        #       = 0.5 - 0.0555 + 0.222 - 0.667 = 0.0
+        #   den = min(0.5, 0.667) - 0.667*0.5 = 0.5 - 0.333 = 0.167
+        #   REV = 0.0 / 0.167 = 0.0
+        #
+        # At alpha=0.3 (where weighting effect is more visible):
+        #   num = min(0.3, 0.667) - 0.333*0.3*0.333 + 0.667*0.667*0.7 - 0.667
+        #       = 0.3 - 0.0333 + 0.311 - 0.667 = -0.089
+        #   den = min(0.3, 0.667) - 0.667*0.3 = 0.3 - 0.2 = 0.1
+        #   REV = -0.089 / 0.1 = -0.89
+
+        weighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.3], weights=weights)
+        expected = xr.DataArray([-0.89], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.3]})
+
+        xr.testing.assert_allclose(weighted, expected, atol=0.01)
+
+    def test_spatial_weights_broadcast(self):
+        """Test that latitude weights broadcast correctly over time dimension."""
+        # Two latitudes, 4 timesteps each - small enough to verify by hand
+        #
+        # Lat 60°: Perfect forecast (2 hits, 2 correct negatives)
+        # Lat 30°: No skill (1 hit, 1 miss, 1 FA, 1 CN)
+
+        fcst = xr.DataArray(
+            [[1, 0, 1, 0], [1, 0, 1, 0]],  # lat 60: fcst matches obs perfectly  # lat 30: fcst uncorrelated with obs
+            dims=["lat", "time"],
+            coords={"lat": [60, 30], "time": range(4)},
+        )
+        obs = xr.DataArray(
+            [[1, 0, 1, 0], [1, 1, 0, 0]],  # lat 60  # lat 30
+            dims=["lat", "time"],
+            coords={"lat": [60, 30], "time": range(4)},
+        )
+
+        #                   Lat 60          Lat 30
+        # Contingency:      H=2, CN=2       H=1, M=1, FA=1, CN=1
+        # POD:              2/2 = 1.0       1/2 = 0.5
+        # POFD:             0/2 = 0.0       1/2 = 0.5
+        # obar:             2/4 = 0.5       2/4 = 0.5
+        # REV (alpha=0.5):  1.0             0.0
+
+        # Unweighted: simple average of REV values
+        # REV = (1.0 + 0.0) / 2 = 0.5
+        unweighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5])
+        xr.testing.assert_allclose(
+            unweighted, xr.DataArray([0.5], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]})
+        )
+
+        # Cosine weights: lat 60° -> cos(60°) = 0.5, lat 30° -> cos(30°) = 0.866
+        # This weights the LOW-skill latitude MORE heavily
+        weights = xr.DataArray([0.5, 0.866], dims=["lat"], coords={"lat": [60, 30]})  # cos(60°), cos(30°)
+
+        # Weighted calculation combines contingency tables:
+        #   weighted_hits = 2*0.5 + 1*0.866 = 1.866
+        #   weighted_misses = 0*0.5 + 1*0.866 = 0.866
+        #   weighted_FA = 0*0.5 + 1*0.866 = 0.866
+        #   weighted_CN = 2*0.5 + 1*0.866 = 1.866
+        #
+        #   weighted_POD = 1.866 / (1.866 + 0.866) = 0.683
+        #   weighted_POFD = 0.866 / (0.866 + 1.866) = 0.317
+        #   weighted_obar = (1.866 + 0.866) / 5.464 = 0.5
+        #
+        #   REV at alpha=0.5:
+        #     num = 0.5 - 0.317*0.5*0.5 + 0.683*0.5*0.5 - 0.5 = 0.0915
+        #     den = 0.5 - 0.5*0.5 = 0.25
+        #     REV = 0.0915 / 0.25 = 0.366
+
+        weighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights)
+        expected = xr.DataArray([0.366], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]})
+        xr.testing.assert_allclose(weighted, expected, atol=0.001)
+
+    def test_preserve_dims_with_weights(self):
+        """Test that weights apply correctly when preserving a dimension (lon)."""
+        # 2 latitudes x 2 longitudes x 4 timesteps
+        # Weights vary by latitude only; we reduce over time and lat, preserve lon
+        #
+        # Lon 0: Good forecast at both latitudes
+        # Lon 180: Inverted forecast (terrible skill)
+
+        fcst = xr.DataArray(
+            [
+                [[1, 1], [0, 0], [1, 1], [0, 0]],  # lat 60: [lon0, lon180] per timestep
+                [[1, 1], [0, 0], [0, 0], [1, 1]],
+            ],  # lat 30
+            dims=["lat", "time", "lon"],
+            coords={"lat": [60, 30], "time": range(4), "lon": [0, 180]},
+        )
+        obs = xr.DataArray(
+            [[[1, 0], [0, 1], [1, 0], [0, 1]], [[1, 0], [0, 1], [1, 0], [0, 1]]],  # lat 60  # lat 30
+            dims=["lat", "time", "lon"],
+            coords={"lat": [60, 30], "time": range(4), "lon": [0, 180]},
+        )
+
+        # At lon=0: fcst and obs align well
+        #   Lat 60: H=2, CN=2 (perfect)
+        #   Lat 30: H=1, M=1, FA=1, CN=1 (no skill)
+        #
+        # At lon=180: obs is inverted, so forecasts are anti-correlated
+        #   Lat 60: M=2, FA=2 (anti-perfect)
+        #   Lat 30: H=1, M=1, FA=1, CN=1 (no skill - same as lon=0)
+
+        # Cosine weights: lat 60° -> 0.5, lat 30° -> 0.866
+        weights = xr.DataArray([0.5, 0.866], dims=["lat"], coords={"lat": [60, 30]})
+
+        result = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights, preserve_dims=["lon"])
+
+        # Lon=0 weighted calculation (same as previous test):
+        #   weighted_H = 2*0.5 + 1*0.866 = 1.866
+        #   weighted_M = 0*0.5 + 1*0.866 = 0.866
+        #   weighted_FA = 0*0.5 + 1*0.866 = 0.866
+        #   weighted_CN = 2*0.5 + 1*0.866 = 1.866
+        #   POD = 1.866/2.732 = 0.683, POFD = 0.866/2.732 = 0.317, obar = 0.5
+        #   REV = 0.366
+        #
+        # Lon=180 weighted calculation:
+        #   weighted_H = 0*0.5 + 1*0.866 = 0.866
+        #   weighted_M = 2*0.5 + 1*0.866 = 1.866
+        #   weighted_FA = 2*0.5 + 1*0.866 = 1.866
+        #   weighted_CN = 0*0.5 + 1*0.866 = 0.866
+        #   POD = 0.866/2.732 = 0.317, POFD = 1.866/2.732 = 0.683, obar = 0.5
+        #   num = 0.5 - 0.683*0.5*0.5 + 0.317*0.5*0.5 - 0.5 = -0.0915
+        #   den = 0.5 - 0.25 = 0.25
+        #   REV = -0.0915 / 0.25 = -0.366
 
         expected = xr.DataArray(
-            [0.58823529],
-            dims=["cost_loss_ratio"],
-            coords={"cost_loss_ratio": cost_loss_ratios},
+            [[0.366], [-0.366]], dims=["lon", "cost_loss_ratio"], coords={"lon": [0, 180], "cost_loss_ratio": [0.5]}
         )
+        xr.testing.assert_allclose(result, expected, atol=0.001)
 
-        xr.testing.assert_allclose(actual, expected)
+    def test_weights_negative(self, make_contingency_data):
+        """Test that negative weights raise a ValueError during calculation."""
+        fcst, obs = make_contingency_data(1, 0, 0, 1)  # actual data doesn't matter
 
-    @pytest.mark.parametrize(
-        "use_weights,expected_rev",
-        [
-            (False, 0.5),
-            (True, 0.455861),
-        ],
-        ids=["no_weights", "with_cosine_weights"],
-    )
-    def test_known_rev_values_spatial(self, use_weights, expected_rev):
-        """Test known REV values across different latitudes.
-        Also tests that weights can have fewer coordinates than fcst/obs and it broadcasts fine"""
-
-        # Three forecast quality scenarios at different latitudes
-        # Format: (hits, false_alarms, misses, correct_negatives) -> REV
-        # Lat 30: (5, 10, 5, 80) -> REV = 0.25
-        # Lat 45: (7, 8, 3, 82) -> REV = 0.5
-        # Lat 60: (9, 6, 1, 84) -> REV = 0.75
-        fcst_data = np.array(
-            [
-                [1] * 5 + [0] * 5 + [1] * 10 + [0] * 80,  # lat 30
-                [1] * 7 + [0] * 3 + [1] * 8 + [0] * 82,  # lat 45
-                [1] * 9 + [0] * 1 + [1] * 6 + [0] * 84,  # lat 60
-            ]
-        ).T[:, :, np.newaxis]
-
-        obs_data = np.array(
-            [
-                [1] * 5 + [1] * 5 + [0] * 10 + [0] * 80,  # lat 30
-                [1] * 7 + [1] * 3 + [0] * 8 + [0] * 82,  # lat 45
-                [1] * 9 + [1] * 1 + [0] * 6 + [0] * 84,  # lat 60
-            ]
-        ).T[:, :, np.newaxis]
-
-        binary_fcst = xr.DataArray(
-            fcst_data, dims=["time", "lat", "lon"], coords={"time": range(100), "lat": [30, 45, 60], "lon": [0]}
-        )
-
-        obs = xr.DataArray(
-            obs_data, dims=["time", "lat", "lon"], coords={"time": range(100), "lat": [30, 45, 60], "lon": [0]}
-        )
-
-        weights = (
-            xr.DataArray(np.cos(np.radians([30, 45, 60])), dims=["lat"], coords={"lat": [30, 45, 60]})
-            if use_weights
-            else None
-        )
-
-        result = _calculate_rev_core(
-            binary_fcst=binary_fcst,
-            obs=obs,
-            cost_loss_ratios=[0.2],
-            dims_to_reduce="all",
-            weights=weights,
-        )
-
-        expected = xr.DataArray([expected_rev], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.2]})
-        xr.testing.assert_allclose(result, expected)
-
-    def test_known_rev_values_spatial_with_weights_two_lons(self):
-        """Test known REV values across different latitudes and longitudes with weights."""
-
-        # Three forecast quality scenarios at different latitudes
-        # Format: (hits, false_alarms, misses, correct_negatives) -> REV
-        # Lat 30: (5, 10, 5, 80) -> REV = 0.25
-        # Lat 45: (7, 8, 3, 82) -> REV = 0.5
-        # Lat 60: (9, 6, 1, 84) -> REV = 0.75
-        fcst_2d = np.array(
-            [
-                [1] * 5 + [0] * 5 + [1] * 10 + [0] * 80,  # lat 30
-                [1] * 7 + [0] * 3 + [1] * 8 + [0] * 82,  # lat 45
-                [1] * 9 + [0] * 1 + [1] * 6 + [0] * 84,  # lat 60
-            ]
-        ).T
-
-        obs_2d = np.array(
-            [
-                [1] * 5 + [1] * 5 + [0] * 10 + [0] * 80,  # lat 30
-                [1] * 7 + [1] * 3 + [0] * 8 + [0] * 82,  # lat 45
-                [1] * 9 + [1] * 1 + [0] * 6 + [0] * 84,  # lat 60
-            ]
-        ).T
-
-        # Expand to 2 longitudes: lon=0 uses original obs, lon=180 uses inverted obs
-        fcst_data = np.stack([fcst_2d, fcst_2d], axis=2)
-        obs_data = np.stack([obs_2d, 1 - obs_2d], axis=2)
-
-        binary_fcst = xr.DataArray(
-            fcst_data, dims=["time", "lat", "lon"], coords={"time": range(100), "lat": [30, 45, 60], "lon": [0, 180]}
-        )
-
-        obs = xr.DataArray(
-            obs_data, dims=["time", "lat", "lon"], coords={"time": range(100), "lat": [30, 45, 60], "lon": [0, 180]}
-        )
-
-        # Weights vary by latitude only (cosine weighting)
-        weights = xr.DataArray(np.cos(np.radians([30, 45, 60])), dims=["lat"], coords={"lat": [30, 45, 60]})
-
-        result = _calculate_rev_core(
-            binary_fcst=binary_fcst,
-            obs=obs,
-            cost_loss_ratios=[0.2],
-            dims_to_reduce=["time", "lat"],
-            weights=weights,
-        )
-
-        expected = xr.DataArray(
-            [[0.455861], [-32.323443]],
-            dims=["lon", "cost_loss_ratio"],
-            coords={"lon": [0, 180], "cost_loss_ratio": [0.2]},
-        )
-
-        xr.testing.assert_allclose(result, expected)
-
-    def test_weights_non_negative(self):
-        """Test that negative weights raise a ValueError"""
-        fcst = xr.DataArray([0, 1])
-        obs = xr.DataArray([0, 1])
-
-        # Negative weights should raise
-        with pytest.raises(ValueError, match="weights must be non-negative"):
-            _validate_rev_inputs(
+        # Negative weights should raise during calculation, not validation
+        with pytest.raises(ValueError, match=re.escape(ERROR_INVALID_WEIGHTS.strip())):
+            relative_economic_value(
                 fcst,
                 obs,
                 cost_loss_ratios=[0.2, 0.5],
-                threshold=[0.3, 0.7],
-                threshold_dim="threshold",
-                cost_loss_dim="cost_loss",
-                weights=xr.DataArray([1, -1]),
-                derived_metrics=None,
-                threshold_outputs=None,
+                weights=xr.DataArray([1, -1], dims=["time"], coords={"time": [1, 2]}),
             )
-
-        # Zero or positive weights should pass
-        _validate_rev_inputs(
-            fcst,
-            obs,
-            cost_loss_ratios=[0.2, 0.5],
-            threshold=[0.3, 0.7],
-            threshold_dim="threshold",
-            cost_loss_dim="cost_loss",
-            weights=xr.DataArray([0, 1]),
-            derived_metrics=None,
-            threshold_outputs=None,
-        )
 
 
 class TestDatasetInputs:
@@ -906,7 +900,6 @@ class TestDatasetInputs:
 
     def test_forecast_as_dataset(self):
         """Test with forecast as Dataset."""
-        # hashtag ECMWF_Winning
         fcst_ds = xr.Dataset(
             {"ecmwf": xr.DataArray([0, 1, 1, 0], dims=["time"]), "access": xr.DataArray([1, 0, 1, 1], dims=["time"])}
         )
@@ -1126,8 +1119,8 @@ class TestErrorHandling:
     def test_forbidden_dimensions(self, array_name, forbidden_dim):
         """Test that 'threshold' and 'cost_loss_ratio' cannot be dimensions in fcst, obs, or weights."""
         # Default valid arrays
-        fcst = xr.DataArray([0, 1, 1], dims=["time"])
-        obs = xr.DataArray([0, 1, 0], dims=["time"])
+        fcst = xr.DataArray([0, 1], dims=["time"])
+        obs = xr.DataArray([0, 1], dims=["time"])
         weights = None
 
         # Create the problematic array
@@ -1323,10 +1316,9 @@ class TestErrorHandling:
         expected = xr.DataArray([np.nan, np.nan], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.1, 0.5]})
         xr.testing.assert_allclose(actual, expected)
 
-    def test_rational_user_without_threshold_raises(self):
+    def test_rational_user_without_threshold_raises(self, make_contingency_data):
         """Test derived metrics 'rational_user' without threshold raises ValueError"""
-        fcst = xr.DataArray([0, 1, 0], dims=["time"])
-        obs = xr.DataArray([1, 0, 1], dims=["time"])
+        fcst, obs = make_contingency_data(1, 1, 1, 1)
 
         with pytest.raises(
             ValueError, match="derived_metrics 'rational_user' can only be used when threshold parameter is provided"
@@ -1343,14 +1335,14 @@ class TestErrorHandling:
 class TestDaskCompatibility:
     """Test that REV works correctly with Dask arrays."""
 
-    def test_binary_forecast_with_dask(self):
+    def test_binary_forecast_with_dask(self, make_contingency_data):
         """Test basic REV calculation with Dask arrays."""
 
-        fcst_np = np.array([1, 1, 0, 0, 1])
-        obs_np = np.array([1, 1, 0, 0, 1])
+        fcst, obs = make_contingency_data(2, 0, 0, 3)
 
-        fcst = xr.DataArray(da.from_array(fcst_np, chunks=2), dims=["time"])
-        obs = xr.DataArray(da.from_array(obs_np, chunks=2), dims=["time"])
+        # Convert to Dask
+        fcst = fcst.chunk({"time": 2})
+        obs = obs.chunk({"time": 2})
 
         result = relative_economic_value(fcst, obs, [0.5], check_args=False)
 
@@ -1364,13 +1356,81 @@ class TestDaskCompatibility:
 
     def test_probabilistic_forecast_with_dask(self):
         """Test probabilistic REV with Dask arrays."""
+        # fcst = [0.8, 0.5, 0.1, 0.9, 0.4, 0.2, 0.75, 0.6, 0.15, 0.35]
+        # obs  = [1,   0,   0,   1,   1,   0,   0,    1,   0,    1   ]
+        #
+        # =========================================================================
+        # Threshold 0.3: fcst >= 0.3 gives binary forecasts
+        # =========================================================================
+        # fcst:  1    1    0    1    1    0    1    1    0    1
+        # obs:   1    0    0    1    1    0    0    1    0    1
+        #
+        # Contingency table:
+        #   hits (fcst=1, obs=1): 5
+        #   false_alarms (fcst=1, obs=0): 2
+        #   misses (fcst=0, obs=1): 0
+        #   correct_neg (fcst=0, obs=0): 3
+        #
+        # POD = hits / (hits + misses) = 5 / (5 + 0) = 1.0
+        # POFD = false_alarms / (false_alarms + correct_neg) = 2 / (2 + 3) = 0.4
+        # obar = (hits + misses) / n = 5 / 10 = 0.5
+        #
+        # =========================================================================
+        # Threshold 0.7: fcst >= 0.7 gives binary forecasts
+        # =========================================================================
+        # fcst:   1    0    0    1    0    0    1    0    0    0
+        # obs:    1    0    0    1    1    0    0    1    0    1
+        #
+        # Contingency table:
+        #   hits (fcst=1, obs=1): 2
+        #   false_alarms (fcst=1, obs=0): 1
+        #   misses (fcst=0, obs=1): 3
+        #   correct_neg (fcst=0, obs=0): 4
+        #
+        # POD = hits / (hits + misses) = 2 / (2 + 3) = 0.4
+        # POFD = false_alarms / (false_alarms + correct_neg) = 1 / (1 + 4) = 0.2
+        # obar = (hits + misses) / n = 5 / 10 = 0.5
+        #
+        # =========================================================================
+        # REV calculations
+        # =========================================================================
+        # REV = (min(alpha, obar) - F*alpha*(1-obar) + H*obar*(1-alpha) - obar) / (min(alpha, obar) - obar*alpha)
+        #
+        # --- Threshold 0.3 (H=1.0, F=0.4, obar=0.5) ---
+        #
+        # alpha=0.2:
+        #   num = min(0.2, 0.5) - 0.4*0.2*0.5 + 1.0*0.5*0.8 - 0.5
+        #       = 0.2 - 0.04 + 0.4 - 0.5 = 0.06
+        #   den = min(0.2, 0.5) - 0.5*0.2 = 0.2 - 0.1 = 0.1
+        #   REV = 0.06 / 0.1 = 0.6
+        #
+        # alpha=0.5:
+        #   num = min(0.5, 0.5) - 0.4*0.5*0.5 + 1.0*0.5*0.5 - 0.5
+        #       = 0.5 - 0.1 + 0.25 - 0.5 = 0.15
+        #   den = min(0.5, 0.5) - 0.5*0.5 = 0.5 - 0.25 = 0.25
+        #   REV = 0.15 / 0.25 = 0.6
+        #
+        # --- Threshold 0.7 (H=0.4, F=0.2, obar=0.5) ---
+        #
+        # alpha=0.2:
+        #   num = min(0.2, 0.5) - 0.2*0.2*0.5 + 0.4*0.5*0.8 - 0.5
+        #       = 0.2 - 0.02 + 0.16 - 0.5 = -0.16
+        #   den = min(0.2, 0.5) - 0.5*0.2 = 0.2 - 0.1 = 0.1
+        #   REV = -0.16 / 0.1 = -1.6
+        #
+        # alpha=0.5:
+        #   num = min(0.5, 0.5) - 0.2*0.5*0.5 + 0.4*0.5*0.5 - 0.5
+        #       = 0.5 - 0.05 + 0.1 - 0.5 = 0.05
+        #   den = min(0.5, 0.5) - 0.5*0.5 = 0.5 - 0.25 = 0.25
+        #   REV = 0.05 / 0.25 = 0.2
+        #
+        # Expected result: [[0.6, 0.6], [-1.6, 0.2]]
 
-        np.random.seed(42)
-        fcst_np = np.random.uniform(0, 1, 50)
-        obs_np = np.random.binomial(1, 0.3, 50)
+        fcst_np = np.array([0.8, 0.5, 0.1, 0.9, 0.4, 0.2, 0.75, 0.6, 0.15, 0.35])
+        obs_np = np.array([1, 0, 0, 1, 1, 0, 0, 1, 0, 1])
 
-        fcst = xr.DataArray(da.from_array(fcst_np, chunks=10), dims=["time"])
-        obs = xr.DataArray(da.from_array(obs_np, chunks=10), dims=["time"])
+        fcst = xr.DataArray(da.from_array(fcst_np, chunks=5), dims=["time"])
+        obs = xr.DataArray(da.from_array(obs_np, chunks=5), dims=["time"])
 
         result = relative_economic_value(fcst, obs, [0.2, 0.5], threshold=[0.3, 0.7], check_args=False)
 
@@ -1378,37 +1438,39 @@ class TestDaskCompatibility:
         computed = result.compute()
 
         expected = xr.DataArray(
-            [[-0.19354839, -0.15789474], [-1.16129032, -0.15789474]],
+            [[0.6, 0.6], [-1.6, 0.2]],
             dims=["threshold", "cost_loss_ratio"],
             coords={"threshold": [0.3, 0.7], "cost_loss_ratio": [0.2, 0.5]},
         )
         xr.testing.assert_allclose(computed, expected)
 
-    @pytest.mark.parametrize("check_args,should_warn", [(True, True), (False, False)])
-    def test_dask_array_warning_behavior(self, check_args, should_warn):
-        """Test Dask array warning based on check_args parameter."""
+    @pytest.mark.parametrize("check_args", [True, False])
+    def test_dask_array_check_args_behavior(self, check_args):
+        """Test that check_args parameter controls validation with Dask arrays."""
         pytest.importorskip("dask")
 
         fcst_dask = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
         obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
 
-        if should_warn:
-            with pytest.warns(UserWarning, match="check_args=True will force computation on Dask arrays"):
-                relative_economic_value(fcst_dask, obs, [0.5], check_args=check_args)
-        else:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-                relative_economic_value(fcst_dask, obs, [0.5], check_args=check_args)
+        # Both should work without raising
+        result = relative_economic_value(fcst_dask, obs, [0.5], check_args=check_args)
 
-    def test_no_dask_warning_when_dask_unavailable(self, monkeypatch):
+        # Result should still be lazy (validation only computes min/max, not full result)
+        assert isinstance(result.data, da.Array)
+
+        # Verify correct result after computation
+        computed = result.compute()
+        expected = xr.DataArray([0.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]})
+        xr.testing.assert_allclose(computed, expected)
+
+    def test_no_dask_warning_when_dask_unavailable(self, monkeypatch, make_contingency_data):
         """Test that no warning is issued when dask is not available."""
         # Temporarily hide dask module
 
         monkeypatch.setitem(sys.modules, "dask", None)
         monkeypatch.setitem(sys.modules, "dask.array", None)
 
-        fcst = xr.DataArray([0, 1, 1, 0], dims=["time"])
-        obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
+        fcst, obs = make_contingency_data(1, 1, 1, 1)
 
         # Should not raise any warning
         with warnings.catch_warnings():
@@ -1417,9 +1479,85 @@ class TestDaskCompatibility:
 
         assert result is not None
 
+    def test_dask_dataset_validation(self):
+        """Test validation with Dask-backed Datasets."""
+        # Valid Dask Dataset for obs
+        obs_ds = xr.Dataset(
+            {
+                "var1": xr.DataArray(da.from_array([0, 1, 0, 1], chunks=2), dims=["time"]),
+                "var2": xr.DataArray(da.from_array([1, 0, 1, 0], chunks=2), dims=["time"]),
+            }
+        )
+        fcst = xr.DataArray([0, 1, 1, 0], dims=["time"])
 
-class TestOther:
-    """Other tests that don't fit elsewhere."""
+        # Should work with check_args=True
+        result = relative_economic_value(fcst, obs_ds, [0.5], check_args=True)
+        assert isinstance(result, xr.Dataset)
+
+        # Invalid Dask Dataset for obs (contains 2)
+        obs_bad_ds = xr.Dataset({"var1": xr.DataArray(da.from_array([0, 2, 0, 1], chunks=2), dims=["time"])})
+
+        with pytest.raises(ValueError, match="obs must contain only 0, 1, or NaN values"):
+            relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True)
+
+        # Valid Dask Dataset for fcst with threshold
+        fcst_ds = xr.Dataset(
+            {
+                "model1": xr.DataArray(da.from_array([0.2, 0.8, 0.6, 0.4], chunks=2), dims=["time"]),
+                "model2": xr.DataArray(da.from_array([0.1, 0.9, 0.5, 0.3], chunks=2), dims=["time"]),
+            }
+        )
+        obs = xr.DataArray([0, 1, 1, 0], dims=["time"])
+
+        result = relative_economic_value(fcst_ds, obs, [0.5], threshold=[0.5], check_args=True)
+        assert isinstance(result, xr.Dataset)
+
+        # Invalid Dask Dataset for fcst (contains 1.5)
+        fcst_bad_ds = xr.Dataset({"model1": xr.DataArray(da.from_array([0.2, 1.5, 0.6, 0.4], chunks=2), dims=["time"])})
+
+        with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
+            relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True)
+
+    def test_binary_forecast_strict_validation(self, make_contingency_data):
+        """Test strict binary validation for non-Dask binary forecasts."""
+        # Valid binary forecast (only 0 and 1)
+        fcst, obs = make_contingency_data(1, 1, 1, 1)
+
+        result = relative_economic_value(fcst, obs, [0.5], check_args=True)
+        assert result is not None
+
+        # Invalid binary forecast (contains 0.5)
+        fcst_bad = xr.DataArray([0, 0.5, 1, 0], dims=["time"])
+
+        with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
+            relative_economic_value(fcst_bad, obs, [0.5], check_args=True)
+
+    def test_rev_with_dask_inputs(self):
+        """Test that REV works correctly when inputs are Dask arrays."""
+
+        # Create Dask Arrays from the numpy data
+        fcst_data = da.from_array(np.array([0.2, 0.8, 0.1]), chunks=1)
+        obs_data = da.from_array(np.array([0, 1, 0]), chunks=1)
+
+        fcst = xr.DataArray(fcst_data, dims=["time"])
+        obs = xr.DataArray(obs_data, dims=["time"])
+
+        cost_loss_ratios = [0.5]
+        threshold = [0.5]  # Ensure a threshold is used for the probabilistic path
+
+        result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=threshold)
+
+        # Test that it's still a dask object
+        assert is_dask_collection(result.data)
+
+        expected = xr.DataArray(
+            [[1.0]], dims=["threshold", "cost_loss_ratio"], coords={"threshold": [0.5], "cost_loss_ratio": [0.5]}
+        )
+
+        xr.testing.assert_allclose(result, expected)
+
+        result_computed = result.compute()
+        assert not is_dask_collection(result_computed.data)
 
     @pytest.mark.parametrize("scalar_value", [0, 0.0, 1, 1.0])  # test a mix of int and float values
     def test_cost_loss_is_converted_to_length_one_coordinate(self, scalar_value):
@@ -1434,29 +1572,3 @@ class TestOther:
         expected = xr.DataArray([np.nan], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [scalar_value]})
 
         xr.testing.assert_identical(actual, expected)
-
-    @pytest.mark.parametrize(
-        "fcst_has_nan,obs_has_nan",
-        [
-            (True, False),
-            (False, True),
-            (True, True),
-        ],
-        ids=["fcst_nans", "obs_nans", "both_nans"],
-    )
-    def test_nan_handling(self, fcst_has_nan, obs_has_nan):
-        """Test that NaN values are handled correctly."""
-        base_fcst = [1] * 5 + [0] * 3 + [1] * 8 + [0] * 80
-        base_obs = [1] * 5 + [1] * 3 + [0] * 8 + [0] * 80
-
-        fcst_values = base_fcst + ([np.nan] * 2 if fcst_has_nan else [1] * 2) + [1] * 2 + [0] * 2
-        obs_values = base_obs + ([np.nan] * 2 if obs_has_nan else [1] * 2) + [1] * 2 + [0] * 2
-
-        fcst = xr.DataArray(fcst_values, dims=["time"])
-        obs = xr.DataArray(obs_values, dims=["time"])
-
-        actual = relative_economic_value(fcst, obs, cost_loss_ratios=[0.2])
-
-        expected = xr.DataArray([0.5], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.2]})
-
-        xr.testing.assert_allclose(actual, expected)

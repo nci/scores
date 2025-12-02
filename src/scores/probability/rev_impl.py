@@ -2,7 +2,6 @@
 Relative Economic Value metrics for forecast evaluation
 """
 
-import warnings
 from collections.abc import Sequence
 from typing import Optional, Union
 
@@ -10,7 +9,7 @@ import numpy as np
 import xarray as xr
 
 from scores.categorical import probability_of_detection, probability_of_false_detection
-from scores.processing import binary_discretise, broadcast_and_match_nan
+from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike
 from scores.utils import gather_dimensions
 
@@ -247,29 +246,6 @@ def _create_output_dataset(
     return result
 
 
-def _check_dask_arrays(fcst: XarrayLike, obs: XarrayLike) -> None:
-    """
-    Warn if Dask arrays detected during validation.
-
-    Note: This check forces computation of Dask arrays.
-    """
-    try:
-        # pylint: disable=import-outside-toplevel
-        import dask.array as da
-
-        is_dask_fcst = isinstance(fcst.data if hasattr(fcst, "data") else fcst, da.Array)
-        is_dask_obs = isinstance(obs.data if hasattr(obs, "data") else obs, da.Array)
-        if is_dask_fcst or is_dask_obs:
-            warnings.warn(
-                "check_args=True will force computation on Dask arrays. "
-                "Set check_args=False to skip validation and preserve lazy evaluation.",
-                UserWarning,
-                stacklevel=4,  # Adjusted for extra function call depth
-            )
-    except ImportError:
-        pass  # Dask not available, proceed with validation
-
-
 def _validate_dimensions(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -278,6 +254,7 @@ def _validate_dimensions(
     cost_loss_dim: str,
 ) -> None:
     """Check for dimension conflicts in inputs."""
+    # Dimension checks are always lazy - just check dims, not values
     # Check fcst dimensions
     if threshold_dim in fcst.dims:
         raise ValueError(f"'{threshold_dim}' cannot be a dimension in fcst")
@@ -296,8 +273,26 @@ def _validate_dimensions(
             raise ValueError(f"'{threshold_dim}' cannot be a dimension in weights")
         if cost_loss_dim in weights.dims:
             raise ValueError(f"'{cost_loss_dim}' cannot be a dimension in weights")
-        if (weights < 0).any():
-            raise ValueError("weights must be non-negative")
+
+
+def _validate_thresholds(
+    threshold: Optional[Union[float, Sequence[float]]],
+    threshold_outputs: Optional[Sequence[float]],
+) -> None:
+    """Lazy validation of forecast configuration."""
+    if threshold is not None:
+        thresh_array = np.atleast_1d(threshold)
+        if not np.all((thresh_array >= 0) & (thresh_array <= 1)):
+            raise ValueError("threshold values must be between 0 and 1")
+        if len(thresh_array) > 1 and not np.all(np.diff(thresh_array) > 0):
+            raise ValueError("threshold values must be strictly monotonically increasing")
+
+        if threshold_outputs is not None:
+            if not set(threshold_outputs) <= set(thresh_array):
+                raise ValueError("values in threshold_outputs must be in the supplied threshold parameter")
+    else:
+        if threshold_outputs:
+            raise ValueError("threshold_outputs can only be used when threshold parameter is provided")
 
 
 def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) -> None:
@@ -313,6 +308,31 @@ def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) 
 
 def _validate_observations(obs: XarrayLike) -> None:
     """Check observations contain only binary values (0, 1, or NaN)."""
+
+    # Check if Dask
+    is_dask = False
+    if isinstance(obs, xr.Dataset):
+        if any(hasattr(var.data, "chunks") for var in obs.data_vars.values()):
+            is_dask = True
+    elif hasattr(obs, "chunks") and obs.chunks is not None:
+        is_dask = True
+
+    if is_dask:
+        # For Dask, compute min/max as sanity check
+        if isinstance(obs, xr.Dataset):
+            # For Datasets, need to get min/max across all variables
+            obs_min = min(var.min().compute().item() for var in obs.data_vars.values())
+            obs_max = max(var.max().compute().item() for var in obs.data_vars.values())
+        else:
+            obs_min_max = obs.min(), obs.max()
+            obs_min = obs_min_max[0].compute().item()
+            obs_max = obs_min_max[1].compute().item()
+
+        if obs_min < 0 or obs_max > 1:
+            raise ValueError("obs must contain only 0, 1, or NaN values")
+        return
+
+    # For memory-resident arrays, do the strict check
     if isinstance(obs, xr.Dataset):
         obs_vals = obs.to_array().values
     else:
@@ -326,46 +346,58 @@ def _validate_observations(obs: XarrayLike) -> None:
 def _validate_forecasts(
     fcst: XarrayLike,
     threshold: Optional[Union[float, Sequence[float]]],
-    threshold_outputs: Optional[Sequence[float]],
 ) -> None:
     """Validate forecast values and threshold configuration."""
-    # Extract forecast values
+
+    # Check if we are working with Dask
+    is_dask = False
     if isinstance(fcst, xr.Dataset):
-        fcst_vals = fcst.to_array().values
+        if any(hasattr(var.data, "chunks") for var in fcst.data_vars.values()):
+            is_dask = True
+    elif hasattr(fcst, "chunks") and fcst.chunks is not None:
+        is_dask = True
+
+    # --- 1. Get Data Stats (Min/Max) ---
+    if isinstance(fcst, xr.Dataset):
+        if is_dask:
+            fcst_min = min(var.min().compute().item() for var in fcst.data_vars.values())
+            fcst_max = max(var.max().compute().item() for var in fcst.data_vars.values())
+        else:
+            fcst_min = min(var.min().item() for var in fcst.data_vars.values())
+            fcst_max = max(var.max().item() for var in fcst.data_vars.values())
     else:
-        fcst_vals = fcst.values
+        fcst_min_max = fcst.min(), fcst.max()
+        if is_dask:
+            fcst_min, fcst_max = fcst_min_max[0].compute().item(), fcst_min_max[1].compute().item()
+        else:
+            fcst_min, fcst_max = fcst_min_max[0].item(), fcst_min_max[1].item()
 
-    fcst_min = np.nanmin(fcst_vals)
-    fcst_max = np.nanmax(fcst_vals)
-
+    # --- 2. Validate based on configuration ---
     if threshold is not None:
         # Probabilistic forecasts: validate range
         if fcst_min < 0 or fcst_max > 1:
             raise ValueError("When threshold is provided, fcst must contain values between 0 and 1")
-
-        # Validate threshold values
-        thresh_array = np.atleast_1d(threshold)
-        if not np.all((thresh_array >= 0) & (thresh_array <= 1)):
-            raise ValueError("threshold values must be between 0 and 1")
-        if len(thresh_array) > 1 and not np.all(np.diff(thresh_array) > 0):
-            raise ValueError("threshold values must be strictly monotonically increasing")
-
-        # Validate threshold_outputs
-        if threshold_outputs is not None:
-            if not set(threshold_outputs) <= set(thresh_array):
-                raise ValueError("values in threshold_outputs must be in the supplied threshold parameter")
     else:
-        # Binary forecasts: validate values
-        unique_fcst = np.unique(fcst_vals[~np.isnan(fcst_vals)])
-        if not np.all(np.isin(unique_fcst, [0, 1])):
+        # Binary forecasts: check bounds
+        if fcst_min < 0 or fcst_max > 1:
             raise ValueError(
                 "When threshold is None, fcst must contain only 0, 1, or NaN values. "
                 "For probabilistic forecasts, provide threshold parameter."
             )
 
-        # threshold_outputs requires thresholds
-        if threshold_outputs:
-            raise ValueError("threshold_outputs can only be used when threshold parameter is provided")
+        # Check strict binary values (0 or 1) for non-Dask
+        if not is_dask:
+            if isinstance(fcst, xr.Dataset):
+                fcst_vals = fcst.to_array().values
+            else:
+                fcst_vals = fcst.values
+
+            unique_fcst = np.unique(fcst_vals[~np.isnan(fcst_vals)])
+            if not np.all(np.isin(unique_fcst, [0, 1])):
+                raise ValueError(
+                    "When threshold is None, fcst must contain only 0, 1, or NaN values. "
+                    "For probabilistic forecasts, provide threshold parameter."
+                )
 
 
 def _validate_derived_metrics(
@@ -399,19 +431,23 @@ def _validate_rev_inputs(
     """
     Validate inputs for REV calculation.
 
-    Note: This function forces computation of Dask arrays. For Dask workflows,
-    set check_args=False to skip validation.
-
-    Raises:
-        ValueError: For various input validation failures
-        UserWarning: If Dask arrays detected with check_args=True
     """
-    _check_dask_arrays(fcst, obs)
+
+    if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
+        raise ValueError("Both fcst and obs cannot be Datasets. Convert one to a DataArray or calculate separately.")
+
+    if isinstance(weights, xr.Dataset):
+        raise ValueError("Weights cannot be Datasets. Convert to a DataArray or calculate separately.")
+
+    # Lazy checks
     _validate_dimensions(fcst, obs, weights, threshold_dim, cost_loss_dim)
     _validate_cost_loss_ratios(cost_loss_ratios)
-    _validate_observations(obs)
-    _validate_forecasts(fcst, threshold, threshold_outputs)
+    _validate_thresholds(threshold, threshold_outputs)
     _validate_derived_metrics(derived_metrics, threshold)
+
+    # Expensive checks
+    _validate_observations(obs)
+    _validate_forecasts(fcst, threshold)
 
 
 def _calculate_rev_core(
@@ -455,7 +491,6 @@ def calculate_climatology(
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-    check_args: bool = True,
 ) -> XarrayLike:
     """
     Calculates the climatological base rate (mean of observations).
@@ -478,17 +513,10 @@ def calculate_climatology(
         weights: An array of weights to apply (e.g., weighting a grid by latitude).
             If None, unweighted mean is calculated. Weights must be broadcastable
             to the data dimensions and should not contain negative or NaN values.
-        check_args: If True, validates input arguments. Set to False to improve performance.
 
     Returns:
         A DataArray of the climatological base rate.
     """
-
-    if check_args and weights is not None:
-        if (weights < 0).any():
-            raise ValueError("'weights' contains negative values")
-        if weights.isnull().any():
-            raise ValueError("'weights' contains NaN values")
 
     # Use gather_dimensions to determine which obs dimensions to reduce
     # gather_dimensions will validate reduce_dims/preserve_dims automatically.
@@ -503,24 +531,23 @@ def calculate_climatology(
     obs_reduce_dims = tuple(d for d in dims_to_reduce if d in obs.dims)
 
     if weights is not None:
-        # Identify which dimensions can be handled with weighted sum
+        # Identify which dimensions weights actually span
         weight_reduce_dims = tuple(d for d in obs_reduce_dims if d in weights.dims)
 
         if weight_reduce_dims:
-            # Weighted mean over dimensions that weights span
-            obs_weighted = obs * weights
-            climatology = obs_weighted.sum(dim=weight_reduce_dims, skipna=True) / weights.sum(dim=weight_reduce_dims)
+            # Use aggregate for weighted mean over dimensions that weights span
+            climatology = aggregate(obs, reduce_dims=weight_reduce_dims, weights=weights, method="mean")
 
             # Unweighted mean over remaining dimensions
             remaining_dims = tuple(d for d in obs_reduce_dims if d not in weight_reduce_dims)
             if remaining_dims:
-                climatology = climatology.mean(dim=remaining_dims, skipna=True)
+                climatology = aggregate(climatology, reduce_dims=remaining_dims, weights=None, method="mean")
         else:
             # Weights exist but don't span any reduction dimensions - ignore them
-            climatology = obs.mean(dim=obs_reduce_dims, skipna=True)
+            climatology = aggregate(obs, reduce_dims=obs_reduce_dims, weights=None, method="mean")
     else:
         # Simple unweighted mean
-        climatology = obs.mean(dim=obs_reduce_dims, skipna=True)
+        climatology = aggregate(obs, reduce_dims=obs_reduce_dims, weights=None, method="mean")
 
     return climatology
 
@@ -699,12 +726,6 @@ def relative_economic_value(
         - :py:func:`scores.categorical.probability_of_false_detection`
         - :py:func:`scores.processing.binary_discretise`
     """
-
-    if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
-        raise ValueError("Both fcst and obs cannot be Datasets. Convert one to a DataArray or calculate separately.")
-
-    if isinstance(weights, xr.Dataset):
-        raise ValueError("Weights cannot be Datasets. Convert to a DataArray or calculate separately.")
 
     # Input validation
     if check_args:
