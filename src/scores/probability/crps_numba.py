@@ -56,8 +56,8 @@ def crps_at_point(
     weights: np.ndarray,
     res_over: np.ndarray,
     res_under: np.ndarray,
-):
-    """CRPRS at a single point for a thresholded probabilistic forecast.
+) -> None:
+    """CRPS at a single point for a thresholded probabilistic forecast.
 
     Args:
         obs: observed value
@@ -121,7 +121,7 @@ def crps_cdf_exact_fast(
     threshold_dim: str,
     *,  # Force keywords arguments to be keyword-only
     include_components=False,
-):
+) -> xr.Dataset:
     """
     Calculates exact value of CRPS assuming that:
         - the forecast CDF is continuous piecewise linear, with join points given by

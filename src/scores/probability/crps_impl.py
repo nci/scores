@@ -420,7 +420,7 @@ def crps_cdf_exact_slow(
     threshold_dim: str,
     *,  # Force keywords arguments to be keyword-only
     include_components=False,
-):
+) -> xr.Dataset:
     """
     Calculates exact value of CRPS assuming that:
         - the forecast CDF is continuous piecewise linear, with join points given by
