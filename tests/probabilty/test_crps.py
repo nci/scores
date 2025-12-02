@@ -82,6 +82,15 @@ def test_crps_cdf_exact_fast():
     )
     assert list(result2.data_vars) == ["total"]
 
+    result3 = crps_cdf_exact_fast(
+        crps_test_data.DA_FCST_CRPS_EXACT_UNITS,
+        crps_test_data.DA_OBS_CRPS,
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=False,
+    )
+    assert result3["total"].attrs["units"] == "mm"
+
 
 def test_crps_cdf_exact_slow():
     """Tests `crps_cdf_exact_slow`."""

@@ -163,13 +163,13 @@ def crps_cdf_exact_fast(
         output_dtypes=[float, float],
         keep_attrs=True,
     )
+    over, under = over.where(inputs_without_nan), under.where(inputs_without_nan)
+    total = over + under
     if "units" in cdf_fcst[threshold_dim].attrs:
         over.attrs["units"] = cdf_fcst[threshold_dim].attrs["units"]
         under.attrs["units"] = cdf_fcst[threshold_dim].attrs["units"]
-    over, under = over.where(inputs_without_nan), under.where(inputs_without_nan)
-    total = over + under
+        total.attrs["units"] = cdf_fcst[threshold_dim].attrs["units"]
     result = total.to_dataset(name="total")
-
     if include_components:
         result = xr.merge(
             [

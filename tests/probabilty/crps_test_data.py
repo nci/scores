@@ -75,6 +75,8 @@ DA_FCST_CRPS_EXACT = xr.DataArray(
     dims=["station", "x"],
     coords={"station": [1001, 1002, 1003, 1004, 1005, 1006], "x": [0, 0.5, 1, 2]},
 )
+DA_FCST_CRPS_EXACT_UNITS = DA_FCST_CRPS_EXACT.copy()
+DA_FCST_CRPS_EXACT_UNITS["x"].attrs["units"] = "mm"
 
 DA_WT_CRPS_EXACT = xr.DataArray(
     data=[
