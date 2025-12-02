@@ -361,7 +361,7 @@ def crps_cdf(
         numba_installed = False
         try:
             import numba
-            from crps_numba import crps_cdf_exact_fast
+            from scores.probability.crps_numba import crps_cdf_exact_fast
 
             numba_installed = True
         except ImportError:
