@@ -19,7 +19,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["xarray", "pandas", "scipy", "bottleneck", "numba"]
+dependencies = ["xarray", "pandas", "scipy", "bottleneck"]
 
 [project.optional-dependencies]
 dev = [
