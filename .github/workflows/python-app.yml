@@ -34,6 +34,11 @@ jobs:
         # package rather than the local files creating a coverage report of 0%
         pip install -e .
         pytest tests/ --cov=src/
+    - name: Coveralls GitHub Action
+      uses: coverallsapp/github-action@v2.3.0
+      with:
+        flag-name: run-${{ join(matrix.*, '-') }}
+        parallel: true
     - name: Test tutorial notebooks with pytest
       run: |
         pytest --nbmake tutorials/
@@ -45,11 +50,6 @@ jobs:
         pip uninstall dask -y
         pip uninstall numba -y
         pytest tests/ 
-    - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v2.3.0
-      with:
-        flag-name: run-${{ join(matrix.*, '-') }}
-        parallel: true
   finish:
     needs: build
     runs-on: ubuntu-latest
