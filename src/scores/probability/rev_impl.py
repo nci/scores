@@ -433,9 +433,6 @@ def _validate_rev_inputs(
 
     """
 
-    if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
-        raise ValueError("Both fcst and obs cannot be Datasets. Convert one to a DataArray or calculate separately.")
-
     if isinstance(weights, xr.Dataset):
         raise ValueError("Weights cannot be Datasets. Convert to a DataArray or calculate separately.")
 
@@ -740,6 +737,37 @@ def relative_economic_value(
             derived_metrics,
             threshold_outputs,
         )
+
+    if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
+        # Align datasets so coords match (drops non-matching coords)
+        fcst_aligned, obs_aligned = xr.align(fcst, obs, join="inner")
+
+        # Choose a separator for combined variable names
+        name_sep = "__vs__"
+
+        result_dict = {}
+        # Cross-product of variables: produce one output variable per pair
+        for fvar in sorted(fcst_aligned.data_vars):
+            for ovar in sorted(obs_aligned.data_vars):
+                out_name = f"{fvar}{name_sep}{ovar}"
+                # Recurse into scalar-DataArray path; pass check_args=False since
+                # we already validated at top-level
+                result_dict[out_name] = relative_economic_value(
+                    fcst_aligned[fvar],
+                    obs_aligned[ovar],
+                    cost_loss_ratios,
+                    threshold=threshold,
+                    reduce_dims=reduce_dims,
+                    preserve_dims=preserve_dims,
+                    weights=weights,
+                    threshold_dim=threshold_dim,
+                    cost_loss_dim=cost_loss_dim,
+                    derived_metrics=derived_metrics,
+                    threshold_outputs=threshold_outputs,
+                    check_args=False,
+                )
+
+        return xr.Dataset(result_dict)
 
     if isinstance(fcst, xr.Dataset):
         result_dict = {}

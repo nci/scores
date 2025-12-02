@@ -901,14 +901,14 @@ class TestDatasetInputs:
     def test_forecast_as_dataset(self):
         """Test with forecast as Dataset."""
         fcst_ds = xr.Dataset(
-            {"ecmwf": xr.DataArray([0, 1, 1, 0], dims=["time"]), "access": xr.DataArray([1, 0, 1, 1], dims=["time"])}
+            {"ecmwf": xr.DataArray([0, 1, 1, 0], dims=["time"]), "access": xr.DataArray([1, 0, 0, 1], dims=["time"])}
         )
-        obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
+        obs = xr.DataArray([0, 1, 1, 0], dims=["time"])
 
         actual = relative_economic_value(fcst_ds, obs, [0.5])
 
         expected = xr.Dataset(
-            data_vars={"ecmwf": (["cost_loss_ratio"], [0.0]), "access": (["cost_loss_ratio"], [-0.5])},
+            data_vars={"ecmwf": (["cost_loss_ratio"], [1.0]), "access": (["cost_loss_ratio"], [-1.0])},
             coords={"cost_loss_ratio": [0.5]},
         )
 
@@ -916,11 +916,11 @@ class TestDatasetInputs:
 
     def test_obs_as_dataset(self):
         """Test with observations as Dataset."""
-        fcst = xr.DataArray([0.2, 0.8, 0.6, 0.4], dims=["time"])
+        fcst = xr.DataArray([0, 1, 1, 0], dims=["time"])
         obs_ds = xr.Dataset(
             {
                 "station_data": xr.DataArray([0, 1, 1, 0], dims=["time"]),
-                "radar_data": xr.DataArray([0, 0, 1, 0], dims=["time"]),
+                "radar_data": xr.DataArray([1, 0, 0, 1], dims=["time"]),
             }
         )
 
@@ -928,7 +928,7 @@ class TestDatasetInputs:
         expected = xr.Dataset(
             data_vars={
                 "station_data": (["threshold", "cost_loss_ratio"], [[1.0, 1.0]]),
-                "radar_data": (["threshold", "cost_loss_ratio"], [[0.571429, -1.33333]]),
+                "radar_data": (["threshold", "cost_loss_ratio"], [[-7 / 3, -7 / 3]]),
             },
             coords={"threshold": [0.5], "cost_loss_ratio": [0.3, 0.7]},
         )
@@ -937,21 +937,32 @@ class TestDatasetInputs:
 
     def test_both_as_dataset(self):
         """Test with both as Dataset."""
-        fcst = xr.Dataset(
-            {
-                "access": xr.DataArray([0.7, 0.3, 0.6, 0.1], dims=["time"]),
-                "ecmwf": xr.DataArray([0.8, 0.2, 0.7, 0.05], dims=["time"]),
-            }
+        fcst_ds = xr.Dataset(
+            {"ecmwf": xr.DataArray([1, 1, 1, 0], dims=["time"]), "access": xr.DataArray([0, 0, 0, 1], dims=["time"])}
         )
         obs_ds = xr.Dataset(
             {
-                "station_data": xr.DataArray([0, 1, 1, 0], dims=["time"]),
-                "radar_data": xr.DataArray([0, 0, 1, 0], dims=["time"]),
+                "station_data": xr.DataArray([0, 0, 1, 1], dims=["time"]),
+                "radar_data": xr.DataArray([1, 1, 0, 0], dims=["time"]),
             }
         )
 
-        with pytest.raises(ValueError, match="Both fcst and obs cannot be Datasets."):
-            relative_economic_value(fcst, obs_ds, [0.3, 0.7], threshold=[0.5])
+        actual = relative_economic_value(fcst_ds, obs_ds, [0.3, 0.7], threshold=[0.5])
+
+        expected = xr.Dataset(
+            data_vars={
+                "access__vs__radar_data": (["threshold", "cost_loss_ratio"], np.array([[-11 / 6, -7 / 6]])),
+                "access__vs__station_data": (["threshold", "cost_loss_ratio"], np.array([[-1 / 6, 0.5]])),
+                "ecmwf__vs__radar_data": (["threshold", "cost_loss_ratio"], np.array([[0.5, -1 / 6]])),
+                "ecmwf__vs__station_data": (["threshold", "cost_loss_ratio"], np.array([[-7 / 6, -11 / 6]])),
+            },
+            coords={
+                "threshold": [0.5],
+                "cost_loss_ratio": [0.3, 0.7],
+            },
+        )
+
+        xr.testing.assert_allclose(actual, expected)
 
     def test_weights_as_dataset_raises_error(self):
         """Test that weights as Dataset raises an error."""
