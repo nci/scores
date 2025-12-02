@@ -195,28 +195,45 @@ def test_crps_cdf_trapz():
     (
         "threshold_weight",
         "additional_thresholds",
+        "convert_obs_to_cdf",
+        "include_obs_in_thresholds",
         "expected",
     ),
     [
         (
             crps_test_data.DA_WT_REFORMAT1,
             None,
+            True,
+            True,
             crps_test_data.EXP_REFORMAT1,
         ),
         (
             crps_test_data.DA_WT_REFORMAT1,
             [0, 1.5],
+            True,
+            True,
             crps_test_data.EXP_REFORMAT2,
         ),
         (
             None,
             None,
+            True,
+            True,
             crps_test_data.EXP_REFORMAT3,
+        ),
+        (
+            crps_test_data.DA_WT_REFORMAT1,
+            None,
+            False,
+            False,
+            crps_test_data.EXP_REFORMAT4,
         ),
     ],
 )
 def test_crps_cdf_reformat_inputs(
     threshold_weight,
+    convert_obs_to_cdf,
+    include_obs_in_thresholds,
     additional_thresholds,
     expected,
 ):
@@ -226,6 +243,8 @@ def test_crps_cdf_reformat_inputs(
         crps_test_data.DA_OBS_REFORMAT1,
         "x",
         threshold_weight=threshold_weight,
+        convert_obs_to_cdf=convert_obs_to_cdf,
+        include_obs_in_thresholds=include_obs_in_thresholds,
         additional_thresholds=additional_thresholds,
         fcst_fill_method="linear",
         threshold_weight_fill_method="forward",

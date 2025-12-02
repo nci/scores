@@ -294,6 +294,36 @@ EXP_WT_REFORMAT3 = xr.DataArray(  # "forward" fill
 
 EXP_REFORMAT3 = EXP_FCST_REFORMAT3, EXP_OBS_REFORMAT3, EXP_WT_REFORMAT3
 
+EXP_FCST_REFORMAT4 = xr.DataArray(  # "linear" fill
+    data=[
+        [[0, 0.1, 0.2, 0.6, 0.9], [0.5, 0.6, 0.7, 1, 1]],
+        [[nan, nan, nan, nan, nan], [0.5, 0.6, 0.7, 1, 1]],
+        [[0, 0.1, 0.2, 0.6, 0.9], [0.5, 0.6, 0.7, 0.85, 1]],
+    ],
+    dims=["station", "date", "x"],
+    coords={
+        "station": [1001, 1002, 1003],
+        "date": [10, 11],
+        "x": [0, 0.5, 1, 2, 3],
+    },
+)
+
+EXP_WT_REFORMAT4 = xr.DataArray(  # "forward" fill
+    data=[
+        [[0, 0, 0, 1.0, 1.0], [0, 0, 0, 1.0, 1.0]],
+        [[0, 1.0, 1.0, 1.0, 1.0], [0, 1.0, 1.0, 1.0, 1.0]],
+        [[0, 0, 1.0, 1.0, 1.0], [0, 0, 1.0, 1.0, 1.0]],
+    ],
+    dims=["station", "date", "x"],
+    coords={
+        "station": [1001, 1002, 1003],
+        "date": [10, 11],
+        "x": [0, 0.5, 1, 2, 3],
+    },
+)
+
+EXP_REFORMAT4 = EXP_FCST_REFORMAT4, DA_OBS_REFORMAT1, EXP_WT_REFORMAT4
+
 DA_WT_CHECK_CRPS1 = xr.DataArray(
     data=[
         [0, 0, 0, 1.0],
