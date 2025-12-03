@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -41,9 +42,13 @@ def _generate_largest_rain_area_2d(
     masked_obs = obs.where(obs >= threshold)
     masked_fcst = fcst.where(fcst >= threshold)
 
+    # If fcst/obs don't meet minimum counts even pre-blobification
     if masked_fcst.count() < min_points or masked_obs.count() < min_points:
         logger.info(f"Less than {min_points} points meet the condition.")
-        return None, None
+        masked_fcst[:] = np.nan
+        masked_obs[:] = np.nan
+
+        return masked_fcst, masked_obs
 
     # Label connected components in the masked array
     # This is to identify and group connected regions (or blobs) in an array
@@ -88,7 +93,8 @@ def _generate_largest_rain_area_2d(
     # Apply min_points check to the extracted blobs
     if fcst_blob.count() < min_points or obs_blob.count() < min_points:
         logger.info(f"Largest blob has fewer than {min_points} points.")
-        return None, None
+        fcst_blob[:] = np.nan
+        obs_blob[:] = np.nan
 
     return fcst_blob, obs_blob
 
@@ -129,7 +135,12 @@ def _calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
 
 
 def _translate_forecast_region(
-    fcst: xr.DataArray, obs: xr.DataArray, y_name: str, x_name: str, max_distance: float, coord_units: str
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    y_name: str,
+    x_name: str,
+    max_distance: float,
+    coord_units: str,
 ) -> Tuple[xr.DataArray, int, int]:
     """
     Translate the forecast field to best spatially align with the observation field.
@@ -158,10 +169,6 @@ def _translate_forecast_region(
     # the evaluation is always done over the same observation-valid region
     fixed_mask = ~np.isnan(obs)
 
-    if not fixed_mask.any():
-        logger.info("No valid observation data.")
-        return None, None, None
-
     # Mask forecast and observation using fixed mask
     fcst_masked = fcst.where(fixed_mask)
     obs_masked = obs.where(fixed_mask)
@@ -181,7 +188,12 @@ def _translate_forecast_region(
                 best_shift = shift
 
     # Refine with local optimization from brute-force result
-    result = minimize(_shifted_mse, best_shift, args=(fcst, obs, [y_name, x_name], fixed_mask), method="Nelder-Mead")
+    result = minimize(
+        _shifted_mse,
+        best_shift,
+        args=(fcst, obs, [y_name, x_name], fixed_mask),
+        method="Nelder-Mead",
+    )
     optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
 
     # Fallback to bounding box centre if optimization fails
@@ -195,14 +207,17 @@ def _translate_forecast_region(
         ]
 
     # Apply shift
-    dx, dy = int(round(optimal_shift[0])), int(round(optimal_shift[1]))
+    dx, dy = np.round(optimal_shift[0]), np.round(optimal_shift[1])
 
     # Compute shift distance in km
     resolution_km = _calc_resolution(obs, [y_name, x_name], coord_units)
+
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
 
     if shift_distance_km > max_distance:
         logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
+        # What does it mean when this happens? Should the overall metric be done,
+        # or just the shift not occur?
         return None, None, None
 
     shifted_fcst = _shift_fcst(fcst, shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
@@ -216,10 +231,26 @@ def _translate_forecast_region(
     rmse_original = float(rmse(fcst_masked, obs_masked))
     corr_original = _calc_corr_coeff(fcst_masked, obs_masked)
 
-    if rmse_shifted > rmse_original or corr_shifted < corr_original or mse_shifted > original_mse:
-        return None, None, None
+    # How can the following actually occur? What should users do about it? What does it mean?
+    # If we don't know, should we warn instead?
+    # If not, should we just let the user decide?
+
+    # if (
+    #     rmse_shifted > rmse_original
+    #     or corr_shifted < corr_original
+    #     or mse_shifted > original_mse
+    # ):
+    #     return None, None, None
 
     return shifted_fcst, dx, dy
+
+
+def nansafe_int(value):
+
+    if np.isnan(value):
+        return value
+
+    return int(value)
 
 
 def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: List[str]) -> xr.DataArray:
@@ -245,20 +276,31 @@ def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Li
     ydim, xdim = spatial_dims
 
     # Define shift amounts for each dim
-    shift_kwargs = {
-        ydim: int(shift_y),  # dy => Y dim
-        xdim: int(shift_x),  # dx => X dim
+    shift_xdim = nansafe_int(shift_x)  # dx => X dim
+    shift_ydim = nansafe_int(shift_y)  # dy => Y dim
+
+    shift_xdim = 0 if np.isnan(shift_xdim) else shift_xdim
+    shift_ydim = 0 if np.isnan(shift_ydim) else shift_ydim
+
+    shifts_kwargs = {
+        xdim: shift_xdim,
+        ydim: shift_ydim,
     }
 
-    # Apply the shift with NaN fill for out-of-bounds values
-    return fcst.shift(
-        **shift_kwargs,
+    shifted = fcst.shift(
+        **shifts_kwargs,
         fill_value=np.nan,
     )
 
+    return shifted
+
 
 def _shifted_mse(
-    shifts: List[int], fcst: xr.DataArray, obs: xr.DataArray, spatial_dims: List[str], fixed_mask: xr.DataArray
+    shifts: List[int],
+    fcst: xr.DataArray,
+    obs: xr.DataArray,
+    spatial_dims: List[str],
+    fixed_mask: xr.DataArray,
 ) -> float:
     """
     Objective function for optimization: computes MSE between shifted forecast and observation.
@@ -408,6 +450,7 @@ def _calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> 
         dy_km = np.abs(dy) / 1000
         dx_km = np.abs(dx) / 1000
     else:
+        # Should not be reachable due to earlier validation step
         raise ValueError("units must be 'degrees' or 'metres'")
 
     avg_resolution_km = np.mean([dy_km, dx_km])
@@ -451,7 +494,7 @@ def _normalize_single_reduce_dim(data: xr.DataArray, reduce_dims: Optional[list[
     return group_dim
 
 
-def cra_2d(
+def cra_image(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
@@ -460,7 +503,9 @@ def cra_2d(
     max_distance: float = 300,
     min_points: int = 10,
     coord_units: str = "metres",
-) -> Optional[dict]:
+    extra_components: bool = False,
+    time_name: Optional[str] = None,
+) -> Optional[xr.Dataset]:
     """
         Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
         This function is designed for 2D spatial fields. For time-dependent data,
@@ -472,9 +517,7 @@ def cra_2d(
         displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
         shifts the forecast blob to best match the observed blob, and evaluates the error reduction.
 
-
         The decomposition is defined as:
-
 
         .. math::
             \\text{MSE}_{\\text{total}} = \\text{MSE}_{\\text{displacement}} + \\text{MSE}_{\\text{pattern}} + \\text{MSE}_{\\text{volume}}
@@ -497,25 +540,8 @@ def cra_2d(
             coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
         Returns:
-            dict: A dictionary containing the following CRA components and diagnostics:
-                - mse_total (float): Total mean squared error between forecast and observed blobs.
-                - mse_displacement (float): MSE due to spatial displacement between forecast and observed blobs.
-                - mse_volume (float): MSE due to volume differences.
-                - mse_pattern (float): MSE due to pattern/structure differences.
-                - fcst_blob (xr.DataArray): Forecast data blob above the threshold.
-                - obs_blob (xr.DataArray): Observed data blob above the threshold.
-                - shifted_fcst (xr.DataArray): Forecast blob shifted to best align with observed blob.
-                - optimal_shift (list[int]): Optimal [x, y] shift applied to forecast blob in grid points units.
-                - num_gridpoints_above_threshold_fcst (int): Number of grid points in forecast blob above threshold.
-                - num_gridpoints_above_threshold_obs (int): Number of grid points in observed blob above threshold.
-                - avg_fcst (float): Mean value of the forecast blob.
-                - avg_obs (float): Mean value of the observed blob.
-                - max_fcst (float): Maximum value in the forecast blob.
-                - max_obs (float): Maximum value in the observed blob.
-                - corr_coeff_original (float): Correlation coefficient between original forecast and observed blobs.
-                - corr_coeff_shifted (float): Correlation coefficient between shifted forecast and observed blobs.
-                - rmse_original (float): Root mean square error between original forecast and observed blobs.
-                - rmse_shifted (float): Root mean square error between shifted forecast and observed blobs.
+            `CRA2DMetric`: A dictionary containing the CRA components and diagnostics.
+
             Returns None if input data is invalid or CRA computation fails.
 
         Raises:
@@ -537,40 +563,19 @@ def cra_2d(
 
     """
 
-    # Type and shape checks
-    if not isinstance(fcst, xr.DataArray):
-        raise TypeError("fcst must be an xarray DataArray")
-    if not isinstance(obs, xr.DataArray):
-        raise TypeError("obs must be an xarray DataArray")
-    if fcst.shape != obs.shape:
-        raise ValueError("fcst and obs must have the same shape")
+    # Throw an exception if invalid input
+    validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
 
-    for dim in [y_name, x_name]:
-        if dim not in obs.dims:
-            raise ValueError(f"Spatial dimension '{dim}' not found in observation data")
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
 
-    allowed_units = ["degrees", "metres"]
-    if coord_units not in allowed_units:
-        raise ValueError(f"Invalid coord_units '{coord_units}'. Must be one of {allowed_units}.")
+    mse_total = mse(fcst_blob, obs_blob)
 
-    [fcst_blob, obs_blob] = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
-
-    if fcst_blob is None or obs_blob is None:
-        return None
-
-    mse_total = float(mse(fcst_blob, obs_blob))
-
-    if np.isnan(mse_total):
-        return None
-
-    [shifted_fcst, delta_x, delta_y] = _translate_forecast_region(
+    shifted_fcst, delta_x, delta_y = _translate_forecast_region(
         fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units
     )
     optimal_shift = [delta_x, delta_y]
-    if shifted_fcst is None:
-        return None
 
-    mse_shift = float(mse(shifted_fcst, obs_blob))
+    mse_shift = mse(shifted_fcst, obs_blob)
     mse_displacement = mse_total - mse_shift
     mse_volume = _calc_mse_volume(shifted_fcst, obs_blob)
     mse_pattern = mse_shift - mse_volume
@@ -578,27 +583,41 @@ def cra_2d(
     num_gridpoints_above_threshold_fcst = _calc_num_points(fcst_blob, threshold)
     num_gridpoints_above_threshold_obs = _calc_num_points(obs_blob, threshold)
 
-    cra_dict = {
+    data_vars = {
         "mse_total": mse_total,
-        "mse_displacement": mse_displacement,
+        "mse_shift": mse_shift,
+        "mse_displacement": mse_total - mse_shift,
         "mse_volume": mse_volume,
-        "mse_pattern": mse_pattern,
-        "fcst_blob": fcst_blob,
-        "obs_blob": obs_blob,
-        "shifted_fcst": shifted_fcst,
-        "optimal_shift": optimal_shift,
-        "num_gridpoints_above_threshold_fcst": num_gridpoints_above_threshold_fcst,
-        "num_gridpoints_above_threshold_obs": num_gridpoints_above_threshold_obs,
-        "avg_fcst": float(np.mean(fcst_blob)),
-        "avg_obs": float(np.mean(obs_blob)),
-        "max_fcst": float(np.max(fcst_blob)),
-        "max_obs": float(np.max(obs_blob)),
-        "corr_coeff_original": _calc_corr_coeff(fcst_blob, obs_blob),
-        "corr_coeff_shifted": _calc_corr_coeff(shifted_fcst, obs_blob),
-        "rmse_original": float(rmse(fcst_blob, obs_blob)),
-        "rmse_shifted": float(rmse(shifted_fcst, obs_blob)),
+        "mse_pattern": mse_shift - mse_volume,
     }
-    return cra_dict
+
+    if extra_components:
+        extra_vars = {
+            "fcst_blob": fcst_blob,
+            "obs_blob": obs_blob,
+            "shifted_fcst": shifted_fcst,
+            "optimal_shift": optimal_shift,
+            "num_gridpoints_above_threshold_fcst": num_gridpoints_above_threshold_fcst,
+            "num_gridpoints_above_threshold_obs": num_gridpoints_above_threshold_obs,
+            "avg_fcst": np.mean(fcst_blob),
+            "avg_obs": np.mean(obs_blob),
+            "max_fcst": np.max(fcst_blob),
+            "max_obs": np.max(obs_blob),
+            "corr_coeff_original": _calc_corr_coeff(fcst_blob, obs_blob),
+            "corr_coeff_shifted": _calc_corr_coeff(shifted_fcst, obs_blob),
+            "rmse_original": rmse(fcst_blob, obs_blob),
+            "rmse_shifted": rmse(shifted_fcst, obs_blob),
+        }
+
+        data_vars = data_vars | extra_vars
+
+    coords = [x_name, y_name]
+    if time_name:
+        coords = [time, x_name, y_name]
+
+    ds = xr.Dataset(coords={name: obs[name] for name in coords}, data_vars=data_vars)
+
+    return ds
 
 
 def cra(
@@ -616,7 +635,7 @@ def cra(
         Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
         observation field.
 
-        This function extends :py:func:`scores.spatial.cra_2d` to handle time series.
+        This function extends :py:func:`scores.spatial.cra_image` to handle time series.
 
         It applies CRA decomposition to each slice along the specified ``reduce_dims`` and
         aggregates results into lists.
@@ -744,7 +763,16 @@ def cra(
                 results[metric].append(np.nan)
             continue
 
-        cra_result = cra_2d(fcst_slice, obs_slice, threshold, y_name, x_name, max_distance, min_points, coord_units)
+        cra_result = cra_image(
+            fcst_slice,
+            obs_slice,
+            threshold,
+            y_name,
+            x_name,
+            max_distance,
+            min_points,
+            coord_units,
+        )
         if cra_result is not None:
             for metric in metrics:
                 results[metric].append(cra_result[metric])
@@ -755,7 +783,44 @@ def cra(
     return results
 
 
-def cra_core_2d(
+def validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name):
+
+    if not isinstance(fcst, xr.DataArray):
+        raise TypeError("fcst must be an xarray DataArray")
+    if not isinstance(obs, xr.DataArray):
+        raise TypeError("obs must be an xarray DataArray")
+    if fcst.shape != obs.shape:
+        raise ValueError("fcst and obs must have the same shape")
+
+    max_allowed_coords = 2
+    if time_name:
+        max_allowed_coords = 3
+        if len(fcst[time_name] != 1):
+            raise ValueError("The time dimension can only have a length of one (single sample) in the 2d score")
+
+    if len(fcst.shape) != max_allowed_coords:
+        raise ValueError("The `fcst` inputs contain additional coordinate dimensions which cannot be handled")
+
+    if len(obs.shape) != max_allowed_coords:
+        raise ValueError("The `obs` inputs contain additional coordinate dimensions which cannot be handled")
+
+    if fcst.shape != obs.shape:
+        raise ValueError("fcst and obs must have the same shape")
+
+    for dim in [y_name, x_name]:
+        if dim not in obs.dims:
+            raise ValueError(f"Spatial dimension '{dim}' not found in observation data")
+
+        if dim not in fcst.dims:
+            raise ValueError(f"Spatial dimension '{dim}' not found in forecast data")
+
+    allowed_units = ["degrees", "metres"]
+    if coord_units not in allowed_units:
+        raise ValueError(f"coord_units must be one of {allowed_units}")
+
+
+# TODO: Merge the docs with cra_image and delete this method
+def def_core_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
@@ -764,19 +829,20 @@ def cra_core_2d(
     max_distance: float = 300,
     min_points: int = 10,
     coord_units: str = "metres",
+    time_name: Optional[str] = None,  # Specify a length-of-one time dimension name
 ) -> Optional[dict]:
     """
     Compute the core Contiguous Rain Area (CRA) decomposition between forecast and observation fields.
 
     This function returns only the essential CRA decomposition components.
-    To obtain all CRA metrics and diagnostics, use :py:func:`scores.spatial.cra_2d`. For time-dependent data,
+    To obtain all CRA metrics and diagnostics, use :py:func:`scores.spatial.cra_image`. For time-dependent data,
     use the :py:func:`scores.spatial.cra` function.
 
     The core CRA score decomposes the total mean squared error (MSE) into three components:
     displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
     shifts the forecast blob to best match the observed blob, and evaluates the error reduction.
 
-    See :py:func:`scores.spatial.cra_2d` for more details.
+    See :py:func:`scores.spatial.cra_image` for more details.
 
     Args:
         fcst (xr.DataArray): Forecast field as an xarray DataArray.
@@ -786,12 +852,13 @@ def cra_core_2d(
             (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension
             (e.g., 'lon', 'projection_x_coordinate').
+        time_name (Optional[str]): Name of the dimension to use for time-series (e.g. 'time', 'lead_time' or 'valid_time')
         max_distance (float): Maximum allowed translation distance in kilometres.
         min_points (int): Minimum number of grid points required in a blob.
         coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
     Returns:
-        A dictionary containing the core CRA components:
+        A CRAMetric instance containing the core CRA components
             - mse_total (float): Total mean squared error between forecast and observed blobs.
             - mse_displacement (float): MSE reduction due to spatial displacement after optimal alignment.
             - mse_volume (float): MSE due to mean intensity (volume) differences.
@@ -801,48 +868,39 @@ def cra_core_2d(
 
     Example:
         >>> import xarray as xr
-        >>> from scores.spatial import cra_core_2d
+        >>> from scores.spatial import cra_image
         >>> fcst = xr.DataArray(...)  # 2D forecast
         >>> obs = xr.DataArray(...)   # 2D observation
-        >>> result = cra_core_2d(fcst, obs, threshold=5.0, y_name="lat", x_name="lon")
-        >>> print(result["mse_total"])
+        >>> result = cra_image(fcst, obs, threshold=5.0, y_name="lat", x_name="lon")
+        >>> print(result.mse_total)
 
 
     """
 
-    if not isinstance(fcst, xr.DataArray):
-        raise TypeError("fcst must be an xarray DataArray")
-    if not isinstance(obs, xr.DataArray):
-        raise TypeError("obs must be an xarray DataArray")
-    if fcst.shape != obs.shape:
-        raise ValueError("fcst and obs must have the same shape")
+    # Throw an exception if invalid input
+    validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
 
-    allowed_units = ["degrees", "metres"]
-    if coord_units not in allowed_units:
-        raise ValueError(f"coord_units must be one of {allowed_units}")
-
-    blobs = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
-    fcst_blob, obs_blob = blobs
-    if fcst_blob is None or obs_blob is None:
-        return None
-
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
     mse_total = float(mse(fcst_blob, obs_blob))
-    if np.isnan(mse_total):
-        return None
 
     shifted_fcst, dx, dy = _translate_forecast_region(fcst_blob, obs_blob, y_name, x_name, max_distance, coord_units)
-    if shifted_fcst is None:
-        return None
-
-    mse_shift = float(mse(shifted_fcst, obs_blob))
-    mse_displacement = mse_total - mse_shift
+    assert shifted_fcst is not None
+    assert obs_blob is not None
+    mse_shift = mse(shifted_fcst, obs_blob)
     mse_volume = _calc_mse_volume(shifted_fcst, obs_blob)
-    mse_pattern = mse_shift - mse_volume
 
-    return {
+    data_vars = {
         "mse_total": mse_total,
-        "mse_displacement": mse_displacement,
+        "mse_shift": mse_shift,
+        "mse_displacement": mse_total - mse_shift,
         "mse_volume": mse_volume,
-        "mse_pattern": mse_pattern,
-        "optimal_shift": [dx, dy],
+        "mse_pattern": mse_shift - mse_volume,
     }
+
+    coords = [x_name, y_name]
+    if time_name:
+        coords = [time, x_name, y_name]
+
+    ds = xr.Dataset(coords={name: obs[name] for name in coords}, data_vars=data_vars)
+
+    return ds
