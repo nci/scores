@@ -16,6 +16,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 
 import numpy as np
 import pytest
+from unittest.mock import patch
 import xarray as xr
 
 from scores.probability import (
@@ -451,6 +452,7 @@ def test_crps_cdf_raises(
         )
 
 
+@pytest.mark.parametrize("numba_available", [True, False])
 @pytest.mark.parametrize(
     (
         "fcst",
@@ -513,6 +515,7 @@ def test_crps_cdf_raises(
 )
 # pylint: disable=too-many-arguments
 def test_crps_cdf(
+    numba_available,
     fcst,
     threshold_weight,
     propagate_nan,
@@ -521,20 +524,37 @@ def test_crps_cdf(
     expected_and_dec,
 ):
     """Tests `crps` with a variety of inputs."""
-    result = crps_cdf(
-        fcst,
-        crps_test_data.DA_OBS_CRPS,
-        threshold_dim="x",
-        threshold_weight=threshold_weight,
-        additional_thresholds=None,
-        propagate_nans=propagate_nan,
-        fcst_fill_method="linear",
-        threshold_weight_fill_method="forward",
-        integration_method=integration_method,
-        preserve_dims=dims,
-        include_components=True,
-    )
-    xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
+    if numba_available:
+        result = crps_cdf(
+            fcst,
+            crps_test_data.DA_OBS_CRPS,
+            threshold_dim="x",
+            threshold_weight=threshold_weight,
+            additional_thresholds=None,
+            propagate_nans=propagate_nan,
+            fcst_fill_method="linear",
+            threshold_weight_fill_method="forward",
+            integration_method=integration_method,
+            preserve_dims=dims,
+            include_components=True,
+        )
+        xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
+    else:
+        with patch.dict("sys.modules", numba=None):
+            result = crps_cdf(
+                fcst,
+                crps_test_data.DA_OBS_CRPS,
+                threshold_dim="x",
+                threshold_weight=threshold_weight,
+                additional_thresholds=None,
+                propagate_nans=propagate_nan,
+                fcst_fill_method="linear",
+                threshold_weight_fill_method="forward",
+                integration_method=integration_method,
+                preserve_dims=dims,
+                include_components=True,
+            )
+        xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
 
 
 @pytest.mark.parametrize(
