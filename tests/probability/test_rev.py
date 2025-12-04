@@ -412,6 +412,20 @@ class TestScienceCalculations:
 
         xr.testing.assert_allclose(result, expected)
 
+    @pytest.mark.parametrize("scalar_value", [0, 0.0, 1, 1.0])  # test a mix of int and float values
+    def test_cost_loss_is_converted_to_length_one_coordinate(self, scalar_value):
+        """
+        Passing an integer cost_loss_ratio should be converted to a length-1 coordinate.
+        Also covers int -> list handling branch.
+        """
+        fcst = BINARY_DA
+        obs = fcst.copy()
+        actual = relative_economic_value(fcst, obs, cost_loss_ratios=scalar_value)
+
+        expected = xr.DataArray([np.nan], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [scalar_value]})
+
+        xr.testing.assert_identical(actual, expected)
+
 
 class TestREVSpecialFeatures:
     """Tests for special features of the REV implementation."""
@@ -1210,6 +1224,20 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="array values should be between 0 and 1."):
             check_monotonic_array(arr)
 
+    def test_binary_forecast_strict_validation(self, make_contingency_data):
+        """Test strict binary validation for binary forecasts."""
+        # Valid binary forecast (only 0 and 1)
+        fcst, obs = make_contingency_data(1, 1, 1, 1)
+
+        result = relative_economic_value(fcst, obs, [0.5], check_args=True)
+        assert result is not None
+
+        # Invalid binary forecast (contains 0.5)
+        fcst_bad = xr.DataArray([0, 0.5, 1, 0], dims=["time"])
+
+        with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
+            relative_economic_value(fcst_bad, obs, [0.5], check_args=True)
+
     @pytest.mark.parametrize("which_input", ["pod", "pofd", "climatology"])
     def test_cost_loss_ratio_dim_in_inputs_raises(self, which_input):
         """create a DataArray that contains the forbidden dimension name"""
@@ -1529,20 +1557,6 @@ class TestDaskCompatibility:
         with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
             relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True)
 
-    def test_binary_forecast_strict_validation(self, make_contingency_data):
-        """Test strict binary validation for non-Dask binary forecasts."""
-        # Valid binary forecast (only 0 and 1)
-        fcst, obs = make_contingency_data(1, 1, 1, 1)
-
-        result = relative_economic_value(fcst, obs, [0.5], check_args=True)
-        assert result is not None
-
-        # Invalid binary forecast (contains 0.5)
-        fcst_bad = xr.DataArray([0, 0.5, 1, 0], dims=["time"])
-
-        with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
-            relative_economic_value(fcst_bad, obs, [0.5], check_args=True)
-
     def test_rev_with_dask_inputs(self):
         """Test that REV works correctly when inputs are Dask arrays."""
 
@@ -1570,16 +1584,59 @@ class TestDaskCompatibility:
         result_computed = result.compute()
         assert not is_dask_collection(result_computed.data)
 
-    @pytest.mark.parametrize("scalar_value", [0, 0.0, 1, 1.0])  # test a mix of int and float values
-    def test_cost_loss_is_converted_to_length_one_coordinate(self, scalar_value):
-        """
-        Passing an integer cost_loss_ratio should be converted to a length-1 coordinate.
-        Also covers int -> list handling branch.
-        """
-        fcst = BINARY_DA
-        obs = fcst.copy()
-        actual = relative_economic_value(fcst, obs, cost_loss_ratios=scalar_value)
+    def test_rev_with_dask_multidimensional(self):
+        """Test REV with multi-dimensional Dask arrays."""
+        fcst = xr.DataArray(da.from_array(np.random.rand(10, 5), chunks=(5, 5)), dims=["time", "location"])
+        obs = xr.DataArray(da.from_array(np.random.randint(0, 2, (10, 5)), chunks=(5, 5)), dims=["time", "location"])
 
-        expected = xr.DataArray([np.nan], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [scalar_value]})
+        # Reduce over time, preserve location
+        result = relative_economic_value(fcst, obs, [0.5], threshold=[0.5], reduce_dims=["time"], check_args=False)
 
-        xr.testing.assert_identical(actual, expected)
+        assert isinstance(result.data, da.Array)
+        assert "location" in result.dims
+        computed = result.compute()
+        assert computed.shape == (5, 1, 1)
+
+    def test_dask_performance_no_premature_compute(self):
+        """Ensure Dask arrays aren't prematurely computed during setup."""
+        # Large array that would be expensive to compute
+        large_fcst = xr.DataArray(da.random.random((1000, 1000), chunks=(100, 100)), dims=["time", "location"])
+        large_obs = xr.DataArray(da.random.randint(0, 2, (1000, 1000), chunks=(100, 100)), dims=["time", "location"])
+
+        # This should be fast (no computation)
+        import time
+
+        start = time.time()
+        result = relative_economic_value(large_fcst, large_obs, [0.5], threshold=[0.5], check_args=False)
+        elapsed = time.time() - start
+
+        # Should take < 1 second (just graph construction)
+        assert elapsed < 1.0, "Graph construction took too long - possible premature compute"
+        assert isinstance(result.data, da.Array)
+
+    def test_weighted_rev_with_dask_deferred_validation(self):
+        """Critical test: weighted REV with invalid weights should defer error."""
+        fcst = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 0, 1], chunks=2), dims=["time"])
+        bad_weights = xr.DataArray(da.from_array([-1.0, 1.0, 1.0, 1.0], chunks=2), dims=["time"])
+
+        # Should not raise immediately
+        result = relative_economic_value(fcst, obs, [0.5], weights=bad_weights, check_args=False)
+        assert isinstance(result.data, da.Array)
+
+        # Should raise on compute
+        with pytest.raises(ValueError, match=ERROR_INVALID_WEIGHTS):
+            result.compute()
+
+    def test_weighted_rev_with_valid_dask_weights(self):
+        """Test that valid weighted REV works with Dask."""
+        fcst = xr.DataArray(da.from_array([0, 1, 1, 0, 1], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 0, 0, 1], chunks=2), dims=["time"])
+        weights = xr.DataArray(da.from_array([1.0, 2.0, 1.0, 1.0, 2.0], chunks=2), dims=["time"])
+
+        result = relative_economic_value(fcst, obs, [0.5], weights=weights, check_args=False)
+        assert isinstance(result.data, da.Array)
+
+        computed = result.compute()
+        # Just verify it completes without error
+        assert not np.isnan(computed.values).all()
