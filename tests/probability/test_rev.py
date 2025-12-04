@@ -412,6 +412,29 @@ class TestScienceCalculations:
 
         xr.testing.assert_allclose(result, expected)
 
+    def test_single_float_cost_loss_is_converted_to_length_one_coordinate(self):
+        """
+        Passing a single float for cost_loss_ratios should produce an output whose
+        cost_loss_ratio coordinate has length 1 and contains that value.
+        """
+        fcst = PROB_FCST_DA
+        obs = BINARY_DA
+        single_alpha = 0.3
+
+        actual = relative_economic_value(
+            fcst,
+            obs,
+            cost_loss_ratios=single_alpha,
+            threshold=[0.5],  # to trigger probabilistic branch
+            check_args=True,
+        )
+
+        expected = xr.DataArray(
+            [[1.0]], dims=["threshold", "cost_loss_ratio"], coords={"threshold": [0.5], "cost_loss_ratio": [0.3]}
+        )
+
+        xr.testing.assert_allclose(actual, expected)
+
     @pytest.mark.parametrize("scalar_value", [0, 0.0, 1, 1.0])  # test a mix of int and float values
     def test_cost_loss_is_converted_to_length_one_coordinate(self, scalar_value):
         """
@@ -740,8 +763,8 @@ class TestWeights:
 
         weights = xr.DataArray([weight_value] * 8, dims=["time"])
 
-        rev_weighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.2], weights=weights)
-        rev_unweighted = relative_economic_value(fcst, obs, [0.2])
+        rev_weighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights)
+        rev_unweighted = relative_economic_value(fcst, obs, [0.5])
 
         xr.testing.assert_allclose(rev_weighted, rev_unweighted)
 
@@ -750,11 +773,11 @@ class TestWeights:
         # Samples: 2 of each item on the contingency table
         fcst, obs = make_contingency_data(2, 2, 2, 2)
         # Without weights: POD = 2/4 = 0.5, POFD = 2/4 = 0.5, obar = 4/8 = 0.5
-        # REV at alpha=0.5: numerator = min(0.5,0.5) - 0.5*0.5*0.5 + 0.5*0.5*0.5 - 0.5 = 0
-        #                   denominator = min(0.5,0.5) - 0.5*0.5 = 0.25
-        #                   REV = 0/0.25 = 0
-        unweighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5])
-        assert unweighted.item() == 0.0
+        # REV at alpha=0.3: numerator = min(0.3,0.5) - 0.5*0.3*0.5 + 0.5*0.7*0.5 - 0.5 = -0.1
+        #                   denominator = min(0.3,0.5) - 0.3*0.5 = 0.15
+        #                   REV = -0.1/0.15 = -2/3
+        unweighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.3])
+        assert np.isclose(unweighted.item(), -2 / 3)
 
         # Now weight the hits heavily (w=2) and false alarms lightly (w=0.5)
         weights = xr.DataArray([2, 2, 1, 1, 0.5, 0.5, 1, 1], dims=["time"])
@@ -765,14 +788,8 @@ class TestWeights:
         # Weighted POD = 4/6 = 0.667, POFD = 1/3 = 0.333
         # Weighted obar = 6/9 = 0.667
         #
-        # REV at alpha=0.5:
-        #   num = min(0.5, 0.667) - 0.333*0.5*0.333 + 0.667*0.667*0.5 - 0.667
-        #       = 0.5 - 0.0555 + 0.222 - 0.667 = 0.0
-        #   den = min(0.5, 0.667) - 0.667*0.5 = 0.5 - 0.333 = 0.167
-        #   REV = 0.0 / 0.167 = 0.0
-        #
-        # At alpha=0.3 (where weighting effect is more visible):
-        #   num = min(0.3, 0.667) - 0.333*0.3*0.333 + 0.667*0.667*0.7 - 0.667
+        # At alpha=0.5:
+        #   num = min(0.5, 0.667) - 0.333*0.3*0.333 + 0.667*0.667*0.7 - 0.667
         #       = 0.3 - 0.0333 + 0.311 - 0.667 = -0.089
         #   den = min(0.3, 0.667) - 0.667*0.3 = 0.3 - 0.2 = 0.1
         #   REV = -0.089 / 0.1 = -0.89
@@ -993,17 +1010,22 @@ class TestDatasetInputs:
             relative_economic_value(fcst, obs, [0.5], weights=weights_ds)
 
     def test_pod_as_dataset(self):
-        """Test with POD as Dataset, others as DataArrays."""
         pod_ds = xr.Dataset(
             {
                 "model_a": xr.DataArray([0.8, 0.6], dims=["threshold"]),
                 "model_b": xr.DataArray([0.9, 0.5], dims=["threshold"]),
             }
         )
-        pofd = xr.DataArray([0.2, 0.1], dims=["threshold"])
+        pofd_ds = xr.Dataset(
+            {
+                "model_a": xr.DataArray([0.2, 0.1], dims=["threshold"]),
+                "model_b": xr.DataArray([0.2, 0.1], dims=["threshold"]),
+            }
+        )
+
         climatology = xr.DataArray(0.3)
 
-        actual = relative_economic_value_from_rates(pod_ds, pofd, climatology, [0.3, 0.7])
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology, [0.3, 0.7])
 
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"model_a", "model_b"}
@@ -1035,10 +1057,12 @@ class TestDatasetInputs:
         pod_ds = xr.Dataset(
             {"region_1": xr.DataArray([0.8], dims=["threshold"]), "region_2": xr.DataArray([0.6], dims=["threshold"])}
         )
-        pofd = xr.DataArray([0.15], dims=["threshold"])
+        pofd_ds = xr.Dataset(
+            {"region_1": xr.DataArray([0.15], dims=["threshold"]), "region_2": xr.DataArray([0.15], dims=["threshold"])}
+        )
         climatology_ds = xr.Dataset({"region_1": xr.DataArray(0.3), "region_2": xr.DataArray(0.45)})
 
-        actual = relative_economic_value_from_rates(pod_ds, pofd, climatology_ds, [0.3, 0.7])
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology_ds, [0.3, 0.7])
 
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"region_1", "region_2"}
@@ -1078,7 +1102,8 @@ class TestDatasetInputs:
 
         # Calculate with Dataset
         pod_ds = xr.Dataset({"test": pod_scalar})
-        actual = relative_economic_value_from_rates(pod_ds, pofd_scalar, climatology_scalar, [0.5])
+        pofd_ds = xr.Dataset({"test": pofd_scalar})
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology_scalar, [0.5])
 
         xr.testing.assert_allclose(actual["test"], expected_scalar)
 
@@ -1266,29 +1291,6 @@ class TestErrorHandling:
             relative_economic_value_from_rates(pod, pofd, climatology, good_cost_loss)
 
         assert "dimension 'cost_loss_ratio' must not be in input data" in str(excinfo.value)
-
-    def test_single_float_cost_loss_is_converted_to_length_one_coordinate(self):
-        """
-        Passing a single float for cost_loss_ratios should produce an output whose
-        cost_loss_ratio coordinate has length 1 and contains that value.
-        """
-        fcst = PROB_FCST_DA
-        obs = BINARY_DA
-        single_alpha = 0.3
-
-        actual = relative_economic_value(
-            fcst,
-            obs,
-            cost_loss_ratios=single_alpha,
-            threshold=[0.5],  # to trigger probabilistic branch
-            check_args=True,
-        )
-
-        expected = xr.DataArray(
-            [[1.0]], dims=["threshold", "cost_loss_ratio"], coords={"threshold": [0.5], "cost_loss_ratio": [0.3]}
-        )
-
-        xr.testing.assert_allclose(actual, expected)
 
     def test_check_monotonic_array_non_convertible_raises_typeerror(self):
         """

@@ -10,7 +10,7 @@ import xarray as xr
 
 from scores.categorical import probability_of_detection, probability_of_false_detection
 from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
-from scores.typing import FlexibleDimensionTypes, XarrayLike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import gather_dimensions
 
 
@@ -62,13 +62,14 @@ def relative_economic_value_from_rates(
     Returns:
         xarray.DataArray or xarray.Dataset: REV values with dimensions from broadcasting the
             input arrays, plus an additional 'cost_loss_ratio' dimension with coordinates
-            matching the supplied cost-loss ratios. Returns a Dataset if 'pod' is a Dataset,
+            matching the supplied cost-loss ratios. Returns a Dataset if 'pod' and 'pofd' are Datasets,
             otherwise returns a DataArray.
 
     Raises:
         ValueError: If cost_loss_ratios is not strictly monotonically increasing,
             is not one-dimensional, or contains values outside [0, 1].
         ValueError: If 'cost_loss_ratio' dimension already exists in any input array.
+        TypeError: If 'pod' and 'pofd' are not both xarray DataArrays or both xarray Datasets.
 
     Notes:
         - REV = 1 indicates perfect forecast value (as good as perfect information)
@@ -130,6 +131,9 @@ def relative_economic_value_from_rates(
         check_monotonic_array(cost_loss_ratios)
     except Exception as ex:
         raise type(ex)("for cost_loss_ratios, " + str(ex))
+
+    if not all_same_xarraylike([pod, pofd]):
+        raise TypeError("Both pod and pofd must be either xarray DataArrays or xarray Datasets.")
 
     if cost_loss_dim in (set(pod.dims) | set(pofd.dims) | set(climatology.dims)):
         raise ValueError(f"dimension '{cost_loss_dim}' must not be in input data")
@@ -200,12 +204,7 @@ def _create_output_dataset(
     derived_metrics = [] if derived_metrics is None else list(derived_metrics)
     threshold_outputs = [] if threshold_outputs is None else list(threshold_outputs)
 
-    # Store original attributes
-    attributes = rev.attrs
-    rev.attrs = {}
-
-    result = xr.Dataset()
-    result.attrs = attributes
+    result = xr.Dataset(attrs=rev.attrs)
 
     # Add derived metrics
     for mode in derived_metrics:
