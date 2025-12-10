@@ -366,9 +366,10 @@ def _calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
     Example:
         >>> volume_error = _calc_mse_volume(shifted_fcst, obs)
     """
-    mean_shifted_forecast = float(shifted_fcst.mean(skipna=True).values)
-    mean_observed = float(obs.mean(skipna=True).values)
-    volume_error = float((mean_shifted_forecast - mean_observed) ** 2)
+    # mean_shifted_forecast = float(shifted_fcst.mean(skipna=True).values)
+    mean_shifted_forecast = np.mean(shifted_fcst)
+    mean_observed = np.mean(obs)
+    volume_error = (mean_shifted_forecast - mean_observed) ** 2
     return volume_error
 
 
@@ -457,44 +458,7 @@ def _calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> 
     return float(avg_resolution_km)
 
 
-def _normalize_single_reduce_dim(data: xr.DataArray, reduce_dims: Optional[list[str] | str]) -> str:
-    """
-    Normalize ``reduce_dims`` to a single dimension name and validate it exists in ``data``.
-
-    CRA supports aggregation by a single dimension only.
-
-    Args:
-        data (xr.DataArray): Input object whose dims are used for validation.
-        reduce_dims (None | str | list[str]): Dimension to group by. Must be exactly one.
-
-    Returns:
-        group_dim(str): The single time dimension name to reduce over.
-
-    """
-    if reduce_dims is None:
-        raise ValueError(
-            "CRA currently supports aggregation by a single dimension only. "
-            "Please specify the dimension to reduce over (e.g., 'time')."
-        )
-
-    if isinstance(reduce_dims, str):
-        group_dim = reduce_dims
-    elif isinstance(reduce_dims, (list, tuple)):
-        if len(reduce_dims) != 1:
-            raise ValueError("CRA currently supports grouping by a single dimension only.")
-        group_dim = reduce_dims[0]
-
-    else:
-        raise ValueError("reduce_dims must be a string or a list of one string.")
-
-    dims = list(data.dims)
-    if group_dim not in dims:
-        raise ValueError(f"Requested reduce dimension '{group_dim}' not found in data dims {dims}.")
-
-    return group_dim
-
-
-def cra_image(
+def _cra_image(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     threshold: float,
@@ -505,7 +469,7 @@ def cra_image(
     coord_units: str = "metres",
     extra_components: bool = False,
     time_name: Optional[str] = None,
-) -> Optional[xr.Dataset]:
+) -> xr.Dataset:
     """
         Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
         This function is designed for 2D spatial fields. For time-dependent data,
@@ -542,7 +506,7 @@ def cra_image(
         Returns:
             `CRA2DMetric`: A dictionary containing the CRA components and diagnostics.
 
-            Returns None if input data is invalid or CRA computation fails.
+            Returns an object containing NaNs if input data is invalid or CRA computation fails.
 
         Raises:
             ValueError: If input shapes do not match or blobs cannot be computed.
@@ -621,16 +585,16 @@ def cra_image(
 
 
 def cra(
-    fcst: xr.DataArray,
-    obs: xr.DataArray,
+    fcst: XarrayLike,
+    obs: XarrayLike,
     threshold: float,
     y_name: str,
     x_name: str,
     max_distance: float = 300,
     min_points: int = 10,
-    reduce_dims: Optional[List[str]] = None,
     coord_units: str = "metres",
-) -> dict:
+    extra_components: bool = False,
+) -> xr.Dataset:
     """
         Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
         observation field.
@@ -712,75 +676,28 @@ def cra(
     if fcst.shape != obs.shape:
         raise ValueError("fcst and obs must have the same shape")
 
-    # Normalize reduce_dims
-    if reduce_dims is None:
-        reduce_dims = ["time"]  # Default to time if not specified
-
-    # Require explicit single dimension
-    group_dim = _normalize_single_reduce_dim(fcst, reduce_dims)
-
     # Align forecast and observation
     fcst, obs = xr.align(fcst, obs)
 
-    # Prepare output dictionary
-    metrics = [
-        "mse_total",
-        "mse_displacement",
-        "mse_volume",
-        "mse_pattern",
-        "optimal_shift",
-        "num_gridpoints_above_threshold_fcst",
-        "num_gridpoints_above_threshold_obs",
-        "avg_fcst",
-        "avg_obs",
-        "max_fcst",
-        "max_obs",
-        "corr_coeff_original",
-        "corr_coeff_shifted",
-        "rmse_original",
-        "rmse_shifted",
-    ]
-    results = {metric: [] for metric in metrics}
+    extra_dims = [d for d in fcst.dims if d not in [x_name, y_name]]
 
-    # Iterate over slices
-    for key, fcst_slice in fcst.groupby(group_dim, squeeze=False):
-        time_val = key
+    if extra_dims:
+        stacked_fcst = fcst.stack({"stacked": extra_dims})
+        stacked_obs = obs.stack({"stacked": extra_dims})
+        results = []
 
-        # Ensure time_val is a datetime64[ns]
-        if isinstance(time_val, (int, np.integer)):
-            time_val = np.datetime64(int(time_val), "ns")
-        elif isinstance(time_val, str):
-            time_val = np.datetime64(time_val)
-        obs_slice = obs.sel({group_dim: time_val}, drop=False)
+        for i in range(len(stacked_fcst.stacked)):
+            fcst_image = stacked_fcst.isel(stacked=i)
+            obs_image = stacked_obs.isel(stacked=i)
+            r = _cra_image(fcst_image, obs_image, threshold, y_name, x_name, extra_components=extra_components)
+            results.append(r)
 
-        # Remove singleton time dimension
-        fcst_slice = fcst_slice.squeeze(drop=True)
+        result = xr.concat(results, dim="stacked").set_index(stacked=extra_dims)
+        result = result.unstack()
 
-        # Ensure shapes match
-        if fcst_slice.shape != obs_slice.shape:
-            logger.warning(f"Skipping {key}: shape mismatch between forecast and observation.")
-            for metric in metrics:
-                results[metric].append(np.nan)
-            continue
-
-        cra_result = cra_image(
-            fcst_slice,
-            obs_slice,
-            threshold,
-            y_name,
-            x_name,
-            max_distance,
-            min_points,
-            coord_units,
-        )
-        if cra_result is not None:
-            for metric in metrics:
-                results[metric].append(cra_result[metric])
-        else:
-            for metric in metrics:
-                results[metric].append(np.nan)
-
-    return results
+    else:
+        result = _cra_image(fcst, obs, threshold, y_name, x_name, extra_components=extra_components)
+    return result
 
 
 def validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name):

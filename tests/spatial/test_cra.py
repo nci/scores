@@ -18,12 +18,11 @@ from scores.spatial.cra_impl import (
     _calc_bounding_box_centre,
     _calc_corr_coeff,
     _calc_resolution,
+    _cra_image,
     _generate_largest_rain_area_2d,
-    _normalize_single_reduce_dim,
     _shifted_mse,
     _translate_forecast_region,
     cra,
-    cra_image,
 )
 
 THRESHOLD = 10
@@ -57,39 +56,39 @@ def sample_data_3d():
     return forecast, analysis
 
 
-# def test_cra_basic_output_type(sample_data_3d):
-#     """Test that CRA returns a dictionary for 3D input."""
-#     forecast, analysis = sample_data_3d
-#     result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude", reduce_dims=["time"])
-#     assert isinstance(result, dict)
+def test_cra_basic_output_type(sample_data_3d):
+    """Test that CRA returns a dictionary for 3D input."""
+    forecast, analysis = sample_data_3d
+    result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
+    assert isinstance(result, xr.Dataset)
 
 
 def test_cra_image_basic_output_type(sample_data_2d):
     """Test that CRA 2D returns a dictionary for valid input."""
     forecast, analysis = sample_data_2d
-    result = cra_image(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
+    result = _cra_image(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
     assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
 
 
-# def test_cra_with_nans(sample_data_3d):
-#     """Test CRA handles NaNs in the forecast without errors"""
-#     forecast, analysis = sample_data_3d
-#     forecast[0, 0] = np.nan  # Introduce a NaN
-#     result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
+def test_cra_with_nans(sample_data_3d):
+    """Test CRA handles NaNs in the forecast without errors"""
+    forecast, analysis = sample_data_3d
+    forecast[0, 0] = np.nan  # Introduce a NaN
+    result = cra(forecast, analysis, THRESHOLD, y_name="latitude", x_name="longitude")
 
-#     assert isinstance(result, dict), "CRA output should be a dictionary even with NaNs"
+    assert isinstance(result, xr.Dataset), "CRA output should be a dictionary even with NaNs"
 
-#     for key, value in result.items():
-#         assert value is not None, f"{key} is None"
-#         if isinstance(value, (float, int, np.number)):
-#             assert not np.isnan(value), f"{key} contains NaN"
+    for key, value in result.items():
+        assert value is not None, f"{key} is None"
+        if isinstance(value, (float, int, np.number)):
+            assert not np.isnan(value), f"{key} contains NaN"
 
 
 def test_cra_dataset_input(sample_data_2d):
     """Test CRA works with xarray.Dataset input."""
     forecast, analysis = sample_data_2d
     ds = xr.Dataset({"forecast": forecast, "analysis": analysis})
-    result = cra_image(
+    result = _cra_image(
         ds["forecast"], ds["analysis"], THRESHOLD, y_name="latitude", x_name="longitude", extra_components=True
     )
     expected_keys = [
@@ -127,14 +126,23 @@ def test_cra_dataset_input(sample_data_2d):
 
 
 def test_cra_image_invalid_input_types():
-    """Test CRA 2D raises TypeError for invalid input types."""
+    """Test CRA 2D and ND raise TypeError for invalid input types."""
     obs = xr.DataArray(np.random.rand(10, 10), dims=["y", "x"])
     with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
-        cra_image("invalid", obs, threshold=5.0, y_name="y", x_name="x")
+        _cra_image("invalid", obs, threshold=5.0, y_name="y", x_name="x")
+
+    with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
+        cra("invalid", obs, threshold=5.0, y_name="y", x_name="x")
+
+    with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
+        cra("invalid", obs, threshold=5.0, y_name="y", x_name="x")
 
     fcst = xr.DataArray(np.random.rand(10, 10), dims=["y", "x"])
     with pytest.raises(TypeError, match="obs must be an xarray DataArray"):
-        cra_image(fcst, "invalid", threshold=5.0, y_name="y", x_name="x")
+        _cra_image(fcst, "invalid", threshold=5.0, y_name="y", x_name="x")
+
+    with pytest.raises(TypeError, match="obs must be an xarray DataArray"):
+        cra(fcst, "invalid", threshold=5.0, y_name="y", x_name="x")
 
 
 def test_cra_mismatched_shapes():
@@ -143,7 +151,7 @@ def test_cra_mismatched_shapes():
     obs = xr.DataArray(np.random.rand(80, 100), dims=["latitude", "longitude"])  # mismatched shape
 
     with pytest.raises(ValueError) as excinfo:
-        cra_image(fcst, obs, THRESHOLD, y_name="latitude", x_name="longitude")
+        _cra_image(fcst, obs, THRESHOLD, y_name="latitude", x_name="longitude")
     assert "fcst and obs must have the same shape" in str(excinfo.value)
 
 
@@ -216,7 +224,7 @@ def test_cra_image_min_points_threshold():
     forecast = xr.DataArray(data, dims=["latitude", "longitude"])
     analysis = xr.DataArray(data, dims=["latitude", "longitude"])
 
-    result = cra_image(forecast, analysis, threshold=5.0, y_name="latitude", x_name="longitude", min_points=100)
+    result = _cra_image(forecast, analysis, threshold=5.0, y_name="latitude", x_name="longitude", min_points=100)
     assert np.isnan(result.mse_total)
 
     # assert result is None, "Expected None when blobs are smaller than min_points"
@@ -320,11 +328,14 @@ def test_translate_exceeds_max_distance():
 
 
 def test_cra_image_shape_mismatch():
-    """Test CRA 2D raises ValueError for shape mismatch."""
+    """Test CRA 2D and ND raise ValueError for shape mismatch."""
     fcst = create_array()
     obs = create_array(shape=(8, 8))
     with pytest.raises(ValueError):
-        cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+        _cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+
+    with pytest.raises(ValueError):
+        cra(fcst, obs, threshold=5.0, y_name="y", x_name="x")
 
 
 # def test_invalid_reduce_dims():
@@ -348,7 +359,7 @@ def test_cra_image_invalid_blobs():
     """Test CRA 2D returns None for invalid blobs."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
-    result = cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+    result = _cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
 
     assert np.isnan(result.mse_total)
 
@@ -357,7 +368,7 @@ def test_cra_image_invalid_blobs_none():
     """Test CRA 2D returns None when blobs are None."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
-    result = cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+    result = _cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
     assert np.isnan(result.mse_total)
 
 
@@ -391,7 +402,7 @@ def test_cra_image_no_valid_rain_area():
     """Test CRA 2D returns None when no valid rain area exists."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
-    result = cra_image(fcst, obs, threshold=50.0, y_name="y", x_name="x")
+    result = _cra_image(fcst, obs, threshold=50.0, y_name="y", x_name="x")
     assert np.isnan(result.mse_total)
 
 
@@ -463,7 +474,7 @@ def test_cra_image_none_blob():
     """Test CRA 2D returns None when blob is None."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
-    result = cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+    result = _cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
     assert np.isnan(result.mse_total)
 
 
@@ -575,7 +586,7 @@ def test_cra_image_returns_none():
     """Test CRA 2D returns None when blobs do not meet threshold."""
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
-    result = cra_image(fcst, obs, threshold=50.0, y_name="y", x_name="x")
+    result = _cra_image(fcst, obs, threshold=50.0, y_name="y", x_name="x")
     assert np.isnan(result.mse_total)
 
 
@@ -584,7 +595,7 @@ def test_cra_missing_spatial_dim():
     fcst = create_array()
     obs = create_array()
     with pytest.raises(ValueError, match="Spatial dimension 'z' not found in observation data"):
-        cra_image(fcst, obs, threshold=5.0, y_name="z", x_name="x")
+        _cra_image(fcst, obs, threshold=5.0, y_name="z", x_name="x")
 
 
 # def test_cra_invalid_reduce_dims_list():
@@ -646,7 +657,7 @@ def test_cra_image_missing_spatial_dimension():
     fcst = create_array()
     obs = create_array()
     with pytest.raises(ValueError, match="Spatial dimension 'z' not found in observation data"):
-        cra_image(fcst, obs, threshold=5.0, y_name="z", x_name="x")
+        _cra_image(fcst, obs, threshold=5.0, y_name="z", x_name="x")
 
 
 # def test_cra_triggers_bbox_fallback_alignment():
@@ -675,7 +686,7 @@ def test_cra_image_no_overlap_blobs():
     obs = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"])
     fcst[0:2, 0:2] = 10.0  # top-left
     obs[-2:, -2:] = 10.0  # bottom-right
-    result = cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+    result = _cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
     assert np.isnan(result.mse_total), "Expected None when blobs do not overlap"
 
 
@@ -790,7 +801,7 @@ def test_cra_image_basic_output_type_and_keys():
     fcst = gaussian_blob()
     obs = gaussian_blob()
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=5.0,
@@ -826,7 +837,7 @@ def test_cra_image_returns_none_when_no_valid_rain_area():
     fcst = create_array(value=0.0)
     obs = create_array(value=0.0)
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=50.0,  # too high -> no blobs
@@ -848,7 +859,7 @@ def test_cra_image_min_points_filter_returns_none():
     fcst[0:2, 0:2] = 10.0
     obs[0:2, 0:2] = 10.0
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=5.0,
@@ -868,18 +879,18 @@ def test_cra_image_shape_mismatch_raises_valueerror():
     obs = create_array(shape=(8, 10))  # mismatched shape
 
     with pytest.raises(ValueError):
-        cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
+        _cra_image(fcst, obs, threshold=5.0, y_name="y", x_name="x")
 
 
 def test_cra_image_invalid_input_types_raise_typeerror():
     """Non-xarray inputs should raise TypeError (parity with cra_image behavior)."""
     obs = create_array()
     with pytest.raises(TypeError):
-        cra_image("invalid", obs, threshold=5.0, y_name="y", x_name="x")
+        _cra_image("invalid", obs, threshold=5.0, y_name="y", x_name="x")
 
     fcst = create_array()
     with pytest.raises(TypeError):
-        cra_image(fcst, "invalid", threshold=5.0, y_name="y", x_name="x")
+        _cra_image(fcst, "invalid", threshold=5.0, y_name="y", x_name="x")
 
 
 def test_cra_image_rejects_large_shift_due_to_max_distance():
@@ -890,7 +901,7 @@ def test_cra_image_rejects_large_shift_due_to_max_distance():
     fcst = base
     obs = base.shift(x=30)  # force a large translation
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=5.0,
@@ -918,7 +929,7 @@ def test_cra_image_component_relationships_when_overlap():
     noise = xr.DataArray(rng.normal(0, 0.1, size=fcst.shape), dims=fcst.dims)
     fcst = fcst + noise
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=5.0,
@@ -954,7 +965,7 @@ def test_cra_image_optimal_shift_vector_type():
     fcst = gaussian_blob(center=(50, 50))  # baseline
     obs = gaussian_blob(center=(52, 53))  # 2 km (y), 3 km (x) shift
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=5.0,
@@ -985,7 +996,7 @@ def test_cra_image_mse_total_nan_triggers_none(monkeypatch):
     # Patch in the module where cra_image resolves _calc_mse
     monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "mse", fake_calc_mse)
 
-    result = cra_image(
+    result = _cra_image(
         fcst,
         obs,
         threshold=5.0,
@@ -1006,7 +1017,7 @@ def test_cra_image_invalid_coord_units_raises_valueerror():
     obs = create_array(value=10.0)
 
     with pytest.raises(ValueError, match=r"coord_units must be one of \['degrees', 'metres'\]"):
-        cra_image(
+        _cra_image(
             fcst,
             obs,
             threshold=5.0,
@@ -1229,30 +1240,6 @@ def test_calc_resolution_invalid_units_raises_valueerror():
 #     assert shifted is None and dx is None and dy is None
 
 
-def test__normalize_single_reduce_dim_raises_when_none():
-    """_normalize_single_reduce_dim should raise when reduce_dims is None (explicit message)."""
-    # Minimal valid DataArray with the grouping dim present
-    fcst = create_array().expand_dims({"time": ["2025-01-01"]})
-
-    # Import the helper from the same module used in your code path
-    from scores.spatial.cra_impl import _normalize_single_reduce_dim
-
-    with pytest.raises(
-        ValueError,
-        match=r"CRA currently supports aggregation by a single dimension only\. "
-        r"Please specify the dimension to reduce over \(e\.g\., 'time'\)\.",
-    ):
-        _normalize_single_reduce_dim(fcst, None)
-
-
-def test_normalize_single_reduce_dim_raises_when_missing_dim():
-    """Directly cover branch in _normalize_single_reduce_dim when dim is missing."""
-    data = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
-
-    with pytest.raises(ValueError, match=r"Requested reduce dimension 'time' not found in data dims \['y', 'x'\]"):
-        _normalize_single_reduce_dim(data, "time")
-
-
 def test_cra_image_invalid_coord_units():
     # Create dummy forecast and observation DataArrays with matching shape
     data = np.ones((5, 5))
@@ -1263,7 +1250,7 @@ def test_cra_image_invalid_coord_units():
     invalid_units = "kilometers"
 
     with pytest.raises(ValueError) as excinfo:
-        cra_image(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units=invalid_units)
+        _cra_image(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units=invalid_units)
 
     # Assert the error message contains the expected text
     assert f"must be one of ['degrees', 'metres']" in str(excinfo.value)
@@ -1286,7 +1273,7 @@ def test_cra_image_returns_none_when_mse_is_nan(monkeypatch):
     # Monkeypatch calc_mse to return NaN explicitly
     monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "mse", lambda a, b: np.nan)
 
-    result = cra_image(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
+    result = _cra_image(fcst=fcst, obs=obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres")
 
     assert np.isnan(result.mse_total)
 
@@ -1305,60 +1292,25 @@ def test_cra_time_val_conversion_int_and_str(monkeypatch):
         # Ignore mismatched type and just return the first slice
         return original_sel(self, {"time": self.time.values[0]}, drop=drop)
 
-    monkeypatch.setattr(xr.DataArray, "sel", safe_sel)
-
-    # Monkeypatch cra_image to avoid heavy computation
-    monkeypatch.setattr(
-        "scores.spatial.cra_impl.cra_image",
-        lambda *a, **k: {
-            m: 0
-            for m in [
-                "mse_total",
-                "mse_displacement",
-                "mse_volume",
-                "mse_pattern",
-                "optimal_shift",
-                "num_gridpoints_above_threshold_fcst",
-                "num_gridpoints_above_threshold_obs",
-                "avg_fcst",
-                "avg_obs",
-                "max_fcst",
-                "max_obs",
-                "corr_coeff_original",
-                "corr_coeff_shifted",
-                "rmse_original",
-                "rmse_shifted",
-            ]
-        },
-    )
-
     # Run cra with integer time coords (covers int -> datetime64 conversion)
-    result_int = cra(fcst_int, obs_int, threshold=1.0, y_name="lat", x_name="lon", reduce_dims="time")
+    result_int = cra(fcst_int, obs_int, threshold=1.0, y_name="lat", x_name="lon")
     assert all(len(v) == 2 for v in result_int.values())
 
     # Forecast and observation with string time coordinates (covers str -> datetime64 conversion)
     fcst_str = xr.DataArray(fcst_data, dims=["time", "lat", "lon"], coords={"time": ["2020-01-01", "2020-01-02"]})
     obs_str = xr.DataArray(obs_data, dims=["time", "lat", "lon"], coords={"time": ["2020-01-01", "2020-01-02"]})
 
-    result_str = cra(fcst_str, obs_str, threshold=1.0, y_name="lat", x_name="lon", reduce_dims="time")
+    result_str = cra(fcst_str, obs_str, threshold=1.0, y_name="lat", x_name="lon")
     assert all(len(v) == 2 for v in result_str.values())
 
 
-def test_cra_image_returns_none_when_shifted_fcst_is_none(monkeypatch):
+def test_cra_image_returns_none_when_shifted_fcst_is_none():
     # Create dummy forecast and observation DataArrays
     data = np.ones((2, 2))
     fcst = xr.DataArray(data, dims=["lat", "lon"])
     obs = xr.DataArray(data, dims=["lat", "lon"])
 
-    # Monkeypatch generate_largest_rain_area_2d to return valid blobs
-    monkeypatch.setattr("scores.spatial.cra_impl._generate_largest_rain_area_2d", lambda *a, **k: (fcst, obs))
-
-    monkeypatch.setattr("scores.spatial.cra_impl.mse", lambda *a, **k: 1.0)
-
-    # Monkeypatch _translate_forecast_region to return None for shifted_fcst
-    monkeypatch.setattr("scores.spatial.cra_impl._translate_forecast_region", lambda *a, **k: (None, 0, 0))
-
-    result = cra_image(
+    result = _cra_image(
         fcst, obs, threshold=1.0, y_name="lat", x_name="lon", coord_units="metres", extra_components=True
     )
 
