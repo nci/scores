@@ -627,6 +627,9 @@ def cra(
             min_points (int): Minimum number of grid points required in a blob.
             reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
             coord_units (str) : Coordinate units, 'degrees' or 'metres'
+        extra_components (bool): If True, include extended CRA diagnostics
+            (e.g., max/mean of fcst/obs blobs, RMSE before/after shift, correlations).
+            If False, return only the core CRA components: MSE total, shift, displacement, volume and pattern.
 
         Returns:
             A dictionary where each key corresponds to a CRA metric and maps to a list of
