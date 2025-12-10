@@ -692,8 +692,12 @@ def cra(
             r = _cra_image(fcst_image, obs_image, threshold, y_name, x_name, extra_components=extra_components)
             results.append(r)
 
-        result = xr.concat(results, dim="stacked").set_index(stacked=extra_dims)
-        result = result.unstack()
+        if len(results) == 1:
+            result = results[0]
+
+        else:
+            result = xr.concat(results, dim="stacked").set_index(stacked=extra_dims)
+            result = result.unstack()
 
     else:
         result = _cra_image(fcst, obs, threshold, y_name, x_name, extra_components=extra_components)
