@@ -11,7 +11,44 @@ import xarray as xr
 from scores.categorical import probability_of_detection, probability_of_false_detection
 from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
-from scores.utils import gather_dimensions
+from scores.utils import check_weights, gather_dimensions
+
+try:
+    import dask.array as da
+
+    HAS_DASK = True
+except ImportError:
+    da = None
+    HAS_DASK = False
+
+
+def _add_assertion_dependency(result: xr.DataArray, assertion_graph: xr.DataArray) -> xr.DataArray:
+    """
+    Creates a new DataArray that depends on both the original result computation
+    and the deferred Dask assertion graph, ensuring the check runs on compute.
+    """
+    if HAS_DASK and hasattr(result.data, "dask"):
+
+        def identity_with_check(x, check):
+            # Force dependency by performing operation that doesn't change x
+            # but requires check to be computed
+            return x * 1.0 + check * 0.0
+
+        # Get dimension labels for blockwise
+        result_dims = tuple(range(result.ndim))
+
+        combined = da.blockwise(
+            identity_with_check,
+            result_dims,  # Output has same dimensions as result
+            result.data,
+            result_dims,  # First input
+            assertion_graph.data,
+            (),  # Second input is scalar (no dims)
+            dtype=result.dtype,
+        )
+
+        return result.copy(data=combined)
+    return result
 
 
 def relative_economic_value_from_rates(
@@ -305,8 +342,13 @@ def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) 
         raise ValueError("cost_loss_ratios must be strictly monotonically increasing")
 
 
-def _validate_observations(obs: XarrayLike) -> None:
-    """Check observations contain only binary values (0, 1, or NaN)."""
+def _validate_observations(obs: XarrayLike) -> Optional[XarrayLike]:
+    """
+    Check observations contain only binary values (0, 1, or NaN).
+
+    For Dask arrays, returns a deferred assertion graph.
+    For non-Dask arrays, performs eager validation and returns None.
+    """
 
     # Check if Dask
     is_dask = False
@@ -316,22 +358,18 @@ def _validate_observations(obs: XarrayLike) -> None:
     elif hasattr(obs, "chunks") and obs.chunks is not None:
         is_dask = True
 
-    if is_dask:
-        # For Dask, compute min/max as sanity check
+    if is_dask and HAS_DASK:
+        # For Dask, create deferred validation graphs
         if isinstance(obs, xr.Dataset):
-            # For Datasets, need to get min/max across all variables
-            obs_min = min(var.min().compute().item() for var in obs.data_vars.values())
-            obs_max = max(var.max().compute().item() for var in obs.data_vars.values())
+            assertion_vars = {}
+            for name, var in obs.data_vars.items():
+                assertion_vars[name] = _check_dask_obs_safety(var)
+            return xr.Dataset(assertion_vars)
         else:
-            obs_min_max = obs.min(), obs.max()
-            obs_min = obs_min_max[0].compute().item()
-            obs_max = obs_min_max[1].compute().item()
+            return _check_dask_obs_safety(obs)
 
-        if obs_min < 0 or obs_max > 1:
-            raise ValueError("obs must contain only 0, 1, or NaN values")
-        return
+    # --- Eager validation for non-Dask arrays ---
 
-    # For memory-resident arrays, do the strict check
     if isinstance(obs, xr.Dataset):
         obs_vals = obs.to_array().values
     else:
@@ -341,12 +379,19 @@ def _validate_observations(obs: XarrayLike) -> None:
     if not np.all(np.isin(unique_obs, [0, 1])):
         raise ValueError("obs must contain only 0, 1, or NaN values")
 
+    return None
+
 
 def _validate_forecasts(
     fcst: XarrayLike,
     threshold: Optional[Union[float, Sequence[float]]],
-) -> None:
-    """Validate forecast values and threshold configuration."""
+) -> Optional[XarrayLike]:
+    """
+    Validate forecast values and threshold configuration.
+
+    For Dask arrays, returns a deferred assertion graph.
+    For non-Dask arrays, performs eager validation and returns None.
+    """
 
     # Check if we are working with Dask
     is_dask = False
@@ -356,22 +401,27 @@ def _validate_forecasts(
     elif hasattr(fcst, "chunks") and fcst.chunks is not None:
         is_dask = True
 
-    # --- 1. Get Data Stats (Min/Max) ---
-    if isinstance(fcst, xr.Dataset):
-        if is_dask:
-            fcst_min = min(var.min().compute().item() for var in fcst.data_vars.values())
-            fcst_max = max(var.max().compute().item() for var in fcst.data_vars.values())
+    if is_dask and HAS_DASK:
+        # For Dask, create deferred validation graphs
+        if isinstance(fcst, xr.Dataset):
+            assertion_vars = {}
+            for name, var in fcst.data_vars.items():
+                assertion_vars[name] = _check_dask_fcst_safety(var, threshold)
+            return xr.Dataset(assertion_vars)
         else:
-            fcst_min = min(var.min().item() for var in fcst.data_vars.values())
-            fcst_max = max(var.max().item() for var in fcst.data_vars.values())
+            return _check_dask_fcst_safety(fcst, threshold)
+
+    # --- Eager validation for non-Dask arrays ---
+
+    # Get Data Stats (Min/Max)
+    if isinstance(fcst, xr.Dataset):
+        fcst_min = min(var.min().item() for var in fcst.data_vars.values())
+        fcst_max = max(var.max().item() for var in fcst.data_vars.values())
     else:
         fcst_min_max = fcst.min(), fcst.max()
-        if is_dask:
-            fcst_min, fcst_max = fcst_min_max[0].compute().item(), fcst_min_max[1].compute().item()
-        else:
-            fcst_min, fcst_max = fcst_min_max[0].item(), fcst_min_max[1].item()
+        fcst_min, fcst_max = fcst_min_max[0].item(), fcst_min_max[1].item()
 
-    # --- 2. Validate based on configuration ---
+    # Validate based on configuration
     if threshold is not None:
         # Probabilistic forecasts: validate range
         if fcst_min < 0 or fcst_max > 1:
@@ -385,18 +435,19 @@ def _validate_forecasts(
             )
 
         # Check strict binary values (0 or 1) for non-Dask
-        if not is_dask:
-            if isinstance(fcst, xr.Dataset):
-                fcst_vals = fcst.to_array().values
-            else:
-                fcst_vals = fcst.values
+        if isinstance(fcst, xr.Dataset):
+            fcst_vals = fcst.to_array().values
+        else:
+            fcst_vals = fcst.values
 
-            unique_fcst = np.unique(fcst_vals[~np.isnan(fcst_vals)])
-            if not np.all(np.isin(unique_fcst, [0, 1])):
-                raise ValueError(
-                    "When threshold is None, fcst must contain only 0, 1, or NaN values. "
-                    "For probabilistic forecasts, provide threshold parameter."
-                )
+        unique_fcst = np.unique(fcst_vals[~np.isnan(fcst_vals)])
+        if not np.all(np.isin(unique_fcst, [0, 1])):
+            raise ValueError(
+                "When threshold is None, fcst must contain only 0, 1, or NaN values. "
+                "For probabilistic forecasts, provide threshold parameter."
+            )
+
+    return None
 
 
 def _validate_derived_metrics(
@@ -426,10 +477,11 @@ def _validate_rev_inputs(
     weights: Optional[xr.DataArray],
     derived_metrics: Optional[Sequence[str]],
     threshold_outputs: Optional[Sequence[float]],
-) -> None:
+) -> Optional[dict]:
     """
     Validate inputs for REV calculation.
 
+    Returns a dict of assertion graphs for Dask arrays, or None for non-Dask.
     """
 
     if isinstance(weights, xr.Dataset):
@@ -441,9 +493,113 @@ def _validate_rev_inputs(
     _validate_thresholds(threshold, threshold_outputs)
     _validate_derived_metrics(derived_metrics, threshold)
 
-    # Expensive checks
-    _validate_observations(obs)
-    _validate_forecasts(fcst, threshold)
+    # Collect assertion graphs
+    assertion_graphs = {}
+
+    # Observations validation
+    obs_graph = _validate_observations(obs)
+    if obs_graph is not None:
+        assertion_graphs["obs"] = obs_graph
+
+    # Forecasts validation
+    fcst_graph = _validate_forecasts(fcst, threshold)
+    if fcst_graph is not None:
+        assertion_graphs["fcst"] = fcst_graph
+
+    # Weights validation
+    if weights is not None:
+        weights_graph = check_weights(weights)
+        if weights_graph is not None:
+            assertion_graphs["weights"] = weights_graph
+
+    return assertion_graphs if assertion_graphs else None
+
+
+def _check_dask_fcst_safety(
+    fcst: xr.DataArray,
+    threshold: Optional[Union[float, Sequence[float]]],
+) -> xr.DataArray:
+    """
+    Creates a deferred validation check for forecast values with Dask arrays.
+
+    Returns an assertion graph that will validate fcst values when computed.
+    """
+
+    def _assert_valid_fcst(fcst_array):
+        """
+        Function that runs on the actual data during compute.
+        """
+        fcst_min = fcst_array.min()
+        fcst_max = fcst_array.max()
+
+        if threshold is not None:
+            # Probabilistic forecasts: validate range [0, 1]
+            if fcst_min < 0 or fcst_max > 1:
+                raise ValueError("When threshold is provided, fcst must contain values between 0 and 1")
+        else:
+            # Binary forecasts: check bounds first
+            if fcst_min < 0 or fcst_max > 1:
+                raise ValueError(
+                    "When threshold is None, fcst must contain only 0, 1, or NaN values. "
+                    "For probabilistic forecasts, provide threshold parameter."
+                )
+
+            # Check strict binary values (0 or 1)
+            unique_fcst = np.unique(fcst_array[~np.isnan(fcst_array)])
+            if not np.all(np.isin(unique_fcst, [0, 1])):
+                raise ValueError(
+                    "When threshold is None, fcst must contain only 0, 1, or NaN values. "
+                    "For probabilistic forecasts, provide threshold parameter."
+                )
+
+        return np.array(0, dtype=np.int8)  # Return dummy value
+
+    # Use map_blocks on the forecast array
+    check_array = da.map_blocks(
+        _assert_valid_fcst,
+        fcst.data,
+        dtype=np.int8,
+        drop_axis=list(range(fcst.ndim)),  # Drop all axes to get scalar
+        chunks=(),  # Scalar output
+    )
+
+    return xr.DataArray(check_array, coords={}, dims=[])
+
+
+def _check_dask_obs_safety(obs: xr.DataArray) -> xr.DataArray:
+    """
+    Creates a deferred validation check for observation values with Dask arrays.
+
+    Returns an assertion graph that will validate obs values when computed.
+    """
+
+    def _assert_valid_obs(obs_array):
+        """
+        Function that runs on the actual data during compute.
+        """
+        obs_min = obs_array.min()
+        obs_max = obs_array.max()
+
+        if obs_min < 0 or obs_max > 1:
+            raise ValueError("obs must contain only 0, 1, or NaN values")
+
+        # Check strict binary values (0 or 1)
+        unique_obs = np.unique(obs_array[~np.isnan(obs_array)])
+        if not np.all(np.isin(unique_obs, [0, 1])):
+            raise ValueError("obs must contain only 0, 1, or NaN values")
+
+        return np.array(0, dtype=np.int8)  # Return dummy value
+
+    # Use map_blocks on the observation array
+    check_array = da.map_blocks(
+        _assert_valid_obs,
+        obs.data,
+        dtype=np.int8,
+        drop_axis=list(range(obs.ndim)),  # Drop all axes to get scalar
+        chunks=(),  # Scalar output
+    )
+
+    return xr.DataArray(check_array, coords={}, dims=[])
 
 
 def _calculate_rev_core(
@@ -724,8 +880,9 @@ def relative_economic_value(
     """
 
     # Input validation
+    assertion_graphs = None
     if check_args:
-        _validate_rev_inputs(
+        assertion_graphs = _validate_rev_inputs(
             fcst,
             obs,
             cost_loss_ratios,
@@ -766,7 +923,10 @@ def relative_economic_value(
                     check_args=False,
                 )
 
-        return xr.Dataset(result_dict)
+        result = xr.Dataset(result_dict)
+        if assertion_graphs:
+            result = _add_all_assertion_dependencies(result, assertion_graphs)
+        return result
 
     if isinstance(fcst, xr.Dataset):
         result_dict = {}
@@ -785,7 +945,10 @@ def relative_economic_value(
                 threshold_outputs=threshold_outputs,
                 check_args=False,  # Already validated
             )
-        return xr.Dataset(result_dict)
+        result = xr.Dataset(result_dict)
+        if assertion_graphs:
+            result = _add_all_assertion_dependencies(result, assertion_graphs)
+        return result
 
     if isinstance(obs, xr.Dataset):
         result_dict = {}
@@ -804,7 +967,10 @@ def relative_economic_value(
                 threshold_outputs=threshold_outputs,
                 check_args=False,  # Already validated
             )
-        return xr.Dataset(result_dict)
+        result = xr.Dataset(result_dict)
+        if assertion_graphs:
+            result = _add_all_assertion_dependencies(result, assertion_graphs)
+        return result
 
     # Handle cost-loss ratios
     if isinstance(cost_loss_ratios, (float, int)):
@@ -845,7 +1011,12 @@ def relative_economic_value(
             result = _create_output_dataset(
                 rev, threshold, cost_loss_ratios, derived_metrics, threshold_outputs, threshold_dim, cost_loss_dim
             )
+            if assertion_graphs:
+                result = _add_all_assertion_dependencies(result, assertion_graphs)
             return result
+
+        if assertion_graphs:
+            rev = _add_all_assertion_dependencies(rev, assertion_graphs)
         return rev
 
     # Assume we already have a binary set of forecasts
@@ -856,4 +1027,68 @@ def relative_economic_value(
         dims_to_reduce=dims_to_reduce,
         weights=weights,
     )
+
+    if assertion_graphs:
+        rev = _add_all_assertion_dependencies(rev, assertion_graphs)
     return rev
+
+
+def _add_all_assertion_dependencies(result: XarrayLike, assertion_graphs: dict) -> XarrayLike:
+    """
+    Add all assertion graph dependencies to the result.
+
+    Args:
+        result: The computed result (DataArray or Dataset)
+        assertion_graphs: Dict of assertion graphs from validation
+
+    Returns:
+        Result with all assertion dependencies added
+    """
+    if not assertion_graphs:
+        return result
+
+    # Combine all assertion graphs into one
+    combined_assertion = None
+
+    for key, graph in assertion_graphs.items():
+        if combined_assertion is None:
+            combined_assertion = graph
+        else:
+            # Merge assertion graphs
+            if isinstance(graph, xr.Dataset):
+                # For Datasets, we need to merge
+                if isinstance(combined_assertion, xr.Dataset):
+                    combined_assertion = xr.merge([combined_assertion, graph])
+                else:
+                    # Convert DataArray to Dataset for merging
+                    combined_assertion = xr.Dataset({"_assertion": combined_assertion})
+                    combined_assertion = xr.merge([combined_assertion, graph])
+            else:
+                # For DataArrays, just keep track of the last one
+                # (they all need to be computed anyway)
+                if not isinstance(combined_assertion, xr.Dataset):
+                    combined_assertion = graph
+
+    # Apply the combined assertion to result
+    if isinstance(result, xr.DataArray):
+        if isinstance(combined_assertion, xr.Dataset):
+            # Use the first assertion variable
+            first_var = list(combined_assertion.data_vars.values())[0]
+            return _add_assertion_dependency(result, first_var)
+        else:
+            return _add_assertion_dependency(result, combined_assertion)
+    else:  # xr.Dataset
+        # Apply to each variable in result
+        new_vars = {}
+        for name, da in result.data_vars.items():
+            # Try to match assertion graph variable, otherwise use first available
+            if isinstance(combined_assertion, xr.Dataset):
+                if name in combined_assertion:
+                    assertion_var = combined_assertion[name]
+                else:
+                    assertion_var = list(combined_assertion.data_vars.values())[0]
+            else:
+                assertion_var = combined_assertion
+
+            new_vars[name] = _add_assertion_dependency(da, assertion_var)
+        return xr.Dataset(new_vars)

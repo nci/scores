@@ -14,6 +14,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 
 import re
 import sys
+import time
 import warnings
 from collections import OrderedDict
 from unittest import mock
@@ -1538,8 +1539,11 @@ class TestDaskCompatibility:
         # Invalid Dask Dataset for obs (contains 2)
         obs_bad_ds = xr.Dataset({"var1": xr.DataArray(da.from_array([0, 2, 0, 1], chunks=2), dims=["time"])})
 
+        # Doesn't raise error until compute is called
+        checking_no_error = relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True)
+
         with pytest.raises(ValueError, match="obs must contain only 0, 1, or NaN values"):
-            relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True)
+            relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True).compute()
 
         # Valid Dask Dataset for fcst with threshold
         fcst_ds = xr.Dataset(
@@ -1556,8 +1560,11 @@ class TestDaskCompatibility:
         # Invalid Dask Dataset for fcst (contains 1.5)
         fcst_bad_ds = xr.Dataset({"model1": xr.DataArray(da.from_array([0.2, 1.5, 0.6, 0.4], chunks=2), dims=["time"])})
 
+        # Doesn't raise error until compute is called
+        checking_no_error = relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True)
+
         with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
-            relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True)
+            relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True).compute()
 
     def test_rev_with_dask_inputs(self):
         """Test that REV works correctly when inputs are Dask arrays."""
@@ -1606,8 +1613,6 @@ class TestDaskCompatibility:
         large_obs = xr.DataArray(da.random.randint(0, 2, (1000, 1000), chunks=(100, 100)), dims=["time", "location"])
 
         # This should be fast (no computation)
-        import time
-
         start = time.time()
         result = relative_economic_value(large_fcst, large_obs, [0.5], threshold=[0.5], check_args=False)
         elapsed = time.time() - start
@@ -1617,7 +1622,7 @@ class TestDaskCompatibility:
         assert isinstance(result.data, da.Array)
 
     def test_weighted_rev_with_dask_deferred_validation(self):
-        """Critical test: weighted REV with invalid weights should defer error."""
+        """Weighted REV with invalid weights should defer error."""
         fcst = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
         obs = xr.DataArray(da.from_array([0, 1, 0, 1], chunks=2), dims=["time"])
         bad_weights = xr.DataArray(da.from_array([-1.0, 1.0, 1.0, 1.0], chunks=2), dims=["time"])
@@ -1642,3 +1647,223 @@ class TestDaskCompatibility:
         computed = result.compute()
         # Just verify it completes without error
         assert not np.isnan(computed.values).all()
+
+
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
+class TestDaskValidationTiming:
+    """
+    Test: all validation should be deferred for Dask arrays.
+
+    - With Dask arrays, validation should create deferred assertion graphs
+    - Errors should only raise when .compute() is called, not when creating the result
+    - This applies to fcst, obs, and weights validation
+    """
+
+    def test_invalid_fcst_deferred_until_compute(self):
+        """
+        Invalid fcst should defer error to compute time with Dask arrays.
+        """
+        # Invalid: contains 1.5
+        fcst = xr.DataArray(da.from_array([0.2, 1.5, 0.6], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 1], chunks=2), dims=["time"])
+
+        # Should NOT raise immediately - graph construction should succeed
+        try:
+            result = relative_economic_value(
+                fcst, obs, [0.5], threshold=[0.5], check_args=True  # Even with True, should defer for Dask
+            )
+
+            # Should return a lazy Dask array
+            assert isinstance(result.data, da.Array), "Result should be a lazy Dask array"
+
+            # Error should happen on compute
+            with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
+                result.compute()
+
+        except ValueError as e:
+            if "fcst must contain values between 0 and 1" in str(e):
+                pytest.fail(
+                    "Fcst validation raised immediately, " "but should be deferred until .compute() for Dask arrays"
+                )
+            else:
+                raise
+
+    def test_check_args_false_still_skips_all_validation(self):
+        """
+        With check_args=False, REV skips its own validation.
+
+        """
+        # Invalid everything
+        fcst = xr.DataArray(da.from_array([0.2, 1.5, 0.6], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 2, 1], chunks=2), dims=["time"])
+        bad_weights = xr.DataArray(da.from_array([-1.0, 1.0, 1.0], chunks=2), dims=["time"])
+
+        # Should NOT raise immediately - REV-level validation is skipped
+        result = relative_economic_value(
+            fcst, obs, [0.5], threshold=[0.5], weights=bad_weights, check_args=False  # Skips REV-level validation only
+        )
+
+        # Should be lazy
+        assert isinstance(result.data, da.Array)
+
+        # Weight validation from aggregate still runs on compute
+        # This is independent of REV's check_args parameter
+        with pytest.raises(ValueError, match=ERROR_INVALID_WEIGHTS):
+            result.compute()
+
+    def test_invalid_fcst_probabilistic_deferred_until_compute(self):
+        """
+        Invalid probabilistic fcst should defer error to compute time.
+        """
+        # Invalid: contains value > 1.0
+        fcst = xr.DataArray(da.from_array([0.2, 1.2, 0.6], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 1], chunks=2), dims=["time"])
+
+        try:
+            result = relative_economic_value(fcst, obs, [0.5], threshold=[0.5], check_args=True)
+
+            assert isinstance(result.data, da.Array), "Result should be a lazy Dask array"
+
+            with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
+                result.compute()
+
+        except ValueError as e:
+            if "fcst must contain values between 0 and 1" in str(e):
+                pytest.fail(
+                    "Probabilistic fcst validation raised immediately, "
+                    "but should be deferred until .compute() for Dask arrays"
+                )
+            else:
+                raise
+
+    def test_invalid_binary_fcst_deferred_until_compute(self):
+        """
+        Invalid binary fcst (without threshold) should defer error to compute time.
+        """
+        # Invalid binary fcst: contains 0.5 instead of just 0 or 1
+        fcst = xr.DataArray(da.from_array([0, 0.5, 1, 0], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+
+        try:
+            result = relative_economic_value(fcst, obs, [0.5], threshold=None, check_args=True)  # Binary forecast
+
+            assert isinstance(result.data, da.Array), "Result should be a lazy Dask array"
+
+            with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
+                result.compute()
+
+        except ValueError as e:
+            if "fcst must contain only 0, 1, or NaN values" in str(e):
+                pytest.fail(
+                    "Binary fcst validation raised immediately, "
+                    "but should be deferred until .compute() for Dask arrays"
+                )
+            else:
+                raise
+
+    def test_invalid_weights_already_deferred(self):
+        """
+        Invalid weights should defer error to compute time.
+        """
+        fcst = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 0, 1], chunks=2), dims=["time"])
+        # Invalid: negative weights
+        bad_weights = xr.DataArray(da.from_array([-1.0, 1.0, 1.0, 1.0], chunks=2), dims=["time"])
+
+        # Should NOT raise immediately
+        result = relative_economic_value(fcst, obs, [0.5], weights=bad_weights, check_args=True)
+
+        # Should be lazy
+        assert isinstance(result.data, da.Array), "Result should be a lazy Dask array"
+
+        # Should raise when computed
+        with pytest.raises(ValueError, match=ERROR_INVALID_WEIGHTS):
+            result.compute()
+
+    def test_all_invalid_inputs_deferred_until_compute(self):
+        """
+        All validation errors should be deferred for Dask arrays.
+        """
+        # Invalid fcst (contains 1.5)
+        fcst = xr.DataArray(da.from_array([0.2, 1.5, 0.6, 0.4], chunks=2), dims=["time"])
+        # Invalid obs (contains 2)
+        obs = xr.DataArray(da.from_array([0, 2, 1, 0], chunks=2), dims=["time"])
+        # Invalid weights (negative)
+        bad_weights = xr.DataArray(da.from_array([-1.0, 1.0, 1.0, 1.0], chunks=2), dims=["time"])
+
+        try:
+            result = relative_economic_value(fcst, obs, [0.5], threshold=[0.5], weights=bad_weights, check_args=True)
+
+            # Should be lazy
+            assert isinstance(result.data, da.Array), "Result should be a lazy Dask array"
+
+            # At least one validation error should be raised on compute
+            with pytest.raises(ValueError):
+                result.compute()
+
+        except ValueError as e:
+            # If we got here, eager validation happened
+            error_msg = str(e)
+            if "fcst must contain values between 0 and 1" in error_msg:
+                pytest.fail(
+                    "Fcst validation raised immediately, " "but should be deferred until .compute() for Dask arrays"
+                )
+            elif "obs must contain only 0, 1, or NaN values" in error_msg:
+                pytest.fail(
+                    "Obs validation raised immediately, " "but should be deferred until .compute() for Dask arrays"
+                )
+            else:
+                raise
+
+    def test_dataset_invalid_fcst_deferred_until_compute(self):
+        """
+        Invalid fcst Dataset should defer error to compute time.
+        """
+        # Invalid Dask Dataset for fcst (contains 1.5)
+        fcst_ds = xr.Dataset({"model1": xr.DataArray(da.from_array([0.2, 1.5, 0.6, 0.4], chunks=2), dims=["time"])})
+        obs = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+
+        try:
+            result = relative_economic_value(fcst_ds, obs, [0.5], threshold=[0.5], check_args=True)
+
+            assert isinstance(result, xr.Dataset), "Result should be a Dataset"
+            # Check that at least one variable is lazy
+            assert any(isinstance(var.data, da.Array) for var in result.data_vars.values())
+
+            with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
+                result.compute()
+
+        except ValueError as e:
+            if "fcst must contain values between 0 and 1" in str(e):
+                pytest.fail(
+                    "Dataset fcst validation raised immediately, "
+                    "but should be deferred until .compute() for Dask arrays"
+                )
+            else:
+                raise
+
+    def test_dataset_invalid_obs_deferred_until_compute(self):
+        """
+        Invalid obs Dataset should defer error to compute time.
+        """
+        fcst = xr.DataArray(da.from_array([0.2, 0.8, 0.6, 0.4], chunks=2), dims=["time"])
+        # Invalid Dask Dataset for obs (contains 2)
+        obs_ds = xr.Dataset({"var1": xr.DataArray(da.from_array([0, 2, 0, 1], chunks=2), dims=["time"])})
+
+        try:
+            result = relative_economic_value(fcst, obs_ds, [0.5], threshold=[0.5], check_args=True)
+
+            assert isinstance(result, xr.Dataset), "Result should be a Dataset"
+            assert any(isinstance(var.data, da.Array) for var in result.data_vars.values())
+
+            with pytest.raises(ValueError, match="obs must contain only 0, 1, or NaN values"):
+                result.compute()
+
+        except ValueError as e:
+            if "obs must contain only 0, 1, or NaN values" in str(e):
+                pytest.fail(
+                    "Dataset obs validation raised immediately, "
+                    "but should be deferred until .compute() for Dask arrays"
+                )
+            else:
+                raise
