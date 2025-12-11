@@ -151,6 +151,7 @@ max-line-length=150  # Deliberately "too long" to avoid disagreements with black
 good-names=['df','da','x','y','z','i','j','k','ae']  # pylint: disable=E0015
 disable = [
     "too-many-positional-arguments",
+    "logging-fstring-interpolation"
 ]
 
 [tool.pixi.project]
