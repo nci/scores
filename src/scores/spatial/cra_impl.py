@@ -456,10 +456,10 @@ def _cra_image(  # pylint: disable=too-many-locals
 ) -> xr.Dataset:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
-    
+
     This function is designed for 2D spatial fields. For time-dependent data,
     use the :py:func:`scores.spatial.cra` function.
-    
+
     For ensemble data, apply this function to each realization individually or compute
     the ensemble mean beforehand.
 
@@ -635,7 +635,7 @@ def cra(  # pylint: disable=too-many-locals
             - corr_coeff_shifted (list[float]): Correlation coefficient between shifted forecast and observed blobs.
             - rmse_original (list[float]): Root mean square error between original forecast and observed blobs.
             - rmse_shifted (list[float]): Root mean square error between shifted forecast and observed blobs.
-        
+
         Returns None if input data is invalid or CRA computation fails.
 
 
@@ -697,8 +697,7 @@ def cra(  # pylint: disable=too-many-locals
         if len(results) == 1:
             result = results[0]
             result = result.expand_dims(extra_dims)
-            result = result.drop_vars('stacked') # No need for this for length-one extra dims
-
+            result = result.drop_vars("stacked")  # No need for this for length-one extra dims
 
         else:
             result = xr.concat(results, dim="stacked").set_index(stacked=extra_dims)

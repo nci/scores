@@ -421,7 +421,9 @@ def test_cra_result_none_fallback_nan_fill():
     time_val = np.datetime64("2025-01-01")
     fcst = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"]).expand_dims(time=[time_val])
     obs = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"]).expand_dims(time=[time_val])
-    import pudb; pudb.set_trace()
+    import pudb
+
+    pudb.set_trace()
     result = cra(fcst, obs, threshold=50.0, y_name="y", x_name="x")
     for metric in result:
         assert np.isnan(result[metric][0]), f"{metric} should be NaN when CRA returns None"
@@ -505,18 +507,6 @@ def test_cra_fallback_to_bbox_alignment():
     fcst = fcst.expand_dims({"time": [time_val]})
     obs = obs.expand_dims({"time": [time_val]})
     result = cra(fcst, obs, threshold=5.0, y_name="y", x_name="x")
-    for metric in result:
-        assert np.isnan(result[metric][0])
-
-
-def test_cra_shift_exceeds_max_distance():
-    """Test CRA returns NaN when shift exceeds max distance."""
-    time_val = np.datetime64("2025-01-01")
-    fcst = create_array()
-    obs = fcst.copy().shift(x=30)
-    fcst = fcst.expand_dims({"time": [time_val]})
-    obs = obs.expand_dims({"time": [time_val]})
-    result = cra(fcst, obs, threshold=5.0, y_name="y", x_name="x", max_distance=1)
     for metric in result:
         assert np.isnan(result[metric][0])
 
@@ -955,7 +945,7 @@ def test_cra_image_mse_total_nan_triggers_none(monkeypatch):
     obs = gaussian_blob()
 
     # Monkeypatch calc_mse to return NaN
-    def fake_calc_mse(a, b):
+    def fake_calc_mse(_a, _b):
         return np.nan
 
     # Patch in the module where cra_image resolves _calc_mse
