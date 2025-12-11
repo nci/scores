@@ -1,7 +1,7 @@
 """
 Fast and memory-efficient vectorised exact CRPS calculation.
 
-The xarray wrapper function crps_cdf_exact is based on the code for crps_ensemble from xskillscore
+The xarray wrapper function crps_cdf_exact_fast is based on the code for crps_ensemble from xskillscore
 https://github.com/xarray-contrib/xskillscore/blob/main/xskillscore/core/probabilistic.py
 Copyright xskillscore developers 2018-2021, released under the Apache-2.0 License
 
