@@ -1867,3 +1867,27 @@ class TestDaskValidationTiming:
                 )
             else:
                 raise
+
+    def test_eager_validation_still_works_for_non_dask(self):
+        """Ensure non-Dask arrays still get eager validation."""
+        fcst = xr.DataArray([0.2, 1.5, 0.6], dims=["time"])  # Invalid
+        obs = xr.DataArray([0, 1, 1], dims=["time"])
+
+        # Should raise immediately (not Dask)
+        with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
+            relative_economic_value(fcst, obs, [0.5], threshold=[0.5], check_args=True)
+
+    def test_valid_dask_inputs_complete_successfully(self):
+        """Verify that valid Dask inputs work correctly end-to-end."""
+        fcst = xr.DataArray(da.from_array([0.2, 0.8, 0.6, 0.4], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+        weights = xr.DataArray(da.from_array([1.0, 2.0, 1.0, 1.0], chunks=2), dims=["time"])
+
+        result = relative_economic_value(
+            fcst, obs, [0.3, 0.7], threshold=[0.5], weights=weights, check_args=True  # All validation should pass
+        )
+
+        assert isinstance(result.data, da.Array)
+        computed = result.compute()
+        assert not np.isnan(computed.values).all()
+        assert computed.shape == (1, 2)  # threshold x cost_loss_ratio
