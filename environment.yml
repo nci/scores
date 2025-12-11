@@ -6,6 +6,7 @@ name: scores
 channels:
   - defaults
 dependencies:
+  - python<=3.13
   - pip
   - pip:
     - scores[all]

@@ -2,6 +2,7 @@
 This module supports the implementation of the CRPS scoring function, drawing from additional functions.
 The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into
 the probability module to be part of the probability API.
+
 """
 
 # pylint: disable=too-many-lines
@@ -25,6 +26,7 @@ from scores.processing.cdf import (
     propagate_nan,
 )
 from scores.typing import XarrayLike
+import warnings
 
 
 # pylint: disable=too-many-arguments
@@ -94,6 +96,8 @@ def crps_cdf_reformat_inputs(
     threshold_dim: str,
     *,  # Force keywords arguments to be keyword-only
     threshold_weight: Optional[xr.DataArray] = None,
+    convert_obs_to_cdf: Optional[bool] = True,
+    include_obs_in_thresholds: Optional[bool] = True,
     additional_thresholds: Optional[Iterable[float]] = None,
     fcst_fill_method: Literal["linear", "step", "forward", "backward"] = "linear",
     threshold_weight_fill_method: Literal["linear", "step", "forward", "backward"] = "forward",
@@ -111,7 +115,6 @@ def crps_cdf_reformat_inputs(
     # will use all thresholds from fcst, obs and (if applicable) weight
 
     fcst_thresholds = fcst[threshold_dim].values
-    obs_thresholds = pd.unique(obs.values.flatten())
 
     weight_thresholds = []  # type: ignore
     if threshold_weight is not None:
@@ -120,18 +123,12 @@ def crps_cdf_reformat_inputs(
     if additional_thresholds is None:
         additional_thresholds = []
 
-    thresholds = np.concatenate((weight_thresholds, fcst_thresholds, obs_thresholds, additional_thresholds))  # type: ignore
+    thresholds = np.concatenate((weight_thresholds, fcst_thresholds, additional_thresholds))  # type: ignore
+    if include_obs_in_thresholds:
+        obs_thresholds = pd.unique(obs.values.flatten())
+        thresholds = np.concatenate((thresholds, obs_thresholds))
     thresholds = np.sort(pd.unique(thresholds))
     thresholds = thresholds[~np.isnan(thresholds)]
-
-    # get obs in cdf form with correct thresholds
-    obs_cdf = observed_cdf(
-        obs,
-        threshold_dim,
-        threshold_values=thresholds,
-        include_obs_in_thresholds=False,  # thresholds already has rounded obs values
-        precision=0,
-    )
 
     # get fcst with correct thresholds
     fcst = add_thresholds(fcst, threshold_dim, thresholds, fcst_fill_method)
@@ -143,9 +140,20 @@ def crps_cdf_reformat_inputs(
     else:
         weight_cdf = add_thresholds(threshold_weight, threshold_dim, thresholds, threshold_weight_fill_method)
 
-    fcst_cdf, obs_cdf, weight_cdf = xr.broadcast(fcst, obs_cdf, weight_cdf)
+    if convert_obs_to_cdf:
+        # get obs in cdf form with correct thresholds
+        obs = observed_cdf(
+            obs,
+            threshold_dim,
+            threshold_values=thresholds,
+            include_obs_in_thresholds=False,  # thresholds already has rounded obs values
+            precision=0,
+        )
+        fcst_cdf, obs, weight_cdf = xr.broadcast(fcst, obs, weight_cdf)
+    else:
+        fcst_cdf, weight_cdf = xr.broadcast(fcst, weight_cdf)
 
-    return fcst_cdf, obs_cdf, weight_cdf
+    return fcst_cdf, obs, weight_cdf
 
 
 # pylint: disable=too-many-locals
@@ -343,29 +351,55 @@ def crps_cdf(
         if threshold_weight is not None:
             threshold_weight = propagate_nan(threshold_weight, threshold_dim)  # type: ignore
 
-    fcst, obs, threshold_weight = crps_cdf_reformat_inputs(
-        fcst,
-        obs,
-        threshold_dim,
-        threshold_weight=threshold_weight,
-        additional_thresholds=additional_thresholds,
-        fcst_fill_method=fcst_fill_method,
-        threshold_weight_fill_method=threshold_weight_fill_method,
-    )
-
     result = None  # Perhaps this should raise an exception if the integration
     # method isn't recognised
+    include_obs_in_thresholds = integration_method == "trapz"
+    convert_obs_to_cdf = integration_method == "trapz"
 
     if integration_method == "exact":
-        result = crps_cdf_exact(
+
+        numba_installed = False
+        try:
+            import numba
+            from scores.probability.crps_numba import crps_cdf_exact_fast
+
+            numba_installed = True
+        except ImportError:
+            warnings.warn("numba is not available. Using slower exact CRPS implementation.")
+
+        cdf_fcst, obs, threshold_weight = crps_cdf_reformat_inputs(
             fcst,
             obs,
-            threshold_weight,
             threshold_dim,
-            include_components=include_components,
+            threshold_weight=threshold_weight,
+            convert_obs_to_cdf=not (numba_installed),
+            include_obs_in_thresholds=not (numba_installed),
+            additional_thresholds=additional_thresholds,
+            fcst_fill_method=fcst_fill_method,
+            threshold_weight_fill_method=threshold_weight_fill_method,
         )
 
+        if numba_installed:
+            result = crps_cdf_exact_fast(
+                cdf_fcst, obs, threshold_weight, threshold_dim, include_components=include_components
+            )
+        else:
+            result = crps_cdf_exact_slow(
+                cdf_fcst, obs, threshold_weight, threshold_dim, include_components=include_components
+            )
+
     if integration_method == "trapz":
+        fcst, obs, threshold_weight = crps_cdf_reformat_inputs(
+            fcst,
+            obs,
+            threshold_dim,
+            threshold_weight=threshold_weight,
+            convert_obs_to_cdf=True,
+            include_obs_in_thresholds=True,
+            additional_thresholds=additional_thresholds,
+            fcst_fill_method=fcst_fill_method,
+            threshold_weight_fill_method=threshold_weight_fill_method,
+        )
         result = crps_cdf_trapz(
             fcst,
             obs,
@@ -379,7 +413,7 @@ def crps_cdf(
     return result
 
 
-def crps_cdf_exact(
+def crps_cdf_exact_slow(
     cdf_fcst: xr.DataArray,
     cdf_obs: xr.DataArray,
     threshold_weight: xr.DataArray,
@@ -407,7 +441,6 @@ def crps_cdf_exact(
         "overforecast_penalty". NaN is returned if there is a NaN in the corresponding
         `cdf_fcst`, `cdf_obs` or `threshold_weight`.
     """
-
     # identify where input arrays have no NaN, collapsing `threshold_dim`
     # Mypy doesn't realise the isnan and any come from xarray not numpy
     inputs_without_nan = (
@@ -437,7 +470,6 @@ def crps_cdf_exact(
     under = integrate_square_piecewise_linear(under, threshold_dim)
     # If zero penalty, could be NaN. Replace with 0, then nan using inputs_without_nan
     under = under.where(~np.isnan(under), 0).where(inputs_without_nan)
-
     total = over + under
     result = total.to_dataset(name="total")
 
@@ -449,7 +481,6 @@ def crps_cdf_exact(
                 over.rename("overforecast_penalty"),
             ]
         )
-
     return result
 
 
@@ -522,7 +553,6 @@ def crps_cdf_brier_decomposition(
     check_crps_cdf_brier_inputs(fcst, obs, threshold_dim, fcst_fill_method, dims)
 
     fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
-
     fcst, obs, _ = crps_cdf_reformat_inputs(
         fcst,
         obs,
@@ -532,7 +562,6 @@ def crps_cdf_brier_decomposition(
         fcst_fill_method=fcst_fill_method,
         threshold_weight_fill_method="forward",
     )
-
     dims.remove(threshold_dim)  # type: ignore
 
     # brier score for each forecast case
