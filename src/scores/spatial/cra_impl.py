@@ -696,6 +696,9 @@ def cra(  # pylint: disable=too-many-locals
 
         if len(results) == 1:
             result = results[0]
+            result = result.expand_dims(extra_dims)
+            result = result.drop_vars('stacked') # No need for this for length-one extra dims
+
 
         else:
             result = xr.concat(results, dim="stacked").set_index(stacked=extra_dims)

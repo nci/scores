@@ -344,7 +344,7 @@ def test_cra_time_format_valid():
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
     result = cra(fcst, obs, threshold=0.5, y_name="y", x_name="x")
-    assert isinstance(result, dict)
+    assert isinstance(result, xr.Dataset)
 
 
 def test_cra_image_invalid_blobs():
@@ -405,7 +405,7 @@ def test_cra_time_formats_valid(time_val):
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
     result = cra(fcst, obs, threshold=0.5, y_name="y", x_name="x")
-    assert isinstance(result, dict)
+    assert isinstance(result, xr.Dataset)
 
 
 def test_cra_time_slice_shape_mismatch_error():
@@ -421,6 +421,7 @@ def test_cra_result_none_fallback_nan_fill():
     time_val = np.datetime64("2025-01-01")
     fcst = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"]).expand_dims(time=[time_val])
     obs = xr.DataArray(np.zeros((10, 10)), dims=["y", "x"]).expand_dims(time=[time_val])
+    import pudb; pudb.set_trace()
     result = cra(fcst, obs, threshold=50.0, y_name="y", x_name="x")
     for metric in result:
         assert np.isnan(result[metric][0]), f"{metric} should be NaN when CRA returns None"
@@ -433,7 +434,7 @@ def test_cra_time_formats(time_val):
     fcst = create_array().expand_dims(time=[time_val])
     obs = create_array().expand_dims(time=[time_val])
     result = cra(fcst, obs, threshold=0.5, y_name="y", x_name="x")
-    assert isinstance(result, dict)
+    assert isinstance(result, xr.Dataset)
 
 
 def test_calc_corr_coeff_empty_after_nan_removal():
@@ -589,7 +590,7 @@ def test_cra_time_val_formats(time_val):
     obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"]).expand_dims({"time": [time_val]})
 
     result = cra(fcst, obs, threshold=5.0, y_name="y", x_name="x")
-    assert isinstance(result, dict)
+    assert isinstance(result, xr.Dataset)
     for metric in result:
         assert metric in result
 
