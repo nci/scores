@@ -387,7 +387,7 @@ def _calc_num_points(data: xr.DataArray, threshold: float) -> int:
         >>> count = _calc_num_points(data, threshold=5.0)
     """
     mask = data >= threshold
-    count_above_threshold = mask.sum().item()
+    count_above_threshold = int(mask.sum().compute())
     return count_above_threshold
 
 
