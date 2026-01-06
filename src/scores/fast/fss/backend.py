@@ -32,7 +32,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
     event_threshold: np.float64
     threshold_operator: BinaryOperator
     window_size: Tuple[int, int]
-    zero_padding: bool
+    padding: str
 
     # internal buffers
     _obs_pop: npt.NDArray[np.int64] = field(init=False)
@@ -71,6 +71,82 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         against a event threshold; using numpy. This is a relatively cheap operation, so a specific
         implementation in derived backends is optional.
         """
+        if self.padding is not None:
+            (w_h, w_w) = (self.window_size[0], self.window_size[1])
+            pad_top_bottom = w_h // 2
+            pad_left_right = w_w // 2
+            if self.padding == "zero":
+                # In the case of zero padding, instead of ignoring edge points, zeros are added outside
+                # the grid boundaries. To ensure that the neighborhood window (M × N) can be centered on
+                # every grid point (including those at the edges), we need to add vertical (top and bottom)
+                # and horizontal (left and right) padding to both the forecast and observation fields.
+                # The padding sizes should be calculated as integers:
+                # - Vertical padding = M // 2
+                # - Horizontal padding = N // 2
+
+                # ------------------------------
+                # 0-padding
+                # ------------------------------
+                #    ..................
+                #    ..................
+                #    ..+------------+..
+                #    ..|            |..
+                #    ..|            |..
+                #    ..|            |..
+                #    ..+------------+..
+                #    ..................
+                #    ..................
+                #
+                # ".." represents 0 padding
+                # the rectangle represents the
+                # FSS computation region.
+                # ------------------------------
+                self.obs = np.pad(
+                    self.obs,
+                    pad_width=((pad_top_bottom, pad_top_bottom), (pad_left_right, pad_left_right)),
+                    mode="constant",
+                    constant_values=0,
+                )
+                self.fcst = np.pad(
+                    self.fcst,
+                    pad_width=((pad_top_bottom, pad_top_bottom), (pad_left_right, pad_left_right)),
+                    mode="constant",
+                    constant_values=0,
+                )
+            elif self.padding == "reflective":
+                # In the case of reflective padding, instead of ignoring edge points or adding zeros,
+                # the values at the edges of the grid are mirrored outward. Reflective padding helps
+                # preserve the spatial structure near boundaries
+                self.obs = np.pad(
+                    self.obs,
+                    pad_width=((pad_top_bottom, pad_top_bottom), (pad_left_right, pad_left_right)),
+                    mode="reflect",
+                )
+                self.fcst = np.pad(
+                    self.fcst,
+                    pad_width=((pad_top_bottom, pad_top_bottom), (pad_left_right, pad_left_right)),
+                    mode="reflect",
+                )
+
+            else:
+                raise ValueError(f"Unsupported padding type: {self.padding}")
+
+            # -------------------------------
+            # interior border with no padding
+            # -------------------------------
+            # data at the border is trim
+            # -ed and used for padding
+            #    +---------------+
+            #    | +-----------+ |
+            #    | |///////////| |
+            #    | |///////////| |
+            #    | |///////////| |
+            #    | +-----------+ |
+            #    +---------------+
+            #
+            # "//" represents the effective
+            # FSS computation region
+            # -------------------------------
         _op = self.threshold_operator.get()
         self._obs_pop = _op(self.obs, self.event_threshold)
         self._fcst_pop = _op(self.fcst, self.event_threshold)
@@ -111,7 +187,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         - `power_fcst :: float = sum_w(p_f^2)`
 
         **WARNING:** returning sums of powers can result in overflows on aggregation. It is advisable
-        to return the means instead, as it is equivilent with minimal computational trade-off.
+        to return the means instead, as it is equivalent with minimal computational trade-off.
 
         Returns:
             Tuple[float, float, float]: (power_fcst, power_obs, power_diff) as described above
@@ -135,10 +211,11 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         )
         # fmt: on
 
-    def compute_fss(self) -> np.float64:
+    def compute_fss(self) -> Tuple[np.float64, np.float64, np.float64]:
         """
         Uses the components from :py:method:`compute_fss_decomposed` to compute the final
-        Fractions Skill Score.
+        Fractions Skill Score. It also returns the FSS decompositions that are Fractions
+        Brier Score (FBS) and reference FBS.
         """
         (fcst, obs, diff) = self.compute_fss_decomposed()
         denom = fcst + obs
@@ -149,4 +226,4 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
 
         fss_clamped = max(min(fss, 1.0), 0.0)
 
-        return fss_clamped  # type: ignore
+        return fss_clamped, diff, denom  # type: ignore

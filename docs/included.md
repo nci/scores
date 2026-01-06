@@ -643,17 +643,9 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     [API](api.md#scores.spatial.fss_2d)
   -
     [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
-* -
-    - FSS - 2D Binary
-  -
-    [API](api.md#scores.spatial.fss_2d_binary)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    &mdash;
-* -
+  - 
+    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1); [Antonio and Aitchison (2025)](https://doi.org/10.1175/MWR-D-24-0120.1)
+* -  
     - FSS - 2D Single Field
   -
     [API](api.md#scores.spatial.fss_2d_single_field)
