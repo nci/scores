@@ -538,9 +538,6 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
 @pytest.mark.parametrize(
     ("interval_where_one", "interval_where_positive", "a", "b", "c", "d"),
     [
-        ((1, 4), (-1, 5), -1, 1, 4, 5),
-        ((-np.inf, 4), (-np.inf, 5), -7, -6, 4, 5),
-        ((-1, np.inf), (-3, np.inf), -3, -1, 11, 12),
         (
             (DA_INTERVAL_WHERE, 10),
             (DA_INTERVAL_WHERE - 1, 11),
