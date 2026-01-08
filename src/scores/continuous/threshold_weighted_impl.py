@@ -100,9 +100,7 @@ def _auxiliary_funcs(
         b = _maybe_convert_to_dataarray(b)
 
         if (a >= b).any():
-            raise ValueError(
-                "left endpoint of `interval_where_one` must be strictly less than right endpoint"
-            )
+            raise ValueError("left endpoint of `interval_where_one` must be strictly less than right endpoint")
 
         # safest to work with finite a and b
         a = a.where(a > -np.inf, float(min(fcst.min(), obs.min(), b.min())) - 1)  # type: ignore
@@ -122,9 +120,7 @@ def _auxiliary_funcs(
         d = _maybe_convert_to_dataarray(d)
 
         if (b >= c).any():
-            raise ValueError(
-                "left endpoint of `interval_where_one` must be strictly less than right endpoint"
-            )
+            raise ValueError("left endpoint of `interval_where_one` must be strictly less than right endpoint")
 
         if (np.isinf(a) & (a != b)).any() or (np.isinf(d) & (c != d)).any():
             raise ValueError(
@@ -219,18 +215,14 @@ def _phi_j_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArr
     return result
 
 
-def _phi_j_prime_rect(
-    a: EndpointType, b: EndpointType, x: xr.DataArray
-) -> xr.DataArray:
+def _phi_j_prime_rect(a: EndpointType, b: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     The subderivative of `_phi_j_rect(a, b, x)` w.r.t. x.
     """
     return 4 * _g_j_rect(a, b, x)
 
 
-def _g_j_trap(
-    a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray
-) -> xr.DataArray:
+def _g_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     Returns values of a nondecreasing function g_j, where g_j is obtained by integrating
     a trapezoidal threshold weight function. The threshold weight is 1 on the interval (b, c) and 0 outside
@@ -263,9 +255,7 @@ def _g_j_trap(
     return result
 
 
-def _phi_j_trap(
-    a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray
-) -> xr.DataArray:
+def _phi_j_trap(a: EndpointType, b: EndpointType, c: EndpointType, d: EndpointType, x: xr.DataArray) -> xr.DataArray:
     """
     Returns values of a convex function phi_j, where phi_j is obtained by integrating
     a trapezoidal threshold weight function. The threshold weight is 1 on the interval (b, c) and 0 outside
@@ -296,10 +286,7 @@ def _phi_j_trap(
         + 2 * (d + c - a - b) * x
         + 2 * ((b - a) ** 2 + 3 * a * b - (d - c) ** 2 - 3 * c * d) / 3
     )
-    result4 = (
-        2 * (d + c - a - b) * x
-        + 2 * ((b - a) ** 2 + 3 * a * b - (d - c) ** 2 - 3 * c * d) / 3
-    )
+    result4 = 2 * (d + c - a - b) * x + 2 * ((b - a) ** 2 + 3 * a * b - (d - c) ** 2 - 3 * c * d) / 3
 
     result = result1.where(x >= a, result0)
     result = result.where(x < b, result2)
@@ -405,23 +392,11 @@ def tw_squared_error(
         consistent scoring functions. Quarterly Journal of the Royal Meteorological
         Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
-    _check_tws_args(
-        interval_where_one=interval_where_one,
-        interval_where_positive=interval_where_positive,
-    )
-    _, phi, phi_prime = _auxiliary_funcs(
-        fcst, obs, interval_where_one, interval_where_positive
-    )
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     return consistent_expectile_score(
-        fcst,
-        obs,
-        0.5,
-        phi,
-        phi_prime,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        weights=weights,
+        fcst, obs, 0.5, phi, phi_prime, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
 
 
@@ -501,21 +476,12 @@ def tw_absolute_error(
         consistent scoring functions. Quarterly Journal of the Royal Meteorological
         Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
-    _check_tws_args(
-        interval_where_one=interval_where_one,
-        interval_where_positive=interval_where_positive,
-    )
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     g, _, _ = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     # Note that the absolute error is twice the quantile score when alpha=0.5
     return 2 * consistent_quantile_score(
-        fcst,
-        obs,
-        0.5,
-        g,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        weights=weights,
+        fcst, obs, 0.5, g, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
 
 
@@ -600,20 +566,11 @@ def tw_quantile_score(
     """
 
     check_alpha(alpha)
-    _check_tws_args(
-        interval_where_one=interval_where_one,
-        interval_where_positive=interval_where_positive,
-    )
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     g, _, _ = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     return consistent_quantile_score(
-        fcst,
-        obs,
-        alpha,
-        g,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        weights=weights,
+        fcst, obs, alpha, g, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
 
 
@@ -697,24 +654,12 @@ def tw_expectile_score(
     """
 
     check_alpha(alpha)
-    _check_tws_args(
-        interval_where_one=interval_where_one,
-        interval_where_positive=interval_where_positive,
-    )
-    _, phi, phi_prime = _auxiliary_funcs(
-        fcst, obs, interval_where_one, interval_where_positive
-    )
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
     # We multiply the output by a factor of two here due to the scaling of phi and phi_prime
     # Since phi(s)=2s^2 was used in `_auxiliary_funcs` to be consistent with Taggart (2022)
     return 0.5 * consistent_expectile_score(
-        fcst,
-        obs,
-        alpha,
-        phi,
-        phi_prime,
-        reduce_dims=reduce_dims,
-        preserve_dims=preserve_dims,
-        weights=weights,
+        fcst, obs, alpha, phi, phi_prime, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights
     )
 
 
@@ -800,13 +745,8 @@ def tw_huber_loss(
     """
 
     check_huber_param(huber_param)
-    _check_tws_args(
-        interval_where_one=interval_where_one,
-        interval_where_positive=interval_where_positive,
-    )
-    _, phi, phi_prime = _auxiliary_funcs(
-        fcst, obs, interval_where_one, interval_where_positive
-    )
+    _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
+    _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
 
     # We multiply the output by a factor of two here due to the scaling of phi and phi_prime
     # Since phi(s)=2s^2 was used in `_auxiliary_funcs` to be consistent with Taggart (2022)

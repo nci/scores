@@ -32,10 +32,7 @@ from scores.continuous.threshold_weighted_impl import (
 )
 
 DA_FCST = xr.DataArray(
-    data=[
-        [[3.0, 1.0, nan, 2], [3.0, 1.0, nan, 2]],
-        [[-4.0, 0.0, 1.0, 2], [-4.0, 0.0, 1.0, 2]],
-    ],
+    data=[[[3.0, 1.0, nan, 2], [3.0, 1.0, nan, 2]], [[-4.0, 0.0, 1.0, 2], [-4.0, 0.0, 1.0, 2]]],
     dims=["date", "lead_day", "station"],
     coords=dict(
         date=["1", "2"],
@@ -132,9 +129,7 @@ EXP_G_J_TRAP2 = xr.DataArray(
     coords=dict(date=["01"], station=[100, 101]),
 )
 
-EXP_PHI_J_TRAP1 = xr.DataArray(
-    [nan, 0.0, 16 / 9, 14, 6 + 140 - 2 * 126 / 3, 280 - 2 * 126 / 3]
-)
+EXP_PHI_J_TRAP1 = xr.DataArray([nan, 0.0, 16 / 9, 14, 6 + 140 - 2 * 126 / 3, 280 - 2 * 126 / 3])
 
 EXP_PHI_J_TRAP2 = xr.DataArray(
     data=[[6 + 8 / 3, 25 / 3]],
@@ -144,21 +139,13 @@ EXP_PHI_J_TRAP2 = xr.DataArray(
 
 EXP_PHI_J_PRIME_TRAP = 4 * EXP_G_J_TRAP1
 
-DA_A_INF = xr.DataArray(
-    [-np.inf, -1], dims=["station"], coords=dict(station=[100, 101])
-)
+DA_A_INF = xr.DataArray([-np.inf, -1], dims=["station"], coords=dict(station=[100, 101]))
 
-DA_B_INF = xr.DataArray(
-    [-100, np.inf], dims=["station"], coords=dict(station=[100, 101])
-)
+DA_B_INF = xr.DataArray([-100, np.inf], dims=["station"], coords=dict(station=[100, 101]))
 
-DA_A_FINITE = xr.DataArray(
-    [-101, -1], dims=["station"], coords=dict(station=[100, 101])
-)
+DA_A_FINITE = xr.DataArray([-101, -1], dims=["station"], coords=dict(station=[100, 101]))
 
-DA_B_FINITE = xr.DataArray(
-    [-100, 11], dims=["station"], coords=dict(station=[100, 101])
-)
+DA_B_FINITE = xr.DataArray([-100, 11], dims=["station"], coords=dict(station=[100, 101]))
 
 
 DA_FCST1 = xr.DataArray(
@@ -607,26 +594,17 @@ def test__auxiliary_funcs_multidimensional(
     xr.testing.assert_allclose(phi_prime(x), _phi_j_prime_trap(a, b, c, d, x))
 
 
+
 # Test all of the threshold weighted scores
 @pytest.mark.parametrize(
     ("scoring_func", "kwargs", "expected"),
     [
-        (
-            tw_squared_error,
-            {},
-            mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
-        ),
-        (
-            tw_absolute_error,
-            {},
-            mae(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
-        ),
+        (tw_squared_error, {}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (tw_absolute_error, {}, mae(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
         (
             tw_quantile_score,
             {"alpha": 0.3},
-            quantile_score(
-                DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]
-            ),
+            quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
         ),
         (
             tw_expectile_score,
@@ -647,11 +625,7 @@ def test_threshold_weighted_scores1(scoring_func, kwargs, expected):
     then the threshold weighted score should be the same as the original score.
     """
     result = scoring_func(
-        DA_FCST1,
-        DA_OBS1,
-        interval_where_one=(-np.inf, np.inf),
-        preserve_dims=["date", "station"],
-        **kwargs,
+        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), preserve_dims=["date", "station"], **kwargs
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -677,9 +651,7 @@ def test_threshold_weighted_scores2(scoring_func, kwargs):
 
     score1 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, 0), **kwargs)
     score2 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(0, np.inf), **kwargs)
-    score = scoring_func(
-        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs
-    )
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
@@ -703,15 +675,9 @@ def test_threshold_weighted_scores3(scoring_func, kwargs):
 
     kwargs["preserve_dims"] = ["date", "station"]
 
-    score1 = scoring_func(
-        DA_FCST1, DA_OBS1, interval_where_one=(-DA_INF, DA_ENDPT1), **kwargs
-    )
-    score2 = scoring_func(
-        DA_FCST1, DA_OBS1, interval_where_one=(DA_ENDPT1, DA_INF), **kwargs
-    )
-    score = scoring_func(
-        DA_FCST1, DA_OBS1, interval_where_one=(-DA_INF, DA_INF), **kwargs
-    )
+    score1 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-DA_INF, DA_ENDPT1), **kwargs)
+    score2 = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(DA_ENDPT1, DA_INF), **kwargs)
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-DA_INF, DA_INF), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
@@ -737,22 +703,12 @@ def test_threshold_weighted_scores4(scoring_func, kwargs):
     point1 = -4
     point2 = 4
     score1 = scoring_func(
-        DA_FCST1,
-        DA_OBS1,
-        interval_where_one=(-np.inf, point1),
-        **kwargs,
-        interval_where_positive=(-np.inf, point2),
+        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, point1), **kwargs, interval_where_positive=(-np.inf, point2)
     )
     score2 = scoring_func(
-        DA_FCST1,
-        DA_OBS1,
-        interval_where_one=(point2, np.inf),
-        **kwargs,
-        interval_where_positive=(point1, np.inf),
+        DA_FCST1, DA_OBS1, interval_where_one=(point2, np.inf), **kwargs, interval_where_positive=(point1, np.inf)
     )
-    score = scoring_func(
-        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs
-    )
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
@@ -783,15 +739,9 @@ def test_threshold_weighted_scores5(scoring_func, kwargs):
         interval_where_positive=(-DA_INF, DA_ENDPT2),
     )
     score2 = scoring_func(
-        DA_FCST1,
-        DA_OBS1,
-        interval_where_one=(DA_ENDPT2, DA_INF),
-        **kwargs,
-        interval_where_positive=(DA_ENDPT1, DA_INF),
+        DA_FCST1, DA_OBS1, interval_where_one=(DA_ENDPT2, DA_INF), **kwargs, interval_where_positive=(DA_ENDPT1, DA_INF)
     )
-    score = scoring_func(
-        DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs
-    )
+    score = scoring_func(DA_FCST1, DA_OBS1, interval_where_one=(-np.inf, np.inf), **kwargs)
     xr.testing.assert_allclose(score1 + score2, score)
 
 
@@ -832,28 +782,14 @@ def test_threshold_weighted_scores6(scoring_func, kwargs):
 @pytest.mark.parametrize(
     ("scoring_func", "kwargs", "expected"),
     [
-        (
-            tw_squared_error,
-            {},
-            mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
-        ),
-        (
-            tw_absolute_error,
-            {},
-            mae(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
-        ),
+        (tw_squared_error, {}, mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
+        (tw_absolute_error, {}, mae(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
         (
             tw_quantile_score,
             {"alpha": 0.3},
-            quantile_score(
-                DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]
-            ),
+            quantile_score(DA_FCST1, DA_OBS1, alpha=0.3, preserve_dims=["date", "station"]),
         ),
-        (
-            tw_expectile_score,
-            {"alpha": 0.5},
-            0.5 * mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"]),
-        ),
+        (tw_expectile_score, {"alpha": 0.5}, 0.5 * mse(DA_FCST1, DA_OBS1, preserve_dims=["date", "station"])),
         (
             tw_huber_loss,
             {"huber_param": HUBER_PARAM},
