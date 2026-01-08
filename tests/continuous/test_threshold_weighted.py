@@ -51,7 +51,7 @@ DA_OBS = xr.DataArray(
 )
 
 # Mimic DA_OBS for rectangular threshold weight
-DA_INTERVAL_WHERE_ONE = xr.full_like(DA_OBS, 3.0)
+DA_INTERVAL_WHERE = xr.full_like(DA_OBS, 3.0)
 
 DA_X1 = xr.DataArray([nan, -2.0, 1.0, 5.0])
 
@@ -501,8 +501,8 @@ def test__phi_j_prime_trap():
         ((-np.inf, 5), -6, 5),
         ((-6, np.inf), -6, 11),
         ((DA_A_INF, DA_B_INF), DA_A_FINITE, DA_B_FINITE),
-        ((DA_INTERVAL_WHERE_ONE, np.inf), DA_INTERVAL_WHERE_ONE, 11),
-        ((-np.inf, DA_INTERVAL_WHERE_ONE), -6, DA_INTERVAL_WHERE_ONE),
+        ((DA_INTERVAL_WHERE, np.inf), DA_INTERVAL_WHERE, 11),
+        ((-np.inf, DA_INTERVAL_WHERE), -6, DA_INTERVAL_WHERE),
     ],
 )
 def test__auxiliary_funcs1(interval_where_one, a, b):
@@ -535,6 +535,65 @@ def test__auxiliary_funcs1(interval_where_one, a, b):
 def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c, d):
     """
     Tests that `_auxiliary_funcs` gives expected results for "trapezoidal" weights.
+    """
+    g, phi, phi_prime = _auxiliary_funcs(
+        xr.DataArray([0, 10]),
+        xr.DataArray([-5, 9]),
+        interval_where_one,
+        interval_where_positive,
+    )
+    x = xr.DataArray(np.linspace(-10, 12, 50))
+    xr.testing.assert_allclose(g(x), _g_j_trap(a, b, c, d, x))
+    xr.testing.assert_allclose(phi(x), _phi_j_trap(a, b, c, d, x))
+    xr.testing.assert_allclose(phi_prime(x), _phi_j_prime_trap(a, b, c, d, x))
+
+
+@pytest.mark.parametrize(
+    ("interval_where_one", "interval_where_positive", "a", "b", "c", "d"),
+    [
+        ((1, 4), (-1, 5), -1, 1, 4, 5),
+        ((-np.inf, 4), (-np.inf, 5), -7, -6, 4, 5),
+        ((-1, np.inf), (-3, np.inf), -3, -1, 11, 12),
+        (
+            (DA_INTERVAL_WHERE, 10),
+            (DA_INTERVAL_WHERE - 1, 11),
+            DA_INTERVAL_WHERE - 1,
+            DA_INTERVAL_WHERE,
+            10,
+            11,
+        ),
+        (
+            (-1, DA_INTERVAL_WHERE),
+            (-3, DA_INTERVAL_WHERE + 1),
+            -3,
+            -1,
+            DA_INTERVAL_WHERE,
+            DA_INTERVAL_WHERE + 1,
+        ),
+        (
+            (-np.inf, DA_INTERVAL_WHERE),
+            (-np.inf, DA_INTERVAL_WHERE + 1),
+            -7,
+            -6,
+            DA_INTERVAL_WHERE,
+            DA_INTERVAL_WHERE + 1,
+        ),
+        (
+            (DA_INTERVAL_WHERE, np.inf),
+            (DA_INTERVAL_WHERE - 1, np.inf),
+            DA_INTERVAL_WHERE - 1,
+            DA_INTERVAL_WHERE,
+            11,
+            12,
+        ),
+    ],
+)
+# pylint: disable=too-many-positional-arguments
+def test__auxiliary_funcs_multidimensional(
+    interval_where_one, interval_where_positive, a, b, c, d
+):
+    """
+    Tests that `_auxiliary_funcs` gives expected results for "trapezoidal" weights for multidimensional endpoints.
     """
     g, phi, phi_prime = _auxiliary_funcs(
         xr.DataArray([0, 10]),
@@ -828,7 +887,7 @@ def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
     [
         (1, xr.DataArray(1)),
         (1.0, xr.DataArray(1.0)),
-        (DA_INTERVAL_WHERE_ONE, DA_INTERVAL_WHERE_ONE),
+        (DA_INTERVAL_WHERE, DA_INTERVAL_WHERE),
     ],
 )
 def test__maybe_convert_to_dataarray(endpoint, expected):

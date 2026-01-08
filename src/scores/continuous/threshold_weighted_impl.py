@@ -116,13 +116,10 @@ def _auxiliary_funcs(
         a, d = interval_where_positive
         b, c = interval_where_one
 
-        if isinstance(a, (float, int)):
-            a = xr.DataArray(a)
-            d = xr.DataArray(d)
-
-        if isinstance(b, (float, int)):
-            b = xr.DataArray(b)
-            c = xr.DataArray(c)
+        a = _maybe_convert_to_dataarray(a)
+        b = _maybe_convert_to_dataarray(b)
+        c = _maybe_convert_to_dataarray(c)
+        d = _maybe_convert_to_dataarray(d)
 
         if (b >= c).any():
             raise ValueError(
