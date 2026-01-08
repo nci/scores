@@ -2,12 +2,6 @@
 Tests for scores.continuous.consistent_impl
 """
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -21,6 +15,15 @@ from scores.continuous.consistent_impl import (
     consistent_huber_score,
     consistent_quantile_score,
 )
+from scores.utils import dask_available
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
+
 
 DA_FCST = xr.DataArray(
     data=[[3.0, 1.0, nan, 3.0], [-4.0, 0.0, 1.0, 3.0]],
@@ -139,7 +142,7 @@ def test_expectile_score_with_dask():
     Tests that the consistent expectile scores work with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = consistent_expectile_score(
@@ -150,7 +153,7 @@ def test_expectile_score_with_dask():
         phi_prime=squared_loss_prime,
         preserve_dims="all",
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     assert_allclose(result, EXP_EXPECTILE_SCORE1)
@@ -199,7 +202,7 @@ def test_huber_score_with_dask():
     Tests that the consistent huber scores work with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = consistent_huber_score(
@@ -210,7 +213,7 @@ def test_huber_score_with_dask():
         phi_prime=squared_loss_prime,
         preserve_dims="all",
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     assert_allclose(result, EXP_HUBER_SCORE1)
@@ -245,7 +248,7 @@ def test_quantile_score_with_dask():
     Tests that the consistent quantile scores work with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = consistent_quantile_score(
@@ -255,7 +258,7 @@ def test_quantile_score_with_dask():
         g=simple_linear,
         preserve_dims="all",
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     assert_allclose(result, EXP_QUANTILE_SCORE1)

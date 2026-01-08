@@ -3,15 +3,6 @@
 Contains unit tests for scores.probability.rev_impl
 """
 
-try:
-    import dask.array as da
-
-    HAS_DASK = True  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-    from dask.base import is_dask_collection
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    HAS_DASK = False  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
-
 import re
 import sys
 import time
@@ -34,7 +25,15 @@ from scores.probability.rev_impl import (
     calculate_climatology,
     check_monotonic_array,
 )
-from scores.utils import ERROR_INVALID_WEIGHTS
+from scores.utils import ERROR_INVALID_WEIGHTS, dask_available
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+    from dask.base import is_dask_collection
+else:
+    da = None
 
 # Module-level test data ... Preserved as is because these come from Jive and we want to demonstrate
 # that they've been carried over exactly.
@@ -1011,6 +1010,7 @@ class TestDatasetInputs:
             relative_economic_value(fcst, obs, [0.5], weights=weights_ds)
 
     def test_pod_as_dataset(self):
+        """Test with POD as Dataset."""
         pod_ds = xr.Dataset(
             {
                 "model_a": xr.DataArray([0.8, 0.6], dims=["threshold"]),
@@ -1540,7 +1540,7 @@ class TestDaskCompatibility:
         obs_bad_ds = xr.Dataset({"var1": xr.DataArray(da.from_array([0, 2, 0, 1], chunks=2), dims=["time"])})
 
         # Doesn't raise error until compute is called
-        checking_no_error = relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True)
+        relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True)
 
         with pytest.raises(ValueError, match="obs must contain only 0, 1, or NaN values"):
             relative_economic_value(fcst, obs_bad_ds, [0.5], check_args=True).compute()
@@ -1561,7 +1561,7 @@ class TestDaskCompatibility:
         fcst_bad_ds = xr.Dataset({"model1": xr.DataArray(da.from_array([0.2, 1.5, 0.6, 0.4], chunks=2), dims=["time"])})
 
         # Doesn't raise error until compute is called
-        checking_no_error = relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True)
+        relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True)
 
         with pytest.raises(ValueError, match="fcst must contain values between 0 and 1"):
             relative_economic_value(fcst_bad_ds, obs, [0.5], threshold=[0.5], check_args=True).compute()
@@ -1683,7 +1683,7 @@ class TestDaskValidationTiming:
         except ValueError as e:
             if "fcst must contain values between 0 and 1" in str(e):
                 pytest.fail(
-                    "Fcst validation raised immediately, " "but should be deferred until .compute() for Dask arrays"
+                    "Fcst validation raised immediately, but should be deferred until .compute() for Dask arrays"
                 )
             else:
                 raise
@@ -1806,11 +1806,11 @@ class TestDaskValidationTiming:
             error_msg = str(e)
             if "fcst must contain values between 0 and 1" in error_msg:
                 pytest.fail(
-                    "Fcst validation raised immediately, " "but should be deferred until .compute() for Dask arrays"
+                    "Fcst validation raised immediately, but should be deferred until .compute() for Dask arrays"
                 )
             elif "obs must contain only 0, 1, or NaN values" in error_msg:
                 pytest.fail(
-                    "Obs validation raised immediately, " "but should be deferred until .compute() for Dask arrays"
+                    "Obs validation raised immediately, but should be deferred until .compute() for Dask arrays"
                 )
             else:
                 raise

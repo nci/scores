@@ -1,3 +1,7 @@
+"""
+Brier score test data
+"""
+
 import numpy as np
 import xarray as xr
 

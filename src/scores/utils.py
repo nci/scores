@@ -2,16 +2,6 @@
 Contains frequently-used functions of a general nature within scores
 """
 
-try:
-    import dask.array as da
-
-    HAS_DASK = True
-except ImportError:
-    da = None
-    HAS_DASK = False
-
-import copy
-import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
@@ -22,6 +12,25 @@ import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
+
+
+def dask_available() -> bool:
+    """Check if dask is available for import."""
+    try:
+        import dask  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
+
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -563,30 +572,15 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
 
     # handle both data arrays and datasets
     if isinstance(weights, xr.DataArray):
-        return _check_single_array(weights)  # <-- ADD RETURN HERE!
-    else:
-        assertion_vars = {}
-        for name, da_weights in weights.data_vars.items():
-            result = _check_single_array(da_weights)
-            if result is not None:
-                assertion_vars[name] = result
+        return _check_single_array(weights)
 
-        if assertion_vars:
-            # Return a Dataset of assertion arrays
-            return xr.Dataset(assertion_vars)
-        return None
+    assertion_vars = {}
+    for name, da_weights in weights.data_vars.items():
+        result = _check_single_array(da_weights)
+        if result is not None:
+            assertion_vars[name] = result
 
-    # handle both data arrays and datasets
-    if isinstance(weights, xr.DataArray):
-        _check_single_array(weights)
-    else:
-        assertion_vars = {}
-        for name, da_weights in weights.data_vars.items():
-            result = _check_single_array(da_weights)
-            if result is not None:
-                assertion_vars[name] = result
-
-        if assertion_vars:
-            # Return a Dataset of assertion arrays
-            return xr.Dataset(assertion_vars)
-        return None
+    if assertion_vars:
+        # Return a Dataset of assertion arrays
+        return xr.Dataset(assertion_vars)
+    return None

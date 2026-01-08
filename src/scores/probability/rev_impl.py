@@ -11,17 +11,14 @@ import xarray as xr
 from scores.categorical import probability_of_detection, probability_of_false_detection
 from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
-from scores.utils import check_weights, gather_dimensions
+from scores.utils import check_weights, dask_available, gather_dimensions
 
-try:
+HAS_DASK = dask_available()
+
+if HAS_DASK:
     import dask.array as da
-
-    HAS_DASK = True
-except ImportError:
+else:
     da = None
-    HAS_DASK = False
-
-# DASK VALIDATION INFRASTRUCTURE
 
 
 def _check_dask_fcst_safety(
@@ -163,7 +160,7 @@ def _add_all_assertion_dependencies(result: XarrayLike, assertion_graphs: dict) 
 
     # Merge all validation graphs into one combined validator
     combined_assertion = None
-    for key, graph in assertion_graphs.items():
+    for _, graph in assertion_graphs.items():
         if combined_assertion is None:
             combined_assertion = graph  # first one becomes the base
         else:
@@ -189,23 +186,23 @@ def _add_all_assertion_dependencies(result: XarrayLike, assertion_graphs: dict) 
             # Use the first assertion variable
             first_var = list(combined_assertion.data_vars.values())[0]
             return _add_assertion_dependency(result, first_var)
-        else:
-            return _add_assertion_dependency(result, combined_assertion)
-    else:  # xr.Dataset
-        # Complex case: attach to each variable in Dataset
-        new_vars = {}
-        for name, da in result.data_vars.items():
-            # Try to match assertion graph variable, otherwise use first available
-            if isinstance(combined_assertion, xr.Dataset):
-                if name in combined_assertion:
-                    assertion_var = combined_assertion[name]
-                else:
-                    assertion_var = list(combined_assertion.data_vars.values())[0]
-            else:
-                assertion_var = combined_assertion
+        return _add_assertion_dependency(result, combined_assertion)
 
-            new_vars[name] = _add_assertion_dependency(da, assertion_var)
-        return xr.Dataset(new_vars)
+    # else a xr.Dataset
+    # Complex case: attach to each variable in Dataset
+    new_vars = {}
+    for name, da_xr in result.data_vars.items():
+        # Try to match assertion graph variable, otherwise use first available
+        if isinstance(combined_assertion, xr.Dataset):
+            if name in combined_assertion:
+                assertion_var = combined_assertion[name]
+            else:
+                assertion_var = list(combined_assertion.data_vars.values())[0]
+        else:
+            assertion_var = combined_assertion
+
+        new_vars[name] = _add_assertion_dependency(da_xr, assertion_var)
+    return xr.Dataset(new_vars)
 
 
 # INPUT VALIDATION
@@ -294,8 +291,7 @@ def _validate_observations(obs: XarrayLike) -> Optional[XarrayLike]:
             for name, var in obs.data_vars.items():
                 assertion_vars[name] = _check_dask_obs_safety(var)
             return xr.Dataset(assertion_vars)
-        else:
-            return _check_dask_obs_safety(obs)
+        return _check_dask_obs_safety(obs)
 
     # --- Eager validation for non-Dask arrays ---
 
@@ -337,8 +333,7 @@ def _validate_forecasts(
             for name, var in fcst.data_vars.items():
                 assertion_vars[name] = _check_dask_fcst_safety(var, threshold)
             return xr.Dataset(assertion_vars)
-        else:
-            return _check_dask_fcst_safety(fcst, threshold)
+        return _check_dask_fcst_safety(fcst, threshold)
 
     # --- Eager validation for non-Dask arrays ---
 
@@ -609,7 +604,7 @@ def _create_output_dataset(
 
         else:
             raise ValueError(
-                f"Invalid derived_metrics value: '{mode}'. Valid options are " "'maximum' and 'rational_user'"
+                f"Invalid derived_metrics value: '{mode}'. Valid options are 'maximum' and 'rational_user'"
             )
 
     # Add threshold-specific outputs

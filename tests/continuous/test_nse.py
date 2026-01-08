@@ -14,24 +14,21 @@ Collection of tests for the NSE score, contains:
     - TestNseDask: Tests compatibility with dask
 """
 import os
-import typing
 
 import numpy as np
 import pytest
 import xarray as xr
 from numpy import typing as npt
 
-import scores.continuous.nse_impl as nse_impl
-from scores.utils import DimensionError
+from scores.continuous import nse_impl
+from scores.utils import DimensionError, dask_available
 
-DASK_AVAILABLE = False
-try:
-    import dask
-    import dask.array
+HAS_DASK = dask_available()
 
-    DASK_AVAILABLE = True
-except ImportError:
-    pass
+if HAS_DASK:
+    from dask.base import is_dask_collection
+else:
+    da = None
 
 
 # Metafunction used to generate tests from TestClasses
@@ -1135,7 +1132,7 @@ class TestNseDask(NseSetup):
         """
         fixture to skip dask if it doesn't exist
         """
-        if not DASK_AVAILABLE:
+        if not HAS_DASK:
             pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     def test_nse_with_dask_inputs(self, tmpdir):
@@ -1160,7 +1157,7 @@ class TestNseDask(NseSetup):
             xr.open_dataarray(tmp_da2_path, chunks=chunks) as da2_disk,
         ):
             res = nse_impl.nse(da1_disk, da2_disk, reduce_dims=("x", "y"))
-            assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
+            assert is_dask_collection(res)  # SHOULD return a dask array if chunked
 
             # Load into memory and perform computation
             true_res = res.compute()

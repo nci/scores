@@ -7,12 +7,14 @@ import pytest
 import xarray as xr
 
 from scores.continuous.correlation import pearsonr, spearmanr
+from scores.utils import dask_available
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 DA1_CORR = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
@@ -149,11 +151,11 @@ def test_correlation_dask():
     Tests continuous.correlation works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = pearsonr(DA3_CORR.chunk(), DA2_CORR.chunk())
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
@@ -218,11 +220,11 @@ def test_spearman_correlation_dask():
     Tests continuous.correlation.spearmanr works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = spearmanr(DA3_CORR.chunk(), DA2_CORR.chunk())
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
@@ -231,12 +233,13 @@ def test_spearman_correlation_dask():
 @pytest.mark.parametrize(
     ("da1", "da2", "reduce_dims", "preserve_dims", "expected", "corr"),
     [
-        # Check non-linear monotonic relationship
         (X_DA, Y_DA, None, None, PEARSON_OUTPUT, "pearson"),
         (X_DA, Y_DA, None, None, SPEARMAN_OUTPUT, "spearman"),
     ],
 )
 def test_divergence(da1, da2, reduce_dims, preserve_dims, expected, corr):
+    """Tests continuous.correlation.pearsonr and spearmanr for divergence,
+    checking non-linear monotonic relationship"""
     if corr == "spearman":
         result = spearmanr(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         assert result.item() == expected

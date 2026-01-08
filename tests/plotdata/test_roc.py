@@ -2,17 +2,20 @@
 Contains unit tests for scores.probability.roc_impl
 """
 
-try:
-    import dask
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores.plotdata import roc
+from scores.utils import dask_available
 from tests.plotdata import roc_test_data as rtd
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 
 @pytest.mark.parametrize(
@@ -123,6 +126,7 @@ def test_roc_curve_auc():
 
 
 def test_roc_auto_threshold():
+    """tests that roc works with auto thresholds"""
     fcst = xr.DataArray(data=[0.1, 0.4, 0.3, 0.9], dims="time")
     obs = xr.DataArray(data=[0, 0, 1, 1], dims="time")
     # Test with check_args=False
@@ -136,7 +140,7 @@ def test_roc_auto_threshold():
 def test_roc_dask():
     """tests that roc works with dask"""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = roc(
@@ -146,9 +150,9 @@ def test_roc_dask():
         preserve_dims=["letter", "lead_day"],
         check_args=False,
     )
-    assert isinstance(result.POD.data, dask.array.Array)  # type: ignore
-    assert isinstance(result.POFD.data, dask.array.Array)  # type: ignore
-    assert isinstance(result.AUC.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.POD.data, da.Array)  # type: ignore
+    assert isinstance(result.POFD.data, da.Array)  # type: ignore
+    assert isinstance(result.AUC.data, da.Array)  # type: ignore
 
     result = result.compute()
 

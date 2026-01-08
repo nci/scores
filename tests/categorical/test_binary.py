@@ -2,18 +2,19 @@
 Tests scores.categorical.binary
 """
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name # pragma: no cover
-
-
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores.categorical import probability_of_detection, probability_of_false_detection
+from scores.utils import dask_available
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 fcst0 = xr.DataArray(data=[[0, 0], [0, np.nan]], dims=["a", "b"], coords={"a": [100, 200], "b": [500, 600]})
 fcst1 = xr.DataArray(data=[[1, 1], [1, np.nan]], dims=["a", "b"], coords={"a": [100, 200], "b": [500, 600]})
@@ -73,14 +74,12 @@ def test_probability_of_detection(
     xr.testing.assert_equal(result, expected)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_pod_dask():
     "Tests that probability_of_detection works with dask"
 
-    if dask == "Unavailable":
-        pytest.skip("Dask unavailable - could not run test")
-
     result = probability_of_detection(fcst_mix.chunk(), obs1.chunk())
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_pod3)
@@ -129,14 +128,12 @@ def test_probability_of_false_detection(
     xr.testing.assert_equal(result, expected)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_pofd_dask():
     "Tests that probability_of_false_detection works with dask"
 
-    if dask == "Unavailable":  # pragma: no cover (requires special testing)
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover (requires special testing)
-
     result = probability_of_false_detection(fcst_mix.chunk(), obs0.chunk())
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_pofd3)

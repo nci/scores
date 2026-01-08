@@ -6,12 +6,6 @@ Contains unit tests for scores.continuous.standard
 # pylint: disable=line-too-long
 # pylint: disable=R0801
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import numpy.random
 import pandas as pd
@@ -19,6 +13,14 @@ import pytest
 import xarray as xr
 
 import scores.continuous
+from scores.utils import dask_available
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 PRECISION = 4
 
@@ -442,7 +444,7 @@ def test_mse_with_dask():
     Test that mse works with dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
@@ -453,7 +455,7 @@ def test_mse_with_dask():
     ).chunk()
 
     result = scores.continuous.mse(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)  # type: ignore # Static analysis fails to recognise the type of 'result' correctly
+    assert isinstance(result.data, da.Array)  # type: ignore # Static analysis fails to recognise the type of 'result' correctly
     result = result.compute()  # type: ignore # Static analysis thinks this is a float, but it's a dask array
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[5, 4], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -465,7 +467,7 @@ def test_mae_with_dask():
     Test that mae works with dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
@@ -476,7 +478,7 @@ def test_mae_with_dask():
     ).chunk()
 
     result = scores.continuous.mae(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.data, da.Array)  # type: ignore
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[2, 2], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -488,7 +490,7 @@ def test_rmse_with_dask():
     Test that rmse works with dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
@@ -499,7 +501,7 @@ def test_rmse_with_dask():
     ).chunk()
 
     result = scores.continuous.rmse(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[np.sqrt(5), 2], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -775,10 +777,10 @@ Incorrect_SFactors_Type_KGE = "incorrect_type"
 Incorrect_SFactors_List_KGE = [1, 2]
 Incorrect_SFactors_Numpy_KGE = np.array([1, 2, 3, 4])
 
-EXP_KGE_message1 = "kge: fcst must be an xarray.DataArray"
-EXP_KGE_message2 = "kge: obs must be an xarray.DataArray"
-EXP_KGE_message3 = "kge: scaling_factors must be a list of floats or a numpy array"
-EXP_KGE_message4 = "kge: scaling_factors must contain exactly 3 elements"
+EXP_KGE_MESSAGE1 = "kge: fcst must be an xarray.DataArray"
+EXP_KGE_MESSAGE2 = "kge: obs must be an xarray.DataArray"
+EXP_KGE_MESSAGE3 = "kge: scaling_factors must be a list of floats or a numpy array"
+EXP_KGE_MESSAGE4 = "kge: scaling_factors must contain exactly 3 elements"
 
 
 @pytest.mark.parametrize(
@@ -816,14 +818,14 @@ def test_additive_bias_dask():
     Tests that continuous.additive_bias works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA2_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
     result = scores.continuous.additive_bias(fcst, obs, preserve_dims="space", weights=weights)
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS2)
@@ -861,14 +863,14 @@ def test_multiplicative_bias_dask():
     Tests that continuous.multiplicative_bias works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
     result = scores.continuous.multiplicative_bias(fcst, obs, preserve_dims="space", weights=weights)
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS6)
@@ -905,14 +907,14 @@ def test_pbias_dask():
     Tests that continuous.pbias works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
     result = scores.continuous.pbias(fcst, obs, preserve_dims="space", weights=weights)
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PBIAS3)
@@ -1052,7 +1054,7 @@ def test_percent_within_x_dask():
     Tests that continuous.within works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
@@ -1060,7 +1062,7 @@ def test_percent_within_x_dask():
     result = scores.continuous.percent_within_x(
         fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, decimals=7, is_inclusive=True
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PERCENT_WITHIN_X3)
@@ -1103,13 +1105,13 @@ def test_kge_dask():
     Tests that continuous.kge works with Dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA3_KGE.chunk()
     obs = DA2_KGE.chunk()
     result = scores.continuous.kge(fcst, obs)
-    assert isinstance(result.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.data, da.Array)  # type: ignore
     result = result.compute()  # type: ignore
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
@@ -1119,15 +1121,15 @@ def test_kge_dask():
     "fcst, obs, scaling_factors, expected_exception, expected_message",
     [
         # Test case for fcst with incorrect type (list instead of xr.DataArray)
-        (Incorrect_Input_KGE, DA2_KGE, None, TypeError, EXP_KGE_message1),
+        (Incorrect_Input_KGE, DA2_KGE, None, TypeError, EXP_KGE_MESSAGE1),
         # Test case for obs with incorrect type (list instead of xr.DataArray)
-        (DA1_KGE, Incorrect_Input_KGE, None, TypeError, EXP_KGE_message2),
+        (DA1_KGE, Incorrect_Input_KGE, None, TypeError, EXP_KGE_MESSAGE2),
         # Test case for scaling_factors with incorrect type (string instead of list or np.ndarray)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, TypeError, EXP_KGE_message3),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, TypeError, EXP_KGE_MESSAGE3),
         # Test case for scaling_factors with incorrect number of elements (list with 2 elements)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, ValueError, EXP_KGE_message4),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, ValueError, EXP_KGE_MESSAGE4),
         # Test case for scaling_factors with incorrect number of elements (numpy array with 4 elements)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, ValueError, EXP_KGE_message4),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, ValueError, EXP_KGE_MESSAGE4),
     ],
 )
 def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_message):

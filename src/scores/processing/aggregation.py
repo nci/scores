@@ -9,10 +9,14 @@ import xarray as xr
 
 from scores.processing.matching import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike
-from scores.utils import HAS_DASK, check_weights
+from scores.utils import check_weights, dask_available
+
+HAS_DASK = dask_available()
 
 if HAS_DASK:
     import dask.array as da
+else:
+    da = None
 
 
 def _add_assertion_dependency(result: xr.DataArray, assertion_graph: xr.DataArray) -> xr.DataArray:
@@ -130,8 +134,8 @@ def aggregate(
             result = _add_assertion_dependency(result, assertion_graph)
         else:  # xr.Dataset case
             new_vars = {}
-            for name, da in result.data_vars.items():
-                new_vars[name] = _add_assertion_dependency(da, assertion_graph[name])
+            for name, data in result.data_vars.items():
+                new_vars[name] = _add_assertion_dependency(data, assertion_graph[name])
             result = xr.Dataset(new_vars)
 
     return result
@@ -149,9 +153,9 @@ def _weighted_mean(
     """
     if isinstance(weights, xr.Dataset):
         w_results = {}
-        for name, da in values.data_vars.items():
+        for name, data in values.data_vars.items():
             w = weights[name]
-            da_aligned, w_aligned = broadcast_and_match_nan(da, w)
+            da_aligned, w_aligned = broadcast_and_match_nan(data, w)
 
             # `check_weights` in `_check_aggregate_inputs` ensures that `weights`
             # has at least one positive value and will raise an error.
@@ -176,9 +180,9 @@ def _weighted_sum(
     """
     if isinstance(weights, xr.Dataset):
         w_results = {}
-        for name, da in values.data_vars.items():
+        for name, data in values.data_vars.items():
             w = weights[name]
-            da_aligned, w_aligned = broadcast_and_match_nan(da, w)
+            da_aligned, w_aligned = broadcast_and_match_nan(data, w)
             summed = (da_aligned * w_aligned).sum(dim=reduce_dims)
             # If weights sum to zero for a point that has been aggregated over reduce_dims,
             # we want the result to be NaN, not zero.

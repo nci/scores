@@ -10,12 +10,14 @@ import pytest
 import xarray as xr
 
 import scores
+from scores.utils import dask_available
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(
@@ -357,7 +359,7 @@ def test_dask_if_available_categorical():
     compatibility.
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
 
     fcst = simple_forecast.chunk()
@@ -367,8 +369,8 @@ def test_dask_if_available_categorical():
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
-    assert isinstance(table.fcst_events.data, dask.array.Array)
-    assert isinstance(table.tp.data, dask.array.Array)
+    assert isinstance(table.fcst_events.data, da.Array)
+    assert isinstance(table.tp.data, da.Array)
 
     # That can be computed to hold numpy data types
     computed = table.fcst_events.compute()

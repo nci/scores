@@ -2,12 +2,6 @@
 This module contains unit tests for scores.stats.tests.block_bootstrap
 """
 
-try:
-    import dask
-    import dask.array as da
-except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
-
 from collections import OrderedDict
 
 import numpy as np
@@ -23,6 +17,14 @@ from scores.processing.block_bootstrap_impl import (
     _n_nested_blocked_random_indices,
     block_bootstrap,
 )
+from scores.utils import dask_available
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 
 @pytest.mark.parametrize(
@@ -283,7 +285,7 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
 
 
 dask_bb_scenarios = [[None, None, None, None, None, None]]
-if not dask == "Unavailable":
+if HAS_DASK:
     dask_bb_scenarios = [
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"]).chunk()],
@@ -295,7 +297,7 @@ if not dask == "Unavailable":
         ),
         # Dask arrays to meet block_size < 1
         (
-            [xr.DataArray(da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
+            [xr.DataArray(da.random.random((100, 100, 30), chunks=dict({"dim1": -1})), dims=["dim1", "dim2", "dim3"])],
             {"dim1": 2, "dim2": 2},
             2,
             None,
@@ -304,7 +306,7 @@ if not dask == "Unavailable":
         ),
         # Dask arrays for a case with leftover != 0
         (
-            [xr.DataArray(da.random.random((100, 100, 10), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
+            [xr.DataArray(da.random.random((100, 100, 10), chunks=dict({"dim1": -1})), dims=["dim1", "dim2", "dim3"])],
             {"dim1": 2, "dim2": 2},
             3,
             None,
@@ -317,10 +319,10 @@ if not dask == "Unavailable":
                 xr.Dataset(
                     {
                         "var1": xr.DataArray(
-                            da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                            da.random.random((100, 100, 30), chunks=dict({"dim1": -1})), dims=["dim1", "dim2", "dim3"]
                         ),
                         "var2": xr.DataArray(
-                            da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                            da.random.random((100, 100, 30), chunks=dict({"dim1": -1})), dims=["dim1", "dim2", "dim3"]
                         ),
                     }
                 )
@@ -337,7 +339,7 @@ if not dask == "Unavailable":
 @pytest.mark.parametrize("objects, blocks, n_iteration, exclude_dims, circular, expected_shape", dask_bb_scenarios)
 def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test block_bootstrap can work with dask arrays"""
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     # We mock MAX_BATCH_SIZE so that we don't need to pass in large arrays which
     # slow down the tests
@@ -346,13 +348,13 @@ def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude
         objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
     if isinstance(result, xr.DataArray):
-        assert isinstance(result.data, dask.array.Array)
+        assert isinstance(result.data, da.Array)
         result = result.compute()
         assert result.shape == expected_shape
         assert isinstance(result.data, np.ndarray)
     else:
         for var in result.data_vars:
-            assert isinstance(result[var].data, dask.array.Array)
+            assert isinstance(result[var].data, da.Array)
         result = result.compute()
         for var in result.data_vars:
             assert isinstance(result[var].data, np.ndarray)

@@ -2,12 +2,6 @@
 Contains unit tests for scores.probability.brier_impl
 """
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
 import operator
 
 import numpy as np
@@ -15,7 +9,15 @@ import pytest
 import xarray as xr
 
 from scores.probability import brier_score, brier_score_for_ensemble
+from scores.utils import dask_available
 from tests.probability import brier_test_data as btd
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 
 @pytest.mark.parametrize(
@@ -75,11 +77,11 @@ def test_brier_score_dask():
     Tests that the Brier score works with dask
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = brier_score(btd.FCST1.chunk(), btd.OBS1.chunk())
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, xr.DataArray(0.1))
@@ -341,7 +343,7 @@ def test_brier_score_for_ensemble_raises():
 
 def test_brier_score_for_ensemble_dask():
     """Tests that the brier_score_for_ensemble works with dask"""
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = brier_score_for_ensemble(
@@ -354,7 +356,7 @@ def test_brier_score_for_ensemble_dask():
         weights=None,
         fair_correction=False,
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, btd.EXP_BRIER_ENS_ALL)

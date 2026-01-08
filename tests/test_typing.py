@@ -13,7 +13,7 @@ import scores.typing
     "xrlike,check_pass",
     [
         # dataset - true
-        (xr.Dataset(dict(x=xr.DataArray([1]))), True),
+        (xr.Dataset({"x": xr.DataArray([1])}), True),
         # dataarray - true
         (xr.DataArray([1]), True),
         # some integer - false
@@ -27,6 +27,7 @@ import scores.typing
     ],
 )
 def test_is_xarraylike(xrlike, check_pass):
+    """Test is_xarraylike returns correct boolean for various input types."""
     assert scores.typing.is_xarraylike(xrlike) == check_pass
 
 
@@ -50,6 +51,7 @@ def test_is_xarraylike(xrlike, check_pass):
     ],
 )
 def test_is_flexibledimensiontypes(dims, check_pass):
+    """test of the is_flexibledimensiontypes function"""
     assert scores.typing.is_flexibledimensiontypes(dims) == check_pass
 
 
@@ -59,12 +61,12 @@ def test_is_flexibledimensiontypes(dims, check_pass):
         # all dataarray - pass
         ([xr.DataArray([1]), xr.DataArray([1, 2, 3])], True),
         # all dataset - pass
-        ([xr.Dataset(dict(x=xr.DataArray([1]))), xr.Dataset(dict(y=xr.DataArray([2, 1])))], True),
+        ([xr.Dataset({"x": xr.DataArray([1])}), xr.Dataset({"y": xr.DataArray([2, 1])})], True),
         # singleton xarraylike - pass
         ([xr.DataArray([1])], True),
-        ([xr.Dataset(dict(x=xr.DataArray([1])))], True),
+        ([xr.Dataset({"x": xr.DataArray([1])})], True),
         # mixed dataset and dataarray - fail
-        ([xr.Dataset(dict(x=xr.DataArray([1]))), xr.DataArray([2])], False),
+        ([xr.Dataset({"x": xr.DataArray([1])}), xr.DataArray([2])], False),
         # mixed dataarray and random type - fail
         ([np.array([1]), xr.DataArray([2])], False),
         # random type - fail
@@ -72,4 +74,5 @@ def test_is_flexibledimensiontypes(dims, check_pass):
     ],
 )
 def test_all_same_xarraylike(list_xrlike, check_pass):
+    """Test all_same_xarraylike returns correct boolean for various input types."""
     assert scores.typing.all_same_xarraylike(list_xrlike) == check_pass

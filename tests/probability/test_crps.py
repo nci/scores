@@ -3,12 +3,6 @@
 Contains unit tests for scores.probability.crps
 """
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -28,7 +22,15 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
+from scores.utils import dask_available
 from tests.probability import crps_test_data
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    import dask.array as da
+else:
+    da = None
 
 
 @pytest.mark.parametrize(
@@ -79,7 +81,7 @@ def test_crps_cdf_exact():
 def test_crps_cdf_exact_dask():
     """Tests `crps_cdf_exact` works with Dask."""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = crps_cdf_exact(
@@ -89,7 +91,7 @@ def test_crps_cdf_exact_dask():
         "x",
         include_components=True,
     )
-    assert isinstance(result.total.data, dask.array.Array)
+    assert isinstance(result.total.data, da.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
@@ -101,7 +103,7 @@ def test_crps_cdf_exact_dask():
         "x",
         include_components=False,
     )
-    assert isinstance(result2.total.data, dask.array.Array)
+    assert isinstance(result2.total.data, da.Array)
     result2 = result2.compute()
     assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
@@ -710,7 +712,7 @@ def test_crps_for_ensemble_raises():
 
 
 scenarios_crps_ensemble_dask = [[None, None]]
-if not dask == "Unavailable":
+if HAS_DASK:
     scenarios_crps_ensemble_dask = [
         (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk()),
         (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk()),
@@ -718,12 +720,10 @@ if not dask == "Unavailable":
     ]
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 @pytest.mark.parametrize(("fcst", "obs"), scenarios_crps_ensemble_dask)
 def test_crps_for_ensemble_dask(fcst, obs):
     """Tests `crps_for_ensemble` works with dask."""
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = crps_for_ensemble(
         fcst=fcst,
@@ -732,7 +732,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
         method="ecdf",
         preserve_dims="all",
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
@@ -932,7 +932,7 @@ def test_tail_tw_crps_for_ensemble(
 def test_tail_tw_crps_for_ensemble_dask():
     """Tests `tail_tw_crps_for_ensemble` works with dask."""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     # Check that it works with xr.Datarrays
@@ -947,7 +947,7 @@ def test_tail_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
@@ -964,15 +964,16 @@ def test_tail_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result_ds["a"].data, dask.array.Array)
+    assert isinstance(result_ds["a"].data, da.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
 
 
 def test_tail_tw_crps_for_ensemble_raises():
+    """Tests `tail_tw_crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError, match="'middle' is not one of 'upper' or 'lower'"):
-        result = tail_tw_crps_for_ensemble(
+        tail_tw_crps_for_ensemble(
             fcst=crps_test_data.DA_FCST_CRPSENS,
             obs=crps_test_data.DA_OBS_CRPSENS,
             ensemble_member_dim="ens_member",
@@ -1150,7 +1151,7 @@ def test_tw_crps_for_ensemble(
 def test_tw_crps_for_ensemble_dask():
     """Tests `tw_crps_for_ensemble` works with dask."""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = tw_crps_for_ensemble(
@@ -1163,7 +1164,7 @@ def test_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
@@ -1179,7 +1180,7 @@ def test_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result_ds["a"].data, dask.array.Array)
+    assert isinstance(result_ds["a"].data, da.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
@@ -1401,7 +1402,7 @@ def test_interval_tw_crps_for_ensemble_raises(lower_threshold, upper_threshold):
 def test_interval_tw_crps_for_ensemble_dask():
     """Tests `interval_tw_crps_for_ensemble` works with dask."""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     # Check that it works with xr.Datarrays
@@ -1416,7 +1417,7 @@ def test_interval_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA)
@@ -1433,7 +1434,7 @@ def test_interval_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=crps_test_data.DS_WT_CRPSENS.chunk(),
     )
-    assert isinstance(result_ds["a"].data, dask.array.Array)
+    assert isinstance(result_ds["a"].data, da.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)
