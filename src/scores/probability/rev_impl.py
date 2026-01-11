@@ -335,8 +335,9 @@ def _validate_forecasts(
         fcst_min = min(var.min().item() for var in fcst.data_vars.values())
         fcst_max = max(var.max().item() for var in fcst.data_vars.values())
     else:
-        fcst_min_max = fcst.min(), fcst.max()
-        fcst_min, fcst_max = fcst_min_max[0].item(), fcst_min_max[1].item()
+        fcst_vals = fcst.values
+        fcst_min = fcst_vals.min().item()
+        fcst_max = fcst_vals.max().item()
 
     # Validate based on configuration
     if threshold is not None:
@@ -625,7 +626,7 @@ def check_monotonic_array(array: Union[Sequence[float], np.ndarray]) -> None:
         raise ValueError("array values should be between 0 and 1.")
 
     if len(np_array) > 1 and not (np_array[1:] - np_array[:-1] >= 0).all():
-        raise ValueError("the supplied array is not monotonic increasing.")
+        raise ValueError("the supplied array is not monotonically increasing.")
 
 
 # PUBLIC API
