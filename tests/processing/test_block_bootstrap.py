@@ -17,14 +17,7 @@ from scores.processing.block_bootstrap_impl import (
     _n_nested_blocked_random_indices,
     block_bootstrap,
 )
-from scores.utils import dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, da
 
 
 @pytest.mark.parametrize(

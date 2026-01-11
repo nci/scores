@@ -27,9 +27,15 @@ def dask_available() -> bool:
 HAS_DASK = dask_available()
 
 if HAS_DASK:
+    # Import the components
     import dask.array as da
+    from dask.base import is_dask_collection
 else:
+    # Provide safe fallbacks
     da = None
+
+    def is_dask_collection(obj):
+        return False
 
 
 WARN_ALL_DATA_CONFLICT_MSG = """

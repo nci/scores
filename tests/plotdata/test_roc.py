@@ -7,15 +7,8 @@ import pytest
 import xarray as xr
 
 from scores.plotdata import roc
-from scores.utils import dask_available
+from scores.utils import HAS_DASK, da
 from tests.plotdata import roc_test_data as rtd
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize(

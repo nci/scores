@@ -7,14 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.continuous.correlation import pearsonr, spearmanr
-from scores.utils import dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, da
 
 DA1_CORR = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),

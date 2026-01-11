@@ -7,14 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.categorical import probability_of_detection, probability_of_false_detection
-from scores.utils import dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, da
 
 fcst0 = xr.DataArray(data=[[0, 0], [0, np.nan]], dims=["a", "b"], coords={"a": [100, 200], "b": [500, 600]})
 fcst1 = xr.DataArray(data=[[1, 1], [1, np.nan]], dims=["a", "b"], coords={"a": [100, 200], "b": [500, 600]})

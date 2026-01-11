@@ -16,14 +16,7 @@ from scores.plotdata.murphy_impl import (
     _huber_thetas,
     _quantile_thetas,
 )
-from scores.utils import dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, da
 
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),

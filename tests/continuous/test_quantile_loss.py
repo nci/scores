@@ -7,15 +7,8 @@ import pytest
 import xarray as xr
 
 from scores.continuous import quantile_score
-from scores.utils import DimensionError, dask_available
+from scores.utils import HAS_DASK, DimensionError, da
 from tests.continuous import quantile_loss_test_data as qltd
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize("alpha", [1.0, 1.1, 0, -0.8])

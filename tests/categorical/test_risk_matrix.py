@@ -13,15 +13,8 @@ from scores.categorical.risk_matrix_impl import (
     risk_matrix_score,
     weights_from_warning_scaling,
 )
-from scores.utils import dask_available
+from scores.utils import HAS_DASK, da
 from tests.categorical import risk_matrix_test_data as mtd
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize(

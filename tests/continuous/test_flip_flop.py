@@ -13,15 +13,8 @@ from scores.continuous.flip_flop_impl import (
     flip_flop_index,
     flip_flop_index_proportion_exceeding,
 )
-from scores.utils import DimensionError, dask_available
+from scores.utils import HAS_DASK, DimensionError, da
 from tests.continuous import flip_flop_test_data as ntd
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize(

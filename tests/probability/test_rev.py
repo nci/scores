@@ -25,15 +25,7 @@ from scores.probability.rev_impl import (
     calculate_climatology,
     check_monotonic_array,
 )
-from scores.utils import ERROR_INVALID_WEIGHTS, dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-    from dask.base import is_dask_collection
-else:
-    da = None
+from scores.utils import ERROR_INVALID_WEIGHTS, HAS_DASK, da, is_dask_collection
 
 # Module-level test data ... Preserved as is because these come from Jive and we want to demonstrate
 # that they've been carried over exactly.

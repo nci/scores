@@ -11,14 +11,7 @@ import xarray as xr
 from scores.categorical import probability_of_detection, probability_of_false_detection
 from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
-from scores.utils import check_weights, dask_available, gather_dimensions
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, check_weights, da, gather_dimensions
 
 
 def _check_dask_fcst_safety(

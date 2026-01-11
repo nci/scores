@@ -10,14 +10,7 @@ import pytest
 import xarray as xr
 
 import scores
-from scores.utils import dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, da
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(

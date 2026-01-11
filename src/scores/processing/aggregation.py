@@ -9,14 +9,7 @@ import xarray as xr
 
 from scores.processing.matching import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike
-from scores.utils import check_weights, dask_available
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import HAS_DASK, check_weights, da
 
 
 def _add_assertion_dependency(result: xr.DataArray, assertion_graph: xr.DataArray) -> xr.DataArray:

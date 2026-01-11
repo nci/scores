@@ -8,15 +8,8 @@ import xarray as xr
 
 from scores.categorical import firm, seeps
 from scores.categorical.multicategorical_impl import _single_category_score
-from scores.utils import DimensionError, dask_available
+from scores.utils import HAS_DASK, DimensionError, da
 from tests.categorical import multicategorical_test_data as mtd
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize(

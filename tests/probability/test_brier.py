@@ -9,15 +9,8 @@ import pytest
 import xarray as xr
 
 from scores.probability import brier_score, brier_score_for_ensemble
-from scores.utils import dask_available
+from scores.utils import HAS_DASK, da
 from tests.probability import brier_test_data as btd
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize(

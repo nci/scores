@@ -22,15 +22,8 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from scores.utils import dask_available
+from scores.utils import HAS_DASK, da
 from tests.probability import crps_test_data
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
 
 
 @pytest.mark.parametrize(

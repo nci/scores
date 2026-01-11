@@ -9,13 +9,7 @@ import pytest
 import xarray as xr
 
 from scores.processing import aggregate
-from scores.utils import ERROR_INVALID_WEIGHTS, dask_available
-
-HAS_DASK = dask_available()
-if HAS_DASK:
-    import dask.array as da
-else:
-    da = None
+from scores.utils import ERROR_INVALID_WEIGHTS, HAS_DASK, da
 
 DA_3x3 = xr.DataArray(
     [[0, 0.5, 1], [2, np.nan, 1], [97, 1, 1]],
