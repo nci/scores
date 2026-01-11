@@ -5,12 +5,7 @@ import pytest
 import xarray as xr
 
 from scores.plotdata import qq
-
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
+from scores.utils import HAS_DASK, da
 
 NP_INTERP_METHODS = [
     "inverted_cdf",
@@ -96,7 +91,7 @@ def expected_result1():
             ],
         ]
     )
-    da = xr.DataArray(
+    da_xr = xr.DataArray(
         data,
         dims=("data_source", "quantile", "y"),
         coords={
@@ -105,13 +100,13 @@ def expected_result1():
             "y": np.arange(10),
         },
     )
-    return da
+    return da_xr
 
 
 @pytest.fixture
 def expected_result2():
     """Expected result for testing"""
-    da = xr.DataArray(
+    da_xr = xr.DataArray(
         np.array([[0, 49.5, 99], [0, 99, 198]]),
         dims=(
             "data_source",
@@ -122,7 +117,7 @@ def expected_result2():
             "quantile": [0.0, 0.5, 1.0],
         },
     )
-    return da
+    return da_xr
 
 
 @pytest.fixture
@@ -142,7 +137,7 @@ def expected_result3():
             ],
         ]
     )
-    da = xr.DataArray(
+    da_xr = xr.DataArray(
         data,
         dims=("data_source", "quantile", "y"),
         coords={
@@ -151,7 +146,7 @@ def expected_result3():
             "y": np.arange(10),
         },
     )
-    return da
+    return da_xr
 
 
 @pytest.fixture
@@ -186,7 +181,7 @@ def expected_result4():
 @pytest.fixture
 def expected_result5():
     """Expected result for testing"""
-    da = xr.DataArray(
+    da_xr = xr.DataArray(
         np.array([[0, 2, 4], [0, 2, 4]]),
         dims=(
             "data_source",
@@ -197,7 +192,7 @@ def expected_result5():
             "quantile": [0.0, 0.5, 1.0],
         },
     )
-    return da
+    return da_xr
 
 
 @pytest.mark.parametrize(
@@ -260,9 +255,9 @@ def test_disallowed_data_source_dim(sample_dataarray1):  # pylint: disable=redef
     """
     Tests that an error is raised if a dimension is named 'data_source'
     """
-    da = sample_dataarray1.expand_dims("data_source")
+    da_xr = sample_dataarray1.expand_dims("data_source")
     with pytest.raises(ValueError, match="Dimensions named 'data_source'"):
-        qq(da, sample_dataarray1, quantiles=[0.1, 0.5])
+        qq(da_xr, sample_dataarray1, quantiles=[0.1, 0.5])
 
 
 def test_mismatched_dataset_variables():
@@ -296,10 +291,10 @@ def test_empirical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disa
     """
     Tests continuous.qq works with dask
     """
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     result = qq(sample_dataarray4.chunk(), sample_dataarray4.chunk(), quantiles=[0, 0.5, 1])
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_result5)

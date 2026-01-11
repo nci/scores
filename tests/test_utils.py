@@ -2,14 +2,11 @@
 Contains tests for the scores.utils file
 """
 
-import warnings
-
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores import utils
-from scores.typing import XarrayLike
 from scores.utils import DimensionError, check_binary, check_weights
 from scores.utils import gather_dimensions as gd
 from tests import utils_test_data

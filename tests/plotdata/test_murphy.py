@@ -5,12 +5,6 @@ import re
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -22,6 +16,7 @@ from scores.plotdata.murphy_impl import (
     _huber_thetas,
     _quantile_thetas,
 )
+from scores.utils import HAS_DASK, da
 
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),
@@ -125,7 +120,7 @@ thetas_list = [0.0, 2.0, 10.0]
 def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, daskinput):
     """murphy_score makes the expected operations on the scoring function output."""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable - could not run test")  # pragma: no cover
 
     fcst = _test_array([1.0, 2.0, 3.0, 4.0])
@@ -191,7 +186,7 @@ def test_murphy_score_operations(functional, score_function, monkeypatch, thetas
         }
     )
     if daskinput:
-        assert isinstance(result.total.data, dask.array.Array)
+        assert isinstance(result.total.data, da.Array)
         result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_identical(result, expected)

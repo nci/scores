@@ -2,11 +2,6 @@
 This module contains tests for scores.continuous.flip_flop
 """
 
-try:
-    import dask
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -18,7 +13,7 @@ from scores.continuous.flip_flop_impl import (
     flip_flop_index,
     flip_flop_index_proportion_exceeding,
 )
-from scores.utils import DimensionError
+from scores.utils import HAS_DASK, DimensionError, da
 from tests.continuous import flip_flop_test_data as ntd
 
 
@@ -406,12 +401,12 @@ def test_flip_flop_index_is_dask_compatible():
     Test that flip flop works with dask.
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     dask_array = ntd.DATA_FFI_1D_6.chunk()
     result = flip_flop_index(dask_array, "letter")
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     xr.testing.assert_allclose(result, ntd.EXP_FFI_SUB_CASE0)
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -422,12 +417,12 @@ def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
     Test that flip flop proportion exceeding works with dask.
     """
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     dask_array = ntd.DATA_FFI_2X2X4.chunk()
     result = flip_flop_index_proportion_exceeding(dask_array, "int", [0, 1, 5], **{"one": [1, 2, 3], "two": [2, 3, 4]})
-    assert isinstance(result.data_vars["one"].data, dask.array.Array)
+    assert isinstance(result.data_vars["one"].data, da.Array)
     result = result.compute()
     xr.testing.assert_allclose(result, ntd.EXP_FFI_PE_NONE)
     assert isinstance(result.one.data, np.ndarray)

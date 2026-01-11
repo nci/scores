@@ -5,7 +5,6 @@ testable and also consistent with the scores package.
 """
 
 import math
-import os
 from collections import OrderedDict
 from itertools import chain, cycle, islice
 from typing import Dict, List, Tuple, Union

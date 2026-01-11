@@ -2,8 +2,6 @@
 Contains frequently-used functions of a general nature within scores
 """
 
-import copy
-import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
@@ -14,6 +12,31 @@ import pandas as pd
 import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
+
+
+def dask_available() -> bool:
+    """Check if dask is available for import."""
+    try:
+        import dask  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    # Import the components
+    import dask.array as da
+    from dask.base import is_dask_collection
+else:
+    # Provide safe fallbacks
+    da = None
+
+    def is_dask_collection(obj):
+        return False
+
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -456,6 +479,45 @@ def check_binary(data: XarrayLike, name: str):
         raise ValueError(f"`{name}` contains values that are not in the set {{0, 1, np.nan}}")
 
 
+# Helper function to embed the weight check into the Dask graph
+def _check_dask_array_safety(_da_weights: xr.DataArray):
+    """
+    Checks if a Dask-backed DataArray meets weight criteria, deferring the error
+    until computation by adding the check as a Dask graph step.
+    """
+
+    # 1. Define the Python function that raises the error
+    def _assert_valid(has_negative_value, has_positive_value):
+        # This function runs when the Dask graph is computed
+        has_negative = bool(has_negative_value)
+        has_positive = bool(has_positive_value)
+
+        # Skip checks if data is all NaN (though check_weights should handle NaN separately)
+        # Note: We enforce the same logic as the eager check here.
+        if has_negative or not has_positive:
+            raise ValueError(ERROR_INVALID_WEIGHTS)
+        return np.array(0, dtype=np.int8)
+
+    # 2. Define the Dask operations (these are lazy and return Dask scalars)
+    has_negative = (_da_weights < 0).any()
+    has_positive = (_da_weights > 0).any()
+
+    # 3. Create a tiny Dask array that depends on the validity checks.
+    # We apply the Python function to the computed Dask scalars.
+    # This creates a computational dependency, ensuring the validation logic runs
+    # when 'result.compute()' is called later.
+    check_array = da.map_blocks(
+        _assert_valid,
+        has_negative.data,  # Pass Dask scalar for negative check
+        has_positive.data,  # Pass Dask scalar for positive check
+        dtype=np.int8,  # Dummy output dtype
+        drop_axis=[],  # Both inputs are scalars
+        new_axis=[],  # Output is also a scalar
+    )
+    # Wrap the Dask array back into an xarray DataArray for consistency
+    return xr.DataArray(check_array, coords={}, dims=[])
+
+
 def check_weights(weights: XarrayLike, *, raise_error=True):
     """
     This is a check that requires weights to be non-negative.
@@ -491,6 +553,14 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
         # type safety: dev/test only
         assert isinstance(_da_weights, xr.DataArray)
 
+        # Check if Dask is available AND if the specific DataArray is Dask-backed
+        is_dask_array = HAS_DASK and hasattr(_da_weights.data, "chunks") and _da_weights.chunks is not None
+
+        if is_dask_array and raise_error:
+            # Dask-backed array: Defer checks to the graph using Dask functions
+            return _check_dask_array_safety(_da_weights)
+
+        # --- Eager (Numpy/Pandas/Non-Dask) or Warning Path ---
         # don't allow NaNs
         checks_passed = ~_da_weights.isnull().any()
         # Don't allow negative weights
@@ -501,16 +571,22 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
         if not checks_passed:
             if raise_error:
                 raise ValueError(ERROR_INVALID_WEIGHTS)
-            # otherwise warn - pylint doesn't like explicit else
+                # otherwise warn - pylint doesn't like explicit else
             warnings.warn(WARN_INVALID_WEIGHTS, UserWarning)
+
+        return None
 
     # handle both data arrays and datasets
     if isinstance(weights, xr.DataArray):
-        _check_single_array(weights)
-    else:
-        # NOTE:
-        # Calling``items`` explicitly instead of ``values`` as ``values`` is confusing - it
-        # could be interpretted as retreiving the underlying ``numpy`` values which we
-        # DO NOT want to (accidentally) do.
-        for _, da_weights in weights.data_vars.items():
-            _check_single_array(da_weights)
+        return _check_single_array(weights)
+
+    assertion_vars = {}
+    for name, da_weights in weights.data_vars.items():
+        result = _check_single_array(da_weights)
+        if result is not None:
+            assertion_vars[name] = result
+
+    if assertion_vars:
+        # Return a Dataset of assertion arrays
+        return xr.Dataset(assertion_vars)
+    return None

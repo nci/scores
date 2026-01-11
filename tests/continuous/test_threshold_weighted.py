@@ -8,12 +8,6 @@ import pytest
 import xarray as xr
 from numpy import nan
 
-try:
-    import dask
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-
-
 from scores.continuous import mae, mse, quantile_score
 from scores.continuous.threshold_weighted_impl import (
     _auxiliary_funcs,
@@ -29,6 +23,7 @@ from scores.continuous.threshold_weighted_impl import (
     tw_quantile_score,
     tw_squared_error,
 )
+from scores.utils import HAS_DASK, da
 
 DA_FCST = xr.DataArray(
     data=[[[3.0, 1.0, nan, 2], [3.0, 1.0, nan, 2]], [[-4.0, 0.0, 1.0, 2], [-4.0, 0.0, 1.0, 2]]],
@@ -737,7 +732,7 @@ def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
     This test is based on the fact that if `interval_where_one=(-np.inf, np.inf)`
     then the threshold weighted score should be the same as the original score.
     """
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     result = scoring_func(
         DA_FCST1.chunk(),
@@ -746,7 +741,7 @@ def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
         preserve_dims=["date", "station"],
         **kwargs,
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, da.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)

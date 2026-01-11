@@ -1092,8 +1092,11 @@ class NseUtils(SimpleNamespace):
         # otherwise (if ref_dims has at least one entry),
         # check that each variable has at least one dim contained in ref_dims
         var_names = list(ds.data_vars.keys())
-        fn_checkvar = lambda _v: any(_d in ref_dims for _d in ds[_v].dims)
-        atleastone_reducedim = all(map(fn_checkvar, var_names))
+
+        def check_var_has_reducible_dim(var_name):
+            return any(dim in ref_dims for dim in ds[var_name].dims)
+
+        atleastone_reducedim = all(map(check_var_has_reducible_dim, var_names))
 
         if not atleastone_reducedim:
             raise DimensionError(NseUtils.ERROR_NO_DIMS_TO_REDUCE)

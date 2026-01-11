@@ -240,6 +240,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)
   - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
   - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
+* - Relative Economic Value
+  - [API](api.md#scores.probability.relative_economic_value)
+  - [Tutorial](project:./tutorials/REV_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.probability.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/REV_Score.md)
+  - &mdash;
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
