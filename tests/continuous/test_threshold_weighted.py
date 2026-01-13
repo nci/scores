@@ -573,9 +573,7 @@ def test__auxiliary_funcs2(interval_where_one, interval_where_positive, a, b, c,
     ],
 )
 # pylint: disable=too-many-positional-arguments
-def test__auxiliary_funcs_multidimensional(
-    interval_where_one, interval_where_positive, a, b, c, d
-):
+def test__auxiliary_funcs_multidimensional(interval_where_one, interval_where_positive, a, b, c, d):
     """
     Tests that `_auxiliary_funcs` gives expected results for "trapezoidal" weights for multidimensional endpoints.
     """
@@ -589,7 +587,6 @@ def test__auxiliary_funcs_multidimensional(
     xr.testing.assert_allclose(g(x), _g_j_trap(a, b, c, d, x))
     xr.testing.assert_allclose(phi(x), _phi_j_trap(a, b, c, d, x))
     xr.testing.assert_allclose(phi_prime(x), _phi_j_prime_trap(a, b, c, d, x))
-
 
 
 # Test all of the threshold weighted scores
