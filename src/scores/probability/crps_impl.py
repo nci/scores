@@ -7,6 +7,7 @@ the probability module to be part of the probability API.
 
 # pylint: disable=too-many-lines
 
+import warnings
 from collections.abc import Iterable
 from typing import Any, Callable, Literal, Optional, Sequence, Union
 
@@ -26,7 +27,6 @@ from scores.processing.cdf import (
     propagate_nan,
 )
 from scores.typing import XarrayLike
-import warnings
 
 
 # pylint: disable=too-many-arguments
@@ -361,6 +361,7 @@ def crps_cdf(
         numba_installed = False
         try:
             import numba
+
             from scores.probability.crps_numba import crps_cdf_exact_fast
 
             numba_installed = True
