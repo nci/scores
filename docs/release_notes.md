@@ -1,5 +1,23 @@
 # Release Notes (What's New)
 
+## Version X.Y.Z (Month Day, Year) e.g. "Version 0.9.3 (July 9, 2024)"
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.4.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Breaking Changes
+### Deprecations
+### Features
+### Bug Fixes
+### Documentation
+### Internal Changes
+### Contributors to this Release
+
+For each entry: "Brief description. See [PR #ABC](add link)."
+
+For Contributors to this Release: "Name ([@handle](https://github.com/handle))"
+
+When there are new contributors: "\* indicates that this release contains their first contribution to `scores`."
+
 ## Version 2.4.0 (January 14, 2026)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...2.4.0). Below are the changes we think users may wish to be aware of.
