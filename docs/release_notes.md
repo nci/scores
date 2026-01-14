@@ -9,7 +9,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Added an optional installation variant "fast" which introduces [`Numba`](https://numba.pydata.org/) as an optional dependency to support optimised implementations for some metrics. `scores.probability.crps_cdf` will now automatically switch to an optimised implementation if `Numba` is installed in the environment. The "fast" variant can be installed with `pip install scores[fast]` if wanted. See [PR #931](https://github.com/nci/scores/pull/931/).
 
 ### Bug Fixes
-`scores.continuous.tw_squared_error` had a bug that caused the code to fail if the first object in the tuple for `interval_where_one` was an xr.DataArray and the second was a float, e.g. np.inf. This method has now been corrected to allow a `float` or an `int` for the interval arguments.
+
+- Fixed a bug in `scores.continuous.tw_squared_error` that caused the code to fail if the first object in the tuple for `interval_where_one` was an xr.DataArray and the second was a float, e.g. np.inf. This method has now been corrected to allow a `float` or an `int` for the interval arguments. See [PR #948](https://github.com/nci/scores/pull/948).
+
 ### Documentation
 
 - Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `docs/included.md`, `tests/categorical/test_contingency.py` and `src/scores/continuous/standard_impl.py`. See [PR #933](https://github.com/nci/scores/pull/933), [PR #934](https://github.com/nci/scores/pull/934) and [PR #935](https://github.com/nci/scores/pull/935). 
