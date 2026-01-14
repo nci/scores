@@ -3,7 +3,7 @@ Fast and memory-efficient vectorised exact CRPS calculation.
 
 The xarray wrapper function crps_cdf_exact_fast is based on the code for crps_ensemble from xskillscore
 https://github.com/xarray-contrib/xskillscore/blob/main/xskillscore/core/probabilistic.py
-Copyright xskillscore developers 2018-2021, released under the Apache-2.0 License
+Copyright xskillscore developers, released under the Apache-2.0 License (as at 11 Dec 2025).
 
 The vectorisation of crps_at_point follows the example of _crps_ensemble_gufunc from properscoring
 https://github.com/properscoring/properscoring/blob/master/properscoring/_gufuncs.py
@@ -12,7 +12,6 @@ Copyright 2015 The Climate Corporation, released under the Apache-2.0 License
 """
 
 import numpy as np
-import pandas as pd
 import xarray as xr
 from numba import float64, guvectorize, int64, jit
 
