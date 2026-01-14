@@ -8,6 +8,14 @@ try:
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+try:
+    import numba
+
+    from scores.probability.crps_numba import crps_cdf_exact_fast
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -23,7 +31,7 @@ from scores.probability import (
     tw_crps_for_ensemble,
 )
 from scores.probability.crps_impl import (
-    crps_cdf_exact,
+    crps_cdf_exact_slow,
     crps_cdf_reformat_inputs,
     crps_cdf_trapz,
     crps_step_threshold_weight,
@@ -54,9 +62,43 @@ def test_crps_stepweight(
     xr.testing.assert_allclose(result, expected)
 
 
-def test_crps_cdf_exact():
-    """Tests `crps_cdf_exact`."""
-    result = crps_cdf_exact(
+def test_crps_cdf_exact_fast():
+    """Tests `crps_cdf_exact_fast`."""
+
+    if numba == "Unavailable":  # pragma: no cover
+        pytest.skip("Numba unavailable, could not run test")  # pragma: no cover
+    result = crps_cdf_exact_fast(
+        crps_test_data.DA_FCST_CRPS_EXACT,
+        crps_test_data.DA_OBS_CRPS,
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=True,
+    )
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
+
+    result2 = crps_cdf_exact_fast(
+        crps_test_data.DA_FCST_CRPS_EXACT,
+        crps_test_data.DA_OBS_CRPS,
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=False,
+    )
+    assert list(result2.data_vars) == ["total"]
+
+    result3 = crps_cdf_exact_fast(
+        crps_test_data.DA_FCST_CRPS_EXACT_UNITS,
+        crps_test_data.DA_OBS_CRPS,
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=False,
+    )
+    assert result3["total"].attrs["units"] == "mm"
+
+
+def test_crps_cdf_exact_slow():
+    """Tests `crps_cdf_exact_slow`."""
+
+    result = crps_cdf_exact_slow(
         crps_test_data.DA_FCST_CRPS_EXACT,
         crps_test_data.DA_OBS_CRPS_EXACT,
         crps_test_data.DA_WT_CRPS_EXACT,
@@ -65,24 +107,56 @@ def test_crps_cdf_exact():
     )
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
-    result2 = crps_cdf_exact(
+    result2 = crps_cdf_exact_slow(
         crps_test_data.DA_FCST_CRPS_EXACT,
         crps_test_data.DA_OBS_CRPS_EXACT,
         crps_test_data.DA_WT_CRPS_EXACT,
         "x",
         include_components=False,
     )
-
     assert list(result2.data_vars) == ["total"]
 
 
-def test_crps_cdf_exact_dask():
-    """Tests `crps_cdf_exact` works with Dask."""
+def test_crps_cdf_exact_fast_dask():
+    """Tests `crps_cdf_exact_fast` works with Dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    if numba == "Unavailable":  # pragma: no cover
+        pytest.skip("Numba unavailable, could not run test")  # pragma: no cover
+
+    result = crps_cdf_exact_fast(
+        crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS.chunk(),
+        crps_test_data.DA_WT_CRPS_EXACT,
+        "x",
+        include_components=True,
+    )
+    assert isinstance(result.total.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.total.data, np.ndarray)
+    xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
+
+    result2 = crps_cdf_exact_fast(
+        crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
+        crps_test_data.DA_OBS_CRPS.chunk(),
+        crps_test_data.DA_WT_CRPS_EXACT.chunk(),
+        "x",
+        include_components=False,
+    )
+    assert isinstance(result2.total.data, dask.array.Array)
+    result2 = result2.compute()
+    assert isinstance(result2.total.data, np.ndarray)
+    assert list(result2.data_vars) == ["total"]
+
+
+def test_crps_cdf_exact_slow_dask():
+    """Tests `crps_cdf_exact_slow` works with Dask."""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = crps_cdf_exact(
+    result = crps_cdf_exact_slow(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
         crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
         crps_test_data.DA_WT_CRPS_EXACT,
@@ -94,7 +168,7 @@ def test_crps_cdf_exact_dask():
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
 
-    result2 = crps_cdf_exact(
+    result2 = crps_cdf_exact_slow(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
         crps_test_data.DA_OBS_CRPS_EXACT.chunk(),
         crps_test_data.DA_WT_CRPS_EXACT.chunk(),
@@ -133,28 +207,45 @@ def test_crps_cdf_trapz():
     (
         "threshold_weight",
         "additional_thresholds",
+        "convert_obs_to_cdf",
+        "include_obs_in_thresholds",
         "expected",
     ),
     [
         (
             crps_test_data.DA_WT_REFORMAT1,
             None,
+            True,
+            True,
             crps_test_data.EXP_REFORMAT1,
         ),
         (
             crps_test_data.DA_WT_REFORMAT1,
             [0, 1.5],
+            True,
+            True,
             crps_test_data.EXP_REFORMAT2,
         ),
         (
             None,
             None,
+            True,
+            True,
             crps_test_data.EXP_REFORMAT3,
+        ),
+        (
+            crps_test_data.DA_WT_REFORMAT1,
+            None,
+            False,
+            False,
+            crps_test_data.EXP_REFORMAT4,
         ),
     ],
 )
 def test_crps_cdf_reformat_inputs(
     threshold_weight,
+    convert_obs_to_cdf,
+    include_obs_in_thresholds,
     additional_thresholds,
     expected,
 ):
@@ -164,6 +255,8 @@ def test_crps_cdf_reformat_inputs(
         crps_test_data.DA_OBS_REFORMAT1,
         "x",
         threshold_weight=threshold_weight,
+        convert_obs_to_cdf=convert_obs_to_cdf,
+        include_obs_in_thresholds=include_obs_in_thresholds,
         additional_thresholds=additional_thresholds,
         fcst_fill_method="linear",
         threshold_weight_fill_method="forward",
@@ -361,6 +454,7 @@ def test_crps_cdf_raises(
         )
 
 
+@pytest.mark.parametrize("numba_available", [True, False])
 @pytest.mark.parametrize(
     (
         "fcst",
@@ -423,6 +517,7 @@ def test_crps_cdf_raises(
 )
 # pylint: disable=too-many-arguments
 def test_crps_cdf(
+    numba_available,
     fcst,
     threshold_weight,
     propagate_nan,
@@ -431,20 +526,37 @@ def test_crps_cdf(
     expected_and_dec,
 ):
     """Tests `crps` with a variety of inputs."""
-    result = crps_cdf(
-        fcst,
-        crps_test_data.DA_OBS_CRPS,
-        threshold_dim="x",
-        threshold_weight=threshold_weight,
-        additional_thresholds=None,
-        propagate_nans=propagate_nan,
-        fcst_fill_method="linear",
-        threshold_weight_fill_method="forward",
-        integration_method=integration_method,
-        preserve_dims=dims,
-        include_components=True,
-    )
-    xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
+    if numba_available:
+        result = crps_cdf(
+            fcst,
+            crps_test_data.DA_OBS_CRPS,
+            threshold_dim="x",
+            threshold_weight=threshold_weight,
+            additional_thresholds=None,
+            propagate_nans=propagate_nan,
+            fcst_fill_method="linear",
+            threshold_weight_fill_method="forward",
+            integration_method=integration_method,
+            preserve_dims=dims,
+            include_components=True,
+        )
+        xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
+    else:
+        with patch.dict("sys.modules", numba=None):
+            result = crps_cdf(
+                fcst,
+                crps_test_data.DA_OBS_CRPS,
+                threshold_dim="x",
+                threshold_weight=threshold_weight,
+                additional_thresholds=None,
+                propagate_nans=propagate_nan,
+                fcst_fill_method="linear",
+                threshold_weight_fill_method="forward",
+                integration_method=integration_method,
+                preserve_dims=dims,
+                include_components=True,
+            )
+        xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
 
 
 @pytest.mark.parametrize(

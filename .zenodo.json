@@ -103,6 +103,11 @@
             "orcid": "https://orcid.org/0009-0007-7082-7029",
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Trotta, Belinda"
+        },
+        {
+            "orcid": "https://orcid.org/0009-0006-5628-565X",
+            "affiliation": "Independent Contributor, United States",
+            "name": "Mandelbaum, Taylor"
         }
      ],    
     "license": "Apache-2.0",
