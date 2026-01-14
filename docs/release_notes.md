@@ -1,8 +1,8 @@
 # Release Notes (What's New)
 
-## Version 2.4.0 (Upcoming Release)
+## Version 2.4.0 (January 14, 2026)
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...develop). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...2.4.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
