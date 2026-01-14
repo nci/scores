@@ -5,9 +5,17 @@
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...develop). Below are the changes we think users may wish to be aware of.
 
 ### Features
+
 ### Bug Fixes
+
 ### Documentation
+
+- Updated the documentation and citation links for the `scoringrules` entry in "Related Works". See [PR #937](https://github.com/nci/scores/pull/937).
+- Fixed rendering (removed an unintentional block quote), and thereby also resolved a sphinx build error, in the `scores.continuous.nse` docstring. See [PR #936](https://github.com/nci/scores/pull/936).
+
 ### Internal Changes
+
+- Sped up (improved the computational efficiency of) the continuous ranked probability score (CRPS) for ensembles, by sorting the ensemble members to compute the CRPS spread term. See [PR #928](https://github.com/nci/scores/pull/928).
 
 ### Contributors to this Release
 
