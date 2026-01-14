@@ -25,7 +25,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 Belinda Trotta* ([@btrotta-bom](https://github.com/btrotta-bom)), Taylor Mandelbaum* ([@aaTman](https://github.com/aaTman)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
 
 \* indicates that this release contains their first contribution to `scores`.
-
+We also acknowledge the developers of `xskillscore` and `properscoring` as we have adapted code from their repositories under a suitable compatible license. This acknowledgment has also been added to NOTICE.md as is best practice. The xarray wrapper function crps_cdf_exact_fast is based on the code for crps_ensemble from xskillscore (https://github.com/xarray-contrib/xskillscore/blob/main/xskillscore/core/probabilistic.py), released under the  Apache-2.0 License with  copyright attributed to xskillscore developers (as at 11 Dec 2025). The vectorisation of crps_at_point follows the example of _crps_ensemble_gufunc from properscoring (https://github.com/properscoring/properscoring/blob/master/properscoring/_gufuncs.py), released under the Apache-2.0 License with copyright attributed to The Climate Corporation (2015). 
 ## Version 2.3.0 (October 14, 2025)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.2.0...2.3.0). Below are the changes we think users may wish to be aware of.
