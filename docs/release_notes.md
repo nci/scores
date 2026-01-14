@@ -34,7 +34,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Bug Fixes
 
-- Updated `scores.continuous.quantile_interval_score` so it now recognises `preserve_dims='all'`. Beforehand, it was not recognising the special case of `preserve_dims='all'` and was raising an error unless a list of dimensions was supplied. (*Note:* the score calculations were not incorrect, it was only that `preserve_dims='all'` was not recognised.) See [PR #893](https://github.com/nci/scores/pull/893).
+- Updated `scores.continuous.quantile_interval_score` and `scores.continuous.quantile_score` so they now recognise `preserve_dims='all'`. Beforehand, these functions were not recognising the special case of `preserve_dims='all'` and were raising an error unless a list of dimensions was supplied. (*Note:* the score calculations were not incorrect, it was only that `preserve_dims='all'` was not recognised.) See [PR #893](https://github.com/nci/scores/pull/893).
 
 ### Documentation
 
