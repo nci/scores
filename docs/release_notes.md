@@ -22,7 +22,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Contributors to this Release
 
-Belinda Trotta* ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
+Belinda Trotta* ([@btrotta-bom](https://github.com/btrotta-bom)), Taylor Mandelbaum* ([@aaTman](https://github.com/aaTman)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
