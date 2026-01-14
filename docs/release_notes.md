@@ -1,5 +1,20 @@
 # Release Notes (What's New)
 
+## Version 2.4.0 (Upcoming Release)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Features
+### Bug Fixes
+### Documentation
+### Internal Changes
+
+### Contributors to this Release
+
+Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.3.0 (October 14, 2025)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.2.0...2.3.0). Below are the changes we think users may wish to be aware of.
