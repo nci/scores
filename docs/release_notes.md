@@ -1,5 +1,35 @@
 # Release Notes (What's New)
 
+## Version 2.4.0 (Upcoming Release)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+- Added an optional installation variant "fast" which introduces [`Numba`](https://numba.pydata.org/) as an optional dependency to support optimised implementations for some metrics. `scores.probability.crps_cdf` will now automatically switch to an optimised implementation if `Numba` is installed in the environment. The "fast" variant can be installed with `pip install scores[fast]` if wanted. See [PR #931](https://github.com/nci/scores/pull/931/).
+
+### Bug Fixes
+
+- Fixed a bug in `scores.continuous.tw_squared_error` that caused the code to fail if the first object in the tuple for `interval_where_one` was an xr.DataArray and the second was a float, e.g. np.inf. This method has now been corrected to allow a `float` or an `int` for the interval arguments. See [PR #948](https://github.com/nci/scores/pull/948).
+
+### Documentation
+
+- Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `docs/included.md`, `tests/categorical/test_contingency.py` and `src/scores/continuous/standard_impl.py`. See [PR #933](https://github.com/nci/scores/pull/933), [PR #934](https://github.com/nci/scores/pull/934) and [PR #935](https://github.com/nci/scores/pull/935). 
+- Updated the documentation and citation links for the `scoringrules` entry in "Related Works". See [PR #937](https://github.com/nci/scores/pull/937).
+- Fixed rendering (removed an unintentional block quote), and thereby also resolved a sphinx build error, in the `scores.continuous.nse` docstring. See [PR #936](https://github.com/nci/scores/pull/936).
+
+### Internal Changes
+
+- Sped up (improved the computational efficiency of) the continuous ranked probability score (CRPS) for ensembles, by sorting the ensemble members to compute the CRPS spread term. See [PR #928](https://github.com/nci/scores/pull/928).
+
+### Contributors to this Release
+
+Belinda Trotta* ([@btrotta-bom](https://github.com/btrotta-bom)), Taylor Mandelbaum* ([@aaTman](https://github.com/aaTman)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
+We also acknowledge the developers of [`xskillscore`](https://github.com/xarray-contrib/xskillscore) and [`properscoring`](https://github.com/properscoring/properscoring) as we have adapted code from their repositories under a suitable compatible license. This acknowledgment has also been added to `NOTICE.md` as is best practice. The xarray wrapper function `scores.probability.crps_numba.crps_cdf_exact_fast` is based on the code for `crps_ensemble` from `xskillscore` (https://github.com/xarray-contrib/xskillscore/blob/main/xskillscore/core/probabilistic.py), released under the  Apache-2.0 License with  copyright attributed to xskillscore developers (as at 11 Dec 2025). The vectorisation of crps_at_point follows the example of `_crps_ensemble_gufunc` from `properscoring` (https://github.com/properscoring/properscoring/blob/master/properscoring/_gufuncs.py), released under the Apache-2.0 License with copyright attributed to The Climate Corporation (2015). 
+
 ## Version 2.3.0 (October 14, 2025)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.2.0...2.3.0). Below are the changes we think users may wish to be aware of.
