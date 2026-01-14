@@ -6,6 +6,8 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
+Added an optional installation variant "fast" which introduces numba as an optional dependency to support optimised implementations for some metrics.  scores.probability.crps_cdf will now automatically switch to an optimised implementation if numba is installed in the environment. The "fast" variant can be installed with pip install scores[fast] if wanted. See [PR 931](https://github.com/nci/scores/pull/931/)
+
 ### Bug Fixes
 
 ### Documentation
