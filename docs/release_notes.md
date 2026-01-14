@@ -6,7 +6,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
-Added an optional installation variant "fast" which introduces numba as an optional dependency to support optimised implementations for some metrics.  scores.probability.crps_cdf will now automatically switch to an optimised implementation if numba is installed in the environment. The "fast" variant can be installed with pip install scores[fast] if wanted. See [PR 931](https://github.com/nci/scores/pull/931/)
+- Added an optional installation variant "fast" which introduces [`Numba`](https://numba.pydata.org/) as an optional dependency to support optimised implementations for some metrics. `scores.probability.crps_cdf` will now automatically switch to an optimised implementation if `Numba` is installed in the environment. The "fast" variant can be installed with `pip install scores[fast]` if wanted. See [PR #931](https://github.com/nci/scores/pull/931/).
 
 ### Bug Fixes
 
@@ -22,7 +22,7 @@ Added an optional installation variant "fast" which introduces numba as an optio
 
 ### Contributors to this Release
 
-Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
+Belinda Trotta* ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
