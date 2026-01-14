@@ -10,6 +10,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
+- Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `docs/included.md`, `tests/categorical/test_contingency.py` and `src/scores/continuous/standard_impl.py`. See [PR #933](https://github.com/nci/scores/pull/933), [PR #934](https://github.com/nci/scores/pull/934) and [PR #935](https://github.com/nci/scores/pull/935). 
 - Updated the documentation and citation links for the `scoringrules` entry in "Related Works". See [PR #937](https://github.com/nci/scores/pull/937).
 - Fixed rendering (removed an unintentional block quote), and thereby also resolved a sphinx build error, in the `scores.continuous.nse` docstring. See [PR #936](https://github.com/nci/scores/pull/936).
 
