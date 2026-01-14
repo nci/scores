@@ -112,7 +112,7 @@
      ],    
     "license": "Apache-2.0",
 
-    "title": "scores: A Python package for verifying and evaluating models and predictions with xarray",
+    "title": "scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models.",
 
     "related_identifiers": [
         {
