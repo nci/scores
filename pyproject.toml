@@ -13,7 +13,7 @@ Scores is a Python package containing mathematical functions \
 for the verification, evaluation and optimisation of forecasts, predictions or models.
 """
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -59,7 +59,8 @@ maintainer = ["build",
               "pandoc",
               "pip-tools",
 ]
-all = ["scores[dev,tutorial]"]
+fast = ["numba"]
+all = ["scores[dev,tutorial,fast]"]
 
 [project.urls]
 "Repository" = "https://github.com/nci/scores" 
@@ -82,10 +83,11 @@ override = true  # This is required to activate the build hook.
 # The pinned versions of these dependencies will be subsituted during package builds.
 # Pinned versions will only be substitued for packages that are already in this package's dependencies list.
 pinned_dependencies = [
+    "python <= 3.13",
     "xarray >= 2024.1",  # xarray follows calver rather than semver, so using >= is the best we can do
     "pandas ~= 2.0",
     "scipy ~= 1.13",
-    "bottleneck ~= 1.3"
+    "bottleneck ~= 1.3",
 ]
 
 [tool.hatch.version]

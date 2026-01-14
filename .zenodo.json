@@ -11,95 +11,108 @@
             "name": "Loveday, Nicholas"
         },
         {
+            "orcid": "https://orcid.org/0009-0002-7406-7438",
             "affiliation": "Bureau of Meteorology, Australia",
-            "name": "Ebert, Elizabeth E."
-        },
+            "name": "Ramanathan, Nikeeth"
+        },        
         {
-            "orcid": "https://orcid.org/0009-0009-3207-4876",
-            "affiliation": "Work undertaken while at the Bureau of Meteorology, Australia",
-            "name": "Cook, Harrison"
-        },
+            "orcid": "https://orcid.org/0009-0007-0796-4127",
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Chong, Stephanie"
+        },     
+        {
+            "orcid": "https://orcid.org/0000-0002-0067-5687",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Taggart, Robert J."
+        },           
+        {
+            "orcid": "https://orcid.org/0000-0002-5545-1736",
+            "affiliation": "CSIRO, Australia",
+            "name": "Shrestha, Durga"
+        },        
         {
             "orcid": "https://orcid.org/0000-0002-5017-9622",
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Khanarmuei, Mohammadreza"
         },
         {
-            "orcid": "https://orcid.org/0000-0002-0067-5687",
-            "affiliation": "Bureau of Meteorology, Australia",
-            "name": "Taggart, Robert J."
-        },
+            "orcid": "https://orcid.org/0009-0009-3207-4876",
+            "affiliation": "Work undertaken while at the Bureau of Meteorology, Australia",
+            "name": "Cook, Harrison"
+        },        
         {
-            "orcid": "https://orcid.org/0009-0002-7406-7438",
+            "orcid": "https://orcid.org/0009-0006-7361-163X",
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Bluett, Liam"
+        },        
+        {
             "affiliation": "Bureau of Meteorology, Australia",
-            "name": "Ramanathan, Nikeeth"
-        },
+            "name": "Ebert, Elizabeth E."
+        },        
         {
             "orcid": "https://orcid.org/0009-0008-6830-8251",
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Carroll, Maree"
         },
         {
-            "orcid": "https://orcid.org/0009-0007-0796-4127",
-            "affiliation": "Independent Contributor, Australia",
-            "name": "Chong, Stephanie"
-        },
-        {
-            "affiliation": "Work undertaken while at the Bureau of Meteorology, Australia",
-            "name": "Griffiths, Aidan"
-        },
-        {
+            "orcid": "https://orcid.org/0009-0007-7082-7029",
             "affiliation": "Bureau of Meteorology, Australia",
-            "name": "Sharples, John"
-        },
-        {
-            "orcid": "https://orcid.org/0000-0002-5545-1736",
-            "affiliation": "CSIRO, Australia",
-            "name": "Shrestha, Durga"
+            "name": "Trotta, Belinda"
         },
         {
             "orcid": "https://orcid.org/0009-0002-8569-1439",
             "affiliation": "Independent Contributor, Australia",
             "name": "Bishop, Sam"
-        },
-        {
-            "affiliation": "Independent Contributor, Australia",
-            "name": "Fisher, A.J."
-        },
-        {
-            "affiliation": "Independent Contributor, Australia",
-            "name": "Jinghan, Fu"
-        },
-        {
-            "orcid": "https://orcid.org/0009-0006-7361-163X",
-            "affiliation": "Independent Contributor, Australia",
-            "name": "Bluett, Liam"
-        },
+        },        
         {
             "orcid": "https://orcid.org/0000-0003-3271-6874",
             "affiliation": "Australian National University, Australia",
             "name": "Squire, Dougal T."
-        },
+        },        
+        {
+            "affiliation": "Work undertaken while at the Bureau of Meteorology, Australia",
+            "name": "Griffiths, Aidan"
+        },     
         {
             "orcid": "https://orcid.org/0009-0003-0771-4671",
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Pagano, Thomas C."
         },
         {
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Fisher, A.J."
+        },
+        {
+            "orcid": "https://orcid.org/0009-0006-5628-565X",
+            "affiliation": "Independent Contributor, United States",
+            "name": "Mandelbaum, Taylor"
+        },        
+        {
+            "affiliation": "Independent Contributor, Australia",
+            "name": "Jinghan, Fu"
+        },
+        {
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Smith, Paul R."
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Sharples, John"
+        },        
+        {
+            "orcid": "https://orcid.org/0000-0003-0610-2510",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Abellan, Esteban"
         },
         {
             "orcid": "https://orcid.org/0009-0006-4111-7610",
             "affiliation": "Swinburne University, Australia",
             "name": "Smallwood, J."
-        }
- 
-
-    ],    
+        }        
+     ],    
     "license": "Apache-2.0",
 
-    "title": "scores: A Python package for verifying and evaluating models and predictions with xarray",
+    "title": "scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models.",
 
     "related_identifiers": [
         {

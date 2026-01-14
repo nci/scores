@@ -50,6 +50,17 @@ def _check_tws_args(
         raise ValueError("`interval_where_positive` must be length 2 when not `None`")
 
 
+def _maybe_convert_to_dataarray(
+    endpoint: EndpointType,
+) -> xr.DataArray:
+    """
+    Converts a float or int to a xr.DataArray.
+    """
+    if isinstance(endpoint, (float, int)):
+        endpoint = xr.DataArray(endpoint)
+    return endpoint
+
+
 def _auxiliary_funcs(
     fcst: xr.DataArray,
     obs: xr.DataArray,
@@ -84,9 +95,9 @@ def _auxiliary_funcs(
     if interval_where_positive is None:  # rectangular threshold weight
         a, b = interval_where_one
 
-        if isinstance(a, (float, int)):
-            a = xr.DataArray(a)
-            b = xr.DataArray(b)
+        # Convert to xr.DataArray if a float or int
+        a = _maybe_convert_to_dataarray(a)
+        b = _maybe_convert_to_dataarray(b)
 
         if (a >= b).any():
             raise ValueError("left endpoint of `interval_where_one` must be strictly less than right endpoint")
@@ -103,13 +114,10 @@ def _auxiliary_funcs(
         a, d = interval_where_positive
         b, c = interval_where_one
 
-        if isinstance(a, (float, int)):
-            a = xr.DataArray(a)
-            d = xr.DataArray(d)
-
-        if isinstance(b, (float, int)):
-            b = xr.DataArray(b)
-            c = xr.DataArray(c)
+        a = _maybe_convert_to_dataarray(a)
+        b = _maybe_convert_to_dataarray(b)
+        c = _maybe_convert_to_dataarray(c)
+        d = _maybe_convert_to_dataarray(d)
 
         if (b >= c).any():
             raise ValueError("left endpoint of `interval_where_one` must be strictly less than right endpoint")
