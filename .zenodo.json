@@ -98,10 +98,13 @@
             "orcid": "https://orcid.org/0000-0003-0610-2510",
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Abellan, Esteban"
+        },
+        {
+            "orcid": "https://orcid.org/0009-0007-7082-7029",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Trotta, Belinda"
         }
- 
-
-    ],    
+     ],    
     "license": "Apache-2.0",
 
     "title": "scores: A Python package for verifying and evaluating models and predictions with xarray",
