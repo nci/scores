@@ -15,12 +15,12 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
+import warnings
 from unittest.mock import patch
 
 import numpy as np
 import pytest
 import xarray as xr
-import warnings
 
 from scores.probability import (
     adjust_fcst_for_crps,
