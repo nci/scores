@@ -66,7 +66,10 @@ def crps_at_point(
         res_over, res_under: ndarrays same length as forecast, for over-forecast
             and under-forecast errors
     """
-
+    if np.isnan(obs) or np.any(np.isnan(fc)) > 0:
+        res_over[0] = np.nan
+        res_under[0] = np.nan
+        return
     obs_ind = np.searchsorted(thresholds, obs)  # thresholds[obs_ind - 1] <= obs < thresholds[obs_ind]
     over = 0
     under = 0
@@ -109,6 +112,9 @@ def crps_threshold(
     Returns:
         n-dimensional array with same dimensions as observations
     """
+    # Convert NaNs in weights to 0 so that we can convert weight to int.
+    # The calling function crps_cdf_exact_fast sets the output to NaN where weights are NaN.
+    weights = np.where(np.isnan(weights), 0, weights)
     weights = weights.astype(np.int64)
     return crps_at_point(observations, forecasts, thresholds, weights)
 
