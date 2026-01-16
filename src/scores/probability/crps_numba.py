@@ -66,7 +66,7 @@ def crps_at_point(
         res_over, res_under: ndarrays same length as forecast, for over-forecast
             and under-forecast errors
     """
-    if np.isnan(obs) or np.any(np.isnan(fc)) > 0:
+    if np.isnan(obs) or np.any(np.isnan(fc)):
         res_over[0] = np.nan
         res_under[0] = np.nan
         return
