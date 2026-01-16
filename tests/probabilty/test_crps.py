@@ -15,6 +15,7 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
 
+import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -542,7 +543,8 @@ def test_crps_cdf(
         )
         xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
     else:
-        with patch.dict("sys.modules", numba=None):
+        with patch.dict("sys.modules", numba=None), warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="numba is not available")
             result = crps_cdf(
                 fcst,
                 crps_test_data.DA_OBS_CRPS,
