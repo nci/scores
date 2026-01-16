@@ -20,6 +20,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 import xarray as xr
+import warnings
 
 from scores.probability import (
     adjust_fcst_for_crps,
@@ -542,7 +543,8 @@ def test_crps_cdf(
         )
         xr.testing.assert_allclose(result, expected_and_dec[0], atol=expected_and_dec[1])
     else:
-        with patch.dict("sys.modules", numba=None):
+        with patch.dict("sys.modules", numba=None), warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="numba is not available")
             result = crps_cdf(
                 fcst,
                 crps_test_data.DA_OBS_CRPS,
