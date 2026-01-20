@@ -84,7 +84,6 @@
     :members:
     :member-order: bysource
 .. autofunction:: scores.spatial.fss_2d
-.. autofunction:: scores.spatial.fss_2d_binary
 .. autofunction:: scores.spatial.fss_2d_single_field
 ```
 

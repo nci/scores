@@ -24,12 +24,12 @@ References:
 .. _GITHUB353: https://github.com/nci/scores/issues/353
 """
 
-# sphinx docstrings: issue with inconsistent type rerpesentations
+# sphinx docstrings: issue with inconsistent type representations
 # see: https://github.com/sphinx-doc/sphinx/issues/9813
 from __future__ import annotations  # isort: off
 
 import warnings
-from typing import Callable, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 import numpy as np
 import xarray as xr
@@ -37,6 +37,7 @@ from numpy import typing as npt
 
 from scores.fast.fss.fss_backends import get_compute_backend
 from scores.fast.fss.typing import FssComputeMethod, FssDecomposed
+from scores.processing import broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes
 from scores.utils import (
     DimensionError,
@@ -47,24 +48,28 @@ from scores.utils import (
     left_identity_operator,
 )
 
+# Set the seed for reproducibility
+np.random.seed(42)
 
-def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
+
+def _fss_2d_without_ref(  # pylint: disable=too-many-locals,too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
-    event_threshold: float,
+    event_threshold: Optional[float],
     window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
-    zero_padding: bool = False,
+    padding: Optional[str] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     threshold_operator: Optional[Callable] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> xr.DataArray:
+) -> xr.Dataset:
     """
-    Uses :py:func:`fss_2d_single_field` to compute the Fractions Skill Score (FSS) for each 2D
-    spatial field in the DataArray and then aggregates them over the output of gather dimensions.
+    Computes the Fractions Skill Score (FSS) for each 2D spatial field in the DataArray and then
+    aggregates them over the output of gather dimensions. It does not include FSS for a reference
+    forecast.
 
     The aggregation method is the intended extension of the score defined by Robert and Leans (2008)
     for multiple forecasts :sup:`[1,2]`
@@ -72,10 +77,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     .. note::
         This method takes in a ``threshold_operator`` to compare the input
         fields against the ``event_threshold`` which defaults to ``numpy.greater``,
-        and is compatible with lightweight numpy operators. If you would
-        like to do more advanced binary discretization consider doing this
-        separately and using :py:func:`scores.spatial.fss_2d_binary` instead, which takes in a
-        pre-discretized binary field.
+        and is compatible with lightweight numpy operators.
 
     Optionally aggregates the output along other dimensions if `reduce_dims` or
     (mutually exclusive) ``preserve_dims`` are specified.
@@ -98,12 +100,15 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         spatial_dims: A pair of dimension names ``(x, y)`` where ``x`` and ``y`` are
             the spatial dimensions to slide the window along to compute the FSS.
             e.g. ``("lat", "lon")``.
-        zero_padding: If set to true, applies a 0-valued window border around the
-            data field before computing the FSS. If set to false (default), it
-            uses the edges (thickness = window size) of the input fields as the border.
+        padding: To handle the edge points, user can use either zero or reflective padding.
+            If set to ``"zero"``, applies a 0-valued window border around the
+            data field before computing the FSS. If set to ``"reflective"``, the values at the
+            edges are mirrored outward. If set to None (default), it uses the edges
+            (thickness = window size) of the input fields as the border.
             One can think of it as:
-            - zero_padding = False => inner border
-            - zero_padding = True => outer border with 0 values
+            - padding = None => inner border
+            - padding = "zero" => outer border with 0 values
+            - padding = "reflective" => outer border with mirrored values
         reduce_dims: Optional set of additional dimensions to aggregate over
             (mutually exclusive to ``preserve_dims``).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
@@ -118,13 +123,14 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         dask: See ``xarray.apply_ufunc`` for options
 
     Returns:
-        An ``xarray.DataArray`` containing the FSS computed over the ``spatial_dims``
+        An ``xarray.Dataset`` containing the FSS and its decompositions (i.e., Fractions
+        Brier Score (FBS) and reference FBS (FBS_ref) computed over the ``spatial_dims``
 
-        The resultant array will have the score grouped against the remaining
+        The resultant dataset will have the score grouped against the remaining
         dimensions, unless ``reduce_dims``/``preserve_dims`` are specified; in which
         case, they will be aggregated over the specified dimensions accordingly.
 
-        For an exact usage please refer to ``FSS.ipynb`` in the tutorials.
+        For an exact usage please refer to ``Fractions_Skill_Score.ipynb`` in the tutorials.
 
     Raises:
         DimensionError: Various errors are thrown if the input dimensions
@@ -178,7 +184,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             da_obs,
             event_threshold=event_threshold,
             window_size=window_size,
-            zero_padding=zero_padding,
+            padding=padding,
             threshold_operator=np_thrsh_op,
         )
         return fb_obj.compute_fss_decomposed()
@@ -209,36 +215,64 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
 
     # apply ufunc again but this time to compute the fss, reducing
     # any non-spatial dimensions.
-    da_fss = xr.apply_ufunc(
+    aggregated = xr.apply_ufunc(
         _aggregate_fss_decomposed,
         da_fss,
         input_core_dims=[list(dims)],
         vectorize=True,
-        dask=dask,  # type: ignore # pragma: no cover
+        dask=dask,
+        output_dtypes=[object],  # type: ignore # pragma: no cover
     )
+    fss = xr.apply_ufunc(lambda x: x["fss"], aggregated, vectorize=True)
+    fbs = xr.apply_ufunc(lambda x: x["fbs"], aggregated, vectorize=True)
+    fbs_ref = xr.apply_ufunc(lambda x: x["fbs_ref"], aggregated, vectorize=True)
+    result = xr.Dataset(data_vars={"FSS": fss, "FBS": fbs, "FBS_ref": fbs_ref})
 
-    return da_fss  # type: ignore
+    return result  # type: ignore
 
 
-def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
+def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     fcst: xr.DataArray,
     obs: xr.DataArray,
     *,  # Force keywords arguments to be keyword-only
+    event_threshold: Optional[float] = None,
     window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
-    zero_padding: bool = False,
+    is_input_binary: bool = False,
+    check_boolean: bool = False,
+    benchmark: Optional[str] = None,
+    padding: Optional[str] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    threshold_operator: Optional[Callable] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
-    check_boolean: bool = True,
     dask: str = "forbidden",  # see: `xarray.apply_ufunc` for options
-) -> xr.DataArray:
+) -> xr.Dataset:
     """
-    Computes the Fractions Skill Score (FSS) using a binary field.
+    Computes the Fractions Skill Score (FSS). In addition to the FSS and its decompositions,
+    it also returns the FSS for a reference forecast if `benchmark` is set to either `uniform`,
+    `random` or `both`.
 
-    Takes in a binary (True or False) field of fcst and obs events. For example
-    the output of a binary threshold applied to a continuous field or an event
-    operator.
+    Based on current literature, two key benchmarks are used to assess whether a forecast system
+    is sufficiently skillful:
+    (i) The most widely used benchmark is the FSS achieved at the grid scale from a forecast where
+    each grid point has a fraction equal to the base rate (i.e., the observed frequency of occurrence)
+    :sup:`[1,2]`. Users need to set ``benchmark`` to ``'uniform'`` or ``'both'`` to calculate the
+    uniform FSS (UFSS).
+    (ii) Recently proposed by Antonio and Aitchison (2025), this benchmark represents the FSS obtained
+    from a random forecast. The random forecast is generated by sampling from a Bernoulli distribution
+    at each grid point, with the probability set to the base rate :sup:`[3]`. Users need to set
+    ``benchmark`` to ``'random'`` or ``'both'`` to calculate the reference score using a random forecast
+    (FSS_rand).
+
+    Please note that FSS values for both benchmarks will be included in the output dataset if
+    ``benchmark='both'`` is specified by the user.
+
+    By default, binary fields for forecast and observation are computed using numpy.greater with a
+    specified ``event_threshold``. However, the function also accepts pre-discretized binary fields
+    (i.e., arrays of True/False values). If you require more advanced binary discretization, it is
+    recommended to perform this step separately and then pass the binary fields to the function with
+    ``is_input_binary=True``.
 
     Optionally the user can set ``check_boolean`` to ``True`` to check that the
     field is boolean before any computations. Note: this asserts that the
@@ -247,35 +281,150 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     boolean), they may set this flag to ``False``, to allow for more flexible binary
     configurations such as 0 and 1; this should give the same results.
 
-    Uses ``fss_2d`` from the ``scores.spatial`` module to perform fss
-    computation, but without the threshold operation.
+    Args:
+        fcst: An array of forecasts
+        obs: An array of observations (same spatial shape as ``fcst``)
+        event_threshold: A scalar to compare ``fcst`` and ``obs`` fields to generate a
+            binary "event" field. (defaults to ``np.greater``).
+        window_size: A pair of positive integers ``(height, width)`` of the sliding
+            window_size; the window size must be greater than 0 and fit within
+            the shape of ``obs`` and ``fcst``.
+        spatial_dims: A pair of dimension names ``(x, y)`` where ``x`` and ``y`` are
+            the spatial dimensions to slide the window along to compute the FSS.
+            e.g. ``("lat", "lon")``.
+        is_input_binary: True if a binary field of obs and fcst is supplied.
+        check_boolean: True if the user want input fields to be checked are
+            boolean before any computations.
+        benchmark: Benchmark to calculate a reference forecast. Users can select
+            either 'uniform', 'random', 'both' or None.
+        padding: To handle the edge points, user can use either zero or reflective padding.
+            If set to ``"zero"``, applies a 0-valued window border around the
+            data field before computing the FSS. If set to ``"reflective"``, the values at the
+            edges are mirrored outward. If set to None (default), it uses the edges
+            (thickness = window size) of the input fields as the border.
+            One can think of it as:
+            - padding = None => inner border
+            - padding = "zero" => outer border with 0 values
+            - padding = "reflective" => outer border with mirrored values
+        reduce_dims: Optional set of additional dimensions to aggregate over
+            (mutually exclusive to ``preserve_dims``).
+        preserve_dims: Optional set of dimensions to keep (all other dimensions
+            are reduced); By default all dimensions except ``spatial_dims``
+            are preserved (mutually exclusive to ``reduce_dims``).
+        threshold_operator: The threshold operator used to generate the binary
+            event field. E.g. ``np.greater``. Note: this may depend on the backend
+            ``compute method`` and not all operators may be supported. Generally,
+            ``np.greater``, ``np.less`` and their counterparts. Defaults to "np.greater".
+        compute_method: currently only supports :py:obj:`FssComputeMethod.NUMPY`
+            see: :py:class:`scores.fast.fss.typing.FssComputeMethod`
+        dask: See ``xarray.apply_ufunc`` for options
 
-    .. seealso::
-        :py:func:`scores.spatial.fss_2d` for more details and the continuous
-        version. As well as detailed argument definitions.
+    Returns:
+        An ``xarray.DataArray`` containing the FSS and its decompositions (i.e., Fractions
+        Brier Score (FBS) and reference FBS) computed over the ``spatial_dims``
+
+        The resultant array will have the score grouped against the remaining
+        dimensions, unless ``reduce_dims``/``preserve_dims`` are specified; in which
+        case, they will be aggregated over the specified dimensions accordingly.
+
+        For an exact usage please refer to ``Fractions_Skill_Score.ipynb`` in the tutorials.
+
+    Raises:
+        ValueError: If ``is_input_binary=True`` while no event threshold is defined.
+        ValueError: If ``check_boolean=True`` while ``is_input_binary=False``.
+        Field_TypeError: If ``check_boolean=True`` and the input fields are not boolean.
+
+    References:
+        1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
+           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather
+           Review, 136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
+        2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting
+           Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
+           https://doi.org/10.1175/mwr-d-18-0106.1.
+        3. Antonio, B. and Aitchison, L., 2025: How to derive skill from the Fractions Skill Score.
+            Monthly Weather Review, 153(6), 1021-1033, https://doi.org/10.1175/MWR-D-24-0120.1.
+
+    Example:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.spatial import fss_2d
+        >>> fcst = xr.DataArray(np.random.rand(10, 20, 20), dims=['time', 'lat', 'lon'])
+        >>> obs = xr.DataArray(np.random.rand(10, 20, 20), dims=['time', 'lat', 'lon'])
+        >>> fss = fss_2d(
+        ...     fcst,
+        ...     obs,
+        ...     event_threshold=0.1,
+        ...     window_size=[9, 9],
+        ...     spatial_dims=["lat", "lon"],
+        ...     benchmark='both'
+        ... )
+
+    Uses ``_fss_2d_without_ref`` from the ``scores.spatial`` module to perform fss
+    computation.
     """
+    if not is_input_binary and event_threshold is None:
+        raise ValueError("The event_threshold must be specified in the case where input fields are not binary.")
+    if check_boolean and not is_input_binary:
+        raise ValueError("The check_boolean can be set to True only if the is_input_binary is True.")
 
     if check_boolean and not (fcst.dtype == np.bool_ and obs.dtype == np.bool_):
-        raise FieldTypeError("Input field is not boolean")
+        raise FieldTypeError("Input field is not boolean.")
 
-    # Note: this s a dummy value that will be discarded by the
-    # `left_identity_operator` mainly used to circumvent passing in "None" to
-    # threshold operators which can have undefined behaviour.
-    _phantom_event_threshold = -999
-
-    return fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
+    if is_input_binary:
+        # Note: The event_threshold is set to a dummy value that will be discarded
+        # by the `left_identity_operator`. This approach helps avoid passing "None"
+        # to threshold operators, which may lead to undefined behaviour).
+        event_threshold = -999
+        threshold_operator = left_identity_operator
+    result = _fss_2d_without_ref(  # pylint: disable=too-many-locals,too-many-arguments
         fcst,
         obs,
-        event_threshold=_phantom_event_threshold,
+        event_threshold=event_threshold,
         window_size=window_size,
         spatial_dims=spatial_dims,
-        zero_padding=zero_padding,
+        padding=padding,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
-        threshold_operator=left_identity_operator,
+        threshold_operator=threshold_operator,
         compute_method=compute_method,
         dask=dask,  # see: `xarray.apply_ufunc` for options
     )
+    if benchmark is None:
+        return result
+    else:
+        np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
+        dims = gather_dimensions(
+            fcst.dims,
+            obs.dims,
+            reduce_dims=reduce_dims,
+            preserve_dims=preserve_dims,
+        )
+        # Broadcasting observations to match the dimensions of fcst, enabling the
+        # calculation of FSS for a reference forecast and its inclusion in the output dataset
+        _, br_obs = broadcast_and_match_nan(fcst, obs)
+        br_obs_pop = np_thrsh_op.get()(br_obs, event_threshold)
+        if benchmark in ["uniform", "both"]:
+            ufss = (br_obs_pop.mean(dim=dims) / 2) + 0.5
+            result = result.assign(UFSS=ufss)
+        if benchmark in ["random", "both"]:
+            obs_pr = np_thrsh_op.get()(br_obs, event_threshold).mean()
+            rand_fcst = obs.copy()
+            rand_fcst.data = np.random.binomial(n=1, p=obs_pr, size=obs.shape)
+            fss_rand = _fss_2d_without_ref(
+                rand_fcst,
+                br_obs_pop,
+                event_threshold=-999,
+                window_size=window_size,
+                spatial_dims=spatial_dims,
+                padding=padding,
+                reduce_dims=reduce_dims,
+                preserve_dims=preserve_dims,
+                threshold_operator=left_identity_operator,
+                compute_method=compute_method,
+                dask=dask,  # see: `xarray.apply_ufunc` for options
+            )
+            result = result.assign(FSS_rand=fss_rand["FSS"])
+    return result
 
 
 def fss_2d_single_field(
@@ -284,13 +433,13 @@ def fss_2d_single_field(
     *,
     event_threshold: float,
     window_size: Tuple[int, int],
-    zero_padding: bool = False,
+    padding: Optional[str] = None,
     threshold_operator: Optional[Callable] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
-) -> np.float64:
+) -> Dict[str, np.float64]:
     """
-    Calculates the Fractions Skill Score (FSS) :sup:`[1]` for a given forecast and observed
-    2-D field.
+    Calculates the Fractions Skill Score (FSS):sup:`[1]` and its decompositions
+    for a given forecast and observed 2-D field.
 
     The FSS is computed by counting the squared sum of forecast and observation
     events in a given window size. This is repeated over all possible window
@@ -319,6 +468,15 @@ def fss_2d_single_field(
         window_size: A pair of positive integers ``height, width)`` of the sliding
             window; the window dimensions must be greater than 0 and fit within
             the shape of ``obs`` and ``fcst``.
+        padding: To handle the edge points, user can use either zero or reflective padding.
+            If set to ``"zero"``, applies a 0-valued window border around the
+            data field before computing the FSS. If set to ``"reflective"``, the values at the
+            edges are mirrored outward. If set to None (default), it uses the edges
+            (thickness = window size) of the input fields as the border.
+            One can think of it as:
+            - padding = None => inner border
+            - padding = "zero" => outer border with 0 values
+            - padding = "reflective" => outer border with mirrored values
         threshold_operator: The threshold operator used to generate the binary
             event field. E.g. ``np.greater``. Note: this may depend on the backend
             ``compute method`` and not all operators may be supported. Generally,
@@ -342,6 +500,13 @@ def fss_2d_single_field(
         2. https://en.wikipedia.org/wiki/Summed-area_table
         3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
            skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+
+    Example:
+        >>> import numpy as np
+        >>> from scores.spatial import fss_2d_single_field
+        >>> fcst = np.random.normal(loc=0.0, scale=1.0, size = (100, 100))
+        >>> obs = np.random.normal(loc=1.0, scale=1.0, size = (100, 100))
+        >>> fss = fss_2d_single_field(fcst, obs, event_threshold=0.1, window_size=(21, 921))
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 
@@ -351,14 +516,14 @@ def fss_2d_single_field(
         fcst,
         obs,
         window_size=window_size,
-        zero_padding=zero_padding,
+        padding=padding,
         event_threshold=event_threshold,
         threshold_operator=np_thrsh_op,
     )
 
-    fss_score = fb_obj.compute_fss()
+    fss_score, fbs, fbs_ref = fb_obj.compute_fss()
 
-    return fss_score  # type: ignore
+    return {"FSS": fss_score, "FBS": fbs, "FBS_ref": fbs_ref}  # type: ignore
 
 
 def _make_numpy_threshold_operator(threshold_operator: Optional[Callable]) -> NumpyThresholdOperator:
@@ -372,7 +537,7 @@ def _make_numpy_threshold_operator(threshold_operator: Optional[Callable]) -> Nu
     return NumpyThresholdOperator(thrsh_op)
 
 
-def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
+def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> Dict[str, np.float64]:
     """
     Aggregates the results of decomposed fss scores.
     """
@@ -404,4 +569,4 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     fss_clamped = max(min(fss, 1.0), 0.0)
 
-    return fss_clamped  # type: ignore
+    return {"fss": np.float64(fss_clamped), "fbs": np.float64(diff_sum), "fbs_ref": np.float64(denom)}  # type: ignore
