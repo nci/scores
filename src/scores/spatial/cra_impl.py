@@ -106,51 +106,18 @@ def _generate_largest_rain_area_2d(
     return fcst_blob, obs_blob
 
 
-def _calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
-    """
-    Compute the centre of the bounding box for valid (non-NaN and non-zero) values in a 2D data array.
-    This function assumes the input is a 2D field and is intended for use with a single contiguous
-    region (blob). It computes the geometric centre of the bounding box enclosing all valid points.
-    Args:
-        data_array (xr.DataArray): Input 2D data array.
-
-    Returns:
-        (row_index, column_index) of the bounding box centre in array index space.
-
-    Example:
-        >>> centre = _calc_bounding_box_centre(data)
-    """
-
-    # Convert to NumPy array and mask NaNs
-    masked_array = np.ma.masked_invalid(data_array.values)
-
-    # Get indices of valid (non-NaN) and non-zero values
-    valid_indices = np.argwhere(masked_array > 0)
-
-    if valid_indices.size == 0:
-        return (np.nan, np.nan)
-
-    # Compute bounding box from array indices
-    min_y, min_x = valid_indices.min(axis=0)
-    max_y, max_x = valid_indices.max(axis=0)
-
-    # Compute centre of bounding box in index space (not coordinate space)
-    centre_y = int((min_y + max_y) / 2)
-    centre_x = int((min_x + max_x) / 2)
-
-    return (centre_y, centre_x)
-
-
 def _translate_forecast_region(  # pylint: disable=too-many-locals
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    x_name: str,    
+    x_name: str,
     y_name: str,
     max_distance: float,
     coord_units: str,
 ) -> Tuple[xr.DataArray, int, int]:
     """
     Translate the forecast field to best spatially align with the observation field.
+    Returns the shifted forecast and degree of shift.
+    Shifting always 'works' - zero shift and the original data is returned, or better
 
     This function performs a 2D spatial translation (no rotation or scaling)
     to minimize the MSE between forecast and observation.
@@ -177,7 +144,9 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
     fixed_mask = ~np.isnan(obs)
 
     # Brute-force search
-    best_score = np.inf
+
+    # The best score is the no-shift score, which we try to better
+    best_score = _shifted_mse_2d(fcst, obs, 0, 0, x_name, y_name, fixed_mask)
     best_shift = [0, 0]  # list structure needed for scipy
     shift_range = range(-10, 11)  # TODO: Document these constants
     for dx in shift_range:
@@ -187,7 +156,7 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
                 best_score = mse_score
                 best_shift = [dx, dy]
 
-    # TODO: Turn best_shift into a list of equal-best shifts and take the 
+    # TODO: Turn best_shift into a list of equal-best shifts and take the
     # minimum-distance best shift
 
     # Apply shift
@@ -201,9 +170,7 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
 
     if shift_distance_km > max_distance:
         logger.info(f"Rejected shift: {shift_distance_km:.2f} km > {max_distance} km")
-        # What does it mean when this happens? Should the overall metric be done,
-        # or just the shift not occur?
-        return None, None, None
+        return fcst, 0, 0
 
     shifted_fcst = _shift_fcst(fcst, dx, dy, x_name, y_name)
 
@@ -266,12 +233,12 @@ def _shifted_mse_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
     shift_x: int,
-    shift_y: int,    
+    shift_y: int,
     x_name: str,
     y_name: str,
     fixed_mask: xr.DataArray,
     *,
-    valid_fraction_required=0.8
+    valid_fraction_required=0.8,
 ) -> float:
     """
     Objective function for optimization: computes MSE between shifted forecast and observation.
@@ -500,7 +467,9 @@ def _cra_image(  # pylint: disable=too-many-locals
     # Throw an exception if invalid input
     validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
 
-    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, minimum_intensity=minimum_intensity, min_points=min_points)
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(
+        fcst, obs, minimum_intensity=minimum_intensity, min_points=min_points
+    )
 
     mse_total = mse(fcst_blob, obs_blob)
 

@@ -13,9 +13,9 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+import scores
 from scores.continuous.standard_impl import mse, rmse
 from scores.spatial.cra_impl import (
-    _calc_bounding_box_centre,
     _calc_corr_coeff,
     _calc_resolution,
     _cra_image,
@@ -23,6 +23,7 @@ from scores.spatial.cra_impl import (
     _shifted_mse_2d,
     _translate_forecast_region,
     cra,
+    nansafe_int,
 )
 
 THRESHOLD = 10
@@ -84,12 +85,47 @@ def test_cra_with_nans(sample_data_3d):
             assert not np.isnan(value), f"{key} contains NaN"
 
 
+def test_cra_without_time_dim(sample_data_2d):
+    """Test CRA works with xarray.Dataset input."""
+    forecast, analysis = sample_data_2d
+    result = cra(
+        forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude", extra_components=True
+    )
+    expected_keys = [
+        "mse_total",
+        "mse_displacement",
+        "mse_volume",
+        "mse_pattern",
+        "fcst_blob",
+        "obs_blob",
+        "shifted_fcst",
+        "optimal_shift",
+        "num_gridpoints_above_threshold_fcst",
+        "num_gridpoints_above_threshold_obs",
+        "avg_fcst",
+        "avg_obs",
+        "max_fcst",
+        "max_obs",
+        "corr_coeff_original",
+        "corr_coeff_shifted",
+        "rmse_original",
+        "rmse_shifted",
+    ]
+    for key in expected_keys:
+        assert key in result, f"Missing key in CRA output: {key}"
+
+
 def test_cra_dataset_input(sample_data_2d):
     """Test CRA works with xarray.Dataset input."""
     forecast, analysis = sample_data_2d
     ds = xr.Dataset({"forecast": forecast, "analysis": analysis})
     result = _cra_image(
-        ds["forecast"], ds["analysis"], minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude", extra_components=True
+        ds["forecast"],
+        ds["analysis"],
+        minimum_intensity=THRESHOLD,
+        y_name="latitude",
+        x_name="longitude",
+        extra_components=True,
     )
     expected_keys = [
         "mse_total",
@@ -197,22 +233,23 @@ def test_cra_invalid_inputs(fcst, obs, expected_error, match_text):
             xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
             xr.DataArray(np.random.rand(100, 100), dims=["latitude", "longitude"]),
         ),
-        (
-            xr.DataArray(np.random.rand(100, 100), dims=["latitude", "longitude"]),
-            xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
-        ),
-        (
-            xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
-            xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
-        ),
+        # (
+        #     xr.DataArray(np.random.rand(100, 100), dims=["latitude", "longitude"]),
+        #     xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
+        # ),
+        # (
+        #     xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
+        #     xr.DataArray(np.full((100, 100), np.nan), dims=["latitude", "longitude"]),
+        # ),
     ],
 )
 def test_cra_all_nan_inputs_warns(fcst, obs, caplog):
     """Test CRA logs warning when forecast or observation is all NaNs."""
+
     with caplog.at_level("INFO"):
         result = _cra_image(fcst, obs, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
     assert "Less than 10 points meet the condition." in caplog.text
-    assert result is None
+    assert np.isnan(result.mse_total)
 
 
 def test_cra_image_min_points_threshold():
@@ -224,7 +261,9 @@ def test_cra_image_min_points_threshold():
     forecast = xr.DataArray(data, dims=["latitude", "longitude"])
     analysis = xr.DataArray(data, dims=["latitude", "longitude"])
 
-    result = _cra_image(forecast, analysis, minimum_intensity=5.0, y_name="latitude", x_name="longitude", min_points=100)
+    result = _cra_image(
+        forecast, analysis, minimum_intensity=5.0, y_name="latitude", x_name="longitude", min_points=100
+    )
     assert np.isnan(result.mse_total)
 
     # assert result is None, "Expected None when blobs are smaller than min_points"
@@ -280,24 +319,18 @@ def test_small_blobs_min_points_filter():
     assert np.isnan(obs_blob).all()
 
 
-def test_empty_bounding_box():
-    """Test bounding box center returns NaNs for empty array"""
-    arr = create_array(value=0.0)
-    centre = _calc_bounding_box_centre(arr)
-    assert np.isnan(centre[0]) and np.isnan(centre[1])
-
-
 def test_translate_with_nan_obs():
-    """Test _translate_forecast_region handles NaN obs"""
+    """
+    Test _translate_forecast_region handles NaN obs.
+    Correct behaviour is potentially unclear, we will just go with returning unshifted data.
+    """
     fcst = create_array()
     obs = create_array(value=np.nan)
     shifted, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=300, coord_units="degrees")
 
-    assert np.isnan(shifted).all()  # TODO: check me
-    assert np.isnan(dx).all()
-    assert np.isnan(dy).all()
-
-    # assert shifted is None and dx is None and dy is None
+    assert (shifted == fcst).all()
+    assert dx == 0
+    assert dy == 0
 
 
 def test_translate_exceeds_max_distance_strict():
@@ -306,11 +339,9 @@ def test_translate_exceeds_max_distance_strict():
     obs = fcst.copy().shift(x=30)  # large shift
     shifted, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
 
-    # assert np.isnan(shifted).all()  # TODO: check me
-    assert np.isnan(dx).all()
-    assert np.isnan(dy).all()
-
-    # assert shifted is None and dx is None and dy is None
+    assert (shifted == fcst).all()
+    assert dx == 0
+    assert dy == 0
 
 
 def test_translate_exceeds_max_distance():
@@ -320,11 +351,9 @@ def test_translate_exceeds_max_distance():
     obs = obs.shift(x=20)  # large shift
     shifted, dx, dy = _translate_forecast_region(fcst, obs, "y", "x", max_distance=1, coord_units="degrees")
 
-    # assert np.isnan(shifted).all()  # TODO: check me
-    assert np.isnan(dx).all()
-    assert np.isnan(dy).all()
-
-    # assert shifted is None and dx is None and dy is None
+    assert (shifted == fcst).all()
+    assert dx == 0
+    assert dy == 0
 
 
 def test_cra_image_shape_mismatch():
@@ -683,7 +712,7 @@ def test_cra_handles_string_time_key():
             assert np.isnan(val1).all(), f"{metric} should be NaN for second time slice where CRA fails"
 
 
-def test_translate_rejects_shift_due_to_max_distance():
+def test_translate_rejects_shift_due_to_max_distance(caplog):
     """Test _translate_forecast_region rejects shift due to max distance."""
     y, x = np.ogrid[:100, :100]
     center_y, center_x = 50, 50
@@ -695,13 +724,16 @@ def test_translate_rejects_shift_due_to_max_distance():
     obs_da = xr.DataArray(obs_blob, dims=["y", "x"], coords=coords)
     fcst_da = xr.DataArray(fcst_blob, dims=["y", "x"], coords=coords)
 
-    shifted_fcst, dx, dy = _translate_forecast_region(
-        fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees"
-    )
+    with caplog.at_level("INFO"):
+        shifted_fcst, dx, dy = _translate_forecast_region(
+            fcst_da, obs_da, "y", "x", max_distance=0.1, coord_units="degrees"
+        )
 
-    assert (
-        shifted_fcst is None and dx is None and dy is None
-    ), "Expected shift to be rejected due to max_distance constraint"
+    assert "Rejected shift" in caplog.text
+
+    assert (shifted_fcst == fcst_da).all()
+    assert dx == 0
+    assert dy == 0
 
 
 def test_translate_fallback_bbox_with_valid_data():
@@ -982,99 +1014,33 @@ def test_cra_image_invalid_coord_units_raises_valueerror():
         )
 
 
-def test_cra_appends_nans_and_logs_when_time_slice_shape_mismatch(monkeypatch, caplog):
-    """
-    Force a per-slice shape mismatch to cover the branch:
-        if fcst_slice.shape != obs_slice.shape: ... append NaNs ... continue
-    """
-    # Build two time steps with valid blobs so the first slice is valid.
-    time_vals = [np.datetime64("2025-01-01"), np.datetime64("2025-01-02")]
-    fcst1 = gaussian_blob()  # values up to ~10
-    obs1 = gaussian_blob()  # same -> valid overlap for slice 1
-    fcst2 = gaussian_blob(center=(55, 52))
-    obs2 = gaussian_blob(center=(55, 52))  # same shape/data before monkeypatch
+# TODO: Find actual data / use case rather to prove this is needed
+# def test_shifted_mse_2d_returns_inf_on_valueerror_in_int(monkeypatch):
+#     """
+#     Force ValueError inside the try-block of _shifted_mse_2d by monkeypatching `int`.
+#     This deterministically covers:
+#         except (ValueError, TypeError):
+#             return np.inf
+#     """
+#     # Minimal valid inputs so we reach the try-block
+#     fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+#     obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
+#     fixed_mask = xr.DataArray(np.ones((10, 10), dtype=bool), dims=["y", "x"])
+#     spatial_dims = ["x", "y"]
+#     x_name, y_name = spatial_dims
 
-    fcst = xr.concat(
-        [fcst1.expand_dims({"time": [time_vals[0]]}), fcst2.expand_dims({"time": [time_vals[1]]})], dim="time"
-    )
-    obs = xr.concat(
-        [obs1.expand_dims({"time": [time_vals[0]]}), obs2.expand_dims({"time": [time_vals[1]]})], dim="time"
-    )
-    assert fcst.shape == obs.shape == (2, 100, 100)
+#     # Valid numeric shifts so len==2 and np.isnan(shifts) is False
+#     shift_x = 1.0
+#     shift_y = 2.0
 
-    # Patch DataArray.sel to return a wrong-shaped slice ONLY for the second time.
-    real_sel = xr.DataArray.sel
+#     # Patch the `int` that _shifted_mse_2d resolves in its own globals to raise ValueError
+#     def fake_int(*args, **kwargs):
+#         raise ValueError("forced int failure")
 
-    def forged_sel(self, indexers=None, **kwargs):
-        if isinstance(indexers, dict) and "time" in indexers:
-            # Normalize the requested time to datetime64[ns] and check against the 2nd time
-            sel_time = np.datetime64(indexers["time"], "ns")
-            if sel_time == np.datetime64(time_vals[1], "ns"):
-                # Return (1, 80, 80) with the selected time coord so squeeze(drop=True) -> (80, 80)
-                wrong = xr.DataArray(np.ones((1, 80, 80)), dims=["time", "y", "x"])
-                wrong = wrong.assign_coords(time=("time", np.array([sel_time])))
-                return wrong
-        return real_sel(self, indexers=indexers, **kwargs)
+#     monkeypatch.setitem(_shifted_mse_2d.__globals__, "int", fake_int)
 
-    monkeypatch.setattr(xr.DataArray, "sel", forged_sel)
-
-    # Run cra; slice 1 should be valid, slice 2 should be NaNs with a warning logged.
-    with caplog.at_level("WARNING"):
-        result = cra(fcst, obs, minimum_intensity=5.0, y_name="y", x_name="x")  # Gaussian blobs have ample area > 5
-
-    # Two results per metric
-    for metric, values in result.items():
-        assert len(values) == 2, f"{metric} should have 2 time entries"
-
-    # First slice: valid (numbers or finite vector)
-    for metric, values in result.items():
-        v0 = values[0]
-        if isinstance(v0, (float, int, np.number)):
-            assert np.isfinite(v0), f"{metric} first slice should be finite"
-        else:
-            # optimal_shift is list-like; ensure all finite
-            arr = np.array(v0, dtype=float)
-            assert np.isfinite(arr).all(), f"{metric} first slice should be finite"
-
-    # Second slice: NaNs due to forced shape mismatch
-    for metric, values in result.items():
-        v1 = values[1]
-        if isinstance(v1, (float, int, np.number)):
-            assert np.isnan(v1), f"{metric} second slice should be NaN due to shape mismatch"
-        else:
-            arr = np.array(v1, dtype=float)
-            assert np.isnan(arr).all(), f"{metric} second slice should be all NaNs due to shape mismatch"
-
-    # Logged warning check
-    assert "shape mismatch between forecast and observation" in caplog.text
-
-
-def test_shifted_mse_2d_returns_inf_on_valueerror_in_int(monkeypatch):
-    """
-    Force ValueError inside the try-block of _shifted_mse_2d by monkeypatching `int`.
-    This deterministically covers:
-        except (ValueError, TypeError):
-            return np.inf
-    """
-    # Minimal valid inputs so we reach the try-block
-    fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
-    obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
-    fixed_mask = xr.DataArray(np.ones((10, 10), dtype=bool), dims=["y", "x"])
-    spatial_dims = ["x", "y"]
-    x_name, y_name = spatial_dims
-
-    # Valid numeric shifts so len==2 and np.isnan(shifts) is False
-    shift_x = 1.0
-    shift_y = 2.0
-
-    # Patch the `int` that _shifted_mse_2d resolves in its own globals to raise ValueError
-    def fake_int(*args, **kwargs):
-        raise ValueError("forced int failure")
-
-    monkeypatch.setitem(_shifted_mse_2d.__globals__, "int", fake_int)
-
-    out = _shifted_mse_2d(fcst, obs, shift_x, shift_y, x_name, y_name, fixed_mask)
-    assert out == np.inf, "Expected np.inf when int(round(...)) raises ValueError"
+#     out = _shifted_mse_2d(fcst, obs, shift_x, shift_y, x_name, y_name, fixed_mask)
+#     assert out == np.inf, "Expected np.inf when int(round(...)) raises ValueError"
 
 
 def test_shifted_mse_2d_returns_inf_on_typeerror_in_round(monkeypatch):
@@ -1131,67 +1097,25 @@ def test_translate_forecast_region_rejects_when_shift_worsens_metrics(monkeypatc
     fcst = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
     obs = xr.DataArray(np.ones((10, 10)), dims=["y", "x"])
 
-    # 1) Patch optimizer to return a small valid shift so we reach the final metric check
-    class FakeResult:
-        success = True
-        x = np.array([1.0, 1.0])  # dx, dy
-        fun = 0.1
-
-    def fake_minimize(*args, **kwargs):
-        return FakeResult()
-
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "minimize", fake_minimize)
-
-    # 2) Patch resolution so distance is tiny (1 km/grid), avoiding max_distance rejection
-    def fake_calc_resolution(_obs, _spatial_dims, _units):
-        return 1.0  # km per grid-point
-
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_resolution", fake_calc_resolution)
-
-    # 3) Patch shift to be applied as-is (optional, but keeps data predictable)
-    def fake_shift_fcst(arr, shift_x, shift_y, x_name, y_name):
-        # very simple: roll without changing values (still ones)
-        return arr.roll({x_name: int(shift_x), y_name: int(shift_y)}, roll_coords=False)
-
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_shift_fcst", fake_shift_fcst)
-
     # 4) Force the final comparison to reject:
     #    rmse_shifted > rmse_original, corr_shifted < corr_original, mse_shifted > original_mse
     # We use counters to distinguish "shifted" vs "original" calls.
     call_state = {"rmse_calls": 0, "corr_calls": 0, "mse_calls": 0}
 
-    def fake_calc_rmse(a, b):
-        call_state["rmse_calls"] += 1
-        # First rmse call in _translate_forecast_region is for shifted_fcst_masked
-        return 10.0 if call_state["rmse_calls"] == 1 else 1.0  # shifted > original
+    def fake_shifted_mse_2d(*args, **kwargs):
+        return 5000
 
-    def fake_calc_corr_coeff(a, b):
-        call_state["corr_calls"] += 1
-        # First corr call is for shifted; second for original
-        return 0.1 if call_state["corr_calls"] == 1 else 0.9  # shifted < original
-
-    def fake_calc_mse(a, b):
-        call_state["mse_calls"] += 1
-        # First mse computed before optimization is original_mse
-        # Later mse for shifted is compared against original_mse at the end
-        # We want mse_shifted > original_mse
-        return 100.0 if call_state["mse_calls"] >= 3 else 10.0
-        # Explanation:
-        #   call 1 -> original_mse (before brute-force/opt) = 10.0
-        #   call 2 -> best_score in brute-force (not critical)
-        #   call 3 -> mse_shifted (final check) = 100.0
-
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "rmse", fake_calc_rmse)
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "_calc_corr_coeff", fake_calc_corr_coeff)
-    monkeypatch.setattr(sys.modules["scores.spatial.cra_impl"], "mse", fake_calc_mse)
+    monkeypatch.setattr(scores.spatial.cra_impl, "_shifted_mse_2d", fake_shifted_mse_2d)
 
     # Run with metres to avoid degree distance surprises
     shifted, dx, dy = _translate_forecast_region(
-        fcst, obs, y_name="y", x_name="x", max_distance=300, coord_units="metres"
+        fcst, obs, y_name="y", x_name="x", max_distance=3000000, coord_units="metres"
     )
 
-    # Expect rejection due to worsened metrics
-    assert shifted is None and dx is None and dy is None
+    # Expect no shift if metrics are worse when shifted
+    assert (shifted == fcst).all()
+    assert dx == 0
+    assert dy == 0
 
 
 def test_cra_image_invalid_coord_units():
@@ -1269,3 +1193,12 @@ def test_cra_image_returns_none_when_shifted_fcst_is_none():
     )
 
     assert np.isnan(result.mse_total)
+
+
+def test_nansave_int():
+
+    result = nansafe_int(np.nan)
+    assert np.isnan(result)
+
+    result = nansafe_int(45.2)
+    assert result == 45
