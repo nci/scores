@@ -21,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 
 def _generate_largest_rain_area_2d(
-    fcst: xr.DataArray, obs: xr.DataArray, threshold: float, min_points: int
+    fcst: xr.DataArray, obs: xr.DataArray, *, minimum_intensity: float, min_points: int
 ) -> Tuple[Optional[xr.DataArray], Optional[xr.DataArray]]:
     """
     Identify and extract the largest contiguous rain blobs from forecast and observation fields.
@@ -35,7 +35,7 @@ def _generate_largest_rain_area_2d(
     Args:
         fcst (xr.DataArray): 2-D forecast field.
         obs (xr.DataArray): 2-D observation field.
-        threshold (float): Minimum value that a grid point must meet or exceed to be considered
+        minimum_intensity (float): Minimum value that a grid point must meet or exceed to be considered
             part of a rain blob.
         min_points (int): Minimum number of grid points required for a blob to be ratined
 
@@ -43,11 +43,11 @@ def _generate_largest_rain_area_2d(
         Largest contiguous blobs from forecast and observation.
 
     Example:
-        >>> fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold=5.0, min_points=10)
+        >>> fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, minimum_intensity=5.0, min_points=10)
     """
 
-    masked_obs = obs.where(obs >= threshold)
-    masked_fcst = fcst.where(fcst >= threshold)
+    masked_obs = obs.where(obs >= minimum_intensity)
+    masked_fcst = fcst.where(fcst >= minimum_intensity)
 
     # If fcst/obs don't meet minimum counts even pre-blobification
     if masked_fcst.count() < min_points or masked_obs.count() < min_points:
@@ -144,8 +144,8 @@ def _calc_bounding_box_centre(data_array: xr.DataArray) -> Tuple[int, int]:
 def _translate_forecast_region(  # pylint: disable=too-many-locals
     fcst: xr.DataArray,
     obs: xr.DataArray,
+    x_name: str,    
     y_name: str,
-    x_name: str,
     max_distance: float,
     coord_units: str,
 ) -> Tuple[xr.DataArray, int, int]:
@@ -178,41 +178,25 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
 
     # Brute-force search
     best_score = np.inf
-    best_shift = None
-    shift_range = range(-10, 11)
-    for dy in shift_range:
-        for dx in shift_range:
-            shift = [dx, dy]
-            mse_score = _shifted_mse(shift, fcst, obs, [y_name, x_name], fixed_mask)
+    best_shift = [0, 0]  # list structure needed for scipy
+    shift_range = range(-10, 11)  # TODO: Document these constants
+    for dx in shift_range:
+        for dy in shift_range:
+            mse_score = _shifted_mse_2d(fcst, obs, dx, dy, x_name, y_name, fixed_mask)
             if np.isfinite(mse_score) and mse_score < best_score:
                 best_score = mse_score
-                best_shift = shift
+                best_shift = [dx, dy]
 
-    # Refine with local optimization from brute-force result
-    result = minimize(
-        _shifted_mse,
-        best_shift,
-        args=(fcst, obs, [y_name, x_name], fixed_mask),
-        method="Nelder-Mead",
-    )
-    optimal_shift = result.x if result.success and np.isfinite(result.fun) else None
-
-    # Fallback to bounding box centre if optimization fails
-    if optimal_shift is None:
-        logger.info("Optimization failed. Falling back to bounding box centre alignment.")
-        fcst_bounding_box_centre = _calc_bounding_box_centre(fcst)  # [y,x]
-        obs_bounding_box_centre = _calc_bounding_box_centre(obs)
-        optimal_shift = [
-            obs_bounding_box_centre[1] - fcst_bounding_box_centre[1],  # x_shift
-            obs_bounding_box_centre[0] - fcst_bounding_box_centre[0],  # y_shift
-        ]
+    # TODO: Turn best_shift into a list of equal-best shifts and take the 
+    # minimum-distance best shift
 
     # Apply shift
-    dx, dy = np.round(optimal_shift[0]), np.round(optimal_shift[1])
+    dx, dy = best_shift
 
     # Compute shift distance in km
     resolution_km = _calc_resolution(obs, [y_name, x_name], coord_units)
 
+    # TODO: shouldn't this be used to determine the range above?
     shift_distance_km = resolution_km * np.sqrt(dx**2 + dy**2)
 
     if shift_distance_km > max_distance:
@@ -221,7 +205,7 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
         # or just the shift not occur?
         return None, None, None
 
-    shifted_fcst = _shift_fcst(fcst, shift_x=dx, shift_y=dy, spatial_dims=[y_name, x_name])
+    shifted_fcst = _shift_fcst(fcst, dx, dy, x_name, y_name)
 
     return shifted_fcst, dx, dy
 
@@ -237,7 +221,7 @@ def nansafe_int(value):
     return int(value)
 
 
-def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: List[str]) -> xr.DataArray:
+def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, x_name: str, y_name: str) -> xr.DataArray:
     """
     Apply a spatial shift to a 2D forecast field along specified spatial dimensions.
 
@@ -248,16 +232,15 @@ def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Li
         fcst (xr.DataArray): 2D forecast field.
         shift_x (int): Shift along x-dimension.
         shift_y (int): Shift along y-dimension.
-        spatial_dims (list[str]):Names of the 2 spatial dimensions, ordered as [y_dim, x_dim]
+        x_name: Name of X dimension
+        y_name: Namy of Y dimension
 
     Returns:
         Forecast field shifted spatially.
 
     Example:
-        >>> shifted = _shift_fcst(fcst, 2, -1, ['y', 'x'])
+        >>> shifted = _shift_fcst(fcst, 2, -1, 'y', 'x')
     """
-    # Unpack spatial dimension names
-    ydim, xdim = spatial_dims
 
     # Define shift amounts for each dim
     shift_xdim = nansafe_int(shift_x)  # dx => X dim
@@ -267,8 +250,8 @@ def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Li
     shift_ydim = 0 if np.isnan(shift_ydim) else shift_ydim
 
     shifts_kwargs = {
-        xdim: shift_xdim,
-        ydim: shift_ydim,
+        x_name: shift_xdim,
+        y_name: shift_ydim,
     }
 
     shifted = fcst.shift(
@@ -279,12 +262,16 @@ def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, spatial_dims: Li
     return shifted
 
 
-def _shifted_mse(
-    shifts: List[int],
+def _shifted_mse_2d(
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    spatial_dims: List[str],
+    shift_x: int,
+    shift_y: int,    
+    x_name: str,
+    y_name: str,
     fixed_mask: xr.DataArray,
+    *,
+    valid_fraction_required=0.8
 ) -> float:
     """
     Objective function for optimization: computes MSE between shifted forecast and observation.
@@ -294,23 +281,17 @@ def _shifted_mse(
         fcst (xr.DataArray): Forecast field.
         obs (xr.DataArray): Observation field.
         spatial_dims (List[str]): List of spatial dimension names.
+        valid_fraction_required: Require at least this proportion of valid intersection
 
     Returns:
         MSE value for the given shift.
+        np.inf for if there is no valid shift (e.g. valid fraction not reached)
 
     Example:
-        >>> error = _shifted_mse([1, -2], fcst, obs, ['x', 'y'])
+        >>> error = _shifted_mse_2d([1, -2], fcst, obs, 'x', 'y')
     """
-    # Validate input
-    if len(shifts) != 2 or np.any(np.isnan(shifts)):
-        return np.inf
 
-    try:
-        shift_x, shift_y = int(round(shifts[0])), int(round(shifts[1]))
-    except (ValueError, TypeError):
-        return np.inf
-
-    shifted_fcst = _shift_fcst(fcst, shift_x, shift_y, spatial_dims)
+    shifted_fcst = _shift_fcst(fcst, shift_x, shift_y, x_name, y_name)
 
     # Mask forecast using fixed obs mask
     fcst_masked = shifted_fcst.where(fixed_mask)
@@ -320,13 +301,13 @@ def _shifted_mse(
     # (at least 80%) stays within the valid observation region
     valid_fraction = np.sum(~np.isnan(fcst_masked)) / np.sum(~np.isnan(fcst))
 
-    if valid_fraction < 0.8:
+    if valid_fraction < valid_fraction_required:
         return np.inf
 
     mse_val = float(mse(fcst_masked, obs_masked))
     corr_val = _calc_corr_coeff(fcst_masked, obs_masked)
 
-    # Penalize low correlation
+    # Penalize low correlation  # TODO explain why
     penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
 
     return mse_val + penalty
@@ -357,21 +338,21 @@ def _calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
     return volume_error
 
 
-def _calc_num_points(data: xr.DataArray, threshold: float) -> int:
+def _calc_num_points(data: xr.DataArray, minimum_intensity: float) -> int:
     """
     Count the number of grid points in the data above a given threshold.
 
     Args:
         data (xr.DataArray): Input data array.
-        threshold (float): Threshold value.
+        minimum_intensity (float): Threshold value.
 
     Returns:
-        Number of points above the threshold.
+        Number of points above the minimum_intensity.
 
     Example:
-        >>> count = _calc_num_points(data, threshold=5.0)
+        >>> count = _calc_num_points(data, minimum_intensity=5.0)
     """
-    mask = data >= threshold
+    mask = data >= minimum_intensity
     count_above_threshold = mask.sum().item()
     return count_above_threshold
 
@@ -445,7 +426,8 @@ def _calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> 
 def _cra_image(  # pylint: disable=too-many-locals
     fcst: xr.DataArray,
     obs: xr.DataArray,
-    threshold: float,
+    *,
+    minimum_intensity: float,
     y_name: str,
     x_name: str,
     max_distance: float = 300,
@@ -464,7 +446,7 @@ def _cra_image(  # pylint: disable=too-many-locals
     the ensemble mean beforehand.
 
     The CRA score decomposes the total mean squared error (MSE) into three components:
-    displacement, volume, and pattern. It identifies contiguous rain blobs above a threshold,
+    displacement, volume, and pattern. It identifies contiguous rain blobs above a minimum_intensity threshold,
     shifts the forecast blob to best match the observed blob, and evaluates the error reduction.
 
     The decomposition is defined as:
@@ -482,7 +464,7 @@ def _cra_image(  # pylint: disable=too-many-locals
     Args:
         fcst (xr.DataArray): Forecast field as an xarray DataArray.
         obs (xr.DataArray): Observation field as an xarray DataArray.
-        threshold (float): Threshold to define contiguous rain areas.
+        minimum_intensity (float): Threshold to define contiguous rain areas.
         y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
         max_distance (float): Maximum allowed translation distance in kilometres.
@@ -510,7 +492,7 @@ def _cra_image(  # pylint: disable=too-many-locals
         >>> import xarray as xr
         >>> fcst = xr.DataArray(...)  # your forecast data
         >>> obs = xr.DataArray(...)   # your observation data
-        >>> result = cra(fcst, obs, threshold=5.0)
+        >>> result = cra(fcst, obs, minimum_intensity=5.0)
         >>> print(result['mse_total'])
 
     """
@@ -518,7 +500,7 @@ def _cra_image(  # pylint: disable=too-many-locals
     # Throw an exception if invalid input
     validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
 
-    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, threshold, min_points)
+    fcst_blob, obs_blob = _generate_largest_rain_area_2d(fcst, obs, minimum_intensity=minimum_intensity, min_points=min_points)
 
     mse_total = mse(fcst_blob, obs_blob)
 
@@ -531,8 +513,8 @@ def _cra_image(  # pylint: disable=too-many-locals
     mse_displacement = mse_total - mse_shift
     mse_volume = _calc_mse_volume(shifted_fcst, obs_blob)
 
-    num_gridpoints_above_threshold_fcst = _calc_num_points(fcst_blob, threshold)
-    num_gridpoints_above_threshold_obs = _calc_num_points(obs_blob, threshold)
+    num_gridpoints_above_threshold_fcst = _calc_num_points(fcst_blob, minimum_intensity)
+    num_gridpoints_above_threshold_obs = _calc_num_points(obs_blob, minimum_intensity)
 
     data_vars = {
         "mse_total": mse_total,
@@ -574,7 +556,8 @@ def _cra_image(  # pylint: disable=too-many-locals
 def cra(  # pylint: disable=too-many-locals
     fcst: XarrayLike,
     obs: XarrayLike,
-    threshold: float,
+    *,
+    minimum_intensity: float,
     y_name: str,
     x_name: str,
     min_points: int = 10,
@@ -596,7 +579,7 @@ def cra(  # pylint: disable=too-many-locals
         - Pattern: Residual error after alignment and volume adjustment.
 
     For each time, the algorithm:
-        1. Identifies contiguous rain blobs above ``threshold``.
+        1. Identifies contiguous rain blobs above ``minimum_intensity``.
         2. Computes optimal spatial shift within ``max_distance``.
         3. Calculates CRA components and diagnostics.
 
@@ -606,7 +589,7 @@ def cra(  # pylint: disable=too-many-locals
     Args:
         fcst (xr.DataArray): Forecast field with at least one grouping dimension (e.g., time).
         obs (xr.DataArray): Observation field aligned with ``fcst``.
-        threshold (float): Threshold to define contiguous rain areas.
+        minimum_intensity (float): Threshold to define contiguous rain areas.
         y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
         max_distance (float): Maximum allowed translation distance in kilometres.
@@ -685,9 +668,9 @@ def cra(  # pylint: disable=too-many-locals
             r = _cra_image(
                 fcst_image,
                 obs_image,
-                threshold,
-                y_name,
-                x_name,
+                minimum_intensity=minimum_intensity,
+                y_name=y_name,
+                x_name=x_name,
                 coord_units=coord_units,
                 min_points=min_points,
                 extra_components=extra_components,
@@ -707,9 +690,9 @@ def cra(  # pylint: disable=too-many-locals
         result = _cra_image(
             fcst,
             obs,
-            threshold,
-            y_name,
-            x_name,
+            minimum_intensity=minimum_intensity,
+            y_name=y_name,
+            x_name=x_name,
             coord_units=coord_units,
             min_points=min_points,
             extra_components=extra_components,
