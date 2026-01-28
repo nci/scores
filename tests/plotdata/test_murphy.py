@@ -1,6 +1,5 @@
 """Tests for murphy metrics and thetas generation code."""
 
-import pathlib
 import re
 from datetime import datetime
 from unittest.mock import Mock, patch
@@ -108,8 +107,12 @@ def patch_scoring_func(monkeypatch, score_function, thetas):
     return mock_rel_fc_func
 
 
-thetas_nc = xr.open_dataarray(pathlib.Path(__file__).parent / "test_data/thetas.nc")
 thetas_list = [0.0, 2.0, 10.0]
+thetas_nc = xr.DataArray(
+    thetas_list,
+    dims=("theta",),
+    coords={"theta": thetas_list},
+)
 
 
 @pytest.mark.parametrize(
