@@ -16,7 +16,8 @@ from typing import Callable, Literal, Optional, Tuple, Union
 
 import numpy as np
 import xarray as xr
-from scipy import interpolate
+
+# from scipy import interpolate
 from scipy.optimize import isotonic_regression
 
 
@@ -169,7 +170,8 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     )
 
     # calculate the fitting function
-    ir_func = interpolate.interp1d(fcst_tidied, y_out, bounds_error=False)
+    # ir_func = interpolate.interp1d(fcst_tidied, y_out, bounds_error=False)
+    ir_func = _get_interp1d_func(fcst_tidied, y_out)
 
     if bootstraps is not None:
         boot_results = _bootstrap_ir(
@@ -184,8 +186,10 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
 
         lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)  # type: ignore
 
-        lower_func = interpolate.interp1d(fcst_tidied, lower_pts, bounds_error=False)
-        upper_func = interpolate.interp1d(fcst_tidied, upper_pts, bounds_error=False)
+        # lower_func = interpolate.interp1d(fcst_tidied, lower_pts, bounds_error=False)
+        # upper_func = interpolate.interp1d(fcst_tidied, upper_pts, bounds_error=False)
+        lower_func = _get_interp1d_func(fcst_tidied, lower_pts)
+        upper_func = _get_interp1d_func(fcst_tidied, upper_pts)
 
         confband_levels = ((1 - confidence_level) / 2, 1 - (1 - confidence_level) / 2)  # type: ignore
 
@@ -562,7 +566,8 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
             solver=solver,
         )
 
-        approximation_func = interpolate.interp1d(fcst_sample, ir_results, bounds_error=False)
+        # approximation_func = interpolate.interp1d(fcst_sample, ir_results, bounds_error=False)
+        approximation_func = _get_interp1d_func(fcst_sample, ir_results)
 
         result[boostrap_sample_num] = approximation_func(fcst)
 
@@ -643,3 +648,37 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
     ceil_frac_val = arr[index_ceil, np.arange(arr.shape[1])] * ceil_frac
     result = np.where(same_index, floor_val, floor_frac_val + ceil_frac_val)
     return result
+
+
+def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.ndarray], np.ndarray]:
+    """
+    Wraps xarray interpolation in a function similar to scipy.interpolate.interp1d.
+    `bounds_error` not included since xarray.interp handles NAs properly.
+
+    Parameters
+    ----------
+    x_data : np.ndarray
+        Independent variable values.
+        interp1d requires 1-D array input by xarray should be able to handle higher dim (not tests)
+    y_data : np.ndarray
+        Dependent variable values.
+
+    Returns
+    -------
+    Callable[[float | np.ndarray], np.ndarray]
+        Interpolation function.
+    """
+    # print("x_data", x_data)
+    # print("y_data", y_data)
+
+    da = xr.DataArray(data=y_data, coords={"x": x_data}, dims="x")
+    # xarray requires non-duplicates in index
+    # this change is consistent with linear interpolation
+    da = da.groupby("x").mean()
+
+    def func(x_new):
+        # print("x_new", x_new)
+        result_da = da.interp(x=x_new, method="linear")
+        return result_da.values
+
+    return func
