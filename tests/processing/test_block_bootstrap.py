@@ -268,7 +268,7 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
     result = block_bootstrap(
         objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
-    if expected_type == tuple:
+    if expected_type is tuple:
         assert isinstance(result, tuple)
         assert all(isinstance(res, xr.DataArray) for res in result)
         for res in result:
