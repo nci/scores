@@ -4,7 +4,14 @@
 """Unit tests for scores.spatial.cra_impl
 
 These tests validate the CRA (Contiguous Rain Area) metric implementation, including
-basic functionality, handling of NaNs, dataset input, and error handling
+basic functionality, handling of NaNs, dataset input, and error handling.
+
+It includes:
+ 1 Functional tests on N-dimensional data structures (3 and more dims)
+ 2 Functional tests on 2D image data (2 spatial dims)
+ 3 Type safety and data verification checks for CRA method
+ 4 Algorithmic correctness tests (and fine-grained data checks)
+ 5 Complete code coverage
 """
 import sys
 
@@ -20,14 +27,14 @@ from scores.spatial.cra_impl import (
     _calc_resolution,
     _cra_image,
     _generate_largest_rain_area_2d,
+    _nansafe_int,
     _shifted_mse_2d,
     _translate_forecast_region,
-    _nansafe_int,
     _validate_cra2d_inputs,
     cra,
 )
 
-THRESHOLD = 10
+THRESHOLD = 10  # Used for minimum intensity
 
 
 @pytest.fixture
@@ -69,41 +76,14 @@ def sample_data_3d():
     return forecast, analysis
 
 
+# Section 1 - Basic functional tests for CRA with 3D and 2D data
+
+
 def test_cra_basic_output_type(sample_data_3d):
     """Test that CRA returns a dictionary for 3D input."""
     forecast, analysis = sample_data_3d
     result = cra(forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
-    assert isinstance(result, xr.Dataset)
-
-
-def test_cra_image_basic_output_type(sample_data_2d):
-    """Test that CRA 2D returns a dictionary for valid input."""
-    forecast, analysis = sample_data_2d
-    result = _cra_image(forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
     assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
-
-
-def test_cra_image_with_time(sample_data_2d_with_time):
-    """Test that CRA 2D returns a dictionary for valid input."""
-    forecast, analysis = sample_data_2d_with_time
-    result = _cra_image(
-        forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude", time_name="time"
-    )
-    assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
-
-
-def test_cra_with_nans(sample_data_3d):
-    """Test CRA handles NaNs in the forecast without errors"""
-    forecast, analysis = sample_data_3d
-    forecast[0, 0] = np.nan  # Introduce a NaN
-    result = cra(forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
-
-    assert isinstance(result, xr.Dataset), "CRA output should be a dictionary even with NaNs"
-
-    for key, value in result.items():
-        assert value is not None, f"{key} is None"
-        if isinstance(value, (float, int, np.number)):
-            assert not np.isnan(value), f"{key} contains NaN"
 
 
 def test_cra_2D_with_time(sample_data_2d_with_time):
@@ -141,6 +121,30 @@ def test_cra_without_time_dim(sample_data_2d):
     ]
     for key in expected_keys:
         assert key in result, f"Missing key in CRA output: {key}"
+
+
+# Section Two - Type safety and data validation handling
+
+
+def test_cra_image_basic_output_type(sample_data_2d):
+    """Test that CRA 2D returns a dictionary for valid input."""
+    forecast, analysis = sample_data_2d
+    result = _cra_image(forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
+    assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
+
+
+def test_cra_with_nans(sample_data_3d):
+    """Test CRA handles NaNs in the forecast without errors"""
+    forecast, analysis = sample_data_3d
+    forecast[0, 0] = np.nan  # Introduce a NaN
+    result = cra(forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
+
+    assert isinstance(result, xr.Dataset), "CRA output should be a dictionary even with NaNs"
+
+    for key, value in result.items():
+        assert value is not None, f"{key} is None"
+        if isinstance(value, (float, int, np.number)):
+            assert not np.isnan(value), f"{key} contains NaN"
 
 
 def test_cra_dataset_input(sample_data_2d):
@@ -187,26 +191,6 @@ def test_cra_invalid_input():
     valid_fcst = xr.DataArray(np.random.rand(1, 10, 10), dims=["time", "latitude", "longitude"], coords={"time": [0]})
     with pytest.raises(TypeError, match="obs must be an xarray DataArray"):
         cra(valid_fcst, "input", minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
-
-
-def test_cra_image_invalid_input_types():
-    """Test CRA 2D and ND raise TypeError for invalid input types."""
-    obs = xr.DataArray(np.random.rand(10, 10), dims=["y", "x"])
-    with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
-        _cra_image("invalid", obs, minimum_intensity=5.0, y_name="y", x_name="x")
-
-    with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
-        cra("invalid", obs, minimum_intensity=5.0, y_name="y", x_name="x")
-
-    with pytest.raises(TypeError, match="fcst must be an xarray DataArray"):
-        cra("invalid", obs, minimum_intensity=5.0, y_name="y", x_name="x")
-
-    fcst = xr.DataArray(np.random.rand(10, 10), dims=["y", "x"])
-    with pytest.raises(TypeError, match="obs must be an xarray DataArray"):
-        _cra_image(fcst, "invalid", minimum_intensity=5.0, y_name="y", x_name="x")
-
-    with pytest.raises(TypeError, match="obs must be an xarray DataArray"):
-        cra(fcst, "invalid", minimum_intensity=5.0, y_name="y", x_name="x")
 
 
 def test_cra_mismatched_shapes():
@@ -295,6 +279,9 @@ def test_cra_image_min_points_threshold():
     assert np.isnan(result.mse_total)
 
     # assert result is None, "Expected None when blobs are smaller than min_points"
+
+
+# Section Three - Algorithmic Correctness Tests
 
 
 # Helper to create a simple 2D DataArray
@@ -895,17 +882,6 @@ def test_cra_image_shape_mismatch_raises_valueerror():
         _cra_image(fcst, obs, minimum_intensity=5.0, y_name="y", x_name="x")
 
 
-def test_cra_image_invalid_input_types_raise_typeerror():
-    """Non-xarray inputs should raise TypeError (parity with cra_image behavior)."""
-    obs = create_array()
-    with pytest.raises(TypeError):
-        _cra_image("invalid", obs, minimum_intensity=5.0, y_name="y", x_name="x")
-
-    fcst = create_array()
-    with pytest.raises(TypeError):
-        _cra_image(fcst, "invalid", minimum_intensity=5.0, y_name="y", x_name="x")
-
-
 def test_cra_image_rejects_large_shift_due_to_max_distance():
     """If the optimal shift exceeds max_distance, cra_image should return None."""
     base = create_array()
@@ -1223,7 +1199,7 @@ def test_cra_image_returns_none_when_shifted_fcst_is_none():
     assert np.isnan(result.mse_total)
 
 
-def test_nansave_int():
+def test_nansafe_int():
 
     result = _nansafe_int(np.nan)
     assert np.isnan(result)
@@ -1234,56 +1210,37 @@ def test_nansave_int():
 
 def test_validate_cra2d_inputs():
 
-    fcst_data = np.ones((1, 2, 2))
-    obs_data = np.ones((1, 2, 2))
-    fcst = xr.DataArray(fcst_data, dims=["time", "lat", "lon"], coords={"time": [0]})
-    obs = xr.DataArray(obs_data, dims=["time", "lat", "lon"], coords={"time": [0]})
-
-    fcst_data_toolong = np.ones((2, 2, 2))
-    obs_data_toolong = np.ones((2, 2, 2))
-    fcst_toolong = xr.DataArray(fcst_data_toolong, dims=["time", "lat", "lon"], coords={"time": [0, 1]})
-    obs_toolong = xr.DataArray(obs_data_toolong, dims=["time", "lat", "lon"], coords={"time": [0, 1]})
+    fcst_data = np.ones((2, 2))
+    obs_data = np.ones((2, 2))
+    fcst = xr.DataArray(fcst_data, dims=["lat", "lon"])
+    obs = xr.DataArray(obs_data, dims=["lat", "lon"])
 
     fcst_data_toobig = np.ones((1, 2, 2, 2, 2))
     obs_data_toobig = np.ones((1, 2, 2, 2, 2))
     fcst_toobig = xr.DataArray(fcst_data_toobig, dims=["time", "lat", "lon", "ens", "level"], coords={"time": [0]})
     obs_toobig = xr.DataArray(obs_data_toobig, dims=["time", "lat", "lon", "ens", "level"], coords={"time": [0]})
 
-    fcst_wrongdim = xr.DataArray(fcst_data, dims=["time", "lat", "ens"], coords={"time": [0]})
-    obs_wrongdim = xr.DataArray(obs_data, dims=["time", "lat", "ens"], coords={"time": [0]})
+    fcst_wrongdim = xr.DataArray(fcst_data, dims=["lat", "ens"])
+    obs_wrongdim = xr.DataArray(obs_data, dims=["lat", "ens"])
 
-    time_name = "time"
     coord_units = "metres"
     x_name = "lat"
     y_name = "lon"
 
-    with pytest.raises(TypeError) as excinfo:
-        _validate_cra2d_inputs("Invalid data type", obs, time_name, coord_units, x_name, y_name)
-    assert "must be an xarray" in str(excinfo.value)
-
-    with pytest.raises(TypeError) as excinfo:
-        _validate_cra2d_inputs(fcst, "Invalid data type", time_name, coord_units, x_name, y_name)
-    assert "must be an xarray" in str(excinfo.value)
-
-    # Too much time
-    with pytest.raises(ValueError) as excinfo:
-        _validate_cra2d_inputs(fcst_toolong, obs_toolong, time_name, coord_units, x_name, y_name)
-    assert "time dimension can only have a length of one" in str(excinfo.value)
-
     # Address mismatched shapes
     with pytest.raises(ValueError) as excinfo:
-        _validate_cra2d_inputs(fcst_toobig, obs, time_name, coord_units, x_name, y_name)
+        _validate_cra2d_inputs(fcst_toobig, obs, coord_units, x_name, y_name)
     assert "must have the same shape" in str(excinfo.value)
 
     # Address n-d dimension being supplied to a 2D method
     with pytest.raises(ValueError) as excinfo:
-        _validate_cra2d_inputs(fcst_toobig, obs_toobig, time_name, coord_units, x_name, y_name)
+        _validate_cra2d_inputs(fcst_toobig, obs_toobig, coord_units, x_name, y_name)
     assert "contain additional coordinate" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
-        _validate_cra2d_inputs(fcst_wrongdim, obs, time_name, coord_units, x_name, y_name)
+        _validate_cra2d_inputs(fcst_wrongdim, obs, coord_units, x_name, y_name)
     assert "'lon' not found in forecast data" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
-        _validate_cra2d_inputs(fcst, obs_wrongdim, time_name, coord_units, x_name, y_name)
+        _validate_cra2d_inputs(fcst, obs_wrongdim, coord_units, x_name, y_name)
     assert "'lon' not found in observation data" in str(excinfo.value)

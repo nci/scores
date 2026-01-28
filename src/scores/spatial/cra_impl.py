@@ -147,17 +147,23 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
 
     # The best score is the no-shift score, which we try to better
     best_score = _shifted_mse_2d(fcst, obs, 0, 0, x_name, y_name, fixed_mask)
-    best_shift = [0, 0]  # list structure needed for scipy
+    best_shifts = [(0, 0)]  # list structure needed for scipy
     shift_range = range(-10, 11)  # TODO: Document these constants
     for dx in shift_range:
         for dy in shift_range:
             mse_score = _shifted_mse_2d(fcst, obs, dx, dy, x_name, y_name, fixed_mask)
             if np.isfinite(mse_score) and mse_score < best_score:
                 best_score = mse_score
-                best_shift = [dx, dy]
+                best_shifts = [(dx, dy)]
 
-    # TODO: Turn best_shift into a list of equal-best shifts and take the
-    # minimum-distance best shift
+            # If this shift is just as good as the best one, it might
+            # be a smaller distance, so add it for consideration
+            if np.isfinite(mse_score) and mse_score == best_score:
+                best_shifts.append((dx, dy))
+
+    # Determine the least-distance of any equal-best shifts
+    # Use sin rule to minimise distance of right-angle triangle but no need to take root
+    best_shift = sorted(best_shifts, key=lambda x: x[0] ** 2 + x[1] ** 2)[0]
 
     # Apply shift
     dx, dy = best_shift
@@ -401,7 +407,6 @@ def _cra_image(  # pylint: disable=too-many-locals
     min_points: int = 10,
     coord_units: str = "metres",
     extra_components: bool = False,
-    time_name: Optional[str] = None,
 ) -> xr.Dataset:
     """
     Compute the Contiguous Rain Area (CRA) score between forecast and observation fields.
@@ -465,7 +470,7 @@ def _cra_image(  # pylint: disable=too-many-locals
     """
 
     # Throw an exception if invalid input
-    _validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
+    _validate_cra2d_inputs(fcst, obs, coord_units, x_name, y_name)
 
     fcst_blob, obs_blob = _generate_largest_rain_area_2d(
         fcst, obs, minimum_intensity=minimum_intensity, min_points=min_points
@@ -514,8 +519,6 @@ def _cra_image(  # pylint: disable=too-many-locals
         data_vars = data_vars | extra_vars
 
     coords = [x_name, y_name]
-    if time_name:
-        coords = [time_name, x_name, y_name]
 
     ds = xr.Dataset(coords={name: obs[name] for name in coords}, data_vars=data_vars)
 
@@ -669,31 +672,22 @@ def cra(  # pylint: disable=too-many-locals
     return result
 
 
-def _validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name):
+def _validate_cra2d_inputs(fcst, obs, coord_units, x_name, y_name):
     """
     Perform input validation of 2D inputs prior to computationally intensive score
     calculation.
     """
 
-    if not isinstance(fcst, xr.DataArray):
-        raise TypeError("fcst must be an xarray DataArray")
-    if not isinstance(obs, xr.DataArray):
-        raise TypeError("obs must be an xarray DataArray")
-    if fcst.shape != obs.shape:
-        raise ValueError("fcst and obs must have the same shape")
+    # THINKABOUT: Raise these checks up to the CRA level not per-slice
 
     max_allowed_coords = 2
-    if time_name:
-        max_allowed_coords = 3
-        if len(fcst[time_name]) != 1:
-            raise ValueError("The time dimension can only have a length of one (single sample) in the 2d score")
+
+    if fcst.shape != obs.shape:
+        raise ValueError("fcst and obs must have the same shape")
 
     if len(fcst.shape) != max_allowed_coords:
         # Note we already know fcst and obs have the same shape, so no need to test both
-        raise ValueError("The `fcst` inputs contain additional coordinate dimensions which cannot be handled")
-
-    if fcst.shape != obs.shape:
-        raise ValueError("fcst and obs must have the same shape")
+        raise ValueError("The `fcst` and `obs` inputs contain additional coordinate dimensions which cannot be handled")
 
     for dim in [y_name, x_name]:
         if dim not in obs.dims:
