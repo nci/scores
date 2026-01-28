@@ -278,12 +278,8 @@ def _shifted_mse_2d(
         return np.inf
 
     mse_val = float(mse(fcst_masked, obs_masked))
-    corr_val = pearsonr(fcst_masked, obs_masked)
 
-    # Penalize low correlation
-    penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
-
-    return mse_val + penalty
+    return mse_val
 
 
 def _calc_mse_volume(shifted_fcst: xr.DataArray, obs: xr.DataArray) -> float:
