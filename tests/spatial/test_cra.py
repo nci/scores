@@ -22,8 +22,9 @@ from scores.spatial.cra_impl import (
     _generate_largest_rain_area_2d,
     _shifted_mse_2d,
     _translate_forecast_region,
+    _nansafe_int,
+    _validate_cra2d_inputs,
     cra,
-    nansafe_int,
 )
 
 THRESHOLD = 10
@@ -34,6 +35,17 @@ def sample_data_2d():
     """2D synthetic forecast and analysis fields for cra_image"""
     forecast = xr.DataArray(np.random.rand(100, 100) * 20, dims=["latitude", "longitude"])
     analysis = xr.DataArray(np.random.rand(100, 100) * 20, dims=["latitude", "longitude"])
+    return forecast, analysis
+
+
+@pytest.fixture
+def sample_data_2d_with_time():
+    """2D synthetic forecast and analysis fields for cra_image"""
+    forecast = xr.DataArray(np.random.rand(100, 100) * 20, dims=["latitude", "longitude"])
+    analysis = xr.DataArray(np.random.rand(100, 100) * 20, dims=["latitude", "longitude"])
+
+    forecast = forecast.expand_dims("time")
+    analysis = analysis.expand_dims("time")
     return forecast, analysis
 
 
@@ -71,6 +83,15 @@ def test_cra_image_basic_output_type(sample_data_2d):
     assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
 
 
+def test_cra_image_with_time(sample_data_2d_with_time):
+    """Test that CRA 2D returns a dictionary for valid input."""
+    forecast, analysis = sample_data_2d_with_time
+    result = _cra_image(
+        forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude", time_name="time"
+    )
+    assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
+
+
 def test_cra_with_nans(sample_data_3d):
     """Test CRA handles NaNs in the forecast without errors"""
     forecast, analysis = sample_data_3d
@@ -83,6 +104,13 @@ def test_cra_with_nans(sample_data_3d):
         assert value is not None, f"{key} is None"
         if isinstance(value, (float, int, np.number)):
             assert not np.isnan(value), f"{key} contains NaN"
+
+
+def test_cra_2D_with_time(sample_data_2d_with_time):
+    """Test that CRA 2D returns a dictionary for valid input."""
+    forecast, analysis = sample_data_2d_with_time
+    result = cra(forecast, analysis, minimum_intensity=THRESHOLD, y_name="latitude", x_name="longitude")
+    assert isinstance(result, xr.Dataset), "CRA output should be a Dataset"
 
 
 def test_cra_without_time_dim(sample_data_2d):
@@ -1197,8 +1225,65 @@ def test_cra_image_returns_none_when_shifted_fcst_is_none():
 
 def test_nansave_int():
 
-    result = nansafe_int(np.nan)
+    result = _nansafe_int(np.nan)
     assert np.isnan(result)
 
-    result = nansafe_int(45.2)
+    result = _nansafe_int(45.2)
     assert result == 45
+
+
+def test_validate_cra2d_inputs():
+
+    fcst_data = np.ones((1, 2, 2))
+    obs_data = np.ones((1, 2, 2))
+    fcst = xr.DataArray(fcst_data, dims=["time", "lat", "lon"], coords={"time": [0]})
+    obs = xr.DataArray(obs_data, dims=["time", "lat", "lon"], coords={"time": [0]})
+
+    fcst_data_toolong = np.ones((2, 2, 2))
+    obs_data_toolong = np.ones((2, 2, 2))
+    fcst_toolong = xr.DataArray(fcst_data_toolong, dims=["time", "lat", "lon"], coords={"time": [0, 1]})
+    obs_toolong = xr.DataArray(obs_data_toolong, dims=["time", "lat", "lon"], coords={"time": [0, 1]})
+
+    fcst_data_toobig = np.ones((1, 2, 2, 2, 2))
+    obs_data_toobig = np.ones((1, 2, 2, 2, 2))
+    fcst_toobig = xr.DataArray(fcst_data_toobig, dims=["time", "lat", "lon", "ens", "level"], coords={"time": [0]})
+    obs_toobig = xr.DataArray(obs_data_toobig, dims=["time", "lat", "lon", "ens", "level"], coords={"time": [0]})
+
+    fcst_wrongdim = xr.DataArray(fcst_data, dims=["time", "lat", "ens"], coords={"time": [0]})
+    obs_wrongdim = xr.DataArray(obs_data, dims=["time", "lat", "ens"], coords={"time": [0]})
+
+    time_name = "time"
+    coord_units = "metres"
+    x_name = "lat"
+    y_name = "lon"
+
+    with pytest.raises(TypeError) as excinfo:
+        _validate_cra2d_inputs("Invalid data type", obs, time_name, coord_units, x_name, y_name)
+    assert "must be an xarray" in str(excinfo.value)
+
+    with pytest.raises(TypeError) as excinfo:
+        _validate_cra2d_inputs(fcst, "Invalid data type", time_name, coord_units, x_name, y_name)
+    assert "must be an xarray" in str(excinfo.value)
+
+    # Too much time
+    with pytest.raises(ValueError) as excinfo:
+        _validate_cra2d_inputs(fcst_toolong, obs_toolong, time_name, coord_units, x_name, y_name)
+    assert "time dimension can only have a length of one" in str(excinfo.value)
+
+    # Address mismatched shapes
+    with pytest.raises(ValueError) as excinfo:
+        _validate_cra2d_inputs(fcst_toobig, obs, time_name, coord_units, x_name, y_name)
+    assert "must have the same shape" in str(excinfo.value)
+
+    # Address n-d dimension being supplied to a 2D method
+    with pytest.raises(ValueError) as excinfo:
+        _validate_cra2d_inputs(fcst_toobig, obs_toobig, time_name, coord_units, x_name, y_name)
+    assert "contain additional coordinate" in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        _validate_cra2d_inputs(fcst_wrongdim, obs, time_name, coord_units, x_name, y_name)
+    assert "'lon' not found in forecast data" in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        _validate_cra2d_inputs(fcst, obs_wrongdim, time_name, coord_units, x_name, y_name)
+    assert "'lon' not found in observation data" in str(excinfo.value)

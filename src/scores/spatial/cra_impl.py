@@ -65,7 +65,7 @@ def _generate_largest_rain_area_2d(
     # Connectivity: how elements are considered connected
     # Define connectivity for the labeling. 3x3 => 8-connected in 2D
     # (includes N, NE, E, SE, S, SW, W, W, NW neighbours)
-    structure = np.ones((3, 3))
+    structure = np.ones((3, 3))  # TODO: should be 1, 3, 3 for some data or don't support time dim in 2d
 
     # Assign a unique label to each connected component. For instance, if there are 3 separate
     # blobs in our array, each blob will be assigned a different label (e.g., 1, 2, 3)
@@ -177,7 +177,7 @@ def _translate_forecast_region(  # pylint: disable=too-many-locals
     return shifted_fcst, dx, dy
 
 
-def nansafe_int(value):
+def _nansafe_int(value):
     """
     Cast values to int if they are not NaN
     """
@@ -210,8 +210,8 @@ def _shift_fcst(fcst: xr.DataArray, shift_x: int, shift_y: int, x_name: str, y_n
     """
 
     # Define shift amounts for each dim
-    shift_xdim = nansafe_int(shift_x)  # dx => X dim
-    shift_ydim = nansafe_int(shift_y)  # dy => Y dim
+    shift_xdim = _nansafe_int(shift_x)  # dx => X dim
+    shift_ydim = _nansafe_int(shift_y)  # dy => Y dim
 
     shift_xdim = 0 if np.isnan(shift_xdim) else shift_xdim
     shift_ydim = 0 if np.isnan(shift_ydim) else shift_ydim
@@ -465,7 +465,7 @@ def _cra_image(  # pylint: disable=too-many-locals
     """
 
     # Throw an exception if invalid input
-    validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
+    _validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name)
 
     fcst_blob, obs_blob = _generate_largest_rain_area_2d(
         fcst, obs, minimum_intensity=minimum_intensity, min_points=min_points
@@ -669,7 +669,7 @@ def cra(  # pylint: disable=too-many-locals
     return result
 
 
-def validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name):
+def _validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name):
     """
     Perform input validation of 2D inputs prior to computationally intensive score
     calculation.
@@ -685,14 +685,12 @@ def validate_cra2d_inputs(fcst, obs, time_name, coord_units, x_name, y_name):
     max_allowed_coords = 2
     if time_name:
         max_allowed_coords = 3
-        if len(fcst[time_name] != 1):
+        if len(fcst[time_name]) != 1:
             raise ValueError("The time dimension can only have a length of one (single sample) in the 2d score")
 
     if len(fcst.shape) != max_allowed_coords:
+        # Note we already know fcst and obs have the same shape, so no need to test both
         raise ValueError("The `fcst` inputs contain additional coordinate dimensions which cannot be handled")
-
-    if len(obs.shape) != max_allowed_coords:
-        raise ValueError("The `obs` inputs contain additional coordinate dimensions which cannot be handled")
 
     if fcst.shape != obs.shape:
         raise ValueError("fcst and obs must have the same shape")
