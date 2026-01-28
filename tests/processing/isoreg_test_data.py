@@ -7,6 +7,8 @@ import xarray as xr
 from numpy import nan
 from scipy import interpolate
 
+from scores.processing.isoreg_impl import _get_interp1d_func
+
 # _xr_to_np test data
 
 FCST_XRTONP = xr.DataArray(
@@ -196,7 +198,7 @@ EXP_IF1 = {
     "fcst_counts": FCST_COUNTS,
     "weight_sorted": None,
     "regression_values": np.delete(Y_REG, 1),
-    "regression_func": interpolate.interp1d(BS_FCST, Y_REG, bounds_error=False),
+    "regression_func": _get_interp1d_func(BS_FCST, Y_REG),
     "confidence_band_lower_values": None,
     "confidence_band_upper_values": None,
     "confidence_band_lower_func": partial(np.full_like, fill_value=np.nan),
@@ -209,11 +211,11 @@ EXP_IF2 = {
     "fcst_counts": FCST_COUNTS,
     "weight_sorted": None,
     "regression_values": np.delete(Y_REG, 1),
-    "regression_func": interpolate.interp1d(BS_FCST, Y_REG, bounds_error=False),
+    "regression_func": _get_interp1d_func(BS_FCST, Y_REG),
     "confidence_band_lower_values": np.delete(CB_LOWER, 1),
     "confidence_band_upper_values": np.delete(CB_UPPER, 1),
-    "confidence_band_lower_func": interpolate.interp1d(BS_FCST, CB_LOWER, bounds_error=False),
-    "confidence_band_upper_func": interpolate.interp1d(BS_FCST, CB_UPPER, bounds_error=False),
+    "confidence_band_lower_func": _get_interp1d_func(BS_FCST, CB_LOWER),
+    "confidence_band_upper_func": _get_interp1d_func(BS_FCST, CB_UPPER),
     "confidence_band_levels": (0.25, 0.75),
 }
 

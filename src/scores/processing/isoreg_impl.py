@@ -170,7 +170,6 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     )
 
     # calculate the fitting function
-    # ir_func = interpolate.interp1d(fcst_tidied, y_out, bounds_error=False)
     ir_func = _get_interp1d_func(fcst_tidied, y_out)
 
     if bootstraps is not None:
@@ -186,8 +185,6 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
 
         lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)  # type: ignore
 
-        # lower_func = interpolate.interp1d(fcst_tidied, lower_pts, bounds_error=False)
-        # upper_func = interpolate.interp1d(fcst_tidied, upper_pts, bounds_error=False)
         lower_func = _get_interp1d_func(fcst_tidied, lower_pts)
         upper_func = _get_interp1d_func(fcst_tidied, upper_pts)
 
@@ -565,8 +562,6 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
             quantile_level=quantile_level,
             solver=solver,
         )
-
-        # approximation_func = interpolate.interp1d(fcst_sample, ir_results, bounds_error=False)
         approximation_func = _get_interp1d_func(fcst_sample, ir_results)
 
         result[boostrap_sample_num] = approximation_func(fcst)
@@ -653,32 +648,32 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
 def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.ndarray], np.ndarray]:
     """
     Wraps xarray interpolation in a function similar to scipy.interpolate.interp1d.
-    `bounds_error` not included since xarray.interp handles NAs properly.
+    `bounds_error` not included since np.interp handles NAs differently.
+    Only accepts 1D arrays.
 
     Parameters
     ----------
     x_data : np.ndarray
+        1-D array
         Independent variable values.
-        interp1d requires 1-D array input by xarray should be able to handle higher dim (not tests)
     y_data : np.ndarray
-        Dependent variable values.
+        1-D array
+        Dependent variable values,
 
     Returns
     -------
     Callable[[float | np.ndarray], np.ndarray]
         Interpolation function.
     """
-    # print("x_data", x_data)
-    # print("y_data", y_data)
 
-    da = xr.DataArray(data=y_data, coords={"x": x_data}, dims="x")
-    # xarray requires non-duplicates in index
-    # this change is consistent with linear interpolation
-    da = da.groupby("x").mean()
+    # x input must be sorted
+    order = np.argsort(x_data)
+    x_sorted = x_data[order]
+    y_sorted = y_data[order]
 
     def func(x_new):
-        # print("x_new", x_new)
-        result_da = da.interp(x=x_new, method="linear")
-        return result_da.values
+        # return nan if interpolating outside known coords
+        result = np.interp(np.sort(x_new), x_sorted, y_sorted, left=np.nan, right=np.nan)
+        return result
 
     return func
