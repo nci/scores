@@ -27,4 +27,4 @@ jobs:
         run: |
           pre-commit run black --all-files
           pre-commit run isort --all-files
-          pre-commit run ruff check
+          pre-commit run ruff-check --all-files
