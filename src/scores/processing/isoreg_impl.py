@@ -647,7 +647,7 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
 
 def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.ndarray], np.ndarray]:
     """
-    Wraps xarray interpolation in a function similar to scipy.interpolate.interp1d.
+    Wraps numpy interpolation in a function similar to scipy.interpolate.interp1d.
     `bounds_error` not included since np.interp handles NAs differently.
     Only accepts 1D arrays.
 
