@@ -101,6 +101,9 @@ line-length = 120
 warn_return_any = true
 warn_unused_configs = true
 
+[tool.ruff]
+exclude = ['*.ipynb']
+
 [[tool.mypy.overrides]]
 module = "scipy.*"
 ignore_missing_imports = true

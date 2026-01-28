@@ -6,12 +6,11 @@ Calculated the Contiguous Rain Area metrics, see class docstrings for details.
 """
 
 import logging
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 import scipy.ndimage
 import xarray as xr
-from scipy.optimize import minimize
 
 from scores.continuous.correlation import pearsonr
 from scores.continuous.standard_impl import mse, rmse
@@ -66,7 +65,7 @@ def _generate_largest_rain_area_2d(
     # Connectivity: how elements are considered connected
     # Define connectivity for the labeling. 3x3 => 8-connected in 2D
     # (includes N, NE, E, SE, S, SW, W, W, NW neighbours)
-    structure = np.ones((3, 3))  # TODO: should be 1, 3, 3 for some data or don't support time dim in 2d
+    structure = np.ones((3, 3))
 
     # Assign a unique label to each connected component. For instance, if there are 3 separate
     # blobs in our array, each blob will be assigned a different label (e.g., 1, 2, 3)
@@ -281,7 +280,7 @@ def _shifted_mse_2d(
     mse_val = float(mse(fcst_masked, obs_masked))
     corr_val = pearsonr(fcst_masked, obs_masked)
 
-    # Penalize low correlation  # TODO explain why
+    # Penalize low correlation
     penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
 
     return mse_val + penalty
@@ -408,7 +407,7 @@ def _cra_image(  # pylint: disable=too-many-locals
         minimum_intensity (float): Threshold to define contiguous rain areas.
         y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometres.
+        max_distance_approx (float): Maximum allowed translation distance in metres.
         min_points (int): Minimum number of grid points required in a blob.
         coord_units (str) : Coordinate units, 'degrees' or 'metres'
 
@@ -504,6 +503,7 @@ def cra(  # pylint: disable=too-many-locals
     min_points: int = 10,
     coord_units: str = "metres",
     extra_components: bool = False,
+    max_distance_approx: float = 300,
 ) -> xr.Dataset:
     """
     Compute Contiguous Rain Area (CRA) metrics across grouped slices of a forecast and
@@ -533,7 +533,7 @@ def cra(  # pylint: disable=too-many-locals
         minimum_intensity (float): Threshold to define contiguous rain areas.
         y_name (str): Name of the meridional spatial dimension (e.g., 'lat', 'projection_y_coordinate').
         x_name (str): Name of the zonal spatial dimension (e.g., 'lon', 'projection_x_coordinate').
-        max_distance (float): Maximum allowed translation distance in kilometres.
+        max_distance_approx (float): Maximum allowed translation distance in kilometres. (see note)
         min_points (int): Minimum number of grid points required in a blob.
         reduce_dims (list[str] or str, optional): Dimension to group by (default: ["time"]).
         coord_units (str) : Coordinate units, 'degrees' or 'metres'
@@ -574,6 +574,17 @@ def cra(  # pylint: disable=too-many-locals
         Ebert, E. E., and W. A. Gallus , 2009: Toward Better Understanding of the Contiguous Rain Area (CRA) Method
         for Spatial Forecast Verification. *Weather and Forecasting*, 24, 1401-1415,
         https://doi.org/10.1175/2009WAF2222252.1
+
+    Note:
+        This method uses a simplified distance calculation between degrees and metres for calculating
+        physical distances for maximum shift distance. Do not rely on a precise projection-aware distance
+        calculation when setting the maximum shift distance.
+
+        >>>
+        >>>     if units == "degrees":
+        >>>         lat_mean = np.mean(y_coords)
+        >>>         dy_km = np.abs(dy) * 111
+        >>>         dx_km = np.abs(dx) * 111 * np.cos(np.radians(lat_mean))
 
     Example:
         >>> from scores.spatial import cra
@@ -637,6 +648,7 @@ def cra(  # pylint: disable=too-many-locals
             coord_units=coord_units,
             min_points=min_points,
             extra_components=extra_components,
+            max_distance=max_distance_approx,
         )
     return result
 
