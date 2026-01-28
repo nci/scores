@@ -2,8 +2,6 @@
 Contains tests for the scores.utils file
 """
 
-import warnings
-
 import numpy as np
 import pytest
 import xarray as xr
