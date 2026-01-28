@@ -13,6 +13,7 @@ import scipy.ndimage
 import xarray as xr
 from scipy.optimize import minimize
 
+from scores.continuous.correlation import pearsonr
 from scores.continuous.standard_impl import mse, rmse
 from scores.typing import XarrayLike
 
@@ -278,7 +279,7 @@ def _shifted_mse_2d(
         return np.inf
 
     mse_val = float(mse(fcst_masked, obs_masked))
-    corr_val = _calc_corr_coeff(fcst_masked, obs_masked)
+    corr_val = pearsonr(fcst_masked, obs_masked)
 
     # Penalize low correlation  # TODO explain why
     penalty = 1e3 if np.isnan(corr_val) or corr_val < 0.3 else 0
@@ -328,38 +329,6 @@ def _calc_num_points(data: xr.DataArray, minimum_intensity: float) -> int:
     mask = data >= minimum_intensity
     count_above_threshold = mask.sum().item()
     return count_above_threshold
-
-
-def _calc_corr_coeff(data1: xr.DataArray, data2: xr.DataArray) -> float:
-    """
-    Calculate the Pearson correlation coefficient between two data arrays.
-
-    Args:
-        data1 (xr.DataArray): First data array.
-        data2 (xr.DataArray): Second data array.
-
-    Returns:
-        Correlation coefficient.
-
-    Example:
-        >>> corr = _calc_corr_coeff(data1, data2)
-    """
-
-    data1_flat = data1.values.flatten()
-    data2_flat = data2.values.flatten()
-
-    # Remove NaNs
-    mask = ~np.isnan(data1_flat) & ~np.isnan(data2_flat)
-    data1_clean = data1_flat[mask]
-    data2_clean = data2_flat[mask]
-
-    # Check for empty or constant arrays
-    if len(data1_clean) == 0 or len(data2_clean) == 0:
-        return np.nan
-    if np.all(data1_clean == data1_clean[0]) or np.all(data2_clean == data2_clean[0]):
-        return np.nan
-    cc = np.corrcoef(data1_clean, data2_clean)[0, 1]
-    return float(cc)
 
 
 def _calc_resolution(obs: xr.DataArray, spatial_dims: list[str], units: str) -> float:
@@ -510,8 +479,8 @@ def _cra_image(  # pylint: disable=too-many-locals
             "avg_obs": np.mean(obs_blob),
             "max_fcst": np.max(fcst_blob),
             "max_obs": np.max(obs_blob),
-            "corr_coeff_original": _calc_corr_coeff(fcst_blob, obs_blob),
-            "corr_coeff_shifted": _calc_corr_coeff(shifted_fcst, obs_blob),
+            "corr_coeff_original": pearsonr(fcst_blob, obs_blob),
+            "corr_coeff_shifted": pearsonr(shifted_fcst, obs_blob),
             "rmse_original": rmse(fcst_blob, obs_blob),
             "rmse_shifted": rmse(shifted_fcst, obs_blob),
         }

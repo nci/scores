@@ -23,7 +23,6 @@ import xarray as xr
 import scores
 from scores.continuous.standard_impl import mse, rmse
 from scores.spatial.cra_impl import (
-    _calc_corr_coeff,
     _calc_resolution,
     _cra_image,
     _generate_largest_rain_area_2d,
@@ -479,24 +478,6 @@ def test_cra_time_formats(time_val):
     obs = create_array().expand_dims(time=[time_val])
     result = cra(fcst, obs, minimum_intensity=0.5, y_name="y", x_name="x")
     assert isinstance(result, xr.Dataset)
-
-
-def test_calc_corr_coeff_empty_after_nan_removal():
-    """Test correlation returns NaN when one input is all NaNs."""
-    # data1 is all NaNs, data2 is valid
-    data1 = xr.DataArray(np.full((10, 10), np.nan))
-    data2 = xr.DataArray(np.random.rand(10, 10))
-
-    result = _calc_corr_coeff(data1, data2)
-    assert np.isnan(result), "Expected NaN when one input is all NaNs"
-
-
-def test_calc_corr_coeff_constant_array():
-    """Test correlation returns NaN for constant array input."""
-    data1 = xr.DataArray(np.full((10, 10), 5.0))
-    data2 = xr.DataArray(np.random.rand(10, 10))
-    result = _calc_corr_coeff(data1, data2)
-    assert np.isnan(result), "Expected NaN for constant array input"
 
 
 def test_cra_image_none_blob():
