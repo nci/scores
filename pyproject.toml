@@ -49,7 +49,7 @@ tutorial = [
 ]
 maintainer = ["build",
               "hatch",
-              "sphinx",
+              "sphinx<8",
               "myst-parser",
               "sphinx-book-theme",
               "nbsphinx",
