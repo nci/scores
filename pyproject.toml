@@ -99,6 +99,10 @@ profile = "black"
 [tool.black]
 line-length = 120
 
+[tool.ruff]
+exclude = ["*.ipynb"]
+lint.ignore = ['E741']
+
 [tool.mypy]
 warn_return_any = true
 warn_unused_configs = true

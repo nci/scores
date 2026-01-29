@@ -2,7 +2,7 @@
 Implementation of the calculation of data for a Quantile-Quantile (Q-Q) plot.
 """
 
-from typing import Dict, Iterable
+from typing import Iterable
 
 import numpy as np
 import xarray as xr
