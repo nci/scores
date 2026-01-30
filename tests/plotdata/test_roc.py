@@ -123,13 +123,29 @@ def test_roc_curve_auc():
 
 
 def test_roc_auto_threshold():
-    fcst = xr.DataArray(data=[0.1, 0.4, 0.3, 0.9], dims="time")
-    obs = xr.DataArray(data=[0, 0, 1, 1], dims="time")
+    """Test roc with auto threshold and 2-D input array."""
+    fcst = xr.DataArray(
+        data=[[0.1, 0.4, 0.3, 0.9], [0.2, 0.9, 0.5, 0.2]],
+        dims=["station", "time"],
+        coords={
+            "station": ["A", "B"],
+            "time": list(range(4)),
+        },
+    )
+
+    obs = xr.DataArray(
+        data=[[0, 0, 1, 1], [0, 1, 1, 0]],
+        dims=["station", "time"],
+        coords={
+            "station": ["A", "B"],
+            "time": list(range(4)),
+        },
+    )
     # Test with check_args=False
-    result_no_check = roc(fcst, obs, check_args=False)
+    result_no_check = roc(fcst, obs, check_args=False, preserve_dims=["station"])
     xr.testing.assert_equal(result_no_check, rtd.EXP_ROC_AUTO)
     # Test with check_args=True
-    result_check = roc(fcst, obs, check_args=True)
+    result_check = roc(fcst, obs, check_args=True, preserve_dims=["station"])
     xr.testing.assert_equal(result_check, rtd.EXP_ROC_AUTO)
 
 

@@ -145,7 +145,7 @@ def roc(  # pylint: disable=too-many-arguments
 
     if isinstance(thresholds, str):
         if thresholds == "auto":
-            thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
+            thresholds = np.sort(np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy()))
             if len(thresholds) > 1000:  # type: ignore
                 warnings.warn(
                     "Number of automatically generated thresholds is very large (>1000). "
