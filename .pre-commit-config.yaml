@@ -12,14 +12,25 @@ repos:
       - id: bandit
         args: [--skip, "B101", --recursive, src/scores]
   # use local version of package with core deps to avoid import-errors from virtual env
-  - repo: local
+  # - repo: local
+  #   hooks:
+  #     - id: pylint
+  #       name: pylint
+  #       entry: pylint --reports=n
+  #       language: system
+  #       types: [python]
+  #       stages: [pre-commit]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.14.14
     hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint --reports=n
-        language: system
-        types: [python]
-        stages: [pre-commit]
+      # Run the linter.
+      - id: ruff-check
+        types_or: [ python, pyi ]
+        stages: [pre-commit]        
+      # Run the formatter.
+      # - id: ruff-format
+      #   types_or: [ python, pyi ]        
   - repo: https://github.com/PyCQA/isort
     rev: 5.11.5
     hooks:
