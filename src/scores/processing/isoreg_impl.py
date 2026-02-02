@@ -248,10 +248,10 @@ def _xr_to_np(
     if weight is not None:
         if set(fcst_dims) != set(weight.dims):
             raise ValueError("`fcst` and `weight` must have same dimensions.")
-        merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs"), weight.rename("weight")])
+        merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs"), weight.rename("weight")], join="outer")
         weight = merged_ds["weight"].transpose(*fcst_dims).values  # type: ignore
     else:
-        merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs")])
+        merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs")], join="outer")
 
     fcst = merged_ds["fcst"].transpose(*fcst_dims).values  # type: ignore
     obs = merged_ds["obs"].transpose(*fcst_dims).values  # type: ignore

@@ -2,8 +2,6 @@
 Contains frequently-used functions of a general nature within scores
 """
 
-import copy
-import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
@@ -150,7 +148,7 @@ class BinaryOperator(Generic[T]):
         Default operator is valid
         """
         # functions are objects so this should work in theory
-        if not self.op in self.valid_ops.values():
+        if self.op not in self.valid_ops.values():
             # intentional list comprehension, for display reasons
             raise ValueError(
                 "Invalid operator specified. Allowed operators: "

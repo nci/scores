@@ -1086,7 +1086,7 @@ def test_tail_tw_crps_for_ensemble_dask():
 
 def test_tail_tw_crps_for_ensemble_raises():
     with pytest.raises(ValueError, match="'middle' is not one of 'upper' or 'lower'"):
-        result = tail_tw_crps_for_ensemble(
+        _result = tail_tw_crps_for_ensemble(
             fcst=crps_test_data.DA_FCST_CRPSENS,
             obs=crps_test_data.DA_OBS_CRPSENS,
             ensemble_member_dim="ens_member",

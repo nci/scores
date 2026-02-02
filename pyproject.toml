@@ -49,7 +49,7 @@ tutorial = [
 ]
 maintainer = ["build",
               "hatch",
-              "sphinx",
+              "sphinx<8",
               "myst-parser",
               "sphinx-book-theme",
               "nbsphinx",
@@ -98,6 +98,10 @@ profile = "black"
 
 [tool.black]
 line-length = 120
+
+[tool.ruff]
+exclude = ["*.ipynb"]
+lint.ignore = ['E741']
 
 [tool.mypy]
 warn_return_any = true

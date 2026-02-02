@@ -353,14 +353,12 @@ def crps_cdf(
 
     result = None  # Perhaps this should raise an exception if the integration
     # method isn't recognised
-    include_obs_in_thresholds = integration_method == "trapz"
-    convert_obs_to_cdf = integration_method == "trapz"
 
     if integration_method == "exact":
 
         numba_installed = False
         try:
-            import numba
+            import numba  # noqa  # ignore unused import
 
             from scores.probability.crps_numba import crps_cdf_exact_fast
 
