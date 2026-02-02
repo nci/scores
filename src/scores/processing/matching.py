@@ -56,8 +56,7 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
     for i, arg in enumerate(args):
         if not isinstance(arg, (xr.Dataset, xr.DataArray)):
             raise ValueError(
-                f"Argument {i} is not an xarray data object. (counting from 0, i.e. "
-                "argument 0 is the first argument)"
+                f"Argument {i} is not an xarray data object. (counting from 0, i.e. argument 0 is the first argument)"
             )
 
     # internal function to update the mask

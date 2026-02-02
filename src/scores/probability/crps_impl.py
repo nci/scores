@@ -355,7 +355,6 @@ def crps_cdf(
     # method isn't recognised
 
     if integration_method == "exact":
-
         numba_installed = False
         try:
             import numba  # noqa  # ignore unused import

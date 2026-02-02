@@ -1,41 +1,19 @@
 ---
 repos:
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
-        name: black
-        entry: black --check
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.0
-    hooks:
-      - id: bandit
-        args: [--skip, "B101", --recursive, src/scores]
-  # use local version of package with core deps to avoid import-errors from virtual env
-  # - repo: local
-  #   hooks:
-  #     - id: pylint
-  #       name: pylint
-  #       entry: pylint --reports=n
-  #       language: system
-  #       types: [python]
-  #       stages: [pre-commit]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.14.14
     hooks:
       # Run the linter.
       - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
         types_or: [ python, pyi ]
         stages: [pre-commit]        
       # Run the formatter.
-      # - id: ruff-format
-      #   types_or: [ python, pyi ]        
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.11.5
-    hooks:
-      - id: isort
-        entry: isort --profile=black
+      - id: ruff-format
+        args: [--exit-non-zero-on-format] # Needed for GH Action to fail
+        types_or: [ python, pyi ]
+        stages: [pre-commit]
   - repo: local
     hooks:
       - id: pytest

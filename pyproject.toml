@@ -27,10 +27,8 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "black == 24.10.0",
     "mypy == 1.13.0",
-    "pylint == 3.3.1",
-    "bandit == 1.8.0",
+    "ruff == 0.14.14",
     "dask",
     "h5netcdf",
     "pandas-stubs",
@@ -93,15 +91,38 @@ pinned_dependencies = [
 [tool.hatch.version]
 path = "src/scores/__init__.py"
 
-[tool.isort]
-profile = "black"
-
-[tool.black]
+[tool.ruff]
+src = ["src", "tests"]
+exclude = ["*.ipynb"]
 line-length = 120
 
-[tool.ruff]
-exclude = ["*.ipynb"]
-lint.ignore = ['E741']
+[tool.ruff.lint]		
+select = [
+    "E",  # errors
+    "W",  # warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "S",  # bandit
+]
+ignore = [
+    "E741", # Allow ambiguous variable names
+    "S101", # Allow asserts
+    # The three ignores below need to be fixed
+    # See GH issue #975
+    "W291", #TODO Trailing whitespace (57)
+    "E501", #TODO Line too long (50)
+    "W293", #TODO Blank lint contains whitespace (6) 
+]
+
+[tool.ruff.format]
+# same as black
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["scores", "tests"]
+known-third-party = ["pandas"] # fix sorting bug
 
 [tool.mypy]
 warn_return_any = true

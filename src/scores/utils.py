@@ -151,8 +151,7 @@ class BinaryOperator(Generic[T]):
         if self.op not in self.valid_ops.values():
             # intentional list comprehension, for display reasons
             raise ValueError(
-                "Invalid operator specified. Allowed operators: "
-                f"{[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
+                f"Invalid operator specified. Allowed operators: {[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
             )
         return self
 
