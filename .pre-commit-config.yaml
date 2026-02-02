@@ -11,8 +11,9 @@ repos:
         stages: [pre-commit]        
       # Run the formatter.
       - id: ruff-format
-        :types_or: [ python, pyi ]        
-        stages: [pre-commit]        
+        args: [--exit-non-zero-on-format] # Needed for GH Action to fail
+        types_or: [ python, pyi ]
+        stages: [pre-commit]
   - repo: local
     hooks:
       - id: pytest
