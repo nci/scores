@@ -96,11 +96,6 @@ src = ["src", "tests"]
 exclude = ["*.ipynb"]
 line-length = 120
 
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = [
-    "S101",    # Asserts allowed in tests.
-    "ARG",     # Unused function args, i.e. fixtures.
-]
 [tool.ruff.lint]		
 select = [
     "E",  # errors
