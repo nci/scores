@@ -1,5 +1,5 @@
 """
-Specific type definitions for Fss backend    
+Specific type definitions for Fss backend
 """
 
 from enum import Enum
