@@ -5,7 +5,6 @@ from functools import partial
 import numpy as np
 import xarray as xr
 from numpy import nan
-from scipy import interpolate
 
 from scores.processing.isoreg_impl import _get_interp1d_func
 
