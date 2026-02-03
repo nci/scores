@@ -287,7 +287,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * -
     - PIT for predictive CDFs evaluated at observations
   -
-    [API](api.md#scores.probability.Pit_fcst_at_obs)
+    [API](api.md#scores.probability.PitFcstAtObs)
   -
     [Tutorial](project:./tutorials/PIT.md)
   -

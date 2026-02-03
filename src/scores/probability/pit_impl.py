@@ -1,8 +1,11 @@
 """
-Methods for the probability integral transform (PIT) classes Pit and Pit_fcst_at_obs.
+Methods for the probability integral transform (PIT) classes Pit and PitFcstAtObs.
 
-The basic approach follows Taggart (2023) and Gneiting and Ranjan (2013); see
-http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
+The implementation follows the theoretical approach of Gneiting and Ranjan (2013) and
+Taggart (2023) (see https://nla.gov.au/nla.obj-3079961862/view
+http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf)
+which interprets the PIT of a forecast--observation pair as a CDF. Details of this
+approach are described in this docstring.
 
 For a forecast--observation pair (F,y), where F is a CDF,
 the corresponding PIT value is the uniform distribution on the closed interval
@@ -28,7 +31,7 @@ PIT for the set of forecast cases, such as PIT histogram bar hieghts and alpha s
 can be calculated exactly from this representation.
 
 The code here is structured as follows:
-1. The two classes `Pit` and `Pit_fcst_at_obs` are introduced
+1. The two classes `Pit` and `PitFcstAtObs` are introduced
 2. Private functions that calculate the PIT distribution are then given
 3. Private functions that calculate the PIT statistics from the PIT distribution are then presented.
 
@@ -60,7 +63,7 @@ RESERVED_NAMES = {
 }
 
 ################################################
-# The two classes: `Pit`` and `Pit_fcst_at_obs`
+# The two classes: `Pit`` and `PitFcstAtObs`
 ################################################
 
 
@@ -99,7 +102,7 @@ class Pit:
         those coordinates are assigned either 0 or 1 as appropriate. Any predictive CDF with
         a NaN value will be treated as NaN in its entirety.
 
-    Consider using the ``Pit_fcst_at_obs`` class instead of ``Pit`` when values of the
+    Consider using the ``PitFcstAtObs`` class instead of ``Pit`` when values of the
     predictive CDFs :math:`G` evaluated at the observations are easy to calculate,
     e.g. when the predictive CDFs are normal distributions with known parameters.
 
@@ -163,10 +166,10 @@ class Pit:
         - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
             https://doi.org/10.1214/13-EJS823
         - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
-            Bureau Research Report 64, http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
+            Bureau Research Report 64, https://nla.gov.au/nla.obj-3079961862/view
 
     See also:
-            - :py:func:`scores.probability.Pit_fcst_at_obs`
+            - :py:func:`scores.probability.PitFcstAtObs`
             - :py:func:`scores.probability.rank_histogram`
 
     Examples:
@@ -327,7 +330,7 @@ class Pit:
         return _variance(self.plotting_points())
 
 
-class Pit_fcst_at_obs:
+class PitFcstAtObs:
     """
     Calculates the probability integral transform (PIT) for a set of forecast cases and
     corresponding observations. The calculated PIT can be a (possibly weighted) average
@@ -347,10 +350,10 @@ class Pit_fcst_at_obs:
     Important statistics related to the PIT distribution :math:`F`, such as bar heights of PIT histograms,
     the graph of :math:`F`, plotting points for PIT uniform probability plots, the alpha score, and
     expected value and variance of :math:`F`, can be calculated from :math:`F` and are accessible via
-    methods on the ``Pit_fcst_at_obs`` class.
+    methods on the ``PitFcstAtObs`` class.
 
-    In the ``Pit_fcst_at_obs`` implementation of PIT, the user supplies the values :math:`G(y)` and
-    (optionally) :math:`G(y-)`. If calculating ``Pit_fcst_at_obs()`` is slow or runs into memory
+    In the ``PitFcstAtObs`` implementation of PIT, the user supplies the values :math:`G(y)` and
+    (optionally) :math:`G(y-)`. If calculating ``PitFcstAtObs()`` is slow or runs into memory
     issues, then rounding the values of :math:`G(y)` and :math:`G(y-)` may resolve this problem with
     very little change to calculated statistics. If the predictive distributions are in the form of an ensemble
     or of CDFs whose values which are harder to evaluate at the observations, consider using the
@@ -401,7 +404,7 @@ class Pit_fcst_at_obs:
         - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
             https://doi.org/10.1214/13-EJS823
         - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
-            Bureau Research Report 64, http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf
+            Bureau Research Report 64, https://nla.gov.au/nla.obj-3079961862/view
 
     See also:
             - :py:func:`scores.probability.Pit`
@@ -412,14 +415,14 @@ class Pit_fcst_at_obs:
 
         >>> import xarray as xr
         >>> from scipy.stats import norm
-        >>> from scores.probability import Pit_fcst_at_obs
+        >>> from scores.probability import PitFcstAtObs
         >>> # observations generated from a normal distribution with
         >>> # mean 0 and standard deviation 2
         >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=['time'])
         >>> # forecasts are normal distributions with mean 0 and standard deviation 1
         >>> # evaluate the forecast CDFs at the observations
         >>> fcst_at_obs = xr.DataArray(norm.cdf(obs), dims=['time'])
-        >>> pit = Pit_fcst_at_obs(fcst_at_obs)
+        >>> pit = PitFcstAtObs(fcst_at_obs)
         >>> # bar heights for a PIT histogram
         >>> histogram_values = pit.hist_values(10)
         >>> # plot the CDF of the PIT distribution
@@ -558,11 +561,11 @@ def _dims_for_mean_with_checks(
     preserve_dims: Optional[FlexibleDimensionTypes],
 ) -> set[Hashable]:
     """
-    Given inputs for Pit or Pit_fcst_at_obs, checks that XarrayLike inputs don't use
+    Given inputs for Pit or PitFcstAtObs, checks that XarrayLike inputs don't use
     RESERVES_NAMES and then gathers dimensions, returning the set of dimensions for
     calculating the mean.
 
-    When applying to `Pit_fcst_at_obs` inputs, use `fcst=obs=fcst_at_obs`.
+    When applying to `PitFcstAtObs` inputs, use `fcst=obs=fcst_at_obs`.
     """
     all_dims = set(fcst.dims).union(obs.dims)
 
@@ -638,11 +641,11 @@ def _pit_values_for_fcst_at_obs(
     weights: Optional[XarrayLike],
 ) -> dict:
     """
-    A private function to compute `Pit_fcst_at_obs.__init__`.
-    Returns `Pit_fcst_at_obs().left` and `Pit_fcst_at_obs().right` in the form of a dictionary
+    A private function to compute `PitFcstAtObs.__init__`.
+    Returns `PitFcstAtObs().left` and `PitFcstAtObs().right` in the form of a dictionary
     with keys 'left' and 'right'.
 
-    See docstring `Pit_fcst_at_obs.__init__` for details.
+    See docstring `PitFcstAtObs.__init__` for details.
     """
     _right_left_checks(fcst_at_obs, fcst_at_obs_left, None, "fcst_at_obs", "fcst_at_obs_left")
 
@@ -1188,7 +1191,7 @@ def _pit_distribution_for_ens(
 
 
 ################################################
-# Functions for Pit and Pit_fcst_at_obs methods
+# Functions for Pit and PitFcstAtObs methods
 ################################################
 
 

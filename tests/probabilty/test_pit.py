@@ -20,7 +20,7 @@ from scipy.interpolate import interp1d
 
 from scores.probability.pit_impl import (
     Pit,
-    Pit_fcst_at_obs,
+    PitFcstAtObs,
     _alpha_score,
     _alpha_score_array,
     _construct_hist_values,
@@ -165,12 +165,12 @@ def test__pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims,
         (create_dataset(ptd.DA_FAO), create_dataset(ptd.DA_FAO_LEFT), None, "all", None, EXP_PVFAO3),
     ],
 )
-def test_Pit_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights, expected):
+def test_PitFcstAtObs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights, expected):
     """
-    Tests that `Pit_fcst_at_obs.__init__` returns as expected. The
+    Tests that `PitFcstAtObs.__init__` returns as expected. The
     Test is on `.left` and `.right` attributes.
     """
-    result = Pit_fcst_at_obs(
+    result = PitFcstAtObs(
         fcst_at_obs,
         fcst_at_obs_left=fcst_at_obs_left,
         reduce_dims=reduce_dims,
@@ -181,9 +181,9 @@ def test_Pit_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_di
     xr.testing.assert_allclose(expected["right"], result.right)
 
 
-def test_Pit_fcst_at_obs_dask():
-    """Tests that dask works for `Pit_fcst_at_obs`."""
-    pit = Pit_fcst_at_obs(ptd.DA_FAO.chunk(), fcst_at_obs_left=ptd.DA_FAO_LEFT.chunk(), preserve_dims="all")
+def test_PitFcstAtObs_dask():
+    """Tests that dask works for `PitFcstAtObs`."""
+    pit = PitFcstAtObs(ptd.DA_FAO.chunk(), fcst_at_obs_left=ptd.DA_FAO_LEFT.chunk(), preserve_dims="all")
     left = pit.left
     right = pit.right
     assert isinstance(left.data, dask.array.Array)
@@ -985,23 +985,23 @@ def test_pit__left_right_dask(fcst, obs, special_fcst_dim, fcst_type, fcst_left,
 
 def test_plotting_points2():
     """
-    Simple test that `Pit_fcst_at_obs().plotting_points()` returns as expected.
-    Note: `.plotting_points()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    Simple test that `PitFcstAtObs().plotting_points()` returns as expected.
+    Note: `.plotting_points()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_plotting_points`.
     """
-    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).plotting_points()
+    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).plotting_points()
     xr.testing.assert_equal(ptd.EXP_FAO_PP, result)
 
 
 def test_plotting_points_parametric2():
     """
-    Simple test that `Pit_fcst_at_obs().plotting_points_parametric()` returns as expected.
-    Note: `.plotting_points_parametric()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    Simple test that `PitFcstAtObs().plotting_points_parametric()` returns as expected.
+    Note: `.plotting_points_parametric()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_plotting_points_parametric`.
     """
-    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).plotting_points_parametric()
+    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).plotting_points_parametric()
     expected = ptd.EXP_FAO_PPP
     assert expected.keys() == result.keys()
     for key in result.keys():
@@ -1010,43 +1010,43 @@ def test_plotting_points_parametric2():
 
 def test_hist_values2():
     """
-    Simple test that `Pit_fcst_at_obs().hist_values()` returns as expected.
-    Note: `.hist_values()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    Simple test that `PitFcstAtObs().hist_values()` returns as expected.
+    Note: `.hist_values()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_hist_values`.
     """
-    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).hist_values(2)
+    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).hist_values(2)
     xr.testing.assert_equal(ptd.EXP_FAO_HV, result)
 
 
 def test_alpha_score2():
     """
-    Simple test that `Pit_fcst_at_obs().alpha_score()` returns as expected.
-    Note: `.alpha_score()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    Simple test that `PitFcstAtObs().alpha_score()` returns as expected.
+    Note: `.alpha_score()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_alpha_score`.
     """
-    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).alpha_score()
+    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).alpha_score()
     xr.testing.assert_equal(xr.DataArray(0.4**2 + 0.1**2 + 0.3**2 + 0.2**2) / 2, result)
 
 
 def test_expected_value2():
     """
-    Simple test that `Pit_fcst_at_obs().expected_value()` returns as expected.
-    Note: `.expected_value()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    Simple test that `PitFcstAtObs().expected_value()` returns as expected.
+    Note: `.expected_value()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_expected_value`.
     """
-    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).expected_value()
+    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).expected_value()
     xr.testing.assert_allclose(xr.DataArray(0.6), result)
 
 
 def test_variance2():
     """
-    Simple test that `Pit_fcst_at_obs().variance()` returns as expected.
-    Note: `.variance()` code is identical for both `Pit_fcst_at_obs` and `Pit` classes,
+    Simple test that `PitFcstAtObs().variance()` returns as expected.
+    Note: `.variance()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_variance`.
     """
-    result = Pit_fcst_at_obs(ptd.DA_FCST_AT_OBS).variance()
+    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).variance()
     xr.testing.assert_allclose(xr.DataArray(0.04), result)

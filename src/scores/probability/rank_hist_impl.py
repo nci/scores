@@ -124,7 +124,7 @@ def rank_histogram(
 
     See also:
         - :py:class:`scores.probability.Pit`
-        - :py:class:`scores.probability.Pit_fcst_at_obs`
+        - :py:class:`scores.probability.PitFcstAtObs`
 
     Examples:
         Calculate and plot the rank histogram for an under-dispersive ensemble forecast:

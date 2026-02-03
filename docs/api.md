@@ -59,7 +59,7 @@
 .. autofunction:: scores.probability.isotonic_fit
 .. autoclass:: scores.probability.Pit
     :members:
-.. autoclass:: scores.probability.Pit_fcst_at_obs
+.. autoclass:: scores.probability.PitFcstAtObs
     :members:
 .. autofunction:: scores.probability.rank_histogram
 ```
