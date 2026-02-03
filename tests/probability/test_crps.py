@@ -4,11 +4,6 @@ Contains unit tests for scores.probability.crps
 """
 
 try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
-try:
     import numba
 
     from scores.probability.crps_numba import crps_cdf_exact_fast
@@ -122,7 +117,7 @@ def test_crps_cdf_exact_slow():
 def test_crps_cdf_exact_fast_dask():
     """Tests `crps_cdf_exact_fast` works with Dask."""
 
-    if dask == "Unavailable":  # pragma: no cover
+    if not HAS_DASK:  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     if numba == "Unavailable":  # pragma: no cover
         pytest.skip("Numba unavailable, could not run test")  # pragma: no cover
@@ -134,7 +129,7 @@ def test_crps_cdf_exact_fast_dask():
         "x",
         include_components=True,
     )
-    assert isinstance(result.total.data, dask.array.Array)
+    assert isinstance(result.total.data, da.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
@@ -146,7 +141,7 @@ def test_crps_cdf_exact_fast_dask():
         "x",
         include_components=False,
     )
-    assert isinstance(result2.total.data, dask.array.Array)
+    assert isinstance(result2.total.data, da.Array)
     result2 = result2.compute()
     assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
@@ -693,7 +688,11 @@ def test_crps_cdf_brier_raises(
     """Check that `crps_cdf_brier_decomposition` raises exceptions as expected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
         crps_cdf_brier_decomposition(
-            fcst, obs, threshold_dim=threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims
+            fcst,
+            obs,
+            threshold_dim=threshold_dim,
+            fcst_fill_method=fcst_fill_method,
+            reduce_dims=dims,
         )
 
 
@@ -707,13 +706,24 @@ def test_crps_cdf_brier_raises(
 def test_crps_cdf_brier_decomposition(dims, expected):
     """Tests `crps_cdf_brier_decomposition` with a variety of inputs."""
     result = crps_cdf_brier_decomposition(
-        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, threshold_dim="x", preserve_dims=dims
+        crps_test_data.DA_FCST_CRPS_BD,
+        crps_test_data.DA_OBS_CRPS_BD,
+        threshold_dim="x",
+        preserve_dims=dims,
     )
     xr.testing.assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "weight", "preserve_dims", "include_components", "expected"),
+    (
+        "fcst",
+        "obs",
+        "method",
+        "weight",
+        "preserve_dims",
+        "include_components",
+        "expected",
+    ),
     [
         (
             crps_test_data.DA_FCST_CRPSENS,
@@ -1024,7 +1034,16 @@ def test_crps_for_ensemble_dask(fcst, obs):
     ],
 )
 def test_tail_tw_crps_for_ensemble(
-    fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, include_components, expected
+    fcst,
+    obs,
+    method,
+    tail,
+    threshold,
+    preserve_dims,
+    reduce_dims,
+    weights,
+    include_components,
+    expected,
 ):
     """Tests tail_tw_crps_for_ensembles"""
     result = tail_tw_crps_for_ensemble(
@@ -1117,7 +1136,17 @@ def v_func4(x):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "include_components", "expected"),
+    (
+        "fcst",
+        "obs",
+        "method",
+        "v_func",
+        "preserve_dims",
+        "reduce_dims",
+        "weights",
+        "include_components",
+        "expected",
+    ),
     [
         # test ecdf
         (
@@ -1243,7 +1272,15 @@ def v_func4(x):
     ],
 )
 def test_tw_crps_for_ensemble(
-    fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, include_components, expected
+    fcst,
+    obs,
+    method,
+    v_func,
+    preserve_dims,
+    reduce_dims,
+    weights,
+    include_components,
+    expected,
 ):
     """Tests tw_crps_for_ensembles"""
 

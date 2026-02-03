@@ -14,15 +14,18 @@ from scores.utils import HAS_DASK, check_weights, da
 
 def _add_assertion_dependency(result: xr.DataArray, assertion_graph: xr.DataArray) -> xr.DataArray:
     """
-    Creates a new DataArray that depends on both the original result computation
-    and the deferred Dask assertion graph, ensuring the check runs on compute.
+    Attaches a validation graph to a result array.
+
+    Uses Dask's blockwise operation to create a mathematical dependency
+    that forces the validation to run when the result is computed.
     """
     if HAS_DASK and hasattr(result.data, "dask"):
 
         def identity_with_check(x, check):
-            # Force dependency by performing operation that doesn't change x
-            # but requires check to be computed
-            return x * 1.0 + check * 0.0
+            # Force evaluation of check by accessing it
+            # This ensures check computation happens before returning x
+            _ = check.item()  # Force the check to be computed
+            return x
 
         # Get dimension labels for blockwise
         result_dims = tuple(range(result.ndim))
@@ -191,7 +194,10 @@ def _weighted_sum(
 
 
 def _check_aggregate_inputs(
-    values: XarrayLike, reduce_dims: FlexibleDimensionTypes | None, weights: XarrayLike | None, method: str
+    values: XarrayLike,
+    reduce_dims: FlexibleDimensionTypes | None,
+    weights: XarrayLike | None,
+    method: str,
 ):
     """
     This function checks the inputs to the aggregate function.

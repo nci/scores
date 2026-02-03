@@ -9,6 +9,7 @@ import pytest
 import xarray as xr
 
 from scores.processing import aggregate
+from scores.processing.aggregation import _add_assertion_dependency
 from scores.utils import ERROR_INVALID_WEIGHTS, HAS_DASK, da
 
 DA_3x3 = xr.DataArray(
@@ -261,7 +262,13 @@ def test_agg_warns():
             ValueError,
         ),
         # Wrong method
-        (DA_3x3, None, "agg", "Method must be either 'mean' or 'sum', got 'agg'", ValueError),
+        (
+            DA_3x3,
+            None,
+            "agg",
+            "Method must be either 'mean' or 'sum', got 'agg'",
+            ValueError,
+        ),
         # DS weights missing data var
         (
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
@@ -337,3 +344,15 @@ def test_eager_weight_check_must_be_deferred():
         else:
             # Re-raise any unexpected error
             raise
+
+
+def test_add_assertion_dependency_non_dask_passthrough():
+    """Test that non-Dask arrays pass through unchanged."""
+    result = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+    assertion_graph = xr.DataArray(True)  # Dummy assertion
+
+    output = _add_assertion_dependency(result, assertion_graph)
+
+    # Should return the same object since it's not Dask
+    assert output is result
+    xr.testing.assert_identical(output, result)

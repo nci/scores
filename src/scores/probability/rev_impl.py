@@ -20,17 +20,22 @@ def _check_dask_fcst_safety(
 ) -> xr.DataArray:
     """
     Creates a deferred validation check for forecast values with Dask arrays.
-
-    The validation is embedded in a Dask computation graph and only executes
-    when .compute() is called, enabling lazy evaluation.
     """
 
-    def _assert_valid_fcst(fcst_array):
+    def _validate_chunk(fcst_array):
         """
-        Function that runs on the actual data during compute.
+        Function that runs on each chunk during compute.
         """
-        fcst_min = fcst_array.min()
-        fcst_max = fcst_array.max()
+        # Filter NaNs first to avoid warnings and simplify checks
+        valid_mask = ~np.isnan(fcst_array)
+
+        # If chunk is all NaNs, it is valid
+        if not np.any(valid_mask):
+            return np.zeros_like(fcst_array, dtype=np.int8)
+
+        subset = fcst_array[valid_mask]
+        fcst_min = np.min(subset)
+        fcst_max = np.max(subset)
 
         if threshold is not None:
             # Probabilistic forecasts: validate range [0, 1]
@@ -45,62 +50,64 @@ def _check_dask_fcst_safety(
                 )
 
             # Check strict binary values (0 or 1)
-            unique_fcst = np.unique(fcst_array[~np.isnan(fcst_array)])
+            unique_fcst = np.unique(subset)
             if not np.all(np.isin(unique_fcst, [0, 1])):
                 raise ValueError(
                     "When threshold is None, fcst must contain only 0, 1, or NaN values. "
                     "For probabilistic forecasts, provide threshold parameter."
                 )
 
-        return np.array(0, dtype=np.int8)  # Return dummy value
+        # Return a zero array of the same shape to maintain chunk structure
+        return np.zeros_like(fcst_array, dtype=np.int8)
 
-    # Use map_blocks on the forecast array
-    check_array = da.map_blocks(
-        _assert_valid_fcst,
-        fcst.data,
-        dtype=np.int8,
-        drop_axis=list(range(fcst.ndim)),  # Drop all axes to get scalar
-        chunks=(),  # Scalar output
-    )
+    # Use map_blocks to apply the check to every chunk
+    checked_chunks = fcst.data.map_blocks(_validate_chunk, dtype=np.int8)
 
-    return xr.DataArray(check_array, coords={}, dims=[])
+    # Reduce to a scalar. If any chunk raised an error, this computation will fail.
+    # We use max() to force computation of all chunks when the scalar is requested.
+    check_scalar = checked_chunks.max()
+
+    return xr.DataArray(check_scalar, coords={}, dims=[])
 
 
 def _check_dask_obs_safety(obs: xr.DataArray) -> xr.DataArray:
     """
     Creates a deferred validation check for observation values with Dask arrays.
-
-    The validation is embedded in a Dask computation graph and only executes
-    when .compute() is called, enabling lazy evaluation.
     """
 
-    def _assert_valid_obs(obs_array):
+    def _validate_chunk(obs_array):
         """
-        Function that runs on the actual data during compute.
+        Function that runs on each chunk during compute.
         """
-        obs_min = obs_array.min()
-        obs_max = obs_array.max()
+        # Filter NaNs first
+        valid_mask = ~np.isnan(obs_array)
+
+        # If chunk is all NaNs, it is valid
+        if not np.any(valid_mask):
+            return np.zeros_like(obs_array, dtype=np.int8)
+
+        subset = obs_array[valid_mask]
+        obs_min = np.min(subset)
+        obs_max = np.max(subset)
 
         if obs_min < 0 or obs_max > 1:
             raise ValueError("obs must contain only 0, 1, or NaN values")
 
         # Check strict binary values (0 or 1)
-        unique_obs = np.unique(obs_array[~np.isnan(obs_array)])
+        unique_obs = np.unique(subset)
         if not np.all(np.isin(unique_obs, [0, 1])):
             raise ValueError("obs must contain only 0, 1, or NaN values")
 
-        return np.array(0, dtype=np.int8)  # Return dummy value
+        # Return a zero array of the same shape to maintain chunk structure
+        return np.zeros_like(obs_array, dtype=np.int8)
 
-    # Use map_blocks on the observation array
-    check_array = da.map_blocks(
-        _assert_valid_obs,
-        obs.data,
-        dtype=np.int8,
-        drop_axis=list(range(obs.ndim)),  # Drop all axes to get scalar
-        chunks=(),  # Scalar output
-    )
+    # Use map_blocks to apply the check to every chunk
+    checked_chunks = obs.data.map_blocks(_validate_chunk, dtype=np.int8)
 
-    return xr.DataArray(check_array, coords={}, dims=[])
+    # Reduce to a scalar to force computation of all chunks when requested
+    check_scalar = checked_chunks.max()
+
+    return xr.DataArray(check_scalar, coords={}, dims=[])
 
 
 def _add_assertion_dependency(result: xr.DataArray, assertion_graph: xr.DataArray) -> xr.DataArray:
@@ -113,9 +120,10 @@ def _add_assertion_dependency(result: xr.DataArray, assertion_graph: xr.DataArra
     if HAS_DASK and hasattr(result.data, "dask"):
 
         def identity_with_check(x, check):
-            # Force dependency by performing operation that doesn't change x
-            # but requires check to be computed
-            return x * 1.0 + check * 0.0
+            # Force evaluation of check by accessing it
+            # This ensures check computation happens before returning x
+            _ = check.item()  # Force the check to be computed
+            return x
 
         # Get dimension labels for blockwise
         result_dims = tuple(range(result.ndim))
@@ -167,10 +175,16 @@ def _add_all_assertion_dependencies(result: XarrayLike, assertion_graphs: dict) 
                     combined_assertion = xr.Dataset({"_assertion": combined_assertion})
                     combined_assertion = xr.merge([combined_assertion, graph])
             else:
-                # For DataArrays, just keep track of the last one
-                # (Dask will compute both anyway when result is computed)
-                if not isinstance(combined_assertion, xr.Dataset):
-                    combined_assertion = graph
+                # graph is DataArray
+                if isinstance(combined_assertion, xr.Dataset):
+                    # Add graph to the dataset as a new variable to ensure it's tracked
+                    combined_assertion = xr.merge([combined_assertion, xr.Dataset({"_assertion_da": graph})])
+                else:
+                    # Both are DataArrays.
+                    # Combine them mathematically (addition) to ensure BOTH dependencies are tracked.
+                    # Since assertion graphs return 0, summing them preserves the value 0
+                    # but merges the dask graphs.
+                    combined_assertion = combined_assertion + graph
 
     # Attach the combined validator to the result
     if isinstance(result, xr.DataArray):
@@ -465,7 +479,11 @@ def _calculate_rev_core(
     )
 
     result = relative_economic_value_from_rates(
-        pod=pod, pofd=pofd, climatology=climatology, cost_loss_ratios=cost_loss_ratios, cost_loss_dim=cost_loss_dim
+        pod=pod,
+        pofd=pofd,
+        climatology=climatology,
+        cost_loss_ratios=cost_loss_ratios,
+        cost_loss_dim=cost_loss_dim,
     )
 
     return result
@@ -579,8 +597,7 @@ def _create_output_dataset(
             # Check that thresholds match cost_loss_ratios exactly
             if list(thresholds) != list(cost_loss_ratios):
                 raise ValueError(
-                    "Can only specify derived_metrics 'rational_user' if thresholds and "
-                    "cost_loss_ratios are identical"
+                    "Can only specify derived_metrics 'rational_user' if thresholds and cost_loss_ratios are identical"
                 )
             # Extract diagonal where threshold == cost_loss_ratio
             actual_values = []
@@ -763,7 +780,7 @@ def relative_economic_value_from_rates(
             result_dict[var] = relative_economic_value_from_rates(
                 pod[var],
                 pofd[var] if isinstance(pofd, xr.Dataset) else pofd,
-                climatology[var] if isinstance(climatology, xr.Dataset) else climatology,
+                (climatology[var] if isinstance(climatology, xr.Dataset) else climatology),
                 cost_loss_ratios,
                 cost_loss_dim=cost_loss_dim,
             )
@@ -1071,13 +1088,24 @@ def relative_economic_value(
         # Calculate REV for each threshold
         # The threshold dimension should be PRESERVED in output
         rev = _calculate_rev_core(
-            binary_fcst, obs, cost_loss_xr, dims_to_reduce=dims_to_reduce, weights=weights, cost_loss_dim=cost_loss_dim
+            binary_fcst,
+            obs,
+            cost_loss_xr,
+            dims_to_reduce=dims_to_reduce,
+            weights=weights,
+            cost_loss_dim=cost_loss_dim,
         )
 
         # Post-process for derived metrics or threshold outputs
         if derived_metrics or threshold_outputs:
             result = _create_output_dataset(
-                rev, threshold, cost_loss_ratios, derived_metrics, threshold_outputs, threshold_dim, cost_loss_dim
+                rev,
+                threshold,
+                cost_loss_ratios,
+                derived_metrics,
+                threshold_outputs,
+                threshold_dim,
+                cost_loss_dim,
             )
             if assertion_graphs:
                 result = _add_all_assertion_dependencies(result, assertion_graphs)

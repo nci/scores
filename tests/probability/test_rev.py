@@ -19,6 +19,8 @@ from scores.probability import (
     relative_economic_value_from_rates,
 )
 from scores.probability.rev_impl import (
+    _add_all_assertion_dependencies,
+    _add_assertion_dependency,
     _calculate_rev_core,
     _create_output_dataset,
     _validate_rev_inputs,
@@ -126,7 +128,13 @@ class TestBroadcastingAndDimensionHandling:
                     [1, 0, 1, 1, 0],
                 ],  # time=3
                 [1, 1, 0, 1],  # time=[0,1,2,3], broadcasts to all space
-                [[1.0], [-2.0], [-1.0], [1.0], [-2.0]],  # REV for each space point after reducing time
+                [
+                    [1.0],
+                    [-2.0],
+                    [-1.0],
+                    [1.0],
+                    [-2.0],
+                ],  # REV for each space point after reducing time
             ),
             # fcst missing space dimension - broadcasts over space, reduce over time
             (
@@ -139,7 +147,13 @@ class TestBroadcastingAndDimensionHandling:
                     [0, 1, 1, 0, 1],  # time=2
                     [1, 0, 1, 1, 0],
                 ],  # time=3
-                [[1.0], [-0.5], [-1], [1.0], [-0.5]],  # REV for each space point after reducing time
+                [
+                    [1.0],
+                    [-0.5],
+                    [-1],
+                    [1.0],
+                    [-0.5],
+                ],  # REV for each space point after reducing time
             ),
         ],
         ids=["obs_missing_space", "fcst_missing_space"],
@@ -161,7 +175,9 @@ class TestBroadcastingAndDimensionHandling:
         actual = relative_economic_value(fcst, obs, [0.5], reduce_dims="time")
 
         expected = xr.DataArray(
-            expected_rev, dims=["space", "cost_loss_ratio"], coords={"space": space_coord, "cost_loss_ratio": [0.5]}
+            expected_rev,
+            dims=["space", "cost_loss_ratio"],
+            coords={"space": space_coord, "cost_loss_ratio": [0.5]},
         )
 
         xr.testing.assert_allclose(actual, expected)
@@ -173,7 +189,11 @@ class TestBroadcastingAndDimensionHandling:
             (
                 ["time", "space"],
                 ["time"],
-                [[1, 0, 1, 1, 0], [1, 1, 0, 1, 1], [0, 1, 1, 0, 1]],  # time=0, space=[0,1,2,3,4]  # time=1  # time=2
+                [
+                    [1, 0, 1, 1, 0],
+                    [1, 1, 0, 1, 1],
+                    [0, 1, 1, 0, 1],
+                ],  # time=0, space=[0,1,2,3,4]  # time=1  # time=2
                 [1, 1, 0],  # time=[0,1,2]
                 [[1.0], [-1.0], [-1.0], [1.0], [-1.0]],  # REV for each space point
             ),
@@ -182,7 +202,11 @@ class TestBroadcastingAndDimensionHandling:
                 ["time"],
                 ["time", "space"],
                 [1, 1, 0],  # time=[0,1,2]
-                [[1, 0, 1, 1, 0], [1, 1, 0, 1, 1], [0, 1, 1, 0, 1]],  # time=0, space=[0,1,2,3,4]  # time=1  # time=2
+                [
+                    [1, 0, 1, 1, 0],
+                    [1, 1, 0, 1, 1],
+                    [0, 1, 1, 0, 1],
+                ],  # time=0, space=[0,1,2,3,4]  # time=1  # time=2
                 [[1.0], [-1.0], [-1.0], [1.0], [-1.0]],  # REV for each space point
             ),
         ],
@@ -202,7 +226,9 @@ class TestBroadcastingAndDimensionHandling:
         actual = relative_economic_value(fcst, obs, [0.5], preserve_dims="space")
 
         expected = xr.DataArray(
-            expected_rev, dims=["space", "cost_loss_ratio"], coords={"space": space_coord, "cost_loss_ratio": [0.5]}
+            expected_rev,
+            dims=["space", "cost_loss_ratio"],
+            coords={"space": space_coord, "cost_loss_ratio": [0.5]},
         )
 
         xr.testing.assert_allclose(actual, expected)
@@ -293,7 +319,12 @@ class TestScienceCalculations:
         "pod,pofd,climatology,expected",
         [
             (POD_LEADDAY, POFD_LEADDAY, CLIMATOLOGY_LEADDAY, EXP_REV_CASE0),
-            (HIT_RATE_REV_NONE, FALSE_ALARM_RATE_REV_NONE, OBAR_REV_NONE, EXP_REV_CASE1),
+            (
+                HIT_RATE_REV_NONE,
+                FALSE_ALARM_RATE_REV_NONE,
+                OBAR_REV_NONE,
+                EXP_REV_CASE1,
+            ),
         ],
         ids=["with_lead_day", "no_dimensions"],
     )
@@ -422,7 +453,9 @@ class TestScienceCalculations:
         )
 
         expected = xr.DataArray(
-            [[1.0]], dims=["threshold", "cost_loss_ratio"], coords={"threshold": [0.5], "cost_loss_ratio": [0.3]}
+            [[1.0]],
+            dims=["threshold", "cost_loss_ratio"],
+            coords={"threshold": [0.5], "cost_loss_ratio": [0.3]},
         )
 
         xr.testing.assert_allclose(actual, expected)
@@ -437,7 +470,11 @@ class TestScienceCalculations:
         obs = fcst.copy()
         actual = relative_economic_value(fcst, obs, cost_loss_ratios=scalar_value)
 
-        expected = xr.DataArray([np.nan], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [scalar_value]})
+        expected = xr.DataArray(
+            [np.nan],
+            dims=["cost_loss_ratio"],
+            coords={"cost_loss_ratio": [scalar_value]},
+        )
 
         xr.testing.assert_identical(actual, expected)
 
@@ -453,7 +490,11 @@ class TestREVSpecialFeatures:
         cost_loss_ratios = [0.2, 0.5, 0.8]
 
         expected = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=threshold, threshold_outputs=[threshold]
+            fcst,
+            obs,
+            cost_loss_ratios,
+            threshold=threshold,
+            threshold_outputs=[threshold],
         )
         actual = xr.Dataset(
             data_vars={"threshold_0_5": (["cost_loss_ratio"], [1.0, 1.0, 1.0])},
@@ -483,7 +524,11 @@ class TestREVSpecialFeatures:
         cost_loss_ratios = [0.3, 0.7]
 
         actual = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, threshold_outputs=[0.4, 0.8]
+            fcst,
+            obs,
+            cost_loss_ratios,
+            threshold=thresholds,
+            threshold_outputs=[0.4, 0.8],
         )
         expected = xr.Dataset(
             data_vars={
@@ -502,7 +547,10 @@ class TestREVSpecialFeatures:
         threshold = [0.2, 0.5]
         threshold_outputs = [0.7]  # not in threshold
 
-        with pytest.raises(ValueError, match="values in threshold_outputs must be in the supplied threshold parameter"):
+        with pytest.raises(
+            ValueError,
+            match="values in threshold_outputs must be in the supplied threshold parameter",
+        ):
             _validate_rev_inputs(
                 fcst=fcst,
                 obs=obs,
@@ -520,7 +568,10 @@ class TestREVSpecialFeatures:
         fcst = xr.DataArray(np.array([0, 1]), dims=["time"])
         obs = xr.DataArray(np.array([0, 1]), dims=["time"])
 
-        with pytest.raises(ValueError, match="threshold_outputs can only be used when threshold parameter is provided"):
+        with pytest.raises(
+            ValueError,
+            match="threshold_outputs can only be used when threshold parameter is provided",
+        ):
             _validate_rev_inputs(
                 fcst=fcst,
                 obs=obs,
@@ -536,16 +587,26 @@ class TestREVSpecialFeatures:
     def test_probabilistic_maximum_output(self):
         """Test maximum value output"""
         fcst = xr.DataArray(
-            [0.75] * 4 + [0.25] * 3 + [0.75] * 2 + [0.25] * 1, dims=["time"], coords={"time": np.arange(10)}
+            [0.75] * 4 + [0.25] * 3 + [0.75] * 2 + [0.25] * 1,
+            dims=["time"],
+            coords={"time": np.arange(10)},
         )
-        obs = xr.DataArray([1] * 4 + [0] * 3 + [0] * 2 + [1] * 1, dims=["time"], coords={"time": np.arange(10)})
+        obs = xr.DataArray(
+            [1] * 4 + [0] * 3 + [0] * 2 + [1] * 1,
+            dims=["time"],
+            coords={"time": np.arange(10)},
+        )
         thresholds = np.arange(0.1, 1.0, 0.1)
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
         actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds)
 
         actual_max_result = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["maximum"]
+            fcst,
+            obs,
+            cost_loss_ratios,
+            threshold=thresholds,
+            derived_metrics=["maximum"],
         )
 
         expected_full_result_values = np.array(
@@ -565,7 +626,10 @@ class TestREVSpecialFeatures:
         expected_full_result = xr.DataArray(
             expected_full_result_values,
             dims=["threshold", "cost_loss_ratio"],
-            coords={"threshold": np.arange(0.1, 1.0, 0.1), "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8]},
+            coords={
+                "threshold": np.arange(0.1, 1.0, 0.1),
+                "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8],
+            },
         )
 
         xr.testing.assert_allclose(expected_full_result, actual_full_result)
@@ -580,31 +644,52 @@ class TestREVSpecialFeatures:
     def test_probabilistic_rational_user_output(self):
         """Test rational user output extraction (diagonal extraction)"""
         fcst = xr.DataArray(
-            [0.75] * 4 + [0.25] * 3 + [0.75] * 2 + [0.25] * 1, dims=["time"], coords={"time": np.arange(10)}
+            [0.75] * 4 + [0.25] * 3 + [0.75] * 2 + [0.25] * 1,
+            dims=["time"],
+            coords={"time": np.arange(10)},
         )
-        obs = xr.DataArray([1] * 4 + [0] * 3 + [0] * 2 + [1] * 1, dims=["time"], coords={"time": np.arange(10)})
+        obs = xr.DataArray(
+            [1] * 4 + [0] * 3 + [0] * 2 + [1] * 1,
+            dims=["time"],
+            coords={"time": np.arange(10)},
+        )
         thresholds = [0.2, 0.4, 0.6, 0.8]
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
         actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds)
 
         actual_rational_result = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["rational_user"]
+            fcst,
+            obs,
+            cost_loss_ratios,
+            threshold=thresholds,
+            derived_metrics=["rational_user"],
         )
 
         expected_full_result_values = np.array(
-            [[0.0, 0.0, -0.5, -3.0], [-0.2, 0.3, 0.2, -0.8], [-0.2, 0.3, 0.2, -0.8], [-3.0, -0.5, 0.0, 0.0]]
+            [
+                [0.0, 0.0, -0.5, -3.0],
+                [-0.2, 0.3, 0.2, -0.8],
+                [-0.2, 0.3, 0.2, -0.8],
+                [-3.0, -0.5, 0.0, 0.0],
+            ]
         )
 
         expected_full_result = xr.DataArray(
             expected_full_result_values,
             dims=["threshold", "cost_loss_ratio"],
-            coords={"threshold": [0.2, 0.4, 0.6, 0.8], "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8]},
+            coords={
+                "threshold": [0.2, 0.4, 0.6, 0.8],
+                "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8],
+            },
         )
 
         expected_rational_result = xr.Dataset(
             data_vars={"rational_user": (["cost_loss_ratio"], [0.0, 0.3, 0.2, 0.0])},
-            coords={"threshold": (["cost_loss_ratio"], [0.2, 0.4, 0.6, 0.8]), "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8]},
+            coords={
+                "threshold": (["cost_loss_ratio"], [0.2, 0.4, 0.6, 0.8]),
+                "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8],
+            },
         )
         xr.testing.assert_allclose(expected_full_result, actual_full_result)
         xr.testing.assert_allclose(expected_rational_result, actual_rational_result)
@@ -617,7 +702,11 @@ class TestREVSpecialFeatures:
         thresholds = [0.1, 0.5]  # must match cost_loss_ratios exactly
 
         result = relative_economic_value(
-            fcst, obs, cost_loss_ratios, threshold=thresholds, derived_metrics=["rational_user"]
+            fcst,
+            obs,
+            cost_loss_ratios,
+            threshold=thresholds,
+            derived_metrics=["rational_user"],
         )
 
         # The 'rational_user' DataArray should not contain the threshold_dim anymore
@@ -635,7 +724,11 @@ class TestREVSpecialFeatures:
 
         with mock.patch("xarray.concat") as mock_concat:
             # Make concat return a DataArray without threshold in coords
-            mock_result = xr.DataArray([0.2, 0.9], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.1, 0.2]})
+            mock_result = xr.DataArray(
+                [0.2, 0.9],
+                dims=["cost_loss_ratio"],
+                coords={"cost_loss_ratio": [0.1, 0.2]},
+            )
             mock_concat.return_value = mock_result
 
             result = _create_output_dataset(
@@ -657,7 +750,11 @@ class TestREVSpecialFeatures:
 
         # Test custom threshold_dim only
         result = relative_economic_value(
-            fcst, obs, cost_loss_ratios=[0.3, 0.7], threshold=[0.5], threshold_dim="my_threshold"
+            fcst,
+            obs,
+            cost_loss_ratios=[0.3, 0.7],
+            threshold=[0.5],
+            threshold_dim="my_threshold",
         )
 
         assert "my_threshold" in result.dims
@@ -670,7 +767,13 @@ class TestREVSpecialFeatures:
         obs = xr.DataArray([0, 1, 1, 0], dims=["time"])
 
         # Test custom cost_loss_dim only
-        result = relative_economic_value(fcst, obs, cost_loss_ratios=[0.3, 0.7], threshold=[0.5], cost_loss_dim="alpha")
+        result = relative_economic_value(
+            fcst,
+            obs,
+            cost_loss_ratios=[0.3, 0.7],
+            threshold=[0.5],
+            cost_loss_dim="alpha",
+        )
 
         assert "threshold" in result.dims
         assert "alpha" in result.dims
@@ -799,7 +902,10 @@ class TestWeights:
         # Lat 30°: No skill (1 hit, 1 miss, 1 FA, 1 CN)
 
         fcst = xr.DataArray(
-            [[1, 0, 1, 0], [1, 0, 1, 0]],  # lat 60: fcst matches obs perfectly  # lat 30: fcst uncorrelated with obs
+            [
+                [1, 0, 1, 0],
+                [1, 0, 1, 0],
+            ],  # lat 60: fcst matches obs perfectly  # lat 30: fcst uncorrelated with obs
             dims=["lat", "time"],
             coords={"lat": [60, 30], "time": range(4)},
         )
@@ -820,7 +926,8 @@ class TestWeights:
         # REV = (1.0 + 0.0) / 2 = 0.5
         unweighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5])
         xr.testing.assert_allclose(
-            unweighted, xr.DataArray([0.5], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]})
+            unweighted,
+            xr.DataArray([0.5], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]}),
         )
 
         # Cosine weights: lat 60° -> cos(60°) = 0.5, lat 30° -> cos(30°) = 0.866
@@ -863,7 +970,10 @@ class TestWeights:
             coords={"lat": [60, 30], "time": range(4), "lon": [0, 180]},
         )
         obs = xr.DataArray(
-            [[[1, 0], [0, 1], [1, 0], [0, 1]], [[1, 0], [0, 1], [1, 0], [0, 1]]],  # lat 60  # lat 30
+            [
+                [[1, 0], [0, 1], [1, 0], [0, 1]],
+                [[1, 0], [0, 1], [1, 0], [0, 1]],
+            ],  # lat 60  # lat 30
             dims=["lat", "time", "lon"],
             coords={"lat": [60, 30], "time": range(4), "lon": [0, 180]},
         )
@@ -900,7 +1010,9 @@ class TestWeights:
         #   REV = -0.0915 / 0.25 = -0.366
 
         expected = xr.DataArray(
-            [[0.366], [-0.366]], dims=["lon", "cost_loss_ratio"], coords={"lon": [0, 180], "cost_loss_ratio": [0.5]}
+            [[0.366], [-0.366]],
+            dims=["lon", "cost_loss_ratio"],
+            coords={"lon": [0, 180], "cost_loss_ratio": [0.5]},
         )
         xr.testing.assert_allclose(result, expected, atol=0.001)
 
@@ -924,14 +1036,20 @@ class TestDatasetInputs:
     def test_forecast_as_dataset(self):
         """Test with forecast as Dataset."""
         fcst_ds = xr.Dataset(
-            {"ecmwf": xr.DataArray([0, 1, 1, 0], dims=["time"]), "access": xr.DataArray([1, 0, 0, 1], dims=["time"])}
+            {
+                "ecmwf": xr.DataArray([0, 1, 1, 0], dims=["time"]),
+                "access": xr.DataArray([1, 0, 0, 1], dims=["time"]),
+            }
         )
         obs = xr.DataArray([0, 1, 1, 0], dims=["time"])
 
         actual = relative_economic_value(fcst_ds, obs, [0.5])
 
         expected = xr.Dataset(
-            data_vars={"ecmwf": (["cost_loss_ratio"], [1.0]), "access": (["cost_loss_ratio"], [-1.0])},
+            data_vars={
+                "ecmwf": (["cost_loss_ratio"], [1.0]),
+                "access": (["cost_loss_ratio"], [-1.0]),
+            },
             coords={"cost_loss_ratio": [0.5]},
         )
 
@@ -961,7 +1079,10 @@ class TestDatasetInputs:
     def test_both_as_dataset(self):
         """Test with both as Dataset."""
         fcst_ds = xr.Dataset(
-            {"ecmwf": xr.DataArray([1, 1, 1, 0], dims=["time"]), "access": xr.DataArray([0, 0, 0, 1], dims=["time"])}
+            {
+                "ecmwf": xr.DataArray([1, 1, 1, 0], dims=["time"]),
+                "access": xr.DataArray([0, 0, 0, 1], dims=["time"]),
+            }
         )
         obs_ds = xr.Dataset(
             {
@@ -974,10 +1095,22 @@ class TestDatasetInputs:
 
         expected = xr.Dataset(
             data_vars={
-                "access__vs__radar_data": (["threshold", "cost_loss_ratio"], np.array([[-11 / 6, -7 / 6]])),
-                "access__vs__station_data": (["threshold", "cost_loss_ratio"], np.array([[-1 / 6, 0.5]])),
-                "ecmwf__vs__radar_data": (["threshold", "cost_loss_ratio"], np.array([[0.5, -1 / 6]])),
-                "ecmwf__vs__station_data": (["threshold", "cost_loss_ratio"], np.array([[-7 / 6, -11 / 6]])),
+                "access__vs__radar_data": (
+                    ["threshold", "cost_loss_ratio"],
+                    np.array([[-11 / 6, -7 / 6]]),
+                ),
+                "access__vs__station_data": (
+                    ["threshold", "cost_loss_ratio"],
+                    np.array([[-1 / 6, 0.5]]),
+                ),
+                "ecmwf__vs__radar_data": (
+                    ["threshold", "cost_loss_ratio"],
+                    np.array([[0.5, -1 / 6]]),
+                ),
+                "ecmwf__vs__station_data": (
+                    ["threshold", "cost_loss_ratio"],
+                    np.array([[-7 / 6, -11 / 6]]),
+                ),
             },
             coords={
                 "threshold": [0.5],
@@ -1045,13 +1178,39 @@ class TestDatasetInputs:
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"model_a", "model_b"}
 
+    def test_relative_economic_value_from_rates_type_error(self):
+        """
+        Tests the error when mixing datasets and dataarrays
+        """
+        # Create a DataArray for POD
+        pod = xr.DataArray([0.8], dims=["threshold"], coords={"threshold": [0.5]})
+
+        # Create a Dataset for POFD (mismatched type)
+        pofd = xr.Dataset({"var": (["threshold"], [0.2])}, coords={"threshold": [0.5]})
+
+        climatology = xr.DataArray(0.3)
+        cost_loss_ratios = [0.5]
+
+        # Verify that mixing DataArray and Dataset raises TypeError
+        with pytest.raises(
+            TypeError,
+            match="Both pod and pofd must be either xarray DataArrays or xarray Datasets",
+        ):
+            relative_economic_value_from_rates(pod, pofd, climatology, cost_loss_ratios)
+
     def test_pod_and_climatology_as_dataset(self):
         """Test with POD and climatology as Datasets."""
         pod_ds = xr.Dataset(
-            {"region_1": xr.DataArray([0.8], dims=["threshold"]), "region_2": xr.DataArray([0.6], dims=["threshold"])}
+            {
+                "region_1": xr.DataArray([0.8], dims=["threshold"]),
+                "region_2": xr.DataArray([0.6], dims=["threshold"]),
+            }
         )
         pofd_ds = xr.Dataset(
-            {"region_1": xr.DataArray([0.15], dims=["threshold"]), "region_2": xr.DataArray([0.15], dims=["threshold"])}
+            {
+                "region_1": xr.DataArray([0.15], dims=["threshold"]),
+                "region_2": xr.DataArray([0.15], dims=["threshold"]),
+            }
         )
         climatology_ds = xr.Dataset({"region_1": xr.DataArray(0.3), "region_2": xr.DataArray(0.45)})
 
@@ -1183,7 +1342,13 @@ class TestErrorHandling:
         obs = xr.DataArray([0, 1, 1], dims=["time"])
 
         try:
-            relative_economic_value(fcst, obs, [0.3, 0.5], threshold=[0.2, 0.5], derived_metrics=["rational_user"])
+            relative_economic_value(
+                fcst,
+                obs,
+                [0.3, 0.5],
+                threshold=[0.2, 0.5],
+                derived_metrics=["rational_user"],
+            )
             raise AssertionError("Should have raised ValueError")
         except ValueError as e:
             assert "identical" in str(e)
@@ -1196,7 +1361,13 @@ class TestErrorHandling:
         derived_metrics = ["pizza_oven"]
 
         try:
-            relative_economic_value(fcst, obs, cost_loss_ratios, threshold=[0.5], derived_metrics=derived_metrics)
+            relative_economic_value(
+                fcst,
+                obs,
+                cost_loss_ratios,
+                threshold=[0.5],
+                derived_metrics=derived_metrics,
+            )
             raise AssertionError("Should have raised ValueError")
         except ValueError as e:
             assert "Invalid derived_metrics" in str(e)
@@ -1299,7 +1470,9 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="array must be one-dimensional"):
             check_monotonic_array([[0.1, 0.2], [0.3, 0.4]])
 
-    def test_check_args_true_validates_and_raises_for_probabilistic_without_threshold(self):
+    def test_check_args_true_validates_and_raises_for_probabilistic_without_threshold(
+        self,
+    ):
         """
         When check_args=True, probabilistic forecasts require a threshold.
         _validate_rev_inputs should raise a ValueError in that case.
@@ -1307,7 +1480,10 @@ class TestErrorHandling:
         fcst = PROB_FCST_DA
         obs = BINARY_DA
 
-        with pytest.raises(ValueError, match="When threshold is None, fcst must contain only 0, 1, or NaN values"):
+        with pytest.raises(
+            ValueError,
+            match="When threshold is None, fcst must contain only 0, 1, or NaN values",
+        ):
             relative_economic_value(
                 fcst,
                 obs,
@@ -1321,7 +1497,10 @@ class TestErrorHandling:
         fcst = xr.DataArray(np.array([-0.1, 1.2]), dims=["time"])
         obs = xr.DataArray(np.array([0, 1]), dims=["time"])
 
-        with pytest.raises(ValueError, match="When threshold is provided, fcst must contain values between 0 and 1"):
+        with pytest.raises(
+            ValueError,
+            match="When threshold is provided, fcst must contain values between 0 and 1",
+        ):
             relative_economic_value(
                 fcst,
                 obs,
@@ -1330,7 +1509,9 @@ class TestErrorHandling:
                 check_args=True,
             )
 
-    def test_check_args_false_skips_validation_allows_probabilistic_without_threshold(self):
+    def test_check_args_false_skips_validation_allows_probabilistic_without_threshold(
+        self,
+    ):
         """
         When check_args=False, the function should skip input validation and proceed.
         This test asserts no ValueError is raised for a probabilistic fcst without threshold.
@@ -1347,7 +1528,11 @@ class TestErrorHandling:
             check_args=False,  # skip validation
         )
 
-        expected = xr.DataArray([np.nan, np.nan], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.1, 0.5]})
+        expected = xr.DataArray(
+            [np.nan, np.nan],
+            dims=["cost_loss_ratio"],
+            coords={"cost_loss_ratio": [0.1, 0.5]},
+        )
         xr.testing.assert_allclose(actual, expected)
 
     def test_rational_user_without_threshold_raises(self, make_contingency_data):
@@ -1355,7 +1540,8 @@ class TestErrorHandling:
         fcst, obs = make_contingency_data(1, 1, 1, 1)
 
         with pytest.raises(
-            ValueError, match="derived_metrics 'rational_user' can only be used when threshold parameter is provided"
+            ValueError,
+            match="derived_metrics 'rational_user' can only be used when threshold parameter is provided",
         ):
             relative_economic_value(
                 fcst=fcst,
@@ -1577,7 +1763,9 @@ class TestDaskCompatibility:
         assert is_dask_collection(result.data)
 
         expected = xr.DataArray(
-            [[1.0]], dims=["threshold", "cost_loss_ratio"], coords={"threshold": [0.5], "cost_loss_ratio": [0.5]}
+            [[1.0]],
+            dims=["threshold", "cost_loss_ratio"],
+            coords={"threshold": [0.5], "cost_loss_ratio": [0.5]},
         )
 
         xr.testing.assert_allclose(result, expected)
@@ -1587,8 +1775,14 @@ class TestDaskCompatibility:
 
     def test_rev_with_dask_multidimensional(self):
         """Test REV with multi-dimensional Dask arrays."""
-        fcst = xr.DataArray(da.from_array(np.random.rand(10, 5), chunks=(5, 5)), dims=["time", "location"])
-        obs = xr.DataArray(da.from_array(np.random.randint(0, 2, (10, 5)), chunks=(5, 5)), dims=["time", "location"])
+        fcst = xr.DataArray(
+            da.from_array(np.random.rand(10, 5), chunks=(5, 5)),
+            dims=["time", "location"],
+        )
+        obs = xr.DataArray(
+            da.from_array(np.random.randint(0, 2, (10, 5)), chunks=(5, 5)),
+            dims=["time", "location"],
+        )
 
         # Reduce over time, preserve location
         result = relative_economic_value(fcst, obs, [0.5], threshold=[0.5], reduce_dims=["time"], check_args=False)
@@ -1602,7 +1796,10 @@ class TestDaskCompatibility:
         """Ensure Dask arrays aren't prematurely computed during setup."""
         # Large array that would be expensive to compute
         large_fcst = xr.DataArray(da.random.random((1000, 1000), chunks=(100, 100)), dims=["time", "location"])
-        large_obs = xr.DataArray(da.random.randint(0, 2, (1000, 1000), chunks=(100, 100)), dims=["time", "location"])
+        large_obs = xr.DataArray(
+            da.random.randint(0, 2, (1000, 1000), chunks=(100, 100)),
+            dims=["time", "location"],
+        )
 
         # This should be fast (no computation)
         start = time.time()
@@ -1640,6 +1837,212 @@ class TestDaskCompatibility:
         # Just verify it completes without error
         assert not np.isnan(computed.values).all()
 
+    def test_dask_fcst_binary_below_zero_deferred(self):
+        """Test that binary fcst < 0 defers error to compute time."""
+        # Invalid: contains value < 0
+        fcst = xr.DataArray(da.from_array([-1, 0, 1, 0], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+
+        result = relative_economic_value(fcst, obs, [0.5], threshold=None, check_args=True)
+        assert isinstance(result.data, da.Array)
+
+        with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
+            result.compute()
+
+    def test_dask_fcst_binary_above_one_deferred(self):
+        """Test that binary fcst > 1 defers error to compute time."""
+        # Invalid: contains value > 1
+        fcst = xr.DataArray(da.from_array([0, 2, 1, 0], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+
+        result = relative_economic_value(fcst, obs, [0.5], threshold=None, check_args=True)
+        assert isinstance(result.data, da.Array)
+
+        with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
+            result.compute()
+
+    def test_dask_obs_fractional_value_deferred(self):
+        """Test that obs with fractional values (not 0 or 1) defers error to compute time."""
+        # Invalid: contains 0.5 which passes min/max check but fails strict binary check
+        fcst = xr.DataArray(da.from_array([0, 1, 1, 0], chunks=2), dims=["time"])
+        obs = xr.DataArray(da.from_array([0, 0.5, 1, 0], chunks=2), dims=["time"])
+
+        result = relative_economic_value(fcst, obs, [0.5], threshold=[0.5], check_args=True)
+        assert isinstance(result.data, da.Array)
+
+        with pytest.raises(ValueError, match="obs must contain only 0, 1, or NaN values"):
+            result.compute()
+
+    def test_add_assertion_dependency_non_dask_passthrough(self):
+        """Test that non-Dask arrays pass through unchanged."""
+        result = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        assertion_graph = xr.DataArray(True)  # Dummy assertion
+
+        output = _add_assertion_dependency(result, assertion_graph)
+
+        # Should return the same object since it's not Dask
+        assert output is result
+        xr.testing.assert_identical(output, result)
+
+    def test_relative_economic_value_dataset_with_assertions(self):
+        """
+        Tests REV properly does _add_all_assertion_dependencies inside the Dataset branch
+        """
+        # 1. Setup Dask-backed Datasets to ensure _validate_rev_inputs returns assertion_graphs
+        fcst_ds = xr.Dataset({"tp": xr.DataArray(da.from_array([0, 1], chunks=2), dims=["time"])})
+        obs_ds = xr.Dataset({"tp": xr.DataArray(da.from_array([0, 1], chunks=2), dims=["time"])})
+
+        cost_loss_ratios = [0.5]
+
+        # 2. Call the function with check_args=True (default)
+        # This triggers the Dataset branch and the assertion attachment
+        result = relative_economic_value(fcst_ds, obs_ds, cost_loss_ratios, check_args=True)
+
+        # 3. Verify the result is a Dataset and can be computed
+        # (Computation ensures the attached assertions actually run and pass)
+        assert isinstance(result, xr.Dataset)
+        assert "tp__vs__tp" in result.data_vars
+
+        # Trigger computation to verify the dependency doesn't break the graph
+        computed_result = result.compute()
+        assert not np.isnan(computed_result["tp__vs__tp"]).any()
+
+    def test_rev_binary_assertion_attachment(self):
+        """
+        Targets the final assertion attachment in the binary DataArray path.
+        """
+        # 1. Dask arrays ensure assertion_graphs is not None
+        fcst = xr.DataArray(da.from_array([0, 1], chunks=2), dims="t")
+        obs = xr.DataArray(da.from_array([0, 1], chunks=2), dims="t")
+
+        # 2. No threshold = Binary path; No Dataset = DataArray path
+        result = relative_economic_value(fcst, obs, [0.5])
+
+        # Verification
+        assert isinstance(result, xr.DataArray)
+        # If the line was hit, the result will have a dask name containing 'blockwise'
+        # from the assertion dependency injection.
+        assert hasattr(result.data, "dask")
+
+    def test_rev_probabilistic_dataset_output_assertion_attachment(self):
+        """
+        Targets case where:
+        threshold not none (probabilistic path)
+        derive_metrics or threshold_outputs not none (dataset output path)
+        assertion_graphs not none (using dask backed inputs)
+        """
+        # 1. Dask arrays trigger assertion_graphs generation
+        fcst = xr.DataArray(da.from_array([0.2, 0.8], chunks=2), dims="time")
+        obs = xr.DataArray(da.from_array([0, 1], chunks=2), dims="time")
+
+        # 2. threshold must be provided
+        # 3. derived_metrics or threshold_outputs must be provided to enter the Dataset branch
+        result = relative_economic_value(
+            fcst,
+            obs,
+            cost_loss_ratios=[0.5],
+            threshold=[0.5],
+            derived_metrics=["maximum"],  # This is the key to entering the target block
+        )
+
+        # Verification
+        assert isinstance(result, xr.Dataset)
+        assert "maximum" in result.data_vars
+
+        # Ensure the Dask graph is intact and the validation runs
+        result.compute()
+
+
+@pytest.mark.skipif(not HAS_DASK, reason="Tests require Dask")
+class TestAddAssertionDependenciesInternal:
+    """
+    Directly tests _add_all_assertion_dependencies with scalar assertion graphs
+    to match the expectations of _add_assertion_dependency.
+    """
+
+    def test_empty_assertion_graphs(self):
+        """Covers: if not assertion_graphs: return result"""
+        result = xr.DataArray([1.0], dims="x").chunk({"x": 1})
+        out = _add_all_assertion_dependencies(result, {})
+        assert out is result
+
+    def test_merge_two_dataset_assertions(self):
+        """
+        Covers:
+            if isinstance(combined_assertion, xr.Dataset):
+                combined_assertion = xr.merge([combined_assertion, graph])
+        """
+        result = xr.DataArray([1.0], dims="x").chunk({"x": 1})
+
+        # Assertion graphs MUST be scalar (0D) for _add_assertion_dependency
+        # to work with the hardcoded '()' in da.blockwise.
+        graph1 = xr.Dataset({"check1": xr.DataArray(da.from_array(0, chunks=()))})
+        graph2 = xr.Dataset({"check2": xr.DataArray(da.from_array(0, chunks=()))})
+
+        assertion_graphs = {"g1": graph1, "g2": graph2}
+
+        out = _add_all_assertion_dependencies(result, assertion_graphs)
+        assert out.compute().item() == 1.0
+
+    def test_dataarray_result_with_dataset_assertion(self):
+        """
+        Covers extraction of first variable from Dataset assertion.
+        """
+        result = xr.DataArray([10.0], dims="x").chunk({"x": 1})
+
+        # Assertion is a Dataset with scalar variables
+        graph_ds = xr.Dataset({"check_a": xr.DataArray(da.from_array(0, chunks=()))})
+
+        assertion_graphs = {"checks": graph_ds}
+
+        out = _add_all_assertion_dependencies(result, assertion_graphs)
+        assert out.compute().item() == 10.0
+
+    def test_dataset_result_with_name_mismatch(self):
+        """
+        Covers the branch where the result variable name doesn't match assertion name.
+        """
+        result = xr.Dataset({"temp": xr.DataArray([25.0], dims="x").chunk({"x": 1})})
+
+        # Assertion name "other" does not match result name "temp"
+        graph_ds = xr.Dataset({"other": xr.DataArray(da.from_array(0, chunks=()))})
+
+        assertion_graphs = {"checks": graph_ds}
+
+        out = _add_all_assertion_dependencies(result, assertion_graphs)
+        assert out["temp"].compute().item() == 25.0
+
+    def test_dataset_result_with_dataarray_assertion(self):
+        """
+        Covers attaching a DataArray assertion to all variables in a Dataset result.
+        """
+        result = xr.Dataset({"temp": xr.DataArray([10.0], dims="x").chunk({"x": 1})})
+
+        # Scalar DataArray assertion
+        graph_da = xr.DataArray(da.from_array(0, chunks=()))
+
+        assertion_graphs = {"simple_check": graph_da}
+
+        out = _add_all_assertion_dependencies(result, assertion_graphs)
+        assert out["temp"].compute().item() == 10.0
+
+    def test_merge_dataarray_into_dataset_assertion(self):
+        """
+        Covers:
+            combined_assertion = xr.Dataset({"_assertion": combined_assertion})
+            combined_assertion = xr.merge([combined_assertion, graph])
+        """
+        result = xr.DataArray([1.0], dims="x").chunk({"x": 1})
+
+        # Mix of DataArray and Dataset in the assertion_graphs dict
+        graph1 = xr.DataArray(da.from_array(0, chunks=()))
+        graph2 = xr.Dataset({"check2": xr.DataArray(da.from_array(0, chunks=()))})
+
+        assertion_graphs = {"g1": graph1, "g2": graph2}
+
+        out = _add_all_assertion_dependencies(result, assertion_graphs)
+        assert out.compute().item() == 1.0
+
 
 @pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 class TestDaskValidationTiming:
@@ -1662,7 +2065,11 @@ class TestDaskValidationTiming:
         # Should NOT raise immediately - graph construction should succeed
         try:
             result = relative_economic_value(
-                fcst, obs, [0.5], threshold=[0.5], check_args=True  # Even with True, should defer for Dask
+                fcst,
+                obs,
+                [0.5],
+                threshold=[0.5],
+                check_args=True,  # Even with True, should defer for Dask
             )
 
             # Should return a lazy Dask array
@@ -1692,7 +2099,12 @@ class TestDaskValidationTiming:
 
         # Should NOT raise immediately - REV-level validation is skipped
         result = relative_economic_value(
-            fcst, obs, [0.5], threshold=[0.5], weights=bad_weights, check_args=False  # Skips REV-level validation only
+            fcst,
+            obs,
+            [0.5],
+            threshold=[0.5],
+            weights=bad_weights,
+            check_args=False,  # Skips REV-level validation only
         )
 
         # Should be lazy
@@ -1747,8 +2159,7 @@ class TestDaskValidationTiming:
         except ValueError as e:
             if "fcst must contain only 0, 1, or NaN values" in str(e):
                 pytest.fail(
-                    "Binary fcst validation raised immediately, "
-                    "but should be deferred until .compute() for Dask arrays"
+                    "Binary fcst validation raised immediately, but should be deferred until .compute() for Dask arrays"
                 )
             else:
                 raise
@@ -1854,8 +2265,7 @@ class TestDaskValidationTiming:
         except ValueError as e:
             if "obs must contain only 0, 1, or NaN values" in str(e):
                 pytest.fail(
-                    "Dataset obs validation raised immediately, "
-                    "but should be deferred until .compute() for Dask arrays"
+                    "Dataset obs validation raised immediately, but should be deferred until .compute() for Dask arrays"
                 )
             else:
                 raise
@@ -1876,7 +2286,12 @@ class TestDaskValidationTiming:
         weights = xr.DataArray(da.from_array([1.0, 2.0, 1.0, 1.0], chunks=2), dims=["time"])
 
         result = relative_economic_value(
-            fcst, obs, [0.3, 0.7], threshold=[0.5], weights=weights, check_args=True  # All validation should pass
+            fcst,
+            obs,
+            [0.3, 0.7],
+            threshold=[0.5],
+            weights=weights,
+            check_args=True,  # All validation should pass
         )
 
         assert isinstance(result.data, da.Array)
