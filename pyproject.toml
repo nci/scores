@@ -107,11 +107,9 @@ select = [
 ignore = [
     "E741", # Allow ambiguous variable names
     "S101", # Allow asserts
-    # The three ignores below need to be fixed
+    # The ignore below need to be fixed
     # See GH issue #975
-    #"W291", #TODO Trailing whitespace (57)
     "E501", #TODO Line too long (50)
-    #"W293", #TODO Blank lint contains whitespace (6) 
 ]
 
 [tool.ruff.format]

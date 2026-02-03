@@ -4,7 +4,7 @@ The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into
 the probability module to be part of the probability API.
 
 """
-
+# ruff: noqa: W291
 # pylint: disable=too-many-lines
 
 import warnings
