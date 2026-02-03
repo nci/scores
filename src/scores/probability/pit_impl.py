@@ -7,24 +7,25 @@ http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf)
 which interprets the PIT of a forecast--observation pair as a CDF. Details of this
 approach are described in this docstring.
 
-For a forecast--observation pair (F,y), where F is a CDF,
+For a forecast--observation pair (G,y), where G is a CDF,
 the corresponding PIT value is the uniform distribution on the closed interval
-[F(y-), F(y)], where F(y-) denotes the left-hand limit.
-So if F(y-)=F(y), the PIT value is the distribution concentrated at the point F(y).
+[G(y-), G(y)], where G(y-) denotes the left-hand limit.
+So if F(G-)=G(y), the PIT value is the distribution concentrated at the point G(y).
 PIT values for particular forecast cases can be represented in the form
-    lower = F(y-), upper = F(y)
-or can be described by the CDF of the uniform distribution on the interval [F(y-), F(y)].
+    lower = G(y-), upper = G(y)
+or can be described by the CDF of the uniform distribution on the interval [G(y-), G(y)].
 
 The code here first converts inputs to the [lower, upper] representation.
 Then it converts this representation to the uniform CDF representation, with CDF values
-stored at a minimal number of points (the remaining values obtained exactly when required
-via linear interpolation).
+stored at a minimal number of points. The remaining values can be obtained exactly when
+required via linear interpolation.
 
 Once each forecast case has a PIT value in CDF representation, the (possibly weighted)
 mean PIT value across all forecast cases is the weighted mean across all the CDF representations.
 We call this the PIT distribution (or PIT CDF) for all the forecast cases.
+This PIT CDF is given the symbol F in docstrings throughout this module.
 
-The PIT distribution is always piecewise linear and right-continuous. It can be represented
+The PIT distribution F is always piecewise linear and right-continuous. It can be represented
 using "left" and "right" values, respectively representing the left-hand limit of the PIT CDF
 and the value (which equals the right-hand limit) of the CDF. All standard statistics of
 PIT for the set of forecast cases, such as PIT histogram bar heights and alpha scores,
@@ -32,10 +33,10 @@ can be calculated exactly from this representation.
 
 The code here is structured as follows:
 1. The two classes `Pit` and `PitFcstAtObs` are introduced
-2. Private functions that calculate the PIT distribution are then given
-3. Private functions that calculate the PIT statistics from the PIT distribution are then presented.
+2. Private functions that calculate the PIT distribution F are then given
+3. Private functions that calculate the PIT statistics from the PIT distribution F are then presented.
 
-The tutorial is a good place to start to understand the big picture.
+The tutorial is a good place to obtain an overview of the big picture.
 """
 
 import warnings
@@ -109,14 +110,14 @@ class Pit:
     Args:
         fcst: an xarray object of forecasts, containing the dimension ``special_fcst_dim``.
             The values of ``fcst`` are the values of the ensemble if ``fcst_type='ensemble'``,
-            or the values of the predictive CDF if ``fcst_type='cdf'``
+            or the values of the predictive CDF :math:`G` if ``fcst_type='cdf'``
         obs: an xarray object of observations.
         special_fcst_dim: name of the ensemble member dimension in ``fcst`` if ``fcst_type='ensemble'``
             or of the CDF threshold dimension in ``fcst`` if ``fcst_type='cdf'``.
         fcst_type: either "ensemble" or "cdf".
         fcst_left: The values of the left-hand limits of the predictive CDF. Must have the same
             shape and dimensions as ``fcst``.
-            Only required when ``fcst_type='cdf'`` and the predictive CDF is discontinuous.
+            Only required when ``fcst_type='cdf'`` and the predictive CDF :math:`G` is discontinuous.
         reduce_dims: Optionally specify which dimensions to reduce when calculating the
             PIT CDF values, where the mean is taken over all forecast cases.
             All other dimensions will be preserved. As a special case, 'all' will allow
@@ -356,7 +357,7 @@ class PitFcstAtObs:
     (optionally) :math:`G(y-)`. If calculating ``PitFcstAtObs()`` is slow or runs into memory
     issues, then rounding the values of :math:`G(y)` and :math:`G(y-)` may resolve this problem with
     very little change to calculated statistics. If the predictive distributions are in the form of an ensemble
-    or of CDFs whose values which are harder to evaluate at the observations, consider using the
+    or of CDFs whose values are harder to evaluate at the observations, consider using the
     ``Pit`` implementation instead.
 
     Args:
@@ -457,8 +458,8 @@ class PitFcstAtObs:
     def plotting_points(self) -> XarrayLike:
         """
         Returns an xarray object with the plotting points for the graph of the
-        PIT CDF :math:`F`. The x (horizontal) plotting positions are values from the "pit_x_value" index, while the
-        y (vertical) plotting positions are values in the output xarray object.
+        PIT CDF :math:`F`. The x (horizontal) plotting positions are values from the "pit_x_value" index,
+        while the y (vertical) plotting positions are values in the output xarray object.
         All other points on the graph are determined by linear interpolation.
 
         Also useful for generating PIT-uniform probability plots.
@@ -825,12 +826,12 @@ def _pit_values_for_cdf_array(
     fcst_left: xr.DataArray, fcst_right: xr.DataArray, obs: xr.DataArray, threshold_dim: str
 ) -> xr.DataArray:
     """
-    For each forecast case in the form of an CDF F (in xr.DataArray format), the PIT value of F
+    For each forecast case in the form of an CDF G (in xr.DataArray format), the PIT value of G
     for the corresponding observation y is a uniform distribution over the closed
     interval [lower,upper], where
-        lower = F(y-)
-        upper = F(y)
-    and F(y-) denotes the left-hand limit of F at y.
+        lower = G(y-)
+        upper = G(y)
+    and G(y-) denotes the left-hand limit of F at y.
 
     Returns an array of [lower,upper] values in the dimension 'uniform_endpoint'.
 
@@ -961,7 +962,7 @@ def _pit_values_for_cdf(
     Args:
         fcst_left: xarray object forecast CDF left-limit values, including dimension `threshold_dim`
         fcst_right: xarray object forecast CDF right-limit values, including dimension `threshold_dim`.
-            Assumed to have same shape, variabes, coords, etc as fcst_right
+            Assumed to have same shape, variables, coords, etc as fcst_right
         obs: array of forecast values, excluding `threshold_dim`
         threshold_dim: name of the threshold dimension in `fcst`
 
@@ -1443,7 +1444,7 @@ def _diagonal_intersection_points(param_plotting_points: dict) -> np.ndarray:
     """
     Gets the x values where the line y = x intersects with the piecewise linear graph
     y = F(x), where F is the PIT CDF. If the graph of F is discontinuous (vertical)
-    at a point of intersection, or if F is coinncident with the diagonal over an open interval,
+    at a point of intersection, or if F is coincident with the diagonal over an open interval,
     then the corresponding points of intersection are not returned as they are not needed to
     calculate the alpha score.
 
