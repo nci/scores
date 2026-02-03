@@ -113,6 +113,10 @@
             "orcid": "https://orcid.org/0009-0004-0604-3623",
             "affiliation": "Deltares, the Netherlands",
             "name": "Beunk, Jurian"
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Wu, Xiaoxi"
         }
     ],
     "license": "Apache-2.0",
