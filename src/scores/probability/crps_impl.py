@@ -4,7 +4,7 @@ The two primary methods, `crps_cdf` and `crps_for_ensemble` are imported into
 the probability module to be part of the probability API.
 
 """
-
+# ruff: noqa: W291
 # pylint: disable=too-many-lines
 
 import warnings
@@ -201,7 +201,7 @@ def crps_cdf(
     This can be decomposed into an over-forecast penalty:
         :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) - 
         \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
-    
+
     and an under-forecast penalty:
         :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - 
         \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
@@ -276,7 +276,7 @@ def crps_cdf(
             "step", "forward" or "backward". If the weight function is continuous, 
             "linear" is probably the best choice. If it is an increasing step function, 
             "forward" may be best.
-                  
+
         integration_method (str): one of "exact" or "trapz".
         preserve_dims (Tuple[str]): dimensions to preserve in the output. All other dimensions are collapsed
             by taking the mean.
@@ -654,7 +654,7 @@ def adjust_fcst_for_crps(
             values give a higher CRPS in which case original values are kept.
 
     See `scores.probability.functions.cdf_envelope` for a description of the 'CDF envelope'.
- 
+
     If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
     `scores.probability.functions.fill_cdf`.
 
@@ -848,7 +848,7 @@ def crps_for_ensemble(
             unbiased estimate for the second expectation.
 
     When the `include_components` flag is set to `True`, the CRPS components are calculated as
-    
+
 
     .. math::
         CRPS(x_i, x_j, y) = O(x_i, y) + U(x_i, y) - S(x_i, x_j)

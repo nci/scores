@@ -22,14 +22,14 @@ string as an instruction to reduce or preserve every dimension.
 """
 
 ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
-You are requesting to preserve a dimension which does not appear in your data 
+You are requesting to preserve a dimension which does not appear in your data
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
 ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = """
 You are requesting to reduce a dimension which does not appear in your data
-(fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been 
+(fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 

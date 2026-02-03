@@ -176,7 +176,7 @@ def _check_aggregate_inputs(
     if reduce_dims is None and weights is not None:
         warnings.warn(
             """
-            Weights were provided but the point-wise score across all dimensions is being preserved. 
+            Weights were provided but the point-wise score across all dimensions is being preserved.
             Weights will be ignored.
             """,
             UserWarning,
