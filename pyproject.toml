@@ -138,6 +138,7 @@ invalid-argument-type = "ignore"
 invalid-type-arguments = "ignore"
 invalid-assignment = "ignore"
 invalid-type-form = "ignore"
+invalid-return-type = "ignore"
 unsupported-operator = "ignore"
 
 
