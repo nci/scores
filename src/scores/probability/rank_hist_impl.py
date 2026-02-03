@@ -30,7 +30,7 @@ def _value_at_rank(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> Xa
     Args:
         fcst: xarray object of ensemble forecasts, including dimension `ens_member_dim`
         obs: xarray object of observations
-        ens_member_dim: name of the ensemble memeber dimension in `fcst`
+        ens_member_dim: name of the ensemble member dimension in `fcst`
 
     Returns:
         the value of the rank for each (fcst, obs) across all possible ranks, as an xarray
@@ -85,7 +85,7 @@ def rank_histogram(
     ensures that the expected rank histogram of a probabilistically calibrated ensemble is flat.
 
     In the case when there is a ``NaN`` in one of the ensemble members, the entire ensemble is
-    treates as ``NaN`` for this particular forecast case.
+    treats as ``NaN`` for this particular forecast case.
 
     Args:
         fcst: forecast of ensemble values, containing the dimension ``ens_member_dim``

@@ -27,7 +27,7 @@ We call this the PIT distribution (or PIT CDF) for all the forecast cases.
 The PIT distribution is always piecewise linear and right-continuous. It can be represented
 using "left" and "right" values, respectively representing the left-hand limit of the PIT CDF
 and the value (which equals the right-hand limit) of the CDF. All standard statistics of
-PIT for the set of forecast cases, such as PIT histogram bar hieghts and alpha scores,
+PIT for the set of forecast cases, such as PIT histogram bar heights and alpha scores,
 can be calculated exactly from this representation.
 
 The code here is structured as follows:
@@ -136,7 +136,7 @@ class Pit:
             (possibly weighted) PIT distribution across all forecast cases. The points :math:`x`
             are in the dimension "pit_x_value". The CDF :math:`F` of the PIT distribution is completely
             reconstructable using values from ``.left``, ``.right`` and linear interpolation.
-        right: xarray object giving the values :math:`F(x-)` of the CDF :math:`F` of the
+        right: xarray object giving the values :math:`F(x)` of the CDF :math:`F` of the
             (possibly weighted) PIT distribution across all forecast cases. The points :math:`x`
             are in the dimension "pit_x_value". The CDF :math:`F` of the PIT distribution is completely
             reconstructable using values from ``.left``, ``.right`` and linear interpolation.
@@ -262,8 +262,8 @@ class Pit:
 
         Returns:
             dictionary of xarray objects with the following keys:
-            - "x_plotting_position", contaning :math:`x(t)` values
-            - "y_plotting_position", contaning :math:`y(t)` values
+            - "x_plotting_position", containing :math:`x(t)` values
+            - "y_plotting_position", containing :math:`y(t)` values
             with :math:`t` values in the "plotting_point" dimension.
         """
         return _get_plotting_points_param(self.left, self.right)
@@ -280,12 +280,12 @@ class Pit:
 
         Example:
             If ``bins=5`` and ``right=True`` then the bins are the set of intervals
-            :math:`\\{[0, 0.2], (0.2, 0.4], (0.4, 0.6], (0.6, 0.8], (0.8,1]\\}`.
+            :math:`\\{[0, 0.2], (0.2, 0.4], (0.4, 0.6], (0.6, 0.8], (0.8, 1]\\}`.
 
         See also:
             - :py:func:`scores.probability.rank_histogram`
         """
-        # calculting _pit_hist_right or _pit_hist_left does not work with chunks,
+        # calculating _pit_hist_right or _pit_hist_left does not work with chunks,
         # because dask wants to chunk over the 'pit_x_value' dimension, but
         # _pit_hist_right and _pit_hist_left merely wants to sample a small number of points
         # from the 'pit_x_value'. So compute chunks at this stage.
@@ -301,7 +301,7 @@ class Pit:
         """
         Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the PIT distribution :math:`F`
         is to the uniform distribution on the closed unit interval :math:`[0,1]`.
-        The formula is for the alpha score is
+        The formula for the alpha score is
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.
 
@@ -383,7 +383,7 @@ class PitFcstAtObs:
             (possibly weighted) PIT distribution across all forecast cases. The points :math:`x`
             are in the dimension "pit_x_value". The CDF :math:`F` of the PIT distribution is completely
             reconstructable using values from ``.left``, ``.right`` and linear interpolation.
-        right: xarray object giving the values :math:`F(x-)` of the CDF :math:`F` of the
+        right: xarray object giving the values :math:`F(x)` of the CDF :math:`F` of the
             (possibly weighted) PIT distribution across all forecast cases. The points :math:`x`
             are in the dimension "pit_x_value". The CDF :math:`F` of the PIT distribution is completely
             reconstructable using values from ``.left``, ``.right`` and linear interpolation.
@@ -479,8 +479,8 @@ class PitFcstAtObs:
 
         Returns:
             dictionary of xarray objects with the following keys:
-            - "x_plotting_position", contaning :math:`x(t)` values
-            - "y_plotting_position", contaning :math:`y(t)` values
+            - "x_plotting_position", containing :math:`x(t)` values
+            - "y_plotting_position", containing :math:`y(t)` values
             with :math:`t` values in the "plotting_point" dimension.
         """
         return _get_plotting_points_param(self.left, self.right)
@@ -502,7 +502,7 @@ class PitFcstAtObs:
         See also:
             - :py:func:`scores.probability.rank_histogram`
         """
-        # calculting _pit_hist_right or _pit_hist_left does not work with chunks,
+        # calculating _pit_hist_right or _pit_hist_left does not work with chunks,
         # because dask wants to chunk over the 'pit_x_value' dimension, but
         # _pit_hist_right and _pit_hist_left merely wants to sample a small number of points
         # from the 'pit_x_value'. So compute chunks at this stage.
@@ -596,10 +596,10 @@ def _right_left_checks(
 ):
     """
     Raises:
-        - if `right` or `left` have values less than 0 or greater than 1
-        - if `right[threshold_dim]` is not strictly increasing
-        - if, when `left` is not None, `right` and `left` don't have the same shape, dims or coords
-        - if, when `left` is not None, `right < left` at some point
+        - ValueError if `right` or `left` have values less than 0 or greater than 1
+        - ValueError if `right[threshold_dim]` is not strictly increasing
+        - ValueError if, when `left` is not None, `right` and `left` don't have the same shape, dims or coords
+        - ValueError if, when `left` is not None, `right < left` at some point
     """
     # first check right
     if isinstance(right, xr.DataArray):
@@ -748,7 +748,7 @@ def _pit_distribution_for_cdf(
     """
     Each forecast case is an array of cumulative distribution function (CDF) values :math:`G(x)`,
     which is the probability that the random variable being forecast does not exceed :math:`x`.
-    Given any observation :math:`y`, the probability intergral transform (PIT) value at :math:`G`
+    Given any observation :math:`y`, the probability integral transform (PIT) value at :math:`G`
     is a uniform distribution on the closed interval :math:`[G(y-), G(y)]`, where :math:`G(y-)`
     denotes the left-hand limit of :math:`G` at :math:`y`.
 
@@ -757,7 +757,7 @@ def _pit_distribution_for_cdf(
     the 'PIT distribution' for the forecast-observation pair :math:`(G,y)`. Values :math:`F(x-)`
     and :math:`F(x)` are given for an optimal set of points :math:`x` satisfying
     :math:`0 <= x <= 1`. The set is optimal in the sense that the value of :math:`F`
-    elswhere can be determined via linear interpolation, whilst no smaller set of values
+    elsewhere can be determined via linear interpolation, whilst no smaller set of values
     has this property.
 
     Dimensions are be reduced by taking (possibly weighted) means of the PIT distribution
@@ -956,8 +956,7 @@ def _pit_values_for_cdf(
     fcst_left: XarrayLike, fcst_right: XarrayLike, obs: XarrayLike, threshold_dim: str
 ) -> xr.Dataset:
     """
-    Does the same as `_pit_values_for_cdf_array` but where at least one of the xarray
-    inputs is a dataset.
+    Does the same as `_pit_values_for_cdf_array` but supports XarrayLike inputs.
 
     Args:
         fcst_left: xarray object forecast CDF left-limit values, including dimension `threshold_dim`
@@ -1044,7 +1043,7 @@ def _pit_distribution_for_jumps(pit_values: XarrayLike, x_values: xr.DataArray) 
     upper_values = pit_values.sel(uniform_endpoint="upper").drop_vars("uniform_endpoint")
     # get the cases where jumps occur
     pit_jumps = upper_values.where(upper_values == lower_values)
-    # pit_jumps, xs = xr.broadcast(pit_jumps, xs)
+
     cdf_left = xr.zeros_like(pit_jumps).where(x_values <= pit_jumps, 1).where(pit_jumps.notnull())
     cdf_right = xr.zeros_like(pit_jumps).where(x_values < pit_jumps, 1).where(pit_jumps.notnull())
     return {"left": cdf_left, "right": cdf_right}
@@ -1135,7 +1134,7 @@ def _pit_distribution_for_ens(
     """
     Each forecast case (i.e., an ensemble of forecasts) is interpreted as an empirical
     cumulative distribution function (CDF) :math:`G`. Given any observation :math:`y`,
-    the probability intergral transform (PIT) value at :math:`G` is a uniform distribution
+    the probability integral transform (PIT) value at :math:`G` is a uniform distribution
     on the closed interval :math:`[G(y-), G(y)]`, where :math:`G(y-)` denotes the left-hand
     limit of :math:`G` at :math:`y`.
 
@@ -1144,7 +1143,7 @@ def _pit_distribution_for_ens(
     the 'PIT CDF' for the forecast-observation pair :math:`(G,y)`. Values :math:`F(x-)`
     and :math:`F(x)` are given for an optimal set of points :math:`x` satisfying
     :math:`0 <= x <= 1`. The set is optimal in the sense that the value of :math:`F`
-    elswhere can be determined via linear interpolation, whilst no smaller set of values
+    elsewhere can be determined via linear interpolation, whilst no smaller set of values
     has this property.
 
     Dimensions are be reduced by taking (possibly weighted) means of the CDF values
@@ -1231,7 +1230,7 @@ def _get_plotting_points_param(left: XarrayLike, right: XarrayLike) -> dict:
     if isinstance(y_points, xr.Dataset):
         x_points = xr.merge([y_points[var]["pit_x_value"].rename(var) for var in y_points.data_vars])
     else:
-        x_points = y_points["pit_x_value"]  # .copy()
+        x_points = y_points["pit_x_value"]
     # reindex with a plotting point index
     y_points = y_points.assign_coords(pit_x_value=np.arange(len(y_points.pit_x_value))).rename(
         {"pit_x_value": "plotting_point"}
@@ -1425,7 +1424,6 @@ def _alpha_score_array(left: xr.DataArray, right: xr.DataArray) -> xr.DataArray:
     x_axis_num = plotting_points.get_axis_num("pit_x_value")
     y_values = plotting_points.values
     x_values = plotting_points["pit_x_value"].values
-    # x_values_extended = np.sort(np.concatenate((x_values, intersection_points)))
 
     plotting_points_interpolated = interp1d(x_values, y_values, axis=x_axis_num, kind="linear")(intersection_points)
 
@@ -1462,7 +1460,7 @@ def _diagonal_intersection_points(param_plotting_points: dict) -> np.ndarray:
     y_pos = param_plotting_points["y_plotting_position"]
     # gradient of chord AB where A(x_pos[i-1], y_pos[i-1]), B(x_pos[i], y_pos[i])
     gradient = y_pos.diff("plotting_point") / x_pos.diff("plotting_point")
-    # solution if there is a desired point of intersection, optained by solving
+    # solution if there is a desired point of intersection, obtained by solving
     # simultaneous equations for equation of line AB with line x = y
     x_solution = (y_pos - gradient * x_pos) / (1 - gradient)
     # for x_solution to be of interest, require that  x_pos[i-1] < x_solution[i] < x_pos[i]

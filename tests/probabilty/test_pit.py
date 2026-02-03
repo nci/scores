@@ -102,7 +102,7 @@ def test_interp1d():
     """
     # x values are sorted, with some duplicates
     x_vals = [0, 0, 1, 1, 2, 2]
-    # y values are assending, possibly with jumps at common x values
+    # y values are ascending, possibly with jumps at common x values
     y_vals = [0, 2, 2, 4, 5, 6]
     # evaluated values are with the range of x_vals, but not including x_vals
     eval_vals = [0.5, 1.2]
@@ -127,7 +127,7 @@ def test_interp1d():
 def test__pit_values_final_processing(pit_values, weights, expected_left, expected_right):
     """
     Tests that `_pit_values_final_processing` returns as expected.
-    This test specifically tests that the weighted means are resaled correctly for left
+    This test specifically tests that the weighted means are rescaled correctly for left
     and right
     """
     expected = {"left": expected_left, "right": expected_right}
