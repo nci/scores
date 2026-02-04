@@ -662,7 +662,7 @@ def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.n
 
     def func(x_new):
         # return nan if interpolating outside known coords
-        result = np.interp(np.sort(x_new), x_data, y_data, left=np.nan, right=np.nan)
+        result = np.interp(x_new, x_data, y_data, left=np.nan, right=np.nan)
         return result
 
     return func
