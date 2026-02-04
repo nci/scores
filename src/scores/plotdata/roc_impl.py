@@ -155,20 +155,14 @@ def roc(  # pylint: disable=too-many-arguments
         if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):  # type: ignore
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
-        if not isinstance(thresholds, str) and not np.all(
-            np.array(thresholds)[1:] >= np.array(thresholds)[:-1]
-        ):
+        if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
 
-    reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     if isinstance(thresholds, str):
         if thresholds == "auto":
-            thresholds = np.sort(
-                np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy())
-            )
+            thresholds = np.sort(np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy()))
             if len(thresholds) > 1000:  # type: ignore
                 warnings.warn(
                     "Number of automatically generated thresholds is very large (>1000). "
@@ -194,22 +188,14 @@ def roc(  # pylint: disable=too-many-arguments
     all_dims = set(fcst.dims).union(set(obs.dims))
     final_preserve_dims = all_dims - set(reduce_dims)  # type: ignore
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
-    final_preserve_dims = auc_dims + ("threshold",)
+    final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
 
     pod = probability_of_detection(
-        discrete_fcst,
-        obs,
-        preserve_dims=final_preserve_dims,
-        weights=weights,
-        check_args=check_args,
+        discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
     )
 
     pofd = probability_of_false_detection(
-        discrete_fcst,
-        obs,
-        preserve_dims=final_preserve_dims,
-        weights=weights,
-        check_args=check_args,
+        discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
     )
 
     # Need to ensure ordering of dims is consistent for xr.apply_ufunc

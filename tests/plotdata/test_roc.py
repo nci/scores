@@ -16,15 +16,7 @@ from tests.plotdata import roc_test_data as rtd
 
 
 @pytest.mark.parametrize(
-    (
-        "fcst",
-        "obs",
-        "thresholds",
-        "preserve_dims",
-        "reduce_dims",
-        "weights",
-        "expected",
-    ),
+    ("fcst", "obs", "thresholds", "preserve_dims", "reduce_dims", "weights", "expected"),
     [
         # preserve_dims=['lead_day']
         (
@@ -112,14 +104,7 @@ def test_roc(fcst, obs, thresholds, preserve_dims, reduce_dims, weights, expecte
     """
     Tests the roc
     """
-    result = roc(
-        fcst,
-        obs,
-        thresholds,
-        preserve_dims=preserve_dims,
-        reduce_dims=reduce_dims,
-        weights=weights,
-    )
+    result = roc(fcst, obs, thresholds, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
     result.broadcast_equals(expected)
 
 
@@ -266,9 +251,7 @@ def test_roc_dask():
         ),
     ],
 )
-def test_roc_raises(
-    fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet
-):
+def test_roc_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet):
     """
     Tests that roc raises the correct error
     """
