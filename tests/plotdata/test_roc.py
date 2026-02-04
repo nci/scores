@@ -149,19 +149,34 @@ def test_roc_auto_threshold():
     xr.testing.assert_equal(result_check, rtd.EXP_ROC_AUTO)
 
 
-def test_roc_dask():
+@pytest.mark.parametrize("check_args", [True, False])
+def test_roc_dask(check_args):
     """tests that roc works with dask"""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = roc(
-        rtd.FCST_2X3X2_WITH_NAN.chunk(),
-        rtd.OBS_3X3_WITH_NAN.chunk(),
-        [0, 0.3, 1],
-        preserve_dims=["letter", "lead_day"],
-        check_args=False,
-    )
+    fcst = rtd.FCST_2X3X2_WITH_NAN.chunk()
+    obs = rtd.OBS_3X3_WITH_NAN.chunk()
+
+    if check_args:
+        with pytest.warns(UserWarning, match="`fcst` or `obs` is an xarray object backed by a dask array"):
+            result = roc(
+                fcst,
+                obs,
+                [0, 0.3, 1],
+                preserve_dims=["letter", "lead_day"],
+                check_args=check_args,
+            )
+    else:
+        result = roc(
+            fcst,
+            obs,
+            [0, 0.3, 1],
+            preserve_dims=["letter", "lead_day"],
+            check_args=check_args,
+        )
+
     assert isinstance(result.POD.data, dask.array.Array)  # type: ignore
     assert isinstance(result.POFD.data, dask.array.Array)  # type: ignore
     assert isinstance(result.AUC.data, dask.array.Array)  # type: ignore
@@ -275,25 +290,3 @@ def test_roc_warns():
         ),
     ):
         roc(fcst, obs)
-
-
-def test_roc_dask_warns_check_args():
-    """
-    Tests that roc raises a warning when fcst or obs is backed by a dask array
-    and check_args=True.
-    """
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-
-    fcst = rtd.FCST_2X3X2_WITH_NAN.chunk()
-    obs = rtd.OBS_3X3_WITH_NAN.chunk()
-
-    with pytest.warns(
-        UserWarning,
-        match=(
-            "`fcst` or `obs` is an xarray object backed by a dask array. "
-            "Input validation is not currently supported for dask arrays, so `check_args` "
-            "has been set to `False`."
-        ),
-    ):
-        roc(fcst, obs, [0, 0.3, 1], check_args=True)
