@@ -664,14 +664,15 @@ def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.n
         Interpolation function.
     """
 
-    # x input must be sorted
-    order = np.argsort(x_data)
-    x_sorted = x_data[order]
-    y_sorted = y_data[order]
+    if not np.all(x_data[:-1] <= x_data[1:]):
+        # x input must be sorted
+        order = np.argsort(x_data)
+        x_data = x_data[order]
+        y_data = y_data[order]
 
     def func(x_new):
         # return nan if interpolating outside known coords
-        result = np.interp(np.sort(x_new), x_sorted, y_sorted, left=np.nan, right=np.nan)
+        result = np.interp(np.sort(x_new), x_data, y_data, left=np.nan, right=np.nan)
         return result
 
     return func
