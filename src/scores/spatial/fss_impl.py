@@ -3,9 +3,11 @@ This module contains methods related to the Fractions Skill Score (FSS).
 
 For an explanation of the FSS, and implementation considerations, see references below.
 
-Currently uses the default score defined Robert and Leans (2008) :sup:`[1,2]`. Fine grained controls are considered in `#353 <GITHUB353_>`_.
+Currently uses the default score defined Robert and Leans (2008) :sup:`[1,2]`. Fine grained controls are considered
+in `#353 <GITHUB353_>`_.
 
-The default computation is performed using`numpy` :sup:`[3]` and summed-area tables, with future optimization options considered in:
+The default computation is performed using`numpy` :sup:`[3]` and summed-area tables, with future optimization options
+considered in:
 - `#269 <GITHUB269_>`_.
 - `#270 <GITHUB270_>`_.
 

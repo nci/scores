@@ -107,9 +107,6 @@ select = [
 ignore = [
     "E741", # Allow ambiguous variable names
     "S101", # Allow asserts
-    # The ignore below need to be fixed
-    # See GH issue #975
-    "E501", #TODO Line too long (50)
 ]
 
 [tool.ruff.format]

@@ -29,7 +29,8 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE for more information.
+    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE
+    for more information.
 
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
@@ -410,10 +411,11 @@ def pbias(
     """
     Calculates the percent bias, which is the ratio of the additive bias to the mean observed value, multiplied by 100.
 
-    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying magnitudes.
-    By expressing the error as a percentage of the observed value, it allows for standardised comparisons, enabling assessment
-    of forecast performance regardless of the absolute scale of values. Like :py:func:`scores.continuous.multiplicative_bias`,
-    ``pbias`` will return a ``np.inf`` where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
+    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying
+    magnitudes. By expressing the error as a percentage of the observed value, it allows for standardised comparisons,
+    enabling assessment of forecast performance regardless of the absolute scale of values. Like
+    :py:func:`scores.continuous.multiplicative_bias`, ``pbias`` will return a ``np.inf`` where the mean of ``obs``
+    across the dims to be reduced is 0. It is defined as
 
     .. math::
         \\text{Percent bias} = 100 \\cdot \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
@@ -517,7 +519,8 @@ def percent_within_x(
         - :math:`y_i` is the observed value at index :math:`i`
         - :math:`\\tau` is the absolute error threshold
         - :math:`\\mathbf{1}(\\cdot)` is the indicator function
-        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not missing (NaN), 0 otherwise
+        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not
+          missing (NaN), 0 otherwise
 
     Args:
         fcst: Forecast or predicted variables.
@@ -727,7 +730,7 @@ def kge(
 
 
 
-    """
+    """  #  noqa: E501
 
     # Type checks as xrray.corr can only handle xr.DataArray
     if not isinstance(fcst, xr.DataArray):

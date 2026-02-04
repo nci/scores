@@ -1112,7 +1112,10 @@ def v_func3(x):
 
 
 def v_func4(x):
-    """For testing tw_crps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset"""
+    """
+    For testing tw_crps_for_ensembles.
+    The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset
+    """
     return np.maximum(x, crps_test_data.DS_T_TWCRPSENS)
 
 

@@ -93,7 +93,7 @@ def quantile_interval_score(  # pylint: disable=R0914
         >>> fcst_upper_level = xr.DataArray(np.random.uniform(20, 25, size=(30, 15)), dims=['time', 'station'])
         >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
         >>> quantile_interval_score(fcst_lower_level, fcst_upper_level, obs, 0.1, 0.6)
-    """
+    """  #  noqa: E501
     if not 0 < lower_qtile_level < upper_qtile_level < 1:
         raise ValueError(
             "Expected 0 < lower_qtile_level < upper_qtile_level < 1. But got "
@@ -222,7 +222,7 @@ def interval_score(
         >>> fcst_upper_level = xr.DataArray(np.random.uniform(20, 25, size=(30, 15)), dims=['time', 'station'])
         >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
         >>> interval_score(fcst_lower_level, fcst_upper_level, obs, 0.5)
-    """
+    """  #  noqa: E501
     if interval_range <= 0 or interval_range >= 1:
         raise ValueError("`interval_range` must be strictly between 0 and 1")
     score = quantile_interval_score(
