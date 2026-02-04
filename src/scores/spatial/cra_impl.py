@@ -37,7 +37,7 @@ def _generate_largest_rain_area_2d(
         obs (xr.DataArray): 2-D observation field.
         minimum_intensity (float): Minimum value that a grid point must meet or exceed to be considered
             part of a rain blob.
-        min_points (int): Minimum number of grid points required for a blob to be ratined
+        min_points (int): Minimum number of grid points required for a blob to be retained
 
     Returns:
         Largest contiguous blobs from forecast and observation.
