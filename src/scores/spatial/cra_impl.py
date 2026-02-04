@@ -64,7 +64,7 @@ def _generate_largest_rain_area_2d(
 
     # Connectivity: how elements are considered connected
     # Define connectivity for the labeling. 3x3 => 8-connected in 2D
-    # (includes N, NE, E, SE, S, SW, W, W, NW neighbours)
+    # (includes N, NE, E, SE, S, SW, W, NW neighbours)
     structure = np.ones((3, 3))
 
     # Assign a unique label to each connected component. For instance, if there are 3 separate
