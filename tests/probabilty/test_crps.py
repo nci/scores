@@ -1551,3 +1551,24 @@ def test_interval_tw_crps_for_ensemble_dask():
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)
+
+
+def test_tw_crps_for_ensemble_deprecation():
+    fcst = crps_test_data.DA_FCST_CRPSENS
+    obs = crps_test_data.DA_OBS_CRPSENS
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        tw_crps_for_ensemble(fcst, obs, "ens_member", lambda x: np.maximum(x, 0.5), include_components=True)
+
+
+def test_tail_tw_crps_for_ensemble_deprecation():
+    fcst = crps_test_data.DA_FCST_CRPSENS
+    obs = crps_test_data.DA_OBS_CRPSENS
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        tail_tw_crps_for_ensemble(fcst, obs, "ens_member", 0.5, tail="upper", include_components=True)
+
+
+def test_interval_tw_crps_for_ensemble_deprecation():
+    fcst = crps_test_data.DA_FCST_CRPSENS
+    obs = crps_test_data.DA_OBS_CRPSENS
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        interval_tw_crps_for_ensemble(fcst, obs, "ens_member", -20, 10, include_components=True)
