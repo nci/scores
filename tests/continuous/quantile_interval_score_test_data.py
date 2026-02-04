@@ -8,8 +8,7 @@ import pandas as pd
 import xarray as xr
 
 ERROR_MESSAGE_QTILE = (
-    "Expected 0 < lower_qtile_level < upper_qtile_level < 1. But got lower_qtile_level ="
-    " {} and upper_qtile_level = {}"
+    "Expected 0 < lower_qtile_level < upper_qtile_level < 1. But got lower_qtile_level = {} and upper_qtile_level = {}"
 )
 ERROR_MESSAGE_FCST_COND = "Input does not satisfy fcst_lower_qtile < fcst_upper_qtile condition."
 ERROR_MESSAGE_INTERVAL_RANGE = "`interval_range` must be strictly between 0 and 1"

@@ -158,7 +158,7 @@ def _expectile_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType,
 def _check_murphy_inputs(*, alpha=None, functional=None, huber_a=None, left_limit_delta=None):
     """Raise ValueError if the arguments have unexpected values."""
     if (alpha is not None) and not (0 < alpha < 1):  # pylint: disable=C0325
-        err = f"alpha (={alpha}) argument for Murphy scoring function should be strictly " "between 0 and 1."
+        err = f"alpha (={alpha}) argument for Murphy scoring function should be strictly between 0 and 1."
         raise ValueError(err)
     if (functional is not None) and (functional not in VALID_SCORING_FUNC_NAMES):
         err = (

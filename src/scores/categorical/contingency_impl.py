@@ -17,7 +17,7 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 
 Users can supply their own event operators to the top-level module functions.
 """
-
+# ruff: noqa: W291
 # pylint: disable=too-many-lines
 
 import operator
@@ -1271,9 +1271,7 @@ class BinaryContingencyManager(BasicContingencyManager):
     against instances of BinaryContingencyManager where performance or transformation are not a concern.
     """
 
-    def __init__(
-        self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType
-    ):  # pylint: disable=super-init-not-called
+    def __init__(self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType):  # pylint: disable=super-init-not-called
         self.fcst_events = fcst_events
         self.obs_events = obs_events
 
