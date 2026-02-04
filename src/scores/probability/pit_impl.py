@@ -298,13 +298,18 @@ class Pit:
             return _pit_hist_right(self.left, self.right, bins)
         return _pit_hist_left(self.left, self.right, bins)
 
-    def alpha_score(self) -> XarrayLike:
+    def alpha_score(self, negative_orientation: bool = True) -> XarrayLike:
         """
         Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the PIT distribution :math:`F`
         is to the uniform distribution on the closed unit interval :math:`[0,1]`.
-        The formula for the alpha score is
+        When ``negative_orientation=True``, the formula is for the alpha score is
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.
+        In this case the alpha score takes values between 0 and 0.5.
+        When ``negative_orientation=False``, the formula is for the alpha score is
+            :math:`1 - 2 \\int_0^1 |F(x) - x|\\,\\text{d}x,`
+        so that the higher the score, the closer :math:`F` is to the uniform distribution.
+        In this case the alpha score takes values between 0 and 1.
 
         References:
             - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
@@ -312,7 +317,7 @@ class Pit:
                 The challenge of identifying input and structural errors. \
                 Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
-        return _alpha_score(self.left, self.right)
+        return _alpha_score(self.left, self.right, negative_orientation=negative_orientation)
 
     def expected_value(self) -> XarrayLike:
         """
@@ -515,13 +520,18 @@ class PitFcstAtObs:
             return _pit_hist_right(self.left, self.right, bins)
         return _pit_hist_left(self.left, self.right, bins)
 
-    def alpha_score(self) -> XarrayLike:
+    def alpha_score(self, negative_orientation: bool = True) -> XarrayLike:
         """
         Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the PIT distribution :math:`F`
         is to the uniform distribution on the closed unit interval :math:`[0,1]`.
-        The formula is for the alpha score is
+        When ``negative_orientation=True``, the formula is for the alpha score is
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.
+        In this case the alpha score takes values between 0 and 0.5.
+        When ``negative_orientation=False``, the formula is for the alpha score is
+            :math:`1 - 2 \\int_0^1 |F(x) - x|\\,\\text{d}x,`
+        so that the higher the score, the closer :math:`F` is to the uniform distribution.
+        In this case the alpha score takes values between 0 and 1.
 
         References:
             - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
@@ -529,7 +539,7 @@ class PitFcstAtObs:
                 The challenge of identifying input and structural errors. \
                 Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
-        return _alpha_score(self.left, self.right)
+        return _alpha_score(self.left, self.right, negative_orientation=negative_orientation)
 
     def expected_value(self) -> XarrayLike:
         """
@@ -1383,7 +1393,7 @@ def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> X
     return histogram_values
 
 
-def _alpha_score(left: XarrayLike, right: XarrayLike) -> XarrayLike:
+def _alpha_score(left: XarrayLike, right: XarrayLike, negative_orientation: bool = True) -> XarrayLike:
     """
     Given left-hand and right-hand limits of the Pit CDF (.left and .right attributes),
     calculates the alpha score.
@@ -1396,18 +1406,25 @@ def _alpha_score(left: XarrayLike, right: XarrayLike) -> XarrayLike:
         xarray object with alpha score, and 'pit_x_value' dimension collapsed
     """
     if isinstance(left, xr.DataArray):
-        return _alpha_score_array(left, right)
+        return _alpha_score_array(left, right, negative_orientation=negative_orientation)
 
-    return xr.merge([_alpha_score_array(left[var], right[var]).rename(var) for var in left.data_vars])
+    return xr.merge(
+        [
+            _alpha_score_array(left[var], right[var], negative_orientation=negative_orientation).rename(var)
+            for var in left.data_vars
+        ]
+    )
 
 
-def _alpha_score_array(left: xr.DataArray, right: xr.DataArray) -> xr.DataArray:
+def _alpha_score_array(left: xr.DataArray, right: xr.DataArray, negative_orientation: bool = True) -> xr.DataArray:
     """
-    The alpha score is integrated absolute difference between the graph of the PIT CDF and the
-    diagonal. This will be calculated using the trapezoidal rule. For the calculation
-    to be exact, we need to include points where the PIT CDF and diagonal intersect.
+    The alpha score with negative orientation is integrated absolute difference between
+    the graph of the PIT CDF and the diagonal. This will be calculated using the trapezoidal rule.
+    For the calculation to be exact, we need to include points where the PIT CDF and diagonal intersect.
 
     This function does this when the left and right limits of the PIT CDF are data arrays.
+
+    When negative_orientation=False, the alpha score is 1 - twice the integrated difference.
 
     Args:
         left: left-hand limit of the PIT CDF, indexed by "pit_x_value". Other dimensions possible.
@@ -1437,7 +1454,11 @@ def _alpha_score_array(left: xr.DataArray, right: xr.DataArray) -> xr.DataArray:
     plotting_points = xr.concat([plotting_points, plotting_points_interpolated], "pit_x_value").sortby("pit_x_value")
 
     score = np.abs(plotting_points - plotting_points["pit_x_value"]).integrate("pit_x_value")
-    return score
+
+    if negative_orientation:
+        return score
+
+    return 1 - 2 * score
 
 
 def _diagonal_intersection_points(param_plotting_points: dict) -> np.ndarray:

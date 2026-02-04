@@ -569,34 +569,44 @@ def test__diagonal_intersection_points(plotting_points_par, expected):
 
 
 @pytest.mark.parametrize(
-    ("left", "right", "expected"),
+    ("left", "right", "negative_orientation", "expected"),
     [
-        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, ptd.EXP_ASA),
+        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, True, ptd.EXP_ASA),
+        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, False, ptd.EXP_ASA_POS),
     ],
 )
-def test__alpha_score_array(left, right, expected):
+def test__alpha_score_array(left, right, negative_orientation, expected):
     """Tests that `_alpha_score_array` returns as expected."""
-    result = _alpha_score_array(left, right)
+    result = _alpha_score_array(left, right, negative_orientation=negative_orientation)
     xr.testing.assert_allclose(expected, result)
 
 
 @pytest.mark.parametrize(
-    ("left", "right", "expected"),
+    ("left", "right", "negative_orientation", "expected"),
     [
-        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, ptd.EXP_ASA),  # data arrays
-        (create_dataset(ptd.DA_ASA_LEFT), create_dataset(ptd.DA_ASA_RIGHT), create_dataset(ptd.EXP_ASA)),
+        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, True, ptd.EXP_ASA),  # data arrays
+        (ptd.DA_ASA_LEFT, ptd.DA_ASA_RIGHT, False, ptd.EXP_ASA_POS),  # data arrays
+        (create_dataset(ptd.DA_ASA_LEFT), create_dataset(ptd.DA_ASA_RIGHT), True, create_dataset(ptd.EXP_ASA)),
+        (create_dataset(ptd.DA_ASA_LEFT), create_dataset(ptd.DA_ASA_RIGHT), False, create_dataset(ptd.EXP_ASA_POS)),
     ],
 )
-def test__alpha_score(left, right, expected):
+def test__alpha_score(left, right, negative_orientation, expected):
     """Tests that `_alpha_score` returns as expected."""
-    result = _alpha_score(left, right)
+    result = _alpha_score(left, right, negative_orientation=negative_orientation)
     xr.testing.assert_allclose(expected, result)
 
 
-def test_alpha_score():
+@pytest.mark.parametrize(
+    ("negative_orientation", "expected"),
+    [
+        (True, ptd.EXP_AS1),  # data arrays
+        (False, 1 - 2 * ptd.EXP_AS1),  # data arrays
+    ],
+)
+def test_alpha_score(negative_orientation, expected):
     """Tests that the `.alpha_score` method returns as expected."""
-    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score()
-    xr.testing.assert_allclose(ptd.EXP_AS1, result)
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score(negative_orientation=negative_orientation)
+    xr.testing.assert_allclose(expected, result)
 
 
 def test_alpha_score_dask():

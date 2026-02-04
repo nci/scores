@@ -649,3 +649,4 @@ EXP_ASA = xr.DataArray(
     dims=["stn"],
     coords={"stn": [101, 102, 103, 104]},
 )
+EXP_ASA_POS = 1 - 2 * EXP_ASA
