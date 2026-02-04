@@ -16,7 +16,6 @@ from typing import Callable, Literal, Optional, Tuple, Union
 
 import numpy as np
 import xarray as xr
-from scipy import interpolate
 from scipy.optimize import isotonic_regression
 
 
@@ -169,7 +168,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     )
 
     # calculate the fitting function
-    ir_func = interpolate.interp1d(fcst_tidied, y_out, bounds_error=False)
+    ir_func = _get_interp1d_func(fcst_tidied, y_out)
 
     if bootstraps is not None:
         boot_results = _bootstrap_ir(
@@ -184,8 +183,8 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
 
         lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)  # type: ignore
 
-        lower_func = interpolate.interp1d(fcst_tidied, lower_pts, bounds_error=False)
-        upper_func = interpolate.interp1d(fcst_tidied, upper_pts, bounds_error=False)
+        lower_func = _get_interp1d_func(fcst_tidied, lower_pts)
+        upper_func = _get_interp1d_func(fcst_tidied, upper_pts)
 
         confband_levels = ((1 - confidence_level) / 2, 1 - (1 - confidence_level) / 2)  # type: ignore
 
@@ -563,8 +562,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
             quantile_level=quantile_level,
             solver=solver,
         )
-
-        approximation_func = interpolate.interp1d(fcst_sample, ir_results, bounds_error=False)
+        approximation_func = _get_interp1d_func(fcst_sample, ir_results)
 
         result[boostrap_sample_num] = approximation_func(fcst)
 
@@ -645,3 +643,26 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
     ceil_frac_val = arr[index_ceil, np.arange(arr.shape[1])] * ceil_frac
     result = np.where(same_index, floor_val, floor_frac_val + ceil_frac_val)
     return result
+
+
+def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.ndarray], np.ndarray]:
+    """
+    Wraps numpy interpolation in a function similar to scipy.interpolate.interp1d.
+    `bounds_error` not included since np.interp handles NAs differently.
+    Only accepts 1D arrays.
+
+    Args:
+        x_data: 1-D non-decreasing array, independent variable values.
+        y_data: 1-D array, dependent variable values
+
+    Returns:
+        Interpolation function which runs input data on np.interp.
+        This new function takes a 1-D array as input and returns interpolated values.
+    """
+
+    def func(x_new):
+        # return nan if interpolating outside known coords
+        result = np.interp(x_new, x_data, y_data, left=np.nan, right=np.nan)
+        return result
+
+    return func
