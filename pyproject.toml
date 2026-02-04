@@ -27,7 +27,7 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "mypy == 1.13.0",
+    "ty",
     "ruff == 0.14.14",
     "dask",
     "h5netcdf",
@@ -122,13 +122,26 @@ line-ending = "auto"
 known-first-party = ["scores", "tests"]
 known-third-party = ["pandas"] # fix sorting bug
 
-[tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
+[tool.ty.src]
+include = [
+    "src",
+    "tests",
+]
 
-[[tool.mypy.overrides]]
-module = "scipy.*"
-ignore_missing_imports = true
+[tool.ty.rules]
+# Warnings
+unused-ignore-comment = "ignore"
+possibly-missing-attribute = "ignore"
+# Errors
+no-matching-overload = "ignore"
+invalid-argument-type = "ignore"
+invalid-type-arguments = "ignore"
+invalid-assignment = "ignore"
+invalid-type-form = "ignore"
+invalid-return-type = "ignore"
+unsupported-operator = "ignore"
+unresolved-import = "ignore"
+unresolved-attribute = "ignore"
 
 [tool.coverage.paths]
 source = ["/src/"]

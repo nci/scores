@@ -27,3 +27,4 @@ jobs:
         run: |
           pre-commit run ruff-check --all-files
           pre-commit run ruff-format --all-files
+          pre-commit run ty-check --all-files
