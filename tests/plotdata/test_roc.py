@@ -5,7 +5,7 @@ Contains unit tests for scores.probability.roc_impl
 try:
     import dask
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -162,9 +162,9 @@ def test_roc_dask():
         preserve_dims=["letter", "lead_day"],
         check_args=False,
     )
-    assert isinstance(result.POD.data, dask.array.Array)  # type: ignore
-    assert isinstance(result.POFD.data, dask.array.Array)  # type: ignore
-    assert isinstance(result.AUC.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.POD.data, dask.array.Array)
+    assert isinstance(result.POFD.data, dask.array.Array)
+    assert isinstance(result.AUC.data, dask.array.Array)
 
     result = result.compute()
 

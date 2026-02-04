@@ -323,12 +323,12 @@ def matrix_weights_to_array(
 
     if len(matrix_dims) != 2:
         raise ValueError("`matrix_weights` must be two dimensional")
-    if matrix_dims[0] != len(prob_threshold_coords):  # type: ignore
+    if matrix_dims[0] != len(prob_threshold_coords):
         raise ValueError("number of `prob_threshold_coords` must equal number of rows of `matrix_weights`")
-    if matrix_dims[1] != len(severity_coords):  # type: ignore
+    if matrix_dims[1] != len(severity_coords):
         raise ValueError("number of `severity_coords` must equal number of columns of `matrix_weights`")
 
-    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):  # type: ignore
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
         raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
 
     prob_threshold_coords = np.flip(np.sort(np.array(prob_threshold_coords)))
@@ -438,17 +438,17 @@ def weights_from_warning_scaling(
         raise ValueError("`scaling_matrix` should be non-increasing along each column (moving top to bottom)")
 
     # checks on compatibility between scaling matrix and other inputs
-    if scaling_matrix_shape[0] - 1 != len(prob_threshold_coords):  # type: ignore
+    if scaling_matrix_shape[0] - 1 != len(prob_threshold_coords):
         raise ValueError("Length of `prob_threshold_coords` should be one less than rows of `scaling_matrix`")
-    if scaling_matrix_shape[1] - 1 != len(severity_coords):  # type: ignore
+    if scaling_matrix_shape[1] - 1 != len(severity_coords):
         raise ValueError("Length of `severity_coords` should be one less than columns of `scaling_matrix`")
-    if len(evaluation_weights) < np.max(scaling_matrix):  # type: ignore
+    if len(evaluation_weights) < np.max(scaling_matrix):
         raise ValueError("length of `evaluation_weights` must be at least the highest value in `scaling_matrix`")
 
     # check on other inputs
-    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):  # type: ignore
+    if (np.max(prob_threshold_coords) >= 1) or (np.min(prob_threshold_coords) <= 0):
         raise ValueError("`prob_threshold_coords` must strictly between 0 and 1")
-    if np.min(evaluation_weights) <= 0:  # type: ignore
+    if np.min(evaluation_weights) <= 0:
         raise ValueError("values in `evaluation_weights` must be positive")
 
     weight_matrix = _scaling_to_weight_matrix(scaling_matrix, evaluation_weights)

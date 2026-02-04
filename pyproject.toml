@@ -131,7 +131,6 @@ include = [
 
 [tool.ty.rules]
 # Warnings
-unused-ignore-comment = "ignore"
 possibly-missing-attribute = "ignore"
 # Errors
 no-matching-overload = "ignore"

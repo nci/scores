@@ -7,13 +7,13 @@ try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 try:
     import numba
 
     from scores.probability.crps_numba import crps_cdf_exact_fast
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    numba = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import warnings
 from unittest.mock import patch
