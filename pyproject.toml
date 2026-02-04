@@ -43,7 +43,8 @@ tutorial = [
     "plotly",
     "dask",
     "gcsfs",
-    "zarr"
+    "zarr",
+    "h5py"
 ]
 maintainer = ["build",
               "hatch",
