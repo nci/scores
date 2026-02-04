@@ -649,26 +649,14 @@ def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.n
     `bounds_error` not included since np.interp handles NAs differently.
     Only accepts 1D arrays.
 
-    Parameters
-    ----------
-    x_data : np.ndarray
-        1-D array
-        Independent variable values.
-    y_data : np.ndarray
-        1-D array
-        Dependent variable values,
+    Args:
+        x_data: 1-D non-decreasing array, independent variable values.
+        y_data: 1-D array, dependent variable values
 
-    Returns
-    -------
-    Callable[[float | np.ndarray], np.ndarray]
-        Interpolation function.
+    Returns:
+        Interpolation function which runs input data on np.interp.
+        This new function takes a 1-D array as input and returns interpolated values.
     """
-
-    if not np.all(x_data[:-1] <= x_data[1:]):
-        # x input must be sorted
-        order = np.argsort(x_data)
-        x_data = x_data[order]
-        y_data = y_data[order]
 
     def func(x_new):
         # return nan if interpolating outside known coords
