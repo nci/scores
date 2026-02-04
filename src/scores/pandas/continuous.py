@@ -117,7 +117,7 @@ def additive_bias(
 ) -> PandasType:
     """Calculates the additive bias (mean error) from forecast and observed data.
 
-    Bias is commonly defined as the mean signed difference between forecast and observed values. [2](https://scores.readthedocs.io/en/stable/tutorials/Additive_and_multiplicative_bias.html)
+    Bias is commonly defined as the mean signed difference between forecast and observed values.  A detailed explanation is on https://scores.readthedocs.io/en/stable/tutorials/Additive_and_multiplicative_bias.html
 
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)
