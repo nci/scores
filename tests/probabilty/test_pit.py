@@ -387,7 +387,7 @@ def test__pit_distribution_for_ens(fcst, obs, preserve_dims, reduce_dims, weight
 )
 def test___init__(fcst, obs, preserve_dims, expected_left, expected_right):
     """Tests that `Pit.__init__` returns as expected."""
-    result = Pit(fcst, obs, "ens_member", preserve_dims=preserve_dims)
+    result = Pit(fcst, obs, ensemble_member_dim="ens_member", preserve_dims=preserve_dims)
     xr.testing.assert_equal(result.left, expected_left)
     xr.testing.assert_equal(result.right, expected_right)
 
@@ -431,7 +431,7 @@ def test__get_plotting_points(left, right, expected):
 )
 def test_plotting_points(fcst, obs, expected):
     """Tests that `Pit().plotting_points()` returns as expected."""
-    result = Pit(fcst, obs, "ens_member", preserve_dims="lead_day").plotting_points()
+    result = Pit(fcst, obs, ensemble_member_dim="ens_member", preserve_dims="lead_day").plotting_points()
     xr.testing.assert_equal(expected, result)
 
 
@@ -440,7 +440,9 @@ def test_plotting_points_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member", preserve_dims="lead_day").plotting_points()
+    result = Pit(
+        ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), ensemble_member_dim="ens_member", preserve_dims="lead_day"
+    ).plotting_points()
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -449,7 +451,7 @@ def test_plotting_points_dask():
 
 def test_plotting_points_parametric():
     """Tests that `Pit().plotting_points_parametric()` returns as expected."""
-    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").plotting_points_parametric()
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, ensemble_member_dim="ens_member").plotting_points_parametric()
     expected = ptd.EXP_PPP
     assert expected.keys() == result.keys()
     for key in result.keys():
@@ -463,7 +465,7 @@ def test_plotting_points_parametric_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").plotting_points_parametric()
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), ensemble_member_dim="ens_member").plotting_points_parametric()
     assert ptd.EXP_PPP.keys() == result.keys()
     assert isinstance(result["y_plotting_position"].data, dask.array.Array)
     # Note: we don't assert that result["x_plotting_position"] is a dask array, because it is
@@ -542,7 +544,7 @@ def test__pit_hist_right(pit_left, pit_right, expected):
 )
 def test_hist_values(fcst, obs, right, expected):
     """Tests that `hist_values` method of Pit_for_ensemble returns as expected"""
-    result = Pit(fcst, obs, "ens_member").hist_values(5, right=right)
+    result = Pit(fcst, obs, ensemble_member_dim="ens_member").hist_values(5, right=right)
     xr.testing.assert_allclose(expected, result)
 
 
@@ -554,7 +556,7 @@ def test_hist_values_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").hist_values(5, right=True)
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), ensemble_member_dim="ens_member").hist_values(5, right=True)
     xr.testing.assert_allclose(result, ptd.EXP_HV1)
 
 
@@ -605,7 +607,9 @@ def test__alpha_score(left, right, negative_orientation, expected):
 )
 def test_alpha_score(negative_orientation, expected):
     """Tests that the `.alpha_score` method returns as expected."""
-    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").alpha_score(negative_orientation=negative_orientation)
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, ensemble_member_dim="ens_member").alpha_score(
+        negative_orientation=negative_orientation
+    )
     xr.testing.assert_allclose(expected, result)
 
 
@@ -614,7 +618,7 @@ def test_alpha_score_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").alpha_score()
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), ensemble_member_dim="ens_member").alpha_score()
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -636,7 +640,7 @@ def test__expected_value(plotting_points, expected):
 
 def test_expected_value():
     """Tests that the `.expected_value` method returns as expected."""
-    result = Pit(ptd.DA_FCST, ptd.DA_OBS, "ens_member").expected_value()
+    result = Pit(ptd.DA_FCST, ptd.DA_OBS, ensemble_member_dim="ens_member").expected_value()
     xr.testing.assert_allclose(ptd.EXP_EXPVAL, result)
 
 
@@ -645,7 +649,7 @@ def test_expected_value_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), "ens_member").expected_value()
+    result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), ensemble_member_dim="ens_member").expected_value()
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -687,7 +691,7 @@ def test__variance(plotting_points, expected):
 )
 def test_variance(fcst, obs, expected):
     """Tests that the `.variance` method returns as expected."""
-    result = Pit(fcst, obs, "member", preserve_dims="all").variance()
+    result = Pit(fcst, obs, ensemble_member_dim="member", preserve_dims="all").variance()
     xr.testing.assert_allclose(expected, result)
 
 
@@ -696,7 +700,9 @@ def test_variance_dask():
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = Pit(ptd.DA_FCST_VAR.chunk(), ptd.DA_OBS_VAR.chunk(), "member", preserve_dims="all").variance()
+    result = Pit(
+        ptd.DA_FCST_VAR.chunk(), ptd.DA_OBS_VAR.chunk(), ensemble_member_dim="member", preserve_dims="all"
+    ).variance()
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -796,18 +802,25 @@ def test__pit_distribution_for_cdf_raises(fcst, fcst_left):
         _pit_distribution_for_cdf(fcst, ptd.DA_OBS_PVCDF, "thld", fcst_left=fcst_left)
 
 
-def test_Pit__init___raises():
+@pytest.mark.parametrize(
+    ("ensemble_member_dim", "cdf_threshold_dim"),
+    [
+        (None, None),
+        ("ens", "cdf"),
+    ],
+)
+def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
     """Tests that `Pit.__init__` raises as expected."""
-    with pytest.raises(ValueError, match='`fcst_type` must be one of "ensemble" or "cdf"'):
-        Pit(ptd.DA_FCST, ptd.DA_OBS, "member", fcst_type="PDF")
+    with pytest.raises(ValueError, match="A string must be supplied to exactly one of"):
+        Pit(ptd.DA_FCST, ptd.DA_OBS, ensemble_member_dim=ensemble_member_dim, cdf_threshold_dim=cdf_threshold_dim)
 
 
 @pytest.mark.parametrize(
     (
         "fcst",
         "obs",
-        "special_fcst_dim",
-        "fcst_type",
+        "ensemble_member_dim",
+        "cdf_threshold_dim",
         "fcst_left",
         "reduce_dims",
         "preserve_dims",
@@ -819,8 +832,8 @@ def test_Pit__init___raises():
         (
             ptd.DA_FCST_CDF_LEFT1,
             ptd.DA_OBS_PDCDF,
+            None,
             "thld",
-            "cdf",
             None,
             "all",
             None,
@@ -831,8 +844,8 @@ def test_Pit__init___raises():
         (
             ptd.DA_FCST_CDF_LEFT1,
             ptd.DA_OBS_PDCDF,
+            None,
             "thld",
-            "cdf",
             None,
             None,
             "all",
@@ -843,8 +856,8 @@ def test_Pit__init___raises():
         (
             ptd.DA_FCST_CDF_RIGHT1,
             ptd.DA_OBS_PDCDF,
+            None,
             "thld",
-            "cdf",
             ptd.DA_FCST_CDF_LEFT1,
             None,
             "all",
@@ -856,7 +869,7 @@ def test_Pit__init___raises():
             ptd.DA_FCST,
             ptd.DA_OBS,
             "ens_member",
-            "ensemble",
+            None,
             None,
             None,
             "all",
@@ -868,7 +881,7 @@ def test_Pit__init___raises():
             ptd.DA_FCST,
             ptd.DA_OBS,
             "ens_member",
-            "ensemble",
+            None,
             None,
             None,
             "lead_day",
@@ -881,8 +894,8 @@ def test_Pit__init___raises():
 def test_Pit__init__(
     fcst,
     obs,
-    special_fcst_dim,
-    fcst_type,
+    ensemble_member_dim,
+    cdf_threshold_dim,
     fcst_left,
     reduce_dims,
     preserve_dims,
@@ -894,8 +907,8 @@ def test_Pit__init__(
     result = Pit(
         fcst,
         obs,
-        special_fcst_dim,
-        fcst_type=fcst_type,
+        ensemble_member_dim=ensemble_member_dim,
+        cdf_threshold_dim=cdf_threshold_dim,
         fcst_left=fcst_left,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
@@ -951,14 +964,14 @@ def test__right_left_checks(right, left, threshold_dim, error_msg):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "special_fcst_dim", "fcst_type", "fcst_left", "preserve_dims", "exp_left", "exp_right"),
+    ("fcst", "obs", "ensemble_member_dim", "cdf_threshold_dim", "fcst_left", "preserve_dims", "exp_left", "exp_right"),
     [
-        (ptd.DA_FCST, ptd.DA_OBS, "ens_member", "ensemble", None, None, ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4),
+        (ptd.DA_FCST, ptd.DA_OBS, "ens_member", None, None, None, ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4),
         (
             ptd.DA_FCST_CDF_RIGHT1,
             ptd.DA_OBS_PDCDF,
+            None,
             "thld",
-            "cdf",
             ptd.DA_FCST_CDF_LEFT1,
             "all",
             ptd.EXP_PDCDF_LEFT1,
@@ -966,7 +979,9 @@ def test__right_left_checks(right, left, threshold_dim, error_msg):
         ),
     ],
 )
-def test_pit__left_right_dask(fcst, obs, special_fcst_dim, fcst_type, fcst_left, preserve_dims, exp_left, exp_right):
+def test_pit__left_right_dask(
+    fcst, obs, ensemble_member_dim, cdf_threshold_dim, fcst_left, preserve_dims, exp_left, exp_right
+):
     """
     Tests that Pit works with dask. The test is done against Pit().left and Pit().right
     """
@@ -976,8 +991,8 @@ def test_pit__left_right_dask(fcst, obs, special_fcst_dim, fcst_type, fcst_left,
     pit = Pit(
         fcst.chunk(),
         obs.chunk(),
-        special_fcst_dim,
-        fcst_type=fcst_type,
+        ensemble_member_dim=ensemble_member_dim,
+        cdf_threshold_dim=cdf_threshold_dim,
         fcst_left=fcst_left,
         preserve_dims=preserve_dims,
     )
