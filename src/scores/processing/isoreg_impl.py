@@ -495,7 +495,9 @@ def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
 
 
 def _contiguous_mean_ir(
-    y: np.ndarray, *, weight: Optional[np.ndarray] = None  # Force keywords arguments to be keyword-only
+    y: np.ndarray,
+    *,
+    weight: Optional[np.ndarray] = None,  # Force keywords arguments to be keyword-only
 ) -> np.ndarray:
     """
     Performs classical (i.e. for mean functional) contiguous quantile IR on the tidied data array y.

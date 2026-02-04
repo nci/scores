@@ -112,10 +112,16 @@ An editable installation is recommended. This is deliberate, to make the process
 
 ### Set up `pre-commit` (optional) <a name="pre-commit"></a>
 
+
 To automate linter and fixer checks this project uses `pre-commit` which is set up to execute after every local commit. This ensures that code standards are flagged at the development stage rather than in the project CI/CD pipeline. Although it is optional we highly recommended to use the tool before pushing changes to the remote.
 
 ```bash
 pre-commit install -t pre-commit -t pre-push
+```
+
+After set up and pre-commit, run the command below to check
+```bash
+pre-commit run --all
 ```
 
 ## Pull Request Etiquette

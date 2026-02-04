@@ -65,9 +65,7 @@ expected_pofd_weighted = xr.DataArray(data=1 / 2, name="ctable_probability_of_de
         ),  # Test with DataSet for inputs
     ],
 )
-def test_probability_of_detection(
-    fcst, obs, reduce_dims, check_args, weights, expected
-):  # pylint: disable=too-many-positional-arguments
+def test_probability_of_detection(fcst, obs, reduce_dims, check_args, weights, expected):  # pylint: disable=too-many-positional-arguments
     """Tests probability_of_detection"""
     result = probability_of_detection(fcst, obs, reduce_dims=reduce_dims, weights=weights, check_args=check_args)
     xr.testing.assert_equal(result, expected)
@@ -121,9 +119,7 @@ def test_probability_of_detection_raises(fcst, obs, error_msg):
         ),  # Test with DataSet for inputs
     ],
 )
-def test_probability_of_false_detection(
-    fcst, obs, reduce_dims, check_args, weights, expected
-):  # pylint: disable=too-many-positional-arguments
+def test_probability_of_false_detection(fcst, obs, reduce_dims, check_args, weights, expected):  # pylint: disable=too-many-positional-arguments
     """Tests probability_of_false_detection"""
     result = probability_of_false_detection(fcst, obs, reduce_dims=reduce_dims, weights=weights, check_args=check_args)
     xr.testing.assert_equal(result, expected)

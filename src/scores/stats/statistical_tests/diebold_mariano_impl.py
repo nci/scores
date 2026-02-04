@@ -132,7 +132,7 @@ def diebold_mariano(  # pylint: disable=R0914
         ...     },
         ... )
 
-        >>> dm_test_stats(da_timeseries, "lead_day", "h")
+        >>> diebold_mariano(da_timeseries, "lead_day", "h")
     """
     if method not in ["HLN", "HG"]:
         raise ValueError("`method` must be one of 'HLN' or 'HG'.")

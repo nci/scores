@@ -27,10 +27,8 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "black == 24.10.0",
-    "mypy == 1.13.0",
-    "pylint == 3.3.1",
-    "bandit == 1.8.0",
+    "ty",
+    "ruff == 0.14.14",
     "dask",
     "h5netcdf",
     "pandas-stubs",
@@ -93,23 +91,57 @@ pinned_dependencies = [
 [tool.hatch.version]
 path = "src/scores/__init__.py"
 
-[tool.isort]
-profile = "black"
-
-[tool.black]
+[tool.ruff]
+src = ["src", "tests"]
+exclude = ["*.ipynb"]
 line-length = 120
 
-[tool.ruff]
-exclude = ["*.ipynb"]
-lint.ignore = ['E741']
+[tool.ruff.lint]		
+select = [
+    "E",  # errors
+    "W",  # warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "S",  # bandit
+]
+ignore = [
+    "E741", # Allow ambiguous variable names
+    "S101", # Allow asserts
+    # The ignore below need to be fixed
+    # See GH issue #975
+    "E501", #TODO Line too long (50)
+]
 
-[tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
+[tool.ruff.format]
+# same as black
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
 
-[[tool.mypy.overrides]]
-module = "scipy.*"
-ignore_missing_imports = true
+[tool.ruff.lint.isort]
+known-first-party = ["scores", "tests"]
+known-third-party = ["pandas"] # fix sorting bug
+
+[tool.ty.src]
+include = [
+    "src",
+    "tests",
+]
+
+[tool.ty.rules]
+# Warnings
+unused-ignore-comment = "ignore"
+possibly-missing-attribute = "ignore"
+# Errors
+no-matching-overload = "ignore"
+invalid-argument-type = "ignore"
+invalid-type-arguments = "ignore"
+invalid-assignment = "ignore"
+invalid-type-form = "ignore"
+invalid-return-type = "ignore"
+unsupported-operator = "ignore"
+unresolved-import = "ignore"
+unresolved-attribute = "ignore"
 
 [tool.coverage.paths]
 source = ["/src/"]

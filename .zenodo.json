@@ -117,6 +117,10 @@
         {
             "affiliation": "Work undertaken while at the Bureau of Meteorology, Australia",
             "name": "Esperson, Felix"
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Wu, Xiaoxi"
         }
     ],
     "license": "Apache-2.0",

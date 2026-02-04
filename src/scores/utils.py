@@ -22,14 +22,14 @@ string as an instruction to reduce or preserve every dimension.
 """
 
 ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
-You are requesting to preserve a dimension which does not appear in your data 
+You are requesting to preserve a dimension which does not appear in your data
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
 ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = """
 You are requesting to reduce a dimension which does not appear in your data
-(fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been 
+(fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
@@ -151,8 +151,7 @@ class BinaryOperator(Generic[T]):
         if self.op not in self.valid_ops.values():
             # intentional list comprehension, for display reasons
             raise ValueError(
-                "Invalid operator specified. Allowed operators: "
-                f"{[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
+                f"Invalid operator specified. Allowed operators: {[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
             )
         return self
 

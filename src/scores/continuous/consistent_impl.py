@@ -48,8 +48,8 @@ def consistent_expectile_score(
 
     The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty`.
 
-    We strongly recommend that you work through the tutorial 
-    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
+    We strongly recommend that you work through the tutorial
+    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you
     understand how to use the consistent scoring functions in ``scores``.
 
     Args:
@@ -87,11 +87,11 @@ def consistent_expectile_score(
         ValueError: if `alpha` is not strictly between 0 and 1.
 
     References:
-        -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
-            American Statistical Association, 106(494), 746–762. 
+        -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the
+            American Statistical Association, 106(494), 746–762.
             https://doi.org/10.1198/jasa.2011.r10138
-        -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using 
-            consistent scoring functions. Quarterly Journal of the Royal Meteorological 
+        -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+            consistent scoring functions. Quarterly Journal of the Royal Meteorological
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
 
     """
@@ -206,7 +206,7 @@ def consistent_quantile_score(
     weights: Optional[xr.DataArray] = None,
 ) -> xr.DataArray:
     """
-    Calculates the score that is consistent for the alpha-quantile functional, based on 
+    Calculates the score that is consistent for the alpha-quantile functional, based on
     nondecreasing function g. See Gneiting (2011), or Equation (8) from Taggart (2022).
 
     .. math::
@@ -226,8 +226,8 @@ def consistent_quantile_score(
 
     The score is negatively oriented with :math:`0 \\leq S(x,y) < \\infty`.
 
-    We strongly recommend that you work through the tutorial 
-    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you 
+    We strongly recommend that you work through the tutorial
+    https://scores.readthedocs.io/en/stable/tutorials/Consistent_Scores.html to help you
     understand how to use the consistent scoring functions in ``scores``.
 
     Args:
@@ -264,11 +264,11 @@ def consistent_quantile_score(
         ValueError: if `alpha` is not strictly between 0 and 1.
 
     References:
-        -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the 
-            American Statistical Association, 106(494), 746–762. 
+        -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the
+            American Statistical Association, 106(494), 746–762.
             https://doi.org/10.1198/jasa.2011.r10138
-        -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using 
-            consistent scoring functions. Quarterly Journal of the Royal Meteorological 
+        -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+            consistent scoring functions. Quarterly Journal of the Royal Meteorological
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
     check_alpha(alpha)

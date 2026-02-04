@@ -381,7 +381,7 @@ def cdf_envelope(
               satisfies "upper" >= "original".
             - "lower": minimally adjusted "original" CDF that is nondecreasing and \
               satisfies "lower" <= "original".
-              
+
         NaN values in `cdf` are maintained in "original", "upper" and "lower".
 
     Raises:

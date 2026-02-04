@@ -132,9 +132,7 @@ def firm(  # pylint: disable=too-many-arguments
     _check_firm_inputs(
         fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
     )
-    reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )  # type: ignore[assignment]
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
     total_score = []
     for categorical_threshold, threshold_weight in zip(categorical_thresholds, threshold_weights):
         score = threshold_weight * _single_category_score(

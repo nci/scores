@@ -13,6 +13,7 @@ Collection of tests for the NSE score, contains:
     - TestNseDataset: Tests compatiblity with datasets (most tests use data array for convenience)
     - TestNseDask: Tests compatibility with dask
 """
+
 import numpy as np
 import pytest
 import xarray as xr
