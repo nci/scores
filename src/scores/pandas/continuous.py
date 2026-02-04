@@ -110,3 +110,29 @@ def mae(
 
     """
     return __continuous.mae(fcst, obs, is_angular=is_angular)
+
+def additive_bias(
+    fcst: PandasType,
+    obs: PandasType,
+) -> PandasType:
+    """Calculates the additive bias (mean error) from forecast and observed data.
+
+    Bias is commonly defined as the mean signed difference between forecast and observed values. [2](https://scores.readthedocs.io/en/stable/tutorials/Additive_and_multiplicative_bias.html)
+
+    .. math ::
+        \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)
+
+    Notes:
+        Dimensional reduction and weights are not supported for pandas and the user should
+        convert their data to xarray to use `reduce_dims`, `preserve_dims`, or `weights`.
+
+    Args:
+        fcst: Forecast or predicted variables in pandas.
+        obs: Observed variables in pandas.
+
+    Returns:
+        pandas.Series: An object containing a single floating point number representing
+        the additive bias for the supplied data. All dimensions will be reduced.
+
+    """
+    return __continuous.additive_bias(fcst, obs)  # type: ignore
