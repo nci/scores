@@ -112,11 +112,14 @@ class Pit:
             If an ensemble, must contain the supplied dimension ``ensemble_member_dim``.
             If a CDF, must contain the supplied dimension ``cdf_threshold_dim``.
         obs: an xarray object of observations.
-        ensemble_member_dim: name of the dimension in ``fcst`` that indexes the ensmeble members.
-        cdf_threshold_dim: name of the dimension in ``fcst`` that indexes the thresholds.
+        ensemble_member_dim: name of the dimension in ``fcst`` that indexes the ensemble members
+            if ``fcst`` is an ensemble; otherwise ``None``.
+        cdf_threshold_dim: name of the dimension in ``fcst`` that indexes the thresholds
+            if ``fcst`` contains predictive CDF values; otherwise ``None``.
         fcst_left: The values of the left-hand limits of the predictive CDF. Must have the same
             shape and dimensions as ``fcst``.
-            Only required when ``fcst_type='cdf'`` and the predictive CDF :math:`G` is discontinuous.
+            Only required when ``cdf_threshold_dim`` has been supplied and
+            the predictive CDF :math:`G` is discontinuous.
         reduce_dims: Optionally specify which dimensions to reduce when calculating the
             PIT CDF values, where the mean is taken over all forecast cases.
             All other dimensions will be preserved. As a special case, 'all' will allow
