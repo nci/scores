@@ -93,7 +93,7 @@ path = "src/scores/__init__.py"
 
 [tool.ruff]
 src = ["src", "tests"]
-exclude = ["*.ipynb"]
+exclude = ["*.ipynb", "docs/"]
 line-length = 120
 
 [tool.ruff.lint]		
