@@ -1078,6 +1078,9 @@ def tw_crps_for_ensemble(
     Raises:
         ValueError: when ``method`` is not one of "ecdf" or "fair".
 
+    Warns:
+        FutureWarning: The ``include_components`` argument is deprecated and will be removed in a future version.
+
     Notes:
         Chaining functions can be created to vary the weights across given dimensions
         such as varying the weights by climatological values.
@@ -1113,6 +1116,14 @@ def tw_crps_for_ensemble(
     """  # noqa: E501
     if chaining_func_kwargs is None:
         chaining_func_kwargs = {}
+
+    if include_components:
+        warnings.warn(
+            "`include_components` is deprecated and will be removed in a future version",
+            FutureWarning,
+            stacklevel=2,
+        )
+
     obs = chaining_func(obs, **chaining_func_kwargs)
     fcst = chaining_func(fcst, **chaining_func_kwargs)
 
@@ -1184,6 +1195,9 @@ def tail_tw_crps_for_ensemble(
     Raises:
         ValueError: when ``tail`` is not one of "upper" or "lower".
         ValueError: when ``method`` is not one of "ecdf" or "fair".
+
+    Warns:
+        FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
@@ -1295,6 +1309,9 @@ def interval_tw_crps_for_ensemble(
     Raises:
         ValueError: when ``lower_threshold`` is not less than ``upper_threshold``.
         ValueError: when ``method`` is not one of "ecdf" or "fair".
+
+    Warns:
+        FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
