@@ -16,7 +16,15 @@ from tests.plotdata import roc_test_data as rtd
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "thresholds", "preserve_dims", "reduce_dims", "weights", "expected"),
+    (
+        "fcst",
+        "obs",
+        "thresholds",
+        "preserve_dims",
+        "reduce_dims",
+        "weights",
+        "expected",
+    ),
     [
         # preserve_dims=['lead_day']
         (
@@ -104,7 +112,14 @@ def test_roc(fcst, obs, thresholds, preserve_dims, reduce_dims, weights, expecte
     """
     Tests the roc
     """
-    result = roc(fcst, obs, thresholds, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
+    result = roc(
+        fcst,
+        obs,
+        thresholds,
+        preserve_dims=preserve_dims,
+        reduce_dims=reduce_dims,
+        weights=weights,
+    )
     result.broadcast_equals(expected)
 
 
@@ -251,7 +266,9 @@ def test_roc_dask():
         ),
     ],
 )
-def test_roc_raises(fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet):
+def test_roc_raises(
+    fcst, obs, thresholds, preserve_dims, error_class, error_msg_snippet
+):
     """
     Tests that roc raises the correct error
     """
@@ -275,3 +292,25 @@ def test_roc_warns():
         ),
     ):
         roc(fcst, obs)
+
+
+def test_roc_dask_warns_check_args():
+    """
+    Tests that roc raises a warning when fcst or obs is backed by a dask array
+    and check_args=True.
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    fcst = rtd.FCST_2X3X2_WITH_NAN.chunk()
+    obs = rtd.OBS_3X3_WITH_NAN.chunk()
+
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "`fcst` or `obs` is an xarray object backed by a dask array. "
+            "Input validation is not currently supported for dask arrays, so `check_args` "
+            "has been set to `False`."
+        ),
+    ):
+        roc(fcst, obs, [0, 0.3, 1], check_args=True)

@@ -75,6 +75,10 @@ def roc(  # pylint: disable=too-many-arguments
         check_args: Checks if ``obs`` data only contains values in the set
             {0, 1, np.nan}. You may want to skip this check if you are sure about your
             input data and want to improve the performance when working with dask.
+            Note: If ``fcst`` or ``obs`` is an xarray object backed by a dask array,
+            ``check_args`` will be automatically set to ``False`` and a warning will be
+            issued. This is because input validation for dask arrays has not been
+            implemented yet.
 
     Returns:
         An xarray.Dataset with data variables:
@@ -99,6 +103,10 @@ def roc(  # pylint: disable=too-many-arguments
         If the number of automatically generated thresholds is very large (>1000),
         a warning is raised suggesting that the user supply thresholds manually as an
         iterable of floats if performance is slow.
+
+        If ``fcst`` or ``obs`` is an xarray object backed by a dask array, ``check_args``
+        will be set to ``False`` and a warning will be issued. Input data will not be
+        validated in this case.
 
     Notes:
         If ``thresholds`` is an iterable of floats, the probabilistic ``fcst``
@@ -126,6 +134,15 @@ def roc(  # pylint: disable=too-many-arguments
         >>> obs = xr.DataArray(np.random.randint(0, 2, size=(3, 4)), dims=["time", "location"])
         >>> result = roc_curve_data(fcst, obs)
     """
+    if check_args and (fcst.chunks is not None or obs.chunks is not None):
+        warnings.warn(
+            "`fcst` or `obs` is an xarray object backed by a dask array. "
+            "Input validation is not currently supported for dask arrays, so `check_args` "
+            "has been set to `False`.",
+            UserWarning,
+        )
+        check_args = False
+
     # If a slight performance improvement is needed, the checks can be skipped
     # when `check_args` is False.
     if check_args:
@@ -138,14 +155,20 @@ def roc(  # pylint: disable=too-many-arguments
         if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):  # type: ignore
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
-        if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
+        if not isinstance(thresholds, str) and not np.all(
+            np.array(thresholds)[1:] >= np.array(thresholds)[:-1]
+        ):
             raise ValueError("`thresholds` is not monotonic increasing between 0 and 1")
 
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    reduce_dims = gather_dimensions(
+        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
 
     if isinstance(thresholds, str):
         if thresholds == "auto":
-            thresholds = np.sort(np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy()))
+            thresholds = np.sort(
+                np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy())
+            )
             if len(thresholds) > 1000:  # type: ignore
                 warnings.warn(
                     "Number of automatically generated thresholds is very large (>1000). "
@@ -171,14 +194,22 @@ def roc(  # pylint: disable=too-many-arguments
     all_dims = set(fcst.dims).union(set(obs.dims))
     final_preserve_dims = all_dims - set(reduce_dims)  # type: ignore
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
-    final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
+    final_preserve_dims = auc_dims + ("threshold",)
 
     pod = probability_of_detection(
-        discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
+        discrete_fcst,
+        obs,
+        preserve_dims=final_preserve_dims,
+        weights=weights,
+        check_args=check_args,
     )
 
     pofd = probability_of_false_detection(
-        discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
+        discrete_fcst,
+        obs,
+        preserve_dims=final_preserve_dims,
+        weights=weights,
+        check_args=check_args,
     )
 
     # Need to ensure ordering of dims is consistent for xr.apply_ufunc
