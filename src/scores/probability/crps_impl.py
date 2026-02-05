@@ -900,7 +900,7 @@ def crps_for_ensemble(
         - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability \
             Score with Limited Information and Applications to Ensemble Weather Forecasts", \
             Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
-    """
+    """  # noqa: E501
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
@@ -1113,7 +1113,7 @@ def tw_crps_for_ensemble(
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
-    """
+    """  # noqa: E501
     if chaining_func_kwargs is None:
         chaining_func_kwargs = {}
 
