@@ -83,9 +83,9 @@ def mse(
         )
 
     if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+        error = scores.functions.angular_difference(fcst, obs)
     else:
-        error = fcst - obs  # type: ignore
+        error = fcst - obs
     squared = error * error
 
     if is_xarraylike(squared):
@@ -155,7 +155,7 @@ def rmse(
 
     _rmse = pow(_mse, (1 / 2))
 
-    return _rmse  # type: ignore
+    return _rmse
 
 
 def mae(
@@ -216,9 +216,9 @@ def mae(
         )
 
     if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+        error = scores.functions.angular_difference(fcst, obs)
     else:
-        error = abs(fcst - obs)  # type: ignore
+        error = abs(fcst - obs)
 
     if is_xarraylike(error):
         result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
@@ -335,7 +335,7 @@ def additive_bias(
 
     score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
 
-    return score  # type: ignore
+    return score
 
 
 def multiplicative_bias(
@@ -391,7 +391,7 @@ def multiplicative_bias(
     )
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
-    fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
     multi_bias = aggregate(fcst, reduce_dims=reduce_dims, weights=weights) / aggregate(
         obs, reduce_dims=reduce_dims, weights=weights
     )
@@ -470,7 +470,7 @@ def pbias(
     )
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
-    fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
     error = fcst - obs
 
     numerator = 100 * aggregate(error, reduce_dims=reduce_dims, weights=weights)
@@ -613,9 +613,9 @@ def percent_within_x(
     )
 
     if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+        error = scores.functions.angular_difference(fcst, obs)
     else:
-        error = fcst - obs  # type: ignore
+        error = fcst - obs
 
     abs_error = abs(error)
     if decimals:
@@ -752,7 +752,7 @@ def kge(
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     # compute linear correlation coefficient r between fcst and obs
-    rho = xr.corr(fcst, obs, reduce_dims)  # type: ignore
+    rho = xr.corr(fcst, obs, reduce_dims)
 
     # compute alpha (sigma_sim / sigma_obs)
     sigma_fcst = fcst.std(reduce_dims)
@@ -777,4 +777,4 @@ def kge(
                 "beta": beta,
             }
         )
-    return kge_s  # type: ignore
+    return kge_s

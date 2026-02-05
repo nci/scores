@@ -107,7 +107,7 @@ def murphy_score(  # pylint: disable=R0914
         theta1 = thetas
     else:
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords={"theta": thetas})
-    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)  # type: ignore
+    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
     over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
         fcst1, obs1, theta1, alpha, huber_a=huber_a
@@ -235,7 +235,7 @@ def murphy_thetas(
         huber_a=huber_a,
         left_limit_delta=left_limit_delta,
     )
-    return result  # type: ignore
+    return result
 
 
 def _quantile_thetas(forecasts, obs, **_):

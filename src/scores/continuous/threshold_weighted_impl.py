@@ -103,8 +103,8 @@ def _auxiliary_funcs(
             raise ValueError("left endpoint of `interval_where_one` must be strictly less than right endpoint")
 
         # safest to work with finite a and b
-        a = a.where(a > -np.inf, float(min(fcst.min(), obs.min(), b.min())) - 1)  # type: ignore
-        b = b.where(b < np.inf, float(max(fcst.max(), obs.max(), a.max())) + 1)  # type: ignore
+        a = a.where(a > -np.inf, float(min(fcst.min(), obs.min(), b.min())) - 1)
+        b = b.where(b < np.inf, float(max(fcst.max(), obs.max(), a.max())) + 1)
 
         g = functools.partial(_g_j_rect, a, b)
         phi = functools.partial(_phi_j_rect, a, b)
@@ -141,10 +141,10 @@ def _auxiliary_funcs(
             )
 
         # safest to work with finite intervals
-        b = b.where(b > -np.inf, min(fcst.min(), obs.min(), c.min()) - 1)  # type: ignore
-        a = a.where(a > -np.inf, b.min() - 1)  # type: ignore
-        c = c.where(c < np.inf, max(fcst.max(), obs.max(), b.max()) + 1)  # type: ignore
-        d = d.where(d < np.inf, c.max() + 1)  # type: ignore
+        b = b.where(b > -np.inf, min(fcst.min(), obs.min(), c.min()) - 1)
+        a = a.where(a > -np.inf, b.min() - 1)
+        c = c.where(c < np.inf, max(fcst.max(), obs.max(), b.max()) + 1)
+        d = d.where(d < np.inf, c.max() + 1)
 
         g = functools.partial(_g_j_trap, a, b, c, d)
         phi = functools.partial(_phi_j_trap, a, b, c, d)

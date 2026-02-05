@@ -8,7 +8,7 @@ try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -457,8 +457,8 @@ def test_murphy_thetas(functional, left_limit_delta, expected):
 def test_murphy_thetas_calls(mock__expectile_thetas, mock__huber_thetas, mock__quantile_thetas, functional):
     """murphy_thetas makes the expected function call."""
     result = murphy_thetas(
-        forecasts=1,  # type: ignore  # due to mocking
-        obs=2,  # type: ignore  # due to mocking
+        forecasts=1,
+        obs=2,
         functional=functional,
         huber_a=4,
         left_limit_delta=5,

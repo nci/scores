@@ -102,10 +102,10 @@ def comparative_discretise(
 
     # do the discretisation
     if mode in INEQUALITY_MODES:
-        operator_func, factor = INEQUALITY_MODES[mode]  # type: ignore
+        operator_func, factor = INEQUALITY_MODES[mode]
         discrete_data = operator_func(data, comparison + (abs_tolerance * factor)).where(notnull_mask)
     elif mode in EQUALITY_MODES:
-        operator_func = EQUALITY_MODES[mode]  # type: ignore
+        operator_func = EQUALITY_MODES[mode]
         discrete_data = operator_func(abs(data - comparison), abs_tolerance).where(notnull_mask)
     elif mode is operator.eq:
         # Instead of `operater.eq` we use `operator.le` because we wish to test within a tolerance.
@@ -128,7 +128,7 @@ def comparative_discretise(
     discrete_data.attrs["discretisation_tolerance"] = abs_tolerance
     discrete_data.attrs["discretisation_mode"] = mode
 
-    return discrete_data  # type: ignore
+    return discrete_data
 
 
 def binary_discretise(
@@ -350,7 +350,7 @@ def binary_discretise_proportion(
     dims = gather_dimensions(data.dims, data.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     # values are 1 when (data {mode} threshold), and 0 when ~(data {mode} threshold).
-    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)  # type: ignore
+    discrete_data = binary_discretise(data, thresholds, mode, abs_tolerance=abs_tolerance, autosqueeze=autosqueeze)
 
     # The proportion in each category
     proportion = discrete_data.mean(dim=dims)

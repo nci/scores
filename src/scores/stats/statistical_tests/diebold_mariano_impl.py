@@ -272,7 +272,7 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"
     else:  # method == 'HG'
         test_stat = _hg_method_stat(diffs, h)
 
-    return test_stat  # type: ignore
+    return test_stat
 
 
 def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
@@ -295,7 +295,7 @@ def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
         Hering and Genton, 'Comparing spatial predictions',
         Technometrics 53 no. 4 (2011), 414-425.
     """
-    return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv  # type: ignore
+    return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv
 
 
 def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
@@ -326,7 +326,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     density_estimate = model_autocovs[0] + 2 * np.sum(model_autocovs[1:])
     test_stat = np.mean(diffs) / np.sqrt(density_estimate / n)
 
-    return test_stat  # type: ignore
+    return test_stat
 
 
 def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
@@ -355,7 +355,7 @@ def _hln_method_stat(diffs: np.ndarray, h: int) -> float:
     correction_factor = (n + 1 - 2 * h + h * (h - 1) / n) / n
     test_stat = (correction_factor**0.5) * test_stat
 
-    return test_stat  # type: ignore
+    return test_stat
 
 
 def _dm_gamma_hat_k(diffs: np.ndarray, diffs_bar: float, n: int, k: int) -> float:
@@ -374,7 +374,7 @@ def _dm_gamma_hat_k(diffs: np.ndarray, diffs_bar: float, n: int, k: int) -> floa
     """
     prod = (diffs[k:n] - diffs_bar) * (diffs[0 : n - k] - diffs_bar)
 
-    return np.sum(prod)  # type: ignore
+    return np.sum(prod)
 
 
 def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
@@ -397,6 +397,6 @@ def _dm_v_hat(diffs: np.ndarray, diffs_bar: float, n: int, h: int) -> float:
     result = (_dm_gamma_hat_k(diffs, diffs_bar, n, 0) + 2 * np.sum(summands)) / n**2
 
     if result <= 0:
-        result = np.nan  # type: ignore
+        result = np.nan
 
-    return result  # type: ignore
+    return result
