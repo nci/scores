@@ -145,20 +145,20 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     """
 
     if isinstance(fcst, xr.DataArray):
-        fcst, obs, weight = _xr_to_np(fcst, obs, weight)  # type: ignore
+        fcst, obs, weight = _xr_to_np(fcst, obs, weight)
     # now fcst, obs and weight (unless None) are np.arrays
 
     _iso_arg_checks(
-        fcst,  # type: ignore
-        obs,  # type: ignore
-        weight=weight,  # type: ignore
+        fcst,
+        obs,
+        weight=weight,
         functional=functional,
         quantile_level=quantile_level,
         solver=solver,
         bootstraps=bootstraps,
         confidence_level=confidence_level,
     )
-    fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)  # type: ignore
+    fcst_tidied, obs_tidied, weight_tidied = _tidy_ir_inputs(fcst, obs, weight=weight)
     y_out = _do_ir(
         obs_tidied,
         weight=weight_tidied,
@@ -181,17 +181,17 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
             bootstraps=bootstraps,
         )
 
-        lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)  # type: ignore
+        lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)
 
         lower_func = _get_interp1d_func(fcst_tidied, lower_pts)
         upper_func = _get_interp1d_func(fcst_tidied, upper_pts)
 
-        confband_levels = ((1 - confidence_level) / 2, 1 - (1 - confidence_level) / 2)  # type: ignore
+        confband_levels = ((1 - confidence_level) / 2, 1 - (1 - confidence_level) / 2)
 
     else:
-        boot_results = lower_pts = upper_pts = None  # type: ignore
+        boot_results = lower_pts = upper_pts = None
         lower_func = upper_func = partial(np.full_like, fill_value=np.nan)
-        confband_levels = (None, None)  # type: ignore
+        confband_levels = (None, None)
     # To reduce the size of output dictionary, we only keep the unique values of
     # forecasts and accordingly regression and confidence band values calculate by using
     # unique forecast values. We also calculate forecast counts that can be used to create
@@ -247,14 +247,14 @@ def _xr_to_np(
         if set(fcst_dims) != set(weight.dims):
             raise ValueError("`fcst` and `weight` must have same dimensions.")
         merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs"), weight.rename("weight")], join="outer")
-        weight = merged_ds["weight"].transpose(*fcst_dims).values  # type: ignore
+        weight = merged_ds["weight"].transpose(*fcst_dims).values
     else:
         merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs")], join="outer")
 
-    fcst = merged_ds["fcst"].transpose(*fcst_dims).values  # type: ignore
-    obs = merged_ds["obs"].transpose(*fcst_dims).values  # type: ignore
+    fcst = merged_ds["fcst"].transpose(*fcst_dims).values
+    obs = merged_ds["obs"].transpose(*fcst_dims).values
 
-    return fcst, obs, weight  # type: ignore
+    return fcst, obs, weight
 
 
 def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
@@ -291,7 +291,7 @@ def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
     if functional not in ["mean", "quantile", None]:
         raise ValueError("`functional` must be one of 'mean', 'quantile' or `None`.")
 
-    if functional == "quantile" and not 0 < quantile_level < 1:  # type: ignore
+    if functional == "quantile" and not 0 < quantile_level < 1:
         raise ValueError("`quantile_level` must be strictly between 0 and 1.")
 
     if functional == "quantile" and weight is not None:
@@ -309,7 +309,7 @@ def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
     if bootstraps is not None:
         if not isinstance(bootstraps, int) or bootstraps < 1:
             raise ValueError("`bootstraps` must be a positive integer.")
-        if not 0 < confidence_level < 1:  # type: ignore
+        if not 0 < confidence_level < 1:
             raise ValueError("`confidence_level` must be strictly between 0 and 1.")
 
 
@@ -367,7 +367,7 @@ def _tidy_ir_inputs(
         new_weight = weight[~nan_locs]
         new_weight = new_weight[sorter]
 
-    return new_fcst, new_obs, new_weight  # type: ignore
+    return new_fcst, new_obs, new_weight
 
 
 def _do_ir(  # pylint: disable=too-many-arguments
@@ -400,9 +400,9 @@ def _do_ir(  # pylint: disable=too-many-arguments
     if functional == "mean":
         y_out = _contiguous_mean_ir(obs, weight=weight)
     elif functional == "quantile":
-        y_out = _contiguous_quantile_ir(obs, quantile_level)  # type: ignore
+        y_out = _contiguous_quantile_ir(obs, quantile_level)
     else:
-        y_out = _contiguous_ir(obs, solver, weight=weight)  # type: ignore
+        y_out = _contiguous_ir(obs, solver, weight=weight)
 
     return y_out
 
@@ -491,7 +491,7 @@ def _contiguous_ir(
 
 def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
     """Performs contiguous quantile IR on tidied data y, for quantile-level alpha, with no weights."""
-    return _contiguous_ir(y, partial(np.quantile, q=alpha))  # type: ignore
+    return _contiguous_ir(y, partial(np.quantile, q=alpha))
 
 
 def _contiguous_mean_ir(
@@ -509,7 +509,7 @@ def _contiguous_mean_ir(
     This sorting of the y array is handled by the '_tidy_ir_inputs' function
     prior to any calls of this function.
     """
-    return isotonic_regression(y, weights=weight, increasing=True).x  # type: ignore
+    return isotonic_regression(y, weights=weight, increasing=True).x
 
 
 def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals

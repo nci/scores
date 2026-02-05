@@ -106,10 +106,10 @@ def quantile_interval_score(  # pylint: disable=R0914
     if specified_dims is not None and specified_dims != "all":
         check_dims(xr_data=fcst_lower_qtile, expected_dims=specified_dims, mode="superset")
     # check obs dimensions are a subset of fcst_lower_qtile (or fcst_upper_qtile) dimensions
-    check_dims(xr_data=obs, expected_dims=fcst_lower_qtile.dims, mode="subset")  # type: ignore
+    check_dims(xr_data=obs, expected_dims=fcst_lower_qtile.dims, mode="subset")
     reduce_dims = gather_dimensions(
         fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )  # type: ignore[assignment]
+    )
     if (fcst_lower_qtile > fcst_upper_qtile).any():
         raise ValueError("Input does not satisfy fcst_lower_qtile < fcst_upper_qtile condition.")
     fcst_lower_qtile, fcst_upper_qtile, obs = broadcast_and_match_nan(fcst_lower_qtile, fcst_upper_qtile, obs)
@@ -128,7 +128,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     result = xr.Dataset(components)
     score = aggregate(result, weights=weights, reduce_dims=reduce_dims)
 
-    return score  # type: ignore
+    return score
 
 
 def interval_score(

@@ -11,7 +11,7 @@ from numpy import nan
 try:
     import dask
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 
 from scores.continuous import mae, mse, quantile_score
