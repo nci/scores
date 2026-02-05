@@ -61,6 +61,12 @@ DA_FCST = xr.DataArray(
     coords={"stn": [101, 102, 103], "lead_day": [0, 1], "ens_member": [0, 1, 2, 3, 4]},
 )
 DA_OBS = xr.DataArray(data=[0, 4, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
+# PIT uniform endpoints for DA_FCST and DA_OBS
+DA_ENDPOINTS = xr.DataArray(
+    data=[[[0, 0], [0.6, nan], [nan, nan]], [[0.4, 0.8], [0.6, nan], [nan, nan]]],
+    dims=["uniform_endpoint", "stn", "lead_day"],
+    coords={"stn": [101, 102, 103], "lead_day": [0, 1], "uniform_endpoint": ["lower", "upper"]},
+)
 # keep all dims
 EXP_PITCDF_LEFT1 = xr.DataArray(
     data=[
@@ -80,7 +86,7 @@ EXP_PITCDF_RIGHT1 = xr.DataArray(
     dims=["stn", "lead_day", "pit_x_value"],
     coords={"stn": [101, 102, 103], "lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
-EXP_PITCDF1 = {"left": EXP_PITCDF_LEFT1, "right": EXP_PITCDF_RIGHT1}
+EXP_PITCDF1 = {"left": EXP_PITCDF_LEFT1, "right": EXP_PITCDF_RIGHT1, "pit_uniform_endpoints": DA_ENDPOINTS}
 # preserve lead day, weights=None
 EXP_PITCDF_LEFT2 = xr.DataArray(
     data=[[0, 0.5, 0.5, 1, 1], [0, 0.5, 0.75, 1, 1]],
@@ -92,7 +98,7 @@ EXP_PITCDF_RIGHT2 = xr.DataArray(
     dims=["lead_day", "pit_x_value"],
     coords={"lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
-EXP_PITCDF2 = {"left": EXP_PITCDF_LEFT2, "right": EXP_PITCDF_RIGHT2}
+EXP_PITCDF2 = {"left": EXP_PITCDF_LEFT2, "right": EXP_PITCDF_RIGHT2, "pit_uniform_endpoints": DA_ENDPOINTS}
 # preserve lead day, station weights = [1, 2, 3]
 WTS_STN = xr.DataArray(data=[1, 2, 3], dims=["stn"], coords={"stn": [101, 102, 103]})
 EXP_PITCDF_LEFT3 = xr.DataArray(
@@ -105,7 +111,7 @@ EXP_PITCDF_RIGHT3 = xr.DataArray(
     dims=["lead_day", "pit_x_value"],
     coords={"lead_day": [0, 1], "pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
-EXP_PITCDF3 = {"left": EXP_PITCDF_LEFT3, "right": EXP_PITCDF_RIGHT3}
+EXP_PITCDF3 = {"left": EXP_PITCDF_LEFT3, "right": EXP_PITCDF_RIGHT3, "pit_uniform_endpoints": DA_ENDPOINTS}
 # reduce all dims, no weights
 EXP_PITCDF_LEFT4 = xr.DataArray(
     data=[0, 0.5, 1.75 / 3, 1, 1],
@@ -117,7 +123,7 @@ EXP_PITCDF_RIGHT4 = xr.DataArray(
     dims=["pit_x_value"],
     coords={"pit_x_value": [0.0, 0.4, 0.6, 0.8, 1]},
 )
-EXP_PITCDF4 = {"left": EXP_PITCDF_LEFT4, "right": EXP_PITCDF_RIGHT4}
+EXP_PITCDF4 = {"left": EXP_PITCDF_LEFT4, "right": EXP_PITCDF_RIGHT4, "pit_uniform_endpoints": DA_ENDPOINTS}
 
 
 EXP_PLOTTING_POINTS2 = xr.DataArray(
@@ -390,6 +396,13 @@ DA_FCST_CDF_RIGHT1 = xr.DataArray(
     coords={"stn": [101, 102, 103], "lead_day": [1, 2], "thld": [0.0, 1, 2, 3]},
 )
 DA_OBS_PDCDF = xr.DataArray(data=[2.0, 1, nan], dims=["stn"], coords={"stn": [101, 102, 103]})
+# endpoints when left-limits are DA_FCST_CDF_LEFT1, cdf values are DA_FCST_CDF_RIGHT1 and
+# obs are DA_OBS_PDCDF
+EXP_PDCDF_ENDPT1 = xr.DataArray(
+    data=[[[0.5, 0.6], [0, nan], [nan, nan]], [[0.5, 0.8], [0, nan], [nan, nan]]],
+    dims=["uniform_endpoint", "stn", "lead_day"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "uniform_endpoint": ["lower", "upper"]},
+)
 EXP_PDCDF_LEFT1 = xr.DataArray(
     data=[
         [[0, 0, 1, 1, 1], [0, 0, 0, 1, 1]],
@@ -408,7 +421,13 @@ EXP_PDCDF_RIGHT1 = xr.DataArray(
     dims=["stn", "lead_day", "pit_x_value"],
     coords={"stn": [101, 102, 103], "lead_day": [1, 2], "pit_x_value": [0, 0.5, 0.6, 0.8, 1]},
 )
-EXP_PDCDF1 = {"left": EXP_PDCDF_LEFT1, "right": EXP_PDCDF_RIGHT1}
+EXP_PDCDF1 = {"left": EXP_PDCDF_LEFT1, "right": EXP_PDCDF_RIGHT1, "pit_uniform_endpoints": EXP_PDCDF_ENDPT1}
+# endpoints when left-limits and cdf values are DA_FCST_CDF_LEFT1 and obs are DA_OBS_PDCDF
+EXP_PDCDF_ENDPT2 = xr.DataArray(
+    data=[[[0.5, 0.6], [0, nan], [nan, nan]], [[0.5, 0.6], [0, nan], [nan, nan]]],
+    dims=["uniform_endpoint", "stn", "lead_day"],
+    coords={"stn": [101, 102, 103], "lead_day": [1, 2], "uniform_endpoint": ["lower", "upper"]},
+)
 EXP_PDCDF_LEFT2 = xr.DataArray(
     data=[
         [[0, 0, 1, 1], [0, 0, 0, 1]],
@@ -427,14 +446,14 @@ EXP_PDCDF_RIGHT2 = xr.DataArray(
     dims=["stn", "lead_day", "pit_x_value"],
     coords={"stn": [101, 102, 103], "lead_day": [1, 2], "pit_x_value": [0, 0.5, 0.6, 1]},
 )
-EXP_PDCDF2 = {"left": EXP_PDCDF_LEFT2, "right": EXP_PDCDF_RIGHT2}
+EXP_PDCDF2 = {"left": EXP_PDCDF_LEFT2, "right": EXP_PDCDF_RIGHT2, "pit_uniform_endpoints": EXP_PDCDF_ENDPT2}
 EXP_PDCDF_LEFT3 = xr.DataArray(
     data=[0, 1 / 3, 2 / 3, 1], dims=["pit_x_value"], coords={"pit_x_value": [0, 0.5, 0.6, 1]}
 )
 EXP_PDCDF_RIGHT3 = xr.DataArray(
     data=[1 / 3, 2 / 3, 1, 1], dims=["pit_x_value"], coords={"pit_x_value": [0, 0.5, 0.6, 1]}
 )
-EXP_PDCDF3 = {"left": EXP_PDCDF_LEFT3, "right": EXP_PDCDF_RIGHT3}
+EXP_PDCDF3 = {"left": EXP_PDCDF_LEFT3, "right": EXP_PDCDF_RIGHT3, "pit_uniform_endpoints": EXP_PDCDF_ENDPT2}
 DA_FCST_CDF_LEFT_RAISES = xr.DataArray(
     data=[
         [[0, 0.2, 0.5, 1], [0, 0, 0.6, 1]],
@@ -474,7 +493,15 @@ EXP_PVFAO_RIGHT0 = xr.DataArray(
     dims=["stn", "lead_day", "pit_x_value"],
     coords={"stn": [101, 102], "lead_day": [0, 1, 2], "pit_x_value": [0, 0.2, 0.4, 0.6, 1]},
 )
-EXP_PVFAO0 = {"left": EXP_PVFAO_LEFT0, "right": EXP_PVFAO_RIGHT0}
+EXP_PVFAO_PV0 = xr.DataArray(
+    data=[
+        [[0, 0.4, nan], [0.4, 0.2, 1]],
+        [[0.2, 0.4, nan], [0.4, 0.6, 1]],
+    ],
+    dims=["uniform_endpoint", "stn", "lead_day"],
+    coords={"stn": [101, 102], "lead_day": [0, 1, 2], "uniform_endpoint": ["lower", "upper"]},
+)
+EXP_PVFAO0 = {"left": EXP_PVFAO_LEFT0, "right": EXP_PVFAO_RIGHT0, "pit_uniform_endpoints": EXP_PVFAO_PV0}
 # keep all dims, fcst_at_obs_left is None
 EXP_PVFAO_LEFT1 = xr.DataArray(
     data=[
@@ -492,7 +519,15 @@ EXP_PVFAO_RIGHT1 = xr.DataArray(
     dims=["stn", "lead_day", "pit_x_value"],
     coords={"stn": [101, 102], "lead_day": [0, 1, 2], "pit_x_value": [0, 0.2, 0.4, 0.6, 1]},
 )
-EXP_PVFAO1 = {"left": EXP_PVFAO_LEFT1, "right": EXP_PVFAO_RIGHT1}
+EXP_PVFAO_PV1 = xr.DataArray(
+    data=[
+        [[0.2, 0.4, nan], [0.4, 0.6, 1]],
+        [[0.2, 0.4, nan], [0.4, 0.6, 1]],
+    ],
+    dims=["uniform_endpoint", "stn", "lead_day"],
+    coords={"stn": [101, 102], "lead_day": [0, 1, 2], "uniform_endpoint": ["lower", "upper"]},
+)
+EXP_PVFAO1 = {"left": EXP_PVFAO_LEFT1, "right": EXP_PVFAO_RIGHT1, "pit_uniform_endpoints": EXP_PVFAO_PV1}
 # preserve lead day with weight, fcst_at_obs_left is None
 DA_WT = xr.DataArray(data=[1, 3], dims=["stn"], coords={"stn": [101, 102]})
 EXP_PVFAO_LEFT2 = xr.DataArray(
@@ -505,7 +540,7 @@ EXP_PVFAO_RIGHT2 = xr.DataArray(
     dims=["lead_day", "pit_x_value"],
     coords={"lead_day": [0, 1, 2], "pit_x_value": [0, 0.2, 0.4, 0.6, 1]},
 )
-EXP_PVFAO2 = {"left": EXP_PVFAO_LEFT2, "right": EXP_PVFAO_RIGHT2}
+EXP_PVFAO2 = {"left": EXP_PVFAO_LEFT2, "right": EXP_PVFAO_RIGHT2, "pit_uniform_endpoints": EXP_PVFAO_PV1}
 
 
 # test data for _pit_values_final_processing

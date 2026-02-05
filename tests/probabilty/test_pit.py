@@ -77,10 +77,15 @@ EXP_PCVFJ2 = {"left": create_dataset(ptd.EXP_PCVFJ_LEFT), "right": create_datase
 EXP_PCV2 = {"left": create_dataset(ptd.EXP_PCV_LEFT), "right": create_dataset(ptd.EXP_PCV_RIGHT)}
 DS_FCST = create_dataset(ptd.DA_FCST)
 DS_OBS = create_dataset(ptd.DA_OBS)
+DS_ENDPOINTS = create_dataset(ptd.DA_ENDPOINTS)
 EXP_PITCDF_LEFT5 = create_dataset(ptd.EXP_PITCDF_LEFT4)
 EXP_PITCDF_RIGHT5 = create_dataset(ptd.EXP_PITCDF_RIGHT4)
-EXP_PITCDF5 = {"left": EXP_PITCDF_LEFT5, "right": EXP_PITCDF_RIGHT5}
-EXP_PVFAO3 = {"left": create_dataset(ptd.EXP_PVFAO_LEFT0), "right": create_dataset(ptd.EXP_PVFAO_RIGHT0)}
+EXP_PITCDF5 = {"left": EXP_PITCDF_LEFT5, "right": EXP_PITCDF_RIGHT5, "pit_uniform_endpoints": DS_ENDPOINTS}
+EXP_PVFAO3 = {
+    "left": create_dataset(ptd.EXP_PVFAO_LEFT0),
+    "right": create_dataset(ptd.EXP_PVFAO_RIGHT0),
+    "pit_uniform_endpoints": create_dataset(ptd.EXP_PVFAO_PV0),
+}
 # test data sets for plotting point functions
 DS_GPP_LEFT4 = create_dataset(ptd.DA_GPP_LEFT2)
 DS_GPP_RIGHT4 = create_dataset(ptd.DA_GPP_RIGHT2)
@@ -130,7 +135,7 @@ def test__pit_values_final_processing(pit_values, weights, expected_left, expect
     This test specifically tests that the weighted means are rescaled correctly for left
     and right
     """
-    expected = {"left": expected_left, "right": expected_right}
+    expected = {"left": expected_left, "right": expected_right, "pit_uniform_endpoints": pit_values}
     result = _pit_values_final_processing(pit_values, weights, {"stn"})
     assert expected.keys() == result.keys()
     for key in result.keys():
@@ -179,6 +184,7 @@ def test_PitFcstAtObs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims,
     )
     xr.testing.assert_allclose(expected["left"], result.left)
     xr.testing.assert_allclose(expected["right"], result.right)
+    xr.testing.assert_allclose(expected["pit_uniform_endpoints"], result.pit_uniform_endpoints)
 
 
 def test_PitFcstAtObs_dask():
@@ -186,14 +192,19 @@ def test_PitFcstAtObs_dask():
     pit = PitFcstAtObs(ptd.DA_FAO.chunk(), fcst_at_obs_left=ptd.DA_FAO_LEFT.chunk(), preserve_dims="all")
     left = pit.left
     right = pit.right
+    endpoints = pit.pit_uniform_endpoints
     assert isinstance(left.data, dask.array.Array)
     assert isinstance(right.data, dask.array.Array)
+    assert isinstance(endpoints.data, dask.array.Array)
     left = left.compute()
     right = right.compute()
+    endpoints = endpoints.compute()
     assert isinstance(left.data, (np.ndarray, np.generic))
     assert isinstance(right.data, (np.ndarray, np.generic))
+    assert isinstance(endpoints.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(left, ptd.EXP_PVFAO0["left"])
     xr.testing.assert_equal(right, ptd.EXP_PVFAO0["right"])
+    xr.testing.assert_equal(endpoints, ptd.EXP_PVFAO0["pit_uniform_endpoints"])
 
 
 def test__pit_values_for_ens():
@@ -770,14 +781,22 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
             ptd.DA_OBS_PDCDF,
             None,
             None,
-            {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
+            {
+                "left": create_dataset(ptd.EXP_PDCDF_LEFT3),
+                "right": create_dataset(ptd.EXP_PDCDF_RIGHT3),
+                "pit_uniform_endpoints": create_dataset(ptd.EXP_PDCDF_ENDPT2),
+            },
         ),
         (
             create_dataset(ptd.DA_FCST_CDF_LEFT1),
             create_dataset(ptd.DA_OBS_PDCDF),
             None,
             None,
-            {"left": create_dataset(ptd.EXP_PDCDF_LEFT3), "right": create_dataset(ptd.EXP_PDCDF_RIGHT3)},
+            {
+                "left": create_dataset(ptd.EXP_PDCDF_LEFT3),
+                "right": create_dataset(ptd.EXP_PDCDF_RIGHT3),
+                "pit_uniform_endpoints": create_dataset(ptd.EXP_PDCDF_ENDPT2),
+            },
         ),
     ],
 )
@@ -827,6 +846,7 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
         "weights",
         "expected_left",
         "expected_right",
+        "expected_endpoints",
     ),
     [
         (
@@ -840,6 +860,7 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
             None,
             ptd.EXP_PDCDF_LEFT3,
             ptd.EXP_PDCDF_RIGHT3,
+            ptd.EXP_PDCDF_ENDPT2,
         ),
         (
             ptd.DA_FCST_CDF_LEFT1,
@@ -852,6 +873,7 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
             None,
             ptd.EXP_PDCDF_LEFT2,
             ptd.EXP_PDCDF_RIGHT2,
+            ptd.EXP_PDCDF_ENDPT2,
         ),
         (
             ptd.DA_FCST_CDF_RIGHT1,
@@ -864,6 +886,7 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
             None,
             ptd.EXP_PDCDF_LEFT1,
             ptd.EXP_PDCDF_RIGHT1,
+            ptd.EXP_PDCDF_ENDPT1,
         ),
         (
             ptd.DA_FCST,
@@ -876,6 +899,7 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
             None,
             ptd.EXP_PITCDF_LEFT1,
             ptd.EXP_PITCDF_RIGHT1,
+            ptd.DA_ENDPOINTS,
         ),
         (
             ptd.DA_FCST,
@@ -888,6 +912,7 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
             ptd.WTS_STN,
             ptd.EXP_PITCDF_LEFT3,
             ptd.EXP_PITCDF_RIGHT3,
+            ptd.DA_ENDPOINTS,
         ),
     ],
 )
@@ -902,6 +927,7 @@ def test_Pit__init__(
     weights,
     expected_left,
     expected_right,
+    expected_endpoints,
 ):
     """Tests that `Pit.__init__` returns as expected."""
     result = Pit(
@@ -916,6 +942,7 @@ def test_Pit__init__(
     )
     xr.testing.assert_equal(expected_left, result.left)
     xr.testing.assert_equal(expected_right, result.right)
+    xr.testing.assert_equal(expected_endpoints, result.pit_uniform_endpoints)
 
 
 @pytest.mark.parametrize(
@@ -964,9 +991,29 @@ def test__right_left_checks(right, left, threshold_dim, error_msg):
 
 
 @pytest.mark.parametrize(
-    ("fcst", "obs", "ensemble_member_dim", "cdf_threshold_dim", "fcst_left", "preserve_dims", "exp_left", "exp_right"),
+    (
+        "fcst",
+        "obs",
+        "ensemble_member_dim",
+        "cdf_threshold_dim",
+        "fcst_left",
+        "preserve_dims",
+        "exp_left",
+        "exp_right",
+        "exp_endpoints",
+    ),
     [
-        (ptd.DA_FCST, ptd.DA_OBS, "ens_member", None, None, None, ptd.EXP_PITCDF_LEFT4, ptd.EXP_PITCDF_RIGHT4),
+        (
+            ptd.DA_FCST,
+            ptd.DA_OBS,
+            "ens_member",
+            None,
+            None,
+            None,
+            ptd.EXP_PITCDF_LEFT4,
+            ptd.EXP_PITCDF_RIGHT4,
+            ptd.DA_ENDPOINTS,
+        ),
         (
             ptd.DA_FCST_CDF_RIGHT1,
             ptd.DA_OBS_PDCDF,
@@ -976,14 +1023,16 @@ def test__right_left_checks(right, left, threshold_dim, error_msg):
             "all",
             ptd.EXP_PDCDF_LEFT1,
             ptd.EXP_PDCDF_RIGHT1,
+            ptd.EXP_PDCDF_ENDPT1,
         ),
     ],
 )
 def test_pit__left_right_dask(
-    fcst, obs, ensemble_member_dim, cdf_threshold_dim, fcst_left, preserve_dims, exp_left, exp_right
+    fcst, obs, ensemble_member_dim, cdf_threshold_dim, fcst_left, preserve_dims, exp_left, exp_right, exp_endpoints
 ):
     """
-    Tests that Pit works with dask. The test is done against Pit().left and Pit().right
+    Tests that Pit works with dask. The test is done against Pit().left, Pit().right and
+    Pit().pit_uniform_endpoints
     """
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
@@ -998,14 +1047,19 @@ def test_pit__left_right_dask(
     )
     left = pit.left
     right = pit.right
+    endpoints = pit.pit_uniform_endpoints
     assert isinstance(left.data, dask.array.Array)
     assert isinstance(right.data, dask.array.Array)
+    assert isinstance(endpoints.data, dask.array.Array)
     left = left.compute()
     right = right.compute()
+    endpoints = endpoints.compute()
     assert isinstance(left.data, (np.ndarray, np.generic))
     assert isinstance(right.data, (np.ndarray, np.generic))
+    assert isinstance(endpoints.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(left, exp_left)
     xr.testing.assert_equal(right, exp_right)
+    xr.testing.assert_equal(endpoints, exp_endpoints)
 
 
 def test_plotting_points2():

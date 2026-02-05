@@ -143,6 +143,11 @@ class Pit:
             (possibly weighted) PIT distribution across all forecast cases. The points :math:`x`
             are in the dimension "pit_x_value". The CDF :math:`F` of the PIT distribution is completely
             reconstructable using values from ``.left``, ``.right`` and linear interpolation.
+        pit_uniform_endpoints: xarray object giving the interval :math:`[G(y-), G(y)]`
+            of the uniform distribution generated from the probability integral transform for each
+            forecast--observation pair :math:`(G,y)`. Dimensions are not reduced and weights are ignored.
+            The left and right endpoints of the interval are given by the "lower" and "upper" coordinates
+            in the "uniform_endpoint" dimension.
 
     Raises:
         ValueError: when exactly one string is not supplied to either ``ensemble_member_dim`` or ``cdf_threshold_dim``.
@@ -214,7 +219,9 @@ class Pit:
     ):
         """
         Calculates the left-hand and right-hand limits of the PIT distribution :math:`F`,
-        accessible via the attributes ``.left`` and ``.right``.
+        accessible via the attributes ``.left`` and ``.right``, as well as the interval
+        :math:`[G(y-),G(y)]` of each probability integral transformed forecast--observation pair
+        :math:`(G,y)`, accessible via the attribute ``.pit_uniform_endpoints``.
         """
         special_dims = [ensemble_member_dim, cdf_threshold_dim]
         if sum(x is not None for x in special_dims) != 1:
@@ -243,6 +250,7 @@ class Pit:
             )
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
+        self.pit_uniform_endpoints = pit_cdf["pit_uniform_endpoints"]
 
     def plotting_points(self) -> XarrayLike:
         """
@@ -399,6 +407,11 @@ class PitFcstAtObs:
             (possibly weighted) PIT distribution across all forecast cases. The points :math:`x`
             are in the dimension "pit_x_value". The CDF :math:`F` of the PIT distribution is completely
             reconstructable using values from ``.left``, ``.right`` and linear interpolation.
+        pit_uniform_endpoints: xarray object giving the interval :math:`[G(y-), G(y)]`
+            of the uniform distribution generated from the probability integral transform for each
+            forecast--observation pair :math:`(G,y)`. Dimensions are not reduced and weights are ignored.
+            The left and right endpoints of the interval are given by the "lower" and "upper" coordinates
+            in the "uniform_endpoint" dimension.
 
     Raises:
         ValueError: when dimensions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
@@ -460,11 +473,14 @@ class PitFcstAtObs:
     ):
         """
         Calculates the left-hand and right-hand limits of the PIT distribution :math:`F`,
-        accessible via the attributes ``.left`` and ``.right``.
+        accessible via the attributes ``.left`` and ``.right``, as well as the interval
+        :math:`[G(y-),G(y)]` of each probability integral transformed forecast--observation pair
+        :math:`(G,y)`, accessible via the attribute ``.pit_uniform_endpoints``.
         """
         pit_cdf = _pit_values_for_fcst_at_obs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims, weights)
         self.left = pit_cdf["left"]
         self.right = pit_cdf["right"]
+        self.pit_uniform_endpoints = pit_cdf["pit_uniform_endpoints"]
 
     def plotting_points(self) -> XarrayLike:
         """
@@ -659,8 +675,8 @@ def _pit_values_for_fcst_at_obs(
 ) -> dict:
     """
     A private function to compute `PitFcstAtObs.__init__`.
-    Returns `PitFcstAtObs().left` and `PitFcstAtObs().right` in the form of a dictionary
-    with keys 'left' and 'right'.
+    Returns `PitFcstAtObs().left`, `PitFcstAtObs().right` and `PitFcstAtObs().pit_uniform_endpoints
+    in the form of a dictionary with keys 'left', 'right' and 'pit_uniform_endpoints'.
 
     See docstring `PitFcstAtObs.__init__` for details.
     """
@@ -683,6 +699,7 @@ def _pit_values_for_fcst_at_obs(
 
     # convert to CDF format, take weighted means, and output dictionary
     result = _pit_values_final_processing(pit_values, weights, dims_for_mean)
+    result["pit_uniform_endpoints"] = pit_values
 
     return result
 
@@ -703,8 +720,9 @@ def _pit_values_final_processing(
         dims_for_mean: list, set etc of dimensions over which to apply the mean.
 
     Returns:
-        dictionary of two xarray objects, with keys 'left' and 'right', containing values of the
-            left-hand and right-hand limits of the mean weighted PIT in CDF format.
+        dictionary of three xarray objects, with keys 'left', 'right' and 'pit_uniform_endpoints'.
+        These contain values of the left-hand and right-hand limits of the mean weighted PIT in CDF format,
+        and the `pit_values` input to this function.
     """
     # convert to F(x-), F(x) format
     pit_cdf = _pit_cdfvalues(pit_values)
@@ -718,7 +736,7 @@ def _pit_values_final_processing(
     pit_cdf_right = pit_cdf_right / cdf_right_max
     pit_cdf_left = pit_cdf_left / cdf_right_max
 
-    return {"left": pit_cdf_left, "right": pit_cdf_right}
+    return {"left": pit_cdf_left, "right": pit_cdf_right, "pit_uniform_endpoints": pit_values}
 
 
 def _pit_values_for_ens(fcst: XarrayLike, obs: XarrayLike, ens_member_dim: str) -> XarrayLike:
@@ -809,6 +827,8 @@ def _pit_distribution_for_cdf(
         a dictionary with the following keys and values:
         - "left": an xarray object containing the left-hand limits :math:`F(x-)` of the PIT CDF values
         - "right": an xarray object containing the values :math:`F(x)` of the PIT CDF values
+        - "pit_uniform_endpoints": an xarray object containing the values :math:`[G(y-), G(y)]`,
+            with lower and upper endpoints indexed by the dimension "uniform_endpoint"
 
     Raises:
         ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
@@ -1190,6 +1210,8 @@ def _pit_distribution_for_ens(
         a dictionary with the following keys and values:
         - "left": an xarray object containing the left-hand limits :math:`F(x-)` of the PIT CDF values
         - "right": an xarray object containing the values :math:`F(x)` of the PIT CDF values
+        - "pit_uniform_endpoints": an xarray object containing the values :math:`[G(y-), G(y)]`,
+            with lower and upper endpoints indexed by the dimension "uniform_endpoint"
 
     Raises:
         ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
