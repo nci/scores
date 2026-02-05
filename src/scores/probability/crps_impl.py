@@ -116,14 +116,14 @@ def crps_cdf_reformat_inputs(
 
     fcst_thresholds = fcst[threshold_dim].values
 
-    weight_thresholds = []  # type: ignore
+    weight_thresholds = []
     if threshold_weight is not None:
-        weight_thresholds = threshold_weight[threshold_dim].values  # type: ignore
+        weight_thresholds = threshold_weight[threshold_dim].values
 
     if additional_thresholds is None:
         additional_thresholds = []
 
-    thresholds = np.concatenate((weight_thresholds, fcst_thresholds, additional_thresholds))  # type: ignore
+    thresholds = np.concatenate((weight_thresholds, fcst_thresholds, additional_thresholds))
     if include_obs_in_thresholds:
         obs_thresholds = pd.unique(obs.values.flatten())
         thresholds = np.concatenate((thresholds, obs_thresholds))
@@ -347,9 +347,9 @@ def crps_cdf(
     )
 
     if propagate_nans:
-        fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
+        fcst = propagate_nan(fcst, threshold_dim)
         if threshold_weight is not None:
-            threshold_weight = propagate_nan(threshold_weight, threshold_dim)  # type: ignore
+            threshold_weight = propagate_nan(threshold_weight, threshold_dim)
 
     result = None  # Perhaps this should raise an exception if the integration
     # method isn't recognised
@@ -405,7 +405,7 @@ def crps_cdf(
             threshold_dim,
             include_components=include_components,
         )
-    dims.remove(threshold_dim)  # type: ignore
+    dims.remove(threshold_dim)
     result = aggregate(result, reduce_dims=dims, weights=weights)
 
     return result
@@ -442,20 +442,20 @@ def crps_cdf_exact_slow(
     # identify where input arrays have no NaN, collapsing `threshold_dim`
     # Mypy doesn't realise the isnan and any come from xarray not numpy
     inputs_without_nan = (
-        ~np.isnan(cdf_fcst).any(threshold_dim)  # type: ignore
-        & ~np.isnan(cdf_obs).any(threshold_dim)  # type: ignore
-        & ~np.isnan(threshold_weight).any(threshold_dim)  # type: ignore
+        ~np.isnan(cdf_fcst).any(threshold_dim)
+        & ~np.isnan(cdf_obs).any(threshold_dim)
+        & ~np.isnan(threshold_weight).any(threshold_dim)
     )
 
     # thresholds in the closure of the interval (i.e. including endpoints) where
     # weight is 1
-    interval_where_weight_one = (threshold_weight == 1) | ((threshold_weight.shift(**{threshold_dim: 1})) == 1)  # type: ignore
+    interval_where_weight_one = (threshold_weight == 1) | ((threshold_weight.shift(**{threshold_dim: 1})) == 1)
 
     # thresholds in the closure of the interval where cdf_obs is 1
     interval_where_obs_one = cdf_obs == 1
 
     # thresholds in the closure of the interval where obs cdf is 0
-    interval_where_obs_zero = (cdf_obs == 0) | ((cdf_obs.shift(**{threshold_dim: 1})) == 0)  # type: ignore
+    interval_where_obs_zero = (cdf_obs == 0) | ((cdf_obs.shift(**{threshold_dim: 1})) == 0)
 
     # over-forecast penalty contribution to CRPS: integral(w(x) * (F(x) - 1)^2) where x >= obs
     over = (cdf_fcst - 1).where(interval_where_obs_one).where(interval_where_weight_one)
@@ -550,7 +550,7 @@ def crps_cdf_brier_decomposition(
 
     check_crps_cdf_brier_inputs(fcst, obs, threshold_dim, fcst_fill_method, dims)
 
-    fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
+    fcst = propagate_nan(fcst, threshold_dim)
     fcst, obs, _ = crps_cdf_reformat_inputs(
         fcst,
         obs,
@@ -560,7 +560,7 @@ def crps_cdf_brier_decomposition(
         fcst_fill_method=fcst_fill_method,
         threshold_weight_fill_method="forward",
     )
-    dims.remove(threshold_dim)  # type: ignore
+    dims.remove(threshold_dim)
 
     # brier score for each forecast case
     bscore = (fcst - obs) ** 2
@@ -683,7 +683,7 @@ def adjust_fcst_for_crps(
     if decreasing_tolerance < 0:
         raise ValueError("`decreasing_tolerance` must be nonnegative")
 
-    fcst = propagate_nan(fcst, threshold_dim)  # type: ignore
+    fcst = propagate_nan(fcst, threshold_dim)
 
     is_decreasing = decreasing_cdfs(fcst, threshold_dim, decreasing_tolerance)
 
@@ -702,7 +702,7 @@ def adjust_fcst_for_crps(
         additional_thresholds=additional_thresholds,
         fcst_fill_method=fcst_fill_method,
         integration_method=integration_method,
-        preserve_dims=crps_dims,  # type: ignore
+        preserve_dims=crps_dims,
     )
 
     fcst_type_to_use = crps_fcst_env["total"].idxmax("cdf_type")
@@ -735,11 +735,11 @@ def crps_cdf_trapz(
     """
 
     # identify where input arrays have no NaN, collapsing `threshold_dim`
-    # mypy doesn't realise the isnan and any come from xarray not numpy
+
     inputs_without_nan = (
-        ~np.isnan(cdf_fcst).any(dim=threshold_dim)  # type: ignore
-        & ~np.isnan(cdf_obs).any(dim=threshold_dim)  # type: ignore
-        & ~np.isnan(threshold_weight).any(dim=threshold_dim)  # type: ignore
+        ~np.isnan(cdf_fcst).any(dim=threshold_dim)
+        & ~np.isnan(cdf_obs).any(dim=threshold_dim)
+        & ~np.isnan(threshold_weight).any(dim=threshold_dim)
     )
 
     # total error measured by CRPS
@@ -900,7 +900,7 @@ def crps_for_ensemble(
         - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability \
             Score with Limited Information and Applications to Ensemble Weather Forecasts", \
             Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
-    """
+    """  # noqa: E501
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
@@ -969,9 +969,9 @@ def crps_for_ensemble(
     fcst_spread_term_numerator = 2 * (fcst_sorted * coeffs).sum(dim=ensemble_member_dim, skipna=True)
 
     if method == "ecdf":
-        fcst_spread_term = fcst_spread_term_numerator / (2 * ens_count**2)  # type: ignore
+        fcst_spread_term = fcst_spread_term_numerator / (2 * ens_count**2)
     else:  # method == "fair" due to earlier check
-        fcst_spread_term = fcst_spread_term_numerator / (2 * ens_count * (ens_count - 1))  # type: ignore
+        fcst_spread_term = fcst_spread_term_numerator / (2 * ens_count * (ens_count - 1))
 
     # calculate final CRPS for each forecast case
     fcst_obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)
@@ -982,14 +982,14 @@ def crps_for_ensemble(
         under_penalty = (obs - fcst).where(fcst < obs, 0).where(mask).mean(dim=ensemble_member_dim)
         over_penalty = (fcst - obs).where(fcst > obs, 0).where(mask).mean(dim=ensemble_member_dim)
         # Match NaNs between spread terms and other terms
-        fcst_spread_term = fcst_spread_term.where(~np.isnan(fcst_obs_term))  # type: ignore  # mypy is wrong, I think
+        fcst_spread_term = fcst_spread_term.where(~np.isnan(fcst_obs_term))
         result = xr.concat([result, under_penalty, over_penalty, fcst_spread_term], dim="component")
         result = result.assign_coords(component=["total", "underforecast_penalty", "overforecast_penalty", "spread"])
 
     # apply weights and take means across specified dims
     result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
 
-    return result  # type: ignore
+    return result
 
 
 def tw_crps_for_ensemble(
@@ -1078,6 +1078,9 @@ def tw_crps_for_ensemble(
     Raises:
         ValueError: when ``method`` is not one of "ecdf" or "fair".
 
+    Warns:
+        FutureWarning: The ``include_components`` argument is deprecated and will be removed in a future version.
+
     Notes:
         Chaining functions can be created to vary the weights across given dimensions
         such as varying the weights by climatological values.
@@ -1110,9 +1113,17 @@ def tw_crps_for_ensemble(
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
 
-    """
+    """  # noqa: E501
     if chaining_func_kwargs is None:
         chaining_func_kwargs = {}
+
+    if include_components:
+        warnings.warn(
+            "`include_components` is deprecated and will be removed in a future version",
+            FutureWarning,
+            stacklevel=2,
+        )
+
     obs = chaining_func(obs, **chaining_func_kwargs)
     fcst = chaining_func(fcst, **chaining_func_kwargs)
 
@@ -1126,7 +1137,7 @@ def tw_crps_for_ensemble(
         weights=weights,
         include_components=include_components,
     )
-    return result  # type: ignore
+    return result
 
 
 def tail_tw_crps_for_ensemble(
@@ -1184,6 +1195,9 @@ def tail_tw_crps_for_ensemble(
     Raises:
         ValueError: when ``tail`` is not one of "upper" or "lower".
         ValueError: when ``method`` is not one of "ecdf" or "fair".
+
+    Warns:
+        FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
@@ -1296,6 +1310,9 @@ def interval_tw_crps_for_ensemble(
         ValueError: when ``lower_threshold`` is not less than ``upper_threshold``.
         ValueError: when ``method`` is not one of "ecdf" or "fair".
 
+    Warns:
+        FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
+
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
             events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
@@ -1322,7 +1339,7 @@ def interval_tw_crps_for_ensemble(
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
-        if (lower_threshold >= upper_threshold).any().values.item():  # type: ignore  # mypy is wrong, I think
+        if (lower_threshold >= upper_threshold).any().values.item():
             raise ValueError("`lower_threshold` must be less than `upper_threshold`")
     elif lower_threshold >= upper_threshold:
         raise ValueError("`lower_threshold` must be less than `upper_threshold`")

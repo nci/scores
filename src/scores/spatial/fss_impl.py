@@ -3,9 +3,11 @@ This module contains methods related to the Fractions Skill Score (FSS).
 
 For an explanation of the FSS, and implementation considerations, see references below.
 
-Currently uses the default score defined Robert and Leans (2008) :sup:`[1,2]`. Fine grained controls are considered in `#353 <GITHUB353_>`_.
+Currently uses the default score defined Robert and Leans (2008) :sup:`[1,2]`. Fine grained controls are considered
+in `#353 <GITHUB353_>`_.
 
-The default computation is performed using`numpy` :sup:`[3]` and summed-area tables, with future optimization options considered in:
+The default computation is performed using`numpy` :sup:`[3]` and summed-area tables, with future optimization options
+considered in:
 - `#269 <GITHUB269_>`_.
 - `#270 <GITHUB270_>`_.
 
@@ -191,7 +193,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         obs,
         input_core_dims=[list(spatial_dims), list(spatial_dims)],
         vectorize=True,
-        dask=dask,  # type: ignore # pragma: no cover
+        dask=dask,  # pragma: no cover
     )
 
     if not (spatial_dims[0] in dims and spatial_dims[1] in dims):
@@ -214,10 +216,10 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         da_fss,
         input_core_dims=[list(dims)],
         vectorize=True,
-        dask=dask,  # type: ignore # pragma: no cover
+        dask=dask,  # pragma: no cover
     )
 
-    return da_fss  # type: ignore
+    return da_fss
 
 
 def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
@@ -279,7 +281,7 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
 
 def fss_2d_single_field(
-    fcst: npt.NDArray[float],  # type: ignore
+    fcst: npt.NDArray[float],
     obs: npt.NDArray[float],
     *,
     event_threshold: float,
@@ -358,7 +360,7 @@ def fss_2d_single_field(
 
     fss_score = fb_obj.compute_fss()
 
-    return fss_score  # type: ignore
+    return fss_score
 
 
 def _make_numpy_threshold_operator(threshold_operator: Optional[Callable]) -> NumpyThresholdOperator:
@@ -389,7 +391,7 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
         with np.nditer(fss_d) as it:
             for elem in it:
-                (fcst_, obs_, diff_) = elem.item()  # type: ignore  # mypy is confused
+                (fcst_, obs_, diff_) = elem.item()
                 fcst_sum += fcst_ / l
                 obs_sum += obs_ / l
                 diff_sum += diff_ / l
@@ -404,4 +406,4 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     fss_clamped = max(min(fss, 1.0), 0.0)
 
-    return fss_clamped  # type: ignore
+    return fss_clamped

@@ -5,7 +5,7 @@ This module contains tests for scores.continuous.flip_flop
 try:
     import dask
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest

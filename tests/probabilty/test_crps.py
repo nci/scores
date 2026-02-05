@@ -7,13 +7,13 @@ try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 try:
     import numba
 
     from scores.probability.crps_numba import crps_cdf_exact_fast
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    numba = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import warnings
 from unittest.mock import patch
@@ -1112,7 +1112,10 @@ def v_func3(x):
 
 
 def v_func4(x):
-    """For testing tw_crps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset"""
+    """
+    For testing tw_crps_for_ensembles.
+    The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset
+    """
     return np.maximum(x, crps_test_data.DS_T_TWCRPSENS)
 
 
@@ -1551,3 +1554,24 @@ def test_interval_tw_crps_for_ensemble_dask():
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)
+
+
+def test_tw_crps_for_ensemble_deprecation():
+    fcst = crps_test_data.DA_FCST_CRPSENS
+    obs = crps_test_data.DA_OBS_CRPSENS
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        tw_crps_for_ensemble(fcst, obs, "ens_member", lambda x: np.maximum(x, 0.5), include_components=True)
+
+
+def test_tail_tw_crps_for_ensemble_deprecation():
+    fcst = crps_test_data.DA_FCST_CRPSENS
+    obs = crps_test_data.DA_OBS_CRPSENS
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        tail_tw_crps_for_ensemble(fcst, obs, "ens_member", 0.5, tail="upper", include_components=True)
+
+
+def test_interval_tw_crps_for_ensemble_deprecation():
+    fcst = crps_test_data.DA_FCST_CRPSENS
+    obs = crps_test_data.DA_OBS_CRPSENS
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        interval_tw_crps_for_ensemble(fcst, obs, "ens_member", -20, 10, include_components=True)

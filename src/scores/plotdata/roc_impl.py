@@ -18,7 +18,7 @@ from scores.utils import gather_dimensions
 # earlier versions. As numpy 2.0 contains some API changes, `scores`
 # will try to support both interchangeably for the time being
 if not hasattr(np, "trapezoid"):
-    np.trapezoid = np.trapz  # type: ignore # pragma: no cover  # tested manually
+    np.trapezoid = np.trapz  # pragma: no cover  # tested manually
 
 
 def roc(  # pylint: disable=too-many-arguments
@@ -147,10 +147,10 @@ def roc(  # pylint: disable=too-many-arguments
         if fcst.max().compute().item() > 1 or fcst.min().compute().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
-        if len(thresholds) == 0:  # type: ignore
+        if len(thresholds) == 0:
             raise ValueError("`thresholds` must not be empty")
 
-        if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):  # type: ignore
+        if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
         if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
@@ -161,7 +161,7 @@ def roc(  # pylint: disable=too-many-arguments
     if isinstance(thresholds, str):
         if thresholds == "auto":
             thresholds = np.sort(np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy()))
-            if len(thresholds) > 1000:  # type: ignore
+            if len(thresholds) > 1000:
                 warnings.warn(
                     "Number of automatically generated thresholds is very large (>1000). "
                     "If performance is slow, consider supplying thresholds manually as an "
@@ -181,12 +181,12 @@ def roc(  # pylint: disable=too-many-arguments
 
     # make a discrete forecast for each threshold in thresholds
     # discrete_fcst has an extra dimension 'threshold'
-    discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)  # type: ignore
+    discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)
 
     all_dims = set(fcst.dims).union(set(obs.dims))
-    final_preserve_dims = all_dims - set(reduce_dims)  # type: ignore
+    final_preserve_dims = all_dims - set(reduce_dims)
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
-    final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
+    final_preserve_dims = auc_dims + ("threshold",)
 
     pod = probability_of_detection(
         discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
@@ -204,7 +204,7 @@ def roc(  # pylint: disable=too-many-arguments
         np.trapezoid,
         pod,
         pofd,
-        input_core_dims=[pod.dims, pofd.dims],  # type: ignore
+        input_core_dims=[pod.dims, pofd.dims],
         output_core_dims=[auc_dims],
         dask="parallelized",
     )

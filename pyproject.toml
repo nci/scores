@@ -13,7 +13,7 @@ Scores is a Python package containing mathematical functions \
 for the verification, evaluation and optimisation of forecasts, predictions or models.
 """
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -43,7 +43,8 @@ tutorial = [
     "plotly",
     "dask",
     "gcsfs",
-    "zarr"
+    "zarr",
+    "h5py"
 ]
 maintainer = ["build",
               "hatch",
@@ -81,7 +82,7 @@ override = true  # This is required to activate the build hook.
 # The pinned versions of these dependencies will be subsituted during package builds.
 # Pinned versions will only be substitued for packages that are already in this package's dependencies list.
 pinned_dependencies = [
-    "python <= 3.13",
+    "python <= 3.14",
     "xarray >= 2024.1",  # xarray follows calver rather than semver, so using >= is the best we can do
     "pandas ~= 2.0",
     "scipy ~= 1.13",
@@ -93,7 +94,7 @@ path = "src/scores/__init__.py"
 
 [tool.ruff]
 src = ["src", "tests"]
-exclude = ["*.ipynb"]
+exclude = ["*.ipynb", "docs/"]
 line-length = 120
 
 [tool.ruff.lint]		
@@ -107,9 +108,6 @@ select = [
 ignore = [
     "E741", # Allow ambiguous variable names
     "S101", # Allow asserts
-    # The ignore below need to be fixed
-    # See GH issue #975
-    "E501", #TODO Line too long (50)
 ]
 
 [tool.ruff.format]
@@ -130,7 +128,6 @@ include = [
 
 [tool.ty.rules]
 # Warnings
-unused-ignore-comment = "ignore"
 possibly-missing-attribute = "ignore"
 # Errors
 no-matching-overload = "ignore"
