@@ -789,7 +789,7 @@ def _pit_distribution_for_cdf(
 
     This function outputs values of PIT by representing each uniform distribution on
     :math:`[G(y-), G(y)]` as the corresponding uniform CDF :math:`F`. We call :math:`F`
-    the 'PIT distribution' for the forecast-observation pair :math:`(G,y)`. Values :math:`F(x-)`
+    the 'PIT distribution' for the forecast--observation pair :math:`(G,y)`. Values :math:`F(x-)`
     and :math:`F(x)` are given for an optimal set of points :math:`x` satisfying
     :math:`0 <= x <= 1`. The set is optimal in the sense that the value of :math:`F`
     elsewhere can be determined via linear interpolation, whilst no smaller set of values
@@ -1177,7 +1177,7 @@ def _pit_distribution_for_ens(
 
     This function outputs values of PIT by representing each uniform distribution on
     :math:`[G(y-), G(y)]` as the corresponding uniform CDF :math:`F`. We call :math:`F`
-    the 'PIT CDF' for the forecast-observation pair :math:`(G,y)`. Values :math:`F(x-)`
+    the 'PIT CDF' for the forecast--observation pair :math:`(G,y)`. Values :math:`F(x-)`
     and :math:`F(x)` are given for an optimal set of points :math:`x` satisfying
     :math:`0 <= x <= 1`. The set is optimal in the sense that the value of :math:`F`
     elsewhere can be determined via linear interpolation, whilst no smaller set of values
