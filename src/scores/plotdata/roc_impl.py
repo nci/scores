@@ -75,6 +75,9 @@ def roc(  # pylint: disable=too-many-arguments
         check_args: Checks if ``obs`` data only contains values in the set
             {0, 1, np.nan}. You may want to skip this check if you are sure about your
             input data and want to improve the performance when working with dask.
+            Note: If ``fcst`` or ``obs`` is an xarray object backed by a dask array,
+            and ``check_args`` is ``True``, the min and max of the arrays will be computed
+            immediately, which triggers computation. Set ``check_args=False`` to avoid this.
 
     Returns:
         An xarray.Dataset with data variables:
@@ -95,10 +98,14 @@ def roc(  # pylint: disable=too-many-arguments
         ValueError: if ``thresholds`` is a string that is not "auto".
         ValueError: if ``thresholds`` is an empty iterable.
 
-    Warnings:
-        If the number of automatically generated thresholds is very large (>1000),
-        a warning is raised suggesting that the user supply thresholds manually as an
-        iterable of floats if performance is slow.
+    Warns:
+        UserWarning: If the number of automatically generated thresholds is very large (>1000),
+            a warning is raised suggesting that the user supply thresholds manually as an
+            iterable of floats if performance is slow.
+
+        UserWarning: If ``fcst`` or ``obs`` is an xarray object backed by a dask array and ``check_args``
+            is ``True``, a warning will be issued to inform the user that an eager computation
+            will occur.
 
     Notes:
         If ``thresholds`` is an iterable of floats, the probabilistic ``fcst``
@@ -118,7 +125,7 @@ def roc(  # pylint: disable=too-many-arguments
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
 
-    Example:
+    Examples:
         >>> import xarray as xr
         >>> import numpy as np
         >>> from scores.probability import roc_curve_data
@@ -129,7 +136,15 @@ def roc(  # pylint: disable=too-many-arguments
     # If a slight performance improvement is needed, the checks can be skipped
     # when `check_args` is False.
     if check_args:
-        if fcst.max().item() > 1 or fcst.min().item() < 0:
+        if fcst.chunks is not None or obs.chunks is not None:
+            warnings.warn(
+                "`fcst` or `obs` is an xarray object backed by a dask array. "
+                "Input validation requires computing the min and max of the arrays "
+                "which triggers immediate computation. Set `check_args=False` to avoid this.",
+                UserWarning,
+            )
+
+        if fcst.max().compute().item() > 1 or fcst.min().compute().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
         if len(thresholds) == 0:
