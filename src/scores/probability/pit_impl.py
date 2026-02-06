@@ -831,12 +831,12 @@ def _pit_distribution_for_cdf(
             with lower and upper endpoints indexed by the dimension "uniform_endpoint"
 
     Raises:
-        ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+        - ValueError if dimensions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
             'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
-        ValueError if, when ``fcst`` is a dictionary, ``fcst['left']`` and ``fcst['right']`` do not have the same
+        - ValueError if, when ``fcst`` is a dictionary, ``fcst['left']`` and ``fcst['right']`` do not have the same
             shape, dimensions and coordinates.
-        ValueError if values in ``fcst`` arrays or sets are less than 0 or greater than 1, ignoriong NaNs.
-        ValueError if coordinates in the ``fcst`` ``threshold_dim`` dimension are not increasing.
+        - ValueError if values in ``fcst`` arrays or sets are less than 0 or greater than 1, ignoring NaNs.
+        - ValueError if coordinates in the ``fcst`` ``threshold_dim`` dimension are not increasing.
 
     Warns:
         - if any values in ``obs`` lie outside the range of values in the forecast ``threshold_dim`` dimension.
@@ -1214,7 +1214,7 @@ def _pit_distribution_for_ens(
             with lower and upper endpoints indexed by the dimension "uniform_endpoint"
 
     Raises:
-        ValueError if dimenions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
+        ValueError if dimensions of ``fcst``, ``obs`` or ``weights`` contain any of the following reserved names:
                 'uniform_endpoint', 'pit_x_value', 'x_plotting_position', 'y_plotting_position', 'plotting_point'
     """
 
@@ -1504,7 +1504,7 @@ def _diagonal_intersection_points(param_plotting_points: dict) -> np.ndarray:
             `_get_plotting_points_param`
 
     Returns:
-        1-dimenions numpy array of intersection points
+        1-dimensions numpy array of intersection points
     """
     x_pos = param_plotting_points["x_plotting_position"]
     y_pos = param_plotting_points["y_plotting_position"]
