@@ -1,7 +1,3 @@
-"""
-Import the functions from the implementations into the public API
-"""
-
 from scores import continuous as __continuous
 from scores.pandas.typing import PandasType
 

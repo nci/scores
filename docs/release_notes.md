@@ -244,7 +244,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
-- Added "Kling–Gupta Efficiency (KGE)" tutorial. See [PR #679](https://github.com/nci/scores/pull/679), [PR #700](https://github.com/nci/scores/pull/700) and [PR #734](https://github.com/nci/scores/pull/734).
+- Added "Kling-Gupta Efficiency (KGE)" tutorial. See [PR #679](https://github.com/nci/scores/pull/679), [PR #700](https://github.com/nci/scores/pull/700) and [PR #734](https://github.com/nci/scores/pull/734).
 - Added "Quantile Interval Score and Interval Score" tutorial. See [PR #704](https://github.com/nci/scores/pull/704), [PR #736](https://github.com/nci/scores/pull/736) and [PR #738](https://github.com/nci/scores/pull/738).
 - Added "Threshold Weighted Continuous Ranked Probability Score (twCRPS) for ensembles" tutorial. See [PR #706](https://github.com/nci/scores/pull/706) and [PR #722](https://github.com/nci/scores/pull/722).
 - Updated the title in the "Binary Categorical Scores and Binary Contingency Tables (Confusion Matrices)" tutorial and the description for the corresponding thumbnail in the tutorial gallery. See [PR #741](https://github.com/nci/scores/pull/741) and [PR #743](https://github.com/nci/scores/pull/743).

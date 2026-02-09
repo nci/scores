@@ -321,11 +321,11 @@ def crps_cdf(
         - :py:func:`scores.probability.crps_for_ensemble`
 
     References:
-        - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions. \
-            Management Science, 22(10), 1087–1095. https://doi.org/10.1287/mnsc.22.10.1087
-        - Gneiting, T., & Ranjan, R. (2011). Comparing Density Forecasts Using Threshold- and \
-            Quantile-Weighted Scoring Rules. \
-            Journal of Business & Economic Statistics, 29(3), 411–422. https://doi.org/10.1198/jbes.2010.08110
+        - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions.
+          Management Science, 22(10), 1087–1095. https://doi.org/10.1287/mnsc.22.10.1087
+        - Gneiting, T., & Ranjan, R. (2011). Comparing Density Forecasts Using Threshold- and
+          Quantile-Weighted Scoring Rules.
+          Journal of Business & Economic Statistics, 29(3), 411–422. https://doi.org/10.1198/jbes.2010.08110
     """
 
     dims = scores.utils.gather_dimensions(
@@ -892,14 +892,14 @@ def crps_for_ensemble(
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
 
     References:
-        - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \
-            Royal Meteorol Society, 140(683):1917-1923. https://doi.org/10.1002/qj.2270
-        - T. Gneiting T and A. Raftery (2007), "Strictly proper scoring rules, prediction, \
-            and estimation", Journal of the American Statistical Association, 102(477):359-378. \
-            https://doi.org/10.1198/016214506000001437
-        - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability \
-            Score with Limited Information and Applications to Ensemble Weather Forecasts", \
-            Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
+        - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the
+          Royal Meteorol Society, 140(683):1917-1923. https://doi.org/10.1002/qj.2270
+        - T. Gneiting T and A. Raftery (2007), "Strictly proper scoring rules, prediction,
+          and estimation", Journal of the American Statistical Association, 102(477):359-378.
+          https://doi.org/10.1198/016214506000001437
+        - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability
+          Score with Limited Information and Applications to Ensemble Weather Forecasts",
+          Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
     """  # noqa: E501
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
@@ -1086,12 +1086,12 @@ def tw_crps_for_ensemble(
         such as varying the weights by climatological values.
 
     References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+          Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes
+          When Evaluating Probabilistic Forecasts. Journal of Statistical Software,
+          110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
 
 
     See also:
@@ -1106,12 +1106,25 @@ def tw_crps_for_ensemble(
         derived from a weight function that assigns a weight of 1 to thresholds above
         0.5 and a weight of 0 to thresholds below 0.5.
 
-        >>> import numpy as np
         >>> import xarray as xr
+        >>> import numpy as np
         >>> from scores.probability import tw_crps_for_ensemble
-        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> times = [1, 2]
+        >>> ensembles = ['A', 'B', 'C']
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 4.2, 0.0], [0.4, -1.2, 0.3]],
+        ...     coords={"time": times, "ensemble": ensembles},
+        ...     dims=["time", "ensemble"]
+        ...     ) 
+        >>> obs = xr.DataArray(
+        ...     data=[0.25, 0.6],
+        ...     coords={"time": times},
+        ...     dims=["time"]
+        ...     ) 
+        >>>     
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
+        <xarray.DataArray ()> Size: 8B
+        array(0.25555556)
 
     """  # noqa: E501
     if chaining_func_kwargs is None:
@@ -1200,12 +1213,12 @@ def tail_tw_crps_for_ensemble(
         FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
     References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+          Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes
+          When Evaluating Probabilistic Forecasts. Journal of Statistical Software,
+          110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
 
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
@@ -1217,12 +1230,24 @@ def tail_tw_crps_for_ensemble(
         Calculate the twCRPS for an ensemble where we assign a threshold weight of 1
         to thresholds above 0.5 and a threshold weight of 0 to thresholds below 0.5.
 
-        >>> import numpy as np
         >>> import xarray as xr
+        >>> import numpy as np
         >>> from scores.probability import tail_tw_crps_for_ensemble
-        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> times = [1, 2]
+        >>> ensembles = ['A', 'B', 'C']
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 4.2, 0.0], [0.4, -1.2, 0.3]],
+        ...     coords={"time": times, "ensemble": ensembles},
+        ...     dims=["time", "ensemble"]
+        ...     )
+        >>> obs = xr.DataArray(
+        ...     data=[0.25, 0.6],
+        ...     coords={"time": times},
+        ...     dims=["time"]
+        ...     )
         >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+        <xarray.DataArray ()> Size: 8B
+        array(0.25555556)
 
     """
     if tail not in ["upper", "lower"]:
@@ -1314,12 +1339,13 @@ def interval_tw_crps_for_ensemble(
         FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
     References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+          Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes
+          When Evaluating Probabilistic Forecasts. Journal of Statistical Software,
+          110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
+
     See also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
@@ -1331,12 +1357,24 @@ def interval_tw_crps_for_ensemble(
         to thresholds between -20 and -10 and a threshold weight of 0 to thresholds outside
         that interval.
 
-        >>> import numpy as np
         >>> import xarray as xr
+        >>> import numpy as np
         >>> from scores.probability import interval_tw_crps_for_ensemble
-        >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+        >>> times = [1, 2]
+        >>> ensembles = ['A', 'B', 'C']
+        >>> fcst = xr.DataArray(
+        ...     data=[[45, 67, 93], [30, 5, -5]],
+        ...     coords={"time": times, "ensemble": ensembles},
+        ...     dims=["time", "ensemble"]
+        ...     )
+        >>> obs = xr.DataArray(
+        ...     data=[50, 4],
+        ...     coords={"time": times},
+        ...     dims=["time"]
+        ...     )
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+        <xarray.DataArray ()> Size: 8B
+        array(1.)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
         if (lower_threshold >= upper_threshold).any().values.item():

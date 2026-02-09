@@ -107,12 +107,12 @@ def diebold_mariano(  # pylint: disable=R0914
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
           Economic Statistics 13 (1995), 253-265.
-        - Hering and Genton, 'Comparing spatial predictions',
-          Technometrics 53 no. 4 (2011), 414-425.
+        - Hering and Genton, 'Comparing spatial predictions', Technometrics 53 no. 4 (2011), 414-425.
         - Harvey, Leybourne and Newbold, 'Testing the equality of prediction mean
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
 
-    Example:
+
+    Examples:
 
         This array gives three timeseries of score differences.
         Coordinates in the "lead_day" dimension uniquely identify each timeseries.
@@ -127,7 +127,8 @@ def diebold_mariano(  # pylint: disable=R0914
         ...     dims=["lead_day", "valid_date"],
         ...     coords={
         ...         "lead_day": [1, 2, 3],
-        ...         "valid_date": ["2020-01-01", "2020-01-02", "2020-01-03", "2020-01-04", "2020-01-05"],
+        ...         "valid_date": ["2020-01-01", "2020-01-02",
+        ...                        "2020-01-03", "2020-01-04", "2020-01-05"],
         ...         "h": ("lead_day", [2, 3, 4]),
         ...     },
         ... )
@@ -242,10 +243,10 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
           Economic Statistics 13 (1995), 253-265.
-        - Hering and Genton, 'Comparing spatial predictions',
-          Technometrics 53 no. 4 (2011), 414-425.
+        - Hering and Genton, 'Comparing spatial predictions', Technometrics 53 no. 4 (2011), 414-425.
         - Harvey, Leybourne and Newbold, 'Testing the equality of prediction mean
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
+
     """
     if method not in ["HLN", "HG"]:
         raise ValueError("`method` must be one of 'HLN' or 'HG'.")
@@ -292,8 +293,8 @@ def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
         Difference between modelled and empirical autocoveriances.
 
     References:
-        Hering and Genton, 'Comparing spatial predictions',
-        Technometrics 53 no. 4 (2011), 414-425.
+        - Hering and Genton, 'Comparing spatial predictions',
+          Technometrics 53 no. 4 (2011), 414-425.
     """
     return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv
 

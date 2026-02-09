@@ -70,9 +70,9 @@ def quantile_score(
             - :math:`x` is the difference, fcst - obs
 
     References:
-        T. Gneiting, "Making and evaluating point forecasts",
-        J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
-        Theorem 9
+        - T. Gneiting, "Making and evaluating point forecasts",
+          J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
+          Theorem 9
 
     """
     specified_dims = reduce_dims or preserve_dims

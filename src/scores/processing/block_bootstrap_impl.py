@@ -36,6 +36,7 @@ def _get_blocked_random_indices(
 
     Returns:
         An array of indices to use for block resampling.
+
     """
 
     def _random_blocks(length, block, circular):
@@ -104,9 +105,9 @@ def _n_nested_blocked_random_indices(
     dimension etc.
 
     Args:
-    sizes: Dictionary with {names: (sizes, blocks)} of the dimensions to resample
-    n_iteration: The number of times to repeat the random resampling
-    circular: Whether or not to do circular resampling.
+        sizes: Dictionary with {names: (sizes, blocks)} of the dimensions to resample
+        n_iteration: The number of times to repeat the random resampling
+        circular: Whether or not to do circular resampling.
 
     Returns:
         A dictionary of arrays containing indices for nested block resampling.
@@ -128,12 +129,13 @@ def _expand_n_nested_random_indices(indices: list[np.ndarray]) -> Tuple[np.ndarr
     broadcast and return a tuple that can be directly indexed
 
     Args:
-    indices:List of numpy arrays of sequentially increasing dimension as output by
-        the function ``_n_nested_blocked_random_indices``. The last axis on all
-        inputs is assumed to correspond to the iteration axis
+        indices: List of numpy arrays of sequentially increasing dimension as output by
+            the function "_n_nested_blocked_random_indices". The last axis on all
+            inputs is assumed to correspond to the iteration axis
 
     Returns:
         Expanded indices suitable for broadcasting.
+
     """
     broadcast_ndim = indices[-1].ndim
     broadcast_indices = []
@@ -153,6 +155,7 @@ def _bootstrap(*arrays: np.ndarray, indices: List[np.ndarray]) -> Union[np.ndarr
 
     Returns:
         Bootstrapped arrays
+
     """
     bootstrapped = [array[ind] for array, ind in zip(arrays, indices)]
     if len(bootstrapped) == 1:
@@ -177,32 +180,33 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         array_list: Data to bootstrap. Multiple arrays can be passed to be bootstrapped
             in the same way. All input arrays must have nested dimensions.
         blocks: Dictionary of dimension(s) to bootstrap and the block sizes to use
-            along each dimension: ``{dim: blocksize}``. Nesting is based on the order of
+            along each dimension: "{dim: blocksize}". Nesting is based on the order of
             this dictionary.
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
-            bootstrapping for each arrays provided in ``arrays``. This parameter expects a list
+            bootstrapping for each arrays provided in "arrays". This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
             the respective arrays. By default, the assumption is that no dimensions are
-            excluded, and all arrays are bootstrapped across all specified dimensions in ``blocks``.
+            excluded, and all arrays are bootstrapped across all specified dimensions in "blocks".
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
 
-     Returns:
+    Returns:
         Tuple of bootstrapped xarray DataArrays or Datasets, based on the input.
 
     Note:
         This function expands out the iteration dimension inside a universal function.
         However, this may generate very large chunks (multiplying chunk size by the number
         of iterations), causing issues for larger iterations. It's advisable to apply this
-        function in blocks using 'block_bootstrap'.
+        function in blocks using "block_bootstrap".
 
     References:
-    Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
-      Academic press, 2011.
+        - Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
+          Academic press, 2011.
+
     """
     # Rename exclude_dims so they are not bootstrapped
     if exclude_dims is None:
@@ -301,21 +305,21 @@ def block_bootstrap(
             a list of multiple xarray objects. In the case where
             multiple datasets are passed, each dataset can have its own set of dimension. However,
             for successful bootstrapping, dimensions across all input arrays must be nested.
-            For instance, for ``block.keys=['d1', 'd2', 'd3']``, an array with dimension 'd1' and
+            For instance, for "block.keys=['d1', 'd2', 'd3']", an array with dimension 'd1' and
             'd2' is valid, but an array with only dimension 'd2' is not valid. All datasets
             are bootstrapped according to the same random samples along available dimensions.
         blocks: A dictionary specifying the dimension(s) to bootstrap and the block sizes to
-            use along each dimension: ``{dimension: block_size}``. The keys represent the dimensions
+            use along each dimension: "{dimension: block_size}". The keys represent the dimensions
             to be bootstrapped, and the values indicate the block sizes along each dimension.
-            The dimension provided here should exist in the data provided in ``array_list``.
+            The dimension provided here should exist in the data provided in "array_list".
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
-            bootstrapping for each array provided in ``array_list``. This parameter expects a list
+            bootstrapping for each array provided in "array_list". This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
             the respective array. By default, the assumption is that no dimensions are
-            excluded, and all arrays are bootstrapped across all specified dimensions in ``blocks``.
+            excluded, and all arrays are bootstrapped across all specified dimensions in "blocks".
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
@@ -327,33 +331,125 @@ def block_bootstrap(
         along the "iteration" dimension.
 
     Raises:
-        ValueError: If bootstrapped dimensions don't consistent sizes across ``arrays_list``.
+        ValueError: If bootstrapped dimensions don't consistent sizes across "arrays_list".
         ValueError: If there is not at least one input array that contains all dimensions in blocks.keys().
-        ValueError: If ``exclude_dims`` is not a list of lists.
-        ValueError: If the list ``exclude_dims`` is not the same length as the number of
-            as ``array_list``.
+        ValueError: If "exclude_dims" is not a list of lists.
+        ValueError: If the list "exclude_dims" is not the same length as the number of
+            as "array_list".
 
     References:
         - Gilleland, E. (2020). Bootstrap Methods for Statistical Inference. Part I:
           Comparative Forecast Verification for Continuous Variables. Journal of
-          Atmospheric and Oceanic Technology, 37(11), 2117–2134. https://doi.org/10.1175/jtech-d-20-0069.1
+          Atmospheric and Oceanic Technology, 37(11), 2117-2134. https://doi.org/10.1175/jtech-d-20-0069.1
         - Wilks, D. S. (2011). Statistical methods in the atmospheric sciences. Academic press.
           https://doi.org/10.1016/C2017-0-03921-6
 
     Examples:
-        Bootstrap a fcst and obs dataset along the time and space dimensions with block sizes of 10
-        for each dimension. The bootstrapping is repeated 1000 times.
-
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.processing import block_bootstrap
-        >>> obs = xr.DataArray(np.random.rand(100, 100), dims=["time", "space"])
-        >>> fcst = xr.DataArray(np.random.rand(100, 100), dims=["time", "space"])
-        >>> bootstrapped_obs, bootstrapped_fcst = block_bootstrap(
+        >>> times = np.arange(6)
+        >>> stations = ["S1", "S2", "S3", "S4"]
+        >>> # Create synthetic observations
+        >>> obs_data = np.array([[t + (s/10) for s in range(4)] for t in range(6)])
+        >>> obs = xr.DataArray(obs_data,
+        ...                    coords={"time": times, "station": stations},
+        ...                                dims=["time", "station"])
+        >>> # Create 2 synthetic forecasts, which are the observations plus bias
+        >>> fcst = xr.concat([obs + 10, obs + 20], dim="model")
+        >>> fcst = fcst.assign_coords(model=["ECMWF", "GFS"])
+        >>> blocks = {"time": 3, "station": 2}
+        >>> n_iter = 5
+        >>> boot_obs, boot_fcst = block_bootstrap(
         ...     [obs, fcst],
-        ...     blocks={"time": 10, "space": 10},
-        ...     n_iteration=1000,
+        ...     blocks=blocks,
+        ...     n_iteration=n_iter,
+        ...     circular=True
         ... )
+        >>> boot_obs
+        <xarray.DataArray (time: 6, station: 4, iteration: 5)> Size: 960B
+        array([[[2. , 5.1, 3. , 5.1, 1.2],
+                [2.1, 5.2, 3.1, 5.2, 1.3],
+                [2.2, 5.2, 3.1, 5.2, 1.2],
+                [2.3, 5.3, 3.2, 5.3, 1.3]],
+
+            [[3. , 0.1, 4. , 0.1, 2.2],
+                [3.1, 0.2, 4.1, 0.2, 2.3],
+                [3.2, 0.2, 4.1, 0.2, 2.2],
+                [3.3, 0.3, 4.2, 0.3, 2.3]],
+
+            [[4. , 1.1, 5. , 1.1, 3.2],
+                [4.1, 1.2, 5.1, 1.2, 3.3],
+                [4.2, 1.2, 5.1, 1.2, 3.2],
+                [4.3, 1.3, 5.2, 1.3, 3.3]],
+
+            [[0.1, 5. , 1.1, 5.2, 0.3],
+                [0.2, 5.1, 1.2, 5.3, 0. ],
+                [0.1, 5.3, 1.3, 5.1, 0.3],
+                [0.2, 5. , 1. , 5.2, 0. ]],
+
+            [[1.1, 0. , 2.1, 0.2, 1.3],
+                [1.2, 0.1, 2.2, 0.3, 1. ],
+                [1.1, 0.3, 2.3, 0.1, 1.3],
+                [1.2, 0. , 2. , 0.2, 1. ]],
+
+            [[2.1, 1. , 3.1, 1.2, 2.3],
+                [2.2, 1.1, 3.2, 1.3, 2. ],
+                [2.1, 1.3, 3.3, 1.1, 2.3],
+                [2.2, 1. , 3. , 1.2, 2. ]]])
+        Coordinates:
+        * time     (time) int64 48B 0 1 2 3 4 5
+        * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
+        Dimensions without coordinates: iteration
+        >>> boot_fcst
+        <xarray.DataArray (model: 2, time: 6, station: 4, iteration: 5)> Size: 2kB
+        array([[[[12. , 15.1, 13. , 15.1, 11.2],
+                [12.1, 15.2, 13.1, 15.2, 11.3],
+                [12.2, 15.2, 13.1, 15.2, 11.2],
+                [12.3, 15.3, 13.2, 15.3, 11.3]],
+
+                [[13. , 10.1, 14. , 10.1, 12.2],
+                [13.1, 10.2, 14.1, 10.2, 12.3],
+                [13.2, 10.2, 14.1, 10.2, 12.2],
+                [13.3, 10.3, 14.2, 10.3, 12.3]],
+
+                [[14. , 11.1, 15. , 11.1, 13.2],
+                [14.1, 11.2, 15.1, 11.2, 13.3],
+                [14.2, 11.2, 15.1, 11.2, 13.2],
+                [14.3, 11.3, 15.2, 11.3, 13.3]],
+
+                [[10.1, 15. , 11.1, 15.2, 10.3],
+                [10.2, 15.1, 11.2, 15.3, 10. ],
+                [10.1, 15.3, 11.3, 15.1, 10.3],
+                [10.2, 15. , 11. , 15.2, 10. ]],
+
+        ...
+
+                [[24. , 21.1, 25. , 21.1, 23.2],
+                [24.1, 21.2, 25.1, 21.2, 23.3],
+                [24.2, 21.2, 25.1, 21.2, 23.2],
+                [24.3, 21.3, 25.2, 21.3, 23.3]],
+
+                [[20.1, 25. , 21.1, 25.2, 20.3],
+                [20.2, 25.1, 21.2, 25.3, 20. ],
+                [20.1, 25.3, 21.3, 25.1, 20.3],
+                [20.2, 25. , 21. , 25.2, 20. ]],
+
+                [[21.1, 20. , 22.1, 20.2, 21.3],
+                [21.2, 20.1, 22.2, 20.3, 21. ],
+                [21.1, 20.3, 22.3, 20.1, 21.3],
+                [21.2, 20. , 22. , 20.2, 21. ]],
+
+                [[22.1, 21. , 23.1, 21.2, 22.3],
+                [22.2, 21.1, 23.2, 21.3, 22. ],
+                [22.1, 21.3, 23.3, 21.1, 22.3],
+                [22.2, 21. , 23. , 21.2, 22. ]]]])
+        Coordinates:
+        * time     (time) int64 48B 0 1 2 3 4 5
+        * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
+        * model    (model) <U5 40B 'ECMWF' 'GFS'
+        Dimensions without coordinates: iteration
+
     """
 
     # While the most efficient method involves expanding the iteration dimension withing the

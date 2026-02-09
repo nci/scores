@@ -387,7 +387,7 @@ def tw_squared_error(
         ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
-    Reference:
+    References:
         Taggart, R. (2022). Evaluation of point forecasts for extreme events using
         consistent scoring functions. Quarterly Journal of the Royal Meteorological
         Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
