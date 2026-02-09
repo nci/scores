@@ -322,10 +322,10 @@ def crps_cdf(
 
     References:
         - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions.
-          Management Science, 22(10), 1087–1095. https://doi.org/10.1287/mnsc.22.10.1087
+          Management Science, 22(10), 1087-1095. https://doi.org/10.1287/mnsc.22.10.1087
         - Gneiting, T., & Ranjan, R. (2011). Comparing Density Forecasts Using Threshold- and
           Quantile-Weighted Scoring Rules.
-          Journal of Business & Economic Statistics, 29(3), 411–422. https://doi.org/10.1198/jbes.2010.08110
+          Journal of Business & Economic Statistics, 29(3), 411-422. https://doi.org/10.1198/jbes.2010.08110
     """
 
     dims = scores.utils.gather_dimensions(
@@ -945,7 +945,7 @@ def crps_for_ensemble(
     #
     # The idea of sorting the ensemble members to compute the CRPS spread term
     # can be found in Hersbach, H. (2000). Decomposition of the Continuous Ranked Probability
-    # Score for Ensemble Prediction Systems. Weather and Forecasting, 15(5), 559–570.
+    # Score for Ensemble Prediction Systems. Weather and Forecasting, 15(5), 559-570.
     # https://doi.org/10.1175/1520-0434(2000)015<0559:dotcrp>2.0.co;2
 
     # Calculate forecast spread term

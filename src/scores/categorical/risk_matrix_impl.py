@@ -105,7 +105,7 @@ def risk_matrix_score(
 
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
-          with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657–2677.
+          with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657-2677.
           https://doi.org/10.5194/nhess-25-2657-2025
 
     See also:
@@ -300,7 +300,7 @@ def matrix_weights_to_array(
 
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
-          with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657–2677.
+          with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657-2677.
           https://doi.org/10.5194/nhess-25-2657-2025
 
     See also:
@@ -407,7 +407,7 @@ def weights_from_warning_scaling(
 
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
-          with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657–2677.
+          with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 26572677.
           https://doi.org/10.5194/nhess-25-2657-2025
 
     See also:

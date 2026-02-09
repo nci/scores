@@ -13,13 +13,13 @@ considered in:
 
 References:
 1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall Accumulations from
-   High-Resolution Forecasts of Convective Events. Monthly Weather Review, 136, 78–97,
+   High-Resolution Forecasts of Convective Events. Monthly Weather Review, 136, 78-97,
    https://doi.org/10.1175/2007mwr2123.1.
 2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting Case and
-   Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
+   Implications for Aggregation. Monthly Weather Review, 149, 3491-3504,
    https://doi.org/10.1175/mwr-d-18-0106.1.
 3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions skill
-   score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+   score. MAUSAM, 66, 457-466, https://doi.org/10.54302/mausam.v66i3.555.
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270
@@ -139,9 +139,9 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     References:
         - Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather
-          Review, 136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
+          Review, 136, 78-97, https://doi.org/10.1175/2007mwr2123.1.
         - Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting
-          Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
+          Case and Implications for Aggregation. Monthly Weather Review, 149, 3491-3504,
           https://doi.org/10.1175/mwr-d-18-0106.1.
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
@@ -340,10 +340,10 @@ def fss_2d_single_field(
     References:
         - Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather Review
-          136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
+          136, 78-97, https://doi.org/10.1175/2007mwr2123.1.
         - https://en.wikipedia.org/wiki/Summed-area_table
         - Faggian, N., B. Roux, P. Steinle, and B. Ebert, 2015: Fast calculation of the fractions
-               skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+          skill score. MAUSAM, 66, 457466, https://doi.org/10.54302/mausam.v66i3.555.
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 

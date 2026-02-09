@@ -269,7 +269,7 @@ def nse(
 
         1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting
            through conceptual models part I — A discussion of principles. In
-           Journal of Hydrology (Vol. 10, Issue 3, pp. 282– 290). Elsevier BV.
+           Journal of Hydrology (Vol. 10, Issue 3, pp. 282-290). Elsevier BV.
            https://doi.org/10.1016/0022-1694%2870%2990255-6
 
         2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land

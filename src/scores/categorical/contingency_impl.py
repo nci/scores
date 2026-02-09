@@ -1663,15 +1663,15 @@ class BinaryContingencyManager(BasicContingencyManager):
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
     ) -> BasicContingencyManager:
         """
-            Compute the contingency table, preserving or reducing the specified dimensions.
+        Compute the contingency table, preserving or reducing the specified dimensions.
 
-            Args:
-                - reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
-                - preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+        Args:
+            - reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+            - preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
 
-            Returns:
-                scores.categorical.BasicContingencyManager: A `scores` class which supports efficient
-                calculation of contingency metrics.
+        Returns:
+            scores.categorical.BasicContingencyManager: A `scores` class which supports efficient
+            calculation of contingency metrics.
 
         Examples:
             >>> import xarray as xr

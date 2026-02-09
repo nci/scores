@@ -88,11 +88,11 @@ def consistent_expectile_score(
 
     References:
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the
-            American Statistical Association, 106(494), 746–762.
+            American Statistical Association, 106(494), 746-762.
             https://doi.org/10.1198/jasa.2011.r10138
         -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
-            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
+            Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
 
     """
     check_alpha(alpha)
@@ -183,7 +183,7 @@ def consistent_huber_score(
             https://doi.org/10.1214/21-ejs1957
         -   Taggart, R. (2022b). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
-            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
+            Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
     check_huber_param(huber_param)
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
@@ -265,11 +265,11 @@ def consistent_quantile_score(
 
     References:
         -   Gneiting, T. (2011). Making and Evaluating Point Forecasts. Journal of the
-            American Statistical Association, 106(494), 746–762.
+            American Statistical Association, 106(494), 746-762.
             https://doi.org/10.1198/jasa.2011.r10138
         -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
-            Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
+            Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
     """
     check_alpha(alpha)
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)

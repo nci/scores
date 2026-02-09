@@ -417,7 +417,7 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010).
         A new equitable score suitable for verifying precipitation in numerical
         weather prediction. Quarterly Journal of the Royal Meteorological Society,
-        136(650), 1344–1363. https://doi.org/10.1002/qj.656
+        136(650), 1344-1363. https://doi.org/10.1002/qj.656
 
     Examples:
         >>> import xarray as xr
