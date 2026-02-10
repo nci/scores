@@ -43,6 +43,23 @@ def round_values(array: xr.DataArray, rounding_precision: float, *, final_round_
 
     Raises:
         ValueError: If `rounding_precision` < 0.
+
+    Examples:
+        >>> from scores.processing.cdf import round_values
+        >>> import xarray as xr
+        >>> data = [3.73, 4.10000001, 37.3]
+        >>> coords = {"sample": [1, 2, 3]}
+        >>> da = xr.DataArray(data, coords=coords, dims="sample")
+        >>> round_values(da, rounding_precision=0.2)
+        <xarray.DataArray (sample: 3)> Size: 24B
+        array([ 3.8,  4.2, 37.2])
+        Coordinates:
+        * sample   (sample) int64 24B 1 2 3
+        >>> round_values(da, rounding_precision=20)
+        <xarray.DataArray (sample: 3)> Size: 24B
+        array([ 0.,  0., 40.])
+        Coordinates:
+        * sample   (sample) int64 24B 1 2 3
     """
     if rounding_precision < 0:
         raise ValueError(f"rounding_precision '{rounding_precision}' is negative")
@@ -67,6 +84,21 @@ def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
 
     Raises:
         ValueError: If `threshold_dim` is not a dimension of `cdf`.
+
+    Examples:
+        >>> import xarray as xr
+        >>> import numpy as np
+        >>> from scores.processing.cdf import propagate_nan
+        >>> data = [[0.1, 0.4, np.nan, 0.9], [0.2, 0.5, 0.7, 1.0]]
+        >>> coords = {"station": [1, 2], "threshold": [10, 20, 30, 40]}
+        >>> cdf = xr.DataArray(data, coords=coords, dims=["station", "threshold"])
+        >>> propagate_nan(cdf, "threshold")
+        <xarray.DataArray (station: 2, threshold: 4)> Size: 64B
+        array([[nan, nan, nan, nan],
+            [0.2, 0.5, 0.7, 1. ]])
+        Coordinates:
+        * station    (station) int64 16B 1 2
+        * threshold  (threshold) int64 32B 10 20 30 40
     """
     if threshold_dim not in cdf.dims:
         raise ValueError(f"'{threshold_dim}' is not a dimension of `cdf`")
@@ -105,6 +137,50 @@ def observed_cdf(
         ValueError: if `precision < 0`.
         ValueError: if all observations are NaN and no non-NaN `threshold_values`
             are not supplied.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing.cdf import observed_cdf
+        >>> coords = {"station": ["A", "B", "C"]}
+        >>> obs = xr.DataArray([2.09, 5.73, 8.11], coords=coords, dims="station")
+        >>> # Thresholds are observations
+        >>> observed_cdf(obs, "threshold")
+        <xarray.DataArray (station: 3, threshold: 3)> Size: 72B
+        array([[1., 1., 1.],
+            [0., 1., 1.],
+            [0., 0., 1.]])
+        Coordinates:
+        * threshold  (threshold) float64 24B 2.09 5.73 8.11
+        * station    (station) <U1 12B 'A' 'B' 'C'
+        >>> # Thresholds are specified but also include observations
+        >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10])
+        <xarray.DataArray (station: 3, threshold: 6)> Size: 144B
+        array([[0., 1., 1., 1., 1., 1.],
+            [0., 0., 0., 1., 1., 1.],
+            [0., 0., 0., 0., 1., 1.]])
+        Coordinates:
+        * threshold  (threshold) float64 48B 0.0 2.09 5.0 5.73 8.11 10.0
+        * station    (station) <U1 12B 'A' 'B' 'C'
+        >>> # Thresholds are specified but also include
+        >>> # observations after rounding to precision
+        >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10], precision=1)
+        <xarray.DataArray (station: 3, threshold: 6)> Size: 144B
+        array([[0., 1., 1., 1., 1., 1.],
+            [0., 0., 0., 1., 1., 1.],
+            [0., 0., 0., 0., 1., 1.]])
+        Coordinates:
+        * threshold  (threshold) float64 48B 0.0 2.0 5.0 6.0 8.0 10.0
+        * station    (station) <U1 12B 'A' 'B' 'C'
+        >>> # Only evaluate at specified thresholds
+        >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10], include_obs_in_thresholds = False)
+        <xarray.DataArray (station: 3, threshold: 3)> Size: 72B
+        array([[0., 1., 1.],
+            [0., 0., 1.],
+            [0., 0., 1.]])
+        Coordinates:
+        * threshold  (threshold) int64 24B 0 5 10
+        * station    (station) <U1 12B 'A' 'B' 'C'
+
     """
     if precision < 0:
         raise ValueError("`precision` must be nonnegative.")
@@ -170,6 +246,25 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
         - Returns value of the integral with `threshold_dim` collapsed and other dimensions preserved.
         - Returns NaN if there are less than two non-NaN function_values.
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing.cdf import integrate_square_piecewise_linear
+        >>> # Linear function F(t) = t on [0, 2]
+        >>> t_vals = [0, 0.5, 1, 1.2, 2]
+        >>> f_vals = [0, 0.75, 1, 1.1, 2]
+        >>> da = xr.DataArray(f_vals, coords={"threshold": t_vals}, dims="threshold")
+        >>> integrate_square_piecewise_linear(da, "threshold")
+        <xarray.DataArray ()> Size: 8B
+        array(2.67583333)
+        >>> # Multiple stations
+        >>> data = [[0, 0.75, 1, 1.1, 2], [0, 0.5, 1, 1.2, 2]]
+        >>> coords = {"station": [1, 2], "threshold": [0, 0.5, 1, 1.2, 2]}
+        >>> da = xr.DataArray(data, coords=coords, dims=["station", "threshold"])
+        >>> integrate_square_piecewise_linear(da, "threshold")
+        <xarray.DataArray (station: 2)> Size: 16B
+        array([2.67583333, 2.66666667])
+        Coordinates:
+        * station  (station) int64 16B 1 2
     """
 
     # notation: Since F is piecewise linear we have
@@ -219,6 +314,23 @@ def add_thresholds(
     Returns:
         xr.DataArray: Additional thresholds, and values at those thresholds
         determined by the specified fill method.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing.cdf import add_thresholds
+        >>> data = [0.2, 0.8]
+        >>> coords = {"threshold": [10, 30]}
+        >>> cdf = xr.DataArray(data, coords=coords, dims="threshold")
+        >>> add_thresholds(cdf, "threshold", [5, 15, 35], "linear")
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0.05, 0.2 , 0.35, 0.8 , 0.95])
+        Coordinates:
+        * threshold  (threshold) int64 40B 5 10 15 30 35
+        >>> add_thresholds(cdf, "threshold", [5, 15, 35], "step")
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0. , 0.2, 0.2, 0.8, 0.8])
+        Coordinates:
+        * threshold  (threshold) int64 40B 5 10 15 30 35
     """
 
     thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))
@@ -268,6 +380,33 @@ def fill_cdf(
         ValueError: If `method` is not "linear", "step", "forward" or "backward".
         ValueError: If any non-NaN value of `cdf` lies outside the unit interval [0,1].
 
+    Examples:
+        >>> import xarray as xr
+        >>> import numpy as np
+        >>> from scores.processing.cdf import fill_cdf
+        >>> data = [np.nan, 0.2, np.nan, 0.8, np.nan]
+        >>> coords = {"threshold": [10, 20, 30, 40, 50]}
+        >>> cdf = xr.DataArray(data, coords=coords, dims="threshold")
+        >>> fill_cdf(cdf, "threshold", "linear", min_nonnan = 2)
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0. , 0.2, 0.5, 0.8, 1. ])
+        Coordinates:
+        * threshold  (threshold) int64 40B 10 20 30 40 50
+        >>> fill_cdf(cdf, "threshold", "step", min_nonnan = 1)
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0. , 0.2, 0.2, 0.8, 0.8])
+        Coordinates:
+        * threshold  (threshold) int64 40B 10 20 30 40 50
+        >>> fill_cdf(cdf, "threshold", "forward", min_nonnan = 1)
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0.2, 0.2, 0.2, 0.8, 0.8])
+        Coordinates:
+        * threshold  (threshold) int64 40B 10 20 30 40 50
+        >>> fill_cdf(cdf, "threshold", "backward", min_nonnan = 1)
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0.2, 0.2, 0.8, 0.8, 0.8])
+        Coordinates:
+        * threshold  (threshold) int64 40B 10 20 30 40 50
     """
 
     if method not in ["linear", "step", "forward", "backward"]:
@@ -336,6 +475,29 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
         ValueError: If `tolerance` is negative.
         ValueError: If coordinates are not increasing along `threshold_dim`.
         ValueError: If some, but not all, CDF values in `cdf` along `threshold_dim` are NaN.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing.cdf import decreasing_cdfs
+        >>> # Well-behaved CDF
+        >>> coords = {"threshold": [10, 20, 30, 40]}
+        >>> good_cdf = xr.DataArray([0, 0.3, 0.7, 1.0], coords=coords, dims="threshold")
+        >>> decreasing_cdfs(good_cdf, "threshold", 0.01)
+        <xarray.DataArray ()> Size: 1B
+        array(False)
+        >>> # CDF with small violation within tolerance
+        >>> coords = {"threshold": [10, 20, 30, 40, 50]}
+        >>> minor_cdf = xr.DataArray([0, 0.4, 0.39, 0.9, 1], coords=coords, dims="threshold")
+        >>> decreasing_cdfs(minor_cdf, "threshold", 0.05)
+        <xarray.DataArray ()> Size: 1B
+        array(False)
+        >>> # CDF with violation exceeding tolerance
+        >>> coords = {"threshold": [10, 20, 30, 40, 50, 60]}
+        >>> bad_cdf = xr.DataArray([0, 0.4, 0.3, 0.9, 0.88, 1], coords=coords, dims="threshold")
+        >>> decreasing_cdfs(bad_cdf, "threshold", 0.05)
+        <xarray.DataArray ()> Size: 1B
+        array(True)
+
     """
     check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)
 
@@ -386,6 +548,29 @@ def cdf_envelope(
 
     Raises:
         ValueError: If `threshold_dim` is not a dimension of `cdf`.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing.cdf import cdf_envelope
+        >>> # CDF with violations
+        >>> coords = {"threshold": [10, 20, 30, 40, 50]}
+        >>> cdf = xr.DataArray([0, 0.5, 0.2, 0.8, 1.0],
+        ...                    coords=coords, dims="threshold")
+        >>> result = cdf_envelope(cdf, "threshold")
+        >>> result.sel(cdf_type="original").values
+        array([0. , 0.5, 0.2, 0.8, 1. ])
+        >>> result.sel(cdf_type="upper").values
+        array([0. , 0.5, 0.5, 0.8, 1. ])
+        >>> result.sel(cdf_type="lower").values
+        array([0. , 0.2, 0.2, 0.8, 1. ])
+        >>> # Multiple stations
+        >>> data = [[0, 0.6, 0.4, 1.0], [0, 0.3, 0.7, 1.0]]
+        >>> coords = {"station": ["A", "B"], "threshold": [10, 20, 30, 40]}
+        >>> cdf = xr.DataArray(data,
+        ...       coords=coords, dims=["station", "threshold"])
+        >>> envelope = cdf_envelope(cdf, "threshold")
+        >>> envelope.sel(station="A", cdf_type="upper").values
+        array([0. , 0.6, 0.6, 1. ])
     """
     if threshold_dim not in cdf.dims:
         raise ValueError(f"'{threshold_dim}' is not a dimension of `cdf`")

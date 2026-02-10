@@ -335,6 +335,23 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast verification:
             A practitioner's guide in atmospheric science (2nd ed.,
             pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.forecast_rate()
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -399,6 +416,24 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#BIAS
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.frequency_bias()
+            <xarray.DataArray ()> Size: 8B
+            array(2.)
+
         """
         # Note - bias_score calls this method
         cd = self.counts
@@ -427,6 +462,23 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#BIAS
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.bias_score()
+            <xarray.DataArray ()> Size: 8B
+            array(2.)
         """
         return self.frequency_bias()
 
@@ -468,6 +520,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.hit_rate()
             <xarray.DataArray ()> Size: 8B array(1)
+
         """  #  noqa: E501
         return self.probability_of_detection()
 
@@ -491,6 +544,24 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.probability_of_detection()
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
+
         """
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
@@ -521,6 +592,23 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.true_positive_rate()
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
         """
         return self.probability_of_detection()
 
@@ -544,6 +632,23 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#FAR
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.false_alarm_ratio()
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
         """
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -570,6 +675,23 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POFD
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.false_alarm_rate()
+            <xarray.DataArray ()> Size: 8B
+            array(0.33333333)
         """
         # Note - probability of false detection calls this function
         cd = self.counts
@@ -597,6 +719,23 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POFD
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.probability_of_false_detection()
+            <xarray.DataArray ()> Size: 8B
+            array(0.33333333)
         """
 
         return self.false_alarm_rate()
@@ -721,6 +860,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.critical_success_index()
             <xarray.DataArray ()> Size: 8B array(0.5)
+
         """
         return self.threat_score()
 
@@ -764,7 +904,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ...                                                   default_op_fn=operator.gt)
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.peirce_skill_score()
-            <xarray.DataArray ()> Size: 8B array(0.66667)  
+            <xarray.DataArray ()> Size: 8B array(0.66667)
+
         """
         cd = self.counts
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
@@ -811,6 +952,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.true_skill_statistic()
             <xarray.DataArray ()> Size: 8B array(0.66667)
+
         """
         return self.peirce_skill_score()
 
@@ -855,14 +997,17 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.hanssen_and_kuipers_discriminant()
             <xarray.DataArray ()> Size: 8B array(0.66667)
+
         """
         return self.peirce_skill_score()
 
     def sensitivity(self) -> xr.DataArray:
         """
         Identical to
-        :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
-        :py:func:`true_positive_rate`, and :py:func:`recall`.
+        :py:func:`hit_rate`,
+        :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`true_positive_rate`, and
+        :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
 
@@ -870,7 +1015,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the probability of detection
 
         .. math::
-            \\text{sensitivity} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+            \\text{sensitivity} = \\frac{\\text{true positives}}
+            {\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
@@ -880,10 +1026,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         References:
             - https://www.cawcr.gov.au/projects/verification/#POD
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
-              & Dmochowski, R. R. (2021).
-              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive
-              value, and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J.,
+              Lazar, J. M., Everaert, K., & Dmochowski, R. R. (2021).
+              Foundational statistical principles in medical research:
+              Sensitivity, specificity, positive predictive
+              value, and negative predictive value. *Medicina*, 57(5), 503.
+              https://doi.org/10.3390/medicina57050503
 
         Examples:
             >>> import xarray as xr
@@ -913,7 +1061,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the true negative rate (specificity).
 
         .. math::
-            \\text{specificity} = \\frac{\\text{true negatives}}{\\text{true negatives} + \\text{false positives}}
+            \\text{specificity} = \\frac{\\text{true negatives}}
+            {\\text{true negatives} + \\text{false positives}}
 
         Notes:
             - "True negatives" is the same as "correct negatives".
@@ -921,12 +1070,31 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
-              & Dmochowski, R. R. (2021).
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J.,
+              Lazar, J. M., Everaert, K., & Dmochowski, R. R. (2021).
               Foundational statistical principles in medical research:
               Sensitivity, specificity, positive predictive value,
               and negative predictive value. *Medicina*, 57(5), 503.
               https://doi.org/10.3390/medicina57050503
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.specificity()
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.66666667)
+
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
@@ -951,13 +1119,33 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.true_negative_rate()
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.66666667)
+
         """
         return self.specificity()
 
     def recall(self) -> xr.DataArray:
         """
         Identical to
-        :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        :py:func:`hit_rate`,
+        :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
         :py:func:`true_positive_rate`, and :py:func:`sensitivity`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -966,7 +1154,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the probability of detection
 
         .. math::
-            \\text{recall} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+            \\text{recall} = \\frac{\\text{true positives}}
+            {\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
@@ -992,6 +1181,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.recall()
             <xarray.DataArray ()> Size: 8B array(1)
+
         """
         return self.probability_of_detection()
 
@@ -1005,7 +1195,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the precision score
 
         .. math::
-            \\text{precision} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false positives}}
+            \\text{precision} = \\frac{\\text{true positives}}
+            {\\text{true positives} + \\text{false positives}}
 
         Notes:
             - Range: 0 to 1.  Perfect score: 1.
@@ -1055,12 +1246,30 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         References:
             - https://www.cawcr.gov.au/projects/verification/#SR
             - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
-            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
-              & Dmochowski, R. R. (2021).
+            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J.,
+              Lazar, J. M., Everaert, K., & Dmochowski, R. R. (2021).
               Foundational statistical principles in medical research:
               Sensitivity, specificity, positive predictive value,
               and negative predictive value. *Medicina*, 57(5), 503.
               https://doi.org/10.3390/medicina57050503
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.positive_predictive_value()
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         return self.success_ratio()
@@ -1085,12 +1294,31 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
-           - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
-             & Dmochowski, R. R. (2021).
+           - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J.,
+             Lazar, J. M., Everaert, K., & Dmochowski, R. R. (2021).
              Foundational statistical principles in medical research: Sensitivity,
              specificity, positive predictive value,
              and negative predictive value. *Medicina*, 57(5), 503.
              https://doi.org/10.3390/medicina57050503
+
+        Examples:
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.negative_predictive_value()
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
+
         """
         cd = self.counts
         npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
@@ -1105,7 +1333,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the F1 score
 
         .. math::
-            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}{(2 \\cdot  \\text{true positives}) +
+            \\text{F1} = \\frac{2 \\cdot \\text{true positives}}
+            {(2 \\cdot  \\text{true positives}) +
             \\text{false positives} + \\text{false negatives}}
 
         Notes:
@@ -1131,6 +1360,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.f1_score()
             <xarray.DataArray ()> Size: 8B array(0.66667)
+
         """
         cd = self.counts
         f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
@@ -1166,10 +1396,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms"
 
         References:
-            - Gilbert, G.K., 1884. Finley's tornado predictions. American Meteorological Journal, 1(5), pp.166-172.
+            - Gilbert, G.K., 1884. Finley's tornado predictions. 
+              American Meteorological Journal, 1(5), pp.166-172.
             - Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010. \
-                Equitability revisited: Why the “equitable threat score” is not equitable. \
-                Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
+              Equitability revisited: Why the “equitable threat score” is not equitable. \
+              Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
 
         Examples:
             >>> import xarray as xr
@@ -1186,6 +1417,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.equitable_threat_score()
             <xarray.DataArray ()> Size: 8B array(0.3333)  
+
         """
         cd = self.counts
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
@@ -1223,10 +1455,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         References:
-            - Gilbert, G.K., 1884. Finley's tornado predictions. American Meteorological Journal, 1(5), pp.166-172.
+            - Gilbert, G.K., 1884. Finley's tornado predictions. 
+              American Meteorological Journal, 1(5), pp.166-172.
             - Hogan, R.J., Ferro, C.A., Jolliffe, I.T. and Stephenson, D.B., 2010. \
-                Equitability revisited: Why the “equitable threat score” is not equitable. \
-                Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
+              Equitability revisited: Why the “equitable threat score” is not equitable. \
+              Weather and Forecasting, 25(2), pp.710-726. https://doi.org/10.1175/2009WAF2222350.1
 
         Examples:
             >>> import xarray as xr
@@ -1243,6 +1476,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.gilberts_skill_score()
             <xarray.DataArray ()> Size: 8B array(0.33333)  
+
         """
         return self.equitable_threat_score()
 
@@ -1301,7 +1535,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ...                                                   default_op_fn=operator.gt)
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.heidke_skill_score()
-            <xarray.DataArray ()> Size: 8B array(0.5)  
+            <xarray.DataArray ()> Size: 8B array(0.5) 
+
         """
         cd = self.counts
         exp_correct = (1 / cd["total_count"]) * (
@@ -1366,6 +1601,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.cohens_kappa()
             <xarray.DataArray ()> Size: 8B array(0.5)  
+
         """
         return self.heidke_skill_score()
 
@@ -1392,12 +1628,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         where
 
         .. math::
-            \\text{POD} = \\frac{\\text{true positives}}{\\text{true positives} + \\text{false negatives}}
+            \\text{POD} = \\frac{\\text{true positives}}
+            {\\text{true positives} + \\text{false negatives}}
 
         and
 
         .. math::
-            \\text{POFD} = \\frac{\\text{false positives}}{\\text{true negatives} + \\text{false positives}}
+            \\text{POFD} = \\frac{\\text{false positives}}
+            {\\text{true negatives} + \\text{false positives}}
 
 
         Notes:
@@ -1410,9 +1648,28 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
-              Weather and Forecasting, 15(2), pp.221-232. \
+            - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+              Weather and Forecasting, 15(2), pp.221-232.
               https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
+
+        Examples: 
+            >>> import xarray as xr
+            >>> import scores
+            >>> import operator
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
+            ...                            dims=["lat", "lon"])
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
+            ...                           dims=["lat", "lon"])
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
+            ...                                                   default_op_fn=operator.gt)
+            >>> table = match.make_contingency_manager(fcst, obs)
+            >>> result = table.odds_ratio()
+            >>> # Infinity because zero misses
+            <xarray.DataArray ()> Size: 8B
+            array(inf)              
+
         """
         odds_r = (self.probability_of_detection() / (1 - self.probability_of_detection())) / (
             self.probability_of_false_detection() / (1 - self.probability_of_false_detection())
@@ -1450,25 +1707,25 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
-              Weather and Forecasting, 15(2), pp.221-232. \
+            - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+              Weather and Forecasting, 15(2), pp.221-232.
               https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
 
         Examples:
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]], 
-            ...                            coords=[[33, 45], [-30, 30]], 
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
             ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]], 
-            ...                           coords=[[33, 45], [-30, 30]], 
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
             ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, 
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
             ...                                                   default_op_fn=operator.gt)
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.odds_ratio_skill_score()
-            <xarray.DataArray ()> Size: 8B array(1)  
+            <xarray.DataArray ()> Size: 8B array(1)
         """
         cd = self.counts
         orss = (cd["tp_count"] * cd["tn_count"] - cd["fn_count"] * cd["fp_count"]) / (
@@ -1506,25 +1763,25 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
-            Weather and Forecasting, 15(2), pp.221-232. \
-            https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
+            - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill.
+              Weather and Forecasting, 15(2), pp.221-232.
+              https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
 
         Examples:
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]], 
-            ...                            coords=[[33, 45], [-30, 30]], 
+            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            ...                            coords=[[33, 45], [-30, 30]],
             ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]], 
-            ...                           coords=[[33, 45], [-30, 30]], 
+            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            ...                           coords=[[33, 45], [-30, 30]],
             ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, 
+            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
             ...                                                   default_op_fn=operator.gt)
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.yules_q()
-            <xarray.DataArray ()> Size: 8B array(1)  
+            <xarray.DataArray ()> Size: 8B array(1)
         """
         return self.odds_ratio_skill_score()
 
@@ -1666,8 +1923,8 @@ class BinaryContingencyManager(BasicContingencyManager):
         Compute the contingency table, preserving or reducing the specified dimensions.
 
         Args:
-            - reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
-            - preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
+            reduce_dims: Dimensions to reduce. Can be "all" to reduce all dimensions.
+            preserve_dims: Dimensions to preserve. Can be "all" to preserve all dimensions.
 
         Returns:
             scores.categorical.BasicContingencyManager: A `scores` class which supports efficient

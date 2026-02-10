@@ -305,13 +305,17 @@ def block_bootstrap(
             a list of multiple xarray objects. In the case where
             multiple datasets are passed, each dataset can have its own set of dimension. However,
             for successful bootstrapping, dimensions across all input arrays must be nested.
-            For instance, for ``block.keys=['d1', 'd2', 'd3']``, an array with dimension 'd1' and
-            'd2' is valid, but an array with only dimension 'd2' is not valid. All datasets
+            For instance, for::
+
+                blocks.keys() == ['d1', 'd2', 'd3']
+
+            an array with dimensions
+            ``d1`` and ``d2`` is valid, but an array with only ``d2`` is not. All datasets
             are bootstrapped according to the same random samples along available dimensions.
         blocks: A dictionary specifying the dimension(s) to bootstrap and the block sizes to
             use along each dimension: ``{dimension: block_size}``. The keys represent the dimensions
             to be bootstrapped, and the values indicate the block sizes along each dimension.
-            The dimension provided here should exist in the data provided in ``array_list`.
+            The dimension provided here should exist in the data provided in ``array_list``.
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
@@ -372,27 +376,22 @@ def block_bootstrap(
                 [2.1, 5.2, 3.1, 5.2, 1.3],
                 [2.2, 5.2, 3.1, 5.2, 1.2],
                 [2.3, 5.3, 3.2, 5.3, 1.3]],
-
             [[3. , 0.1, 4. , 0.1, 2.2],
                 [3.1, 0.2, 4.1, 0.2, 2.3],
                 [3.2, 0.2, 4.1, 0.2, 2.2],
                 [3.3, 0.3, 4.2, 0.3, 2.3]],
-
             [[4. , 1.1, 5. , 1.1, 3.2],
                 [4.1, 1.2, 5.1, 1.2, 3.3],
                 [4.2, 1.2, 5.1, 1.2, 3.2],
                 [4.3, 1.3, 5.2, 1.3, 3.3]],
-
             [[0.1, 5. , 1.1, 5.2, 0.3],
                 [0.2, 5.1, 1.2, 5.3, 0. ],
                 [0.1, 5.3, 1.3, 5.1, 0.3],
                 [0.2, 5. , 1. , 5.2, 0. ]],
-
             [[1.1, 0. , 2.1, 0.2, 1.3],
                 [1.2, 0.1, 2.2, 0.3, 1. ],
                 [1.1, 0.3, 2.3, 0.1, 1.3],
                 [1.2, 0. , 2. , 0.2, 1. ]],
-
             [[2.1, 1. , 3.1, 1.2, 2.3],
                 [2.2, 1.1, 3.2, 1.3, 2. ],
                 [2.1, 1.3, 3.3, 1.1, 2.3],
@@ -407,39 +406,31 @@ def block_bootstrap(
                 [12.1, 15.2, 13.1, 15.2, 11.3],
                 [12.2, 15.2, 13.1, 15.2, 11.2],
                 [12.3, 15.3, 13.2, 15.3, 11.3]],
-
-                [[13. , 10.1, 14. , 10.1, 12.2],
+               [[13. , 10.1, 14. , 10.1, 12.2],
                 [13.1, 10.2, 14.1, 10.2, 12.3],
                 [13.2, 10.2, 14.1, 10.2, 12.2],
                 [13.3, 10.3, 14.2, 10.3, 12.3]],
-
-                [[14. , 11.1, 15. , 11.1, 13.2],
+               [[14. , 11.1, 15. , 11.1, 13.2],
                 [14.1, 11.2, 15.1, 11.2, 13.3],
                 [14.2, 11.2, 15.1, 11.2, 13.2],
                 [14.3, 11.3, 15.2, 11.3, 13.3]],
-
-                [[10.1, 15. , 11.1, 15.2, 10.3],
+               [[10.1, 15. , 11.1, 15.2, 10.3],
                 [10.2, 15.1, 11.2, 15.3, 10. ],
                 [10.1, 15.3, 11.3, 15.1, 10.3],
                 [10.2, 15. , 11. , 15.2, 10. ]],
-
         ...
-
                 [[24. , 21.1, 25. , 21.1, 23.2],
                 [24.1, 21.2, 25.1, 21.2, 23.3],
                 [24.2, 21.2, 25.1, 21.2, 23.2],
                 [24.3, 21.3, 25.2, 21.3, 23.3]],
-
                 [[20.1, 25. , 21.1, 25.2, 20.3],
                 [20.2, 25.1, 21.2, 25.3, 20. ],
                 [20.1, 25.3, 21.3, 25.1, 20.3],
                 [20.2, 25. , 21. , 25.2, 20. ]],
-
                 [[21.1, 20. , 22.1, 20.2, 21.3],
                 [21.2, 20.1, 22.2, 20.3, 21. ],
                 [21.1, 20.3, 22.3, 20.1, 21.3],
                 [21.2, 20. , 22. , 20.2, 21. ]],
-
                 [[22.1, 21. , 23.1, 21.2, 22.3],
                 [22.2, 21.1, 23.2, 21.3, 22. ],
                 [22.1, 21.3, 23.3, 21.1, 22.3],

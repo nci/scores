@@ -67,12 +67,12 @@ def qq(
         preserve_dims: Dimensions to preserve when calculating quantiles.
 
     Returns:
-        An xarray object with a new dimension called "data_source".
+        An xarray object with a new dimension called ``data_source``.
 
     Raises:
         ValueError: If the interpolation method is invalid.
         ValueError: if quantiles are not between 0 and 1.
-        ValueError: If a dimension in the input data has the same name as "data_source_dim"
+        ValueError: If a dimension in the input data has the same name as ``data_source_dim``
         ValueError: If fcst and obs are Datasets with different data variables.
         ValueError: If a user tries to preserve all dimensions.
         TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
@@ -110,7 +110,6 @@ def qq(
         array([[[ 0.02,  1.62],
                 [ 0.1 ,  6.5 ],
                 [ 8.02,  6.98]],
-
             [[-2.7 ,  1.22],
                 [ 0.1 ,  4.5 ],
                 [10.74,  9.06]]])

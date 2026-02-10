@@ -63,6 +63,31 @@ def brier_score(
 
     See Also:
         - :py:func:`scores.probability.brier_score_for_ensemble`
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.probability import brier_score
+        >>> fcst = xr.DataArray([[0.3, 0.5],[0.7, 1.0]],
+        ...                            coords=[[33, 45], [-30, 30]],
+        ...                            dims=["lat", "lon"])
+        >>> obs = xr.DataArray([[0, 1],[0, 1]],
+        ...                           coords=[[33, 45], [-30, 30]],
+        ...                           dims=["lat", "lon"])
+        >>> brier_score(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.2075)
+        >>> brier_score(fcst, obs, preserve_dims=['lon'])
+        <xarray.DataArray (lon: 2)> Size: 16B
+        array([0.29 , 0.125])
+        Coordinates:
+        * lon      (lon) int64 16B -30 30
+        >>> weights = xr.DataArray([0.35, 0.5],
+        ...                        coords={"lat": [33, 45]},
+        ...                        dims=["lat"])
+        >>> brier_score(fcst, obs, weights = weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.21411765)
+
     """
     if check_args:
         error_msg = ValueError("`fcst` contains values outside of the range [0, 1]")
