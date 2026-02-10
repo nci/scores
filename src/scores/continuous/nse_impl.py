@@ -267,15 +267,15 @@ def nse(
 
     References:
 
-        1. Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting
-           through conceptual models part I — A discussion of principles. In
-           Journal of Hydrology (Vol. 10, Issue 3, pp. 282-290). Elsevier BV.
-           https://doi.org/10.1016/0022-1694%2870%2990255-6
+        - Nash, J. E., & Sutcliffe, J. V. (1970). River flow forecasting
+          through conceptual models part I — A discussion of principles. In
+          Journal of Hydrology (Vol. 10, Issue 3, pp. 282-290). Elsevier BV.
+          https://doi.org/10.1016/0022-1694%2870%2990255-6
 
-        2. Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land
-           use changes on the runoff generation of a river basin through parameter
-           regionalization of a watershed model. Journal of Hydrology, 292(1-4),
-           281-295. https://doi.org/10.1016/j.jhydrol.2004.01.002
+        - Hundecha, Y., & Bárdossy, A. (2004). Modeling of the effect of land
+          use changes on the runoff generation of a river basin through parameter
+          regionalization of a watershed model. Journal of Hydrology, 292(1-4),
+          281-295. https://doi.org/10.1016/j.jhydrol.2004.01.002
     """
     # safety: assert that the input types are as expected. This is for early
     # failure during dev/testing only when incompatible types are detected at

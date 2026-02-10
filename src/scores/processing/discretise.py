@@ -100,7 +100,9 @@ def comparative_discretise(
         Attributes:
             discretisation_tolerance:  0
             discretisation_mode:       >=
-        >>> thresholds = xr.DataArray([15, 20, 25], coords={"threshold": [15, 20, 25]}, dims="threshold")
+        >>> thresholds = xr.DataArray([15, 20, 25],
+        ...                           coords={"threshold": [15, 20, 25]},
+        ...                           dims="threshold")
         >>> comparative_discretise(data, thresholds, ">=")
         <xarray.DataArray (station: 3, threshold: 3)> Size: 72B
         array([[1., 0., 0.],

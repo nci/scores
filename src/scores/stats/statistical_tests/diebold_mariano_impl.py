@@ -113,15 +113,14 @@ def diebold_mariano(  # pylint: disable=R0914
 
 
     Examples:
-
-        This array gives three timeseries of score differences.
-        Coordinates in the "lead_day" dimension uniquely identify each timeseries.
-        Here `ts_dim="lead_day"`.
-        Coordinates in the "valid_date" dimension give the forecast validity timestamp
-        of each item in the timeseries.
-        The "h" coordinates specify that the timeseries are for 2, 3 and 4-step
-        ahead forecasts respectively. Here `h_coord="h"`.
-
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.stats.statistical_tests import diebold_mariano
+        >>> # Create timeseries of score differences for different lead times
+        >>> # This array gives three timeseries of score differences.
+        >>> # Coordinates in the "lead_day" dimension uniquely identify each timeseries.
+        >>> # The "h" coordinates specify that the timeseries are for 2, 3 and 4-step
+        >>> # ahead forecasts respectively.
         >>> da_timeseries = xr.DataArray(
         ...     data=[[1, 2, 3.0, 4, np.nan], [2.0, 1, -3, -1, 0], [1.0, 1, 1, 1, 1]],
         ...     dims=["lead_day", "valid_date"],
@@ -132,8 +131,44 @@ def diebold_mariano(  # pylint: disable=R0914
         ...         "h": ("lead_day", [2, 3, 4]),
         ...     },
         ... )
+        >>> # Calculate Diebold-Mariano test statistic using default HG method
+        >>> result = diebold_mariano(da_timeseries, "lead_day", "h")
+        /data/scores/src/scores/stats/statistical_tests/diebold_mariano_impl.py:255:
+        RuntimeWarning: A least one NaN value was detected in `da_timeseries`.
+        This may impact the calculation of autocovariances. warnings.warn(
+        <xarray.Dataset> Size: 168B
+        Dimensions:          (lead_day: 3)
+        Coordinates:
+        * lead_day         (lead_day) int64 24B 1 2 3
+        Data variables:
+            mean             (lead_day) float64 24B 2.5 -0.2 1.0
+            dm_test_stat     (lead_day) float64 24B 3.475 -0.2484 289.5
+            timeseries_len   (lead_day) int64 24B 4 5 5
+            confidence_gt_0  (lead_day) float64 24B 0.9997 0.4019 1.0
+            ci_upper         (lead_day) float64 24B 3.91 1.378 1.007
+            ci_lower         (lead_day) float64 24B 1.09 -1.778 0.9932
+        >>> # Access specific results
+        >>> result['dm_test_stat'].values
+        array([ 3.47497794e+00, -2.48369569e-01,  2.89455668e+02])
+        >>> # Calculate using HLN method with Student's t distribution
+        >>> result_t = diebold_mariano(da_timeseries, "lead_day", "h",
+        ...                            method="HLN", statistic_distribution="t",
+        ...                            confidence_level=0.90)
+        /data/scores/src/scores/stats/statistical_tests/diebold_mariano_impl.py:255:
+        RuntimeWarning: A least one NaN value was detected in `da_timeseries`.
+        This may impact the calculation of autocovariances. warnings.warn(
+        <xarray.Dataset> Size: 168B
+        Dimensions:          (lead_day: 3)
+        Coordinates:
+        * lead_day         (lead_day) int64 24B 1 2 3
+        Data variables:
+            mean             (lead_day) float64 24B 2.5 -0.2 1.0
+            dm_test_stat     (lead_day) float64 24B 2.236 -0.3333 nan
+            timeseries_len   (lead_day) int64 24B 4 5 5
+            confidence_gt_0  (lead_day) float64 24B 0.9443 0.3778 nan
+            ci_upper         (lead_day) float64 24B 5.131 1.079 nan
+            ci_lower         (lead_day) float64 24B -0.1311 -1.479 nan
 
-        >>> diebold_mariano(da_timeseries, "lead_day", "h")
     """
     if method not in ["HLN", "HG"]:
         raise ValueError("`method` must be one of 'HLN' or 'HG'.")

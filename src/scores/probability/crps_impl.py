@@ -326,6 +326,20 @@ def crps_cdf(
         - Gneiting, T., & Ranjan, R. (2011). Comparing Density Forecasts Using Threshold- and
           Quantile-Weighted Scoring Rules.
           Journal of Business & Economic Statistics, 29(3), 411-422. https://doi.org/10.1198/jbes.2010.08110
+
+    Examples: 
+        >>> import xarray as xr
+        >>> from scores.probability import crps_cdf
+        >>> fcst = xr.DataArray([0.1, 0.4, 0.7, 0.9], 
+        ...                                     dims=['threshold'], 
+        ...                                     coords={'threshold': [0, 1, 2, 3]})
+        >>> obs = xr.DataArray(1.5)
+        >>> crps_cdf(fcst, obs, threshold_dim='threshold')
+        <xarray.Dataset> Size: 8B
+        Dimensions:  ()
+        Data variables:
+            total    float64 8B 0.298
+
     """
 
     dims = scores.utils.gather_dimensions(
@@ -540,6 +554,25 @@ def crps_cdf_brier_decomposition(
         ValueError: if dimensions in `dims` is not among the dimensions of `fcst`.
         ValueError: if `fcst_fill_method` is not one of 'linear', 'step', 'forward' or 'backward'.
         ValueError: if coordinates in `fcst[threshold_dim]` are not increasing.
+
+    Examples: 
+        >>> import xarray as xr
+        >>> from scores.probability import crps_cdf_brier_decomposition
+        >>> fcst = xr.DataArray([0.1, 0.4, 0.7, 0.9], 
+        ...                                     dims=['threshold'], 
+        ...                                     coords={'threshold': [0, 1, 2, 3]})
+        >>> obs = xr.DataArray(1.5)
+        >>> crps_cdf_brier_decomposition(fcst, obs, 
+        ...                             threshold_dim='threshold')
+        <xarray.Dataset> Size: 160B
+        Dimensions:                (threshold: 5)
+        Coordinates:
+        * threshold              (threshold) float64 40B 0.0 1.0 1.5 2.0 3.0
+        Data variables:
+            total_penalty          (threshold) float64 40B 0.01 0.16 0.2025 0.09 0.01
+            underforecast_penalty  (threshold) float64 40B 0.01 0.16 0.0 0.0 0.0
+            overforecast_penalty   (threshold) float64 40B 0.0 0.0 0.2025 0.09 0.01
+
     """
     dims = scores.utils.gather_dimensions(
         fcst.dims,
@@ -676,6 +709,22 @@ def adjust_fcst_for_crps(
     Raises:
         ValueError: If `threshold_dim` is not a dimension of `fcst`.
         ValueError: If `decreasing_tolerance` is negative.
+
+    Examples: 
+        >>> import xarray as xr
+        >>> from scores.probability import adjust_fcst_for_crps
+        >>> fcst = xr.DataArray(
+        ...     [0.1, 0.6, 0.4, 0.9],
+        ...     dims=['threshold'],
+        ...     coords={'threshold': [0, 1, 2, 3]}
+        ... )
+        >>> obs = xr.DataArray(0.5)
+        >>> adjust_fcst_for_crps(fcst, 'threshold', obs)
+        <xarray.DataArray (threshold: 4)> Size: 32B
+        array([0.1, 0.4, 0.4, 0.9])
+        Coordinates:
+        * threshold  (threshold) int64 32B 0 1 2 3
+
     """
     if threshold_dim not in fcst.dims:
         raise ValueError(f"'{threshold_dim}' is not a dimension of `fcst`")
@@ -793,6 +842,19 @@ def crps_step_threshold_weight(
     Returns:
         (xr.DataArray): Zeros and ones with the dimensions in `step_points`
         and an additional `threshold_dim` dimension.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.probability import crps_step_threshold_weight
+        >>> step_points = xr.DataArray(1.5)
+        >>> crps_step_threshold_weight(
+        ...    step_points, 'threshold', threshold_values=[0, 1, 2, 3]
+        ... )
+        <xarray.DataArray (threshold: 5)> Size: 40B
+        array([0., 0., 1., 1., 1.])
+        Coordinates:
+        * threshold  (threshold) float64 40B 0.0 1.0 1.5 2.0 3.0
+
     """
 
     weight = observed_cdf(
@@ -900,6 +962,21 @@ def crps_for_ensemble(
         - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability
           Score with Limited Information and Applications to Ensemble Weather Forecasts",
           Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.probability import crps_for_ensemble
+        >>> # Create ensemble forecast with 3 members
+        >>> fcst = xr.DataArray(
+        ...     [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+        ...     dims=['time', 'member'],
+        ...     coords={'time': [1, 2], 'member': ['A', 'B', 'C']}
+        ... )
+        >>> obs = xr.DataArray([2.5, 5.5], dims=['time'], coords={'time': [1, 2]})
+        >>> crps_for_ensemble(fcst, obs, 'member')
+        <xarray.DataArray ()> Size: 8B
+        array(0.38888889)
+
     """  # noqa: E501
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")

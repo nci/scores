@@ -201,8 +201,8 @@ def brier_score_for_ensemble(
 
     References:
         - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
-            Journal of the Royal Meteorological Society, 140(683), 1917-1923.
-            https://doi.org/10.1002/qj.2270
+          Journal of the Royal Meteorological Society, 140(683), 1917-1923.
+          https://doi.org/10.1002/qj.2270
 
     See Also:
         - :py:func:`scores.probability.brier_score`

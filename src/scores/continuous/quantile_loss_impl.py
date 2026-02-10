@@ -50,7 +50,7 @@ def quantile_score(
             See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
-        A DataArray with values being the mean generalised piecewise linear (GPL)
+        An xarray object with values being the mean generalised piecewise linear (GPL)
         scoring function, with the dimensions specified in `dims`.
         If `dims` is `None`, the returned DataArray will have only one element,
         the overall mean GPL score.

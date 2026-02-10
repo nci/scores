@@ -64,13 +64,38 @@ def aggregate(
     Examples:
         >>> import xarray as xr
         >>> import numpy as np
-        >>> da = xr.DataArray(np.arange(6).reshape(2, 3), dims=['x', 'y'])
+        >>> from scores.processing import aggregate
+        >>> # Create sample data
+        >>> da = xr.DataArray(np.arange(6).reshape(2, 3),
+        ...     dims=['x', 'y'],
+        ...     coords={'x':[1,2],'y':['A','B','C']})
+        >>> da
+        <xarray.DataArray (x: 2, y: 3)> Size: 48B
+        array([[0, 1, 2],
+            [3, 4, 5]])
+        Coordinates:
+        * x        (x) int64 16B 1 2
+        * y        (y) <U1 12B 'A' 'B' 'C'
+        >>> # Unweighted mean over x dimension
+        >>> aggregate(da, reduce_dims='x')
+        <xarray.DataArray (y: 3)> Size: 24B
+        array([1.5, 2.5, 3.5])
+        Coordinates:
+        * y        (y) <U1 12B 'A' 'B' 'C'
+        >>> # Weighted mean over x dimension
         >>> weights = xr.DataArray([1, 2], dims=['x'])
-        >>> apply_weighted_mean(da, reduce_dims=['x'], weights=weights)
-        <xarray.DataArray (y: 3)>
+        >>> aggregate(da, reduce_dims='x', weights=weights)
+        <xarray.DataArray (y: 3)> Size: 24B
         array([2., 3., 4.])
-        Dimensions without coordinates: y
-
+        Coordinates:
+        * y        (y) <U1 12B 'A' 'B' 'C'
+        >>> # Weighted sum over y dimension
+        >>> weights_y = xr.DataArray([0.5, 1.0, 1.5], dims=['y'])
+        >>> aggregate(da, reduce_dims='y', weights=weights_y, method='sum')
+        <xarray.DataArray (x: 2)> Size: 16B
+        array([ 4., 13.])
+        Coordinates:
+        * x        (x) int64 16B 1 2
     """
     _check_aggregate_inputs(values, reduce_dims, weights, method)
 

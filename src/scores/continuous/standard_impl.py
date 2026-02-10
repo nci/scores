@@ -64,11 +64,10 @@ def mse(
             degrees rather than radians.
 
     Returns:
-        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: An object containing
-            a single floating point number representing the mean squared
-            error for the supplied data. All dimensions will be reduced.
-            Otherwise: Returns an object representing the mean squared error,
-            reduced along the relevant dimensions and weighted appropriately.
+        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]
+            The mean squared error, with dimensions reduced as specified by
+            `reduce_dims` or `preserve_dims`. If neither is specified, all
+            dimensions are reduced and a scalar value is returned.
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
@@ -174,11 +173,11 @@ def rmse(
             degrees rather than radians.
 
     Returns:
-        An object containing
-            a single floating point number representing the root mean squared
-            error for the supplied data. All dimensions will be reduced.
-            Otherwise: Returns an object representing the root mean squared error,
-            reduced along the relevant dimensions and weighted appropriately.
+        An object containing a single floating point number representing
+        the root mean squared error for the supplied data. All dimensions
+        will be reduced. Otherwise: Returns an object representing the root
+        mean squared error, reduced along the relevant dimensions and weighted
+        appropriately.
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
@@ -302,6 +301,7 @@ def mae(
         >>> mae(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.32314815)
+
     """
 
     if is_xarraylike(fcst):
@@ -365,7 +365,7 @@ def mean_error(
             See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
-        An xarray object with the mean error of a forecast.
+        An object with the mean error of a forecast.
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
@@ -446,7 +446,7 @@ def additive_bias(
             See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
-        An xarray object with the additive bias of a forecast.
+        An object with the additive bias of a forecast.
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
@@ -536,7 +536,7 @@ def multiplicative_bias(
             See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
-        An xarray object with the multiplicative bias of a forecast.
+        An object with the multiplicative bias of a forecast.
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
@@ -634,19 +634,19 @@ def pbias(
         An xarray object with the percent bias of a forecast.
 
     References:
-        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
-            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
-            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
-        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
-            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
-            https://doi.org/10.1016/j.jhydrol.2014.06.035
-        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
-            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
-            Environmental Modelling and Software, 22(7), 1034-1052.
-            https://doi.org/10.1016/j.envsoft.2006.06.008
-        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
-            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
-            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
+        - Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+          Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+          Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
+        - Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+          Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
+          https://doi.org/10.1016/j.jhydrol.2014.06.035
+        - Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+          A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+          Environmental Modelling and Software, 22(7), 1034-1052.
+          https://doi.org/10.1016/j.envsoft.2006.06.008
+        - Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+          Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+          Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
 
     Examples:
         >>> import xarray as xr
