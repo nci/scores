@@ -2,19 +2,13 @@
 Contains unit tests for scores.categorical
 """
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores.categorical import firm, seeps
 from scores.categorical.multicategorical_impl import _single_category_score
-from scores.utils import DimensionError
+from scores.utils import HAS_DASK, DimensionError, da
 from tests.categorical import multicategorical_test_data as mtd
 
 
@@ -341,11 +335,9 @@ def test_firm(
     )
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_firm_dask():
     """Tests firm works with dask"""
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
 
     calculated = firm(
         mtd.DA_FCST_FIRM.chunk(),
@@ -359,7 +351,7 @@ def test_firm_dask():
         include_components=True,
     )
 
-    assert isinstance(calculated.data, dask.array.Array)
+    assert isinstance(calculated.data, da.Array)
     calculated = calculated.compute()
     calculated = calculated.transpose("components", "i", "j", "k")
     assert isinstance(calculated.data, np.ndarray)
@@ -866,11 +858,9 @@ def test_seeps_raises(p1):
         )
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_seeps_dask():
     """Tests seeps works with dask"""
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
 
     calculated = seeps(
         mtd.DA_FCST_SEEPS.chunk(),
@@ -885,7 +875,7 @@ def test_seeps_dask():
         preserve_dims="all",
     )
 
-    assert isinstance(calculated.data, dask.array.Array)
+    assert isinstance(calculated.data, da.Array)
     calculated = calculated.compute()
     assert isinstance(calculated.data, np.ndarray)
     xr.testing.assert_allclose(

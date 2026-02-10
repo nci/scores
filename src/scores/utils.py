@@ -13,6 +13,48 @@ import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
 
+
+def dask_available() -> bool:
+    """Check if dask is available for import."""
+    try:
+        import dask  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+HAS_DASK = dask_available()
+
+if HAS_DASK:
+    # Import the components
+    import dask.array as da
+    from dask.base import is_dask_collection
+else:
+    # Provide safe fallbacks
+    da = None
+
+    def is_dask_collection(obj):
+        return False
+
+
+def numba_available() -> bool:
+    """Check if numba is available for import."""
+    try:
+        import numba  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+HAS_NUMBA = numba_available()
+
+if HAS_NUMBA:
+    # Import the components
+    pass
+
+
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
 In this case, 'all' is also a named dimension in your data, leading to an ambiguity.

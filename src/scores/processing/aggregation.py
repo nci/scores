@@ -102,9 +102,9 @@ def _weighted_mean(
     """
     if isinstance(weights, xr.Dataset):
         w_results = {}
-        for name, da in values.data_vars.items():
+        for name, data in values.data_vars.items():
             w = weights[name]
-            da_aligned, w_aligned = broadcast_and_match_nan(da, w)
+            da_aligned, w_aligned = broadcast_and_match_nan(data, w)
 
             # `check_weights` in `_check_aggregate_inputs` ensures that `weights`
             # has at least one positive value and will raise an error.
@@ -129,9 +129,9 @@ def _weighted_sum(
     """
     if isinstance(weights, xr.Dataset):
         w_results = {}
-        for name, da in values.data_vars.items():
+        for name, data in values.data_vars.items():
             w = weights[name]
-            da_aligned, w_aligned = broadcast_and_match_nan(da, w)
+            da_aligned, w_aligned = broadcast_and_match_nan(data, w)
             summed = (da_aligned * w_aligned).sum(dim=reduce_dims)
             # If weights sum to zero for a point that has been aggregated over reduce_dims,
             # we want the result to be NaN, not zero.

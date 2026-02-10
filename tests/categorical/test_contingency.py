@@ -10,12 +10,7 @@ import pytest
 import xarray as xr
 
 import scores
-
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+from scores.utils import HAS_DASK, da
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(
@@ -350,15 +345,13 @@ def test_categorical_table_dims_handling():
     assert acc_withheight.sel(height=20).sum().values.item() == 7 / 9
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_dask_if_available_categorical():
     """
     A basic smoke test on a dask object. More rigorous exploration of dask
     is probably needed beyond this. Performance is not explored here, just
     compatibility.
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
 
     fcst = simple_forecast.chunk()
     obs = simple_obs.chunk()
@@ -367,8 +360,8 @@ def test_dask_if_available_categorical():
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
-    assert isinstance(table.fcst_events.data, dask.array.Array)
-    assert isinstance(table.tp.data, dask.array.Array)
+    assert isinstance(table.fcst_events.data, da.Array)
+    assert isinstance(table.tp.data, da.Array)
 
     # That can be computed to hold numpy data types
     computed = table.fcst_events.compute()
