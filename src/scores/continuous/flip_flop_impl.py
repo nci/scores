@@ -116,13 +116,14 @@ def flip_flop_index(
             before calculation of the Flip_Flop Index. e.g. days123=[1, 2, 3]
 
     Returns:
-        If `selections` are not supplied: An xarray.DataArray, the Flip-Flop
-        Index by collapsing the dimension `sampling_dim`.
+        xarray.DataArray or xarray.Dataset
+            If `selections` are not supplied, returns an xarray.DataArray containing
+            the Flip-Flop Index by collapsing the dimension `sampling_dim`.
 
-        If `selections` are supplied: An xarray.Dataset. Each data variable
-        is a supplied key-word argument, and corresponds to selecting the
-        values specified from `sampling_dim` of `data`. The Flip-Flop Index
-        is calculated for each of these selections.
+            If `selections` are supplied, returns an xarray.Dataset. Each data variable
+            is a supplied key-word argument, and corresponds to selecting the
+            values specified from `sampling_dim` of `data`. The Flip-Flop Index
+            is calculated for each of these selections.
 
     Notes:
 
@@ -415,15 +416,16 @@ def flip_flop_index_proportion_exceeding(
             subsets to draw from the dimension `sampling_dim` of the supplied `data`
             before calculation of the Flip_Flop Index. e.g. days123=[1, 2, 3]
     Returns:
-        If `selections` are not supplied - An xarray.DataArray with dimensions
-        `dims` + 'threshold'. The DataArray is the proportion of the Flip-Flop
-        Index calculated by collapsing dimension `sampling_dim` exceeding or
-        equal to `thresholds`.
+        xarray.DataArray or xarray.Dataset
+            If `selections` are not supplied, returns an xarray.DataArray with dimensions
+            `dims` + 'threshold'. The DataArray is the proportion of the Flip-Flop
+            Index calculated by collapsing dimension `sampling_dim` exceeding or
+            equal to `thresholds`.
 
-        If `selections` are supplied - An xarray.Dataset with dimensions `dims`
-        + 'threshold'. There is a data variable for each keyword in
-        `selections`, and corresponds to the Flip-Flop Index proportion
-        exceeding for the subset of data specified by the keyword values.
+            If `selections` are supplied, returns an xarray.Dataset with dimensions `dims`
+            + 'threshold'. There is a data variable for each keyword in
+            `selections`, and corresponds to the Flip-Flop Index proportion
+            exceeding for the subset of data specified by the keyword values.
 
     Examples:
         >>> import xarray as xr
