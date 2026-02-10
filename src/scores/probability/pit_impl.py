@@ -314,8 +314,8 @@ class Pit:
 
     def alpha_score(self, negative_orientation: bool = True) -> XarrayLike:
         """
-        Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the PIT distribution :math:`F`
-        is to the uniform distribution on the closed unit interval :math:`[0,1]`.
+        Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the
+        PIT distribution :math:`F` is to the uniform distribution on the closed unit interval :math:`[0,1]`.
         When ``negative_orientation=True``, the formula is for the alpha score is
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.
@@ -544,8 +544,8 @@ class PitFcstAtObs:
 
     def alpha_score(self, negative_orientation: bool = True) -> XarrayLike:
         """
-        Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the PIT distribution :math:`F`
-        is to the uniform distribution on the closed unit interval :math:`[0,1]`.
+        Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the
+        PIT distribution :math:`F` is to the uniform distribution on the closed unit interval :math:`[0,1]`.
         When ``negative_orientation=True``, the formula is for the alpha score is
             :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.

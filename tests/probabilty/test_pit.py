@@ -189,6 +189,9 @@ def test_PitFcstAtObs(fcst_at_obs, fcst_at_obs_left, reduce_dims, preserve_dims,
 
 def test_PitFcstAtObs_dask():
     """Tests that dask works for `PitFcstAtObs`."""
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
     pit = PitFcstAtObs(ptd.DA_FAO.chunk(), fcst_at_obs_left=ptd.DA_FAO_LEFT.chunk(), preserve_dims="all")
     left = pit.left
     right = pit.right
