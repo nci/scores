@@ -38,23 +38,6 @@ else:
         return False
 
 
-def numba_available() -> bool:
-    """Check if numba is available for import."""
-    try:
-        import numba  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
-
-
-HAS_NUMBA = numba_available()
-
-if HAS_NUMBA:
-    # Import the components
-    pass
-
-
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
 In this case, 'all' is also a named dimension in your data, leading to an ambiguity.
