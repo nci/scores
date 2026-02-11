@@ -59,9 +59,11 @@ def test_crps_stepweight(
     xr.testing.assert_allclose(result, expected)
 
 
-@pytest.mark.skipif(numba != "Unavailable", reason="Numba not installed")
 def test_crps_cdf_exact_fast():
     """Tests `crps_cdf_exact_fast`."""
+
+    if numba == "Unavailable":  # pragma: no cover
+        pytest.skip("Numba unavailable, could not run test")
 
     result = crps_cdf_exact_fast(
         crps_test_data.DA_FCST_CRPS_EXACT,
@@ -114,9 +116,11 @@ def test_crps_cdf_exact_slow():
 
 
 @pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
-@pytest.mark.skipif(numba != "Unavailable", reason="Numba not installed")
 def test_crps_cdf_exact_fast_dask():
     """Tests `crps_cdf_exact_fast` works with Dask."""
+
+    if numba == "Unavailable":  # pragma: no cover
+        pytest.skip("Numba unavailable, could not run test")
 
     result = crps_cdf_exact_fast(
         crps_test_data.DA_FCST_CRPS_EXACT.chunk(),
