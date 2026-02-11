@@ -10,7 +10,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Bug Fixes
 
-- Fixed a bug in threshold-weighed scoring methods that caused the code to fail if the first object in the tuple for `interval_where_one` was an xr.DataArray and the second was a float, e.g. np.inf. This method has now been corrected to allow a `float`, `int`, or `xr.DataArray` for the interval arguments. See [PR #948](https://github.com/nci/scores/pull/948).
+- Fixed a bug in threshold-weighed scoring methods that caused the code to fail if the first object in the tuple for `interval_where_one` was an `xr.DataArray` and the second was a `float`, e.g. `np.inf`. This method has now been corrected to allow a `float`, `int`, or `xr.DataArray` for the interval arguments. See [PR #948](https://github.com/nci/scores/pull/948).
 
 ### Documentation
 
