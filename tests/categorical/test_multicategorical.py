@@ -8,7 +8,7 @@ import xarray as xr
 
 from scores.categorical import firm, seeps
 from scores.categorical.multicategorical_impl import _single_category_score
-from scores.utils import HAS_DASK, DimensionError, da
+from scores.utils import HAS_DASK, DimensionError, dask
 from tests.categorical import multicategorical_test_data as mtd
 
 
@@ -351,7 +351,7 @@ def test_firm_dask():
         include_components=True,
     )
 
-    assert isinstance(calculated.data, da.Array)
+    assert isinstance(calculated.data, dask.array.Array)
     calculated = calculated.compute()
     calculated = calculated.transpose("components", "i", "j", "k")
     assert isinstance(calculated.data, np.ndarray)
@@ -875,7 +875,7 @@ def test_seeps_dask():
         preserve_dims="all",
     )
 
-    assert isinstance(calculated.data, da.Array)
+    assert isinstance(calculated.data, dask.array.Array)
     calculated = calculated.compute()
     assert isinstance(calculated.data, np.ndarray)
     xr.testing.assert_allclose(

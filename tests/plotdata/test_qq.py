@@ -5,7 +5,7 @@ import pytest
 import xarray as xr
 
 from scores.plotdata import qq
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 NP_INTERP_METHODS = [
     "inverted_cdf",
@@ -293,7 +293,7 @@ def test_empirical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disa
     Tests continuous.qq works with dask
     """
     result = qq(sample_dataarray4.chunk(), sample_dataarray4.chunk(), quantiles=[0, 0.5, 1])
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_result5)

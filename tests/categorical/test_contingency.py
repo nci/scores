@@ -10,7 +10,7 @@ import pytest
 import xarray as xr
 
 import scores
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(
@@ -360,8 +360,8 @@ def test_dask_if_available_categorical():
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
-    assert isinstance(table.fcst_events.data, da.Array)
-    assert isinstance(table.tp.data, da.Array)
+    assert isinstance(table.fcst_events.data, dask.array.Array)
+    assert isinstance(table.tp.data, dask.array.Array)
 
     # That can be computed to hold numpy data types
     computed = table.fcst_events.compute()

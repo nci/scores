@@ -15,7 +15,7 @@ from scores.continuous.consistent_impl import (
     consistent_huber_score,
     consistent_quantile_score,
 )
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 DA_FCST = xr.DataArray(
     data=[[3.0, 1.0, nan, 3.0], [-4.0, 0.0, 1.0, 3.0]],
@@ -143,7 +143,7 @@ def test_expectile_score_with_dask():
         phi_prime=squared_loss_prime,
         preserve_dims="all",
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     assert_allclose(result, EXP_EXPECTILE_SCORE1)
@@ -201,7 +201,7 @@ def test_huber_score_with_dask():
         phi_prime=squared_loss_prime,
         preserve_dims="all",
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     assert_allclose(result, EXP_HUBER_SCORE1)
@@ -244,7 +244,7 @@ def test_quantile_score_with_dask():
         g=simple_linear,
         preserve_dims="all",
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     assert_allclose(result, EXP_QUANTILE_SCORE1)

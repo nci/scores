@@ -15,7 +15,7 @@ from scores.plotdata.murphy_impl import (
     _huber_thetas,
     _quantile_thetas,
 )
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),
@@ -187,7 +187,7 @@ def test_murphy_score_operations(functional, score_function, monkeypatch, thetas
         }
     )
     if daskinput:
-        assert isinstance(result.total.data, da.Array)
+        assert isinstance(result.total.data, dask.array.Array)
         result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_identical(result, expected)

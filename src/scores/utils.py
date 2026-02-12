@@ -28,11 +28,11 @@ HAS_DASK = dask_available()
 
 if HAS_DASK:
     # Import the components
-    import dask.array as da
+    import dask.array
     from dask.base import is_dask_collection
 else:
     # Provide safe fallbacks
-    da = None
+    dask = None
 
     def is_dask_collection(obj):
         return False

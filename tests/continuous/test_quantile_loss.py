@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.continuous import quantile_score
-from scores.utils import HAS_DASK, DimensionError, da
+from scores.utils import HAS_DASK, DimensionError, dask
 from tests.continuous import quantile_loss_test_data as qltd
 
 
@@ -142,7 +142,7 @@ def test_quantile_score_dask():
         alpha=0.1,
         reduce_dims=["valid_start", "station_index"],
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, qltd.EXPECTED2)

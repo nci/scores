@@ -16,7 +16,7 @@ def test_dask_fallback_block_execution():
     # This includes HAS_DASK (True or False), da, and the classes
     original_state = {
         "HAS_DASK": utils.HAS_DASK,
-        "da": utils.da,
+        "dask": utils.dask,
         "is_dask_collection": utils.is_dask_collection,
         "DimensionError": utils.DimensionError,
     }
@@ -28,7 +28,7 @@ def test_dask_fallback_block_execution():
 
             # 3. Verify the fallback logic executed
             assert utils.HAS_DASK is False
-            assert utils.da is None
+            assert utils.dask is None
             assert utils.is_dask_collection("anything") is False
 
     finally:

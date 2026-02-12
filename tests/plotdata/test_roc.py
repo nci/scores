@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.plotdata import roc
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 from tests.plotdata import roc_test_data as rtd
 
 
@@ -171,9 +171,9 @@ def test_roc_dask(check_args):
             check_args=check_args,
         )
 
-    assert isinstance(result.POD.data, da.Array)
-    assert isinstance(result.POFD.data, da.Array)
-    assert isinstance(result.AUC.data, da.Array)
+    assert isinstance(result.POD.data, dask.array.Array)
+    assert isinstance(result.POFD.data, dask.array.Array)
+    assert isinstance(result.AUC.data, dask.array.Array)
 
     result = result.compute()
 

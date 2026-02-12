@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.categorical import probability_of_detection, probability_of_false_detection
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 fcst0 = xr.DataArray(data=[[0, 0], [0, np.nan]], dims=["a", "b"], coords={"a": [100, 200], "b": [500, 600]})
 fcst1 = xr.DataArray(data=[[1, 1], [1, np.nan]], dims=["a", "b"], coords={"a": [100, 200], "b": [500, 600]})
@@ -70,7 +70,7 @@ def test_pod_dask():
     "Tests that probability_of_detection works with dask"
 
     result = probability_of_detection(fcst_mix.chunk(), obs1.chunk())
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_pod3)
@@ -122,7 +122,7 @@ def test_pofd_dask():
     "Tests that probability_of_false_detection works with dask"
 
     result = probability_of_false_detection(fcst_mix.chunk(), obs0.chunk())
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, expected_pofd3)

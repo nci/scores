@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.continuous import interval_score, quantile_interval_score
-from scores.utils import HAS_DASK, DimensionError, da
+from scores.utils import HAS_DASK, DimensionError, dask
 from tests.continuous import quantile_interval_score_test_data as qistd
 
 
@@ -197,7 +197,7 @@ def test_quantile_interval_score_dask():
         weights=None,
     )
     for var in result.data_vars:
-        assert isinstance(result[var].data, da.Array)
+        assert isinstance(result[var].data, dask.array.Array)
     result = result.compute()
     xr.testing.assert_allclose(result, qistd.EXPECTED_2D)
 

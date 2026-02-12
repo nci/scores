@@ -13,7 +13,7 @@ from scores.categorical.risk_matrix_impl import (
     risk_matrix_score,
     weights_from_warning_scaling,
 )
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 from tests.categorical import risk_matrix_test_data as mtd
 
 
@@ -113,7 +113,7 @@ def test_risk_matrix_score_dask(fcst, obs):
     result = risk_matrix_score(
         fcst, obs, mtd.DA_RMS_WT2A, "sev", "prob", threshold_assignment="lower", weights=None, preserve_dims="all"
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute().transpose(*expected.dims)
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)

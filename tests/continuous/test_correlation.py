@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.continuous.correlation import pearsonr, spearmanr
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 DA1_CORR = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
@@ -146,7 +146,7 @@ def test_correlation_dask():
     """
 
     result = pearsonr(DA3_CORR.chunk(), DA2_CORR.chunk())
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)
@@ -213,7 +213,7 @@ def test_spearman_correlation_dask():
     """
 
     result = spearmanr(DA3_CORR.chunk(), DA2_CORR.chunk())
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result, EXP_CORR_REDUCE_ALL)

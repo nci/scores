@@ -25,7 +25,7 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 from tests.probability import crps_test_data
 
 try:
@@ -129,7 +129,7 @@ def test_crps_cdf_exact_fast_dask():
         "x",
         include_components=True,
     )
-    assert isinstance(result.total.data, da.Array)
+    assert isinstance(result.total.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
@@ -141,7 +141,7 @@ def test_crps_cdf_exact_fast_dask():
         "x",
         include_components=False,
     )
-    assert isinstance(result2.total.data, da.Array)
+    assert isinstance(result2.total.data, dask.array.Array)
     result2 = result2.compute()
     assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
@@ -158,7 +158,7 @@ def test_crps_cdf_exact_slow_dask():
         "x",
         include_components=True,
     )
-    assert isinstance(result.total.data, da.Array)
+    assert isinstance(result.total.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
@@ -170,7 +170,7 @@ def test_crps_cdf_exact_slow_dask():
         "x",
         include_components=False,
     )
-    assert isinstance(result2.total.data, da.Array)
+    assert isinstance(result2.total.data, dask.array.Array)
     result2 = result2.compute()
     assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
@@ -838,7 +838,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
         method="ecdf",
         preserve_dims="all",
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
@@ -1025,7 +1025,7 @@ def test_tail_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
@@ -1042,7 +1042,7 @@ def test_tail_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result_ds["a"].data, da.Array)
+    assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
@@ -1218,7 +1218,7 @@ def test_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
@@ -1234,7 +1234,7 @@ def test_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result_ds["a"].data, da.Array)
+    assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
@@ -1443,7 +1443,7 @@ def test_interval_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA)
@@ -1460,7 +1460,7 @@ def test_interval_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=crps_test_data.DS_WT_CRPSENS.chunk(),
     )
-    assert isinstance(result_ds["a"].data, da.Array)
+    assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)

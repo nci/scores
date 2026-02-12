@@ -9,7 +9,7 @@ import pytest
 import xarray as xr
 
 from scores.probability import brier_score, brier_score_for_ensemble
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 from tests.probability import brier_test_data as btd
 
 
@@ -72,7 +72,7 @@ def test_brier_score_dask():
     """
 
     result = brier_score(btd.FCST1.chunk(), btd.OBS1.chunk())
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, xr.DataArray(0.1))
@@ -346,7 +346,7 @@ def test_brier_score_for_ensemble_dask():
         weights=None,
         fair_correction=False,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, btd.EXP_BRIER_ENS_ALL)

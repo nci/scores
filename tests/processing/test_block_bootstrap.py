@@ -17,7 +17,7 @@ from scores.processing.block_bootstrap_impl import (
     _n_nested_blocked_random_indices,
     block_bootstrap,
 )
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 
 @pytest.mark.parametrize(
@@ -290,7 +290,11 @@ if HAS_DASK:
         ),
         # Dask arrays to meet block_size < 1
         (
-            [xr.DataArray(da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
+            [
+                xr.DataArray(
+                    dask.array.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                )
+            ],
             {"dim1": 2, "dim2": 2},
             2,
             None,
@@ -299,7 +303,11 @@ if HAS_DASK:
         ),
         # Dask arrays for a case with leftover != 0
         (
-            [xr.DataArray(da.random.random((100, 100, 10), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"])],
+            [
+                xr.DataArray(
+                    dask.array.random.random((100, 100, 10), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                )
+            ],
             {"dim1": 2, "dim2": 2},
             3,
             None,
@@ -312,10 +320,12 @@ if HAS_DASK:
                 xr.Dataset(
                     {
                         "var1": xr.DataArray(
-                            da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                            dask.array.random.random((100, 100, 30), chunks=dict(dim1=-1)),
+                            dims=["dim1", "dim2", "dim3"],
                         ),
                         "var2": xr.DataArray(
-                            da.random.random((100, 100, 30), chunks=dict(dim1=-1)), dims=["dim1", "dim2", "dim3"]
+                            dask.array.random.random((100, 100, 30), chunks=dict(dim1=-1)),
+                            dims=["dim1", "dim2", "dim3"],
                         ),
                     }
                 )
@@ -340,13 +350,13 @@ def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude
         objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
     if isinstance(result, xr.DataArray):
-        assert isinstance(result.data, da.Array)
+        assert isinstance(result.data, dask.array.Array)
         result = result.compute()
         assert result.shape == expected_shape
         assert isinstance(result.data, np.ndarray)
     else:
         for var in result.data_vars:
-            assert isinstance(result[var].data, da.Array)
+            assert isinstance(result[var].data, dask.array.Array)
         result = result.compute()
         for var in result.data_vars:
             assert isinstance(result[var].data, np.ndarray)

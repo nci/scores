@@ -13,7 +13,7 @@ import pytest
 import xarray as xr
 
 import scores.continuous
-from scores.utils import HAS_DASK, da
+from scores.utils import HAS_DASK, dask
 
 PRECISION = 4
 
@@ -446,7 +446,7 @@ def test_mse_with_dask():
     ).chunk()
 
     result = scores.continuous.mse(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[5, 4], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -467,7 +467,7 @@ def test_mae_with_dask():
     ).chunk()
 
     result = scores.continuous.mae(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[2, 2], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -488,7 +488,7 @@ def test_rmse_with_dask():
     ).chunk()
 
     result = scores.continuous.rmse(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[np.sqrt(5), 2], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -810,7 +810,7 @@ def test_additive_bias_dask():
     obs = DA2_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
     result = scores.continuous.additive_bias(fcst, obs, preserve_dims="space", weights=weights)
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS2)
@@ -853,7 +853,7 @@ def test_multiplicative_bias_dask():
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
     result = scores.continuous.multiplicative_bias(fcst, obs, preserve_dims="space", weights=weights)
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_BIAS6)
@@ -895,7 +895,7 @@ def test_pbias_dask():
     obs = DA3_BIAS.chunk()
     weights = BIAS_WEIGHTS.chunk()
     result = scores.continuous.pbias(fcst, obs, preserve_dims="space", weights=weights)
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PBIAS3)
@@ -1041,7 +1041,7 @@ def test_percent_within_x_dask():
     result = scores.continuous.percent_within_x(
         fcst, obs, preserve_dims="space", is_angular=False, threshold=1.0, decimals=7, is_inclusive=True
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_equal(result, EXP_PERCENT_WITHIN_X3)
@@ -1088,7 +1088,7 @@ def test_kge_dask():
     fcst = DA3_KGE.chunk()
     obs = DA2_KGE.chunk()
     result = scores.continuous.kge(fcst, obs)
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
