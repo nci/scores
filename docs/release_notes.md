@@ -1,5 +1,34 @@
 # Release Notes (What's New)
 
+## Version 2.5.0 (Upcoming Release)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.4.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Breaking Changes
+### Deprecations
+### Features
+### Bug Fixes
+
+- Fixed an `IndexError` in Receiver (Relative) Operating Characteristic (ROC). As such, mutlidimensional input arrays are now supported when using automatic thresholds. See [PR #963](https://github.com/nci/scores/pull/963).
+
+### Documentation
+
+- Pinned version of `Sphinx` to prior to version 8 (i.e. `sphinx<8`), due to a change in symlink handling. This will need to be resolved before `scores` can migrate to more recent versions of `Sphinx`. See [commit f60ae0c](https://github.com/nci/scores/commit/f60ae0c9d6f2ebd723df57541d849b6b5ecccd23).
+
+### Internal Changes
+
+- Fixed `Numba` warnings in fast Continuous Ranked Probability Score (CRPS) implementation when NaNs are present in input data. See [PR #957](https://github.com/nci/scores/pull/957).
+- Set join explicity to "outer" to be compatible with upcoming changes in `Xarray`. See [PR #964](https://github.com/nci/scores/pull/964).
+- Replaced implementations of `SciPy's` legacy function `interpolate.interp1d` with a wrapper function. See [PR #971](https://github.com/nci/scores/pull/971).
+- Removed the use of `NetCDF` data on disk from tests. Data is now created on the fly. See [PR #966](https://github.com/nci/scores/pull/966).
+- Updated GitHub CI/CD to use `Ruff` instead of `Pylint`. See [PR #967](https://github.com/nci/scores/pull/967).
+
+### Contributors to this Release
+
+Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)) and Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.4.0 (January 14, 2026)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...2.4.0). Below are the changes we think users may wish to be aware of.
