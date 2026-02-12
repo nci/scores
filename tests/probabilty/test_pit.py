@@ -738,6 +738,7 @@ def test_variance_dask():
 @pytest.mark.parametrize(
     ("obs", "expected"),
     [
+        # these test all `if len() > 0` cases in `_pit_values_for_cdf_array`
         (ptd.DA_OBS_PVCDF, ptd.EXP__PVCDF),  # all cases of obs relative to thresholds
         (ptd.DA_OBS_PVCDF1, ptd.EXP__PVCDF1),  # obs between thresholds only
         (ptd.DA_OBS_PVCDF2, ptd.EXP__PVCDF2),  # obs < thresholds only

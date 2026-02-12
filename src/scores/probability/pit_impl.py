@@ -1035,7 +1035,7 @@ def _pit_values_for_cdf(
 def _get_pit_x_values(pit_values: XarrayLike) -> xr.DataArray:
     """
     Returns a data array of consisting of exactly those x-axis values needed for
-    constructing a unifornm PIT probability plot for the given array of `pit_values`.
+    constructing a uniform PIT probability plot for the given array of `pit_values`.
 
     Args:
         pit_values: output from `_pit_values_for_ens` or `_pit_values_for_cdf`, containing
@@ -1368,9 +1368,10 @@ def _pit_hist_left(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> Xa
 
     # get values of the PIT CDF that are aleady available in pit
     common_points = [x for x in left_endpoints if x in pit_left["pit_x_value"]]
-    if len(common_points) > 0:
-        cdf_at_common_points = pit_left.sel(pit_x_value=common_points)
-        cdf_at_endpoints.append(cdf_at_common_points)
+    # common_points is no-empty because 0.0 is in both left_endpoints and pit_left["pit_x_value"];
+    # see _get_pit_x_values
+    cdf_at_common_points = pit_left.sel(pit_x_value=common_points)
+    cdf_at_endpoints.append(cdf_at_common_points)
 
     # get values of the PIT CDF that are not available in pit
     new_points = [x for x in left_endpoints if x not in pit_left["pit_x_value"]]
@@ -1406,9 +1407,11 @@ def _pit_hist_right(pit_left: XarrayLike, pit_right: XarrayLike, bins: int) -> X
 
     # get values of the PIT CDF that are aleady available in pit
     common_points = [x for x in right_endpoints if x in pit_right["pit_x_value"]]
-    if len(common_points) > 0:
-        cdf_at_common_points = pit_right.sel(pit_x_value=common_points)
-        cdf_at_endpoints.append(cdf_at_common_points)
+    # common_points is non-empty because 1.0 is in both right_endpoints and pit_left["pit_x_value"];
+    # see _get_pit_x_values and floating point arithmetic tested on
+    # (np.arange(1000) / np.arange(1000)) == 1.
+    cdf_at_common_points = pit_right.sel(pit_x_value=common_points)
+    cdf_at_endpoints.append(cdf_at_common_points)
 
     # get values of the PIT CDF that are not available in pit
     new_points = [x for x in right_endpoints if x not in pit_right["pit_x_value"]]
