@@ -23,11 +23,12 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Set join explicity to "outer" to be compatible with upcoming changes in `Xarray`. See [PR #964](https://github.com/nci/scores/pull/964).
 - Replaced implementations of `SciPy's` legacy function `interpolate.interp1d` with a wrapper function. See [PR #971](https://github.com/nci/scores/pull/971).
 - Removed the use of `NetCDF` data on disk from tests. Data is now created on the fly. See [PR #966](https://github.com/nci/scores/pull/966).
-- Added `Ruff`. `Ruff` replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967) and [PR #972](https://github.com/nci/scores/pull/972).
+- Added `Ruff`. `Ruff` replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967), [PR #972](https://github.com/nci/scores/pull/972) and [PR #979](https://github.com/nci/scores/pull/979).
+- Replaced `mypy` with `ty`. Added `ty` to pre-commit for type checking. [PR #984](https://github.com/nci/scores/pull/984).
 
 ### Contributors to this Release
 
-Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)) John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
+Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)) John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
