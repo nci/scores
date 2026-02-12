@@ -1,5 +1,6 @@
-from scores import continuous as __continuous
 import scores
+from scores import continuous as __continuous
+
 
 def mse(
     fcst,
@@ -42,7 +43,7 @@ def additive_bias(
     fcst,
     obs,
     *,
-    weights = None,
+    weights=None,
 ):
     """
     Calculates the additive bias which is also sometimes called the mean error.
@@ -89,6 +90,6 @@ def additive_bias(
     # )
     #
     error = fcst - obs
-    score = scores.processing.aggregate(error, reduce_dims='all', weights=weights)
+    score = scores.processing.aggregate(error, reduce_dims="all", weights=weights)
 
     return score

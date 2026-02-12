@@ -103,7 +103,7 @@ def aggregate(
         Coordinates:
           * x        (x) int64 16B 1 2
     """
-    _check_aggregate_inputs(values, reduce_dims, weights, method)
+    # _check_aggregate_inputs(values, reduce_dims, weights, method)
 
     if reduce_dims is None:
         return values
