@@ -1,6 +1,7 @@
 """
 This module contains methods related to the rank histogram.
 """
+
 import warnings
 from typing import Optional
 

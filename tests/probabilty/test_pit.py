@@ -2,15 +2,13 @@
 Unit tests for scores.probability.pit_impl.py
 """
 
-
 try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pragma: no cover
 
 import re
-import warnings
 
 import numpy as np
 import pytest

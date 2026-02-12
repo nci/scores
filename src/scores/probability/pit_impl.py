@@ -210,8 +210,8 @@ class Pit:
         fcst: XarrayLike,
         obs: XarrayLike,
         *,  # Force keywords arguments to be keyword-only
-        ensemble_member_dim: str = None,
-        cdf_threshold_dim: str = None,
+        ensemble_member_dim: Optional[str] = None,
+        cdf_threshold_dim: Optional[str] = None,
         fcst_left: Optional[XarrayLike] = None,
         reduce_dims: Optional[FlexibleDimensionTypes] = None,
         preserve_dims: Optional[FlexibleDimensionTypes] = None,
@@ -608,8 +608,8 @@ def _dims_for_mean_with_checks(
 
     if len([dim for dim in RESERVED_NAMES if dim in all_dims]) > 0:
         raise ValueError(
-            f'The following names are reserved and should not be among the dimensions of \
-            xarray inputs: {", ".join(RESERVED_NAMES)}'
+            f"The following names are reserved and should not be among the dimensions of \
+            xarray inputs: {', '.join(RESERVED_NAMES)}"
         )
 
     dims_for_mean = gather_dimensions(
