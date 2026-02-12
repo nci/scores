@@ -9,6 +9,7 @@ import scores.continuous
 import scores.emerging
 import scores.functions
 import scores.pandas
+import scores.loss
 import scores.plotdata
 import scores.probability
 import scores.processing
@@ -23,6 +24,7 @@ __all__ = [
     "scores.continuous",
     "scores.emerging",
     "scores.functions",
+    "scores.loss",
     "scores.pandas",
     "scores.probability",
     "scores.processing",
