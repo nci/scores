@@ -21,7 +21,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Set join explicity to "outer" to be compatible with upcoming changes in `Xarray`. See [PR #964](https://github.com/nci/scores/pull/964).
 - Replaced implementations of `SciPy's` legacy function `interpolate.interp1d` with a wrapper function. See [PR #971](https://github.com/nci/scores/pull/971).
 - Removed the use of `NetCDF` data on disk from tests. Data is now created on the fly. See [PR #966](https://github.com/nci/scores/pull/966).
-- Updated GitHub CI/CD to use `Ruff` instead of `Pylint`. See [PR #967](https://github.com/nci/scores/pull/967).
+- Added `Ruff`. `Ruff` replaces `Pylint`, `black`, `bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967) and [PR #972](https://github.com/nci/scores/pull/972).
 
 ### Contributors to this Release
 
