@@ -152,7 +152,9 @@ def rank_histogram(
     any_null = fcst.isnull().any()
     if isinstance(any_null, xr.Dataset):
         any_null = any([bool(any_null[var]) for var in any_null.data_vars])
-    if any_null:
+    # the following block has a unit test, see `test_rank_histogram_warns`
+    # but the test coverage report does not recognise it
+    if any_null:  # pragma: no cover
         warnings.warn(
             "Encountered a NaN in `fcst`. Any forecast case with NaN for one ensemble member "
             "will be treated as NaN for all ensemble members.",

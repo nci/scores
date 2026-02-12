@@ -562,9 +562,9 @@ def test_hist_values(fcst, obs, right, expected):
     xr.testing.assert_allclose(expected, result)
 
 
-def test_hist_values_dask():
+def test_hist_values_dask1():
     """
-    Tests that the `.hist_values` method works with dask.
+    Tests that the `Pit().hist_values` method works with dask.
     Note that dask is used for the Pit() calculation but not for .hist_values
     """
     if dask == "Unavailable":  # pragma: no cover
@@ -572,6 +572,18 @@ def test_hist_values_dask():
 
     result = Pit(ptd.DA_FCST.chunk(), ptd.DA_OBS.chunk(), ensemble_member_dim="ens_member").hist_values(5, right=True)
     xr.testing.assert_allclose(result, ptd.EXP_HV1)
+
+
+def test_hist_values_dask2():
+    """
+    Tests that the `PitFcstAtObs().hist_values` method works with dask.
+    Note that dask is used for the Pit() calculation but not for .hist_values
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    result = PitFcstAtObs(ptd.DA_HVD_FAO.chunk()).hist_values(2, right=True)
+    xr.testing.assert_allclose(result, ptd.EXP_HVD_RIGHT)
 
 
 @pytest.mark.parametrize(
@@ -723,10 +735,18 @@ def test_variance_dask():
     xr.testing.assert_allclose(result, ptd.EXP_VAR)
 
 
-def test__pit_values_for_cdf_array():
+@pytest.mark.parametrize(
+    ("obs", "expected"),
+    [
+        (ptd.DA_OBS_PVCDF, ptd.EXP__PVCDF),  # all cases of obs relative to thresholds
+        (ptd.DA_OBS_PVCDF1, ptd.EXP__PVCDF1),  # obs between thresholds only
+        (ptd.DA_OBS_PVCDF2, ptd.EXP__PVCDF2),  # obs < thresholds only
+    ],
+)
+def test__pit_values_for_cdf_array(obs, expected):
     """Tests that `_pit_values_for_cdf_array` returns as expected."""
-    result = _pit_values_for_cdf_array(ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, ptd.DA_OBS_PVCDF, "thld")
-    xr.testing.assert_allclose(ptd.EXP__PVCDF, result)
+    result = _pit_values_for_cdf_array(ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, obs, "thld")
+    xr.testing.assert_allclose(expected, result)
 
 
 @pytest.mark.parametrize(
@@ -1090,15 +1110,22 @@ def test_plotting_points_parametric2():
         xr.testing.assert_equal(expected[key], result[key])
 
 
-def test_hist_values2():
+@pytest.mark.parametrize(
+    ("right", "expected"),
+    [
+        (True, ptd.EXP_HVD_RIGHT),
+        (False, ptd.EXP_HVD_LEFT),
+    ],
+)
+def test_hist_values2(right, expected):
     """
     Simple test that `PitFcstAtObs().hist_values()` returns as expected.
     Note: `.hist_values()` code is identical for both `PitFcstAtObs` and `Pit` classes,
     so this test is mainly to identify copy/paste errors and is not as comprehensive
     as `test_hist_values`.
     """
-    result = PitFcstAtObs(ptd.DA_FCST_AT_OBS).hist_values(2)
-    xr.testing.assert_equal(ptd.EXP_FAO_HV, result)
+    result = PitFcstAtObs(ptd.DA_HVD_FAO).hist_values(2, right=right)
+    xr.testing.assert_equal(expected, result)
 
 
 def test_alpha_score2():

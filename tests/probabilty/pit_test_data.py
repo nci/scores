@@ -362,6 +362,32 @@ EXP__PVCDF = xr.DataArray(  # uniform distribution format
     dims=["uniform_endpoint", "stn", "instrument"],
     coords={"stn": [101, 102, 103], "instrument": [0, 1, 2, 4], "uniform_endpoint": ["lower", "upper"]},
 )
+DA_OBS_PVCDF1 = xr.DataArray(
+    data=[0.5, 0.5, 1.5],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103]},
+)
+EXP__PVCDF1 = xr.DataArray(  # uniform distribution format
+    data=[
+        [0.1, 0.1, nan],  # lower
+        [0.1, 0.1, nan],  # upper
+    ],
+    dims=["uniform_endpoint", "stn"],
+    coords={"stn": [101, 102, 103], "uniform_endpoint": ["lower", "upper"]},
+)
+DA_OBS_PVCDF2 = xr.DataArray(
+    data=[-1, nan, 1.5],
+    dims=["stn"],
+    coords={"stn": [101, 102, 103]},
+)
+EXP__PVCDF2 = xr.DataArray(  # uniform distribution format
+    data=[
+        [0, nan, nan],  # lower
+        [0, nan, nan],  # upper
+    ],
+    dims=["uniform_endpoint", "stn"],
+    coords={"stn": [101, 102, 103], "uniform_endpoint": ["lower", "upper"]},
+)
 # test data for _pit_values_for_cdf_array warning tests
 DA_FCST_WARN1 = xr.DataArray(
     data=[[0, 0.2, 0.5, 0.8, 1], [0, 0.1, 0.1, 0.9, 1], [0, 0, 1, 0.5, 0.9]],
@@ -685,3 +711,24 @@ EXP_ASA = xr.DataArray(
     coords={"stn": [101, 102, 103, 104]},
 )
 EXP_ASA_POS = 1 - 2 * EXP_ASA
+
+# test data for test_hist_values_dask2, test_hist_values2
+DA_HVD_FAO = xr.DataArray([0.1, 0.2, 0.5, 0.3], dims=["stn"], coords={"stn": [1, 2, 3, 4]})
+EXP_HVD_LEFT = xr.DataArray(  # right=False
+    data=[0.75, 0.25],
+    dims=["bin_centre"],
+    coords={
+        "bin_centre": [0.25, 0.75],
+        "bin_left_endpoint": (["bin_centre"], [0.0, 0.5]),
+        "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
+    },
+)
+EXP_HVD_RIGHT = xr.DataArray(  # right=True
+    data=[1, 0.0],
+    dims=["bin_centre"],
+    coords={
+        "bin_centre": [0.25, 0.75],
+        "bin_left_endpoint": (["bin_centre"], [0.0, 0.5]),
+        "bin_right_endpoint": (["bin_centre"], [0.5, 1]),
+    },
+)

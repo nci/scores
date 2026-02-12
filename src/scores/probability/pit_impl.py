@@ -875,9 +875,9 @@ def _pit_values_for_cdf_array(
 
     Args:
         fcst_left: array of forecast CDF left-limit values, including dimension `threshold_dim`
-        fcst_right: array of forecast CDF left-right values, including dimension `threshold_dim`.
+        fcst_right: array of forecast CDF right-limit values, including dimension `threshold_dim`.
             Assumed to have same shape and dimensions at `fcst_left`
-        obs: array of forecast values, excluding `threshold_dim`
+        obs: array of observed values; does not have dimension `threshold_dim`
         threshold_dim: name of the threshold dimension in `fcst`
 
     Returns:
