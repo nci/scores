@@ -304,9 +304,8 @@ class Pit:
         # because dask wants to chunk over the 'pit_x_value' dimension, but
         # _pit_hist_right and _pit_hist_left merely wants to sample a small number of points
         # from the 'pit_x_value'. So compute chunks at this stage.
-        if self.left.chunks is not None:
-            self.left = self.left.compute()
-            self.right = self.right.compute()
+        self.left = self.left.compute()
+        self.right = self.right.compute()
 
         if right:
             return _pit_hist_right(self.left, self.right, bins)
