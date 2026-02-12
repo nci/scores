@@ -8,8 +8,8 @@ import scores.categorical
 import scores.continuous
 import scores.emerging
 import scores.functions
-import scores.pandas
 import scores.loss
+import scores.pandas
 import scores.plotdata
 import scores.probability
 import scores.processing
