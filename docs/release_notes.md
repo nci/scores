@@ -4,6 +4,10 @@
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.4.0...develop). Below are the changes we think users may wish to be aware of.
 
+### Features
+
+- `scores` has introduced support for Python 3.14. See [PR #989](https://github.com/nci/scores/pull/989).
+
 ### Deprecations
 
 - Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
@@ -12,13 +16,10 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- support for `include_components` in `scores.probability.interval_tw_crps_for_ensemble`.  
 	See [PR #991](https://github.com/nci/scores/pull/991). 
 
-### Features
-
-- `scores` has introduced support for Python 3.14. See [PR #989](https://github.com/nci/scores/pull/989).
-
 ### Bug Fixes
 
 - Fixed an `IndexError` in receiver (relative) operating characteristic (ROC). As such, mutlidimensional input arrays are now supported when using automatic thresholds. See [PR #963](https://github.com/nci/scores/pull/963).
+- Fixed a situation where receiver (relative) operating characteristic (ROC) calculations could trigger a `NotImplementedError` within `Dask`. `scores.probability.roc_curve_data` and `scores.plotdata.roc` have been updated so that if `fcst` or `obs` is an xarray object backed by a dask array, and `check_args` is `True`, the min and max of the arrays will be calcuated immediately, which triggers computation. This can be avoided by setting `check_args=False.` See [PR #987](https://github.com/nci/scores/pull/987).
 
 ### Documentation
 
@@ -32,8 +33,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Set join explicity to "outer" to be compatible with upcoming changes in `Xarray`. See [PR #964](https://github.com/nci/scores/pull/964).
 - Replaced implementations of `SciPy's` legacy function `interpolate.interp1d` with a wrapper function. See [PR #971](https://github.com/nci/scores/pull/971).
 - Removed the use of `NetCDF` data on disk from tests. Data is now created on the fly. See [PR #966](https://github.com/nci/scores/pull/966).
-- Added `Ruff`. `Ruff` replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967), [PR #972](https://github.com/nci/scores/pull/972) and [PR #979](https://github.com/nci/scores/pull/979).
-- Replaced `mypy` with `ty`. Added `ty` to pre-commit for type checking. [PR #984](https://github.com/nci/scores/pull/984).
+- Added `Ruff`. `Ruff` replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967), [PR #972](https://github.com/nci/scores/pull/972), [PR #979](https://github.com/nci/scores/pull/979) and [PR #990](https://github.com/nci/scores/pull/990).
+- Replaced `mypy` with `ty`. Added `ty` to pre-commit for type checking. [PR #984](https://github.com/nci/scores/pull/984) and [PR #993](https://github.com/nci/scores/pull/993).
+
 
 ### Contributors to this Release
 
