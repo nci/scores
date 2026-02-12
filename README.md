@@ -91,7 +91,7 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 
 ## Acknowledging or Citing `scores`
 
-**If you use `scores` for your work or a publication, we would appreciate you citing our [paper](https://doi.org/10.21105/joss.06889) and also the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
+**If you use `scores` for your work or a publication, we would appreciate you citing both our [paper](https://doi.org/10.21105/joss.06889) and also the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
 
 - **Our [paper](https://doi.org/10.21105/joss.06889) can be cited as follows:**
 	- Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. *Journal of Open Source Software, 9*(99), 6889. [https://doi.org/10.21105/joss.06889](https://doi.org/10.21105/joss.06889)
