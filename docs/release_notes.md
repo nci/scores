@@ -15,6 +15,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 - Pinned version of `Sphinx` to prior to version 8 (i.e. `sphinx<8`), due to a change in symlink handling. This will need to be resolved before `scores` can migrate to more recent versions of `Sphinx`. See [commit f60ae0c](https://github.com/nci/scores/commit/f60ae0c9d6f2ebd723df57541d849b6b5ecccd23).
 - Updated the "Contributing Guide" to include additional information about running pre-commit checks. See [PR #977](https://github.com/nci/scores/pull/977).
+- Corrected a function name in an example in the `scores.stats.statistical_tests.diebold_mariano` docstring. See [PR #978](https://github.com/nci/scores/pull/978).
 
 ### Internal Changes
 
@@ -26,7 +27,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Contributors to this Release
 
-Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu ([@wuxx66](https://github.com/wuxx66)) John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)) and Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)).
+Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)) John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)) and Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
