@@ -4,12 +4,21 @@
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.4.0...develop). Below are the changes we think users may wish to be aware of.
 
-### Breaking Changes
 ### Deprecations
+
+- Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
+	- support for `include_components` in `scores.probability.tw_crps_for_ensemble`, 
+	- support for `include_components` in `scores.probability.tail_tw_crps_for_ensemble` and
+	- support for `include_components` in `scores.probability.interval_tw_crps_for_ensemble`.  
+	See [PR #991](https://github.com/nci/scores/pull/991). 
+
 ### Features
+
+- `scores` has introduced support for Python 3.14. See [PR #989](https://github.com/nci/scores/pull/989).
+
 ### Bug Fixes
 
-- Fixed an `IndexError` in Receiver (Relative) Operating Characteristic (ROC). As such, mutlidimensional input arrays are now supported when using automatic thresholds. See [PR #963](https://github.com/nci/scores/pull/963).
+- Fixed an `IndexError` in receiver (relative) operating characteristic (ROC). As such, mutlidimensional input arrays are now supported when using automatic thresholds. See [PR #963](https://github.com/nci/scores/pull/963).
 
 ### Documentation
 
