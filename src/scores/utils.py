@@ -13,24 +13,13 @@ import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
 
+try:
+    import dask
 
-def dask_available() -> bool:
-    """Check if dask is available for import."""
-    try:
-        import dask  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
-
-
-HAS_DASK = dask_available()
-
-if HAS_DASK:
-    # Import the components
-    import dask.array
+    HAS_DASK = True
     from dask.base import is_dask_collection
-else:
+except ImportError:
+    HAS_DASK = False
     # Provide safe fallbacks
     dask = None
 
