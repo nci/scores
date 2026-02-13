@@ -283,7 +283,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/PIT.md)
   -
-    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
+    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
 * -
     - PIT for predictive CDFs evaluated at observations
   -
@@ -291,7 +291,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
     [Tutorial](project:./tutorials/PIT.md)
   -
-    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](http://www.bom.gov.au/research/publications/researchreports/BRR-064.pdf); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
+    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
 * - Rank histogram
   -
     [API](api.md#scores.probability.rank_histogram)
@@ -873,4 +873,3 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - &mdash;
   - &mdash;
 ```
-
