@@ -2,9 +2,8 @@
 Methods for the probability integral transform (PIT) classes Pit and PitFcstAtObs.
 
 The implementation follows the theoretical approach of Gneiting and Ranjan (2013) and
-Taggart (2023) (see https://nla.gov.au/nla.obj-3079961862/view) 
-which interprets the PIT of a forecast--observation pair as a CDF. Details of this
-approach are described in this docstring.
+Taggart (2023) (see https://nla.gov.au/nla.obj-3079961862/view) which interprets the PIT 
+of a forecast--observation pair as a CDF. Details of this approach are described in this docstring.
 
 For a forecast--observation pair (G,y), where G is a CDF,
 the corresponding PIT value is the uniform distribution on the closed interval
