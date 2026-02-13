@@ -13,7 +13,7 @@ Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutor
 Journal paper: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)  
 
 **If you use `scores` for your work or a publication, [please cite](https://scores.readthedocs.io/en/stable/#acknowledging-or-citing-scores)
-our [paper](https://doi.org/10.21105/joss.06889).**
+both our [paper](https://doi.org/10.21105/joss.06889) and the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you use.**
 
 ## Overview
 
@@ -91,22 +91,38 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 
 ## Acknowledging or Citing `scores`
 
-If you use `scores` for a published work, we would appreciate you citing our [paper](https://doi.org/10.21105/joss.06889):
+**If you use `scores` for your work or a publication, we would appreciate you citing both our [paper](https://doi.org/10.21105/joss.06889) and also the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
 
-Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. *Journal of Open Source Software, 9*(99), 6889. [https://doi.org/10.21105/joss.06889](https://doi.org/10.21105/joss.06889)
-
-BibTeX:
-```
-@article{Leeuwenburg_scores_A_Python_2024,
-author = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
-doi = {10.21105/joss.06889},
-journal = {Journal of Open Source Software},
-month = jul,
-number = {99},
-pages = {6889},
-title = {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
-url = {https://joss.theoj.org/papers/10.21105/joss.06889},
-volume = {9},
-year = {2024}
-}
-```
+- **Our [paper](https://doi.org/10.21105/joss.06889) can be cited as follows:**
+	- Leeuwenburg, T., Loveday, N., Ebert, E. E., Cook, H., Khanarmuei, M., Taggart, R. J., Ramanathan, N., Carroll, M., Chong, S., Griffiths, A., & Sharples, J. (2024). scores: A Python package for verifying and evaluating models and predictions with xarray. *Journal of Open Source Software, 9*(99), 6889. [https://doi.org/10.21105/joss.06889](https://doi.org/10.21105/joss.06889)
+	- BibTeX:
+		```
+		@article{Leeuwenburg_scores_A_Python_2024,
+		author = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
+		doi = {10.21105/joss.06889},
+		journal = {Journal of Open Source Software},
+		month = jul,
+		number = {99},
+		pages = {6889},
+		title = {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
+		url = {https://joss.theoj.org/papers/10.21105/joss.06889},
+		volume = {9},
+		year = {2024}
+		}
+		```
+- **Please also cite the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
+	- For example, below is the citation for Version 2.4.0 of `scores`:  
+	- Leeuwenburg, T., Loveday, N., Ramanathan, N., Chong, S., Taggart, R. J., Shrestha, D., Khanarmuei, M., Cook, H., Bluett, L., Ebert, E. E., Carroll, M., Trotta, B., Bishop, S., Squire, D. T., Griffiths, A., Pagano, T. C., Fisher, A. J., Mandelbaum, T., Jinghan, F., … Smallwood, J. (2026). scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models (2.4.0). Zenodo. [https://doi.org/10.5281/zenodo.18242190](https://doi.org/10.5281/zenodo.18242190)
+	- BibTeX:
+		```
+		@software{leeuwenburg_2026_18242190,
+  		author       = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ramanathan, Nikeeth and Chong, Stephanie and Taggart, Robert J. and Shrestha, Durga and Khanarmuei, Mohammadreza and Cook, Harrison and Bluett, Liam and Ebert, Elizabeth E. and Carroll, Maree and Trotta, Belinda and Bishop, Sam and Squire, Dougal T. and Griffiths, Aidan and Pagano, Thomas C. and Fisher, A.J. and Mandelbaum, Taylor and Jinghan, Fu and Smith, Paul R. and Sharples, John and Abellan, Esteban and Smallwood, J.},
+  		title        = {scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models},
+  		month        = jan,
+  		year         = 2026,
+  		publisher    = {Zenodo},
+  		version      = {2.4.0},
+  		doi          = {10.5281/zenodo.18242190},
+  		url          = {https://doi.org/10.5281/zenodo.18242190}
+		}
+		```
