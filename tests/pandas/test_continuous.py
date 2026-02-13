@@ -10,8 +10,10 @@ import numbers
 import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 
 import scores.pandas as scores
+from scores.continuous.standard_impl import additive_bias
 
 PRECISION = 4
 
@@ -138,3 +140,12 @@ def test_additive_bias_pandas_series():
 
     assert isinstance(result, numbers.Real)
     assert round(float(result), PRECISION) == expected
+
+
+def test_additive_bias_raises_when_not_xarray_and_weights_given():
+    fcst = np.array([1, 2, 3])
+    obs = np.array([1, 2, 3])
+    weights = xr.DataArray([1, 2, 3])
+
+    with pytest.raises(ValueError):
+        additive_bias(fcst=fcst, obs=obs, weights=weights)
