@@ -811,6 +811,15 @@ def test_additive_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected)
     xr.testing.assert_equal(result, result2)
 
 
+def test_additive_bias_raises_when_not_xarray_and_weights_given():
+    fcst = np.array([1, 2, 3])
+    obs = np.array([1, 2, 3])
+    weights = xr.DataArray([1, 2, 3])
+
+    with pytest.raises(ValueError):
+        scores.continuous.additive_bias(fcst=fcst, obs=obs, weights=weights)
+
+
 def test_additive_bias_dask():
     """
     Tests that continuous.additive_bias works with Dask
