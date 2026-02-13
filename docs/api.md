@@ -123,6 +123,7 @@
 .. autofunction:: scores.plotdata.murphy_score
 .. autofunction:: scores.plotdata.murphy_thetas
 .. autofunction:: scores.plotdata.qq
+.. autofunction:: scores.plotdata.rank_histogram
 .. autofunction:: scores.plotdata.roc
 ```
 
