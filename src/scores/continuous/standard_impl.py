@@ -334,7 +334,13 @@ def additive_bias(
 
     """
 
-    if is_xarraylike(fcst):
+    fcst_is_xr = is_xarraylike(fcst)
+    obs_is_xr = is_xarraylike(obs)
+
+    if not (fcst_is_xr and obs_is_xr) and weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
+
+    if fcst_is_xr:
         reduce_dims = scores.utils.gather_dimensions(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
@@ -343,8 +349,6 @@ def additive_bias(
 
     if is_xarraylike(error):
         score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
-    elif weights is not None:
-        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
     else:
         score = error.mean()
 
