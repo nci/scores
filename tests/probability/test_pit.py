@@ -45,7 +45,7 @@ from scores.probability.pit_impl import (
     _variance,
     _variance_integral_term,
 )
-from tests.probabilty import pit_test_data as ptd
+from tests.probability import pit_test_data as ptd
 
 
 def create_dataset(dataarray):
