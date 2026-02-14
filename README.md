@@ -119,7 +119,7 @@ All metrics, statistical techniques and data processing tools in `scores` work w
   		author      = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ramanathan, Nikeeth and Chong, Stephanie and Taggart, Robert J. and Shrestha, Durga and Khanarmuei, Mohammadreza and Cook, Harrison and Bluett, Liam and Ebert, Elizabeth E. and Carroll, Maree and Trotta, Belinda and Sharples, John and Bishop, Sam and Squire, Dougal T. and Griffiths, Aidan and Pagano, Thomas C. and Fisher, A.J. and Mandelbaum, Taylor and Jinghan, Fu and Smith, Paul R. and Abellan, Esteban and Beunk, Jurian and Esperson, Felix and Smallwood, J. and Wu, Xiaoxi},
   		title       = {scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models},
 		month       = feb,
-  		year.       = 2026,
+  		year        = 2026,
   		publisher   = {Zenodo},
   		version     = {2.5.0},
   		doi         = {10.5281/zenodo.18638494},
