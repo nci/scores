@@ -5,7 +5,7 @@ Contains unit tests for scores.probability.roc_impl
 try:
     import dask
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pytest
@@ -123,32 +123,63 @@ def test_roc_curve_auc():
 
 
 def test_roc_auto_threshold():
-    fcst = xr.DataArray(data=[0.1, 0.4, 0.3, 0.9], dims="time")
-    obs = xr.DataArray(data=[0, 0, 1, 1], dims="time")
+    """Test roc with auto threshold and 2-D input array."""
+    fcst = xr.DataArray(
+        data=[[0.1, 0.4, 0.3, 0.9], [0.2, 0.9, 0.5, 0.2]],
+        dims=["station", "time"],
+        coords={
+            "station": ["A", "B"],
+            "time": list(range(4)),
+        },
+    )
+
+    obs = xr.DataArray(
+        data=[[0, 0, 1, 1], [0, 1, 1, 0]],
+        dims=["station", "time"],
+        coords={
+            "station": ["A", "B"],
+            "time": list(range(4)),
+        },
+    )
     # Test with check_args=False
-    result_no_check = roc(fcst, obs, check_args=False)
+    result_no_check = roc(fcst, obs, check_args=False, preserve_dims=["station"])
     xr.testing.assert_equal(result_no_check, rtd.EXP_ROC_AUTO)
     # Test with check_args=True
-    result_check = roc(fcst, obs, check_args=True)
+    result_check = roc(fcst, obs, check_args=True, preserve_dims=["station"])
     xr.testing.assert_equal(result_check, rtd.EXP_ROC_AUTO)
 
 
-def test_roc_dask():
+@pytest.mark.parametrize("check_args", [True, False])
+def test_roc_dask(check_args):
     """tests that roc works with dask"""
 
     if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-    result = roc(
-        rtd.FCST_2X3X2_WITH_NAN.chunk(),
-        rtd.OBS_3X3_WITH_NAN.chunk(),
-        [0, 0.3, 1],
-        preserve_dims=["letter", "lead_day"],
-        check_args=False,
-    )
-    assert isinstance(result.POD.data, dask.array.Array)  # type: ignore
-    assert isinstance(result.POFD.data, dask.array.Array)  # type: ignore
-    assert isinstance(result.AUC.data, dask.array.Array)  # type: ignore
+    fcst = rtd.FCST_2X3X2_WITH_NAN.chunk()
+    obs = rtd.OBS_3X3_WITH_NAN.chunk()
+
+    if check_args:
+        with pytest.warns(UserWarning, match="`fcst` or `obs` is an xarray object backed by a dask array"):
+            result = roc(
+                fcst,
+                obs,
+                [0, 0.3, 1],
+                preserve_dims=["letter", "lead_day"],
+                check_args=check_args,
+            )
+    else:
+        result = roc(
+            fcst,
+            obs,
+            [0, 0.3, 1],
+            preserve_dims=["letter", "lead_day"],
+            check_args=check_args,
+        )
+
+    assert isinstance(result.POD.data, dask.array.Array)
+    assert isinstance(result.POFD.data, dask.array.Array)
+    assert isinstance(result.AUC.data, dask.array.Array)
 
     result = result.compute()
 

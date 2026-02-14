@@ -107,7 +107,7 @@ def murphy_score(  # pylint: disable=R0914
         theta1 = thetas
     else:
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords={"theta": thetas})
-    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)  # type: ignore
+    theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
     over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
         fcst1, obs1, theta1, alpha, huber_a=huber_a
@@ -158,7 +158,7 @@ def _expectile_elementary_score(fcst: FlexibleArrayType, obs: FlexibleArrayType,
 def _check_murphy_inputs(*, alpha=None, functional=None, huber_a=None, left_limit_delta=None):
     """Raise ValueError if the arguments have unexpected values."""
     if (alpha is not None) and not (0 < alpha < 1):  # pylint: disable=C0325
-        err = f"alpha (={alpha}) argument for Murphy scoring function should be strictly " "between 0 and 1."
+        err = f"alpha (={alpha}) argument for Murphy scoring function should be strictly between 0 and 1."
         raise ValueError(err)
     if (functional is not None) and (functional not in VALID_SCORING_FUNC_NAMES):
         err = (
@@ -235,7 +235,7 @@ def murphy_thetas(
         huber_a=huber_a,
         left_limit_delta=left_limit_delta,
     )
-    return result  # type: ignore
+    return result
 
 
 def _quantile_thetas(forecasts, obs, **_):

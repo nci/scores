@@ -6,7 +6,7 @@ try:
     import dask
     import dask.array as da
 except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 from collections import OrderedDict
 
@@ -268,7 +268,7 @@ def test_block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, e
     result = block_bootstrap(
         objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
     )
-    if expected_type == tuple:
+    if expected_type is tuple:
         assert isinstance(result, tuple)
         assert all(isinstance(res, xr.DataArray) for res in result)
         for res in result:

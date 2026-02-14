@@ -25,6 +25,6 @@ jobs:
           pip install .[dev]
       - name: pre-commit checks
         run: |
-          pre-commit run black --all-files
-          pre-commit run isort --all-files
-          pre-commit run pylint --all-files
+          pre-commit run ruff-check --all-files
+          pre-commit run ruff-format --all-files
+          pre-commit run ty-check --all-files

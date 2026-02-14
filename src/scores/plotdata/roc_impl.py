@@ -18,7 +18,7 @@ from scores.utils import gather_dimensions
 # earlier versions. As numpy 2.0 contains some API changes, `scores`
 # will try to support both interchangeably for the time being
 if not hasattr(np, "trapezoid"):
-    np.trapezoid = np.trapz  # type: ignore # pragma: no cover  # tested manually
+    np.trapezoid = np.trapz  # pragma: no cover  # tested manually
 
 
 def roc(  # pylint: disable=too-many-arguments
@@ -75,6 +75,9 @@ def roc(  # pylint: disable=too-many-arguments
         check_args: Checks if ``obs`` data only contains values in the set
             {0, 1, np.nan}. You may want to skip this check if you are sure about your
             input data and want to improve the performance when working with dask.
+            Note: If ``fcst`` or ``obs`` is an xarray object backed by a dask array,
+            and ``check_args`` is ``True``, the min and max of the arrays will be computed
+            immediately, which triggers computation. Set ``check_args=False`` to avoid this.
 
     Returns:
         An xarray.Dataset with data variables:
@@ -95,10 +98,14 @@ def roc(  # pylint: disable=too-many-arguments
         ValueError: if ``thresholds`` is a string that is not "auto".
         ValueError: if ``thresholds`` is an empty iterable.
 
-    Warnings:
-        If the number of automatically generated thresholds is very large (>1000),
-        a warning is raised suggesting that the user supply thresholds manually as an
-        iterable of floats if performance is slow.
+    Warns:
+        UserWarning: If the number of automatically generated thresholds is very large (>1000),
+            a warning is raised suggesting that the user supply thresholds manually as an
+            iterable of floats if performance is slow.
+
+        UserWarning: If ``fcst`` or ``obs`` is an xarray object backed by a dask array and ``check_args``
+            is ``True``, a warning will be issued to inform the user that an eager computation
+            will occur.
 
     Notes:
         If ``thresholds`` is an iterable of floats, the probabilistic ``fcst``
@@ -118,7 +125,7 @@ def roc(  # pylint: disable=too-many-arguments
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
 
-    Example:
+    Examples:
         >>> import xarray as xr
         >>> import numpy as np
         >>> from scores.probability import roc_curve_data
@@ -129,13 +136,21 @@ def roc(  # pylint: disable=too-many-arguments
     # If a slight performance improvement is needed, the checks can be skipped
     # when `check_args` is False.
     if check_args:
-        if fcst.max().item() > 1 or fcst.min().item() < 0:
+        if fcst.chunks is not None or obs.chunks is not None:
+            warnings.warn(
+                "`fcst` or `obs` is an xarray object backed by a dask array. "
+                "Input validation requires computing the min and max of the arrays "
+                "which triggers immediate computation. Set `check_args=False` to avoid this.",
+                UserWarning,
+            )
+
+        if fcst.max().compute().item() > 1 or fcst.min().compute().item() < 0:
             raise ValueError("`fcst` contains values outside of the range [0, 1]")
 
-        if len(thresholds) == 0:  # type: ignore
+        if len(thresholds) == 0:
             raise ValueError("`thresholds` must not be empty")
 
-        if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):  # type: ignore
+        if not isinstance(thresholds, str) and (np.max(thresholds) > 1 or np.min(thresholds) < 0):
             raise ValueError("`thresholds` contains values outside of the range [0, 1]")
 
         if not isinstance(thresholds, str) and not np.all(np.array(thresholds)[1:] >= np.array(thresholds)[:-1]):
@@ -145,8 +160,8 @@ def roc(  # pylint: disable=too-many-arguments
 
     if isinstance(thresholds, str):
         if thresholds == "auto":
-            thresholds = np.sort(np.unique(fcst[~np.isnan(fcst)]))
-            if len(thresholds) > 1000:  # type: ignore
+            thresholds = np.sort(np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy()))
+            if len(thresholds) > 1000:
                 warnings.warn(
                     "Number of automatically generated thresholds is very large (>1000). "
                     "If performance is slow, consider supplying thresholds manually as an "
@@ -166,12 +181,12 @@ def roc(  # pylint: disable=too-many-arguments
 
     # make a discrete forecast for each threshold in thresholds
     # discrete_fcst has an extra dimension 'threshold'
-    discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)  # type: ignore
+    discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)
 
     all_dims = set(fcst.dims).union(set(obs.dims))
-    final_preserve_dims = all_dims - set(reduce_dims)  # type: ignore
+    final_preserve_dims = all_dims - set(reduce_dims)
     auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
-    final_preserve_dims = auc_dims + ("threshold",)  # type: ignore[assignment]
+    final_preserve_dims = auc_dims + ("threshold",)
 
     pod = probability_of_detection(
         discrete_fcst, obs, preserve_dims=final_preserve_dims, weights=weights, check_args=check_args
@@ -189,7 +204,7 @@ def roc(  # pylint: disable=too-many-arguments
         np.trapezoid,
         pod,
         pofd,
-        input_core_dims=[pod.dims, pofd.dims],  # type: ignore
+        input_core_dims=[pod.dims, pofd.dims],
         output_core_dims=[auc_dims],
         dask="parallelized",
     )

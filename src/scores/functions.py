@@ -36,8 +36,7 @@ def angular_difference(source_a: xr.Dataset, source_b: xr.Dataset) -> xr.Dataset
 
 # DataArray input types lead to a DataArray return type
 @overload
-def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray:  # type: ignore
-    ...
+def angular_difference(source_a: xr.DataArray, source_b: xr.DataArray) -> xr.DataArray: ...
 
 
 def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike:
@@ -53,5 +52,5 @@ def angular_difference(source_a: XarrayLike, source_b: XarrayLike) -> XarrayLike
         An array containing angles within the range [0, 180].
     """
     difference = np.abs(source_a - source_b) % 360
-    difference = difference.where(difference <= 180, 360 - difference)  # type: ignore
-    return difference  # type: ignore
+    difference = difference.where(difference <= 180, 360 - difference)
+    return difference

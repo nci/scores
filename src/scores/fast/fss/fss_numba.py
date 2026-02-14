@@ -1,6 +1,6 @@
 """
 Backend for computing Fractions Skill Score (FSS) using numba
-    
+
 """
 
 from dataclasses import dataclass
@@ -10,7 +10,7 @@ from scores.fast.fss.typing import FssComputeMethod
 
 _COMPATIBLE = True
 try:
-    import numba  # type: ignore # pylint: disable=unused-import
+    import numba  # noqa  # ignore unused import
 except ImportError:  # pragma: no cover
     _COMPATIBLE = False
 

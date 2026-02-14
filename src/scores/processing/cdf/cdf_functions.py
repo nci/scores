@@ -117,18 +117,18 @@ def observed_cdf(
     if precision > 0:
         obs = round_values(obs, precision)
 
-    thresholds = threshold_values_as_array if threshold_values is not None else []  # type: ignore
+    thresholds = threshold_values_as_array if threshold_values is not None else []
 
     if include_obs_in_thresholds:
-        thresholds = np.concatenate((obs.values.flatten(), thresholds))  # type: ignore
+        thresholds = np.concatenate((obs.values.flatten(), thresholds))
 
     # remove any NaN
-    thresholds = [x for x in thresholds if not np.isnan(x)]  # type: ignore
+    thresholds = [x for x in thresholds if not np.isnan(x)]
 
     # pandas.unique retains the original ordering whereas set() may not
     # pandas.unique no longer accepts a simple array as input
     thresholds = pd.Series(thresholds)
-    thresholds = np.sort(pd.unique(thresholds))  # type: ignore
+    thresholds = np.sort(pd.unique(thresholds))
 
     da_thresholds = xr.DataArray(
         thresholds,
@@ -176,16 +176,16 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
     # F(t) = mt + b, whenever x[i-1] <= t <= x[i].
 
     # difference in x
-    diff_xs = function_values[threshold_dim] - function_values[threshold_dim].shift(**{threshold_dim: 1})  # type: ignore
+    diff_xs = function_values[threshold_dim] - function_values[threshold_dim].shift(**{threshold_dim: 1})
 
     # difference in function values
-    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})  # type: ignore
+    diff_ys = function_values - function_values.shift(**{threshold_dim: 1})
 
     # gradients m
     m_values = diff_ys / diff_xs
 
     # y intercepts b
-    b_values = function_values.shift(**{threshold_dim: 1})  # type: ignore
+    b_values = function_values.shift(**{threshold_dim: 1})
 
     # integral for x[i-1] <= t <= x[i]
     piece_integral = (m_values**2) * (diff_xs**3) / 3 + m_values * b_values * (diff_xs**2) + (b_values**2) * diff_xs
@@ -221,7 +221,7 @@ def add_thresholds(
         determined by the specified fill method.
     """
 
-    thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))  # type: ignore
+    thresholds = np.concatenate((cdf[threshold_dim].values, new_thresholds))
     thresholds = np.sort(pd.unique(thresholds))
     thresholds = thresholds[~np.isnan(thresholds)]
 
@@ -340,7 +340,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)
 
     # difference between consecutive terms along threshold_dim
-    diff = cdf - cdf.shift(**{threshold_dim: 1})  # type: ignore
+    diff = cdf - cdf.shift(**{threshold_dim: 1})
 
     result = diff.clip(max=0).sum(dim=threshold_dim) < -tolerance
 
@@ -381,7 +381,7 @@ def cdf_envelope(
               satisfies "upper" >= "original".
             - "lower": minimally adjusted "original" CDF that is nondecreasing and \
               satisfies "lower" <= "original".
-              
+
         NaN values in `cdf` are maintained in "original", "upper" and "lower".
 
     Raises:

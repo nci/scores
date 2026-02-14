@@ -1,7 +1,7 @@
 """
 Estimate autocovariances
 
-Barebones reimplementation of the `acovf` from `statsmodels.api.tsa.acovf`, 
+Barebones reimplementation of the `acovf` from `statsmodels.api.tsa.acovf`,
 for use only with `scores.stats.test.diebold_mariano`
 
 Package: https://www.statsmodels.org/devel/
@@ -9,7 +9,7 @@ Package: https://www.statsmodels.org/devel/
 Code reference: https://github.com/statsmodels/statsmodels/blob/main/statsmodels/tsa/stattools.py
 
 Notes:
-    All type checking and other features have been removed, as they aren't needed for the 
+    All type checking and other features have been removed, as they aren't needed for the
     `diebold_mariano` function.
 
 Why:

@@ -93,7 +93,7 @@ def quantile_interval_score(  # pylint: disable=R0914
         >>> fcst_upper_level = xr.DataArray(np.random.uniform(20, 25, size=(30, 15)), dims=['time', 'station'])
         >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
         >>> quantile_interval_score(fcst_lower_level, fcst_upper_level, obs, 0.1, 0.6)
-    """
+    """  #  noqa: E501
     if not 0 < lower_qtile_level < upper_qtile_level < 1:
         raise ValueError(
             "Expected 0 < lower_qtile_level < upper_qtile_level < 1. But got "
@@ -106,8 +106,10 @@ def quantile_interval_score(  # pylint: disable=R0914
     if specified_dims is not None and specified_dims != "all":
         check_dims(xr_data=fcst_lower_qtile, expected_dims=specified_dims, mode="superset")
     # check obs dimensions are a subset of fcst_lower_qtile (or fcst_upper_qtile) dimensions
-    check_dims(xr_data=obs, expected_dims=fcst_lower_qtile.dims, mode="subset")  # type: ignore
-    reduce_dims = gather_dimensions(fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)  # type: ignore[assignment]
+    check_dims(xr_data=obs, expected_dims=fcst_lower_qtile.dims, mode="subset")
+    reduce_dims = gather_dimensions(
+        fcst_lower_qtile.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
     if (fcst_lower_qtile > fcst_upper_qtile).any():
         raise ValueError("Input does not satisfy fcst_lower_qtile < fcst_upper_qtile condition.")
     fcst_lower_qtile, fcst_upper_qtile, obs = broadcast_and_match_nan(fcst_lower_qtile, fcst_upper_qtile, obs)
@@ -126,7 +128,7 @@ def quantile_interval_score(  # pylint: disable=R0914
     result = xr.Dataset(components)
     score = aggregate(result, weights=weights, reduce_dims=reduce_dims)
 
-    return score  # type: ignore
+    return score
 
 
 def interval_score(
@@ -220,7 +222,7 @@ def interval_score(
         >>> fcst_upper_level = xr.DataArray(np.random.uniform(20, 25, size=(30, 15)), dims=['time', 'station'])
         >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
         >>> interval_score(fcst_lower_level, fcst_upper_level, obs, 0.5)
-    """
+    """  #  noqa: E501
     if interval_range <= 0 or interval_range >= 1:
         raise ValueError("`interval_range` must be strictly between 0 and 1")
     score = quantile_interval_score(

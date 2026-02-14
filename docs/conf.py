@@ -9,7 +9,7 @@ from scores import __version__
 
 project = "scores"
 copyright = "Licensed under Apache 2.0 - https://www.apache.org/licenses/LICENSE-2.0"
-release = "2.4.0"
+release = "2.5.0"
 
 version = __version__
 

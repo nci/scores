@@ -16,7 +16,7 @@ from scores.processing.cdf import (
     propagate_nan,
     round_values,
 )
-from tests.probabilty import cdf_test_data, crps_test_data
+from tests.probability import cdf_test_data, crps_test_data
 from tests.processing.cdf import functions_test_data as ftd
 
 

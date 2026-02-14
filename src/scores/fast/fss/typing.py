@@ -1,5 +1,5 @@
 """
-Specific type definitions for Fss backend    
+Specific type definitions for Fss backend
 """
 
 from enum import Enum
@@ -13,7 +13,7 @@ import numpy.typing as npt
 f8x3 = np.dtype("f8, f8, f8")
 # Note: `TypeAlias` on variables not available for python <3.10
 if TYPE_CHECKING:  # pragma: no cover
-    FssDecomposed = Union[np.ArrayLike, np.DtypeLike]  # type: ignore
+    FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
 else:  # pragma: no cover
     FssDecomposed = npt.NDArray[f8x3]
 

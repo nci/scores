@@ -15,7 +15,10 @@ from scores.utils import DimensionError, check_dims, dims_complement
 
 
 def _flip_flop_index(
-    data: xr.DataArray, sampling_dim: str, *, is_angular: bool = False  # Force keywords arguments to be keyword-only
+    data: xr.DataArray,
+    sampling_dim: str,
+    *,
+    is_angular: bool = False,  # Force keywords arguments to be keyword-only
 ) -> xr.DataArray:
     """
     Calculates the Flip-Flop Index by collapsing the dimension specified by
@@ -56,7 +59,7 @@ def _flip_flop_index(
     else:
         max_val = data.max(dim=sampling_dim, skipna=False)
         min_val = data.min(dim=sampling_dim, skipna=False)
-        range_val = max_val - min_val  # type: ignore
+        range_val = max_val - min_val
         # subtract each consecutive 'row' from eachother
         flip_flop = data.shift({sampling_dim: 1}) - data
 
@@ -160,7 +163,7 @@ def flip_flop_index(
     if not selections and isinstance(data, xr.DataArray):
         result = _flip_flop_index(data, sampling_dim, is_angular=is_angular)
     else:
-        result = xr.Dataset()  # type: ignore
+        result = xr.Dataset()
         result.attrs["selections"] = selections
         for key, data_subset in iter_selections(data, sampling_dim, **selections):
             result[key] = _flip_flop_index(data_subset, sampling_dim, is_angular=is_angular)
@@ -178,7 +181,7 @@ def iter_selections(
 
 # Dataset input types load to Dataset output types
 @overload
-def iter_selections(  # type: ignore
+def iter_selections(
     data: xr.Dataset, sampling_dim: str, **selections: Optional[Iterable[int]]
 ) -> Generator[tuple[str, xr.Dataset], None, None]: ...
 
@@ -233,14 +236,17 @@ def iter_selections(
             data_subset = data.sel({sampling_dim: values}).copy(deep=False)
         except KeyError as ex:
             raise KeyError(
-                f"for `selections` item {str({key: values})}, not all values found in " f"dimension '{sampling_dim}'",
+                f"for `selections` item {str({key: values})}, not all values found in dimension '{sampling_dim}'",
             ) from ex
 
         yield key, data_subset
 
 
 def encompassing_sector_size(
-    data: xr.DataArray, dims: Sequence[str], *, skipna: bool = False  # Force keywords arguments to be keyword-only
+    data: xr.DataArray,
+    dims: Sequence[str],
+    *,
+    skipna: bool = False,  # Force keywords arguments to be keyword-only
 ) -> xr.DataArray:
     """
     Calculates the minimum angular distance which encompasses all data points
@@ -443,8 +449,7 @@ def flip_flop_index_proportion_exceeding(
         )
     if reduce_dims is not None and sampling_dim in list(reduce_dims):
         raise DimensionError(
-            f"`sampling_dim`: '{sampling_dim}' must not be in dimensions to reduce "
-            f"`reduce_dims`: {list(reduce_dims)}"
+            f"`sampling_dim`: '{sampling_dim}' must not be in dimensions to reduce `reduce_dims`: {list(reduce_dims)}"
         )
     # calculate the Flip-Flop Index
     flip_flop_data = flip_flop_index(data, sampling_dim, is_angular=is_angular, **selections)

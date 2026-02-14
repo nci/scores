@@ -15,7 +15,7 @@ import scores.processing
 import scores.sample_data
 import scores.stats.statistical_tests  # noqa: F401
 
-__version__ = "2.4.0"
+__version__ = "2.5.0"
 
 __all__ = [
     "scores.categorical",

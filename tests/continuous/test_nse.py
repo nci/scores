@@ -13,8 +13,6 @@ Collection of tests for the NSE score, contains:
     - TestNseDataset: Tests compatiblity with datasets (most tests use data array for convenience)
     - TestNseDask: Tests compatibility with dask
 """
-import os
-import typing
 
 import numpy as np
 import pytest
@@ -451,15 +449,15 @@ class TestNseInternals(NseSetup):
     """
 
     META_INPUT_DA = nse_impl.NseMetaInput(
-        datasets=[],  # type: ignore
-        gathered_dims=[],  # type: ignore
+        datasets=[],
+        gathered_dims=[],
         is_angular=False,  # doesn't matter
         is_dataarray=True,  # >>> checking for this
     )
 
     META_INPUT_NOT_DA = nse_impl.NseMetaInput(
-        datasets=[],  # type: ignore
-        gathered_dims=[],  # type: ignore
+        datasets=[],
+        gathered_dims=[],
         is_angular=False,  # doesn't matter
         is_dataarray=False,  # >>> checking for this
     )
@@ -1149,29 +1147,20 @@ class TestNseDask(NseSetup):
         chunks = {"x": 25, "y": 25}
         da1 = self.make_random_xr_array((100, 100, 10), ("x", "y", "t")).chunk(chunks)
         da2 = da1 * 0.99  # make them almost equal - [1]
-        tmp_da1_path = os.path.join(tmpdir, "da1.nc")
-        tmp_da2_path = os.path.join(tmpdir, "da2.nc")
-        da1.to_netcdf(tmp_da1_path)
-        da2.to_netcdf(tmp_da2_path)
 
-        # try NSE with dask
-        with (
-            xr.open_dataarray(tmp_da1_path, chunks=chunks) as da1_disk,
-            xr.open_dataarray(tmp_da2_path, chunks=chunks) as da2_disk,
-        ):
-            res = nse_impl.nse(da1_disk, da2_disk, reduce_dims=("x", "y"))
-            assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
+        res = nse_impl.nse(da1, da2, reduce_dims=("x", "y"))
+        assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
 
-            # Load into memory and perform computation
-            true_res = res.compute()
+        # Load into memory and perform computation
+        true_res = res.compute()
 
-            # SHOULD be a regular DataArray after compute()
-            assert isinstance(true_res, xr.DataArray)
-            # SHOULD be close to 1 ~= NSE >> 0 see: [1]
-            # using "any" instead of "all" as a weak check, so this is unlikely to fail
-            not_terrible = (true_res > 0).any().item()
-            not_wrong = (true_res <= 1).all().item()
-            # SHOULD NOT be dask anymore, typecheck: bool
-            assert isinstance(not_terrible and not_wrong, bool)
-            # Do the actual assertion for [1]
-            assert not_terrible and not_wrong
+        # SHOULD be a regular DataArray after compute()
+        assert isinstance(true_res, xr.DataArray)
+        # SHOULD be close to 1 ~= NSE >> 0 see: [1]
+        # using "any" instead of "all" as a weak check, so this is unlikely to fail
+        not_terrible = (true_res > 0).any().item()
+        not_wrong = (true_res <= 1).all().item()
+        # SHOULD NOT be dask anymore, typecheck: bool
+        assert isinstance(not_terrible and not_wrong, bool)
+        # Do the actual assertion for [1]
+        assert not_terrible and not_wrong

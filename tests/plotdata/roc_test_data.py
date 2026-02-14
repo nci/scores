@@ -120,17 +120,24 @@ EXP_ROC_NONE_WEIGHTED = xr.Dataset(
         "AUC": xr.DataArray([0.41666666666666663]).squeeze(),
     }
 )
-
 EXP_ROC_AUTO = xr.Dataset(
     {
         "POD": xr.DataArray(
-            [1, 1, 1, 0.5, 0.5, 0],
-            coords=[("threshold", [0, 0.1, 0.3, 0.4, 0.9, np.inf])],
+            [[1, 1, 1, 1, 0.5, 0.5, 0.5, 0], [1, 1, 1, 1, 1, 1, 0.5, 0]],
+            coords={
+                "station": ["A", "B"],
+                "threshold": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.9, np.inf],
+            },
+            dims=["station", "threshold"],
         ),
         "POFD": xr.DataArray(
-            [1, 1, 0.5, 0.5, 0, 0],
-            coords=[("threshold", [0, 0.1, 0.3, 0.4, 0.9, np.inf])],
+            [[1, 1, 0.5, 0.5, 0.5, 0, 0, 0], [1, 1, 1, 0, 0, 0, 0, 0]],
+            coords={
+                "station": ["A", "B"],
+                "threshold": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.9, np.inf],
+            },
+            dims=["station", "threshold"],
         ),
-        "AUC": xr.DataArray(0.75),
+        "AUC": xr.DataArray([0.75, 1], coords=[("station", ["A", "B"])], dims=["station"]),
     }
 )

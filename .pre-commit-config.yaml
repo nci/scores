@@ -1,36 +1,31 @@
 ---
 repos:
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.14.14
     hooks:
-      - id: black
-        name: black
-        entry: black --check
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.0
-    hooks:
-      - id: bandit
-        args: [--skip, "B101", --recursive, src/scores]
-  # use local version of package with core deps to avoid import-errors from virtual env
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint --reports=n
-        language: system
-        types: [python]
+      # Run the linter.
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [ python, pyi ]
+        stages: [pre-commit]        
+      # Run the formatter.
+      - id: ruff-format
+        args: [--exit-non-zero-on-format] # Needed for GH Action to fail
+        types_or: [ python, pyi ]
         stages: [pre-commit]
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.11.5
-    hooks:
-      - id: isort
-        entry: isort --profile=black
   - repo: local
     hooks:
       - id: pytest
         name: pytest
-        entry: pytest tests/ --cov=src/scores --cov-report term-missing
+        entry: pytest -W error::RuntimeWarning tests/ --cov=src/scores --cov-report term-missing
         language: system
         stages: [pre-push]
         always_run: true
         pass_filenames: false
+      - id: ty-check
+        name: ty-check
+        entry: ty check
+        language: system
+        pass_filenames: false
+        types: [python]

@@ -66,8 +66,8 @@ Link to Zenodo archive: [https://doi.org/10.5281/zenodo.12697241](https://doi.or
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/(X-1).(Y-1).(Z-1)...X.Y.Z). Below are the changes we think users may wish to be aware of.
 
 ### Breaking Changes
-### Deprecations
 ### Features
+### Deprecations
 ### Bug Fixes
 ### Documentation
 ### Internal Changes

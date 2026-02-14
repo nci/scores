@@ -10,7 +10,7 @@ try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import numpy.random
@@ -101,7 +101,7 @@ def test_2d_xarray_mse_with_dimensions():
     expected_values = [290.0929, 90.8107, 12.2224, 176.2005]
     expected_dimensions = ("longitude",)
     assert isinstance(result, xr.DataArray)
-    assert all(result.round(4) == expected_values)  # type: ignore  # We don't want full xarray comparison, and static analysis is confused about types
+    assert all(result.round(4) == expected_values)
     assert result.dims == expected_dimensions
 
 
@@ -390,7 +390,7 @@ def test_2d_xarray_mae_with_dimensions():
 
     expected_values = [13.2397, 9.0065, 2.9662, 9.8629]
     expected_dimensions = ("longitude",)
-    assert all(result.round(4) == expected_values)  # type: ignore  # We don't want full xarray comparison, and static analysis is confused about types
+    assert all(result.round(4) == expected_values)
     assert result.dims == expected_dimensions
 
 
@@ -412,7 +412,7 @@ def test_xarray_dimension_handling_with_arrays():
 
     expected_values = [13.2397, 9.0065, 2.9662, 9.8629]
     expected_dimensions = ("longitude",)
-    assert all(preserve_lon.round(4) == expected_values)  # type: ignore  # We don't want full xarray comparison, and static analysis is confused about types
+    assert all(preserve_lon.round(4) == expected_values)
     assert reduce_lat.dims == expected_dimensions
     assert preserve_lon.dims == expected_dimensions
 
@@ -453,8 +453,8 @@ def test_mse_with_dask():
     ).chunk()
 
     result = scores.continuous.mse(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)  # type: ignore # Static analysis fails to recognise the type of 'result' correctly
-    result = result.compute()  # type: ignore # Static analysis thinks this is a float, but it's a dask array
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[5, 4], dims=["dim2"], coords={"dim2": [1, 2]})
     xr.testing.assert_equal(result, expected)
@@ -476,7 +476,7 @@ def test_mae_with_dask():
     ).chunk()
 
     result = scores.continuous.mae(fcst_chunked, obs_chunked, reduce_dims="dim1")
-    assert isinstance(result.data, dask.array.Array)  # type: ignore
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     expected = xr.DataArray(data=[2, 2], dims=["dim2"], coords={"dim2": [1, 2]})
@@ -1109,8 +1109,8 @@ def test_kge_dask():
     fcst = DA3_KGE.chunk()
     obs = DA2_KGE.chunk()
     result = scores.continuous.kge(fcst, obs)
-    assert isinstance(result.data, dask.array.Array)  # type: ignore
-    result = result.compute()  # type: ignore
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
     assert isinstance(result.data, (np.ndarray, np.generic))
     xr.testing.assert_equal(result, EXP_KGE_REDUCE_ALL)
 
@@ -1135,7 +1135,7 @@ def test_kge_errors(fcst, obs, scaling_factors, expected_exception, expected_mes
     Test continuous.kge raises error with an incorrect type and sizes
     """
     with pytest.raises(expected_exception, match=expected_message):
-        scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)  # type: ignore
+        scores.continuous.kge(fcst, obs, scaling_factors=scaling_factors)
 
 
 def test_mse_raises():

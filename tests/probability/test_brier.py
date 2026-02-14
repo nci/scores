@@ -6,7 +6,7 @@ try:
     import dask
     import dask.array
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import operator
 
@@ -15,7 +15,7 @@ import pytest
 import xarray as xr
 
 from scores.probability import brier_score, brier_score_for_ensemble
-from tests.probabilty import brier_test_data as btd
+from tests.probability import brier_test_data as btd
 
 
 @pytest.mark.parametrize(

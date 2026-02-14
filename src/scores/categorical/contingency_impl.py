@@ -17,7 +17,7 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 
 Users can supply their own event operators to the top-level module functions.
 """
-
+# ruff: noqa: W291
 # pylint: disable=too-many-lines
 
 import operator
@@ -159,7 +159,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             Attributes: (0)
 
         """
-        return self.xr_table  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return self.xr_table
 
     def format_table(
         self, positive_value_name: str = "Positive", negative_value_name: str = "Negative"
@@ -250,7 +250,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
         ratio = correct_count / count_dictionary["total_count"]
-        return ratio  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return ratio
 
     def base_rate(self) -> xr.DataArray:
         """
@@ -269,12 +269,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             Hogan, R. J. & Mason, I. B. (2011). Deterministic forecasts of binary events.
-            In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner's guide in atmospheric science (2nd ed.,
-            pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
+            In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner's guide in atmospheric
+            science (2nd ed., pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fn_count"]) / cd["total_count"]
-        return br  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return br
 
     def forecast_rate(self) -> xr.DataArray:
         """
@@ -293,12 +293,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             Hogan, R. J. & Mason, I. B. (2011). Deterministic forecasts of binary events.
-            In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner's guide in atmospheric science (2nd ed.,
-            pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
+            In I. T. Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner's guide in atmospheric
+            science (2nd ed., pp. 39-51). https://doi.org/10.1002/9781119960003.ch3
         """
         cd = self.counts
         br = (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
-        return br  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return br
 
     def fraction_correct(self) -> xr.DataArray:
         """
@@ -342,12 +342,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#BIAS
-        """
+        """  #  noqa: E501
         # Note - bias_score calls this method
         cd = self.counts
         freq_bias = (cd["tp_count"] + cd["fp_count"]) / (cd["tp_count"] + cd["fn_count"])
 
-        return freq_bias  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return freq_bias
 
     def bias_score(self) -> xr.DataArray:
         """
@@ -369,7 +369,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#BIAS
-        """
+        """  #  noqa: E501
         return self.frequency_bias()
 
     def hit_rate(self) -> xr.DataArray:
@@ -392,7 +392,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
-        """
+        """  #  noqa: E501
         return self.probability_of_detection()
 
     def probability_of_detection(self) -> xr.DataArray:
@@ -415,12 +415,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
-        """
+        """  #  noqa: E501
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
         pod = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
 
-        return pod  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return pod
 
     def true_positive_rate(self) -> xr.DataArray:
         """
@@ -442,7 +442,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POD
-        """
+        """  #  noqa: E501
         return self.probability_of_detection()
 
     def false_alarm_ratio(self) -> xr.DataArray:
@@ -464,11 +464,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#FAR
-        """
+        """  #  noqa: E501
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
 
-        return far  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return far
 
     def false_alarm_rate(self) -> xr.DataArray:
         """
@@ -490,12 +490,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POFD
-        """
+        """  #  noqa: E501
         # Note - probability of false detection calls this function
         cd = self.counts
         far = cd["fp_count"] / (cd["tn_count"] + cd["fp_count"])
 
-        return far  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return far
 
     def probability_of_false_detection(self) -> xr.DataArray:
         """
@@ -517,7 +517,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         References:
             https://www.cawcr.gov.au/projects/verification/#POFD
-        """
+        """  #  noqa: E501
 
         return self.false_alarm_rate()
 
@@ -545,7 +545,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
 
-        return sr  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return sr
 
     def threat_score(self) -> xr.DataArray:
         """
@@ -571,7 +571,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         cd = self.counts
         ts = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
-        return ts  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return ts
 
     def critical_success_index(self) -> xr.DataArray:
         """
@@ -626,7 +626,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         component_a = cd["tp_count"] / (cd["tp_count"] + cd["fn_count"])
         component_b = cd["fp_count"] / (cd["fp_count"] + cd["tn_count"])
         skill_score = component_a - component_b
-        return skill_score  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return skill_score
 
     def true_skill_statistic(self) -> xr.DataArray:
         """
@@ -684,7 +684,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
     def sensitivity(self) -> xr.DataArray:
         """
-        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        Identical to
+        :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
         :py:func:`true_positive_rate`, and :py:func:`recall`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -705,8 +706,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
             - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
               & Dmochowski, R. R. (2021).
-              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
-              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive
+              value, and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
 
         """
         return self.probability_of_detection()
@@ -731,12 +732,12 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
             - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
               & Dmochowski, R. R. (2021).
-              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
-              and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
+              Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive
+              value, and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
         """
         cd = self.counts
         s = cd["tn_count"] / (cd["tn_count"] + cd["fp_count"])
-        return s  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return s
 
     def true_negative_rate(self) -> xr.DataArray:
         """
@@ -756,12 +757,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
 
         Reference:
             https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-        """
+        """  #  noqa: E501
         return self.specificity()
 
     def recall(self) -> xr.DataArray:
         """
-        Identical to :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
+        Identical to
+        :py:func:`hit_rate`, :py:func:`probability_of_detection <BasicContingencyManager.probability_of_detection>`,
         :py:func:`true_positive_rate`, and :py:func:`sensitivity`.
 
         Calculates the proportion of the observed events that were correctly forecast.
@@ -832,7 +834,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
               Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
               and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
 
-        """
+        """  #  noqa: E501
         return self.success_ratio()
 
     def negative_predictive_value(self) -> xr.DataArray:
@@ -857,13 +859,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
            - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
            - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
              & Dmochowski, R. R. (2021).
-             Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive value,
-             and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
+             Foundational statistical principles in medical research: Sensitivity, specificity, positive predictive
+             value, and negative predictive value. *Medicina*, 57(5), 503. https://doi.org/10.3390/medicina57050503
         """
         cd = self.counts
         npv = cd["tn_count"] / (cd["tn_count"] + cd["fn_count"])
 
-        return npv  # type: ignore
+        return npv
 
     def f1_score(self) -> xr.DataArray:
         """
@@ -886,7 +888,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         """
         cd = self.counts
         f1 = 2 * cd["tp_count"] / (2 * cd["tp_count"] + cd["fp_count"] + cd["fn_count"])
-        return f1  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return f1
 
     def equitable_threat_score(self) -> xr.DataArray:
         """
@@ -927,7 +929,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         hits_random = (cd["tp_count"] + cd["fn_count"]) * (cd["tp_count"] + cd["fp_count"]) / cd["total_count"]
         ets = (cd["tp_count"] - hits_random) / (cd["tp_count"] + cd["fn_count"] + cd["fp_count"] - hits_random)
 
-        return ets  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return ets
 
     def gilberts_skill_score(self) -> xr.DataArray:
         """
@@ -1013,7 +1015,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             + ((cd["tn_count"] + cd["fn_count"]) * (cd["tn_count"] + cd["fp_count"]))
         )
         hss = ((cd["tp_count"] + cd["tn_count"]) - exp_correct) / (cd["total_count"] - exp_correct)
-        return hss  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return hss
 
     def cohens_kappa(self) -> xr.DataArray:
         """
@@ -1101,7 +1103,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - Stephenson, D.B., 2000. Use of the “odds ratio” for diagnosing forecast skill. \
               Weather and Forecasting, 15(2), pp.221-232. \
               https://doi.org/10.1175/1520-0434(2000)015%3C0221:UOTORF%3E2.0.CO;2
-        """
+        """  #  noqa: E501
         odds_r = (self.probability_of_detection() / (1 - self.probability_of_detection())) / (
             self.probability_of_false_detection() / (1 - self.probability_of_false_detection())
         )
@@ -1146,7 +1148,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         orss = (cd["tp_count"] * cd["tn_count"] - cd["fn_count"] * cd["fp_count"]) / (
             cd["tp_count"] * cd["tn_count"] + cd["fn_count"] * cd["fp_count"]
         )
-        return orss  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return orss
 
     def yules_q(self) -> xr.DataArray:
         """
@@ -1232,7 +1234,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             + np.log(1 - self.probability_of_detection())
             + np.log(1 - self.probability_of_false_detection())
         )
-        return score  # type: ignore  # mypy doesn't recognise when np has been overriden by xarray
+        return score
 
 
 class BinaryContingencyManager(BasicContingencyManager):
@@ -1271,9 +1273,7 @@ class BinaryContingencyManager(BasicContingencyManager):
     against instances of BinaryContingencyManager where performance or transformation are not a concern.
     """
 
-    def __init__(
-        self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType
-    ):  # pylint: disable=super-init-not-called
+    def __init__(self, fcst_events: FlexibleArrayType, obs_events: FlexibleArrayType):  # pylint: disable=super-init-not-called
         self.fcst_events = fcst_events
         self.obs_events = obs_events
 

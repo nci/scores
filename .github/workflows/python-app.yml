@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
         # editable is necessary as pytest will run against the installed
         # package rather than the local files creating a coverage report of 0%
         pip install -e .
-        pytest tests/ --cov=src/
+        pytest -W error::RuntimeWarning tests/ --cov=src/
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.3.0
       with:

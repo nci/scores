@@ -2,8 +2,6 @@
 Contains frequently-used functions of a general nature within scores
 """
 
-import copy
-import functools
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
@@ -24,14 +22,14 @@ string as an instruction to reduce or preserve every dimension.
 """
 
 ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION = """
-You are requesting to preserve a dimension which does not appear in your data 
+You are requesting to preserve a dimension which does not appear in your data
 (fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
 ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION = """
 You are requesting to reduce a dimension which does not appear in your data
-(fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been 
+(fcst, obs or weights). It is ambiguous how to proceed therefore an exception has been
 raised instead.
 """
 
@@ -150,11 +148,10 @@ class BinaryOperator(Generic[T]):
         Default operator is valid
         """
         # functions are objects so this should work in theory
-        if not self.op in self.valid_ops.values():
+        if self.op not in self.valid_ops.values():
             # intentional list comprehension, for display reasons
             raise ValueError(
-                "Invalid operator specified. Allowed operators: "
-                f"{[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
+                f"Invalid operator specified. Allowed operators: {[k for k in self.valid_ops.keys()]}"  # pylint: disable=unnecessary-comprehension
             )
         return self
 
@@ -426,7 +423,7 @@ def tmp_coord_name(xr_data: xr.DataArray, *, count=1) -> Union[str, list[str]]:
         If count > 1, a list of such strings, each unique from one another
     """
     all_names = ["new"] + list(xr_data.dims) + list(xr_data.coords)
-    result = "".join(all_names)  # type: ignore
+    result = "".join(all_names)
 
     if count == 1:
         return result
