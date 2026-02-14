@@ -98,16 +98,16 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 	- BibTeX:
 		```
 		@article{Leeuwenburg_scores_A_Python_2024,
-		author 		= {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
-		doi 		= {10.21105/joss.06889},
-		journal 	= {Journal of Open Source Software},
-		month 		= jul,
-		number 		= {99},
-		pages 		= {6889},
-		title 		= {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
-		url 		= {https://joss.theoj.org/papers/10.21105/joss.06889},
-		volume 		= {9},
-		year 		= {2024}
+		author      = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
+		doi         = {10.21105/joss.06889},
+		journal     = {Journal of Open Source Software},
+		month       = jul,
+		number      = {99},
+		pages       = {6889},
+		title       = {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
+		url         = {https://joss.theoj.org/papers/10.21105/joss.06889},
+		volume      = {9},
+		year        = {2024}
 		}
 		```
 - **Please also cite the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
