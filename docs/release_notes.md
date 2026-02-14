@@ -7,6 +7,12 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ### Features
 
 - `scores` has introduced support for Python 3.14. See [PR #989](https://github.com/nci/scores/pull/989).
+- Added probability integral transform (PIT) classes:
+	- PIT for ensembles or cumulative distribution functions (CDFs): `scores.probability.Pit`
+	- PIT for predictive CDFs evaluated at observations: `scores.probability.PitFcstAtObs`.  
+	See [PR #919](https://github.com/nci/scores/pull/919). 
+- Added a new function for generating data for rank histograms:
+	- Rank histogram: `scores.plotdata.rank_histogram` (also available as `scores.probability.rank_histogram`). See [PR #919](https://github.com/nci/scores/pull/919).
 
 ### Deprecations
 
@@ -23,6 +29,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
+- Added two new tutorials:
+	- "The Probability Integral Transform (PIT)". See [PR #919](https://github.com/nci/scores/pull/919).
+	- "Rank Histogram". See [PR #919](https://github.com/nci/scores/pull/919). 
 - Pinned version of `Sphinx` to prior to version 8 (i.e. `sphinx<8`), due to a change in symlink handling. This will need to be resolved before `scores` can migrate to more recent versions of `Sphinx`. See [commit f60ae0c](https://github.com/nci/scores/commit/f60ae0c9d6f2ebd723df57541d849b6b5ecccd23).
 - Updated the "Contributing Guide" to include additional information about running pre-commit checks. See [PR #977](https://github.com/nci/scores/pull/977).
 - Corrected a function name in an example in the `scores.stats.statistical_tests.diebold_mariano` docstring. See [PR #978](https://github.com/nci/scores/pull/978).
