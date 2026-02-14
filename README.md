@@ -98,31 +98,31 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 	- BibTeX:
 		```
 		@article{Leeuwenburg_scores_A_Python_2024,
-		author = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
-		doi = {10.21105/joss.06889},
-		journal = {Journal of Open Source Software},
-		month = jul,
-		number = {99},
-		pages = {6889},
-		title = {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
-		url = {https://joss.theoj.org/papers/10.21105/joss.06889},
-		volume = {9},
-		year = {2024}
+		author 		= {Leeuwenburg, Tennessee and Loveday, Nicholas and Ebert, Elizabeth E. and Cook, Harrison and Khanarmuei, Mohammadreza and Taggart, Robert J. and Ramanathan, Nikeeth and Carroll, Maree and Chong, Stephanie and Griffiths, Aidan and Sharples, John},
+		doi 		= {10.21105/joss.06889},
+		journal 	= {Journal of Open Source Software},
+		month 		= jul,
+		number 		= {99},
+		pages 		= {6889},
+		title 		= {{scores: A Python package for verifying and evaluating models and predictions with xarray}},
+		url 		= {https://joss.theoj.org/papers/10.21105/joss.06889},
+		volume 		= {9},
+		year 		= {2024}
 		}
 		```
 - **Please also cite the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
-	- For example, below is the citation for Version 2.4.0 of `scores`:  
-	- Leeuwenburg, T., Loveday, N., Ramanathan, N., Chong, S., Taggart, R. J., Shrestha, D., Khanarmuei, M., Cook, H., Bluett, L., Ebert, E. E., Carroll, M., Trotta, B., Bishop, S., Squire, D. T., Griffiths, A., Pagano, T. C., Fisher, A. J., Mandelbaum, T., Jinghan, F., … Smallwood, J. (2026). scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models (2.4.0). Zenodo. [https://doi.org/10.5281/zenodo.18242190](https://doi.org/10.5281/zenodo.18242190)
+	- For example, below is the citation for Version 2.5.0 of `scores`:  
+	- Leeuwenburg, T., Loveday, N., Ramanathan, N., Chong, S., Taggart, R. J., Shrestha, D., Khanarmuei, M., Cook, H., Bluett, L., Ebert, E. E., Carroll, M., Trotta, B., Sharples, J., Bishop, S., Squire, D. T., Griffiths, A., Pagano, T. C., Fisher, A. J., Mandelbaum, T., … Wu, X. (2026). scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models (2.5.0). Zenodo. https://doi.org/10.5281/zenodo.18638494
 	- BibTeX:
 		```
-		@software{leeuwenburg_2026_18242190,
-  		author       = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ramanathan, Nikeeth and Chong, Stephanie and Taggart, Robert J. and Shrestha, Durga and Khanarmuei, Mohammadreza and Cook, Harrison and Bluett, Liam and Ebert, Elizabeth E. and Carroll, Maree and Trotta, Belinda and Bishop, Sam and Squire, Dougal T. and Griffiths, Aidan and Pagano, Thomas C. and Fisher, A.J. and Mandelbaum, Taylor and Jinghan, Fu and Smith, Paul R. and Sharples, John and Abellan, Esteban and Smallwood, J.},
-  		title        = {scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models},
-  		month        = jan,
-  		year         = 2026,
-  		publisher    = {Zenodo},
-  		version      = {2.4.0},
-  		doi          = {10.5281/zenodo.18242190},
-  		url          = {https://doi.org/10.5281/zenodo.18242190}
+		@software{leeuwenburg_2026_18638494,
+  		author      = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ramanathan, Nikeeth and Chong, Stephanie and Taggart, Robert J. and Shrestha, Durga and Khanarmuei, Mohammadreza and Cook, Harrison and Bluett, Liam and Ebert, Elizabeth E. and Carroll, Maree and Trotta, Belinda and Sharples, John and Bishop, Sam and Squire, Dougal T. and Griffiths, Aidan and Pagano, Thomas C. and Fisher, A.J. and Mandelbaum, Taylor and Jinghan, Fu and Smith, Paul R. and Abellan, Esteban and Beunk, Jurian and Esperson, Felix and Smallwood, J. and Wu, Xiaoxi},
+  		title       = {scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models},
+		month       = feb,
+  		year.       = 2026,
+  		publisher   = {Zenodo},
+  		version     = {2.5.0},
+  		doi         = {10.5281/zenodo.18638494},
+  		url         = {https://doi.org/10.5281/zenodo.18638494},
 		}
 		```
