@@ -1,5 +1,60 @@
 # Release Notes (What's New)
 
+## Version 2.5.0 (February 14, 2026)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.4.0...2.5.0). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+- `scores` has introduced support for Python 3.14. See [PR #989](https://github.com/nci/scores/pull/989).
+- Added probability integral transform (PIT) classes:
+	- PIT for ensembles or cumulative distribution functions (CDFs): `scores.probability.Pit`
+	- PIT for predictive CDFs evaluated at observations: `scores.probability.PitFcstAtObs`.  
+	See [PR #919](https://github.com/nci/scores/pull/919). 
+- Added a new function for generating data for rank histograms:
+	- Rank histogram: `scores.plotdata.rank_histogram` (also available as `scores.probability.rank_histogram`). See [PR #919](https://github.com/nci/scores/pull/919) and [PR #1012](https://github.com/nci/scores/pull/1012).
+
+### Deprecations
+
+- Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
+	- support for `include_components` in `scores.probability.tw_crps_for_ensemble`, 
+	- support for `include_components` in `scores.probability.tail_tw_crps_for_ensemble` and
+	- support for `include_components` in `scores.probability.interval_tw_crps_for_ensemble`.  
+	See [PR #991](https://github.com/nci/scores/pull/991). 
+
+### Bug Fixes
+
+- Fixed an `IndexError` in receiver (relative) operating characteristic (ROC). As such, mutlidimensional input arrays are now supported when using automatic thresholds. See [PR #963](https://github.com/nci/scores/pull/963).
+- Fixed a situation where receiver (relative) operating characteristic (ROC) calculations could trigger a `NotImplementedError` within `Dask`. `scores.probability.roc_curve_data` and `scores.plotdata.roc` have been updated so that if `fcst` or `obs` is an xarray object backed by a dask array, and `check_args` is `True`, the min and max of the arrays will be calcuated immediately, which triggers computation. This can be avoided by setting `check_args=False.` See [PR #987](https://github.com/nci/scores/pull/987).
+
+### Documentation
+
+- Added two new tutorials:
+	- "The Probability Integral Transform (PIT)". See [PR #919](https://github.com/nci/scores/pull/919).
+	- "Rank Histogram". See [PR #919](https://github.com/nci/scores/pull/919).
+- Updated documentation to say there are now over 75 metrics, statistical techniques and data processing tools contained in `scores`. See [PR #1014](https://github.com/nci/scores/pull/1014).
+- Updated "Acknowledging or Citing `scores`" to include citation details for both our [Journal of Open Source Software paper](https://doi.org/10.21105/joss.06889) and the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` being used. See [PR #1003](https://github.com/nci/scores/pull/1003).
+- Updated the "Contributing Guide" to include additional information about running pre-commit checks. See [PR #977](https://github.com/nci/scores/pull/977) and [PR #1010](https://github.com/nci/scores/pull/1010).
+- Corrected a function name in an example in the `scores.stats.statistical_tests.diebold_mariano` docstring. See [PR #978](https://github.com/nci/scores/pull/978).
+- Pinned version of `Sphinx` to prior to version 8 (i.e. `sphinx<8`), due to a change in symlink handling. This will need to be resolved before `scores` can migrate to more recent versions of `Sphinx`. See [commit f60ae0c](https://github.com/nci/scores/commit/f60ae0c9d6f2ebd723df57541d849b6b5ecccd23).
+
+### Internal Changes
+
+- Fixed `Numba` warnings in fast Continuous Ranked Probability Score (CRPS) implementation when NaNs are present in input data. See [PR #957](https://github.com/nci/scores/pull/957).
+- Set join explicity to "outer" to be compatible with upcoming changes in `Xarray`. See [PR #964](https://github.com/nci/scores/pull/964).
+- Replaced implementations of `SciPy's` legacy function `interpolate.interp1d` with a wrapper function. See [PR #971](https://github.com/nci/scores/pull/971).
+- Removed the use of `NetCDF` data on disk from tests. Data is now created on the fly. See [PR #966](https://github.com/nci/scores/pull/966).
+- Added `Ruff`. `Ruff` is now included in pre-commit and replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967), [PR #972](https://github.com/nci/scores/pull/972), [PR #979](https://github.com/nci/scores/pull/979) and [PR #990](https://github.com/nci/scores/pull/990).
+- Replaced `mypy` with `ty`. Added `ty` to pre-commit for type checking. [PR #984](https://github.com/nci/scores/pull/984) and [PR #993](https://github.com/nci/scores/pull/993).
+- Updated CI/CD and pre-commit hooks to treat warnings as test failures. See [commit a28042d](https://github.com/nci/scores/commit/a28042df1b0ad18d721fa3ead106af4cb5e59d8b).
+- The directory name `tests/probabilty/` was spelled incorrectly and has been renamed to `tests/probability/`. See [PR #1021](https://github.com/nci/scores/pull/1021).
+
+### Contributors to this Release
+
+Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Durga Shrestha ([@durgals](https://github.com/durgals)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.4.0 (January 14, 2026)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.3.0...2.4.0). Below are the changes we think users may wish to be aware of.
