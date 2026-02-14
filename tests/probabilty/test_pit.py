@@ -742,6 +742,7 @@ def test_variance_dask():
         (ptd.DA_OBS_PVCDF2, ptd.EXP__PVCDF2),  # obs < thresholds only
     ],
 )
+# Ignore UserWarnings as these are explicitly tested in other tests
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test__pit_values_for_cdf_array(obs, expected):
     """Tests that `_pit_values_for_cdf_array` returns as expected."""
@@ -793,6 +794,7 @@ def test__pit_values_for_cdf_array_warns(fcst_left, obs, warning_msg):
         ),
     ],
 )
+# Ignore UserWarnings as these are explicitly tested in other tests
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
     """Tests that `_pit_values_for_cdf_dataset` returns as expected."""
@@ -836,6 +838,7 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
         ),
     ],
 )
+# Ignore UserWarnings as these are explicitly tested in other tests
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test__pit_distribution_for_cdf(fcst, obs, fcst_left, preserve_dims, expected):
     """Tests that `_pit_distribution_for_cdf` returns as expected."""
@@ -959,7 +962,8 @@ def test_Pit__init___raises(ensemble_member_dim, cdf_threshold_dim):
         ),
     ],
 )
-# @pytest.mark.filterwarnings("ignore::UserWarning")
+# Ignore UserWarnings as these are explicitly tested in other tests
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_Pit__init__(
     fcst,
     obs,
@@ -1071,6 +1075,7 @@ def test__right_left_checks(right, left, threshold_dim, error_msg):
         ),
     ],
 )
+# Ignore UserWarnings as these are explicitly tested in other tests
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_pit__left_right_dask(
     fcst, obs, ensemble_member_dim, cdf_threshold_dim, fcst_left, preserve_dims, exp_left, exp_right, exp_endpoints
