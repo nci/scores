@@ -37,7 +37,7 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from tests.probabilty import crps_test_data
+from tests.probability import crps_test_data
 
 
 @pytest.mark.parametrize(
@@ -996,32 +996,6 @@ def test_crps_for_ensemble_dask(fcst, obs):
             False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
-        # Test decomposition with DataArrays
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            "upper",
-            1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
-        ),
-        # Test decomposition with Datasets
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            "upper",
-            1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
-        ),
     ],
 )
 def test_tail_tw_crps_for_ensemble(
@@ -1219,30 +1193,6 @@ def v_func4(x):
             False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
-        # Test decomposition with DataArrays
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            v_func1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
-        ),
-        # Test decomposition with Datasets
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            v_func1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
-        ),
     ],
 )
 def test_tw_crps_for_ensemble(
@@ -1433,32 +1383,6 @@ def test_tw_crps_for_ensemble_dask():
             False,
             crps_test_data.EXP_CRPSENS_WT_DS,
         ),
-        # Test decomposition with DataArrays
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            2,
-            5,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA,
-        ),
-        # Test decomposition with Datasets
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            2,
-            5,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS,
-        ),
     ],
 )
 def test_interval_tw_crps_for_ensemble(
@@ -1556,22 +1480,104 @@ def test_interval_tw_crps_for_ensemble_dask():
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)
 
 
-def test_tw_crps_for_ensemble_deprecation():
-    fcst = crps_test_data.DA_FCST_CRPSENS
-    obs = crps_test_data.DA_OBS_CRPSENS
+@pytest.mark.parametrize(
+    ("fcst", "obs", "v_func", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            v_func1,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            v_func1,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
+        ),
+    ],
+)
+def test_tw_crps_for_ensemble_deprecation(fcst, obs, v_func, expected):
+    """
+    Tests tw_crps_for_ensemble include_components=True emits FutureWarning and
+    returns correct result.
+    """
     with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
-        tw_crps_for_ensemble(fcst, obs, "ens_member", lambda x: np.maximum(x, 0.5), include_components=True)
+        result = tw_crps_for_ensemble(
+            fcst,
+            obs,
+            ensemble_member_dim="ens_member",
+            chaining_func=v_func,
+            method="ecdf",
+            preserve_dims="all",
+            include_components=True,
+        )
+    xr.testing.assert_allclose(result, expected)
 
 
-def test_tail_tw_crps_for_ensemble_deprecation():
-    fcst = crps_test_data.DA_FCST_CRPSENS
-    obs = crps_test_data.DA_OBS_CRPSENS
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
+        ),
+    ],
+)
+def test_tail_tw_crps_for_ensemble_deprecation(fcst, obs, expected):
+    """
+    Tests tail_tw_crps_for_ensemble include_components=True emits FutureWarning
+    and returns correct result.
+    """
     with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
-        tail_tw_crps_for_ensemble(fcst, obs, "ens_member", 0.5, tail="upper", include_components=True)
+        result = tail_tw_crps_for_ensemble(
+            fcst,
+            obs,
+            ensemble_member_dim="ens_member",
+            threshold=1,
+            method="ecdf",
+            tail="upper",
+            preserve_dims="all",
+            include_components=True,
+        )
+    xr.testing.assert_allclose(result, expected)
 
 
-def test_interval_tw_crps_for_ensemble_deprecation():
-    fcst = crps_test_data.DA_FCST_CRPSENS
-    obs = crps_test_data.DA_OBS_CRPSENS
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS,
+        ),
+    ],
+)
+def test_interval_tw_crps_for_ensemble_deprecation(fcst, obs, expected):
+    """
+    Tests interval_tw_crps_for_ensemble include_components=True emits
+    FutureWarning and returns correct result.
+    """
     with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
-        interval_tw_crps_for_ensemble(fcst, obs, "ens_member", -20, 10, include_components=True)
+        result = interval_tw_crps_for_ensemble(
+            fcst,
+            obs,
+            ensemble_member_dim="ens_member",
+            lower_threshold=2,
+            upper_threshold=5,
+            method="ecdf",
+            preserve_dims="all",
+            include_components=True,
+        )
+    xr.testing.assert_allclose(result, expected)

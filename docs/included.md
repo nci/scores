@@ -277,28 +277,25 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
   -
 * -
-    - PIT for ensembles or CDFs
+    - PIT for Ensembles or CDFs
   -
     [API](api.md#scores.probability.Pit)
   -
     [Tutorial](project:./tutorials/PIT.md)
   -
-    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
+    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et al. (2010)](https://doi.org/10.1029/2009WR008328)
 * -
-    - PIT for predictive CDFs evaluated at observations
+    - PIT for Predictive CDFs Evaluated at Observations
   -
     [API](api.md#scores.probability.PitFcstAtObs)
   -
     [Tutorial](project:./tutorials/PIT.md)
   -
-    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et. al. (2010)](https://doi.org/10.1029/2009WR008328)
-* - Rank histogram
-  -
-    [API](api.md#scores.probability.rank_histogram)
-  -
-    [Tutorial](project:./tutorials/Rank_Histogram.md)
-  -
-    [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
+    [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et al. (2010)](https://doi.org/10.1029/2009WR008328)
+* - Rank Histogram
+  - [API](api.md#scores.probability.rank_histogram)
+  - [Tutorial](project:./tutorials/Rank_Histogram.md)
+  - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.probability.roc_curve_data)
   - [Tutorial](project:./tutorials/ROC.md)
@@ -826,6 +823,10 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.plotdata.qq)
   - [Tutorial](project:./tutorials/Q-Q_plots.md)
   - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
+* - Rank Histogram
+  - [API](api.md#scores.plotdata.rank_histogram)
+  - [Tutorial](project:./tutorials/Rank_Histogram.md)
+  - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2) 
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.plotdata.roc)
   - [Tutorial](project:./tutorials/ROC.md)

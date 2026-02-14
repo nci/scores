@@ -18,7 +18,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: pytest tests/ --cov=src/scores --cov-report term-missing
+        entry: pytest -W error::RuntimeWarning tests/ --cov=src/scores --cov-report term-missing
         language: system
         stages: [pre-push]
         always_run: true
