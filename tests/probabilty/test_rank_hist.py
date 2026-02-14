@@ -87,6 +87,7 @@ def test__value_at_rank(fcst, obs, expected):
     xr.testing.assert_equal(expected, result)
 
 
+# Ignore UserWarnings as these are explicitly tested in other tests
 @pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
@@ -119,6 +120,7 @@ def test_rank_histogram_warns(fcst):
         rh.rank_histogram(fcst, DA_OBS, "ens_member")
 
 
+# Ignore UserWarnings as these are explicitly tested in other tests
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_rank_histogram_dask():
     """
