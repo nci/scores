@@ -33,7 +33,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- "The Probability Integral Transform (PIT)". See [PR #919](https://github.com/nci/scores/pull/919).
 	- "Rank Histogram". See [PR #919](https://github.com/nci/scores/pull/919).
 - Updated "Acknowledging or Citing `scores`" to include citation details for both our [Journal of Open Source Software paper](https://doi.org/10.21105/joss.06889) and the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` being used. See [PR #1003](https://github.com/nci/scores/pull/1003).
-- Updated the "Contributing Guide" to include additional information about running pre-commit checks. See [PR #977](https://github.com/nci/scores/pull/977).
+- Updated the "Contributing Guide" to include additional information about running pre-commit checks. See [PR #977](https://github.com/nci/scores/pull/977) and [PR #1010](https://github.com/nci/scores/pull/1010).
 - Corrected a function name in an example in the `scores.stats.statistical_tests.diebold_mariano` docstring. See [PR #978](https://github.com/nci/scores/pull/978).
 - Pinned version of `Sphinx` to prior to version 8 (i.e. `sphinx<8`), due to a change in symlink handling. This will need to be resolved before `scores` can migrate to more recent versions of `Sphinx`. See [commit f60ae0c](https://github.com/nci/scores/commit/f60ae0c9d6f2ebd723df57541d849b6b5ecccd23).
 
@@ -46,10 +46,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Added `Ruff`. `Ruff` is now included in pre-commit and replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967), [PR #972](https://github.com/nci/scores/pull/972), [PR #979](https://github.com/nci/scores/pull/979) and [PR #990](https://github.com/nci/scores/pull/990).
 - Replaced `mypy` with `ty`. Added `ty` to pre-commit for type checking. [PR #984](https://github.com/nci/scores/pull/984) and [PR #993](https://github.com/nci/scores/pull/993).
 
-
 ### Contributors to this Release
 
-Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)) John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
+Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Durga Shrestha ([@durgals](https://github.com/durgals)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
