@@ -15,7 +15,7 @@ import pytest
 import xarray as xr
 
 from scores.probability import brier_score, brier_score_for_ensemble
-from tests.probabilty import brier_test_data as btd
+from tests.probability import brier_test_data as btd
 
 
 @pytest.mark.parametrize(
