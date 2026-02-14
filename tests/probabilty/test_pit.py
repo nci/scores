@@ -746,6 +746,12 @@ def test_variance_dask():
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test__pit_values_for_cdf_array(obs, expected):
     """Tests that `_pit_values_for_cdf_array` returns as expected."""
+
+    # We have ignored the UserWarnings here since:
+
+    # We want the tests to capture cases where there are NaNs to ensure that the behaviour is correct
+    # The UserWarnings are already explicitly tested
+
     result = _pit_values_for_cdf_array(ptd.DA_FCST_CDF_LEFT, ptd.DA_FCST_CDF_RIGHT, obs, "thld")
     xr.testing.assert_allclose(expected, result)
 
@@ -792,6 +798,12 @@ def test__pit_values_for_cdf_array_warns(fcst_left, obs, warning_msg):
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
     """Tests that `_pit_values_for_cdf_dataset` returns as expected."""
+
+    # We have ignored the UserWarnings here since:
+
+    # We want the tests to capture cases where there are NaNs to ensure that the behaviour is correct
+    # The UserWarnings are already explicitly tested
+
     result = _pit_values_for_cdf(fcst_left, fcst_right, obs, "thld")
     xr.testing.assert_allclose(expected, result)
 
@@ -830,6 +842,12 @@ def test__pit_values_for_cdf(fcst_left, fcst_right, obs, expected):
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test__pit_distribution_for_cdf(fcst, obs, fcst_left, preserve_dims, expected):
     """Tests that `_pit_distribution_for_cdf` returns as expected."""
+
+    # We have ignored the UserWarnings here since:
+
+    # We want the tests to capture cases where there are NaNs to ensure that the behaviour is correct
+    # The UserWarnings are already explicitly tested
+
     result = _pit_distribution_for_cdf(fcst, obs, "thld", fcst_left=fcst_left, preserve_dims=preserve_dims)
     assert expected.keys() == result.keys()
     for key in result.keys():
