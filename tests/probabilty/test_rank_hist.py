@@ -87,6 +87,7 @@ def test__value_at_rank(fcst, obs, expected):
     xr.testing.assert_equal(expected, result)
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
     ("fcst", "obs", "reduce_dims", "preserve_dims", "weights", "expected"),
     [
@@ -118,6 +119,7 @@ def test_rank_histogram_warns(fcst):
         rh.rank_histogram(fcst, DA_OBS, "ens_member")
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_rank_histogram_dask():
     """
     Tests that rank_histogram works with dask
