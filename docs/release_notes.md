@@ -12,7 +12,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- PIT for predictive CDFs evaluated at observations: `scores.probability.PitFcstAtObs`.  
 	See [PR #919](https://github.com/nci/scores/pull/919). 
 - Added a new function for generating data for rank histograms:
-	- Rank histogram: `scores.plotdata.rank_histogram` (also available as `scores.probability.rank_histogram`). See [PR #919](https://github.com/nci/scores/pull/919).
+	- Rank histogram: `scores.plotdata.rank_histogram` (also available as `scores.probability.rank_histogram`). See [PR #919](https://github.com/nci/scores/pull/919) and [PR #1012](https://github.com/nci/scores/pull/1012).
 
 ### Deprecations
 
@@ -32,6 +32,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Added two new tutorials:
 	- "The Probability Integral Transform (PIT)". See [PR #919](https://github.com/nci/scores/pull/919).
 	- "Rank Histogram". See [PR #919](https://github.com/nci/scores/pull/919).
+- Updated documentation to say there are now over 75 metrics, statistical techniques and data processing tools contained in `scores`. See [PR #1014](https://github.com/nci/scores/pull/1014).
 - Updated "Acknowledging or Citing `scores`" to include citation details for both our [Journal of Open Source Software paper](https://doi.org/10.21105/joss.06889) and the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` being used. See [PR #1003](https://github.com/nci/scores/pull/1003).
 - Updated the "Contributing Guide" to include additional information about running pre-commit checks. See [PR #977](https://github.com/nci/scores/pull/977) and [PR #1010](https://github.com/nci/scores/pull/1010).
 - Corrected a function name in an example in the `scores.stats.statistical_tests.diebold_mariano` docstring. See [PR #978](https://github.com/nci/scores/pull/978).
@@ -45,6 +46,8 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Removed the use of `NetCDF` data on disk from tests. Data is now created on the fly. See [PR #966](https://github.com/nci/scores/pull/966).
 - Added `Ruff`. `Ruff` is now included in pre-commit and replaces `Pylint`, `Black`, `Bandit` and `isort`. See [PR #967](https://github.com/nci/scores/pull/967), [PR #972](https://github.com/nci/scores/pull/972), [PR #979](https://github.com/nci/scores/pull/979) and [PR #990](https://github.com/nci/scores/pull/990).
 - Replaced `mypy` with `ty`. Added `ty` to pre-commit for type checking. [PR #984](https://github.com/nci/scores/pull/984) and [PR #993](https://github.com/nci/scores/pull/993).
+- Updated CI/CD and pre-commit hooks to treat warnings as test failures. See [commit a28042d](https://github.com/nci/scores/commit/a28042df1b0ad18d721fa3ead106af4cb5e59d8b).
+- The directory name `tests/probabilty/` was spelled incorrectly and has been renamed to `tests/probability/`. See [PR #1021](https://github.com/nci/scores/pull/1021).
 
 ### Contributors to this Release
 
