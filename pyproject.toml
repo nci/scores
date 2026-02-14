@@ -82,7 +82,6 @@ override = true  # This is required to activate the build hook.
 # The pinned versions of these dependencies will be subsituted during package builds.
 # Pinned versions will only be substitued for packages that are already in this package's dependencies list.
 pinned_dependencies = [
-    "python <= 3.14",
     "xarray >= 2024.1",  # xarray follows calver rather than semver, so using >= is the best we can do
     "pandas ~= 2.0",
     "scipy ~= 1.13",
