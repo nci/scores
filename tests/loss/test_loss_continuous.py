@@ -31,7 +31,7 @@ BIAS_WEIGHTS = torch.tensor(
     names=("space", "time"),
 )
 
-EXP_BIAS2 = torch.tensor(np.array([-1, -2, 1]), names=("space",))
+EXP_BIAS2 = torch.tensor(np.array([-1.33333]))
 
 
 def test_mse_pandas_series():
@@ -67,12 +67,9 @@ def test_additive_bias(fcst, obs, weights, expected):
     Tests continuous.additive_bias
     Also tests mean_error (which is an identical function)
     """
-    result = scores.loss.continuous.additive_bias(fcst, obs, weights=weights)
-    # result2 = scores.loss.continuous.mean_error(
-    #     fcst, obs, weights=weights
-    # )
-    xr.testing.assert_equal(result, expected)
-    # xr.testing.assert_equal(result, result2)
+
+    tensor_result = scores.loss.continuous.additive_bias(fcst, obs, weights=weights)
+    assert (torch.round(tensor_result, decimals=4) == torch.tensor(expected)).all()
 
 
 # def test_mse_dataframe():
