@@ -116,14 +116,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> counts = table.get_counts()
             {'tp_count': <xarray.DataArray ()> Size: 8B array(1.),
@@ -152,14 +157,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             <xarray.DataArray (contingency: 5)> Size: 40B
             array([1., 2., 1., 0., 4.])
@@ -192,18 +202,25 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> # Optional arguments provide more informative column and row names
-            >>> result = table.format_table(positive_value_name="Above 1.3",
-            ...                             negative_value_name="Below 1.3")
+            >>> result = table.format_table(
+            ...     positive_value_name="Above 1.3",
+            ...     negative_value_name="Below 1.3",
+            ... )
                                 Above 1.3 Observed  Below 1.3 Observed  Total
             Above 1.3 Forecast                   1                   1      2
             Below 1.3 Forecast                   0                   2      2
@@ -256,14 +273,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.accuracy()
             <xarray.DataArray ()> Size: 8B array(0.75)
@@ -298,14 +320,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.base_rate()
             <xarray.DataArray ()> Size: 8B array(0.25)
@@ -340,14 +367,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.forecast_rate()
             <xarray.DataArray ()> Size: 8B
@@ -381,14 +413,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.fraction_correct()
             <xarray.DataArray ()> Size: 8B array(0.75)
@@ -421,14 +458,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.frequency_bias()
             <xarray.DataArray ()> Size: 8B
@@ -467,14 +509,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.bias_score()
             <xarray.DataArray ()> Size: 8B
@@ -509,14 +556,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.hit_rate()
             <xarray.DataArray ()> Size: 8B array(1)
@@ -549,14 +601,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.probability_of_detection()
             <xarray.DataArray ()> Size: 8B
@@ -597,14 +654,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.true_positive_rate()
             <xarray.DataArray ()> Size: 8B
@@ -637,14 +699,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.false_alarm_ratio()
             <xarray.DataArray ()> Size: 8B
@@ -680,14 +747,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.false_alarm_rate()
             <xarray.DataArray ()> Size: 8B
@@ -724,14 +796,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.probability_of_false_detection()
             <xarray.DataArray ()> Size: 8B
@@ -765,14 +842,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.success_ratio()
             <xarray.DataArray ()> Size: 8B array(0.5)
@@ -806,14 +888,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.threat_score()
             <xarray.DataArray ()> Size: 8B array(0.5)
@@ -849,14 +936,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.critical_success_index()
             <xarray.DataArray ()> Size: 8B array(0.5)
@@ -941,14 +1033,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.true_skill_statistic()
             <xarray.DataArray ()> Size: 8B array(0.66667)
@@ -986,14 +1083,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.hanssen_and_kuipers_discriminant()
             <xarray.DataArray ()> Size: 8B array(0.66667)
@@ -1037,14 +1139,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.sensitivity()
             <xarray.DataArray ()> Size: 8B array(1)
@@ -1081,14 +1188,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.specificity()
             >>> result
@@ -1124,14 +1236,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.true_negative_rate()
             >>> result
@@ -1170,14 +1287,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.recall()
             <xarray.DataArray ()> Size: 8B array(1)
@@ -1211,14 +1333,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.precision()
             <xarray.DataArray ()> Size: 8B array(0.5)
@@ -1257,14 +1384,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.positive_predictive_value()
             >>> result
@@ -1305,14 +1437,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.negative_predictive_value()
             >>> result
@@ -1349,14 +1486,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.f1_score()
             <xarray.DataArray ()> Size: 8B array(0.66667)
@@ -1715,14 +1857,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.odds_ratio_skill_score()
             <xarray.DataArray ()> Size: 8B array(1)
@@ -1771,14 +1918,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5], [0.8, 1.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.yules_q()
             <xarray.DataArray ()> Size: 8B array(1)
@@ -1810,11 +1962,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         Notes:
             - POD = Probability of Detection
             - POFD = Probability of False Detection
-            - "True positives" is the same as "hits".
-            - "False negatives" is the same as "misses".
-            - "False positives" is the same as "false alarms".
-            - "True negatives" is the same as "correct negatives".
-            - Range: -1 to 1, Perfect score: 1.
+            - "True positives" is the same as "hits"
+            - "False negatives" is the same as "misses"
+            - "False positives" is the same as "false alarms"
+            - "True negatives" is the same as "correct negatives"
+            - Range: -1 to 1, Perfect score: 1, No skill score: 0
 
 
         References:
@@ -1828,14 +1980,19 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import operator
             >>> # Note a different set of forecasts and observations
             >>> from other examples, to give a meaningful result here
-            >>> fcst = xr.DataArray([[1.0, 1.4],[0.7, 1.4]],
-            ...                            coords=[[33, 45], [-30, 30]],
-            ...                            dims=["lat", "lon"])
-            >>> obs = xr.DataArray([[1.5, 1.5],[0.8, 0.5]],
-            ...                           coords=[[33, 45], [-30, 30]],
-            ...                           dims=["lat", "lon"])
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> fcst = xr.DataArray(
+            ...     [[1.0, 1.4], [0.7, 1.4]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> obs = xr.DataArray(
+            ...     [[1.5, 1.5], [0.8, 0.5]],
+            ...     coords=[[33, 45], [-30, 30]],
+            ...     dims=["lat", "lon"],
+            ... )
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.symmetric_extremal_dependence_index()
             <xarray.DataArray ()> Size: 8B array(0)
@@ -1938,16 +2095,25 @@ class BinaryContingencyManager(BasicContingencyManager):
             >>> # lat, lon, and time dimensions
             >>> fcst = xr.DataArray(
             ...     [[[1.5, 0.0], [0.7, 1.4]], [[1.2, 1.6], [0.5, 1.8]]],
-            ...     coords={"time": [0, 1], "lat": [33, 45], "lon": [-30, 30]},
-            ...     dims=["time", "lat", "lon"]
+            ...     coords={
+            ...         "time": [0, 1],
+            ...         "lat": [33, 45],
+            ...         "lon": [-30, 30],
+            ...     },
+            ...     dims=["time", "lat", "lon"],
             ... )
             >>> obs = xr.DataArray(
             ...     [[[1.2, 0.5], [0.8, 1.5]], [[1.0, 1.7], [0.6, 1.9]]],
-            ...     coords={"time": [0, 1], "lat": [33, 45], "lon": [-30, 30]},
-            ...     dims=["time", "lat", "lon"]
+            ...     coords={
+            ...         "time": [0, 1],
+            ...         "lat": [33, 45],
+            ...         "lon": [-30, 30],
+            ...     },
+            ...     dims=["time", "lat", "lon"],
             ... )
-            >>> match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3,
-            ...                                                   default_op_fn=operator.gt)
+            >>> match = scores.categorical.ThresholdEventOperator(
+            ...     default_event_threshold=1.3, default_op_fn=operator.gt
+            ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> # Reduce all dimensions to get overall statistics
             >>> basic_all = table.transform(reduce_dims="all")
@@ -1957,7 +2123,7 @@ class BinaryContingencyManager(BasicContingencyManager):
             * contingency  (contingency) <U11 220B 'tp_count' 'tn_count' ... 'total_count'
             >>> # Reduce lat and lon dimensions to get statistics vs time
             >>> # This is equivalent to preserve_dims=["time"]
-            >>> basic_time = table.transform(reduce_dims=["lat","lon"])
+            >>> basic_time = table.transform(reduce_dims=["lat", "lon"])
             Contingency Manager (xarray view of table):
             <xarray.DataArray (contingency: 5, time: 2)> Size: 80B
             array([[1., 2.],
