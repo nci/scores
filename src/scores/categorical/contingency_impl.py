@@ -396,7 +396,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         return self.accuracy()
 
     def frequency_bias(self) -> xr.DataArray:
-        r"""
+        """
         Identical to :py:func:`bias_score`.
 
         How did the forecast frequency of "yes" events compare to the observed frequency of "yes" events?
@@ -405,8 +405,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataAray: An xarray object containing the frequency bias
 
         .. math::
-            \text{frequency bias} = \frac{\text{true positives} + \text{false positives}}
-            {\text{true positives} + \text{false negatives}}
+            \\text{frequency bias} = \\frac{\\text{true positives} + \\text{false positives}}
+            {\\text{true positives} + \\text{false negatives}}
 
         Notes:
             - Range: 0 to ∞ (infinity), where 1 indicates a perfect score.
@@ -1101,7 +1101,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         return s
 
     def true_negative_rate(self) -> xr.DataArray:
-        r"""
+        """
         Identical to :py:func:`specificity`.
 
         The probability that an observed non-event will be correctly predicted.
@@ -1110,8 +1110,8 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the true negative rate.
 
         .. math::
-            \text{true negative rate} = \frac{\text{true negatives}}
-                {\text{true negatives} + \text{false positives}}
+            \\text{true negative rate} = \\frac{\\text{true negatives}}
+                {\\text{true negatives} + \\text{false positives}}
 
         Notes:
             - "True negatives" is the same as "correct negatives".
@@ -1606,7 +1606,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
         return self.heidke_skill_score()
 
     def odds_ratio(self) -> xr.DataArray:
-        r"""
+        """
         Calculates the odds ratio
 
         What is the ratio of the odds of a "yes" forecast being correct, to the odds of
@@ -1616,14 +1616,14 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             xr.DataArray: An xarray object containing the odds ratio
 
         .. math::
-            \begin{aligned}
-                    \text{odds ratio} &=
-                        \left[\frac{\text{POD}}{1 - \text{POD}}\right]
-                        \div
-                        \left[\frac{\text{POFD}}{1 - \text{POFD}}\right] \\
-                    &= \frac{\text{true positives} \cdot \text{true negatives}}
-                            {\text{false positives} \cdot \text{false negatives}}
-                \end{aligned}
+            \\begin{aligned}
+                    \\text{odds ratio} &=
+                        \\left[\\frac{\\text{POD}}{1 - \\text{POD}}\\right]
+                        \\div
+                        \\left[\\frac{\\text{POFD}}{1 - \\text{POFD}}\right] \\
+                    &= \\frac{\\text{true positives} \\cdot \\text{true negatives}}
+                            {\\text{false positives} \\cdot \\text{false negatives}}
+                \\end{aligned}
 
         where
 
