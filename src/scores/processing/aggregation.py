@@ -3,6 +3,7 @@ Functions related to aggregating data
 """
 
 import warnings
+from functools import singledispatch
 from typing import Optional
 
 import xarray as xr
@@ -90,7 +91,13 @@ def aggregate(
             raise ValueError(f"Unsupported method {method}. Expected 'mean' or 'sum'.")
 
 
-def _weighted_mean(
+@singledispatch
+def _weighted_mean(values, weights, reduce_dims=None):
+    raise NotImplementedError("Somehow hit the base implementation")
+
+
+@_weighted_mean.register
+def _(
     values: XarrayLike,
     weights: XarrayLike,
     reduce_dims: FlexibleDimensionTypes,
@@ -117,6 +124,20 @@ def _weighted_mean(
     values = values.weighted(weights)
 
     return values.mean(reduce_dims)
+
+
+try:
+    import torch
+
+    @_weighted_mean.register
+    def _(values: torch.Tensor, weights: torch.Tensor, reduce_dims: FlexibleDimensionTypes):
+        sum_of_weights = weights.sum()
+        weighted = values * weights
+        result = weighted.rename(None).nanmean() / sum_of_weights
+        return result
+except ImportError:
+    # This is fully expected when torch is not available in the user environment - the default expectation
+    pass
 
 
 def _weighted_sum(
