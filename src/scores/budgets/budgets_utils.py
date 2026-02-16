@@ -56,6 +56,8 @@ def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sum_d
 
     dlat[:] = meters_per_degree*dlat[:]
 
+    return dlon, dlat, longitude, latitude
+
 # dimensions are assumed as: field[num_latitudes,num_longitudes]
 def integrate_horizontal(field, dlon, dlat):
     int_lon = np.dot(field, dlon)
