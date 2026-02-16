@@ -14,6 +14,7 @@ import scores.probability
 import scores.processing
 import scores.sample_data
 import scores.stats.statistical_tests  # noqa: F401
+import scores.budgets
 
 __version__ = "2.6.0"
 
@@ -28,4 +29,5 @@ __all__ = [
     "scores.processing",
     "scores.sample_data",
     "scores.stats.statistical_tests",
+    "scores.budgets",
 ]
