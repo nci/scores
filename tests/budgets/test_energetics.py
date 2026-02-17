@@ -20,37 +20,34 @@ from scores.budgets.budgets_utils import *
 # Refereince: 
 #   Williamson, et al. (1992) JCP vol. 102 pp 211--224, eqn. (92)
 #
-# lambda: azimuthal angle
+# psi: azimuthal angle
 # theta: polar angle (from the equator)
 rad_earth = 6371220.0
 area_earth = 4.0 * np.pi * rad_earth * rad_earth
 u_0 = 2.0 * np.pi * rad_earth / (12.0 * 24.0 * 60.0 * 60.0)
-def stream_function(lambda, theta, alpha):
-    _lambda = np.deg2rad(lambda)
+def stream_function(psi, theta, alpha):
+    _psi = np.deg2rad(psi)
     _theta = np.deg2rad(theta)
 
-    return -rad_earth * u_0 * (np.sin(_theta) * np.cos(alpha) - np.cos(_lambda) * np.cos(_theta) * np.sin(alpha))
-
-def zero_function(lambda, theta, alpha):
-    return 0.0
+    return -rad_earth * u_0 * (np.sin(_theta) * np.cos(alpha) - np.cos(_psi) * np.cos(_theta) * np.sin(alpha))
 
 # derived from the stream function, \phi as:
 #   -1/r d\phi/d\theta
 # see eqn. (90) of Williamson et al. (1992)
-def zonal_velocity(lambda, theta, alpha):
-    _lambda = np.deg2rad(lambda)
+def zonal_velocity(psi, theta, alpha):
+    _psi = np.deg2rad(psi)
     _theta = np.deg2rad(theta)
 
-    return u_0 * (np.cos(_theta) * np.cos(alpha) + np.cos(_lambda) * np.sin(_theta) * np.sin(alpha))
+    return u_0 * (np.cos(_theta) * np.cos(alpha) + np.cos(_psi) * np.sin(_theta) * np.sin(alpha))
 
 # derived from the stream function, \phi as:
-#   1/(r cos(theta)) d\phi/d\lambda
+#   1/(r cos(theta)) d\phi/d\psi
 # see eqn. (91) of Williamson et al. (1992)
-def meridional_velocity(lambda, theta, alpha):
-    _lambda = np.deg2rad(lambda)
+def meridional_velocity(psi, theta, alpha):
+    _psi = np.deg2rad(psi)
     _theta = np.deg2rad(theta)
 
-    return -u_0 * np.sin(_lambda) * np.sin(alpha)
+    return -u_0 * np.sin(_psi) * np.sin(alpha)
 
 # init test for the spherical integration via convergence of errors with resolution
 @pytest.mark.parametrize(
@@ -59,7 +56,7 @@ def meridional_velocity(lambda, theta, alpha):
         # Global integral
         (
             stream_function,
-            0.25*np.pi + 0.05
+            0.25*np.pi,
             10.0,
             np.array([9,18], dtype=np.int64),
             3,
@@ -91,12 +88,12 @@ def meridional_velocity(lambda, theta, alpha):
         ),
         # Sub-domain in latitude and longitude
         (
-            zero_function,
-            0.0,
+            stream_function,
+            0.5*np.pi,
             10.0,
             np.array([9,18], dtype=np.int64),
             3,
-            np.array([-45.0, +45.0]),
+            np.array([-135.0, -45.0]),
             np.array([-90.0, 0.0]),
             0.125 * area_earth * 10.0,
         ),
@@ -157,12 +154,12 @@ def test_budgets_gradient(field, zonal_gradient, meridional_gradient, longitude,
     nlat = len(lat)
 
     psi = np.zeros((nlat, nlon))
-    dpsidlambda_analytic = np.zeros((nlat, nlon))
+    dpsidpsi_analytic = np.zeros((nlat, nlon))
     dpsidtheta_analytic = np.zeros((nlat, nlon))
     for ii in np.arange(nlat):
         for jj in np.arange(nlon):
             psi[ii,jj] = field(lon[jj], lat[ii])
-            dpsidlambda_analytic[ii,jj] = meridional_velocity(lon[jj], lat[ii])
+            dpsidpsi_analytic[ii,jj] = meridional_velocity(lon[jj], lat[ii])
             dpsidtheta_analytic[ii,jj] = -1.0*zonal_velocity(lon[jj], lat[ii])
 
     return
