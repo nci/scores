@@ -136,6 +136,24 @@ Most of these kinds of code change can also be handled as a PR by the reviewer o
 
 In short - once you have made a PR, the maintainers may then take it, modify it, or include it as-is. However, every effort will be made to communicate about that process and make sure that the originator of the PR is happy with any modifications made.
 
+
+## Generative AI Usage
+
+Generative AI tools can be helpful, but contributors must be transparent about using them in the `scores` repository.
+
+1.	Contributors must declare any use of generative AI tools in preparing their pull request. Because `scores` is used for academic work and many journals now require authors to declare if generative AI tools are used (see [1](https://joss.readthedocs.io/en/latest/policies.html#ai-usage-policy ), [2](https://www.ametsoc.org/ams/publications/ethical-guidelines-and-ams-policies/author-disclosure-and-obligations/), [3](https://www.egu.eu/news/1031/statement-on-the-use-of-ai-based-tools-for-the-presentation-and-publication-of-research-results-in-earth-planetary-and-space-science/), [4](https://rmets.onlinelibrary.wiley.com/hub/ai-policy)), it is important to keep track of generative AI usage.
+2.	The name of any generative AI tool or system used, and the version, should be included in each pull request, including identifying exactly where they were applied. The pull request template will include this in the checklist.
+3.	A human must be in the loop for all pull requests. Human contributors must understand their code, have reviewed it before submitting the pull request, and be able to explain all changes during review.
+4.	Contributors are responsible for all submitted content, regardless of whether generative AI tools were used.
+5.	If bots wish to propose improvements to the `scores` package, they should create an issue rather than submitting a pull request. The issue should clearly describe the proposed feature or change and may include example code snippets to illustrate how the implementation could be improved.
+6.	All contributions must adhere to the [code of conduct](https://github.com/nci/scores/blob/develop/CODE_OF_CONDUCT.md).
+7.	Given that generative tools are evolving rapidly, this policy will likely be adjusted over time.
+
+[1] https://joss.readthedocs.io/en/latest/policies.html#ai-usage-policy  
+[2] https://www.ametsoc.org/ams/publications/ethical-guidelines-and-ams-policies/author-disclosure-and-obligations/  
+[3] https://www.egu.eu/news/1031/statement-on-the-use-of-ai-based-tools-for-the-presentation-and-publication-of-research-results-in-earth-planetary-and-space-science/  
+[4] https://rmets.onlinelibrary.wiley.com/hub/ai-policy  
+
 ## Review Processes
 
 All pull requests will undergo a review process prior to being included in the develop branch in order to ensure both the coding and the scientific validity of changes. 
