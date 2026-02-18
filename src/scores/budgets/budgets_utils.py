@@ -18,7 +18,7 @@ c_pv = 1872.0
 Integration weights for a two dimensional latitude-longitude field on
 the surface of the sphere
 '''
-def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sum_domain_lat=np.array([None])):
+def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sub_domain_lat=np.array([None])):
     # Check the longitude sub domain is valid if specified
     if sub_domain_lon[0] != None:
         error_msg = ValueError(f'sub-domain longitude outside valid range: ' + \
@@ -54,7 +54,7 @@ def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sum_d
     dlat = np.zeros(len(latitude))
     for ii in np.arange(len(latitude)-2) + 1:
         dlat[ii] = 0.5*(latitude[ii+1]-latitude[ii-1])
-        dlat[ii] = dlat[ii]*np.cos(np.get2rad(latitude[ii]))
+        dlat[ii] = dlat[ii]*np.cos(np.deg2rad(latitude[ii]))
 
     dlat[:] = meters_per_degree*dlat[:]
 

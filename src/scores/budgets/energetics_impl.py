@@ -1,7 +1,8 @@
 import numpy as np
 import xarray as xr
 
-from budgets_utils import *
+from scores.budgets.budgets_utils import *
+from scores.typing import XarrayLike
 
 def prepare_fields(
         fourDFields: XarrayLike,

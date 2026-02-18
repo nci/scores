@@ -176,14 +176,14 @@ def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, a
         cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
 
         psi = np.zeros((nlat, nlon))
-        dpsiDx = np.zeros((nlat, nlon))
-        dpsiDy = np.zeros((nlat, nlon))
+        dPsiDx = np.zeros((nlat, nlon))
+        dPsiDy = np.zeros((nlat, nlon))
         lap_psi = np.zeros((nlat, nlon))
         for ii in np.arange(nlat):
             for jj in np.arange(nlon):
                 psi[ii,jj] = field(lon[jj], lat[ii], alpha)
-                dpsiDx[ii,jj] = zonal_gradient(lon[jj], lat[ii], alpha)
-                dpsiDy[ii,jj] = meridional_gradient(lon[jj], lat[ii], alpha)
+                dPsiDx[ii,jj] = zonal_gradient(lon[jj], lat[ii], alpha)
+                dPsiDy[ii,jj] = meridional_gradient(lon[jj], lat[ii], alpha)
                 lap_psi[ii,jj] = div_vec(lon[jj], lat[ii], alpha)
 
         grad_f_dot_u, f_div_u = integrate_energy_exchange(psi, dPsiDx, dPsiDy, lon, lat, dlon, dlat, \
@@ -191,8 +191,8 @@ def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, a
 
         err1 = grad_f_dot_u - (dPsiDx*dPsiDx + dPsiDy*dPsiDy)
         err2 = f_div_u - psi*lap_psi
-        error_at_res_grad_f_dot_u = integrate_horizontal(err1, dlon, dlat)
-        error_at_res_f_div_u = integrate_horizontal(err2, dlon, dlat)
+        error_at_res_grad_f_dot_u[res] = integrate_horizontal(err1, dlon, dlat)
+        error_at_res_f_div_u[res] = integrate_horizontal(err2, dlon, dlat)
 
     convergence = np.zeros(num_resolutions-1)
 
