@@ -11,6 +11,8 @@ lon_max = +180.0
 lat_min = -90.0
 lat_max = +90.0
 gravity = 9.80665
+c_p = 1006.0
+c_pv = 1872.0
 
 '''
 Integration weights for a two dimensional latitude-longitude field on
@@ -63,7 +65,7 @@ def integrate_horizontal(field, dlon, dlat):
     int_lon = np.dot(field, dlon)
     return np.dot(int_lon, dlat)
 
-def trig_fields(longitude,latitude):
+def trig_fields(longitude, latitude):
     nlon = len(longitude)
     nlat = len(latitude)
 
