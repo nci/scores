@@ -1,4 +1,3 @@
-# pylint: disable=too-many-lines
 """
 Contains unit tests for scores.probability.rev_impl
 """
@@ -1262,7 +1261,7 @@ class TestErrorHandling:
         "fcst_data,obs_data,cost_loss_ratios,threshold,expected_error",
         [
             # Probabilistic forecasts without threshold
-            ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, "0, 1, or NaN"),
+            ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, "contains values that are not in the set {0, 1, np.nan}"),
             # Cost-loss ratios out of range
             ([0, 1, 1], [0, 1, 0], [-0.1, 0.5, 1.2], None, "between 0 and 1"),
             # Cost-loss ratios not monotonic
@@ -1272,9 +1271,9 @@ class TestErrorHandling:
             # Threshold values not monotonic
             ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], [0.7, 0.3], "monotonically increasing"),
             # Invalid observation values
-            ([0, 1, 1], [0, 1, 2], [0.5], None, "0, 1, or NaN"),
+            ([0, 1, 1], [0, 1, 2], [0.5], None, "contains values that are not in the set {0, 1, np.nan}"),
             # Invalid forecast values
-            ([0, 1, 2], [0, 1, 1], [0.5], None, "0, 1, or NaN"),
+            ([0, 1, 2], [0, 1, 1], [0.5], None, "contains values that are not in the set {0, 1, np.nan}"),
         ],
         ids=[
             "probabilistic_without_threshold",
@@ -1408,20 +1407,6 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="array values should be between 0 and 1."):
             check_monotonic_array(arr)
 
-    def test_binary_forecast_strict_validation(self, make_contingency_data):
-        """Test strict binary validation for binary forecasts."""
-        # Valid binary forecast (only 0 and 1)
-        fcst, obs = make_contingency_data(1, 1, 1, 1)
-
-        result = relative_economic_value(fcst, obs, [0.5], check_args=True)
-        assert result is not None
-
-        # Invalid binary forecast (contains 0.5)
-        fcst_bad = xr.DataArray([0, 0.5, 1, 0], dims=["time"])
-
-        with pytest.raises(ValueError, match="fcst must contain only 0, 1, or NaN values"):
-            relative_economic_value(fcst_bad, obs, [0.5], check_args=True)
-
     @pytest.mark.parametrize("which_input", ["pod", "pofd", "climatology"])
     def test_cost_loss_ratio_dim_in_inputs_raises(self, which_input):
         """create a DataArray that contains the forbidden dimension name"""
@@ -1477,7 +1462,7 @@ class TestErrorHandling:
 
         with pytest.raises(
             ValueError,
-            match="When threshold is None, fcst must contain only 0, 1, or NaN values",
+            match="contains values that are not in the set {0, 1, np.nan}",
         ):
             relative_economic_value(
                 fcst,

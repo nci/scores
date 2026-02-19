@@ -11,7 +11,7 @@ import xarray as xr
 from scores.categorical import probability_of_detection, probability_of_false_detection
 from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
-from scores.utils import check_weights, gather_dimensions
+from scores.utils import check_binary, check_weights, gather_dimensions
 
 # INPUT VALIDATION
 
@@ -49,7 +49,7 @@ def _validate_thresholds(
     threshold: Optional[Union[float, Sequence[float]]],
     threshold_outputs: Optional[Sequence[float]],
 ) -> None:
-    """Lazy validation of forecast configuration."""
+    """Validation of forecast configuration."""
     if threshold is not None:
         thresh_array = np.atleast_1d(threshold)
         if not np.all((thresh_array >= 0) & (thresh_array <= 1)):
@@ -80,19 +80,10 @@ def _validate_observations(obs: XarrayLike) -> Optional[XarrayLike]:
     """
     Check observations contain only binary values (0, 1, or NaN).
 
-    Successful validation returns None.
+    Raises ValueError if invalid values are present.
     """
 
-    if isinstance(obs, xr.Dataset):
-        obs_vals = obs.to_array().values
-    else:
-        obs_vals = obs.values
-
-    unique_obs = np.unique(obs_vals[~np.isnan(obs_vals)])
-    if not np.all(np.isin(unique_obs, [0, 1])):
-        raise ValueError("obs must contain only 0, 1, or NaN values")
-
-    return None
+    check_binary(obs, "obs")
 
 
 def _validate_forecasts(
@@ -102,7 +93,9 @@ def _validate_forecasts(
     """
     Validate forecast values and threshold configuration.
 
-    Successful validation returns None.
+    Raises ValueError if the threshold is provided but forecast is not
+    between 0 and 1 or threshold is None but the forecast is not 0, 1 or NaN.
+
     """
 
     # Get Data Stats (Min/Max)
@@ -120,27 +113,7 @@ def _validate_forecasts(
         if fcst_min < 0 or fcst_max > 1:
             raise ValueError("When threshold is provided, fcst must contain values between 0 and 1")
     else:
-        # Binary forecasts: check bounds
-        if fcst_min < 0 or fcst_max > 1:
-            raise ValueError(
-                "When threshold is None, fcst must contain only 0, 1, or NaN values. "
-                "For probabilistic forecasts, provide threshold parameter."
-            )
-
-        # Check strict binary values (0 or 1)
-        if isinstance(fcst, xr.Dataset):
-            fcst_vals = fcst.to_array().values
-        else:
-            fcst_vals = fcst.values
-
-        unique_fcst = np.unique(fcst_vals[~np.isnan(fcst_vals)])
-        if not np.all(np.isin(unique_fcst, [0, 1])):
-            raise ValueError(
-                "When threshold is None, fcst must contain only 0, 1, or NaN values. "
-                "For probabilistic forecasts, provide threshold parameter."
-            )
-
-    return None
+        check_binary(fcst, "fcst")
 
 
 def _validate_derived_metrics(
@@ -174,7 +147,7 @@ def _validate_rev_inputs(
     """
     Validate inputs for REV calculation.
 
-    Successful validation returns none.
+    Raises ValueError if weights are datasets or one of the validations fails
     """
 
     if isinstance(weights, xr.Dataset):
@@ -190,8 +163,6 @@ def _validate_rev_inputs(
     # Weights validation
     if weights is not None:
         check_weights(weights)
-
-    return None
 
 
 # REV CALCULATION CORE
@@ -281,24 +252,20 @@ def calculate_climatology(
 
     obs_reduce_dims = tuple(d for d in dims_to_reduce if d in obs.dims)
 
-    if weights is not None:
-        # Identify which dimensions weights actually span
-        weight_reduce_dims = tuple(d for d in obs_reduce_dims if d in weights.dims)
+    # Determine which dims weights actually span (None if weights don't cover any)
+    weight_reduce_dims = tuple(d for d in obs_reduce_dims if d in weights.dims) if weights is not None else None
 
-        if weight_reduce_dims:
-            # Use aggregate for weighted mean over dimensions that weights span
-            climatology = aggregate(obs, reduce_dims=weight_reduce_dims, weights=weights, method="mean")
+    climatology = aggregate(
+        obs,
+        reduce_dims=weight_reduce_dims or obs_reduce_dims,
+        weights=weights if weight_reduce_dims else None,
+        method="mean",
+    )
 
-            # Unweighted mean over remaining dimensions
-            remaining_dims = tuple(d for d in obs_reduce_dims if d not in weight_reduce_dims)
-            if remaining_dims:
-                climatology = aggregate(climatology, reduce_dims=remaining_dims, weights=None, method="mean")
-        else:
-            # Weights exist but don't span any reduction dimensions - ignore them
-            climatology = aggregate(obs, reduce_dims=obs_reduce_dims, weights=None, method="mean")
-    else:
-        # Simple unweighted mean
-        climatology = aggregate(obs, reduce_dims=obs_reduce_dims, weights=None, method="mean")
+    # Unweighted mean over any remaining dims not covered by weights
+    if weight_reduce_dims:
+        remaining_dims = tuple(d for d in obs_reduce_dims if d not in weight_reduce_dims) or None
+        climatology = aggregate(climatology, reduce_dims=remaining_dims, weights=None, method="mean")
 
     return climatology
 
@@ -555,7 +522,6 @@ def relative_economic_value_from_rates(
     return rev
 
 
-# pylint: disable=too-many-arguments,too-many-locals
 def relative_economic_value(
     fcst: XarrayLike,
     obs: XarrayLike,
