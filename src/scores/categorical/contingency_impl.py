@@ -245,7 +245,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#ACC
+            https://jwgfvr.github.io/forecastverification/index.html#ACC
         """
         count_dictionary = self.counts
         correct_count = count_dictionary["tp_count"] + count_dictionary["tn_count"]
@@ -318,7 +318,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#ACC
+            https://jwgfvr.github.io/forecastverification/index.html#ACC
         """
         return self.accuracy()
 
@@ -341,7 +341,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#BIAS
+            https://jwgfvr.github.io/forecastverification/index.html#BIAS
         """  #  noqa: E501
         # Note - bias_score calls this method
         cd = self.counts
@@ -368,7 +368,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#BIAS
+            https://jwgfvr.github.io/forecastverification/index.html#BIAS
         """  #  noqa: E501
         return self.frequency_bias()
 
@@ -391,7 +391,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#POD
+            https://jwgfvr.github.io/forecastverification/index.html#POD
         """  #  noqa: E501
         return self.probability_of_detection()
 
@@ -414,7 +414,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses"
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#POD
+            https://jwgfvr.github.io/forecastverification/index.html#POD
         """  #  noqa: E501
         # Note - hit_rate and sensitiviy call this function
         cd = self.counts
@@ -441,7 +441,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#POD
+            https://jwgfvr.github.io/forecastverification/index.html#POD
         """  #  noqa: E501
         return self.probability_of_detection()
 
@@ -463,7 +463,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True positives" is the same as "hits".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#FAR
+            https://jwgfvr.github.io/forecastverification/index.html#FAR
         """  #  noqa: E501
         cd = self.counts
         far = cd["fp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -489,7 +489,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#POFD
+            https://jwgfvr.github.io/forecastverification/index.html#POFD
         """  #  noqa: E501
         # Note - probability of false detection calls this function
         cd = self.counts
@@ -516,7 +516,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#POFD
+            https://jwgfvr.github.io/forecastverification/index.html#POFD
         """  #  noqa: E501
 
         return self.false_alarm_rate()
@@ -540,7 +540,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#SR
+            https://jwgfvr.github.io/forecastverification/index.html#SR
         """
         cd = self.counts
         sr = cd["tp_count"] / (cd["tp_count"] + cd["fp_count"])
@@ -565,7 +565,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#CSI
+            https://jwgfvr.github.io/forecastverification/index.html#CSI
         """
         # Note - critical success index just calls this method
 
@@ -592,7 +592,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives"
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#CSI
+            https://jwgfvr.github.io/forecastverification/index.html#CSI
         """
         return self.threat_score()
 
@@ -618,7 +618,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            - https://www.cawcr.gov.au/projects/verification/#HK
+            - https://jwgfvr.github.io/forecastverification/index.html#HK
             - Peirce, C.S., 1884. The numerical measure of the success of predictions. \
               Science, ns-4(93), pp.453-454. https://doi.org/10.1126/science.ns-4.93.453.b
         """
@@ -650,7 +650,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#HK
+            https://jwgfvr.github.io/forecastverification/index.html#HK
         """
         return self.peirce_skill_score()
 
@@ -678,7 +678,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "True negatives" is the same as "correct negatives".
 
         References:
-            https://www.cawcr.gov.au/projects/verification/#HK
+            https://jwgfvr.github.io/forecastverification/index.html#HK
         """
         return self.peirce_skill_score()
 
@@ -702,7 +702,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            - https://www.cawcr.gov.au/projects/verification/#POD
+            - https://jwgfvr.github.io/forecastverification/index.html#POD
             - https://en.wikipedia.org/wiki/Sensitivity_and_specificity
             - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
               & Dmochowski, R. R. (2021).
@@ -780,7 +780,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False negatives" is the same as "misses".
 
         References:
-            - https://www.cawcr.gov.au/projects/verification/#POD
+            - https://jwgfvr.github.io/forecastverification/index.html#POD
             - https://en.wikipedia.org/wiki/Precision_and_recall
         """
         return self.probability_of_detection()
@@ -803,7 +803,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         References:
-            - https://www.cawcr.gov.au/projects/verification/#SR
+            - https://jwgfvr.github.io/forecastverification/index.html#SR
             - https://en.wikipedia.org/wiki/Precision_and_recall
 
         """
@@ -827,7 +827,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             - "False positives" is the same as "false alarms".
 
         References:
-            - https://www.cawcr.gov.au/projects/verification/#SR
+            - https://jwgfvr.github.io/forecastverification/index.html#SR
             - https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
             - Monaghan, T. F., Rahman, S. N., Agudelo, C. W., Wein, A. J., Lazar, J. M., Everaert, K.,
               & Dmochowski, R. R. (2021).
