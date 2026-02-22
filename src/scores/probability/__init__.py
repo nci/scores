@@ -17,6 +17,10 @@ from scores.probability.crps_impl import (
 )
 from scores.probability.pit_impl import Pit, PitFcstAtObs
 from scores.probability.rank_hist_impl import rank_histogram
+from scores.probability.rev_impl import (
+    relative_economic_value,
+    relative_economic_value_from_rates,
+)
 from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
@@ -28,6 +32,8 @@ __all__ = [
     "crps_cdf",
     "crps_cdf_brier_decomposition",
     "crps_for_ensemble",
+    "relative_economic_value",
+    "relative_economic_value_from_rates",
     "roc_curve_data",
     "isotonic_fit",
     "crps_step_threshold_weight",
