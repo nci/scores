@@ -3,7 +3,6 @@ Contains unit tests for scores.probability.rev_impl
 """
 
 import re
-from collections import OrderedDict
 from unittest import mock
 
 import numpy as np
@@ -22,68 +21,7 @@ from scores.probability.rev_impl import (
     check_monotonic_array,
 )
 from scores.utils import ERROR_INVALID_WEIGHTS
-
-# Module-level test data ... Preserved as is because these come from Jive and we want to demonstrate
-# that they've been carried over exactly.
-SCALAR_DA = xr.DataArray(np.array([0.5]), dims=("x",), coords={"x": [0]})
-BINARY_DA = xr.DataArray([0, 1, 0], dims=["time"])
-PROB_FCST_DA = xr.DataArray([0.2, 0.8, 0.1], dims=["time"])
-
-THRESHOLDS = [0, 0.3, 1]
-CL_RATIOS = [0, 0.2, 0.5, 0.8, 1]
-
-POD_LEADDAY = xr.DataArray(
-    [[1, 0.75, 0.25], [1, 0.25, 0]],
-    dims=["lead_day", "threshold"],
-    coords=OrderedDict([("lead_day", [0, 1]), ("threshold", THRESHOLDS)]),
-)
-POFD_LEADDAY = xr.DataArray(
-    [[1, 1 / 3, 0], [1, 0.75, 0]],
-    dims=["lead_day", "threshold"],
-    coords=OrderedDict([("lead_day", [0, 1]), ("threshold", THRESHOLDS)]),
-)
-CLIMATOLOGY_LEADDAY = xr.DataArray([4 / 7, 0.5], dims=["lead_day"], coords={"lead_day": [0, 1]})
-
-HIT_RATE_REV_NONE = xr.DataArray([1, 0.5, 1 / 8], dims=["threshold"], coords={"threshold": THRESHOLDS})
-FALSE_ALARM_RATE_REV_NONE = xr.DataArray([1, 4 / 7, 0], dims=["threshold"], coords={"threshold": THRESHOLDS})
-OBAR_REV_NONE = xr.DataArray(8 / 15)
-
-EXP_REV_CASE0 = xr.DataArray(
-    np.array(
-        [
-            [
-                [np.nan, 0, 0, -2, np.nan],
-                [np.nan, -2 / 3, 1 / 3, -0.25, np.nan],
-                [np.nan, -3, 0, 0.25, np.nan],
-            ],
-            [
-                [np.nan, 0, 0, -3, np.nan],
-                [np.nan, -2.75, -0.5, -2.75, np.nan],
-                [np.nan, -3, 0, 0, np.nan],
-            ],
-        ]
-    ).transpose(0, 2, 1),
-    dims=["lead_day", "cost_loss_ratio", "threshold"],
-    coords=OrderedDict(
-        [
-            ("lead_day", [0, 1]),
-            ("cost_loss_ratio", CL_RATIOS),
-            ("threshold", THRESHOLDS),
-        ]
-    ),
-)
-
-EXP_REV_CASE1 = xr.DataArray(
-    np.array(
-        [
-            [np.nan, 0, 0, -2.5, np.nan],
-            [np.nan, -13 / 7, -1 / 7, -1.5, np.nan],
-            [np.nan, -3, 0, 0.125, np.nan],
-        ]
-    ).T,
-    dims=["cost_loss_ratio", "threshold"],
-    coords=OrderedDict([("cost_loss_ratio", CL_RATIOS), ("threshold", THRESHOLDS)]),
-)
+from tests.probability import rev_test_data as rtd
 
 
 @pytest.fixture(name="make_contingency_data")
@@ -309,24 +247,6 @@ class TestCalculateClimatology:
 class TestScienceCalculations:
     """Tests for core scientific calculations in REV."""
 
-    @pytest.mark.parametrize(
-        "pod,pofd,climatology,expected",
-        [
-            (POD_LEADDAY, POFD_LEADDAY, CLIMATOLOGY_LEADDAY, EXP_REV_CASE0),
-            (
-                HIT_RATE_REV_NONE,
-                FALSE_ALARM_RATE_REV_NONE,
-                OBAR_REV_NONE,
-                EXP_REV_CASE1,
-            ),
-        ],
-        ids=["with_lead_day", "no_dimensions"],
-    )
-    def test_from_rates_jive(self, pod, pofd, climatology, expected):
-        """Tests relative economic value from rates against known Jive outputs."""
-        result = relative_economic_value_from_rates(pod, pofd, climatology, cost_loss_ratios=CL_RATIOS)
-        xr.testing.assert_allclose(result, expected)
-
     def test_perfect_forecast(self, make_contingency_data):
         """Perfect forecast (all correct) has REV=1 at any cost-loss ratio."""
         fcst, obs = make_contingency_data(hits=2, misses=0, false_alarms=0, correct_negatives=2)
@@ -434,8 +354,8 @@ class TestScienceCalculations:
         Passing a single float for cost_loss_ratios should produce an output whose
         cost_loss_ratio coordinate has length 1 and contains that value.
         """
-        fcst = PROB_FCST_DA
-        obs = BINARY_DA
+        fcst = rtd.PROB_FCST_DA
+        obs = rtd.BINARY_DA
         single_alpha = 0.3
 
         actual = relative_economic_value(
@@ -460,7 +380,7 @@ class TestScienceCalculations:
         Passing an integer cost_loss_ratio should be converted to a length-1 coordinate.
         Also covers int -> list handling branch.
         """
-        fcst = BINARY_DA
+        fcst = rtd.BINARY_DA
         obs = fcst.copy()
         actual = relative_economic_value(fcst, obs, cost_loss_ratios=scalar_value)
 
@@ -1263,6 +1183,8 @@ class TestErrorHandling:
             # Probabilistic forecasts without threshold
             ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, "contains values that are not in the set {0, 1, np.nan}"),
             # Cost-loss ratios out of range
+            ([0, 1, 1], [0, 1, 0], None, None, "must not be None"),
+            # Cost-loss ratios out of range
             ([0, 1, 1], [0, 1, 0], [-0.1, 0.5, 1.2], None, "between 0 and 1"),
             # Cost-loss ratios not monotonic
             ([0, 1, 1], [0, 1, 0], [0.5, 0.3, 0.7], None, "monotonically increasing"),
@@ -1277,6 +1199,7 @@ class TestErrorHandling:
         ],
         ids=[
             "probabilistic_without_threshold",
+            "cost_loss_none",
             "cost_loss_out_of_range",
             "cost_loss_not_monotonic",
             "threshold_out_of_range",
@@ -1291,7 +1214,7 @@ class TestErrorHandling:
 
         Validates that the function raises ValueError for:
         - Probabilistic forecasts (values between 0 and 1) without threshold parameter
-        - Cost-loss ratios outside [0, 1] range or not strictly monotonically increasing
+        - Cost-loss ratios None, outside [0, 1] range or not strictly monotonically increasing
         - Threshold values outside [0, 1] range or not strictly monotonically increasing
         - Forecast or observation values outside {0, 1, NaN}
         """
@@ -1388,7 +1311,7 @@ class TestErrorHandling:
 
     def test_non_monotonic_cost_loss_ratios_raises(self):
         """Test that REV catches non-monotonic cost loss ratios"""
-        pod = SCALAR_DA
+        pod = rtd.SCALAR_DA
         pofd = pod.copy()
         climatology = pod.copy()
 
@@ -1417,7 +1340,7 @@ class TestErrorHandling:
         )
 
         # other inputs are normal scalar-like arrays
-        pod = SCALAR_DA
+        pod = rtd.SCALAR_DA
         pofd = pod.copy()
         climatology = pod.copy()
 
@@ -1457,8 +1380,8 @@ class TestErrorHandling:
         When check_args=True, probabilistic forecasts require a threshold.
         _validate_rev_inputs should raise a ValueError in that case.
         """
-        fcst = PROB_FCST_DA
-        obs = BINARY_DA
+        fcst = rtd.PROB_FCST_DA
+        obs = rtd.BINARY_DA
 
         with pytest.raises(
             ValueError,
@@ -1496,8 +1419,8 @@ class TestErrorHandling:
         When check_args=False, the function should skip input validation and proceed.
         This test asserts no ValueError is raised for a probabilistic fcst without threshold.
         """
-        fcst = PROB_FCST_DA
-        obs = BINARY_DA
+        fcst = rtd.PROB_FCST_DA
+        obs = rtd.BINARY_DA
 
         # Nothing should raise; we expect an xr.DataArray back (or Dataset depending on other args)
         actual = relative_economic_value(
@@ -1529,3 +1452,226 @@ class TestErrorHandling:
                 cost_loss_ratios=[0.2, 0.5],
                 derived_metrics=["rational_user"],
             )
+
+
+class TestLegacyJive:
+    """Tests that were part of the original Jive code"""
+
+    @pytest.mark.parametrize(
+        (
+            "fcst",
+            "obs",
+            "thresholds",
+            "cost_loss_ratios",
+            "preserve_dims",
+            "derived_metrics",
+            "threshold_outputs",
+            "expected",
+        ),
+        [
+            # 0: 3-D, keep one dim, mask_extreme_values=False
+            (
+                rtd.FCST_2X3X2_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0, 0.3, 1],
+                [0, 0.2, 0.5, 0.8, 1],
+                ["lead_day"],
+                ["maximum"],
+                [0, 0.3, 1],
+                rtd.EXP_PREV_CASE0,
+            ),
+            # 2: 3-D, keep no dims, mask_extreme_values=False
+            (
+                rtd.FCST_2X3X2_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0, 0.3, 1],
+                [0, 0.2, 0.5, 0.8, 1],
+                None,
+                ["maximum"],
+                None,
+                rtd.EXP_PREV_CASE2,
+            ),
+            # 3: 3-D, keep one dim, one threshold, one cost_loss_ratio
+            # SPOT-CHECKED by DG
+            (
+                rtd.FCST_2X3X2_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0.3],
+                [0.5],
+                ["lead_day"],
+                [],
+                [0.3],
+                rtd.EXP_PREV_CASE3,
+            ),
+            # 4: mis-aligned fcst & obs
+            (
+                rtd.FCST_2X3X2_WITH_NAN_MISALIGNED,
+                rtd.OBS_3X3_WITH_NAN_MISALIGNED,
+                [0.3],
+                [0.5],
+                ["lead_day"],
+                [],
+                [0.3],
+                rtd.EXP_PREV_CASE3,
+            ),
+            # 5: get rational_user
+            # Censored because scores code does not allow
+            # cost loss ratios to be optional, they are required
+            # (
+            #     rtd.FCST_2X3X2_WITH_NAN_MISALIGNED,
+            #     rtd.OBS_3X3_WITH_NAN_MISALIGNED,
+            #     [0, 0.3, 0.5, 0.7, 1],
+            #     None,
+            #     ["lead_day"],
+            #     ["maximum", "rational_user"],
+            #     None,
+            #     rtd.EXP_PREV_CASE5,
+            # ),
+            # # 6: don't supply derived_metrics, supply threshold_outputs
+            # (
+            #     rtd.FCST_2X3X2_WITH_NAN_MISALIGNED,
+            #     rtd.OBS_3X3_WITH_NAN_MISALIGNED,
+            #     [0, 0.3, 0.5, 0.7, 1],
+            #     None,
+            #     ["lead_day"],
+            #     ["rational_user"],
+            #     [0, 0.3, 0.5, 0.7, 1],
+            #     rtd.EXP_PREV_CASE6,
+            # ),
+            # issue #162  - dims accepts any iterable
+            (
+                rtd.FCST_2X3X2_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0, 0.3, 1],
+                [0, 0.2, 0.5, 0.8, 1],
+                {"lead_day"},
+                ["maximum"],
+                [0, 0.3, 1],
+                rtd.EXP_PREV_CASE0,
+            ),
+        ],
+    )
+    def test_jive_probabilistic_relative_economic_value(
+        self,
+        fcst,
+        obs,
+        thresholds,
+        cost_loss_ratios,
+        preserve_dims,
+        derived_metrics,
+        threshold_outputs,
+        expected,
+    ):
+        """
+        Tests that probabilistic_relative_economic_value returns correct result
+        """
+        calculated = relative_economic_value(
+            fcst,
+            obs,
+            threshold=thresholds,
+            cost_loss_ratios=cost_loss_ratios,
+            preserve_dims=preserve_dims,
+            derived_metrics=derived_metrics,
+            threshold_outputs=threshold_outputs,
+        )
+        xr.testing.assert_allclose(calculated, expected)
+
+    @pytest.mark.parametrize(
+        (
+            "fcst",
+            "obs",
+            "cost_loss_ratios",
+            "preserve_dims",
+            "expected",
+        ),
+        [
+            # See jive.tests.metrics.standard.test_probabilistic.test_probabilistic_relative_
+            # economic_value for SPOT-CHECKED by DG result.
+            # 0: 4-D, keep two dims, mask_extreme_values=False
+            (
+                rtd.DISCRETE_FCST_2X3X2X3_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0, 0.2, 0.5, 0.8, 1],
+                ["lead_day", "binary_threshold"],
+                rtd.EXP_REV_CASE0,
+            ),
+            # 2: 4-D, keep one dim, mask_extreme_values=False
+            (
+                rtd.DISCRETE_FCST_2X3X2X3_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0, 0.2, 0.5, 0.8, 1],
+                ["binary_threshold"],
+                rtd.EXP_REV_CASE2,
+            ),
+            # 3: 3-D, keep no dims, mask_extreme_values=False
+            (
+                rtd.DISCRETE_FCST_2X3X2_WITH_NAN,
+                rtd.OBS_3X3_WITH_NAN,
+                [0, 0.2, 0.5, 0.8, 1],
+                None,
+                rtd.EXP_REV_CASE3,
+            ),
+            # 4: as no.3, but misaligned coordinates
+            (
+                rtd.DISCRETE_FCST_2X3X2_WITH_NAN_MISALIGNED,
+                rtd.OBS_3X3_WITH_NAN_MISALIGNED,
+                [0, 0.2, 0.5, 0.8, 1],
+                None,
+                rtd.EXP_REV_CASE3,
+            ),
+            # 5: integer fcst & obs
+            (
+                rtd.DISCRETE_FCST_3X5_INT,
+                rtd.OBS_3X5_INT,
+                [0, 0.2, 0.5, 0.8, 1],
+                None,
+                rtd.EXP_REV_CASE3,
+            ),
+        ],
+    )
+    def test_jive_relative_economic_value(self, fcst, obs, cost_loss_ratios, preserve_dims, expected):
+        """Tests that relative_economic value returns the correct result"""
+        calculated = relative_economic_value(
+            fcst,
+            obs,
+            cost_loss_ratios,
+            preserve_dims=preserve_dims,
+        )
+        xr.testing.assert_allclose(calculated, expected)
+
+    @pytest.mark.parametrize(
+        (
+            "pod",
+            "pofd",
+            "climatology",
+            "cost_loss_ratios",
+            "expected",
+        ),
+        [
+            # 0: 3-D, keep one dim
+            (
+                rtd.HIT_RATE_REV_LEADDAY,
+                rtd.FALSE_ALARM_RATE_REV_LEADDAY,
+                rtd.OBAR_REV_LEADDAY,
+                [0, 0.2, 0.5, 0.8, 1],
+                rtd.EXP_REV_CASE0.transpose("lead_day", "cost_loss_ratio", "binary_threshold"),
+            ),
+            # 2: 3-D, keep no dims
+            (
+                rtd.HIT_RATE_REV_NONE,
+                rtd.FALSE_ALARM_RATE_REV_NONE,
+                rtd.OBAR_REV_NONE,
+                [0, 0.2, 0.5, 0.8, 1],
+                rtd.EXP_REV_CASE2.transpose("cost_loss_ratio", "binary_threshold"),
+            ),
+        ],
+    )
+    def test_jive_relative_economic_value_from_rates(self, pod, pofd, climatology, cost_loss_ratios, expected):
+        """Tests that relative_economic_value_from_rates returns the correct result"""
+        calculated = relative_economic_value_from_rates(
+            pod,
+            pofd,
+            climatology,
+            cost_loss_ratios,
+        )
+        xr.testing.assert_allclose(calculated, expected)

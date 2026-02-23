@@ -67,6 +67,10 @@ def _validate_thresholds(
 
 def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) -> None:
     """Validate cost-loss ratio values are in [0,1] and monotonically increasing."""
+
+    if cost_loss_ratios is None:
+        raise ValueError("cost_loss_ratios must not be None")
+
     clr_array = np.atleast_1d(cost_loss_ratios)
 
     if not np.all((clr_array >= 0) & (clr_array <= 1)):
