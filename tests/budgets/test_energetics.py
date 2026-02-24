@@ -57,37 +57,38 @@ def vorticity(phi, theta, alpha):
     _phi = np.deg2rad(phi)
     _theta = np.deg2rad(theta)
 
-    return 2.0 * u_0 / rad_earth * (-np.cos(_phi) * np.cos(_theta) * np.sin(alpha) + np.sin(_theta) * np.cos(alpha))
+    #return 2.0 * u_0 / rad_earth * (-np.cos(_phi) * np.cos(_theta) * np.sin(alpha) + np.sin(_theta) * np.cos(alpha))
+    return 2.0 * u_0 * (-np.cos(_phi) * np.cos(_theta) * np.sin(alpha) + np.sin(_theta) * np.cos(alpha))
 
 # init test for the spherical integration via convergence of errors with resolution
 @pytest.mark.parametrize(
-    ("field", "alpha", "offset", "low_resolution", "num_resolutions", "sub_domain_latitude", "sub_domain_longitude", "analytic_solution"),
+    ("field", "alpha", "offset", "low_resolution", "num_resolutions", "sub_domain_longitude", "sub_domain_latitude", "analytic_solution"),
     [
         # Global integral
         (
-            stream_function,
+            vorticity,
             0.25*np.pi,
             10.0,
-            np.array([9,18], dtype=np.int64),
-            3,
+            np.array([30,60], dtype=np.int64),
+            4,
             np.array([None]),
             np.array([None]),
             area_earth * 10.0,
         ),
         # Northern hemisphere
         (
-            stream_function,
+            vorticity,
             0.5*np.pi,
             10.0,
-            np.array([9,18], dtype=np.int64),
-            3,
+            np.array([30,60], dtype=np.int64),
+            4,
             np.array([None]),
             np.array([0.0, 90.0]),
             0.5 * area_earth * 10.0,
         ),
         # Longitudinal sub-domain
         (
-            stream_function,
+            vorticity,
             0.0,
             10.0,
             np.array([9,18], dtype=np.int64),
@@ -98,7 +99,7 @@ def vorticity(phi, theta, alpha):
         ),
         # Sub-domain in latitude and longitude
         (
-            stream_function,
+            vorticity,
             0.5*np.pi,
             10.0,
             np.array([9,18], dtype=np.int64),
@@ -122,6 +123,8 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
         latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
 
         dlon, dlat, lon, lat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        nlon = len(lon)
+        nlat = len(lat)
 
         psi = np.zeros((nlat, nlon))
         for ii in np.arange(nlat):
@@ -132,7 +135,7 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
 
         error_at_res[res] = (analytic_solution - int_psi)/analytic_solution
 
-        #print(str(res) + ':\t{:.4e}'.format(analytic_solution) + '\t{:.4e}'.format(int_psi) + '\t{:.4e}'.format(error_at_res[res]))
+        print(str(res) + ':\t{:.4e}'.format(analytic_solution) + '\t{:.4e}'.format(int_psi) + '\t{:.4e}'.format(error_at_res[res]))
 
     convergence = np.zeros(num_resolutions-1)
     for res in np.arange(num_resolutions-1):
@@ -140,12 +143,12 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
 
     # for second order accuracy, we anticipate the integration error should decrease by a factor of 4 for a
     # doubling of the spatial resolution (to within some tolerance)
-    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-1)
+    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-4)
 
 # unit test for the energy exchanges
 @pytest.mark.parametrize(
     ("field", "zonal_gradient", "meridional_gradient", "div_vec", "alpha", "low_resolution", "num_resolutions", \
-            "sub_domain_latitude", "sub_domain_longitude"),
+            "sub_domain_longitude", "sub_domain_latitude"),
     [
         # Global integral
         (
@@ -162,8 +165,7 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
     ],
 )
 
-def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, alpha, low_resolution, num_resolutions, \
-        sub_domain_longitude, sub_domain_latitude):
+def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, alpha, low_resolution, num_resolutions, sub_domain_longitude, sub_domain_latitude):
 
     error_at_res_grad_f_dot_u = np.zeros(num_resolutions)
     error_at_res_f_div_u = np.zeros(num_resolutions)
@@ -176,6 +178,8 @@ def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, a
         latitude = np.linspace(-90.0, +90.0, nlat)
 
         dlon, dlat, lon, lat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        nlon = len(lon)
+        nlat = len(lat)
         cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
 
         psi = np.zeros((nlat, nlon))
