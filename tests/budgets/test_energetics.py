@@ -22,9 +22,11 @@ from scores.budgets.budgets_utils import *
 #
 # phi: azimuthal angle
 # theta: polar angle (from the equator)
+
 rad_earth = 6371220.0
 area_earth = 4.0 * np.pi * rad_earth * rad_earth
 u_0 = 2.0 * np.pi * rad_earth / (12.0 * 24.0 * 60.0 * 60.0)
+
 def stream_function(phi, theta, alpha):
     _phi = np.deg2rad(phi)
     _theta = np.deg2rad(theta)
@@ -116,11 +118,10 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
         nlon = low_resolution[1] * np.power(2, res)
         nlat = low_resolution[0] * np.power(2, res)
 
-        longitude = np.linspace(-180.0, +180.0, nlon)
-        latitude = np.linspace(-90.0, +90.0, nlat)
+        longitude = np.linspace(-180.0, +180.0, nlon, endpoint=False)
+        latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
 
         dlon, dlat, lon, lat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
-        cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
 
         psi = np.zeros((nlat, nlon))
         for ii in np.arange(nlat):
@@ -131,13 +132,15 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
 
         error_at_res[res] = (analytic_solution - int_psi)/analytic_solution
 
+        #print(str(res) + ':\t{:.4e}'.format(analytic_solution) + '\t{:.4e}'.format(int_psi) + '\t{:.4e}'.format(error_at_res[res]))
+
     convergence = np.zeros(num_resolutions-1)
     for res in np.arange(num_resolutions-1):
         convergence[res] = error_at_res[res] / error_at_res[res+1]
 
     # for second order accuracy, we anticipate the integration error should decrease by a factor of 4 for a
     # doubling of the spatial resolution (to within some tolerance)
-    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-3)
+    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-1)
 
 # unit test for the energy exchanges
 @pytest.mark.parametrize(

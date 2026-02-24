@@ -97,13 +97,14 @@ def pressure_level_thickness(levels):
 
 def integrate_energy_exchange(field_scalar, field_vector_x, field_vector_y, longitude, latitude, dlon, dlat, \
         cos_theta, sin_theta, cos_theta_inv):
+
     '''
     Williamson et. al., JCP (1992), eqns (3-4):
 
-    \lambda: longitude
-    \theta:  latitude (from the equator)
-    grad f:  1/(r \cos(\theta)) df/d\lambda, 1/r df/d\theta
-    div(u):  1/(r \cos(\theta)) (du/d\lambda + d(v\cos(\theta))/d\theta)
+    lambda: longitude
+    theta:  latitude (from the equator)
+    grad f:  1/(r \cos(theta)) d f/d lambda, 1/r df/d theta
+    div(u):  1/(r \cos(theta)) (d u/d lambda + d(v\cos(theta))/d theta)
     '''
 
     _dlon = np.abs(np.deg2rad(longitude[1] - longitude[0])*meters_per_degree)
