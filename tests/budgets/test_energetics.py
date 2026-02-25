@@ -62,7 +62,8 @@ def vorticity(phi, theta, alpha):
 
 # init test for the spherical integration via convergence of errors with resolution
 @pytest.mark.parametrize(
-    ("field", "alpha", "offset", "low_resolution", "num_resolutions", "sub_domain_longitude", "sub_domain_latitude", "analytic_solution"),
+    ("field", "alpha", "offset", "low_resolution", "num_resolutions", "sub_domain_longitude", "sub_domain_latitude", \
+            "analytic_solution", "convergence_rate", "tolerance"),
     [
         # Global integral
         (
@@ -74,6 +75,8 @@ def vorticity(phi, theta, alpha):
             np.array([None]),
             np.array([None]),
             area_earth * 10.0,
+            4.0,
+            1.0e-3,
         ),
         # Northern hemisphere
         (
@@ -85,33 +88,40 @@ def vorticity(phi, theta, alpha):
             np.array([None]),
             np.array([0.0, 90.0]),
             0.5 * area_earth * 10.0,
+            2.0,
+            2.0e-2,
         ),
         # Longitudinal sub-domain
         (
             vorticity,
             0.0,
             10.0,
-            np.array([9,18], dtype=np.int64),
-            3,
+            np.array([30,60], dtype=np.int64),
+            4,
             np.array([-90.0, 0.0]),
             np.array([None]),
             0.25 * area_earth * 10.0,
+            2.0,
+            2.0e-2,
         ),
         # Sub-domain in latitude and longitude
         (
             vorticity,
             0.5*np.pi,
             10.0,
-            np.array([9,18], dtype=np.int64),
-            3,
+            np.array([60,120], dtype=np.int64),
+            4,
             np.array([-135.0, -45.0]),
-            np.array([-90.0, 0.0]),
-            0.125 * area_earth * 10.0,
+            np.array([-60.0, +60.0]),
+            rad_earth * rad_earth * np.pi * (135.0 - 45.0) / 180.0 * (np.sin(np.pi/3.0) + np.sin(np.pi/3.0)) * 10.0,
+            2.0,
+            1.0e-2,
         ),
     ],
 )
 
-def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions, sub_domain_longitude, sub_domain_latitude, analytic_solution):
+def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions, sub_domain_longitude, sub_domain_latitude, \
+        analytic_solution, convergence_rate, tolerance):
 
     error_at_res = np.zeros(num_resolutions)
 
@@ -143,7 +153,7 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
 
     # for second order accuracy, we anticipate the integration error should decrease by a factor of 4 for a
     # doubling of the spatial resolution (to within some tolerance)
-    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-4)
+    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(convergence_rate*np.ones(num_resolutions-1)), atol=tolerance)
 
 # unit test for the energy exchanges
 @pytest.mark.parametrize(

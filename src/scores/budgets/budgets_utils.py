@@ -56,8 +56,10 @@ def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sub_d
         dlat[ii] = 0.5*(latitude[ii+1]-latitude[ii-1])
         dlat[ii] = dlat[ii]*np.cos(np.deg2rad(latitude[ii]))
 
-    dlat[0] = (latitude[1] - latitude[0])*np.cos(np.deg2rad(0.5*(latitude[0]+latitude[1])))
-    dlat[-1] = np.abs(latitude[-1] - latitude[-2])*np.cos(np.deg2rad(0.5*(latitude[-1]+latitude[-2])))
+    if latitude[0] > -90.0 + 1.0e-4:
+        dlat[0] = np.abs(latitude[1] - latitude[0])*np.cos(np.deg2rad(latitude[0]))
+    if latitude[-1] < +90.0 - 1.0e-4:
+        dlat[-1] = np.abs(latitude[-1] - latitude[-2])*np.cos(np.deg2rad(latitude[-1]))
 
     dlat[:] = meters_per_degree*dlat[:]
 
