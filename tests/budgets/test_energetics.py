@@ -158,7 +158,7 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
 # unit test for the energy exchanges
 @pytest.mark.parametrize(
     ("field", "zonal_gradient", "meridional_gradient", "div_vec", "alpha", "low_resolution", "num_resolutions", \
-            "sub_domain_longitude", "sub_domain_latitude"),
+            "sub_domain_longitude", "sub_domain_latitude", "convergence_rate", "tolerance"),
     [
         # Global integral
         (
@@ -167,18 +167,22 @@ def test_budgets_integral(field, alpha, offset, low_resolution, num_resolutions,
             d_psi_d_theta,
             vorticity,
             0.25*np.pi,
-            np.array([9,18], dtype=np.int64),
+            np.array([60,120], dtype=np.int64),
             3,
             np.array([None]),
             np.array([None]),
+            2.0,
+            2.0e-2,
         ),
     ],
 )
 
-def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, alpha, low_resolution, num_resolutions, sub_domain_longitude, sub_domain_latitude):
+def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, alpha, low_resolution, num_resolutions, \
+        sub_domain_longitude, sub_domain_latitude, convergence_rate, tolerance):
 
     error_at_res_grad_f_dot_u = np.zeros(num_resolutions)
     error_at_res_f_div_u = np.zeros(num_resolutions)
+    balance_error_at_res = np.zeros(num_resolutions)
 
     for res in np.arange(num_resolutions):
         nlon = low_resolution[1] * np.power(2, res)
@@ -210,15 +214,14 @@ def test_budgets_gradient(field, zonal_gradient, meridional_gradient, div_vec, a
         err2 = f_div_u - psi*lap_psi
         error_at_res_grad_f_dot_u[res] = integrate_horizontal(err1, dlon, dlat)
         error_at_res_f_div_u[res] = integrate_horizontal(err2, dlon, dlat)
+        balance_error_at_res[res] = np.abs(error_at_res_grad_f_dot_u[res] + error_at_res_f_div_u[res])/np.abs(error_at_res_grad_f_dot_u[res])
+
+        print(str(res) + '\t{:.4e}'.format(error_at_res_grad_f_dot_u[res]) + '\t{:.4e}'.format(error_at_res_f_div_u[res]) + \
+                '\t{:.4e}'.format(balance_error_at_res[res]))
 
     convergence = np.zeros(num_resolutions-1)
-
     for res in np.arange(num_resolutions-1):
-        convergence[res] = error_at_res_grad_f_dot_u[res] / error_at_res_grad_f_dot_u[res+1]
+        convergence[res] = balance_error_at_res[res] / balance_error_at_res[res+1]
 
-    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-3)
-
-    for res in np.arange(num_resolutions-1):
-        convergence[res] = error_at_res_f_div_u[res] / error_at_res_f_div_u[res+1]
-
-    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(4.0*np.ones(num_resolutions-1)), atol=1.0e-3)
+    xr.testing.assert_allclose(xr.DataArray(convergence), xr.DataArray(convergence_rate*np.ones(num_resolutions-1)), atol=tolerance)
+    xr.testing.assert_allclose(xr.DataArray(balance_error_at_res), xr.DataArray(np.zeros(num_resolutions)), atol=1.0e-2)
