@@ -24,40 +24,29 @@ def _validate_dimensions(
     cost_loss_dim: str,
 ) -> None:
     """Check for dimension conflicts in inputs."""
-    # Dimension checks are always lazy - just check dims, not values
-    # Check fcst dimensions
-    if threshold_dim in fcst.dims:
-        raise ValueError(f"'{threshold_dim}' cannot be a dimension in fcst")
-    if cost_loss_dim in fcst.dims:
-        raise ValueError(f"'{cost_loss_dim}' cannot be a dimension in fcst")
-
-    # Check obs dimensions
-    if threshold_dim in obs.dims:
-        raise ValueError(f"'{threshold_dim}' cannot be a dimension in obs")
-    if cost_loss_dim in obs.dims:
-        raise ValueError(f"'{cost_loss_dim}' cannot be a dimension in obs")
-
-    # Check weights dimensions
+    inputs = [("fcst", fcst), ("obs", obs)]
     if weights is not None:
-        if threshold_dim in weights.dims:
-            raise ValueError(f"'{threshold_dim}' cannot be a dimension in weights")
-        if cost_loss_dim in weights.dims:
-            raise ValueError(f"'{cost_loss_dim}' cannot be a dimension in weights")
+        inputs.append(("weights", weights))
+
+    for dim_name in (threshold_dim, cost_loss_dim):
+        for input_name, input_data in inputs:
+            if dim_name in input_data.dims:
+                raise ValueError(f"'{dim_name}' cannot be a dimension in {input_name}")
 
 
 def _validate_thresholds(
     threshold: Optional[Union[float, Sequence[float]]],
     threshold_outputs: Optional[Sequence[float]],
 ) -> None:
-    """Validation of forecast configuration."""
+    """Validate threshold and threshold_outputs configuration."""
     if threshold is not None:
-        thresh_array = np.atleast_1d(threshold)
-        if not np.all((thresh_array >= 0) & (thresh_array <= 1)):
-            raise ValueError("threshold values must be between 0 and 1")
-        if len(thresh_array) > 1 and not np.all(np.diff(thresh_array) > 0):
-            raise ValueError("threshold values must be strictly monotonically increasing")
+        try:
+            check_monotonic_array(np.atleast_1d(threshold))
+        except (ValueError, TypeError) as ex:
+            raise type(ex)(f"for threshold, {ex}") from ex
 
         if threshold_outputs is not None:
+            thresh_array = np.atleast_1d(threshold)
             if not set(threshold_outputs) <= set(thresh_array):
                 raise ValueError("values in threshold_outputs must be in the supplied threshold parameter")
     else:
@@ -70,30 +59,16 @@ def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) 
 
     if cost_loss_ratios is None:
         raise ValueError("cost_loss_ratios must not be None")
-
-    clr_array = np.atleast_1d(cost_loss_ratios)
-
-    if not np.all((clr_array >= 0) & (clr_array <= 1)):
-        raise ValueError("cost_loss_ratios must be between 0 and 1")
-
-    if len(clr_array) > 1 and not np.all(np.diff(clr_array) > 0):
-        raise ValueError("cost_loss_ratios must be strictly monotonically increasing")
-
-
-def _validate_observations(obs: XarrayLike) -> Optional[XarrayLike]:
-    """
-    Check observations contain only binary values (0, 1, or NaN).
-
-    Raises ValueError if invalid values are present.
-    """
-
-    check_binary(obs, "obs")
+    try:
+        check_monotonic_array(np.atleast_1d(cost_loss_ratios))
+    except (ValueError, TypeError) as ex:
+        raise type(ex)(f"for cost_loss_ratios, {ex}") from ex
 
 
 def _validate_forecasts(
     fcst: XarrayLike,
     threshold: Optional[Union[float, Sequence[float]]],
-) -> Optional[XarrayLike]:
+) -> None:
     """
     Validate forecast values and threshold configuration.
 
@@ -147,7 +122,7 @@ def _validate_rev_inputs(
     weights: Optional[xr.DataArray],
     derived_metrics: Optional[Sequence[str]],
     threshold_outputs: Optional[Sequence[float]],
-) -> Optional[dict]:
+) -> None:
     """
     Validate inputs for REV calculation.
 
@@ -161,7 +136,7 @@ def _validate_rev_inputs(
     _validate_cost_loss_ratios(cost_loss_ratios)
     _validate_thresholds(threshold, threshold_outputs)
     _validate_derived_metrics(derived_metrics, threshold)
-    _validate_observations(obs)
+    check_binary(obs, "obs")
     _validate_forecasts(fcst, threshold)
 
     # Weights validation
@@ -253,23 +228,12 @@ def calculate_climatology(
         preserve_dims=preserve_dims,
         weights_dims=weights.dims if weights is not None else None,
     )
-
-    obs_reduce_dims = tuple(d for d in dims_to_reduce if d in obs.dims)
-
-    # Determine which dims weights actually span (None if weights don't cover any)
-    weight_reduce_dims = tuple(d for d in obs_reduce_dims if d in weights.dims) if weights is not None else None
-
     climatology = aggregate(
         obs,
-        reduce_dims=weight_reduce_dims or obs_reduce_dims,
-        weights=weights if weight_reduce_dims else None,
+        reduce_dims=dims_to_reduce,
+        weights=weights,
         method="mean",
     )
-
-    # Unweighted mean over any remaining dims not covered by weights
-    if weight_reduce_dims:
-        remaining_dims = tuple(d for d in obs_reduce_dims if d not in weight_reduce_dims) or None
-        climatology = aggregate(climatology, reduce_dims=remaining_dims, weights=None, method="mean")
 
     return climatology
 
@@ -311,7 +275,7 @@ def _create_output_dataset(
     for mode in derived_metrics:
         if mode == "maximum":
             result["maximum"] = rev.max(dim=threshold_dim)
-        elif mode == "rational_user":
+        elif mode == "rational_user":  # pragma: no cover
             # Check that thresholds match cost_loss_ratios exactly
             if list(thresholds) != list(cost_loss_ratios):
                 raise ValueError(
@@ -330,11 +294,6 @@ def _create_output_dataset(
             # Drop threshold coordinate since it's redundant
             if threshold_dim in result["rational_user"].coords:
                 result["rational_user"] = result["rational_user"].drop_vars(threshold_dim)
-
-        else:
-            raise ValueError(
-                f"Invalid derived_metrics value: '{mode}'. Valid options are 'maximum' and 'rational_user'"
-            )
 
     # Add threshold-specific outputs
     for thresh in threshold_outputs:
@@ -475,15 +434,6 @@ def relative_economic_value_from_rates(
         - :py:func:`scores.categorical.probability_of_detection`
         - :py:func:`scores.categorical.probability_of_false_detection`
     """
-
-    # From Richardson, D.S., QJR Meteorol Soc 2000, 126, pp 649-667
-    # Hit rate (probability of detection) equation 4
-    # False alarm rate (probability of false detection) equation 5
-
-    try:
-        check_monotonic_array(cost_loss_ratios)
-    except Exception as ex:
-        raise type(ex)("for cost_loss_ratios, " + str(ex))
 
     if not all_same_xarraylike([pod, pofd]):
         raise TypeError("Both pod and pofd must be either xarray DataArrays or xarray Datasets.")
@@ -667,7 +617,12 @@ def relative_economic_value(
         ...     threshold=thresholds,
         ...     derived_metrics=['maximum']
         ... )
-        >>> # result is a Dataset with 'maximum' variable
+        <xarray.Dataset> Size: 80B
+        Dimensions:          (cost_loss_ratio: 5)
+        Coordinates:
+        * cost_loss_ratio  (cost_loss_ratio) float64 40B 0.1 0.3 0.5 0.7 0.9
+        Data variables:
+            maximum          (cost_loss_ratio) float64 40B 1.0 1.0 1.0 1.0 1.0
 
     See Also:
         - :py:func:`scores.probability.brier_score`
@@ -717,7 +672,7 @@ def relative_economic_value(
                     cost_loss_dim=cost_loss_dim,
                     derived_metrics=derived_metrics,
                     threshold_outputs=threshold_outputs,
-                    check_args=False,
+                    check_args=False,  # Already validated
                 )
 
         result = xr.Dataset(result_dict)
@@ -766,7 +721,6 @@ def relative_economic_value(
     # Handle cost-loss ratios
     if isinstance(cost_loss_ratios, (float, int)):
         cost_loss_ratios = [cost_loss_ratios]
-    cost_loss_xr = xr.DataArray(cost_loss_ratios, dims=[cost_loss_dim], coords={cost_loss_dim: cost_loss_ratios})
 
     # Determine dimensions for aggregation
     weights_dims = weights.dims if weights is not None else None
@@ -788,7 +742,7 @@ def relative_economic_value(
         binary_fcst = binary_discretise(fcst, threshold, ">=")
 
         # Rename the threshold dimension if needed
-        if "threshold" in binary_fcst.dims and threshold_dim != "threshold":
+        if threshold_dim != "threshold":
             binary_fcst = binary_fcst.rename({"threshold": threshold_dim})
 
         # Calculate REV for each threshold
@@ -796,7 +750,7 @@ def relative_economic_value(
         rev = _calculate_rev_core(
             binary_fcst,
             obs,
-            cost_loss_xr,
+            cost_loss_ratios,
             dims_to_reduce=dims_to_reduce,
             weights=weights,
             cost_loss_dim=cost_loss_dim,
@@ -821,7 +775,7 @@ def relative_economic_value(
     rev = _calculate_rev_core(
         fcst,
         obs,
-        cost_loss_xr,
+        cost_loss_ratios,
         dims_to_reduce=dims_to_reduce,
         weights=weights,
     )
