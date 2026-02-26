@@ -17,7 +17,6 @@ def prepare_fields(
     threeDFields.sortby("latitude")
     fourDFields.sortby("latitude")
 
-    twoDFields = twoDFields.sel(time=twoDFields.time[0])
     if sub_domain_time != []:
         threeDFields = threeDFields.sel(time=sub_domain_time)
         fourDFields = fourDFields.sel(time=sub_domain_time)
@@ -57,7 +56,7 @@ def energy_components(
         1/g\int_{p1}^{p0} c_p* T + L_v q + \Phi_s + 0.5*(u*u + v*v + w*w) dp
         c_p* = cp(1-q) + c_{pv}q
     '''
-    dlon, dlat, lon, lat = integration_weights(zs.longitude.values, zs.latitude.values, \
+    dlon, dlat, lon, lat = integration_weights(fourDFields.longitude.values, fourDFields.latitude.values, \
             sub_domain_longitude, sub_domain_latitude)
 
     # select the temporal, vertical and horizontal sub-domain
@@ -87,6 +86,7 @@ def energy_components(
     else:
         level_array = fourDFields.level.values
 
+    tt = 0
     for _time in time_array:
         #  From Taylor (2011), eqn (12.8)
         sp    = threeDFields["sp"].sel(time=_time)
@@ -118,6 +118,8 @@ def energy_components(
 
             with open(output_file_name, "a") as outfile:
                 outfile.write(f"{I_str}\t{L_str}\t{P_str}\t{Kh_str}\t{Kv_str}\n")
+
+        tt = tt + 1
 
     energy_integrals = xr.DataArray([I, L, P, Kh, Kv])
 
@@ -162,6 +164,7 @@ def energy_exchanges(
     else:
         level_array = fourDFields.level.values
 
+    tt = 0
     for _time in time_array:
         for _level in level_array:
             ult = fourDFields["u"].sel(level=_level,time=_time)
@@ -186,6 +189,8 @@ def energy_exchanges(
 
             with open(outfilename, "a") as outfile:
                 outfile.write(f"{KtoI_str}\t{ItoK_str}\t{KtoP_str}\t{PtoK_str}\n")
+
+        tt = tt + 1
 
     energy_exchange_integrals = xr.DataArray([KtoI, ItoK, KtoP, PtoK])
 
