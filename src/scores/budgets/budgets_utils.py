@@ -13,6 +13,7 @@ lat_max = +90.0
 gravity = 9.80665
 c_p = 1006.0
 c_pv = 1872.0
+L_v = 2.5008e+6
 
 '''
 Integration weights for a two dimensional latitude-longitude field on

@@ -93,6 +93,7 @@ def energy_components(
         sp_zs = sp*zs
         P[tt] = integrate_horizontal(sp_zs,dlon,dlat)
 
+        ll = 0
         for _level in level_array:
             ult = fourDFields["u"].sel(level=_level,time=_time)
             vlt = fourDFields["v"].sel(level=_level,time=_time)
@@ -108,6 +109,8 @@ def energy_components(
             L[tt]  = L[tt] + dp[ll]*L_v*integrate_horizontal(qlt,dlon,dlat)
             Kh[tt] = Kh[tt] + dp[ll]*0.5*integrate_horizontal(khlt,dlon,dlat)
             Kv[tt] = Kv[tt] + dp[ll]*0.5*integrate_horizontal(kvlt,dlon,dlat)
+
+            ll = ll + 1
 
         if output_file_name != []:
             I_str = "{:16.15e}".format(I[tt])
@@ -136,7 +139,7 @@ def energy_exchanges(
         output_file_name = [],
         ) -> XarrayLike:
 
-    dlon, dlat, lon, lat = integration_weights(zs.longitude.values, zs.latitude.values, \
+    dlon, dlat, lon, lat = integration_weights(fourDFields.longitude.values, fourDFields.latitude.values, \
             sub_domain_longitude, sub_domain_latitude)
 
     cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
@@ -152,7 +155,7 @@ def energy_exchanges(
     KtoP = np.zeros(nt) # kinetic to potential energy exchange (horizontal)
     PtoK = np.zeros(nt) # potential to kinetic energy exchange (horizontal)
 
-    dp = get_pressure_thickness(sub_domain_level)
+    dp = pressure_level_thickness(sub_domain_level)
 
     if sub_domain_time != []:
         time_array = sub_domain_time
@@ -164,8 +167,11 @@ def energy_exchanges(
     else:
         level_array = fourDFields.level.values
 
+    zs = twoDFields["z_surf"]
+
     tt = 0
     for _time in time_array:
+        ll = 0
         for _level in level_array:
             ult = fourDFields["u"].sel(level=_level,time=_time)
             vlt = fourDFields["v"].sel(level=_level,time=_time)
@@ -173,13 +179,15 @@ def energy_exchanges(
 
             z_m_zs = zlt - zs
 
-            KtoI_t, ItoK_t = integrate_energy_exchange(z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
+            KtoI_t, ItoK_t = integrate_energy_exchange(z_m_zs, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
             KtoI[tt] = KtoI[tt] + dp[ll]*KtoI_t
             ItoK[tt] = ItoK[tt] + dp[ll]*ItoK_t
 
-            KtoP_t, PtoK_t = integrate_energy_exchange(zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
+            KtoP_t, PtoK_t = integrate_energy_exchange(zs, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
             KtoP[tt] = KtoP[tt] + dp[ll]*KtoP_t
             PtoK[tt] = PtoK[tt] + dp[ll]*PtoK_t
+
+            ll = ll + 1
 
         if output_file_name != []:
             KtoI_str = "{:16.15e}".format(KtoI[tt])
