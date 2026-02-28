@@ -128,7 +128,7 @@ def _weighted_mean(values, weights, reduce_dims=None):
 
 
 @_weighted_mean.register
-def _(
+def weighted_mean_xarray(
     values: XarrayLike,
     weights: XarrayLike,
     reduce_dims: FlexibleDimensionTypes,
@@ -161,13 +161,15 @@ try:
     import torch
 
     @_weighted_mean.register
-    def _(values: torch.Tensor, weights: torch.Tensor, reduce_dims: FlexibleDimensionTypes):
-        sum_of_weights = weights.sum()
-        weighted = values * weights
-        result = weighted.rename(None).nanmean() / sum_of_weights
-        return result
-except ImportError:
-    # This is fully expected when torch is not available in the user environment - the default expectation
+    def weighted_mean_pytorch(values: torch.Tensor, weights: torch.Tensor, reduce_dims: FlexibleDimensionTypes):
+        weighted_error = torch.mul(values, weights)
+        weighted_sum_of_error = weighted_error.nansum()
+
+        sum_of_weights = torch.nansum(weights)
+        weighted_mean = weighted_sum_of_error / sum_of_weights
+        return weighted_mean
+except ModuleNotFoundError:
+    # This isfully esum_of_xpected when torch is not available in the user environment - the default expectation
     pass
 
 

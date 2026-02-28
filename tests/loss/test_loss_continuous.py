@@ -18,20 +18,19 @@ PRECISION = 4
 #
 DA1_BIAS = torch.tensor(
     np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
-    names=("space", "time"),
 )
 
 DA2_BIAS = torch.tensor(
     np.array([[2, 2, 6], [2, 10, 0], [-0.5, 0.5, -0.5]]),
-    names=("space", "time"),
 )
 
 BIAS_WEIGHTS = torch.tensor(
     np.array([[1, 1, 1], [3, 0, 0], [3, 0, 0]]),
-    names=("space", "time"),
 )
 
 EXP_BIAS2 = torch.tensor(np.array([-1.33333]))
+
+EXP_BIAS3 = torch.tensor(np.array(-1.625))
 
 
 def test_mse_pandas_series():
@@ -60,6 +59,7 @@ def test_mse_pandas_series():
     [
         # Check weighting works
         (DA1_BIAS, DA2_BIAS, BIAS_WEIGHTS, EXP_BIAS2),
+        (DA1_BIAS, DA2_BIAS, None, EXP_BIAS3),
     ],
 )
 def test_additive_bias(fcst, obs, weights, expected):
@@ -68,7 +68,19 @@ def test_additive_bias(fcst, obs, weights, expected):
     Also tests mean_error (which is an identical function)
     """
 
+    fcst = fcst.rename(None)
+    obs = obs.rename(None)
+
+    if weights is None:
+        weights = torch.ones(fcst.shape)
+
+    weights = weights.rename(None)
+
+    weights = weights * (~torch.isnan(fcst))  # mask out nans from fcst
+    weights = weights * (~torch.isnan(obs))  # mask out nans from obs
     tensor_result = scores.loss.continuous.additive_bias(fcst, obs, weights=weights)
+
+    tensor_result = tensor_result.rename(None)
     assert (torch.round(tensor_result, decimals=4) == torch.tensor(expected)).all()
 
 
