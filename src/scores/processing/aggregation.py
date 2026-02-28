@@ -73,7 +73,9 @@ def aggregate(
         Dimensions without coordinates: y
 
     """
-    # _check_aggregate_inputs(values, reduce_dims, weights, method)
+
+    if isinstance(values, XarrayLike):
+        _check_aggregate_inputs(values, reduce_dims, weights, method)
 
     if reduce_dims is None:
         return values
