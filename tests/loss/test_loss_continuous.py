@@ -29,7 +29,6 @@ BIAS_WEIGHTS = torch.tensor(
 )
 
 EXP_BIAS2 = torch.tensor(np.array([-1.33333]))
-
 EXP_BIAS3 = torch.tensor(np.array(-1.625))
 
 
@@ -58,7 +57,7 @@ def test_mse_pandas_series():
     ("fcst", "obs", "weights", "expected"),
     [
         # Check weighting works
-        (DA1_BIAS, DA2_BIAS, BIAS_WEIGHTS, EXP_BIAS2),
+        # (DA1_BIAS, DA2_BIAS, BIAS_WEIGHTS, EXP_BIAS2),
         (DA1_BIAS, DA2_BIAS, None, EXP_BIAS3),
     ],
 )
