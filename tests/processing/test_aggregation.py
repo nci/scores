@@ -284,7 +284,4 @@ def test_aggregate_raises(values, weights, method, msg, err_type):
     """
 
     with pytest.raises(err_type, match=msg):
-        import pudb
-
-        pudb.set_trace()
         aggregate(values, reduce_dims=["x"], weights=weights, method=method)
