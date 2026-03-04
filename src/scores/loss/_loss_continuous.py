@@ -43,6 +43,7 @@ def additive_bias(
     fcst,
     obs,
     *,
+    reduce_dims=None,
     weights=None,
 ):
     """
@@ -62,14 +63,7 @@ def additive_bias(
         fcst: Forecast or predicted variables.
         obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating the additive bias. All other dimensions will be preserved.
-        preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the additive bias. All other dimensions will be reduced. As a
-            special case, 'all' will allow all dimensions to be preserved. In
-            this case, the result will be in the same shape/dimensionality
-            as the forecast, and the errors will be the error at each
-            point (i.e. single-value comparison against observed), and the
-            forecast and observed dimensions must match precisely.
+            calculating the additive bias. All other dimensions will be preserved. Note, this should be an int of list-of-int.
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If
@@ -84,11 +78,7 @@ def additive_bias(
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     """
-    # # Note - mean error call this function
-    # reduce_dims = scores.utils.gather_dimensions(
-    #     fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    # )
-    #
+
     error = fcst - obs
     score = scores.processing.aggregate(error, reduce_dims="all", weights=weights)
 
