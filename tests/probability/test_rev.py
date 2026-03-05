@@ -103,7 +103,7 @@ class TestBroadcastingAndDimensionHandling:
         fcst = xr.DataArray(fcst_data, dims=fcst_dims, coords=fcst_coords)
         obs = xr.DataArray(obs_data, dims=obs_dims, coords=obs_coords)
 
-        actual = relative_economic_value(fcst, obs, [0.5], reduce_dims="time")
+        actual = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], reduce_dims="time")
 
         expected = xr.DataArray(
             expected_rev,
@@ -154,7 +154,7 @@ class TestBroadcastingAndDimensionHandling:
         fcst = xr.DataArray(fcst_data, dims=fcst_dims, coords=fcst_coords)
         obs = xr.DataArray(obs_data, dims=obs_dims, coords=obs_coords)
 
-        actual = relative_economic_value(fcst, obs, [0.5], preserve_dims="space")
+        actual = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], preserve_dims="space")
 
         expected = xr.DataArray(
             expected_rev,
@@ -233,7 +233,7 @@ class TestScienceCalculations:
         fcst, obs = make_contingency_data(hits=2, misses=0, false_alarms=0, correct_negatives=2)
 
         for alpha in [0.2, 0.5, 0.8]:
-            actual = relative_economic_value(fcst, obs, [alpha])
+            actual = relative_economic_value(fcst, obs, cost_loss_ratios=[alpha])
             expected = xr.DataArray([1.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [alpha]})
             xr.testing.assert_allclose(actual, expected)
 
@@ -242,11 +242,11 @@ class TestScienceCalculations:
         fcst, obs = make_contingency_data(0, 2, 0, 2)
 
         xr.testing.assert_allclose(
-            relative_economic_value(fcst, obs, [0.5]),
+            relative_economic_value(fcst, obs, cost_loss_ratios=[0.5]),
             xr.DataArray([0.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]}),
         )
         xr.testing.assert_allclose(
-            relative_economic_value(fcst, obs, [0.2]),
+            relative_economic_value(fcst, obs, cost_loss_ratios=[0.2]),
             xr.DataArray([-3.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.2]}),
         )
 
@@ -255,11 +255,11 @@ class TestScienceCalculations:
         fcst, obs = make_contingency_data(2, 0, 2, 0)
 
         xr.testing.assert_allclose(
-            relative_economic_value(fcst, obs, [0.5]),
+            relative_economic_value(fcst, obs, cost_loss_ratios=[0.5]),
             xr.DataArray([0.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.5]}),
         )
         xr.testing.assert_allclose(
-            relative_economic_value(fcst, obs, [0.8]),
+            relative_economic_value(fcst, obs, cost_loss_ratios=[0.8]),
             xr.DataArray([-3.0], dims=["cost_loss_ratio"], coords={"cost_loss_ratio": [0.8]}),
         )
 
@@ -270,9 +270,9 @@ class TestScienceCalculations:
         obs = xr.DataArray([1, 0, 1, 0], dims=["time"])
 
         # At alpha=0.5: REV = -1.0
-        assert relative_economic_value(fcst, obs, [0.5]).item() == -1.0
+        assert relative_economic_value(fcst, obs, cost_loss_ratios=[0.5]).item() == -1.0
         # At extreme alphas: even worse
-        assert relative_economic_value(fcst, obs, [0.2]).item() == -4.0
+        assert relative_economic_value(fcst, obs, cost_loss_ratios=[0.2]).item() == -4.0
 
     @pytest.mark.parametrize(
         "hits,misses,fa,cn,alpha,expected",
@@ -286,25 +286,25 @@ class TestScienceCalculations:
     def test_partial_skill_cases(self, make_contingency_data, hits, misses, fa, cn, alpha, expected):
         """Test cases with varying levels of forecast skill."""
         fcst, obs = make_contingency_data(hits, misses, fa, cn)
-        actual = relative_economic_value(fcst, obs, [alpha])
+        actual = relative_economic_value(fcst, obs, cost_loss_ratios=[alpha])
         assert actual.item() == pytest.approx(expected)
 
     def test_undefined_when_obar_is_zero_or_one(self, make_contingency_data):
         """REV undefined when climatology is 0 or 1 (no variance in obs)."""
         # obar = 0: no events
         fcst, obs = make_contingency_data(0, 0, 2, 2)
-        assert np.isnan(relative_economic_value(fcst, obs, [0.2]).item())
+        assert np.isnan(relative_economic_value(fcst, obs, cost_loss_ratios=[0.2]).item())
 
         # obar = 1: all events
         fcst, obs = make_contingency_data(2, 2, 0, 0)
-        assert np.isnan(relative_economic_value(fcst, obs, [0.2]).item())
+        assert np.isnan(relative_economic_value(fcst, obs, cost_loss_ratios=[0.2]).item())
 
     def test_undefined_at_extreme_cost_loss(self, make_contingency_data):
         """REV undefined at cost_loss_ratio = 0 or 1."""
         fcst, obs = make_contingency_data(2, 0, 0, 2)  # perfect forecast
 
-        assert np.isnan(relative_economic_value(fcst, obs, [0.0]).item())
-        assert np.isnan(relative_economic_value(fcst, obs, [1.0]).item())
+        assert np.isnan(relative_economic_value(fcst, obs, cost_loss_ratios=[0.0]).item())
+        assert np.isnan(relative_economic_value(fcst, obs, cost_loss_ratios=[1.0]).item())
 
     def test_nan_values_excluded_from_calculation(self):
         """NaN values in fcst or obs are excluded pairwise."""
@@ -313,7 +313,7 @@ class TestScienceCalculations:
         fcst = xr.DataArray([1, 1, 0, 0, 1, np.nan], dims=["time"])
         obs = xr.DataArray([1, 0, 1, 0, np.nan, 0], dims=["time"])
 
-        actual = relative_economic_value(fcst, obs, [0.5])
+        actual = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5])
         assert actual.item() == 0.0
 
     def test_multiple_cost_loss_ratios(self, make_contingency_data):
@@ -388,6 +388,18 @@ class TestScienceCalculations:
 class TestREVSpecialFeatures:
     """Tests for special features of the REV implementation."""
 
+    def test_default_cost_loss_ratios(self):
+        """When cost_loss_ratios is omitted, defaults to 0.01..0.99 (99 values)."""
+        fcst = xr.DataArray([0, 1, 1, 0, 1], dims=["time"])
+        obs = xr.DataArray([0, 1, 0, 0, 1], dims=["time"])
+
+        result = relative_economic_value(fcst, obs)
+
+        expected_ratios = list(np.arange(0.01, 1.0, 0.01))
+        assert result.dims == ("cost_loss_ratio",)
+        assert len(result.cost_loss_ratio) == 99
+        np.testing.assert_allclose(result.cost_loss_ratio.values, expected_ratios)
+
     def test_probabilistic_single_threshold(self):
         """Test with single threshold"""
         fcst = xr.DataArray([0.2, 0.8, 0.6, 0.1, 0.9], dims=["time"])
@@ -398,7 +410,7 @@ class TestREVSpecialFeatures:
         actual = relative_economic_value(
             fcst,
             obs,
-            cost_loss_ratios,
+            cost_loss_ratios=cost_loss_ratios,
             threshold=threshold,
             threshold_outputs=[threshold],
         )
@@ -415,7 +427,9 @@ class TestREVSpecialFeatures:
         thresholds = [0.3, 0.5, 0.7]
         cost_loss_ratios = [0.2, 0.5, 0.8]
 
-        actual = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds, threshold_outputs=[0.5])
+        actual = relative_economic_value(
+            fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=thresholds, threshold_outputs=[0.5]
+        )
         expected = xr.Dataset(
             data_vars={"threshold_0_5": (["cost_loss_ratio"], [1.0, 1.0, 1.0])},
             coords={"cost_loss_ratio": [0.2, 0.5, 0.8]},
@@ -432,7 +446,7 @@ class TestREVSpecialFeatures:
         actual = relative_economic_value(
             fcst,
             obs,
-            cost_loss_ratios,
+            cost_loss_ratios=cost_loss_ratios,
             threshold=thresholds,
             threshold_outputs=[0.4, 0.8],
         )
@@ -461,12 +475,12 @@ class TestREVSpecialFeatures:
         thresholds = np.arange(0.1, 1.0, 0.1)
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
-        actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds)
+        actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=thresholds)
 
         actual_max_result = relative_economic_value(
             fcst,
             obs,
-            cost_loss_ratios,
+            cost_loss_ratios=cost_loss_ratios,
             threshold=thresholds,
             derived_metrics=["maximum"],
         )
@@ -518,12 +532,12 @@ class TestREVSpecialFeatures:
         thresholds = [0.2, 0.4, 0.6, 0.8]
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
-        actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios, threshold=thresholds)
+        actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=thresholds)
 
         actual_rational_result = relative_economic_value(
             fcst,
             obs,
-            cost_loss_ratios,
+            cost_loss_ratios=cost_loss_ratios,
             threshold=thresholds,
             derived_metrics=["maximum", "rational_user"],
         )
@@ -636,7 +650,7 @@ class TestWeights:
         weights = xr.DataArray([18.342] * 8, dims=["time"])
 
         rev_weighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights)
-        rev_unweighted = relative_economic_value(fcst, obs, [0.5])
+        rev_unweighted = relative_economic_value(fcst, obs, cost_loss_ratios=[0.5])
 
         xr.testing.assert_allclose(rev_weighted, rev_unweighted)
 
@@ -776,7 +790,7 @@ class TestDatasetInputs:
         )
         obs = xr.DataArray([0, 1, 1, 0], dims=["time"])
 
-        actual = relative_economic_value(fcst_ds, obs, [0.5])
+        actual = relative_economic_value(fcst_ds, obs, cost_loss_ratios=[0.5])
 
         expected = xr.Dataset(
             data_vars={
@@ -798,7 +812,7 @@ class TestDatasetInputs:
             }
         )
 
-        actual = relative_economic_value(fcst, obs_ds, [0.3, 0.7], threshold=[0.5])
+        actual = relative_economic_value(fcst, obs_ds, cost_loss_ratios=[0.3, 0.7], threshold=[0.5])
         expected = xr.Dataset(
             data_vars={
                 "station_data": (["threshold", "cost_loss_ratio"], [[1.0, 1.0]]),
@@ -824,7 +838,7 @@ class TestDatasetInputs:
             }
         )
 
-        actual = relative_economic_value(fcst_ds, obs_ds, [0.3, 0.7], threshold=[0.5])
+        actual = relative_economic_value(fcst_ds, obs_ds, cost_loss_ratios=[0.3, 0.7], threshold=[0.5])
 
         expected = xr.Dataset(
             data_vars={
@@ -865,7 +879,7 @@ class TestDatasetInputs:
         )
 
         with pytest.raises(ValueError, match="Weights cannot be Datasets."):
-            relative_economic_value(fcst, obs, [0.5], weights=weights_ds)
+            relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights_ds)
 
     def test_pod_as_dataset(self):
         """Test with POD as Dataset."""
@@ -1001,8 +1015,6 @@ class TestErrorHandling:
         [
             # Probabilistic forecasts without threshold
             ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, None, "contains values that are not in the set {0, 1, np.nan}"),
-            # Cost-loss ratios cannot be none
-            ([0, 1, 1], [0, 1, 0], None, None, None, "must not be None"),
             # Cost-loss ratios out of range
             ([0, 1, 1], [0, 1, 0], [-0.1, 0.5, 1.2], None, None, "between 0 and 1"),
             # Cost-loss ratios not monotonic
@@ -1045,7 +1057,6 @@ class TestErrorHandling:
         ],
         ids=[
             "probabilistic_without_threshold",
-            "cost_loss_none",
             "cost_loss_out_of_range",
             "cost_loss_not_monotonic",
             "threshold_out_of_range",
@@ -1074,7 +1085,7 @@ class TestErrorHandling:
 
         with pytest.raises(ValueError, match=expected_error):
             relative_economic_value(
-                fcst, obs, cost_loss_ratios, threshold=threshold, threshold_outputs=threshold_outputs
+                fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=threshold, threshold_outputs=threshold_outputs
             )
 
     def test_weights_negative(self, make_contingency_data):
@@ -1117,7 +1128,7 @@ class TestErrorHandling:
             weights = xr.DataArray([1.0, 2.0], dims=[forbidden_dim])
 
         with pytest.raises(ValueError, match=f"'{forbidden_dim}' cannot be a dimension in {array_name}"):
-            relative_economic_value(fcst, obs, [0.5], weights=weights)
+            relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights)
 
     def test_value_without_matching_thresholds(self):
         """Test that 'rational_user' output requires matching thresholds"""
@@ -1128,7 +1139,7 @@ class TestErrorHandling:
             relative_economic_value(
                 fcst,
                 obs,
-                [0.3, 0.5],
+                cost_loss_ratios=[0.3, 0.5],
                 threshold=[0.2, 0.5],
                 derived_metrics=["rational_user"],
             )
@@ -1142,7 +1153,7 @@ class TestErrorHandling:
             relative_economic_value(
                 fcst,
                 obs,
-                [0.5],
+                cost_loss_ratios=[0.5],
                 threshold=[0.5],
                 derived_metrics=["pizza_oven"],
             )
@@ -1387,7 +1398,7 @@ class TestLegacyJive:
         actual = relative_economic_value(
             fcst,
             obs,
-            cost_loss_ratios,
+            cost_loss_ratios=cost_loss_ratios,
             preserve_dims=preserve_dims,
         )
         xr.testing.assert_allclose(actual, expected)

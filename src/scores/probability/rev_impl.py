@@ -57,8 +57,6 @@ def _validate_thresholds(
 def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) -> None:
     """Validate cost-loss ratio values are in [0,1] and monotonically increasing."""
 
-    if cost_loss_ratios is None:
-        raise ValueError("cost_loss_ratios must not be None")
     try:
         check_monotonic_array(np.atleast_1d(cost_loss_ratios))
     except (ValueError, TypeError) as ex:
@@ -82,9 +80,8 @@ def _validate_forecasts(
         fcst_min = min(var.min().item() for var in fcst.data_vars.values())
         fcst_max = max(var.max().item() for var in fcst.data_vars.values())
     else:
-        fcst_vals = fcst.values
-        fcst_min = fcst_vals.min().item()
-        fcst_max = fcst_vals.max().item()
+        fcst_min = fcst.min().item()
+        fcst_max = fcst.max().item()
 
     # Validate based on configuration
     if threshold is not None:
@@ -282,18 +279,8 @@ def _create_output_dataset(
                     "Can only specify derived_metrics 'rational_user' if thresholds and cost_loss_ratios are identical"
                 )
             # Extract diagonal where threshold == cost_loss_ratio
-            actual_values = []
-            for alpha in cost_loss_ratios:
-                val = rev.sel({threshold_dim: alpha, cost_loss_dim: alpha})
-                actual_values.append(val)
-
-            # Concat and assign proper coordinates
-            result["rational_user"] = xr.concat(actual_values, dim=cost_loss_dim)
-            result["rational_user"][cost_loss_dim] = cost_loss_ratios
-
-            # Drop threshold coordinate since it's redundant
-            if threshold_dim in result["rational_user"].coords:
-                result["rational_user"] = result["rational_user"].drop_vars(threshold_dim)
+            coords = xr.DataArray(cost_loss_ratios, dims=[cost_loss_dim])
+            result["rational_user"] = rev.sel({threshold_dim: coords, cost_loss_dim: coords})
 
     # Add threshold-specific outputs
     for thresh in threshold_outputs:
@@ -313,10 +300,10 @@ def check_monotonic_array(array: Union[Sequence[float], np.ndarray]) -> None:
     except Exception as ex:
         raise TypeError("could not convert array into a numpy ndarray of floats") from ex
 
-    if len(np_array.shape) != 1:
+    if np_array.ndim != 1:
         raise ValueError("array must be one-dimensional")
 
-    if max(np_array) > 1 or min(np_array) < 0:
+    if np_array.max() > 1 or np_array.min() < 0:
         raise ValueError("array values should be between 0 and 1.")
 
     if len(np_array) > 1 and not (np_array[1:] - np_array[:-1] >= 0).all():
@@ -479,8 +466,8 @@ def relative_economic_value_from_rates(
 def relative_economic_value(
     fcst: XarrayLike,
     obs: XarrayLike,
-    cost_loss_ratios: Union[float, Sequence[float]],
     *,  # Force keyword arguments to be keyword-only
+    cost_loss_ratios: Optional[Union[float, Sequence[float]]] = None,
     threshold: Optional[Union[float, Sequence[float]]] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
@@ -527,7 +514,8 @@ def relative_economic_value(
         cost_loss_ratios: The cost-loss ratio(s) at which to calculate REV. Must be
             strictly monotonically increasing values between 0 and 1. The cost-loss
             ratio represents the ratio of the cost of taking protective action to
-            the loss incurred if the event occurs without protection.
+            the loss incurred if the event occurs without protection. If None, assumes
+            each percentile between 0 to 1, i.e. 0.01, 0.02...0.98, 0.99.
         threshold: Decision threshold(s) for converting probabilistic forecasts to
             binary decisions. Required for probabilistic forecasts. Each threshold
             converts forecasts to 1 where fcst >= threshold, 0 otherwise. Must be
@@ -613,7 +601,8 @@ def relative_economic_value(
         >>> fcst_prob = xr.DataArray([0.2, 0.8, 0.6, 0.1, 0.9], dims=['time'])
         >>> thresholds = [0.3, 0.5, 0.7]
         >>> result = relative_economic_value(
-        ...     fcst_prob, obs, cost_loss_ratios,
+        ...     fcst_prob, obs,
+        ...     cost_loss_ratios=cost_loss_ratios,
         ...     threshold=thresholds,
         ...     derived_metrics=['maximum']
         ... )
@@ -631,6 +620,9 @@ def relative_economic_value(
         - :py:func:`scores.categorical.probability_of_false_detection`
         - :py:func:`scores.processing.binary_discretise`
     """
+
+    if cost_loss_ratios is None:
+        cost_loss_ratios = list(np.arange(0.01, 1.0, 0.01))
 
     # Input validation
     if check_args:
@@ -663,7 +655,7 @@ def relative_economic_value(
                 result_dict[out_name] = relative_economic_value(
                     fcst_aligned[fvar],
                     obs_aligned[ovar],
-                    cost_loss_ratios,
+                    cost_loss_ratios=cost_loss_ratios,
                     threshold=threshold,
                     reduce_dims=reduce_dims,
                     preserve_dims=preserve_dims,
@@ -684,7 +676,7 @@ def relative_economic_value(
             result_dict[var] = relative_economic_value(
                 fcst[var],
                 obs,
-                cost_loss_ratios,
+                cost_loss_ratios=cost_loss_ratios,
                 threshold=threshold,
                 reduce_dims=reduce_dims,
                 preserve_dims=preserve_dims,
@@ -704,7 +696,7 @@ def relative_economic_value(
             result_dict[var] = relative_economic_value(
                 fcst,
                 obs[var],
-                cost_loss_ratios,
+                cost_loss_ratios=cost_loss_ratios,
                 threshold=threshold,
                 reduce_dims=reduce_dims,
                 preserve_dims=preserve_dims,
