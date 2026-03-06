@@ -115,6 +115,41 @@ def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, 
     return u_weighted / (w_pos * w_neg)
 
 
+def _check_roc_auc_args(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    weights: Optional[xr.DataArray],
+    check_args: bool,
+) -> None:
+    """Validate inputs for :func:`roc_auc`."""
+    if check_args:
+        if isinstance(fcst, (xr.DataArray, xr.Dataset)) and (
+            getattr(fcst, "chunks", None) is not None or getattr(obs, "chunks", None) is not None
+        ):
+            warnings.warn(
+                "`fcst` or `obs` is an xarray object backed by a Dask array. "
+                "Input validation requires computing the min and max of the arrays "
+                "which triggers immediate computation. Set `check_args=False` to avoid this.",
+                UserWarning,
+            )
+
+        if isinstance(fcst, xr.Dataset):
+            fcst_arr = fcst.to_array()
+            fcst_max = fcst_arr.max().values.item()
+            fcst_min = fcst_arr.min().values.item()
+        else:
+            fcst_max = fcst.max().values.item()
+            fcst_min = fcst.min().values.item()
+
+        if fcst_max > 1 or fcst_min < 0:
+            raise ValueError("`fcst` contains values outside of the range [0, 1]")
+
+        check_binary(obs, "obs")
+
+    if weights is not None:
+        check_weights(weights)
+
+
 def roc_auc(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -230,31 +265,7 @@ def roc_auc(
         ... )
         >>> result = roc_auc(fcst, obs, preserve_dims=["station"])
     """
-    if check_args:
-        if isinstance(fcst, (xr.DataArray, xr.Dataset)) and (
-            getattr(fcst, "chunks", None) is not None or getattr(obs, "chunks", None) is not None
-        ):
-            warnings.warn(
-                "`fcst` or `obs` is an xarray object backed by a Dask array. "
-                "Input validation requires computing the min and max of the arrays "
-                "which triggers immediate computation. Set `check_args=False` to avoid this.",
-                UserWarning,
-            )
-
-        if isinstance(fcst, xr.Dataset):
-            fcst_max = fcst.to_array().max().values.item()
-            fcst_min = fcst.to_array().min().values.item()
-        else:
-            fcst_max = fcst.max().values.item()
-            fcst_min = fcst.min().values.item()
-
-        if fcst_max > 1 or fcst_min < 0:
-            raise ValueError("`fcst` contains values outside of the range [0, 1]")
-
-        check_binary(obs, "obs")
-
-    if weights is not None:
-        check_weights(weights)
+    _check_roc_auc_args(fcst, obs, weights, check_args)
 
     reduce_dims = gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -272,26 +283,28 @@ def roc_auc(
     obs_stacked = obs.stack({sample_dim: reduce_dims_tuple})
 
     # Try numba-accelerated gufuncs; fall back to numpy if numba is unavailable
-    numba_installed = False
+    weighted_numba_gufunc = None
     try:
         import numba  # noqa  # ignore unused import
 
         from scores.probability.auc_numba import _roc_auc_mann_whitney_weighted_gufunc
 
-        numba_installed = True
+        weighted_numba_gufunc = _roc_auc_mann_whitney_weighted_gufunc
     except ImportError:
         pass
 
-    if numba_installed:
+    weights_stacked = None
+    if weights is not None:
+        weights_stacked = weights.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
+
+    if weighted_numba_gufunc is not None:
         # When numba is available, always use the weighted gufunc.
         # For the unweighted case, supply constant unit weights — benchmarking
         # shows the overhead is negligible compared to the speedup from numba.
-        if weights is not None:
-            weights_stacked = weights.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
-        else:
+        if weights_stacked is None:
             weights_stacked = xr.ones_like(fcst_stacked)
         result = xr.apply_ufunc(
-            _roc_auc_mann_whitney_weighted_gufunc,
+            weighted_numba_gufunc,
             fcst_stacked,
             obs_stacked,
             weights_stacked,
@@ -299,8 +312,7 @@ def roc_auc(
             dask="parallelized",
             output_dtypes=[float],
         )
-    elif weights is not None:
-        weights_stacked = weights.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
+    elif weights_stacked is not None:
         result = xr.apply_ufunc(
             _roc_auc_mann_whitney_weighted,
             fcst_stacked,
