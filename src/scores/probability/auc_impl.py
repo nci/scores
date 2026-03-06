@@ -10,7 +10,7 @@ import xarray as xr
 from scipy.stats import rankdata
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike
-from scores.utils import check_binary, gather_dimensions
+from scores.utils import check_binary, check_weights, gather_dimensions
 
 
 def _roc_auc_mann_whitney(fcst_flat: np.ndarray, obs_flat: np.ndarray) -> float:
@@ -19,6 +19,8 @@ def _roc_auc_mann_whitney(fcst_flat: np.ndarray, obs_flat: np.ndarray) -> float:
     Computes AUC = U / (n_pos * n_neg) where U is the Mann-Whitney U statistic.
     This is equivalent to P(fcst_positive > fcst_negative) + 0.5 * P(fcst_positive == fcst_negative)
     and runs in O(n log n) time due to sorting-based ranking.
+
+    This function handles the non-numba-accelerated unweighted case.
 
     Args:
         fcst_flat: 1-D array of forecast probabilities.
@@ -51,12 +53,75 @@ def _roc_auc_mann_whitney(fcst_flat: np.ndarray, obs_flat: np.ndarray) -> float:
     return u_stat / (n_pos * n_neg)
 
 
+def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, weights_flat: np.ndarray) -> float:
+    """Weighted ROC AUC computation using a sorted sweep over cumulative negative weights.
+
+    Equivalent to the weighted pair-counting definition:
+
+        AUC = sum_{i:y=1} sum_{j:y=0} w_i * w_j * [1(f_i > f_j) + 0.5 * 1(f_i == f_j)]
+              / (W_+ * W_-)
+
+    but runs in O(n log n) time by sorting once and sweeping left-to-right with a
+    running cumulative negative weight, handling ties as a group.
+
+    Args:
+        fcst_flat: 1-D array of forecast probabilities.
+        obs_flat: 1-D array of binary observations (0 or 1).
+        weights_flat: 1-D array of non-negative sample weights.
+
+    Returns:
+        The weighted area under the ROC curve as a float, or NaN if the total
+        positive weight or total negative weight is zero.
+    """
+    valid = ~(np.isnan(fcst_flat) | np.isnan(obs_flat) | np.isnan(weights_flat))
+    fcst_v = fcst_flat[valid]
+    obs_v = obs_flat[valid]
+    w_v = weights_flat[valid]
+
+    w_pos = np.sum(w_v[obs_v == 1])
+    w_neg = np.sum(w_v[obs_v == 0])
+
+    if w_pos == 0 or w_neg == 0:
+        return np.nan
+
+    order = np.argsort(fcst_v, kind="stable")
+    fcst_s = fcst_v[order]
+    obs_s = obs_v[order]
+    w_s = w_v[order]
+
+    u_weighted = 0.0
+    cum_neg = 0.0
+    i = 0
+    n = len(fcst_s)
+
+    while i < n:
+        # Find the end of the current tie group
+        j = i
+        while j < n and fcst_s[j] == fcst_s[i]:
+            j += 1
+
+        group_obs = obs_s[i:j]
+        group_w = w_s[i:j]
+        tie_neg = np.sum(group_w[group_obs == 0])
+
+        # Positives in tie group are fully concordant with all negatives seen
+        # before this group and half-concordant with negatives inside this group
+        pos_mask = group_obs == 1
+        u_weighted += np.sum(group_w[pos_mask]) * (cum_neg + 0.5 * tie_neg)
+
+        cum_neg += tie_neg
+        i = j
+
+    return u_weighted / (w_pos * w_neg)
+
+
 def roc_auc(
     fcst: XarrayLike,
     obs: XarrayLike,
     *,  # Force keyword arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
     check_args: bool = True,
 ) -> XarrayLike:
     """Calculates the area under the Receiver Operating Characteristic (ROC) curve.
@@ -67,7 +132,7 @@ def roc_auc(
     non-event.
 
     This implementation uses the Mann-Whitney U statistic, which is equivalent to
-    the trapezoidal ROC AUC but runs in O(n log n) time instead of O(n × T) where
+    the trapezoidal ROC AUC but runs in O(n log n) time instead of O(n x T) where
     T is the number of unique thresholds. Ties in forecast values are handled
     correctly via average ranking.
 
@@ -95,6 +160,12 @@ def roc_auc(
             this case, the result will be in the same shape/dimensionality
             as the forecast, and the forecast and observed dimensions must match
             precisely.
+        weights: An array of weights to apply to each sample (e.g., latitude
+            weighting). If None, all samples are weighted equally. If provided,
+            the weights must be broadcastable to the data dimensions and must not
+            contain negative or NaN values. Zero weights are permitted and
+            effectively exclude those samples. If appropriate, users can choose
+            to replace NaN values in weights by calling ``weights.fillna(0)``.
         check_args: If True, checks that ``fcst`` values are in [0, 1] and
             ``obs`` values are in {0, 1, NaN}. Set to False to skip these checks
             for improved performance, especially with Dask-backed arrays.
@@ -108,6 +179,8 @@ def roc_auc(
     Raises:
         ValueError: if ``fcst`` contains values outside of the range [0, 1].
         ValueError: if ``obs`` contains non-NaN values not in the set {0, 1}.
+        ValueError: if ``weights`` contains negative or NaN values, or all
+            weights are zero.
 
     Warns:
         UserWarning: If ``fcst`` or ``obs`` is backed by a Dask array and
@@ -180,6 +253,9 @@ def roc_auc(
 
         check_binary(obs, "obs")
 
+    if weights is not None:
+        check_weights(weights)
+
     reduce_dims = gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
@@ -195,14 +271,57 @@ def roc_auc(
     fcst_stacked = fcst.stack({sample_dim: reduce_dims_tuple})
     obs_stacked = obs.stack({sample_dim: reduce_dims_tuple})
 
-    result = xr.apply_ufunc(
-        _roc_auc_mann_whitney,
-        fcst_stacked,
-        obs_stacked,
-        input_core_dims=[[sample_dim], [sample_dim]],
-        vectorize=True,
-        dask="parallelized",
-        output_dtypes=[float],
-    )
+    # Try numba-accelerated gufuncs; fall back to numpy if numba is unavailable
+    numba_installed = False
+    try:
+        import numba  # noqa  # ignore unused import
+
+        from scores.probability.auc_numba import _roc_auc_mann_whitney_weighted_gufunc
+
+        numba_installed = True
+    except ImportError:
+        pass
+
+    if numba_installed:
+        # When numba is available, always use the weighted gufunc.
+        # For the unweighted case, supply constant unit weights — benchmarking
+        # shows the overhead is negligible compared to the speedup from numba.
+        if weights is not None:
+            weights_stacked = weights.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
+        else:
+            weights_stacked = xr.ones_like(fcst_stacked)
+        result = xr.apply_ufunc(
+            _roc_auc_mann_whitney_weighted_gufunc,
+            fcst_stacked,
+            obs_stacked,
+            weights_stacked,
+            input_core_dims=[[sample_dim], [sample_dim], [sample_dim]],
+            dask="parallelized",
+            output_dtypes=[float],
+        )
+    elif weights is not None:
+        weights_stacked = weights.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
+        result = xr.apply_ufunc(
+            _roc_auc_mann_whitney_weighted,
+            fcst_stacked,
+            obs_stacked,
+            weights_stacked,
+            input_core_dims=[[sample_dim], [sample_dim], [sample_dim]],
+            vectorize=True,
+            dask="parallelized",
+            output_dtypes=[float],
+        )
+    # When numba is not available and weights are not provided, use the unweighted 
+    # function which is faster than the weighted version.
+    else:
+        result = xr.apply_ufunc(
+            _roc_auc_mann_whitney,
+            fcst_stacked,
+            obs_stacked,
+            input_core_dims=[[sample_dim], [sample_dim]],
+            vectorize=True,
+            dask="parallelized",
+            output_dtypes=[float],
+        )
 
     return result

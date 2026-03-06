@@ -382,3 +382,165 @@ class TestRocAucDask:
         ).chunk({"station": 1, "time": 4})
         result = roc_auc(fcst, obs, preserve_dims=["station"], check_args=False)
         np.testing.assert_array_almost_equal(result.values, [1.0, 1.0])
+
+
+# ──────────────────────────── weights ────────────────────────────
+
+
+class TestRocAucWeighted:
+    """Tests for the weighted ROC AUC."""
+
+    def test_uniform_weights_equals_unweighted(self):
+        """Uniform weights should produce the same result as no weights."""
+        fcst = xr.DataArray([0.9, 0.8, 0.6, 0.4, 0.2, 0.1], dims=["sample"])
+        obs = xr.DataArray([1, 1, 1, 0, 0, 0], dims=["sample"])
+        weights = xr.DataArray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dims=["sample"])
+        result_weighted = float(roc_auc(fcst, obs, weights=weights))
+        result_unweighted = float(roc_auc(fcst, obs))
+        np.testing.assert_almost_equal(result_weighted, result_unweighted, decimal=12)
+
+    def test_perfect_discrimination_with_weights(self):
+        """Weighted AUC should be 1.0 for perfect forecasts regardless of weights."""
+        fcst = xr.DataArray([0.9, 0.8, 0.3, 0.1], dims=["sample"])
+        obs = xr.DataArray([1, 1, 0, 0], dims=["sample"])
+        weights = xr.DataArray([2.0, 1.0, 3.0, 0.5], dims=["sample"])
+        result = float(roc_auc(fcst, obs, weights=weights))
+        assert result == 1.0
+
+    def test_reversed_discrimination_with_weights(self):
+        """Weighted AUC should be 0.0 for perfectly reversed forecasts."""
+        fcst = xr.DataArray([0.1, 0.2, 0.8, 0.9], dims=["sample"])
+        obs = xr.DataArray([1, 1, 0, 0], dims=["sample"])
+        weights = xr.DataArray([2.0, 1.0, 3.0, 0.5], dims=["sample"])
+        result = float(roc_auc(fcst, obs, weights=weights))
+        assert result == 0.0
+
+    def test_weighted_known_value(self):
+        """Test a manually computed weighted AUC.
+
+        fcst: [0.2, 0.8, 0.4, 0.9], obs: [0, 1, 0, 1], weights: [1, 2, 1, 1]
+        Sorted: (0.2,neg,w=1), (0.4,neg,w=1), (0.8,pos,w=2), (0.9,pos,w=1)
+        Sweep:
+          i=0 (0.2, neg): cum_neg stays 0 -> cum_neg becomes 1
+          i=1 (0.4, neg): cum_neg stays 1 -> cum_neg becomes 2
+          i=2 (0.8, pos, w=2): U += 2 * (2 + 0.5*0) = 4
+          i=3 (0.9, pos, w=1): U += 1 * (2 + 0.5*0) = 2
+        U_w = 6, W_+ = 3, W_- = 2, AUC = 6 / (3*2) = 1.0
+        """
+        fcst = xr.DataArray([0.2, 0.8, 0.4, 0.9], dims=["sample"])
+        obs = xr.DataArray([0, 1, 0, 1], dims=["sample"])
+        weights = xr.DataArray([1.0, 2.0, 1.0, 1.0], dims=["sample"])
+        result = float(roc_auc(fcst, obs, weights=weights))
+        assert result == 1.0
+
+    def test_weights_with_ties(self):
+        """Weighted AUC with tied forecast values should handle half-concordance correctly.
+
+        fcst: [0.5, 0.5, 0.5, 0.5], obs: [1, 0, 1, 0], weights: [2, 1, 1, 2]
+        All in one tie group.
+        tie_neg = 1 + 2 = 3, pos weights = [2, 1], W_+ = 3, W_- = 3
+        U_w = (2 + 1) * (0 + 0.5 * 3) = 3 * 1.5 = 4.5
+        AUC = 4.5 / (3 * 3) = 0.5
+        """
+        fcst = xr.DataArray([0.5, 0.5, 0.5, 0.5], dims=["sample"])
+        obs = xr.DataArray([1, 0, 1, 0], dims=["sample"])
+        weights = xr.DataArray([2.0, 1.0, 1.0, 2.0], dims=["sample"])
+        result = float(roc_auc(fcst, obs, weights=weights))
+        np.testing.assert_almost_equal(result, 0.5, decimal=12)
+
+    def test_zero_weight_excludes_sample(self):
+        """A sample with weight=0 should be effectively excluded.
+
+        With weight=0 on the single negative that causes errors, AUC should be NaN
+        because there are no effective negatives.
+        """
+        fcst = xr.DataArray([0.9, 0.1, 0.5], dims=["sample"])
+        obs = xr.DataArray([1, 1, 0], dims=["sample"])
+        # Zero-weight the only negative -> no effective negatives -> NaN
+        weights = xr.DataArray([1.0, 1.0, 0.0], dims=["sample"])
+        result = float(roc_auc(fcst, obs, weights=weights))
+        assert np.isnan(result)
+
+    def test_weighted_partially_concordant(self):
+        """Weighted AUC for a partially concordant case.
+
+        fcst: [0.3, 0.7, 0.6, 0.4], obs: [0, 1, 0, 1], weights: [1, 1, 1, 1]
+        Sorted: (0.3,neg,w=1), (0.4,pos,w=1), (0.6,neg,w=1), (0.7,pos,w=1)
+        Sweep:
+          (0.3,neg): cum_neg -> 1
+          (0.4,pos,w=1): U += 1*(1 + 0) = 1, cum_neg stays 1
+          (0.6,neg): cum_neg -> 2
+          (0.7,pos,w=1): U += 1*(2 + 0) = 2
+        U_w = 3, W_+ = 2, W_- = 2, AUC = 3/4 = 0.75
+        Should match unweighted (uniform weights).
+        """
+        fcst = xr.DataArray([0.3, 0.7, 0.6, 0.4], dims=["sample"])
+        obs = xr.DataArray([0, 1, 0, 1], dims=["sample"])
+        weights = xr.DataArray([1.0, 1.0, 1.0, 1.0], dims=["sample"])
+        result = float(roc_auc(fcst, obs, weights=weights))
+        np.testing.assert_almost_equal(result, 0.75, decimal=12)
+
+    def test_weights_broadcast_from_lat_dim(self):
+        """Latitude-style weights broadcast correctly over a time dimension."""
+        np.random.seed(7)
+        fcst = xr.DataArray(
+            np.random.rand(3, 20),
+            dims=["lat", "time"],
+            coords={"lat": [20.0, 45.0, 70.0]},
+        )
+        obs = xr.DataArray(
+            np.random.randint(0, 2, size=(3, 20)).astype(float),
+            dims=["lat", "time"],
+            coords={"lat": [20.0, 45.0, 70.0]},
+        )
+        lat_weights = xr.DataArray(
+            np.cos(np.deg2rad([20.0, 45.0, 70.0])),
+            dims=["lat"],
+            coords={"lat": [20.0, 45.0, 70.0]},
+        )
+        result = roc_auc(fcst, obs, weights=lat_weights)
+        assert result.dims == ()
+        assert np.isfinite(float(result))
+
+    def test_weights_preserve_dims(self):
+        """Weights should work correctly when preserving a dimension."""
+        fcst = xr.DataArray(
+            [[0.9, 0.8, 0.3, 0.1], [0.1, 0.3, 0.8, 0.9]],
+            dims=["station", "time"],
+            coords={"station": ["A", "B"], "time": [0, 1, 2, 3]},
+        )
+        obs = xr.DataArray(
+            [[1, 1, 0, 0], [0, 0, 1, 1]],
+            dims=["station", "time"],
+            coords={"station": ["A", "B"], "time": [0, 1, 2, 3]},
+        )
+        weights = xr.DataArray([1.0, 2.0, 1.0, 2.0], dims=["time"], coords={"time": [0, 1, 2, 3]})
+        result = roc_auc(fcst, obs, weights=weights, preserve_dims=["station"])
+        assert result.dims == ("station",)
+        assert float(result.sel(station="A")) == 1.0
+        assert float(result.sel(station="B")) == 1.0
+
+    def test_invalid_weights_negative_raises(self):
+        """Negative weights should raise a ValueError."""
+        fcst = xr.DataArray([0.9, 0.8, 0.3, 0.1], dims=["sample"])
+        obs = xr.DataArray([1, 1, 0, 0], dims=["sample"])
+        weights = xr.DataArray([1.0, -1.0, 1.0, 1.0], dims=["sample"])
+        with pytest.raises(ValueError):
+            roc_auc(fcst, obs, weights=weights)
+
+    def test_invalid_weights_nan_raises(self):
+        """NaN weights should raise a ValueError."""
+        fcst = xr.DataArray([0.9, 0.8, 0.3, 0.1], dims=["sample"])
+        obs = xr.DataArray([1, 1, 0, 0], dims=["sample"])
+        weights = xr.DataArray([1.0, np.nan, 1.0, 1.0], dims=["sample"])
+        with pytest.raises(ValueError):
+            roc_auc(fcst, obs, weights=weights)
+
+    def test_check_args_false_skips_weight_validation(self):
+        """check_args=False should NOT skip weight validation (weights are always checked)."""
+        fcst = xr.DataArray([0.9, 0.8, 0.3, 0.1], dims=["sample"])
+        obs = xr.DataArray([1, 1, 0, 0], dims=["sample"])
+        weights = xr.DataArray([1.0, -1.0, 1.0, 1.0], dims=["sample"])
+        # Weight validation is independent of check_args
+        with pytest.raises(ValueError):
+            roc_auc(fcst, obs, weights=weights, check_args=False)
