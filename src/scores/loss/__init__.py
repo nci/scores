@@ -2,6 +2,6 @@
 Explicit Pandas API
 """
 
-from scores.loss import _loss_continuous as continuous
+from scores.loss._loss_continuous import additive_bias, mse
 
-__all__ = ["continuous"]
+__all__ = ["mse", "additive_bias"]

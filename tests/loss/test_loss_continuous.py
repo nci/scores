@@ -18,21 +18,21 @@ PRECISION = 4
 #
 DA1_BIAS = torch.tensor(
     np.array([[1, 1, np.nan], [0, 0, 0], [0.5, -0.5, 0.5]]),
-)
+).float()
 
 DA2_BIAS = torch.tensor(
     np.array([[2, 2, 6], [2, 10, 0], [-0.5, 0.5, -0.5]]),
-)
+).float()
 
 BIAS_WEIGHTS = torch.tensor(
     np.array([[1, 1, 1], [3, 0, 0], [3, 0, 0]]),
-)
+).float()
 
-EXP_BIAS2 = torch.tensor(np.array([-1.33333]))
-EXP_BIAS3 = torch.tensor(np.array(-1.625))
+EXP_BIAS2 = torch.tensor(np.array([-1.33333])).float()
+EXP_BIAS3 = torch.tensor(np.array(-1.625)).float()
 
 
-def test_mse_pandas_series():
+def test_mse_series():
     """
     Test calculation works correctly on pandas series
     """
@@ -48,9 +48,13 @@ def test_mse_pandas_series():
     assert isinstance(pd_result, float)
     assert round(pd_result, 4) == expected
 
-    tensor_result = scores.continuous.mse(fcst_tensor, obs_tensor)
+    tensor_result = scores.loss.mse(fcst_tensor, obs_tensor)
     assert tensor_result.dtype is torch.float
     assert torch.round(tensor_result, decimals=4) == torch.tensor(expected)
+
+    fcst_gpu = fcst_tensor.to(device="mps")
+    obs_gpu = obs_tensor.to(device="mps")
+    _gpu_result = scores.loss.mse(fcst_gpu, obs_gpu)
 
 
 @pytest.mark.parametrize(
@@ -77,10 +81,15 @@ def test_additive_bias(fcst, obs, weights, expected):
 
     weights = weights * (~torch.isnan(fcst))  # mask out nans from fcst
     weights = weights * (~torch.isnan(obs))  # mask out nans from obs
-    tensor_result = scores.loss.continuous.additive_bias(fcst, obs, weights=weights)
+    tensor_result = scores.loss.additive_bias(fcst, obs, weights=weights)
 
     tensor_result = tensor_result.rename(None)
     assert (torch.round(tensor_result, decimals=4) == torch.tensor(expected)).all()
+
+    fcst_gpu = fcst.to(device="mps")
+    obs_gpu = obs.to(device="mps")
+    weights_gpu = weights.to(device="mps")
+    _gpu_result = scores.loss.additive_bias(fcst_gpu, obs_gpu, weights=weights_gpu)
 
 
 # def test_mse_dataframe():

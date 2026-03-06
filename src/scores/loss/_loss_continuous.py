@@ -63,7 +63,7 @@ def additive_bias(
         fcst: Forecast or predicted variables.
         obs: Observed variables.
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating the additive bias. All other dimensions will be preserved. Note, this should be an int of list-of-int.
+            calculating the additive bias. All other dimensions will be preserved.
         weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
             If None, no weights are applied. If provided, the weights must be broadcastable
             to the data dimensions and must not contain negative or NaN values. If

@@ -3,9 +3,9 @@ Functions related to aggregating data
 """
 
 import warnings
-from functools import singledispatch
 from typing import Optional
 
+import array_api_compat
 import xarray as xr
 
 from scores.processing.matching import broadcast_and_match_nan
@@ -124,22 +124,7 @@ def aggregate(
             raise ValueError(f"Unsupported method {method}. Expected 'mean' or 'sum'.")
 
 
-@singledispatch
 def _weighted_mean(values, weights, reduce_dims=None):
-    raise NotImplementedError("Somehow hit the base implementation")
-
-
-@_weighted_mean.register
-def weighted_mean_xarray(
-    values: XarrayLike,
-    weights: XarrayLike,
-    reduce_dims: FlexibleDimensionTypes,
-) -> XarrayLike:
-    """
-    Calculates the weighted mean of `values` using `weights` over specified dimensions.
-
-    xarray doesn't allow ``.weighted`` to take ``xr.Dataset`` as weights, so we need to do it ourselves
-    """
     if isinstance(weights, xr.Dataset):
         w_results = {}
         for name, da in values.data_vars.items():
@@ -154,25 +139,18 @@ def weighted_mean_xarray(
 
         return xr.Dataset(w_results)
 
-    values = values.weighted(weights)
+    elif isinstance(values, xr.DataArray) or isinstance(values, xr.Dataset):
+        values = values.weighted(weights)
+        return values.mean(reduce_dims)
 
-    return values.mean(reduce_dims)
-
-
-try:
-    import torch
-
-    @_weighted_mean.register
-    def weighted_mean_pytorch(values: torch.Tensor, weights: torch.Tensor, reduce_dims: FlexibleDimensionTypes):
-        weighted_error = torch.mul(values, weights)
-        weighted_sum_of_error = weighted_error.nansum()
-
-        sum_of_weights = torch.nansum(weights)
+    # Else attempt to handle with array compatibility
+    else:
+        xp = array_api_compat.array_namespace(values, weights)
+        weighted_error = xp.mul(values, weights)
+        weighted_sum_of_error = xp.nansum(weighted_error)
+        sum_of_weights = xp.nansum(weights)
         weighted_mean = weighted_sum_of_error / sum_of_weights
         return weighted_mean
-except ModuleNotFoundError:
-    # This isfully esum_of_xpected when torch is not available in the user environment - the default expectation
-    pass
 
 
 def _weighted_sum(
