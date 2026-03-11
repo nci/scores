@@ -14,7 +14,7 @@ from numba import float64, guvectorize
 @guvectorize(
     [(float64[:], float64[:], float64[:], float64[:])],
     "(n),(n),(n)->()",
-)  # pragma: no cover
+) # pragma: no cover
 def _roc_auc_mann_whitney_weighted_gufunc(
     fcst_flat: np.ndarray,
     obs_flat: np.ndarray,
@@ -26,7 +26,7 @@ def _roc_auc_mann_whitney_weighted_gufunc(
     Handles NaN masking, sorting, tie-group sweeping and returns a scalar
     AUC for each set of 1-D input vectors.
     """
-    # This section handles NaN masking
+    # NaN masking
     n_total = fcst_flat.shape[0]
     n_valid = 0
     for k in range(n_total):

@@ -132,6 +132,10 @@ def roc(  # pylint: disable=too-many-arguments
         >>> fcst = xr.DataArray(np.random.rand(3, 4), dims=["time", "location"])
         >>> obs = xr.DataArray(np.random.randint(0, 2, size=(3, 4)), dims=["time", "location"])
         >>> result = roc_curve_data(fcst, obs)
+
+    See also:
+        :py:func:`scores.probability.roc_auc` which is a much faster implementation for
+          calculating the area under the ROC curve directly.
     """
     # If a slight performance improvement is needed, the checks can be skipped
     # when `check_args` is False.
@@ -160,7 +164,9 @@ def roc(  # pylint: disable=too-many-arguments
 
     if isinstance(thresholds, str):
         if thresholds == "auto":
-            thresholds = np.sort(np.unique(fcst.where(~np.isnan(fcst), drop=True).to_numpy()))
+            thresholds_arr = fcst.to_numpy().ravel()
+            thresholds = np.sort(np.unique(thresholds_arr[~np.isnan(thresholds_arr)]))
+
             if len(thresholds) > 1000:
                 warnings.warn(
                     "Number of automatically generated thresholds is very large (>1000). "
@@ -183,9 +189,9 @@ def roc(  # pylint: disable=too-many-arguments
     # discrete_fcst has an extra dimension 'threshold'
     discrete_fcst = binary_discretise(fcst, thresholds, operator.ge)
 
-    all_dims = set(fcst.dims).union(set(obs.dims))
-    final_preserve_dims = all_dims - set(reduce_dims)
-    auc_dims = () if final_preserve_dims is None else tuple(final_preserve_dims)
+    reduce_dims_set = set(reduce_dims)
+    all_dims_ordered = list(fcst.dims) + [d for d in obs.dims if d not in set(fcst.dims)]
+    auc_dims = tuple(d for d in all_dims_ordered if d not in reduce_dims_set)
     final_preserve_dims = auc_dims + ("threshold",)
 
     pod = probability_of_detection(

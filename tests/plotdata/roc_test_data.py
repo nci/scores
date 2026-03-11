@@ -141,3 +141,26 @@ EXP_ROC_AUTO = xr.Dataset(
         "AUC": xr.DataArray([0.75, 1], coords=[("station", ["A", "B"])], dims=["station"]),
     }
 )
+
+# ──────────────────────────── Expected exact AUC values for roc_auc ────────────────────────────
+# These are the exact Mann-Whitney AUC values for FCST_2X3X2_WITH_NAN / OBS_3X3_WITH_NAN,
+# as opposed to the approximate trapezoidal AUC in EXP_ROC_* (which use sparse thresholds).
+
+# preserve_dims=['lead_day'] or reduce_dims=['letter', 'pet'] — exact AUC per lead_day
+# Computed via Mann-Whitney rank-sum formula after excluding NaN pairs.
+EXP_ROC_AUC_LEADDAY = xr.DataArray(
+    [7 / 12, 3 / 16],
+    coords=[("lead_day", [0, 1])],
+)
+
+# All dims reduced — exact AUC over all valid samples
+EXP_ROC_AUC_NONE = xr.DataArray(19 / 56)
+
+# All dims reduced with LEAD_DAY_WEIGHTS=[1, 2] — weighted Mann-Whitney AUC
+EXP_ROC_AUC_NONE_WEIGHTED = xr.DataArray(37 / 132)
+
+# preserve_dims=['lead_day', 'letter'] — exact AUC per (lead_day, letter) slice (reduce over pet)
+EXP_ROC_AUC_MULTI_DIMS = xr.DataArray(
+    [[1.0, 0.0, 0.5], [0.0, 0.5, 0.0]],
+    coords=[("lead_day", [0, 1]), ("letter", ["a", "b", "c"])],
+)

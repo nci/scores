@@ -190,11 +190,8 @@ def roc_auc(
         reduce_dims: Optionally specify which dimensions to reduce when
             calculating the ROC AUC. All other dimensions will be preserved.
         preserve_dims: Optionally specify which dimensions to preserve when
-            calculating the ROC AUC. All other dimensions will be reduced. As a
-            special case, 'all' will allow all dimensions to be preserved. In
-            this case, the result will be in the same shape/dimensionality
-            as the forecast, and the forecast and observed dimensions must match
-            precisely.
+            calculating the ROC AUC. All other dimensions will be reduced.
+            ``preserve_dims='all'`` is not supported.
         weights: An array of weights to apply to each sample (e.g., latitude
             weighting). If None, all samples are weighted equally. If provided,
             the weights must be broadcastable to the data dimensions and must not
@@ -212,6 +209,7 @@ def roc_auc(
         guessing), and 0.0 indicates perfectly reversed discrimination.
 
     Raises:
+        ValueError: if ``preserve_dims='all'`` is passed.
         ValueError: if ``fcst`` contains values outside of the range [0, 1].
         ValueError: if ``obs`` contains non-NaN values not in the set {0, 1}.
         ValueError: if ``weights`` contains negative or NaN values, or all
@@ -252,19 +250,13 @@ def roc_auc(
         >>> roc_auc(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(1.)
-
-        Calculate ROC AUC preserving the 'station' dimension:
-
-        >>> fcst = xr.DataArray(
-        ...     np.random.rand(3, 100),
-        ...     dims=["station", "time"],
-        ... )
-        >>> obs = xr.DataArray(
-        ...     np.random.randint(0, 2, size=(3, 100)),
-        ...     dims=["station", "time"],
-        ... )
-        >>> result = roc_auc(fcst, obs, preserve_dims=["station"])
     """
+    if preserve_dims == "all":
+        raise ValueError(
+            "`preserve_dims='all'` is not supported for `roc_auc`. "
+            "Please specify the dimensions to preserve explicitly."
+        )
+
     _check_roc_auc_args(fcst, obs, weights, check_args)
 
     reduce_dims = gather_dimensions(
@@ -273,14 +265,10 @@ def roc_auc(
 
     reduce_dims_tuple = tuple(reduce_dims)
 
-    # If there are no dims to reduce, return element-wise (degenerate case)
-    if not reduce_dims_tuple:
-        return fcst * np.nan  # AUC is undefined for a single point
-
     # Stack reduce dims into a single sample dimension for the core computation
     sample_dim = "__roc_auc_sample__"
     fcst_stacked = fcst.stack({sample_dim: reduce_dims_tuple})
-    obs_stacked = obs.stack({sample_dim: reduce_dims_tuple})
+    obs_stacked = obs.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
 
     # Try numba-accelerated gufuncs; fall back to numpy if numba is unavailable
     weighted_numba_gufunc = None
