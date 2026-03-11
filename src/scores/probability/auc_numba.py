@@ -67,7 +67,7 @@ def _roc_auc_mann_whitney_weighted_gufunc(
     obs_s = obs_v[order]
     w_s = w_v[order]
 
-    # Sweep with cumulative negative weight 
+    # Sweep with cumulative negative weight
     u_weighted = 0.0
     cum_neg = 0.0
     i = 0

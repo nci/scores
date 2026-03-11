@@ -8,14 +8,14 @@ from unittest.mock import patch
 try:
     import dask
     import dask.array
-except:  
-    dask = "Unavailable"  
+except ImportError:
+    dask = "Unavailable"
 
 try:
-    import numba  # noqa: F401
-    from scores.probability.auc_numba import _roc_auc_mann_whitney_weighted_gufunc  
-except:  
-    numba = "Unavailable"  
+    import numba
+
+except ImportError:
+    numba = "Unavailable"
 
 import numpy as np
 import pytest

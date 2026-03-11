@@ -174,15 +174,16 @@ def roc_auc(
     .. math::
         \\text{AUC} = \\frac{U}{n_1 \\cdot n_0}
 
-    where :math:`U` is the Mann-Whitney U statistic, :math:`n_1` is the number of
-    positive observations, and :math:`n_0` is the number of negative observations.
-    :math:`U` is calculated from the rank sum of the positive class forecasts:
+    Here, :math:`n_1` and :math:`n_0` denote the number of positive and negative
+    observations respectively. The Mann-Whitney statistic :math:`U` is defined as:
 
     .. math::
         U = R_1 - \\frac{n_1(n_1 + 1)}{2}
 
-    where :math:`R_1 = \\sum_{i : y_i = 1} \\text{rank}(\\hat{y}_i)` is the sum of ranks
-    of the forecast values corresponding to positive observations.
+    where :math:`R_1` is the rank sum of the positive-class forecasts:
+
+    .. math::
+        R_1 = \\sum_{i : y_i = 1} \\mathrm{rank}(\\hat{y}_i)
 
     Args:
         fcst: An array of probabilistic forecasts for a binary event in the range [0, 1].
@@ -311,7 +312,7 @@ def roc_auc(
             dask="parallelized",
             output_dtypes=[float],
         )
-    # When numba is not available and weights are not provided, use the unweighted 
+    # When numba is not available and weights are not provided, use the unweighted
     # function which is faster than the weighted version.
     else:
         result = xr.apply_ufunc(
