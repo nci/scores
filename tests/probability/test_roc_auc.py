@@ -160,10 +160,25 @@ def test_roc_auc_zero_pos_weight_no_numba():
     assert np.isnan(float(result))
 
 
-def test_roc_auc_dataset_check_args():
-    """check_args=True with xr.Dataset input exercises the Dataset validation path."""
-    fcst = xr.Dataset({"a": xr.DataArray([0.9, 0.1], dims=["sample"])})
-    obs = xr.Dataset({"a": xr.DataArray([1, 0], dims=["sample"])})
-    result = roc_auc(fcst, obs, check_args=True)
-    assert isinstance(result, xr.Dataset)
-    assert float(result["a"]) == 1.0
+def test_roc_auc_dataset_vs_roc_curve_data():
+    """
+    Tests that roc_auc produces the same result for xr.Dataset inputs as roc_curve_data.
+    Since roc_curve_data only works on DataArrays, the expected Dataset is reconstructed
+    from per-variable DataArray results.
+    """
+    fcst_da1 = rtd.FCST_2X3X2_WITH_NAN
+    fcst_da2 = 1 - rtd.FCST_2X3X2_WITH_NAN
+    obs_da = rtd.OBS_3X3_WITH_NAN
+
+    fcst_ds = xr.Dataset({"var1": fcst_da1, "var2": fcst_da2})
+    obs_ds = xr.Dataset({"var1": obs_da, "var2": obs_da})
+
+    result = roc_auc(fcst_ds, obs_ds, preserve_dims=["lead_day"])
+
+    expected_var1 = roc_curve_data(fcst_da1, obs_da, preserve_dims=["lead_day"])["AUC"]
+    expected_var1.attrs = {}
+    expected_var2 = roc_curve_data(fcst_da2, obs_da, preserve_dims=["lead_day"])["AUC"]
+    expected_var2.attrs = {}
+    expected_ds = xr.Dataset({"var1": expected_var1, "var2": expected_var2})
+
+    xr.testing.assert_allclose(result, expected_ds)
