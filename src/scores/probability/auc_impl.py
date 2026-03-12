@@ -260,9 +260,7 @@ def roc_auc(
 
     _check_roc_auc_args(fcst, obs, weights, check_args)
 
-    reduce_dims = gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
 
     reduce_dims_tuple = tuple(reduce_dims)
 

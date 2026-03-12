@@ -14,7 +14,7 @@ from numba import float64, guvectorize
 @guvectorize(
     [(float64[:], float64[:], float64[:], float64[:])],
     "(n),(n),(n)->()",
-) # pragma: no cover
+)  # pragma: no cover
 def _roc_auc_mann_whitney_weighted_gufunc(
     fcst_flat: np.ndarray,
     obs_flat: np.ndarray,
