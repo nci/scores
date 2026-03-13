@@ -25,6 +25,9 @@ def _roc_auc_mann_whitney_weighted_gufunc(
 
     Handles NaN masking, sorting, tie-group sweeping and returns a scalar
     AUC for each set of 1-D input vectors.
+
+    Assumes that the input arrays have already been validated to contain only
+    valid values (i.e., fcst in [0, 1], obs in {0, 1}, weights non-negative).
     """
     # NaN masking
     n_total = fcst_flat.shape[0]

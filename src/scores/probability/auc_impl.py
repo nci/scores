@@ -123,9 +123,7 @@ def _check_roc_auc_args(
 ) -> None:
     """Validate inputs for :func:`roc_auc`."""
     if check_args:
-        if isinstance(fcst, (xr.DataArray, xr.Dataset)) and (
-            getattr(fcst, "chunks", None) is not None or getattr(obs, "chunks", None) is not None
-        ):
+        if getattr(fcst, "chunks", None) is not None or getattr(obs, "chunks", None) is not None:
             warnings.warn(
                 "`fcst` or `obs` is an xarray object backed by a Dask array. "
                 "Input validation requires computing the min and max of the arrays "

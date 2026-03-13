@@ -173,11 +173,11 @@ def test_roc_auc_dataset_vs_roc_curve_data():
     fcst_ds = xr.Dataset({"var1": fcst_da1, "var2": fcst_da2})
     obs_ds = xr.Dataset({"var1": obs_da, "var2": obs_da})
 
-    result = roc_auc(fcst_ds, obs_ds, preserve_dims=["lead_day"])
+    result = roc_auc(fcst_ds, obs_ds, preserve_dims=["lead_day"], weights=rtd.LEAD_DAY_WEIGHTS)
 
-    expected_var1 = roc_curve_data(fcst_da1, obs_da, preserve_dims=["lead_day"])["AUC"]
+    expected_var1 = roc_curve_data(fcst_da1, obs_da, preserve_dims=["lead_day"], weights=rtd.LEAD_DAY_WEIGHTS)["AUC"]
     expected_var1.attrs = {}
-    expected_var2 = roc_curve_data(fcst_da2, obs_da, preserve_dims=["lead_day"])["AUC"]
+    expected_var2 = roc_curve_data(fcst_da2, obs_da, preserve_dims=["lead_day"], weights=rtd.LEAD_DAY_WEIGHTS)["AUC"]
     expected_var2.attrs = {}
     expected_ds = xr.Dataset({"var1": expected_var1, "var2": expected_var2})
 
