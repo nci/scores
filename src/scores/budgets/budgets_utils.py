@@ -46,7 +46,6 @@ def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sub_d
             raise error_msg
         if sub_domain_lat[1] <= sub_domain_lat[0] or sub_domain_lat[0] < LAT_MIN or \
                 sub_domain_lat[0] > LAT_MAX or sub_domain_lat[1] < LAT_MIN or \
-
                 sub_domain_lat[1] > LAT_MAX:
             raise error_msg
 
