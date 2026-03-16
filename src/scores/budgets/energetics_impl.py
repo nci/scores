@@ -45,7 +45,7 @@ def energy_components(
     Compute the time series for the energy budget on pressure levels
 
     .. math::
-        \\text{Internal}  = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}(c_p(1-q) + c_{pv}q)T\\text{d}\\Omega\\text{d}p
+        \\text{Internal}  = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}(C_p(1-q) + C_{pv}q)T\\text{d}\\Omega\\text{d}p
         \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p
         \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}\\Phi_s\\text{d}\\Omega
         \\text{Kinetic}   = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}\\frac{1}{2}(u^2 + v^2 + w^2)\\text{d}\\Omega\\text{d}p
@@ -112,10 +112,10 @@ def energy_components(
 
             khlt = ult*ult + vlt*vlt
             kvlt = wlt*wlt
-            cpt  = (c_p*(1.0 - qlt) + c_pv*qlt)*tlt
+            cpt  = (C_P*(1.0 - qlt) + C_PV*qlt)*tlt
 
             I[tt]  = I[tt] + dp[ll]*integrate_horizontal(cpt,dlon,dlat)
-            L[tt]  = L[tt] + dp[ll]*L_v*integrate_horizontal(qlt,dlon,dlat)
+            L[tt]  = L[tt] + dp[ll]*L_V*integrate_horizontal(qlt,dlon,dlat)
             Kh[tt] = Kh[tt] + dp[ll]*0.5*integrate_horizontal(khlt,dlon,dlat)
             Kv[tt] = Kv[tt] + dp[ll]*0.5*integrate_horizontal(kvlt,dlon,dlat)
 
