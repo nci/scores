@@ -993,11 +993,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0],[0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5],[0.8, 1.5]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
@@ -1564,11 +1566,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0],[0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5],[0.8, 1.5]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
@@ -1626,11 +1630,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0],[0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5],[0.8, 1.5]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
@@ -1689,11 +1695,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0],[0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5],[0.8, 1.5]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
@@ -1757,11 +1765,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0],[0.7, 1.4]],
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0],[0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
-            >>> obs = xr.DataArray([[1.2, 0.5],[0.8, 1.5]],
+            >>> obs = xr.DataArray(
+            ...     [[1.2, 0.5],[0.8, 1.5]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
@@ -1841,11 +1851,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import xarray as xr
             >>> import scores
             >>> import operator
-            >>> fcst = xr.DataArray([[1.5, 0.0], [0.7, 1.4]],
+            >>> fcst = xr.DataArray(
+            ...     [[1.5, 0.0], [0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
-            >>> obs = xr.DataArray([[1.2, 0.5], [0.8, 1.5]],
+            >>> obs = xr.DataArray(
+            ... [[1.2, 0.5], [0.8, 1.5]],
             ...     coords=[[33, 45], [-30, 30]],
             ...     dims=["lat", "lon"]
             ... )
