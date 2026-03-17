@@ -79,11 +79,6 @@ def energy_components(
     # select the latitude and longitude sub-domain
     fields = prepare_fields(fields, lon, lat)
 
-    # get the surface geopotential from the 2d fields
-    zs = fields[fieldnames[7]]
-
-    dp = pressure_level_thickness(sub_domain_level)
-
     nt = len(fields.time)
 
     I = np.zeros(nt)    # global integral of the interal energy
@@ -94,6 +89,11 @@ def energy_components(
 
     time_array = fields.time.values
     level_array = fields.level.values
+
+    dp = pressure_level_thickness(level_array)
+
+    # get the surface geopotential (constant in time)
+    zs = fields[fieldnames[7]]
 
     tt = 0
     for _time in time_array:
@@ -189,11 +189,12 @@ def energy_exchanges(
     KtoP = np.zeros(nt) # kinetic to potential energy exchange (horizontal)
     PtoK = np.zeros(nt) # potential to kinetic energy exchange (horizontal)
 
-    dp = pressure_level_thickness(sub_domain_level)
-
     time_array = fields.time.values
     level_array = fields.level.values
 
+    dp = pressure_level_thickness(level_array)
+
+    # get the surface geopotential (constant in time)
     zs = fields[fieldnames[7]]
 
     tt = 0
