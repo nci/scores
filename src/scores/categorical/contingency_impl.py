@@ -124,11 +124,13 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> counts = table.get_counts()
-            {'tp_count': <xarray.DataArray ()> Size: 8B array(1.),
-            'tn_count': <xarray.DataArray ()> Size: 8B array(2.),
-            'fp_count': <xarray.DataArray ()> Size: 8B array(1.),
-            'fn_count': <xarray.DataArray ()> Size: 8B array(0.),
-            'total_count': <xarray.DataArray ()> Size: 8B array(4.)}
+            >>> counts
+            {'tp_count': <xarray.DataArray ()> Size: 8B
+            array(1.), 'tn_count': <xarray.DataArray ()> Size: 8B
+            array(2.), 'fp_count': <xarray.DataArray ()> Size: 8B
+            array(1.), 'fn_count': <xarray.DataArray ()> Size: 8B
+            array(0.), 'total_count': <xarray.DataArray ()> Size: 8B
+            array(4.)}
 
         """
         return self.counts
@@ -163,10 +165,11 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ...     default_event_threshold=1.3, default_op_fn=operator.gt
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
+            >>> table.get_table()
             <xarray.DataArray (contingency: 5)> Size: 40B
             array([1., 2., 1., 0., 4.])
             Coordinates:
-            * contingency  (contingency) U11 220B 'tp_count', 'tn_count', 'fp_count', 'fn_count', 'total_count'
+              * contingency  (contingency) <U11 220B 'tp_count' 'tn_count' ... 'total_count'
 
         """
         return self.xr_table
@@ -213,6 +216,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ...     positive_value_name="Above 1.3",
             ...     negative_value_name="Below 1.3",
             ... )
+            >>> result
                                 Above 1.3 Observed  Below 1.3 Observed  Total
             Above 1.3 Forecast                   1                   1      2
             Below 1.3 Forecast                   0                   2      2
@@ -280,7 +284,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.accuracy()
-            <xarray.DataArray ()> Size: 8B array(0.75)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.75)
 
         """
         count_dictionary = self.counts
@@ -327,7 +333,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.base_rate()
-            <xarray.DataArray ()> Size: 8B array(0.25)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.25)
 
         """
         cd = self.counts
@@ -374,6 +382,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.forecast_rate()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(0.5)
 
@@ -421,7 +430,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.fraction_correct()
-            <xarray.DataArray ()> Size: 8B array(0.75)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.75)
 
         """
         return self.accuracy()
@@ -467,6 +478,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.frequency_bias()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(2.)
 
@@ -520,6 +532,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.bias_score()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(2.)
 
@@ -568,7 +581,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.hit_rate()
-            <xarray.DataArray ()> Size: 8B array(1)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
 
         """  #  noqa: E501
         return self.probability_of_detection()
@@ -613,6 +628,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.probability_of_detection()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(1.)
 
@@ -666,6 +682,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.true_positive_rate()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(1.)
 
@@ -712,6 +729,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.false_alarm_ratio()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(0.5)
 
@@ -762,6 +780,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.false_alarm_rate()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(0.33333333)
 
@@ -812,6 +831,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.probability_of_false_detection()
+            >>> result
             <xarray.DataArray ()> Size: 8B
             array(0.33333333)
 
@@ -858,7 +878,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.success_ratio()
-            <xarray.DataArray ()> Size: 8B array(0.5)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         cd = self.counts
@@ -907,7 +929,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.threat_score()
-            <xarray.DataArray ()> Size: 8B array(0.5)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         # Note - critical success index just calls this method
@@ -958,7 +982,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.critical_success_index()
-            <xarray.DataArray ()> Size: 8B array(0.5)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         return self.threat_score()
@@ -1008,7 +1034,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.peirce_skill_score()
-            <xarray.DataArray ()> Size: 8B array(0.66667)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.66666667)
 
         """
         cd = self.counts
@@ -1060,7 +1088,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.true_skill_statistic()
-            <xarray.DataArray ()> Size: 8B array(0.66667)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.66666667)
 
         """
         return self.peirce_skill_score()
@@ -1110,7 +1140,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.hanssen_and_kuipers_discriminant()
-            <xarray.DataArray ()> Size: 8B array(0.66667)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.66666667)
 
         """
         return self.peirce_skill_score()
@@ -1166,7 +1198,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.sensitivity()
-            <xarray.DataArray ()> Size: 8B array(1)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
 
         """
         return self.probability_of_detection()
@@ -1319,7 +1353,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.recall()
-            <xarray.DataArray ()> Size: 8B array(1)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
 
         """
         return self.probability_of_detection()
@@ -1365,7 +1401,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.precision()
-            <xarray.DataArray ()> Size: 8B array(0.5)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         return self.success_ratio()
@@ -1519,7 +1557,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.f1_score()
-            <xarray.DataArray ()> Size: 8B array(0.66667)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.66666667)
 
         """
         cd = self.counts
@@ -1581,7 +1621,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.equitable_threat_score()
-            <xarray.DataArray ()> Size: 8B array(0.3333)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.33333333)
 
         """
         cd = self.counts
@@ -1645,7 +1687,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.gilberts_skill_score()
-            <xarray.DataArray ()> Size: 8B array(0.33333)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.33333333)
 
         """
         return self.equitable_threat_score()
@@ -1710,7 +1754,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.heidke_skill_score()
-            <xarray.DataArray ()> Size: 8B array(0.5)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         cd = self.counts
@@ -1780,7 +1826,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.cohens_kappa()
-            <xarray.DataArray ()> Size: 8B array(0.5)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(0.5)
 
         """
         return self.heidke_skill_score()
@@ -1866,7 +1914,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.odds_ratio()
-            >>> # Infinity because zero misses
+            >>> result  # Infinity because zero misses
             <xarray.DataArray ()> Size: 8B
             array(inf)
 
@@ -1930,7 +1978,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.odds_ratio_skill_score()
-            <xarray.DataArray ()> Size: 8B array(1)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
 
         """
         cd = self.counts
@@ -1992,7 +2042,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.yules_q()
-            <xarray.DataArray ()> Size: 8B array(1)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(1.)
 
         """
         return self.odds_ratio_skill_score()
@@ -2039,7 +2091,7 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             >>> import scores
             >>> import operator
             >>> # Note a different set of forecasts and observations
-            >>> from other examples, to give a meaningful result here
+            >>> # from other examples, to give a meaningful result here
             >>> fcst = xr.DataArray(
             ...     [[1.0, 1.4], [0.7, 1.4]],
             ...     coords=[[33, 45], [-30, 30]],
@@ -2055,7 +2107,9 @@ class BasicContingencyManager:  # pylint: disable=too-many-public-methods
             ... )
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> result = table.symmetric_extremal_dependence_index()
-            <xarray.DataArray ()> Size: 8B array(0)
+            >>> result
+            <xarray.DataArray ()> Size: 8B
+            array(-0.)
 
         """
         score = (
@@ -2176,23 +2230,25 @@ class BinaryContingencyManager(BasicContingencyManager):
             >>> table = match.make_contingency_manager(fcst, obs)
             >>> # Reduce all dimensions to get overall statistics
             >>> basic_all = table.transform(reduce_dims="all")
+            >>> basic_all.get_table()
             <xarray.DataArray (contingency: 5)> Size: 40B
             array([3., 4., 1., 0., 8.])
             Coordinates:
-            * contingency  (contingency) U11 220B 'tp_count' 'tn_count' ... 'total_count'
+              * contingency  (contingency) <U11 220B 'tp_count' 'tn_count' ... 'total_count'
             >>> # Reduce lat and lon dimensions to get statistics vs time
             >>> # This is equivalent to preserve_dims=["time"]
             >>> basic_time = table.transform(reduce_dims=["lat", "lon"])
+            >>> print(basic_time)
             Contingency Manager (xarray view of table):
             <xarray.DataArray (contingency: 5, time: 2)> Size: 80B
             array([[1., 2.],
-                [2., 2.],
-                [1., 0.],
-                [0., 0.],
-                [4., 4.]])
+                   [2., 2.],
+                   [1., 0.],
+                   [0., 0.],
+                   [4., 4.]])
             Coordinates:
-            * time         (time) int64 16B 0 1
-            * contingency  (contingency) U11 220B 'tp_count' 'tn_count' ... 'total_count'
+              * time         (time) int64 16B 0 1
+              * contingency  (contingency) <U11 220B 'tp_count' 'tn_count' ... 'total_count'
 
         """
         cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)
