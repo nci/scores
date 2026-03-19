@@ -240,14 +240,6 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.probability.tail_tw_crps_for_ensemble)
   - [Tutorial](project:./tutorials/Threshold_Weighted_CRPS_for_Ensembles.md)
   - [Allen et al. (2023)](https://doi.org/10.1137/22M1532184); [Allen (2024)](https://doi.org/10.18637/jss.v110.i08)
-* - Relative Economic Value
-  - [API](api.md#scores.probability.relative_economic_value)
-  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
-* - Relative Economic Value From Rates
-  - [API](api.md#scores.probability.relative_economic_value_from_rates)
-  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -839,6 +831,15 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.plotdata.roc)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
+* - Relative Economic Value
+  - [API](api.md#scores.plotdata.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.plotdata.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+
 ```
 ## Pandas
 

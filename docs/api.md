@@ -48,7 +48,6 @@
 .. autofunction:: scores.probability.crps_step_threshold_weight
 .. autofunction:: scores.probability.crps_cdf_brier_decomposition
 .. autofunction:: scores.probability.crps_for_ensemble
-.. autofunction:: scores.probability.relative_economic_value
 .. autofunction:: scores.probability.tw_crps_for_ensemble
 .. autofunction:: scores.probability.tail_tw_crps_for_ensemble
 .. autofunction:: scores.probability.interval_tw_crps_for_ensemble
@@ -125,6 +124,7 @@
 .. autofunction:: scores.plotdata.murphy_thetas
 .. autofunction:: scores.plotdata.qq
 .. autofunction:: scores.plotdata.rank_histogram
+.. autofunction:: scores.plotdata.relative_economic_value
 .. autofunction:: scores.plotdata.roc
 ```
 

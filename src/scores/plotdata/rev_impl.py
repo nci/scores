@@ -417,7 +417,7 @@ def relative_economic_value_from_rates(
         array([1.])
 
     See Also:
-        - :py:func:`scores.probability.relative_economic_value`
+        - :py:func:`scores.plotdata.relative_economic_value`
         - :py:func:`scores.categorical.probability_of_detection`
         - :py:func:`scores.categorical.probability_of_false_detection`
     """
