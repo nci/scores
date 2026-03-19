@@ -100,13 +100,13 @@ def _validate_derived_metrics(
     if derived_metrics is None:
         return
 
-    valid_special = {"maximum", "rational_user"}
+    valid_special = {"maximum", "equilibrium_point"}
     invalid = set(derived_metrics) - valid_special
     if invalid:
         raise ValueError(f"Invalid derived_metrics values: {invalid}. Valid options are {valid_special}")
 
-    if "rational_user" in derived_metrics and threshold is None:
-        raise ValueError("derived_metrics 'rational_user' can only be used when threshold parameter is provided")
+    if "equilibrium_point" in derived_metrics and threshold is None:
+        raise ValueError("derived_metrics 'equilibrium_point' can only be used when threshold parameter is provided")
 
 
 def _validate_rev_inputs(
@@ -157,7 +157,7 @@ def _calculate_rev_core(
     """
 
     # Ensure that we're censoring off obs where forecasts are missing,
-    # mainly for climatology calculations.
+    # mainly for base rate calculations.
     binary_fcst, obs = broadcast_and_match_nan(binary_fcst, obs)
 
     pod = probability_of_detection(binary_fcst, obs, reduce_dims=dims_to_reduce, weights=weights, check_args=False)
@@ -166,7 +166,7 @@ def _calculate_rev_core(
         binary_fcst, obs, reduce_dims=dims_to_reduce, weights=weights, check_args=False
     )
 
-    climatology = calculate_climatology(
+    base_rate = calculate_base_rate(
         obs,
         reduce_dims=dims_to_reduce,
         weights=weights,
@@ -175,7 +175,7 @@ def _calculate_rev_core(
     result = relative_economic_value_from_rates(
         pod=pod,
         pofd=pofd,
-        climatology=climatology,
+        base_rate=base_rate,
         cost_loss_ratios=cost_loss_ratios,
         cost_loss_dim=cost_loss_dim,
     )
@@ -183,7 +183,7 @@ def _calculate_rev_core(
     return result
 
 
-def calculate_climatology(
+def calculate_base_rate(
     obs: XarrayLike,
     *,  # Force keyword arguments to be keyword-only
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
@@ -199,12 +199,12 @@ def calculate_climatology(
     Args:
         obs: An array containing binary values (typically {0, 1, np.nan})
         reduce_dims: Optionally specify which dimensions to reduce when
-            calculating climatology. All other dimensions will be preserved. As a
+            calculating base rates. All other dimensions will be preserved. As a
             special case, 'all' will reduce all dimensions. Only one
             of `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
         preserve_dims: Optionally specify which dimensions to preserve
-            when calculating climatology. All other dimensions will be reduced.
+            when calculating base rates. All other dimensions will be reduced.
             As a special case, 'all' will preserve all dimensions. Only one of
             `reduce_dims` and `preserve_dims` can be supplied. The default behaviour
             if neither are supplied is to reduce all dims.
@@ -219,20 +219,20 @@ def calculate_climatology(
     # Use gather_dimensions to determine which obs dimensions to reduce
     # gather_dimensions will validate reduce_dims/preserve_dims automatically.
     dims_to_reduce = gather_dimensions(
-        fcst_dims=(),  # Not needed for climatology
+        fcst_dims=(),  # Not needed for base rates
         obs_dims=obs.dims,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights_dims=weights.dims if weights is not None else None,
     )
-    climatology = aggregate(
+    base_rate = aggregate(
         obs,
         reduce_dims=dims_to_reduce,
         weights=weights,
         method="mean",
     )
 
-    return climatology
+    return base_rate
 
 
 def _create_output_dataset(
@@ -261,7 +261,7 @@ def _create_output_dataset(
 
     Raises:
         ValueError: If invalid derived_metrics values provided
-        ValueError: If 'rational_user' requested but thresholds don't match cost_loss_ratios
+        ValueError: If 'equilibrium_point' requested but thresholds don't match cost_loss_ratios
     """
     derived_metrics = [] if derived_metrics is None else list(derived_metrics)
     threshold_outputs = [] if threshold_outputs is None else list(threshold_outputs)
@@ -272,15 +272,16 @@ def _create_output_dataset(
     for mode in derived_metrics:
         if mode == "maximum":
             result["maximum"] = rev.max(dim=threshold_dim)
-        elif mode == "rational_user":  # pragma: no cover
+        elif mode == "equilibrium_point":  # pragma: no cover
             # Check that thresholds match cost_loss_ratios exactly
             if list(thresholds) != list(cost_loss_ratios):
                 raise ValueError(
-                    "Can only specify derived_metrics 'rational_user' if thresholds and cost_loss_ratios are identical"
+                    "Can only specify derived_metrics 'equilibrium_point' "
+                    "if thresholds and cost_loss_ratios are identical"
                 )
             # Extract diagonal where threshold == cost_loss_ratio
             coords = xr.DataArray(cost_loss_ratios, dims=[cost_loss_dim])
-            result["rational_user"] = rev.sel({threshold_dim: coords, cost_loss_dim: coords})
+            result["equilibrium_point"] = rev.sel({threshold_dim: coords, cost_loss_dim: coords})
 
     # Add threshold-specific outputs
     for thresh in threshold_outputs:
@@ -316,17 +317,17 @@ def check_monotonic_array(array: Union[Sequence[float], np.ndarray]) -> None:
 def relative_economic_value_from_rates(
     pod: XarrayLike,
     pofd: XarrayLike,
-    climatology: XarrayLike,
+    base_rate: XarrayLike,
     cost_loss_ratios: Union[float, Sequence[float]],
     cost_loss_dim: str = "cost_loss_ratio",
 ) -> XarrayLike:
     """
     Calculates Relative Economic Value (REV) from pre-computed detection rates.
 
-    REV measures the economic benefit of using forecasts compared to climatology,
-    relative to perfect forecasts. This function computes REV directly from
-    probability of detection (POD), probability of false detection (POFD), and
-    climatological frequency.
+    REV measures the economic benefit of using forecasts compared to a
+    baseline strategy (based on base rates), relative to perfect forecasts.
+    This function computes REV directly from probability of detection (POD),
+    probability of false detection (POFD), and base rates.
 
     The relative economic value is calculated using:
 
@@ -348,7 +349,7 @@ def relative_economic_value_from_rates(
             where 1 indicates all events were correctly forecast.
         pofd: Probability of false detection (false alarm rate). Values should be
             between 0 and 1, where 0 indicates no false alarms.
-        climatology: Climatological frequency of the event (base rate). Values should
+        base_rate: Climatological frequency of the event (base rate). Values should
             be between 0 and 1, representing the proportion of time the event occurs.
         cost_loss_ratios: Cost-loss ratio(s) at which to calculate REV. Must be
             strictly monotonically increasing values between 0 and 1. Can be a single
@@ -372,8 +373,8 @@ def relative_economic_value_from_rates(
 
     Notes:
         - REV = 1 indicates perfect forecast value (as good as perfect information)
-        - REV = 0 indicates no value over climatology
-        - REV < 0 indicates the forecast performs worse than climatology
+        - REV = 0 indicates no value over a baseline strategy based on base rates
+        - REV < 0 indicates the forecast performs worse than the baseline strategy
         - This function is typically called internally by `relative_economic_value()`
           after computing POD and POFD from forecasts and observations
 
@@ -392,12 +393,12 @@ def relative_economic_value_from_rates(
         >>> # Pre-computed detection rates
         >>> pod = xr.DataArray([0.8, 0.6, 0.4], dims=['threshold'])
         >>> pofd = xr.DataArray([0.2, 0.1, 0.05], dims=['threshold'])
-        >>> climatology = xr.DataArray(0.3)  # 30% base rate
+        >>> base_rate = xr.DataArray(0.3)  # 30% base rate
         >>>
         >>> # Calculate REV at multiple cost-loss ratios
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
         >>> rev = relative_economic_value_from_rates(
-        ...     pod, pofd, climatology, cost_loss_ratios
+        ...     pod, pofd, base_rate, cost_loss_ratios
         ... )
         >>> rev.dims
         ('cost_loss_ratio', 'threshold')
@@ -407,10 +408,10 @@ def relative_economic_value_from_rates(
         >>> # Perfect forecast scenario
         >>> pod_perfect = xr.DataArray(1.0)
         >>> pofd_perfect = xr.DataArray(0.0)
-        >>> climatology = xr.DataArray(0.5)
+        >>> base_rate = xr.DataArray(0.5)
         >>>
         >>> rev = relative_economic_value_from_rates(
-        ...     pod_perfect, pofd_perfect, climatology,
+        ...     pod_perfect, pofd_perfect, base_rate,
         ...     cost_loss_ratios=[0.5],
         ... )
         >>> rev.values  # Returns finite value close to 1
@@ -425,7 +426,7 @@ def relative_economic_value_from_rates(
     if not all_same_xarraylike([pod, pofd]):
         raise TypeError("Both pod and pofd must be either xarray DataArrays or xarray Datasets.")
 
-    if cost_loss_dim in (set(pod.dims) | set(pofd.dims) | set(climatology.dims)):
+    if cost_loss_dim in (set(pod.dims) | set(pofd.dims) | set(base_rate.dims)):
         raise ValueError(f"dimension '{cost_loss_dim}' must not be in input data")
 
     # Handle Dataset inputs by applying to each variable
@@ -435,7 +436,7 @@ def relative_economic_value_from_rates(
             result_dict[var] = relative_economic_value_from_rates(
                 pod[var],
                 pofd[var] if isinstance(pofd, xr.Dataset) else pofd,
-                (climatology[var] if isinstance(climatology, xr.Dataset) else climatology),
+                (base_rate[var] if isinstance(base_rate, xr.Dataset) else base_rate),
                 cost_loss_ratios,
                 cost_loss_dim=cost_loss_dim,
             )
@@ -447,7 +448,7 @@ def relative_economic_value_from_rates(
         coords={cost_loss_dim: cost_loss_ratios},
     )
 
-    obar, alphas = xr.broadcast(climatology, alphas)
+    obar, alphas = xr.broadcast(base_rate, alphas)
     climatological_term = xr.where(obar < alphas, obar, alphas)
 
     # calculate the relative economic value (equation 8)
@@ -537,7 +538,7 @@ def relative_economic_value(
         derived_metrics: Optional list of derived metrics to compute. Options are:
             - 'maximum': Maximum REV across all thresholds (envelope of value curves,
               also called "potential value")
-            - 'rational_user': REV when threshold equals cost-loss ratio (requires thresholds
+            - 'equilibrium_point': REV when threshold equals cost-loss ratio (requires thresholds
               to match cost_loss_ratios exactly). The user is assuming that the forecast
               probabilities are reliable.
             If None and threshold is provided, returns full DataArray with threshold
@@ -567,19 +568,19 @@ def relative_economic_value(
         ValueError: If threshold_dim or cost_loss_dim already exist in fcst or obs
         ValueError: If both reduce_dims and preserve_dims are specified
         ValueError: If threshold_outputs values are not in threshold parameter
-        ValueError: If 'rational_user' in derived_metrics but thresholds don't match cost_loss_ratios
+        ValueError: If 'equilibrium_point' in derived_metrics but thresholds don't match cost_loss_ratios
 
     Notes:
         - REV = 1 indicates perfect forecast value (as good as perfect information)
-        - REV = 0 indicates no value over climatology
-        - REV < 0 indicates the forecast is worse than using climatology
+        - REV = 0 indicates no value over a baseline strategy based on historical base rates
+        - REV < 0 indicates the forecast is worse than the baseline strategy
         - For probabilistic forecasts, 'maximum' value represents the maximum achievable
           value with perfect calibration (max across all decision thresholds)
-        - 'rational_user' represents what a user would achieve by using the forecast probability
+        - 'equilibrium_point' represents what a user would achieve by using the forecast probability
           directly as their decision threshold (only valid when thresholds equal
-          cost-loss ratios). This assumes the forecasts are probabilistically reliable.
+          cost-loss ratios). This assumes the forecasts are probabilistically reliable
         - Negative REV values can occur with small samples due to random chance, or when
-          forecasts genuinely perform worse than climatology
+          forecasts genuinely perform worse than the baseline strategy.
 
     References:
         - Richardson, D. S. (2000). Skill and relative economic value of the ECMWF ensemble

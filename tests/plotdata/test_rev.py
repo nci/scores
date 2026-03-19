@@ -16,7 +16,7 @@ from scores.plotdata import (
 from scores.plotdata.rev_impl import (
     _calculate_rev_core,
     _create_output_dataset,
-    calculate_climatology,
+    calculate_base_rate,
     check_monotonic_array,
 )
 from scores.utils import ERROR_INVALID_WEIGHTS
@@ -165,13 +165,13 @@ class TestBroadcastingAndDimensionHandling:
         xr.testing.assert_allclose(actual, expected)
 
 
-class TestCalculateClimatology:
-    """Tests for climatology calculation."""
+class TestCalculateBaseRate:
+    """Tests for base rate calculation."""
 
     def test_simple_mean(self):
         """Test basic mean calculation."""
         obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
-        actual = calculate_climatology(obs)
+        actual = calculate_base_rate(obs)
         expected = xr.DataArray(data=0.5)
         xr.testing.assert_allclose(expected, actual)
 
@@ -180,13 +180,13 @@ class TestCalculateClimatology:
         obs = xr.DataArray([0, 1, 0, 1], dims=["time"])
         weights = xr.DataArray([1, 2, 1, 2], dims=["time"])
 
-        actual = calculate_climatology(obs, weights=weights)
+        actual = calculate_base_rate(obs, weights=weights)
         expected_val = (0 * 1 + 1 * 2 + 0 * 1 + 1 * 2) / (1 + 2 + 1 + 2)
         expected = xr.DataArray(expected_val)
 
         xr.testing.assert_allclose(actual, expected)
 
-    def test_climatology_ignores_weights_when_dims_not_matching(self):
+    def test_base_rate_ignores_weights_when_dims_not_matching(self):
         """Test that weights are ignored when their dims don't match reduce_dims."""
         # Create obs with a dimension 'time'
         obs = xr.DataArray([1, 0, 1, 1], dims="time")
@@ -195,7 +195,7 @@ class TestCalculateClimatology:
         weights = xr.DataArray([0.1, 0.2], dims="lat")
 
         # Reduce over 'time' (default)
-        actual = calculate_climatology(obs, weights=weights)
+        actual = calculate_base_rate(obs, weights=weights)
 
         # Should be simple mean of obs since weights dims don't match reduce_dims
         expected = xr.DataArray(3 / 4)
@@ -208,7 +208,7 @@ class TestCalculateClimatology:
         weights = xr.DataArray([1, 2], dims=["space"])
 
         # Reduce all dims
-        actual = calculate_climatology(obs, reduce_dims=["time", "space"], weights=weights)
+        actual = calculate_base_rate(obs, reduce_dims=["time", "space"], weights=weights)
 
         # Weighted mean over space, then mean over time
         expected_val = np.mean([(0 * 1 + 1 * 2) / 3, (1 * 1 + 0 * 2) / 3, (1 * 1 + 1 * 2) / 3])
@@ -220,7 +220,7 @@ class TestCalculateClimatology:
         """Test preserve_dims parameter."""
         obs = xr.DataArray([[0, 1], [1, 0]], dims=["time", "space"])
 
-        actual = calculate_climatology(obs, preserve_dims="space")
+        actual = calculate_base_rate(obs, preserve_dims="space")
         expected = xr.DataArray([0.5, 0.5], dims=["space"])
         xr.testing.assert_allclose(actual, expected)
 
@@ -290,7 +290,7 @@ class TestScienceCalculations:
         assert actual.item() == pytest.approx(expected)
 
     def test_undefined_when_obar_is_zero_or_one(self, make_contingency_data):
-        """REV undefined when climatology is 0 or 1 (no variance in obs)."""
+        """REV undefined when base_rate is 0 or 1 (no variance in obs)."""
         # obar = 0: no events
         fcst, obs = make_contingency_data(0, 0, 2, 2)
         assert np.isnan(relative_economic_value(fcst, obs, cost_loss_ratios=[0.2]).item())
@@ -320,7 +320,7 @@ class TestScienceCalculations:
         """Test with multiple cost-loss ratios spanning the full range."""
         # Simple, verifiable data:
         # 10 samples: 6 hits, 2 misses, 1 false alarm, 1 correct negative
-        # POD = 6/8 = 0.75, POFD = 1/2 = 0.5, climatology = 8/10 = 0.8
+        # POD = 6/8 = 0.75, POFD = 1/2 = 0.5, base_rate = 8/10 = 0.8
         binary_fcst, obs = make_contingency_data(6, 2, 1, 1)
 
         cost_loss_ratios = [0.0, 0.25, 0.5, 0.75, 1.0]
@@ -517,8 +517,8 @@ class TestREVSpecialFeatures:
 
         xr.testing.assert_allclose(expected_max_result, actual_max_result)
 
-    def test_probabilistic_rational_user_output(self):
-        """Test maximum and rational user output extraction (diagonal extraction)"""
+    def test_probabilistic_equilibrium_point_output(self):
+        """Test maximum and equilibrium point output extraction (diagonal extraction)"""
         fcst = xr.DataArray(
             [0.75] * 4 + [0.25] * 3 + [0.75] * 2 + [0.25] * 1,
             dims=["time"],
@@ -539,7 +539,7 @@ class TestREVSpecialFeatures:
             obs,
             cost_loss_ratios=cost_loss_ratios,
             threshold=thresholds,
-            derived_metrics=["maximum", "rational_user"],
+            derived_metrics=["maximum", "equilibrium_point"],
         )
 
         expected_full_result_values = np.array(
@@ -563,7 +563,7 @@ class TestREVSpecialFeatures:
         expected_rational_result = xr.Dataset(
             data_vars={
                 "maximum": (["cost_loss_ratio"], [0.0, 0.3, 0.2, 0.0]),
-                "rational_user": (["cost_loss_ratio"], [0.0, 0.3, 0.2, 0.0]),
+                "equilibrium_point": (["cost_loss_ratio"], [0.0, 0.3, 0.2, 0.0]),
             },
             coords={
                 "threshold": (["cost_loss_ratio"], [0.2, 0.4, 0.6, 0.8]),
@@ -573,8 +573,8 @@ class TestREVSpecialFeatures:
         xr.testing.assert_allclose(expected_full_result, actual_full_result)
         xr.testing.assert_allclose(expected_rational_result, actual_rational_result)
 
-    def test_rational_user_no_threshold_in_coords(self):
-        """Test rational_user path where threshold coord somehow not present"""
+    def test_equilibrium_point_no_threshold_in_coords(self):
+        """Test equilibrium_point path where threshold coord somehow not present"""
         # Create a REV array with threshold as dimension but use isel instead of sel
         # to avoid coordinate preservation
         rev = xr.DataArray(
@@ -596,13 +596,13 @@ class TestREVSpecialFeatures:
                 rev=rev,
                 thresholds=[0.1, 0.2],
                 cost_loss_ratios=[0.1, 0.2],
-                derived_metrics=["rational_user"],
+                derived_metrics=["equilibrium_point"],
                 threshold_outputs=None,
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss_ratio",
             )
 
-            assert "rational_user" in actual
+            assert "equilibrium_point" in actual
 
     @pytest.mark.parametrize(
         "threshold_dim, cost_loss_dim, kwargs, expected_dims_by_var",
@@ -613,8 +613,8 @@ class TestREVSpecialFeatures:
             (
                 "decision_threshold",
                 "alpha",
-                {"derived_metrics": ["maximum", "rational_user"]},
-                {"maximum": ("alpha",), "rational_user": ("alpha",)},
+                {"derived_metrics": ["maximum", "equilibrium_point"]},
+                {"maximum": ("alpha",), "equilibrium_point": ("alpha",)},
             ),
             ("decision_threshold", "alpha", {"threshold_outputs": [0.5]}, {"threshold_0_5": ("alpha",)}),
         ],
@@ -896,9 +896,9 @@ class TestDatasetInputs:
             }
         )
 
-        climatology = xr.DataArray(0.3)
+        base_rate = xr.DataArray(0.3)
 
-        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology, [0.3, 0.7])
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate, [0.3, 0.7])
 
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"model_a", "model_b"}
@@ -918,9 +918,9 @@ class TestDatasetInputs:
                 "model_b": xr.DataArray([0.15, 0.08], dims=["threshold"]),
             }
         )
-        climatology = xr.DataArray(0.4)
+        base_rate = xr.DataArray(0.4)
 
-        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology, [0.5])
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate, [0.5])
 
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"model_a", "model_b"}
@@ -935,7 +935,7 @@ class TestDatasetInputs:
         # Create a Dataset for POFD (mismatched type)
         pofd = xr.Dataset({"var": (["threshold"], [0.2])}, coords={"threshold": [0.5]})
 
-        climatology = xr.DataArray(0.3)
+        base_rate = xr.DataArray(0.3)
         cost_loss_ratios = [0.5]
 
         # Verify that mixing DataArray and Dataset raises TypeError
@@ -943,10 +943,10 @@ class TestDatasetInputs:
             TypeError,
             match="Both pod and pofd must be either xarray DataArrays or xarray Datasets",
         ):
-            relative_economic_value_from_rates(pod, pofd, climatology, cost_loss_ratios)
+            relative_economic_value_from_rates(pod, pofd, base_rate, cost_loss_ratios)
 
-    def test_pod_and_climatology_as_dataset(self):
-        """Test with POD and climatology as Datasets."""
+    def test_pod_and_base_rate_as_dataset(self):
+        """Test with POD and base_rate as Datasets."""
         pod_ds = xr.Dataset(
             {
                 "region_1": xr.DataArray([0.8], dims=["threshold"]),
@@ -959,15 +959,15 @@ class TestDatasetInputs:
                 "region_2": xr.DataArray([0.15], dims=["threshold"]),
             }
         )
-        climatology_ds = xr.Dataset({"region_1": xr.DataArray(0.3), "region_2": xr.DataArray(0.45)})
+        base_rate_ds = xr.Dataset({"region_1": xr.DataArray(0.3), "region_2": xr.DataArray(0.45)})
 
-        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology_ds, [0.3, 0.7])
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate_ds, [0.3, 0.7])
 
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"region_1", "region_2"}
 
     def test_all_as_dataset(self):
-        """Test with POD, POFD, and climatology all as Datasets."""
+        """Test with POD, POFD, and base_rate all as Datasets."""
         pod_ds = xr.Dataset(
             {
                 "var_1": xr.DataArray([0.7, 0.9], dims=["threshold"]),
@@ -980,9 +980,9 @@ class TestDatasetInputs:
                 "var_2": xr.DataArray([0.2, 0.1], dims=["threshold"]),
             }
         )
-        climatology_ds = xr.Dataset({"var_1": xr.DataArray(0.25), "var_2": xr.DataArray(0.35)})
+        base_rate_ds = xr.Dataset({"var_1": xr.DataArray(0.25), "var_2": xr.DataArray(0.35)})
 
-        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology_ds, [0.2, 0.5, 0.8])
+        actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate_ds, [0.2, 0.5, 0.8])
 
         assert isinstance(actual, xr.Dataset)
         assert set(actual.data_vars) == {"var_1", "var_2"}
@@ -994,15 +994,15 @@ class TestDatasetInputs:
         # Use simple values where we can verify the math
         pod_scalar = xr.DataArray(1.0)  # Perfect detection
         pofd_scalar = xr.DataArray(0.0)  # No false alarms
-        climatology_scalar = xr.DataArray(0.5)
+        base_rate_scalar = xr.DataArray(0.5)
 
         # Calculate with scalars
-        actual_scalar = relative_economic_value_from_rates(pod_scalar, pofd_scalar, climatology_scalar, [0.5])
+        actual_scalar = relative_economic_value_from_rates(pod_scalar, pofd_scalar, base_rate_scalar, [0.5])
 
         # Calculate with Dataset
         pod_ds = xr.Dataset({"test": pod_scalar})
         pofd_ds = xr.Dataset({"test": pofd_scalar})
-        actual_dataset = relative_economic_value_from_rates(pod_ds, pofd_ds, climatology_scalar, [0.5])
+        actual_dataset = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate_scalar, [0.5])
 
         xr.testing.assert_allclose(actual_dataset["test"], actual_scalar)
 
@@ -1131,7 +1131,7 @@ class TestErrorHandling:
             relative_economic_value(fcst, obs, cost_loss_ratios=[0.5], weights=weights)
 
     def test_value_without_matching_thresholds(self):
-        """Test that 'rational_user' output requires matching thresholds"""
+        """Test that 'equilibrium_point' output requires matching thresholds"""
         fcst = xr.DataArray([0.2, 0.8, 0.6], dims=["time"])
         obs = xr.DataArray([0, 1, 1], dims=["time"])
 
@@ -1141,7 +1141,7 @@ class TestErrorHandling:
                 obs,
                 cost_loss_ratios=[0.3, 0.5],
                 threshold=[0.2, 0.5],
-                derived_metrics=["rational_user"],
+                derived_metrics=["equilibrium_point"],
             )
 
     def test_invalid_derived_metrics(self):
@@ -1172,7 +1172,7 @@ class TestErrorHandling:
         with pytest.raises(expected_exception, match=expected_error):
             check_monotonic_array(arr)
 
-    @pytest.mark.parametrize("which_input", ["pod", "pofd", "climatology"])
+    @pytest.mark.parametrize("which_input", ["pod", "pofd", "base_rate"])
     def test_cost_loss_ratio_dim_in_inputs_raises(self, which_input):
         """create a DataArray that contains the forbidden dimension name"""
         da_with_forbidden_dim = xr.DataArray(
@@ -1184,7 +1184,7 @@ class TestErrorHandling:
         # other inputs are normal scalar-like arrays
         pod = rtd.SCALAR_DA
         pofd = pod.copy()
-        climatology = pod.copy()
+        base_rate = pod.copy()
 
         # replace the selected input with the bad one
         if which_input == "pod":
@@ -1192,12 +1192,12 @@ class TestErrorHandling:
         elif which_input == "pofd":
             pofd = da_with_forbidden_dim
         else:
-            climatology = da_with_forbidden_dim
+            base_rate = da_with_forbidden_dim
 
         good_cost_loss = np.array([0.1, 0.5, 0.9])  # valid monotonic ratios
 
         with pytest.raises(ValueError) as excinfo:
-            relative_economic_value_from_rates(pod, pofd, climatology, good_cost_loss)
+            relative_economic_value_from_rates(pod, pofd, base_rate, good_cost_loss)
 
         assert "dimension 'cost_loss_ratio' must not be in input data" in str(excinfo.value)
 
@@ -1227,19 +1227,19 @@ class TestErrorHandling:
         )
         xr.testing.assert_allclose(actual, expected)
 
-    def test_rational_user_without_threshold_raises(self, make_contingency_data):
-        """Test derived metrics 'rational_user' without threshold raises ValueError"""
+    def test_equilibrium_point_without_threshold_raises(self, make_contingency_data):
+        """Test derived metrics 'equilibrium_point' without threshold raises ValueError"""
         fcst, obs = make_contingency_data(1, 1, 1, 1)
 
         with pytest.raises(
             ValueError,
-            match="derived_metrics 'rational_user' can only be used when threshold parameter is provided",
+            match="derived_metrics 'equilibrium_point' can only be used when threshold parameter is provided",
         ):
             relative_economic_value(
                 fcst=fcst,
                 obs=obs,
                 cost_loss_ratios=[0.2, 0.5],
-                derived_metrics=["rational_user"],
+                derived_metrics=["equilibrium_point"],
             )
 
 
@@ -1407,7 +1407,7 @@ class TestLegacyJive:
         (
             "pod",
             "pofd",
-            "climatology",
+            "base_rate",
             "cost_loss_ratios",
             "expected",
         ),
@@ -1430,12 +1430,12 @@ class TestLegacyJive:
             ),
         ],
     )
-    def test_jive_relative_economic_value_from_rates(self, pod, pofd, climatology, cost_loss_ratios, expected):
+    def test_jive_relative_economic_value_from_rates(self, pod, pofd, base_rate, cost_loss_ratios, expected):
         """Tests that relative_economic_value_from_rates returns the correct result"""
         actual = relative_economic_value_from_rates(
             pod,
             pofd,
-            climatology,
+            base_rate,
             cost_loss_ratios,
         )
         xr.testing.assert_allclose(actual, expected)
