@@ -387,7 +387,7 @@ def relative_economic_value_from_rates(
 
         >>> import numpy as np
         >>> import xarray as xr
-        >>> from scores.probability import relative_economic_value_from_rates
+        >>> from scores.plotdata import relative_economic_value_from_rates
         >>>
         >>> # Pre-computed detection rates
         >>> pod = xr.DataArray([0.8, 0.6, 0.4], dims=['threshold'])
@@ -590,7 +590,7 @@ def relative_economic_value(
         Calculate REV for binary forecasts:
 
         >>> import xarray as xr
-        >>> from scores.probability import relative_economic_value
+        >>> from scores.plotdata import relative_economic_value
         >>> fcst = xr.DataArray([0, 1, 1, 0, 1], dims=['time'])
         >>> obs = xr.DataArray([0, 1, 0, 0, 1], dims=['time'])
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]

@@ -9,15 +9,15 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from scores.plotdata import (
+    relative_economic_value,
+    relative_economic_value_from_rates,
+)
 from scores.plotdata.rev_impl import (
     _calculate_rev_core,
     _create_output_dataset,
     calculate_climatology,
     check_monotonic_array,
-)
-from scores.probability import (
-    relative_economic_value,
-    relative_economic_value_from_rates,
 )
 from scores.utils import ERROR_INVALID_WEIGHTS
 from tests.plotdata import rev_test_data as rtd
