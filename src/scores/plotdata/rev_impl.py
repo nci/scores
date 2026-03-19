@@ -594,7 +594,7 @@ def relative_economic_value(
         >>> fcst = xr.DataArray([0, 1, 1, 0, 1], dims=['time'])
         >>> obs = xr.DataArray([0, 1, 0, 0, 1], dims=['time'])
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
-        >>> rev = relative_economic_value(fcst, obs, cost_loss_ratios)
+        >>> rev = relative_economic_value(fcst, obs, cost_loss_ratios = cost_loss_ratios)
 
         Calculate REV for probabilistic forecasts with maximum value:
 
@@ -606,10 +606,11 @@ def relative_economic_value(
         ...     threshold=thresholds,
         ...     derived_metrics=['maximum']
         ... )
+        >>> result
         <xarray.Dataset> Size: 80B
         Dimensions:          (cost_loss_ratio: 5)
         Coordinates:
-        * cost_loss_ratio  (cost_loss_ratio) float64 40B 0.1 0.3 0.5 0.7 0.9
+          * cost_loss_ratio  (cost_loss_ratio) float64 40B 0.1 0.3 0.5 0.7 0.9
         Data variables:
             maximum          (cost_loss_ratio) float64 40B 1.0 1.0 1.0 1.0 1.0
 

@@ -3,6 +3,10 @@ Import the functions from the implementations into the public API
 """
 
 from scores.plotdata.murphy_impl import murphy_score, murphy_thetas
+from scores.plotdata.rev_impl import (
+    relative_economic_value,
+    relative_economic_value_from_rates,
+)
 from scores.plotdata.roc_impl import roc as roc_curve_data
 from scores.probability.brier_impl import brier_score, brier_score_for_ensemble
 from scores.probability.crps_impl import (
@@ -17,10 +21,6 @@ from scores.probability.crps_impl import (
 )
 from scores.probability.pit_impl import Pit, PitFcstAtObs
 from scores.probability.rank_hist_impl import rank_histogram
-from scores.probability.rev_impl import (
-    relative_economic_value,
-    relative_economic_value_from_rates,
-)
 from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
