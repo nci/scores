@@ -3,7 +3,7 @@ Relative Economic Value metrics for forecast evaluation
 """
 
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 import numpy as np
 import xarray as xr
@@ -131,13 +131,13 @@ def _validate_rev_inputs(
 
 
 def _calculate_rev_core(
-    binary_fcst: XarrayLike,
-    obs: XarrayLike,
+    binary_fcst: xr.DataArray,
+    obs: xr.DataArray,
     cost_loss_ratios: Union[float, Sequence[float]],
     dims_to_reduce: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
     cost_loss_dim: str = "cost_loss_ratio",
-) -> XarrayLike:
+) -> xr.DataArray:
     """
     Core REV calculation from binary forecasts using scores library functions.
     """
@@ -166,7 +166,7 @@ def _calculate_rev_core(
         cost_loss_dim=cost_loss_dim,
     )
 
-    return result
+    return cast(xr.DataArray, result)
 
 
 def calculate_base_rate(
@@ -721,7 +721,7 @@ def relative_economic_value(
             threshold = [threshold]
 
         # Discretize forecasts at each threshold, adding a threshold dim
-        binary_fcst = binary_discretise(fcst, threshold, ">=")
+        binary_fcst = cast(xr.DataArray, binary_discretise(fcst, threshold, ">="))
 
         # Rename the threshold dimension if needed
         if threshold_dim != "threshold":
