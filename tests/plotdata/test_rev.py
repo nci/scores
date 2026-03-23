@@ -16,6 +16,7 @@ from scores.plotdata import (
 from scores.plotdata.rev_impl import (
     _calculate_rev_core,
     _create_output_dataset,
+    _validate_dimensions,
     calculate_base_rate,
     check_monotonic_array,
 )
@@ -1229,6 +1230,54 @@ class TestErrorHandling:
                 cost_loss_ratios=[0.2, 0.5],
                 generate_equilibrium_point_rev=True,
             )
+
+    def test_valid_no_weights(self):
+        """No error when inputs have no forbidden dims and weights is None."""
+        fcst = xr.DataArray([0, 1], dims=["time"])
+        obs = xr.DataArray([0, 1], dims=["time"])
+        _validate_dimensions(fcst, obs, None, "threshold", "cost_loss_ratio")
+
+    def test_valid_with_weights(self):
+        """No error when weights present but carries no forbidden dims."""
+        fcst = xr.DataArray([0, 1], dims=["time"])
+        obs = xr.DataArray([0, 1], dims=["time"])
+        weights = xr.DataArray([1.0, 1.0], dims=["time"])
+        _validate_dimensions(fcst, obs, weights, "threshold", "cost_loss_ratio")
+
+    @pytest.mark.parametrize(
+        "which_input,forbidden_dim",
+        [
+            ("fcst", "threshold"),
+            ("fcst", "cost_loss_ratio"),
+            ("obs", "threshold"),
+            ("obs", "cost_loss_ratio"),
+            ("weights", "threshold"),
+            ("weights", "cost_loss_ratio"),
+        ],
+        ids=[
+            "fcst_has_threshold_dim",
+            "fcst_has_cost_loss_dim",
+            "obs_has_threshold_dim",
+            "obs_has_cost_loss_dim",
+            "weights_has_threshold_dim",
+            "weights_has_cost_loss_dim",
+        ],
+    )
+    def test_forbidden_dim_raises(self, which_input, forbidden_dim):
+        """Raises ValueError when threshold_dim or cost_loss_dim appears in fcst, obs, or weights."""
+        fcst = xr.DataArray([0, 1], dims=["time"])
+        obs = xr.DataArray([0, 1], dims=["time"])
+        weights = xr.DataArray([1.0, 1.0], dims=["time"])
+
+        if which_input == "fcst":
+            fcst = xr.DataArray([0, 1], dims=[forbidden_dim])
+        elif which_input == "obs":
+            obs = xr.DataArray([0, 1], dims=[forbidden_dim])
+        else:
+            weights = xr.DataArray([1.0, 1.0], dims=[forbidden_dim])
+
+        with pytest.raises(ValueError, match=f"'{forbidden_dim}' cannot be a dimension in {which_input}"):
+            _validate_dimensions(fcst, obs, weights, "threshold", "cost_loss_ratio")
 
 
 class TestLegacyJive:
