@@ -92,23 +92,6 @@ def _validate_forecasts(
         check_binary(fcst, "fcst")
 
 
-def _validate_derived_metrics(
-    derived_metrics: Optional[Sequence[str]],
-    threshold: Optional[Union[float, Sequence[float]]],
-) -> None:
-    """Validate derived metrics configuration."""
-    if derived_metrics is None:
-        return
-
-    valid_special = {"maximum", "equilibrium_point"}
-    invalid = set(derived_metrics) - valid_special
-    if invalid:
-        raise ValueError(f"Invalid derived_metrics values: {invalid}. Valid options are {valid_special}")
-
-    if "equilibrium_point" in derived_metrics and threshold is None:
-        raise ValueError("derived_metrics 'equilibrium_point' can only be used when threshold parameter is provided")
-
-
 def _validate_rev_inputs(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -117,7 +100,7 @@ def _validate_rev_inputs(
     threshold_dim: str,
     cost_loss_dim: str,
     weights: Optional[xr.DataArray],
-    derived_metrics: Optional[Sequence[str]],
+    generate_equilibrium_point_rev: bool,
     threshold_outputs: Optional[Sequence[float]],
 ) -> None:
     """
@@ -132,7 +115,10 @@ def _validate_rev_inputs(
     _validate_dimensions(fcst, obs, weights, threshold_dim, cost_loss_dim)
     _validate_cost_loss_ratios(cost_loss_ratios)
     _validate_thresholds(threshold, threshold_outputs)
-    _validate_derived_metrics(derived_metrics, threshold)
+
+    if generate_equilibrium_point_rev and threshold is None:
+        raise ValueError("generate_equilibrium_point_rev=True can only be used when threshold parameter is provided")
+
     check_binary(obs, "obs")
     _validate_forecasts(fcst, threshold)
 
@@ -239,7 +225,8 @@ def _create_output_dataset(
     rev: xr.DataArray,
     thresholds: Sequence[float],
     cost_loss_ratios: Sequence[float],
-    derived_metrics: Optional[Sequence[str]],
+    generate_maximum_rev: bool,
+    generate_equilibrium_point_rev: bool,
     threshold_outputs: Optional[Sequence[float]],
     threshold_dim: str,
     cost_loss_dim: str,
@@ -251,7 +238,8 @@ def _create_output_dataset(
         rev: Full REV DataArray with threshold and cost_loss_ratio dimensions
         thresholds: List of threshold values
         cost_loss_ratios: List of cost-loss ratio values
-        derived_metrics: Derived metrics to compute
+        generate_maximum_rev: If True, include maximum REV across all thresholds
+        generate_equilibrium_point_rev: If True, include the equilibrium point REV
         threshold_outputs: Specific thresholds to extract
         threshold_dim: Name of threshold dimension
         cost_loss_dim: Name of cost-loss ratio dimension
@@ -260,28 +248,24 @@ def _create_output_dataset(
         Dataset with requested outputs
 
     Raises:
-        ValueError: If invalid derived_metrics values provided
-        ValueError: If 'equilibrium_point' requested but thresholds don't match cost_loss_ratios
+        ValueError: If generate_equilibrium_point_rev is True but thresholds don't match cost_loss_ratios
     """
-    derived_metrics = [] if derived_metrics is None else list(derived_metrics)
     threshold_outputs = [] if threshold_outputs is None else list(threshold_outputs)
 
     result = xr.Dataset(attrs=rev.attrs)
 
-    # Add derived metrics
-    for mode in derived_metrics:
-        if mode == "maximum":
-            result["maximum"] = rev.max(dim=threshold_dim)
-        elif mode == "equilibrium_point":  # pragma: no cover
-            # Check that thresholds match cost_loss_ratios exactly
-            if list(thresholds) != list(cost_loss_ratios):
-                raise ValueError(
-                    "Can only specify derived_metrics 'equilibrium_point' "
-                    "if thresholds and cost_loss_ratios are identical"
-                )
-            # Extract diagonal where threshold == cost_loss_ratio
-            coords = xr.DataArray(cost_loss_ratios, dims=[cost_loss_dim])
-            result["equilibrium_point"] = rev.sel({threshold_dim: coords, cost_loss_dim: coords})
+    if generate_maximum_rev:
+        result["maximum"] = rev.max(dim=threshold_dim)
+
+    if generate_equilibrium_point_rev:  # pragma: no cover
+        # Check that thresholds match cost_loss_ratios exactly
+        if list(thresholds) != list(cost_loss_ratios):
+            raise ValueError(
+                "Can only use generate_equilibrium_point_rev=True if thresholds and cost_loss_ratios are identical"
+            )
+        # Extract diagonal where threshold == cost_loss_ratio
+        coords = xr.DataArray(cost_loss_ratios, dims=[cost_loss_dim])
+        result["equilibrium_point"] = rev.sel({threshold_dim: coords, cost_loss_dim: coords})
 
     # Add threshold-specific outputs
     for thresh in threshold_outputs:
@@ -475,7 +459,8 @@ def relative_economic_value(
     weights: Optional[xr.DataArray] = None,
     threshold_dim: str = "threshold",
     cost_loss_dim: str = "cost_loss_ratio",
-    derived_metrics: Optional[Sequence[str]] = None,
+    generate_maximum_rev: bool = False,
+    generate_equilibrium_point_rev: bool = False,
     threshold_outputs: Optional[Sequence[float]] = None,
     check_args: bool = True,
 ) -> XarrayLike:
@@ -535,24 +520,24 @@ def relative_economic_value(
             Must not exist as a dimension in fcst or obs.
         cost_loss_dim: Name of the cost-loss ratio dimension in output. Default is
             'cost_loss_ratio'. Must not exist as a dimension in fcst or obs.
-        derived_metrics: Optional list of derived metrics to compute. Options are:
-            - 'maximum': Maximum REV across all thresholds (envelope of value curves,
-              also called "potential value")
-            - 'equilibrium_point': REV when threshold equals cost-loss ratio (requires thresholds
-              to match cost_loss_ratios exactly). The user is assuming that the forecast
-              probabilities are reliable.
-            If None and threshold is provided, returns full DataArray with threshold
-            dimension. If None and threshold is None, returns DataArray with
-            cost_loss_ratio dimension only.
+        generate_maximum_rev: If True, include the maximum REV across all thresholds
+            (the envelope of value curves, also called "potential value") as a variable
+            in the output Dataset. Only used when threshold is provided.
+        generate_equilibrium_point_rev: If True, include the equilibrium point REV as
+            a variable in the output Dataset. The equilibrium point is the REV value for
+            each user whose decision threshold equals their cost-loss ratio — i.e. the
+            point where the decision threshold and cost-loss ratio are in balance. Requires
+            thresholds and cost_loss_ratios to be identical. Only used when threshold
+            is provided.
         threshold_outputs: Optional list of specific threshold values to extract as
             separate variables in the output Dataset. Values must exist in the threshold
             parameter. Only used when threshold is provided.
-        check_args: If True, validates input arguments.
+        check_args: If True (default), validates input arguments.
 
     Returns:
         XarrayLike:
-            - If derived_metrics or threshold_outputs is specified: xr.Dataset with data
-              variables for each requested output
+            - If generate_maximum_rev, generate_equilibrium_point_rev, or threshold_outputs
+              is specified: xr.Dataset with data variables for each requested output
             - If threshold is provided: xr.DataArray with dimensions from
               reduce_dims/preserve_dims, plus cost_loss_dim and threshold_dim
             - If threshold is None: xr.DataArray with dimensions from
@@ -568,17 +553,17 @@ def relative_economic_value(
         ValueError: If threshold_dim or cost_loss_dim already exist in fcst or obs
         ValueError: If both reduce_dims and preserve_dims are specified
         ValueError: If threshold_outputs values are not in threshold parameter
-        ValueError: If 'equilibrium_point' in derived_metrics but thresholds don't match cost_loss_ratios
+        ValueError: If generate_equilibrium_point_rev=True but thresholds don't match cost_loss_ratios
 
     Notes:
         - REV = 1 indicates perfect forecast value (as good as perfect information)
         - REV = 0 indicates no value over a baseline strategy based on historical base rates
         - REV < 0 indicates the forecast is worse than the baseline strategy
-        - For probabilistic forecasts, 'maximum' value represents the maximum achievable
-          value with perfect calibration (max across all decision thresholds)
-        - 'equilibrium_point' represents what a user would achieve by using the forecast probability
-          directly as their decision threshold (only valid when thresholds equal
-          cost-loss ratios). This assumes the forecasts are probabilistically reliable
+        - generate_maximum_rev represents the maximum achievable value with perfect calibration
+          (max REV across all decision thresholds)
+        - generate_equilibrium_point_rev represents what a user would achieve by using the
+          forecast probability directly as their decision threshold (only valid when thresholds
+          equal cost-loss ratios). This assumes the forecasts are probabilistically reliable.
         - Negative REV values can occur with small samples due to random chance, or when
           forecasts genuinely perform worse than the baseline strategy.
 
@@ -605,7 +590,7 @@ def relative_economic_value(
         ...     fcst_prob, obs,
         ...     cost_loss_ratios=cost_loss_ratios,
         ...     threshold=thresholds,
-        ...     derived_metrics=['maximum']
+        ...     generate_maximum_rev=True,
         ... )
         >>> result
         <xarray.Dataset> Size: 80B
@@ -636,7 +621,7 @@ def relative_economic_value(
             threshold_dim,
             cost_loss_dim,
             weights,
-            derived_metrics,
+            generate_equilibrium_point_rev,
             threshold_outputs,
         )
 
@@ -664,7 +649,8 @@ def relative_economic_value(
                     weights=weights,
                     threshold_dim=threshold_dim,
                     cost_loss_dim=cost_loss_dim,
-                    derived_metrics=derived_metrics,
+                    generate_maximum_rev=generate_maximum_rev,
+                    generate_equilibrium_point_rev=generate_equilibrium_point_rev,
                     threshold_outputs=threshold_outputs,
                     check_args=False,  # Already validated
                 )
@@ -685,7 +671,8 @@ def relative_economic_value(
                 weights=weights,
                 threshold_dim=threshold_dim,
                 cost_loss_dim=cost_loss_dim,
-                derived_metrics=derived_metrics,
+                generate_maximum_rev=generate_maximum_rev,
+                generate_equilibrium_point_rev=generate_equilibrium_point_rev,
                 threshold_outputs=threshold_outputs,
                 check_args=False,  # Already validated
             )
@@ -705,7 +692,8 @@ def relative_economic_value(
                 weights=weights,
                 threshold_dim=threshold_dim,
                 cost_loss_dim=cost_loss_dim,
-                derived_metrics=derived_metrics,
+                generate_maximum_rev=generate_maximum_rev,
+                generate_equilibrium_point_rev=generate_equilibrium_point_rev,
                 threshold_outputs=threshold_outputs,
                 check_args=False,  # Already validated
             )
@@ -751,12 +739,13 @@ def relative_economic_value(
         )
 
         # Post-process for derived metrics or threshold outputs
-        if derived_metrics or threshold_outputs:
+        if generate_maximum_rev or generate_equilibrium_point_rev or threshold_outputs:
             result = _create_output_dataset(
                 rev,
                 threshold,
                 cost_loss_ratios,
-                derived_metrics,
+                generate_maximum_rev,
+                generate_equilibrium_point_rev,
                 threshold_outputs,
                 threshold_dim,
                 cost_loss_dim,

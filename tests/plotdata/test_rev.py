@@ -482,7 +482,7 @@ class TestREVSpecialFeatures:
             obs,
             cost_loss_ratios=cost_loss_ratios,
             threshold=thresholds,
-            derived_metrics=["maximum"],
+            generate_maximum_rev=True,
         )
 
         expected_full_result_values = np.array(
@@ -539,7 +539,8 @@ class TestREVSpecialFeatures:
             obs,
             cost_loss_ratios=cost_loss_ratios,
             threshold=thresholds,
-            derived_metrics=["maximum", "equilibrium_point"],
+            generate_maximum_rev=True,
+            generate_equilibrium_point_rev=True,
         )
 
         expected_full_result_values = np.array(
@@ -596,7 +597,8 @@ class TestREVSpecialFeatures:
                 rev=rev,
                 thresholds=[0.1, 0.2],
                 cost_loss_ratios=[0.1, 0.2],
-                derived_metrics=["equilibrium_point"],
+                generate_maximum_rev=False,
+                generate_equilibrium_point_rev=True,
                 threshold_outputs=None,
                 threshold_dim="threshold",
                 cost_loss_dim="cost_loss_ratio",
@@ -613,7 +615,7 @@ class TestREVSpecialFeatures:
             (
                 "decision_threshold",
                 "alpha",
-                {"derived_metrics": ["maximum", "equilibrium_point"]},
+                {"generate_maximum_rev": True, "generate_equilibrium_point_rev": True},
                 {"maximum": ("alpha",), "equilibrium_point": ("alpha",)},
             ),
             ("decision_threshold", "alpha", {"threshold_outputs": [0.5]}, {"threshold_0_5": ("alpha",)}),
@@ -1141,21 +1143,7 @@ class TestErrorHandling:
                 obs,
                 cost_loss_ratios=[0.3, 0.5],
                 threshold=[0.2, 0.5],
-                derived_metrics=["equilibrium_point"],
-            )
-
-    def test_invalid_derived_metrics(self):
-        """Test validation of derived_metrics values"""
-        fcst = xr.DataArray([0.2, 0.8, 0.6], dims=["time"])
-        obs = xr.DataArray([0, 1, 1], dims=["time"])
-
-        with pytest.raises(ValueError, match="Invalid derived_metrics"):
-            relative_economic_value(
-                fcst,
-                obs,
-                cost_loss_ratios=[0.5],
-                threshold=[0.5],
-                derived_metrics=["pizza_oven"],
+                generate_equilibrium_point_rev=True,
             )
 
     @pytest.mark.parametrize(
@@ -1233,13 +1221,13 @@ class TestErrorHandling:
 
         with pytest.raises(
             ValueError,
-            match="derived_metrics 'equilibrium_point' can only be used when threshold parameter is provided",
+            match="generate_equilibrium_point_rev=True can only be used when threshold parameter is provided",
         ):
             relative_economic_value(
                 fcst=fcst,
                 obs=obs,
                 cost_loss_ratios=[0.2, 0.5],
-                derived_metrics=["equilibrium_point"],
+                generate_equilibrium_point_rev=True,
             )
 
 
@@ -1253,7 +1241,7 @@ class TestLegacyJive:
             "thresholds",
             "cost_loss_ratios",
             "preserve_dims",
-            "derived_metrics",
+            "generate_maximum_rev",
             "threshold_outputs",
             "expected",
         ),
@@ -1265,7 +1253,7 @@ class TestLegacyJive:
                 [0, 0.3, 1],
                 [0, 0.2, 0.5, 0.8, 1],
                 ["lead_day"],
-                ["maximum"],
+                True,
                 [0, 0.3, 1],
                 rtd.EXP_PREV_CASE0,
             ),
@@ -1276,7 +1264,7 @@ class TestLegacyJive:
                 [0, 0.3, 1],
                 [0, 0.2, 0.5, 0.8, 1],
                 None,
-                ["maximum"],
+                True,
                 None,
                 rtd.EXP_PREV_CASE2,
             ),
@@ -1288,7 +1276,7 @@ class TestLegacyJive:
                 [0.3],
                 [0.5],
                 ["lead_day"],
-                [],
+                False,
                 [0.3],
                 rtd.EXP_PREV_CASE3,
             ),
@@ -1299,7 +1287,7 @@ class TestLegacyJive:
                 [0.3],
                 [0.5],
                 ["lead_day"],
-                [],
+                False,
                 [0.3],
                 rtd.EXP_PREV_CASE3,
             ),
@@ -1309,7 +1297,7 @@ class TestLegacyJive:
                 [0, 0.3, 1],
                 [0, 0.2, 0.5, 0.8, 1],
                 {"lead_day"},
-                ["maximum"],
+                True,
                 [0, 0.3, 1],
                 rtd.EXP_PREV_CASE0,
             ),
@@ -1322,7 +1310,7 @@ class TestLegacyJive:
         thresholds,
         cost_loss_ratios,
         preserve_dims,
-        derived_metrics,
+        generate_maximum_rev,
         threshold_outputs,
         expected,
     ):
@@ -1335,7 +1323,7 @@ class TestLegacyJive:
             threshold=thresholds,
             cost_loss_ratios=cost_loss_ratios,
             preserve_dims=preserve_dims,
-            derived_metrics=derived_metrics,
+            generate_maximum_rev=generate_maximum_rev,
             threshold_outputs=threshold_outputs,
         )
         xr.testing.assert_allclose(actual, expected)
