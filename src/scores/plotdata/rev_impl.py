@@ -35,23 +35,27 @@ def _validate_dimensions(
 
 
 def _validate_thresholds(
-    threshold: Optional[Union[float, Sequence[float]]],
-    threshold_outputs: Optional[Sequence[float]],
+    probability_threshold: Optional[Union[float, Sequence[float]]],
+    probability_threshold_outputs: Optional[Sequence[float]],
 ) -> None:
-    """Validate threshold and threshold_outputs configuration."""
-    if threshold is not None:
+    """Validate probability_threshold and probability_threshold_outputs configuration."""
+    if probability_threshold is not None:
         try:
-            check_monotonic_array(np.atleast_1d(threshold))
+            check_monotonic_array(np.atleast_1d(probability_threshold))
         except (ValueError, TypeError) as ex:
-            raise type(ex)(f"for threshold, {ex}") from ex
+            raise type(ex)(f"for probability_threshold, {ex}") from ex
 
-        if threshold_outputs is not None:
-            thresh_array = np.atleast_1d(threshold)
-            if not set(threshold_outputs) <= set(thresh_array):
-                raise ValueError("values in threshold_outputs must be in the supplied threshold parameter")
+        if probability_threshold_outputs is not None:
+            thresh_array = np.atleast_1d(probability_threshold)
+            if not set(probability_threshold_outputs) <= set(thresh_array):
+                raise ValueError(
+                    "values in probability_threshold_outputs must be in the supplied probability_threshold parameter"
+                )
     else:
-        if threshold_outputs:
-            raise ValueError("threshold_outputs can only be used when threshold parameter is provided")
+        if probability_threshold_outputs:
+            raise ValueError(
+                "probability_threshold_outputs can only be used when probability_threshold parameter is provided"
+            )
 
 
 def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) -> None:
@@ -65,13 +69,13 @@ def _validate_cost_loss_ratios(cost_loss_ratios: Union[float, Sequence[float]]) 
 
 def _validate_forecasts(
     fcst: XarrayLike,
-    threshold: Optional[Union[float, Sequence[float]]],
+    probability_threshold: Optional[Union[float, Sequence[float]]],
 ) -> None:
     """
-    Validate forecast values and threshold configuration.
+    Validate forecast values and probability_threshold configuration.
 
-    Raises ValueError if the threshold is provided but forecast is not
-    between 0 and 1 or threshold is None but the forecast is not 0, 1 or NaN.
+    Raises ValueError if the probability_threshold is provided but forecast is not
+    between 0 and 1 or probability_threshold is None but the forecast is not 0, 1 or NaN.
 
     """
 
@@ -84,10 +88,10 @@ def _validate_forecasts(
         fcst_max = fcst.max().item()
 
     # Validate based on configuration
-    if threshold is not None:
+    if probability_threshold is not None:
         # Probabilistic forecasts: validate range
         if fcst_min < 0 or fcst_max > 1:
-            raise ValueError("When threshold is provided, fcst must contain values between 0 and 1")
+            raise ValueError("When probability_threshold is provided, fcst must contain values between 0 and 1")
     else:
         check_binary(fcst, "fcst")
 
@@ -96,12 +100,12 @@ def _validate_rev_inputs(
     fcst: XarrayLike,
     obs: XarrayLike,
     cost_loss_ratios: Union[float, Sequence[float]],
-    threshold: Optional[Union[float, Sequence[float]]],
-    threshold_dim: str,
+    probability_threshold: Optional[Union[float, Sequence[float]]],
+    probability_threshold_dim: str,
     cost_loss_dim: str,
     weights: Optional[xr.DataArray],
     generate_equilibrium_point_rev: bool,
-    threshold_outputs: Optional[Sequence[float]],
+    probability_threshold_outputs: Optional[Sequence[float]],
 ) -> None:
     """
     Validate inputs for REV calculation.
@@ -112,15 +116,17 @@ def _validate_rev_inputs(
     if isinstance(weights, xr.Dataset):
         raise ValueError("Weights cannot be Datasets. Convert to a DataArray or calculate separately.")
 
-    _validate_dimensions(fcst, obs, weights, threshold_dim, cost_loss_dim)
+    _validate_dimensions(fcst, obs, weights, probability_threshold_dim, cost_loss_dim)
     _validate_cost_loss_ratios(cost_loss_ratios)
-    _validate_thresholds(threshold, threshold_outputs)
+    _validate_thresholds(probability_threshold, probability_threshold_outputs)
 
-    if generate_equilibrium_point_rev and threshold is None:
-        raise ValueError("generate_equilibrium_point_rev=True can only be used when threshold parameter is provided")
+    if generate_equilibrium_point_rev and probability_threshold is None:
+        raise ValueError(
+            "generate_equilibrium_point_rev=True can only be used when probability_threshold parameter is provided"
+        )
 
     check_binary(obs, "obs")
-    _validate_forecasts(fcst, threshold)
+    _validate_forecasts(fcst, probability_threshold)
 
     # Weights validation
     if weights is not None:
@@ -453,15 +459,15 @@ def relative_economic_value(
     obs: XarrayLike,
     *,  # Force keyword arguments to be keyword-only
     cost_loss_ratios: Optional[Union[float, Sequence[float]]] = None,
-    threshold: Optional[Union[float, Sequence[float]]] = None,
+    probability_threshold: Optional[Union[float, Sequence[float]]] = None,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     weights: Optional[xr.DataArray] = None,
-    threshold_dim: str = "threshold",
+    probability_threshold_dim: str = "probability_threshold",
     cost_loss_dim: str = "cost_loss_ratio",
     generate_maximum_rev: bool = False,
     generate_equilibrium_point_rev: bool = False,
-    threshold_outputs: Optional[Sequence[float]] = None,
+    probability_threshold_outputs: Optional[Sequence[float]] = None,
     check_args: bool = True,
 ) -> XarrayLike:
     """
@@ -502,11 +508,11 @@ def relative_economic_value(
             ratio represents the ratio of the cost of taking protective action to
             the loss incurred if the event occurs without protection. If None, assumes
             each percentile between 0 to 1, i.e. 0.01, 0.02...0.98, 0.99.
-        threshold: Decision threshold(s) for converting probabilistic forecasts to
-            binary decisions. Required for probabilistic forecasts. Each threshold
-            converts forecasts to 1 where fcst >= threshold, 0 otherwise. Must be
-            strictly monotonically increasing values between 0 and 1. If None, assumes
-            fcst is already binary (0 or 1).
+        probability_threshold: The minimum probability of an event occurring that implies
+            a decision would be taken. A sequence of probability thresholds may be
+            provided. Each threshold converts forecasts to 1 where fcst >= probability_threshold,
+            0 otherwise. Must be strictly monotonically increasing values between 0 and 1.
+            If None, assumes fcst is already binary (0 or 1).
         reduce_dims: Dimensions to reduce when calculating REV. All other dimensions
             will be preserved. Cannot be used with preserve_dims.
         preserve_dims: Dimensions to preserve when calculating REV. All other dimensions
@@ -516,7 +522,8 @@ def relative_economic_value(
             to the data dimensions and cannot contain negative or NaN values. Weights
             need not cover all dimensions being reduced; unweighted averaging is applied
             to dimensions not in weights.
-        threshold_dim: Name of the threshold dimension in output. Default is 'threshold'.
+        probability_threshold_dim: Name of the probability_threshold dimension in output.
+            Default is 'probability_threshold'.
             Must not exist as a dimension in fcst or obs.
         cost_loss_dim: Name of the cost-loss ratio dimension in output. Default is
             'cost_loss_ratio'. Must not exist as a dimension in fcst or obs.
@@ -529,30 +536,30 @@ def relative_economic_value(
             point where the decision threshold and cost-loss ratio are in balance. Requires
             thresholds and cost_loss_ratios to be identical. Only used when threshold
             is provided.
-        threshold_outputs: Optional list of specific threshold values to extract as
-            separate variables in the output Dataset. Values must exist in the threshold
-            parameter. Only used when threshold is provided.
+        probability_threshold_outputs: Optional list of specific probability_threshold values to extract as
+            separate variables in the output Dataset. Values must exist in the probability_threshold
+            parameter. Only used when probability_threshold is provided.
         check_args: If True (default), validates input arguments.
 
     Returns:
         XarrayLike:
-            - If generate_maximum_rev, generate_equilibrium_point_rev, or threshold_outputs
+            - If generate_maximum_rev, generate_equilibrium_point_rev, or probability_threshold_outputs
               is specified: xr.Dataset with data variables for each requested output
-            - If threshold is provided: xr.DataArray with dimensions from
-              reduce_dims/preserve_dims, plus cost_loss_dim and threshold_dim
-            - If threshold is None: xr.DataArray with dimensions from
+            - If probability_threshold is provided: xr.DataArray with dimensions from
+              reduce_dims/preserve_dims, plus cost_loss_dim and probability_threshold_dim
+            - If probability_threshold is None: xr.DataArray with dimensions from
               reduce_dims/preserve_dims, plus cost_loss_dim
 
     Raises:
-        ValueError: If fcst contains probabilistic values but threshold is None
-        ValueError: If fcst contains values outside [0, 1] when threshold is provided
-        ValueError: If fcst contains values other than 0 or 1 when threshold is None
+        ValueError: If fcst contains probabilistic values but probability_threshold is None
+        ValueError: If fcst contains values outside [0, 1] when probability_threshold is provided
+        ValueError: If fcst contains values other than 0 or 1 when probability_threshold is None
         ValueError: If obs contains values other than 0 or 1
         ValueError: If cost_loss_ratios not strictly monotonically increasing or not in [0, 1]
-        ValueError: If threshold values not strictly monotonically increasing or not in [0, 1]
-        ValueError: If threshold_dim or cost_loss_dim already exist in fcst or obs
+        ValueError: If probability_threshold values not strictly monotonically increasing or not in [0, 1]
+        ValueError: If probability_threshold_dim or cost_loss_dim already exist in fcst or obs
         ValueError: If both reduce_dims and preserve_dims are specified
-        ValueError: If threshold_outputs values are not in threshold parameter
+        ValueError: If probability_threshold_outputs values are not in probability_threshold parameter
         ValueError: If generate_equilibrium_point_rev=True but thresholds don't match cost_loss_ratios
 
     Notes:
@@ -589,7 +596,7 @@ def relative_economic_value(
         >>> result = relative_economic_value(
         ...     fcst_prob, obs,
         ...     cost_loss_ratios=cost_loss_ratios,
-        ...     threshold=thresholds,
+        ...     probability_threshold=thresholds,
         ...     generate_maximum_rev=True,
         ... )
         >>> result
@@ -617,12 +624,12 @@ def relative_economic_value(
             fcst,
             obs,
             cost_loss_ratios,
-            threshold,
-            threshold_dim,
+            probability_threshold,
+            probability_threshold_dim,
             cost_loss_dim,
             weights,
             generate_equilibrium_point_rev,
-            threshold_outputs,
+            probability_threshold_outputs,
         )
 
     if isinstance(fcst, xr.Dataset) and isinstance(obs, xr.Dataset):
@@ -643,15 +650,15 @@ def relative_economic_value(
                     fcst_aligned[fvar],
                     obs_aligned[ovar],
                     cost_loss_ratios=cost_loss_ratios,
-                    threshold=threshold,
+                    probability_threshold=probability_threshold,
                     reduce_dims=reduce_dims,
                     preserve_dims=preserve_dims,
                     weights=weights,
-                    threshold_dim=threshold_dim,
+                    probability_threshold_dim=probability_threshold_dim,
                     cost_loss_dim=cost_loss_dim,
                     generate_maximum_rev=generate_maximum_rev,
                     generate_equilibrium_point_rev=generate_equilibrium_point_rev,
-                    threshold_outputs=threshold_outputs,
+                    probability_threshold_outputs=probability_threshold_outputs,
                     check_args=False,  # Already validated
                 )
 
@@ -665,15 +672,15 @@ def relative_economic_value(
                 fcst[var],
                 obs,
                 cost_loss_ratios=cost_loss_ratios,
-                threshold=threshold,
+                probability_threshold=probability_threshold,
                 reduce_dims=reduce_dims,
                 preserve_dims=preserve_dims,
                 weights=weights,
-                threshold_dim=threshold_dim,
+                probability_threshold_dim=probability_threshold_dim,
                 cost_loss_dim=cost_loss_dim,
                 generate_maximum_rev=generate_maximum_rev,
                 generate_equilibrium_point_rev=generate_equilibrium_point_rev,
-                threshold_outputs=threshold_outputs,
+                probability_threshold_outputs=probability_threshold_outputs,
                 check_args=False,  # Already validated
             )
         result = xr.Dataset(result_dict)
@@ -686,15 +693,15 @@ def relative_economic_value(
                 fcst,
                 obs[var],
                 cost_loss_ratios=cost_loss_ratios,
-                threshold=threshold,
+                probability_threshold=probability_threshold,
                 reduce_dims=reduce_dims,
                 preserve_dims=preserve_dims,
                 weights=weights,
-                threshold_dim=threshold_dim,
+                probability_threshold_dim=probability_threshold_dim,
                 cost_loss_dim=cost_loss_dim,
                 generate_maximum_rev=generate_maximum_rev,
                 generate_equilibrium_point_rev=generate_equilibrium_point_rev,
-                threshold_outputs=threshold_outputs,
+                probability_threshold_outputs=probability_threshold_outputs,
                 check_args=False,  # Already validated
             )
         result = xr.Dataset(result_dict)
@@ -715,17 +722,17 @@ def relative_economic_value(
     )
 
     # Handle probabilistic vs binary forecasts
-    if threshold is not None:
+    if probability_threshold is not None:
         # Probabilistic forecast: discretize at multiple thresholds
-        if isinstance(threshold, (float, int)):
-            threshold = [threshold]
+        if isinstance(probability_threshold, (float, int)):
+            probability_threshold = [probability_threshold]
 
         # Discretize forecasts at each threshold, adding a threshold dim
-        binary_fcst = cast(xr.DataArray, binary_discretise(fcst, threshold, ">="))
+        binary_fcst = cast(xr.DataArray, binary_discretise(fcst, probability_threshold, ">="))
 
         # Rename the threshold dimension if needed
-        if threshold_dim != "threshold":
-            binary_fcst = binary_fcst.rename({"threshold": threshold_dim})
+        if probability_threshold_dim != "threshold":
+            binary_fcst = binary_fcst.rename({"threshold": probability_threshold_dim})
 
         # Calculate REV for each threshold
         # The threshold dimension should be PRESERVED in output
@@ -739,15 +746,15 @@ def relative_economic_value(
         )
 
         # Post-process for derived metrics or threshold outputs
-        if generate_maximum_rev or generate_equilibrium_point_rev or threshold_outputs:
+        if generate_maximum_rev or generate_equilibrium_point_rev or probability_threshold_outputs:
             result = _create_output_dataset(
                 rev,
-                threshold,
+                probability_threshold,
                 cost_loss_ratios,
                 generate_maximum_rev,
                 generate_equilibrium_point_rev,
-                threshold_outputs,
-                threshold_dim,
+                probability_threshold_outputs,
+                probability_threshold_dim,
                 cost_loss_dim,
             )
             return result

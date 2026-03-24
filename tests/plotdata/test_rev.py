@@ -355,14 +355,14 @@ class TestScienceCalculations:
             fcst,
             obs,
             cost_loss_ratios=single_alpha,
-            threshold=[0.5],  # to trigger probabilistic branch
+            probability_threshold=[0.5],  # to trigger probabilistic branch
             check_args=True,
         )
 
         expected = xr.DataArray(
             [[1.0]],
-            dims=["threshold", "cost_loss_ratio"],
-            coords={"threshold": [0.5], "cost_loss_ratio": [0.3]},
+            dims=["probability_threshold", "cost_loss_ratio"],
+            coords={"probability_threshold": [0.5], "cost_loss_ratio": [0.3]},
         )
 
         xr.testing.assert_allclose(actual, expected)
@@ -412,8 +412,8 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            threshold=threshold,
-            threshold_outputs=[threshold],
+            probability_threshold=threshold,
+            probability_threshold_outputs=[threshold],
         )
         expected = xr.Dataset(
             data_vars={"threshold_0_5": (["cost_loss_ratio"], [1.0, 1.0, 1.0])},
@@ -429,7 +429,11 @@ class TestREVSpecialFeatures:
         cost_loss_ratios = [0.2, 0.5, 0.8]
 
         actual = relative_economic_value(
-            fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=thresholds, threshold_outputs=[0.5]
+            fcst,
+            obs,
+            cost_loss_ratios=cost_loss_ratios,
+            probability_threshold=thresholds,
+            probability_threshold_outputs=[0.5],
         )
         expected = xr.Dataset(
             data_vars={"threshold_0_5": (["cost_loss_ratio"], [1.0, 1.0, 1.0])},
@@ -448,8 +452,8 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            threshold=thresholds,
-            threshold_outputs=[0.4, 0.8],
+            probability_threshold=thresholds,
+            probability_threshold_outputs=[0.4, 0.8],
         )
         expected = xr.Dataset(
             data_vars={
@@ -476,13 +480,15 @@ class TestREVSpecialFeatures:
         thresholds = np.arange(0.1, 1.0, 0.1)
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
-        actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=thresholds)
+        actual_full_result = relative_economic_value(
+            fcst, obs, cost_loss_ratios=cost_loss_ratios, probability_threshold=thresholds
+        )
 
         actual_max_result = relative_economic_value(
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            threshold=thresholds,
+            probability_threshold=thresholds,
             generate_maximum_rev=True,
         )
 
@@ -502,9 +508,9 @@ class TestREVSpecialFeatures:
 
         expected_full_result = xr.DataArray(
             expected_full_result_values,
-            dims=["threshold", "cost_loss_ratio"],
+            dims=["probability_threshold", "cost_loss_ratio"],
             coords={
-                "threshold": np.arange(0.1, 1.0, 0.1),
+                "probability_threshold": np.arange(0.1, 1.0, 0.1),
                 "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8],
             },
         )
@@ -533,13 +539,15 @@ class TestREVSpecialFeatures:
         thresholds = [0.2, 0.4, 0.6, 0.8]
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
-        actual_full_result = relative_economic_value(fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=thresholds)
+        actual_full_result = relative_economic_value(
+            fcst, obs, cost_loss_ratios=cost_loss_ratios, probability_threshold=thresholds
+        )
 
         actual_rational_result = relative_economic_value(
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            threshold=thresholds,
+            probability_threshold=thresholds,
             generate_maximum_rev=True,
             generate_equilibrium_point_rev=True,
         )
@@ -555,9 +563,9 @@ class TestREVSpecialFeatures:
 
         expected_full_result = xr.DataArray(
             expected_full_result_values,
-            dims=["threshold", "cost_loss_ratio"],
+            dims=["probability_threshold", "cost_loss_ratio"],
             coords={
-                "threshold": [0.2, 0.4, 0.6, 0.8],
+                "probability_threshold": [0.2, 0.4, 0.6, 0.8],
                 "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8],
             },
         )
@@ -568,7 +576,7 @@ class TestREVSpecialFeatures:
                 "equilibrium_point": (["cost_loss_ratio"], [0.0, 0.3, 0.2, 0.0]),
             },
             coords={
-                "threshold": (["cost_loss_ratio"], [0.2, 0.4, 0.6, 0.8]),
+                "probability_threshold": (["cost_loss_ratio"], [0.2, 0.4, 0.6, 0.8]),
                 "cost_loss_ratio": [0.2, 0.4, 0.6, 0.8],
             },
         )
@@ -619,7 +627,7 @@ class TestREVSpecialFeatures:
                 {"generate_maximum_rev": True, "generate_equilibrium_point_rev": True},
                 {"maximum": ("alpha",), "equilibrium_point": ("alpha",)},
             ),
-            ("decision_threshold", "alpha", {"threshold_outputs": [0.5]}, {"threshold_0_5": ("alpha",)}),
+            ("decision_threshold", "alpha", {"probability_threshold_outputs": [0.5]}, {"threshold_0_5": ("alpha",)}),
         ],
     )
     def test_custom_dimension_names(self, threshold_dim, cost_loss_dim, kwargs, expected_dims_by_var):
@@ -632,8 +640,8 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=matching_values,
-            threshold=matching_values,
-            threshold_dim=threshold_dim,
+            probability_threshold=matching_values,
+            probability_threshold_dim=threshold_dim,
             cost_loss_dim=cost_loss_dim,
             **kwargs,
         )
@@ -815,13 +823,13 @@ class TestDatasetInputs:
             }
         )
 
-        actual = relative_economic_value(fcst, obs_ds, cost_loss_ratios=[0.3, 0.7], threshold=[0.5])
+        actual = relative_economic_value(fcst, obs_ds, cost_loss_ratios=[0.3, 0.7], probability_threshold=[0.5])
         expected = xr.Dataset(
             data_vars={
-                "station_data": (["threshold", "cost_loss_ratio"], [[1.0, 1.0]]),
-                "radar_data": (["threshold", "cost_loss_ratio"], [[-7 / 3, -7 / 3]]),
+                "station_data": (["probability_threshold", "cost_loss_ratio"], [[1.0, 1.0]]),
+                "radar_data": (["probability_threshold", "cost_loss_ratio"], [[-7 / 3, -7 / 3]]),
             },
-            coords={"threshold": [0.5], "cost_loss_ratio": [0.3, 0.7]},
+            coords={"probability_threshold": [0.5], "cost_loss_ratio": [0.3, 0.7]},
         )
 
         xr.testing.assert_allclose(actual, expected)
@@ -841,29 +849,29 @@ class TestDatasetInputs:
             }
         )
 
-        actual = relative_economic_value(fcst_ds, obs_ds, cost_loss_ratios=[0.3, 0.7], threshold=[0.5])
+        actual = relative_economic_value(fcst_ds, obs_ds, cost_loss_ratios=[0.3, 0.7], probability_threshold=[0.5])
 
         expected = xr.Dataset(
             data_vars={
                 "access__vs__radar_data": (
-                    ["threshold", "cost_loss_ratio"],
+                    ["probability_threshold", "cost_loss_ratio"],
                     np.array([[-11 / 6, -7 / 6]]),
                 ),
                 "access__vs__station_data": (
-                    ["threshold", "cost_loss_ratio"],
+                    ["probability_threshold", "cost_loss_ratio"],
                     np.array([[-1 / 6, 0.5]]),
                 ),
                 "ecmwf__vs__radar_data": (
-                    ["threshold", "cost_loss_ratio"],
+                    ["probability_threshold", "cost_loss_ratio"],
                     np.array([[0.5, -1 / 6]]),
                 ),
                 "ecmwf__vs__station_data": (
-                    ["threshold", "cost_loss_ratio"],
+                    ["probability_threshold", "cost_loss_ratio"],
                     np.array([[-7 / 6, -11 / 6]]),
                 ),
             },
             coords={
-                "threshold": [0.5],
+                "probability_threshold": [0.5],
                 "cost_loss_ratio": [0.3, 0.7],
             },
         )
@@ -1014,9 +1022,9 @@ class TestErrorHandling:
     """Tests that check that error handling is done correctly"""
 
     @pytest.mark.parametrize(
-        "fcst_data,obs_data,cost_loss_ratios,threshold,threshold_outputs,expected_error",
+        "fcst_data,obs_data,cost_loss_ratios,probability_threshold,probability_threshold_outputs,expected_error",
         [
-            # Probabilistic forecasts without threshold
+            # Probabilistic forecasts without probability_threshold
             ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, None, "contains values that are not in the set {0, 1, np.nan}"),
             # Cost-loss ratios out of range
             ([0, 1, 1], [0, 1, 0], [-0.1, 0.5, 1.2], None, None, "between 0 and 1"),
@@ -1030,32 +1038,32 @@ class TestErrorHandling:
             ([0, 1, 1], [0, 1, 2], [0.5], None, None, "contains values that are not in the set {0, 1, np.nan}"),
             # Invalid forecast values
             ([0, 1, 2], [0, 1, 1], [0.5], None, None, "contains values that are not in the set {0, 1, np.nan}"),
-            # threshold_outputs not in threshold
+            # probability_threshold_outputs not in probability_threshold
             (
                 [0.2, 0.8],
                 [0, 1],
                 [0.5],
                 [0.2, 0.5],
                 [0.7],
-                "values in threshold_outputs must be in the supplied threshold parameter",
+                "values in probability_threshold_outputs must be in the supplied probability_threshold parameter",
             ),
-            # threshold_outputs without threshold
+            # probability_threshold_outputs without probability_threshold
             (
                 [0, 1],
                 [0, 1],
                 [0.5],
                 None,
                 [0.5],
-                "threshold_outputs can only be used when threshold parameter is provided",
+                "probability_threshold_outputs can only be used when probability_threshold parameter is provided",
             ),
-            # Forecast outside [0,1] when threshold provided
+            # Forecast outside [0,1] when probability_threshold provided
             (
                 [-0.1, 1.2],
                 [0, 1],
                 [0.1, 0.5],
                 [0.5],
                 None,
-                "When threshold is provided, fcst must contain values between 0 and 1",
+                "When probability_threshold is provided, fcst must contain values between 0 and 1",
             ),
         ],
         ids=[
@@ -1072,13 +1080,19 @@ class TestErrorHandling:
         ],
     )
     def test_input_validation(
-        self, fcst_data, obs_data, cost_loss_ratios, threshold, threshold_outputs, expected_error
+        self,
+        fcst_data,
+        obs_data,
+        cost_loss_ratios,
+        probability_threshold,
+        probability_threshold_outputs,
+        expected_error,
     ):
         """
         Test that relative_economic_value validates inputs correctly.
 
         Validates that the function raises ValueError for:
-        - Probabilistic forecasts (values between 0 and 1) without threshold parameter
+        - Probabilistic forecasts (values between 0 and 1) without probability_threshold parameter
         - Cost-loss ratios None, outside [0, 1] range or not strictly monotonically increasing
         - Threshold values outside [0, 1] range or not strictly monotonically increasing
         - Forecast or observation values outside {0, 1, NaN}
@@ -1088,7 +1102,11 @@ class TestErrorHandling:
 
         with pytest.raises(ValueError, match=expected_error):
             relative_economic_value(
-                fcst, obs, cost_loss_ratios=cost_loss_ratios, threshold=threshold, threshold_outputs=threshold_outputs
+                fcst,
+                obs,
+                cost_loss_ratios=cost_loss_ratios,
+                probability_threshold=probability_threshold,
+                probability_threshold_outputs=probability_threshold_outputs,
             )
 
     def test_weights_negative(self, make_contingency_data):
@@ -1107,16 +1125,16 @@ class TestErrorHandling:
     @pytest.mark.parametrize(
         "array_name,forbidden_dim",
         [
-            ("fcst", "threshold"),
+            ("fcst", "probability_threshold"),
             ("fcst", "cost_loss_ratio"),
-            ("obs", "threshold"),
+            ("obs", "probability_threshold"),
             ("obs", "cost_loss_ratio"),
-            ("weights", "threshold"),
+            ("weights", "probability_threshold"),
             ("weights", "cost_loss_ratio"),
         ],
     )
     def test_forbidden_dimensions(self, array_name, forbidden_dim):
-        """Test that 'threshold' and 'cost_loss_ratio' cannot be dimensions in fcst, obs, or weights."""
+        """Test that 'probability_threshold' and 'cost_loss_ratio' cannot be dimensions in fcst, obs, or weights."""
         # Default valid arrays
         fcst = xr.DataArray([0, 1], dims=["time"])
         obs = xr.DataArray([0, 1], dims=["time"])
@@ -1143,7 +1161,7 @@ class TestErrorHandling:
                 fcst,
                 obs,
                 cost_loss_ratios=[0.3, 0.5],
-                threshold=[0.2, 0.5],
+                probability_threshold=[0.2, 0.5],
                 generate_equilibrium_point_rev=True,
             )
 
@@ -1205,7 +1223,7 @@ class TestErrorHandling:
             fcst,
             obs,
             cost_loss_ratios=[0.1, 0.5],
-            threshold=None,
+            probability_threshold=None,
             check_args=False,  # skip validation
         )
 
@@ -1222,7 +1240,7 @@ class TestErrorHandling:
 
         with pytest.raises(
             ValueError,
-            match="generate_equilibrium_point_rev=True can only be used when threshold parameter is provided",
+            match="generate_equilibrium_point_rev=True can only be used when probability_threshold parameter",
         ):
             relative_economic_value(
                 fcst=fcst,
@@ -1369,11 +1387,11 @@ class TestLegacyJive:
         actual = relative_economic_value(
             fcst,
             obs,
-            threshold=thresholds,
+            probability_threshold=thresholds,
             cost_loss_ratios=cost_loss_ratios,
             preserve_dims=preserve_dims,
             generate_maximum_rev=generate_maximum_rev,
-            threshold_outputs=threshold_outputs,
+            probability_threshold_outputs=threshold_outputs,
         )
         xr.testing.assert_allclose(actual, expected)
 
