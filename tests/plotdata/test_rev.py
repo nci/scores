@@ -355,7 +355,7 @@ class TestScienceCalculations:
             fcst,
             obs,
             cost_loss_ratios=single_alpha,
-            probability_threshold=[0.5],  # to trigger probabilistic branch
+            probability_thresholds=[0.5],  # to trigger probabilistic branch
             check_args=True,
         )
 
@@ -412,7 +412,7 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            probability_threshold=threshold,
+            probability_thresholds=threshold,
             probability_threshold_outputs=[threshold],
         )
         expected = xr.Dataset(
@@ -432,7 +432,7 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            probability_threshold=thresholds,
+            probability_thresholds=thresholds,
             probability_threshold_outputs=[0.5],
         )
         expected = xr.Dataset(
@@ -452,7 +452,7 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            probability_threshold=thresholds,
+            probability_thresholds=thresholds,
             probability_threshold_outputs=[0.4, 0.8],
         )
         expected = xr.Dataset(
@@ -481,14 +481,14 @@ class TestREVSpecialFeatures:
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
         actual_full_result = relative_economic_value(
-            fcst, obs, cost_loss_ratios=cost_loss_ratios, probability_threshold=thresholds
+            fcst, obs, cost_loss_ratios=cost_loss_ratios, probability_thresholds=thresholds
         )
 
         actual_max_result = relative_economic_value(
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            probability_threshold=thresholds,
+            probability_thresholds=thresholds,
             generate_maximum_rev=True,
         )
 
@@ -540,14 +540,14 @@ class TestREVSpecialFeatures:
         cost_loss_ratios = [0.2, 0.4, 0.6, 0.8]
 
         actual_full_result = relative_economic_value(
-            fcst, obs, cost_loss_ratios=cost_loss_ratios, probability_threshold=thresholds
+            fcst, obs, cost_loss_ratios=cost_loss_ratios, probability_thresholds=thresholds
         )
 
         actual_rational_result = relative_economic_value(
             fcst,
             obs,
             cost_loss_ratios=cost_loss_ratios,
-            probability_threshold=thresholds,
+            probability_thresholds=thresholds,
             generate_maximum_rev=True,
             generate_equilibrium_point_rev=True,
         )
@@ -640,7 +640,7 @@ class TestREVSpecialFeatures:
             fcst,
             obs,
             cost_loss_ratios=matching_values,
-            probability_threshold=matching_values,
+            probability_thresholds=matching_values,
             probability_threshold_dim=threshold_dim,
             cost_loss_dim=cost_loss_dim,
             **kwargs,
@@ -823,7 +823,7 @@ class TestDatasetInputs:
             }
         )
 
-        actual = relative_economic_value(fcst, obs_ds, cost_loss_ratios=[0.3, 0.7], probability_threshold=[0.5])
+        actual = relative_economic_value(fcst, obs_ds, cost_loss_ratios=[0.3, 0.7], probability_thresholds=[0.5])
         expected = xr.Dataset(
             data_vars={
                 "station_data": (["probability_threshold", "cost_loss_ratio"], [[1.0, 1.0]]),
@@ -849,7 +849,7 @@ class TestDatasetInputs:
             }
         )
 
-        actual = relative_economic_value(fcst_ds, obs_ds, cost_loss_ratios=[0.3, 0.7], probability_threshold=[0.5])
+        actual = relative_economic_value(fcst_ds, obs_ds, cost_loss_ratios=[0.3, 0.7], probability_thresholds=[0.5])
 
         expected = xr.Dataset(
             data_vars={
@@ -1022,7 +1022,7 @@ class TestErrorHandling:
     """Tests that check that error handling is done correctly"""
 
     @pytest.mark.parametrize(
-        "fcst_data,obs_data,cost_loss_ratios,probability_threshold,probability_threshold_outputs,expected_error",
+        "fcst_data,obs_data,cost_loss_ratios,probability_thresholds,probability_threshold_outputs,expected_error",
         [
             # Probabilistic forecasts without probability_threshold
             ([0.2, 0.8, 0.6], [0, 1, 1], [0.5], None, None, "contains values that are not in the set {0, 1, np.nan}"),
@@ -1045,7 +1045,7 @@ class TestErrorHandling:
                 [0.5],
                 [0.2, 0.5],
                 [0.7],
-                "values in probability_threshold_outputs must be in the supplied probability_threshold parameter",
+                "values in probability_threshold_outputs must be in the supplied probability_thresholds parameter",
             ),
             # probability_threshold_outputs without probability_threshold
             (
@@ -1054,7 +1054,7 @@ class TestErrorHandling:
                 [0.5],
                 None,
                 [0.5],
-                "probability_threshold_outputs can only be used when probability_threshold parameter is provided",
+                "probability_threshold_outputs can only be used when probability_thresholds parameter is provided",
             ),
             # Forecast outside [0,1] when probability_threshold provided
             (
@@ -1063,7 +1063,7 @@ class TestErrorHandling:
                 [0.1, 0.5],
                 [0.5],
                 None,
-                "When probability_threshold is provided, fcst must contain values between 0 and 1",
+                "When probability_thresholds is provided, fcst must contain values between 0 and 1",
             ),
         ],
         ids=[
@@ -1084,7 +1084,7 @@ class TestErrorHandling:
         fcst_data,
         obs_data,
         cost_loss_ratios,
-        probability_threshold,
+        probability_thresholds,
         probability_threshold_outputs,
         expected_error,
     ):
@@ -1092,7 +1092,7 @@ class TestErrorHandling:
         Test that relative_economic_value validates inputs correctly.
 
         Validates that the function raises ValueError for:
-        - Probabilistic forecasts (values between 0 and 1) without probability_threshold parameter
+        - Probabilistic forecasts (values between 0 and 1) without probability_thresholds parameter
         - Cost-loss ratios None, outside [0, 1] range or not strictly monotonically increasing
         - Threshold values outside [0, 1] range or not strictly monotonically increasing
         - Forecast or observation values outside {0, 1, NaN}
@@ -1105,7 +1105,7 @@ class TestErrorHandling:
                 fcst,
                 obs,
                 cost_loss_ratios=cost_loss_ratios,
-                probability_threshold=probability_threshold,
+                probability_thresholds=probability_thresholds,
                 probability_threshold_outputs=probability_threshold_outputs,
             )
 
@@ -1161,7 +1161,7 @@ class TestErrorHandling:
                 fcst,
                 obs,
                 cost_loss_ratios=[0.3, 0.5],
-                probability_threshold=[0.2, 0.5],
+                probability_thresholds=[0.2, 0.5],
                 generate_equilibrium_point_rev=True,
             )
 
@@ -1223,7 +1223,7 @@ class TestErrorHandling:
             fcst,
             obs,
             cost_loss_ratios=[0.1, 0.5],
-            probability_threshold=None,
+            probability_thresholds=None,
             check_args=False,  # skip validation
         )
 
@@ -1240,7 +1240,7 @@ class TestErrorHandling:
 
         with pytest.raises(
             ValueError,
-            match="generate_equilibrium_point_rev=True can only be used when probability_threshold parameter",
+            match="generate_equilibrium_point_rev=True can only be used when probability_thresholds parameter",
         ):
             relative_economic_value(
                 fcst=fcst,
@@ -1387,7 +1387,7 @@ class TestLegacyJive:
         actual = relative_economic_value(
             fcst,
             obs,
-            probability_threshold=thresholds,
+            probability_thresholds=thresholds,
             cost_loss_ratios=cost_loss_ratios,
             preserve_dims=preserve_dims,
             generate_maximum_rev=generate_maximum_rev,
