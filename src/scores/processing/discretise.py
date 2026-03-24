@@ -2,7 +2,6 @@
 
 import operator
 from collections.abc import Iterable, Sequence
-from numbers import Real
 from typing import Callable, Optional, Union
 
 import numpy as np
@@ -133,7 +132,7 @@ def comparative_discretise(
 
 def binary_discretise(
     data: XarrayLike,
-    thresholds: Real | Sequence[Real],
+    thresholds: float | Sequence[float],
     mode: Union[Callable, str],
     *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,

@@ -17,7 +17,6 @@ Scores supports complex, weighted, multi-dimensional data, including in continge
 Users can supply their own event operators to the top-level module functions.
 """
 # ruff: noqa: W291
-# pylint: disable=too-many-lines
 
 import operator
 import warnings
