@@ -141,6 +141,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - &mdash;
   - &mdash;
   - &mdash;
+* - Relative Economic Value
+  - [API](api.md#scores.continuous.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.continuous.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -300,6 +308,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.probability.roc_curve_data)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
+* - Relative Economic Value
+  - [API](api.md#scores.probability.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.probability.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -603,6 +619,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.categorical.probability_of_false_detection)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
+* - Relative Economic Value
+  - [API](api.md#scores.categorical.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.categorical.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
 * - Risk Matrix Score
   -
   -
