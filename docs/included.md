@@ -734,6 +734,9 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Name (Alphabetical order)
   - API
   - Utilised For
+* - Aggregate
+  - [API](api.md#scores.processing.aggregate)
+  - Utilised to calculate weighted or unweighted means in most verification scores
 * - Binary Discretise
   - [API](api.md#scores.processing.binary_discretise)
   - Receiver (Relative) Operating Characteristic (ROC)
