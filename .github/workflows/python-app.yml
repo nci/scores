@@ -41,7 +41,7 @@ jobs:
         parallel: true
     - name: Test tutorial notebooks with pytest
       run: |
-        pytest --nbmake tutorials/
+        pytest --nbmake docs/tutorials/
     - name: Test again with without dask and numba installed
       run: |
         # editable is necessary as pytest will run against the installed
