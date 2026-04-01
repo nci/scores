@@ -126,7 +126,7 @@ To ensure pre-commit has been configured correctly, run the command below and co
 pre-commit run --all
 ```
 
-## Set up the git commit template (optional)
+### Set up the git commit template (optional)
 Using a git commit template is optional, but can streamline the process of writing the git commit messages. Important information should be put into commit messages rather than left solely to the issue tracker or pull request tracker. While today we rely on the Github system, one day that could change. While we don't ask developers to fully duplicate information between the tracker and the git log, a summary of pertinent information should still be included in the commit messages. The template is a helpful prompt for what you might want to include.
 
 To configure git to use the template for this project, run:
