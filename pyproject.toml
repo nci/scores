@@ -67,7 +67,6 @@ all = ["scores[dev,tutorial,fast]"]
 
 [tool.hatch.build]
 exclude = [
-    "/tutorials/",
     "/docs/",
     "/tests/"
 ]
@@ -159,12 +158,12 @@ addopts = [
     '--cov-report=term-missing',
     '--junitxml=report.xml',
     # Ignore notebooks which depend on external data for E2E tests
-    '--ignore=tutorials/First_Data_Fetching.ipynb',
-    '--ignore=tutorials/Mean_Squared_Error.ipynb',
-    '--ignore=tutorials/Root_Mean_Squared_Error.ipynb',
-    '--ignore=tutorials/Weighting_Results.ipynb',
-    '--ignore=tutorials/Mean_Absolute_Error.ipynb',
-    '--ignore=tutorials/Additive_and_multiplicative_bias.ipynb'
+    '--ignore=docs/tutorials/First_Data_Fetching.ipynb',
+    '--ignore=docs/tutorials/Mean_Squared_Error.ipynb',
+    '--ignore=docs/tutorials/Root_Mean_Squared_Error.ipynb',
+    '--ignore=docs/tutorials/Weighting_Results.ipynb',
+    '--ignore=docs/tutorials/Mean_Absolute_Error.ipynb',
+    '--ignore=docs/tutorials/Additive_and_multiplicative_bias.ipynb'
 ]
 
 [tool.pylint.master]
