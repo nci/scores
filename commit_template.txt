@@ -1,0 +1,6 @@
+# Short description of commit
+#
+# Longer description of the purpose of the change (optional)
+#
+# AI Usage Summary: (name and version of tool used, summary of how tool was used)
+# AI Usage Summary: nil AI was used
