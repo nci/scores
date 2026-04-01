@@ -115,11 +115,13 @@ An editable installation is recommended. This is deliberate, to make the process
 To automate linter and fixer checks this project uses `pre-commit` which is set up to execute after every local commit. This ensures that code standards are flagged at the development stage rather than in the project CI/CD pipeline. Although it is optional we highly recommended to use the tool before pushing changes to the remote.
 
 To set up pre-commit, run the following command:
+
 ```bash
 pre-commit install -t pre-commit -t pre-push
 ```
 
 To ensure pre-commit has been configured correctly, run the command below and confirm that pre-commit runs `ruff check`, `ruff format` and `ty-check`. 
+
 ```bash
 pre-commit run --all
 ```
@@ -128,10 +130,10 @@ pre-commit run --all
 Using a git commit template is optional, but can streamline the process of writing the git commit messages. Important information should be put into commit messages rather than left solely to the issue tracker or pull request tracker. While today we rely on the Github system, one day that could change. While we don't ask developers to fully duplicate information between the tracker and the git log, a summary of pertinent information should still be included in the commit messages. The template is a helpful prompt for what you might want to include.
 
 To configure git to use the template for this project, run:
+
 ```bash
 git config commit.template commit_template.txt
 ```
-
 
 ## Pull Request Etiquette
 
