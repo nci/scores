@@ -621,7 +621,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * -
     - CDF Envelope
   - [API](api.md#scores.processing.cdf.cdf_envelope)
-  - Forecast CDFs for real-valued random variables.
+  - Reconstructs CDFs from known points along a predictive distribution.
 * -
     - Decreasing CDFs
   - [API](api.md#scores.processing.cdf.decreasing_cdfs)
