@@ -3,11 +3,17 @@ Contains unit tests for scores.probability.continuous.quantile_interval_score an
 scores.probability.continuous.interval_score
 """
 
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here  # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+
 import pytest
 import xarray as xr
 
 from scores.continuous import interval_score, quantile_interval_score
-from scores.utils import HAS_DASK, DimensionError, da
+from scores.utils import DimensionError
 from tests.continuous import quantile_interval_score_test_data as qistd
 
 
@@ -185,7 +191,7 @@ def test_qsf_calculations(
 def test_quantile_interval_score_dask():
     """Tests quantile_interval_score works with dask"""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = quantile_interval_score(
@@ -199,7 +205,7 @@ def test_quantile_interval_score_dask():
         weights=None,
     )
     for var in result.data_vars:
-        assert isinstance(result[var].data, da.Array)
+        assert isinstance(result[var].data, dask.array.Array)
     result = result.compute()
     xr.testing.assert_allclose(result, qistd.EXPECTED_2D)
 

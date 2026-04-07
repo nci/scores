@@ -4,11 +4,16 @@ Contains unit tests for scores.probability.crps
 """
 
 try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+try:
     import numba
 
     from scores.probability.crps_numba import crps_cdf_exact_fast
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    numba = "Unavailable"  # type: ignore  # pylint: disable=invalid-name  # pragma: no cover
+    numba = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import warnings
 from unittest.mock import patch
@@ -32,7 +37,6 @@ from scores.probability.crps_impl import (
     crps_cdf_trapz,
     crps_step_threshold_weight,
 )
-from scores.utils import HAS_DASK, da
 from tests.probability import crps_test_data
 
 
@@ -117,7 +121,7 @@ def test_crps_cdf_exact_slow():
 def test_crps_cdf_exact_fast_dask():
     """Tests `crps_cdf_exact_fast` works with Dask."""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     if numba == "Unavailable":  # pragma: no cover
         pytest.skip("Numba unavailable, could not run test")  # pragma: no cover
@@ -129,7 +133,7 @@ def test_crps_cdf_exact_fast_dask():
         "x",
         include_components=True,
     )
-    assert isinstance(result.total.data, da.Array)
+    assert isinstance(result.total.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
@@ -141,7 +145,7 @@ def test_crps_cdf_exact_fast_dask():
         "x",
         include_components=False,
     )
-    assert isinstance(result2.total.data, da.Array)
+    assert isinstance(result2.total.data, dask.array.Array)
     result2 = result2.compute()
     assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
@@ -150,7 +154,7 @@ def test_crps_cdf_exact_fast_dask():
 def test_crps_cdf_exact_slow_dask():
     """Tests `crps_cdf_exact_slow` works with Dask."""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = crps_cdf_exact_slow(
@@ -160,7 +164,7 @@ def test_crps_cdf_exact_slow_dask():
         "x",
         include_components=True,
     )
-    assert isinstance(result.total.data, da.Array)
+    assert isinstance(result.total.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.total.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPS_EXACT)
@@ -172,7 +176,7 @@ def test_crps_cdf_exact_slow_dask():
         "x",
         include_components=False,
     )
-    assert isinstance(result2.total.data, da.Array)
+    assert isinstance(result2.total.data, dask.array.Array)
     result2 = result2.compute()
     assert isinstance(result2.total.data, np.ndarray)
     assert list(result2.data_vars) == ["total"]
@@ -688,11 +692,7 @@ def test_crps_cdf_brier_raises(
     """Check that `crps_cdf_brier_decomposition` raises exceptions as expected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
         crps_cdf_brier_decomposition(
-            fcst,
-            obs,
-            threshold_dim=threshold_dim,
-            fcst_fill_method=fcst_fill_method,
-            reduce_dims=dims,
+            fcst, obs, threshold_dim=threshold_dim, fcst_fill_method=fcst_fill_method, reduce_dims=dims
         )
 
 
@@ -706,24 +706,13 @@ def test_crps_cdf_brier_raises(
 def test_crps_cdf_brier_decomposition(dims, expected):
     """Tests `crps_cdf_brier_decomposition` with a variety of inputs."""
     result = crps_cdf_brier_decomposition(
-        crps_test_data.DA_FCST_CRPS_BD,
-        crps_test_data.DA_OBS_CRPS_BD,
-        threshold_dim="x",
-        preserve_dims=dims,
+        crps_test_data.DA_FCST_CRPS_BD, crps_test_data.DA_OBS_CRPS_BD, threshold_dim="x", preserve_dims=dims
     )
     xr.testing.assert_allclose(result, expected)
 
 
 @pytest.mark.parametrize(
-    (
-        "fcst",
-        "obs",
-        "method",
-        "weight",
-        "preserve_dims",
-        "include_components",
-        "expected",
-    ),
+    ("fcst", "obs", "method", "weight", "preserve_dims", "include_components", "expected"),
     [
         (
             crps_test_data.DA_FCST_CRPSENS,
@@ -835,7 +824,7 @@ def test_crps_for_ensemble_raises():
 
 
 scenarios_crps_ensemble_dask = [[None, None]]
-if HAS_DASK:
+if not dask == "Unavailable":
     scenarios_crps_ensemble_dask = [
         (crps_test_data.DA_FCST_CRPSENS.chunk(), crps_test_data.DA_OBS_CRPSENS.chunk()),
         (crps_test_data.DA_FCST_CRPSENS, crps_test_data.DA_OBS_CRPSENS.chunk()),
@@ -843,10 +832,12 @@ if HAS_DASK:
     ]
 
 
-@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 @pytest.mark.parametrize(("fcst", "obs"), scenarios_crps_ensemble_dask)
 def test_crps_for_ensemble_dask(fcst, obs):
     """Tests `crps_for_ensemble` works with dask."""
+
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = crps_for_ensemble(
         fcst=fcst,
@@ -855,7 +846,7 @@ def test_crps_for_ensemble_dask(fcst, obs):
         method="ecdf",
         preserve_dims="all",
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_CRPSENS_ECDF)
@@ -1005,45 +996,10 @@ def test_crps_for_ensemble_dask(fcst, obs):
             False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
-        # Test decomposition with DataArrays
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            "upper",
-            1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
-        ),
-        # Test decomposition with Datasets
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            "upper",
-            1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
-        ),
     ],
 )
 def test_tail_tw_crps_for_ensemble(
-    fcst,
-    obs,
-    method,
-    tail,
-    threshold,
-    preserve_dims,
-    reduce_dims,
-    weights,
-    include_components,
-    expected,
+    fcst, obs, method, tail, threshold, preserve_dims, reduce_dims, weights, include_components, expected
 ):
     """Tests tail_tw_crps_for_ensembles"""
     result = tail_tw_crps_for_ensemble(
@@ -1064,7 +1020,7 @@ def test_tail_tw_crps_for_ensemble(
 def test_tail_tw_crps_for_ensemble_dask():
     """Tests `tail_tw_crps_for_ensemble` works with dask."""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     # Check that it works with xr.Datarrays
@@ -1079,7 +1035,7 @@ def test_tail_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
@@ -1096,16 +1052,15 @@ def test_tail_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result_ds["a"].data, da.Array)
+    assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
 
 
 def test_tail_tw_crps_for_ensemble_raises():
-    """Tests `tail_tw_crps_for_ensemble` raises exception as expected."""
     with pytest.raises(ValueError, match="'middle' is not one of 'upper' or 'lower'"):
-        tail_tw_crps_for_ensemble(
+        _result = tail_tw_crps_for_ensemble(
             fcst=crps_test_data.DA_FCST_CRPSENS,
             obs=crps_test_data.DA_OBS_CRPSENS,
             ensemble_member_dim="ens_member",
@@ -1131,22 +1086,15 @@ def v_func3(x):
 
 
 def v_func4(x):
-    """For testing tw_crps_for_ensembles. The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset"""
+    """
+    For testing tw_crps_for_ensembles.
+    The equivalent of a tail weight for thresholds that vary across a dimension with a xr.dataset
+    """
     return np.maximum(x, crps_test_data.DS_T_TWCRPSENS)
 
 
 @pytest.mark.parametrize(
-    (
-        "fcst",
-        "obs",
-        "method",
-        "v_func",
-        "preserve_dims",
-        "reduce_dims",
-        "weights",
-        "include_components",
-        "expected",
-    ),
+    ("fcst", "obs", "method", "v_func", "preserve_dims", "reduce_dims", "weights", "include_components", "expected"),
     [
         # test ecdf
         (
@@ -1245,42 +1193,10 @@ def v_func4(x):
             False,
             crps_test_data.EXP_VAR_THRES_CRPSENS_DS,
         ),
-        # Test decomposition with DataArrays
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            v_func1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
-        ),
-        # Test decomposition with Datasets
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            v_func1,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
-        ),
     ],
 )
 def test_tw_crps_for_ensemble(
-    fcst,
-    obs,
-    method,
-    v_func,
-    preserve_dims,
-    reduce_dims,
-    weights,
-    include_components,
-    expected,
+    fcst, obs, method, v_func, preserve_dims, reduce_dims, weights, include_components, expected
 ):
     """Tests tw_crps_for_ensembles"""
 
@@ -1301,7 +1217,7 @@ def test_tw_crps_for_ensemble(
 def test_tw_crps_for_ensemble_dask():
     """Tests `tw_crps_for_ensemble` works with dask."""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = tw_crps_for_ensemble(
@@ -1314,7 +1230,7 @@ def test_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DA)
@@ -1330,7 +1246,7 @@ def test_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result_ds["a"].data, da.Array)
+    assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, np.ndarray)
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DS)
@@ -1467,32 +1383,6 @@ def test_tw_crps_for_ensemble_dask():
             False,
             crps_test_data.EXP_CRPSENS_WT_DS,
         ),
-        # Test decomposition with DataArrays
-        (
-            crps_test_data.DA_FCST_CRPSENS,
-            crps_test_data.DA_OBS_CRPSENS,
-            "ecdf",
-            2,
-            5,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA,
-        ),
-        # Test decomposition with Datasets
-        (
-            crps_test_data.DS_FCST_CRPSENS,
-            crps_test_data.DS_OBS_CRPSENS,
-            "ecdf",
-            2,
-            5,
-            "all",
-            None,
-            None,
-            True,
-            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS,
-        ),
     ],
 )
 def test_interval_tw_crps_for_ensemble(
@@ -1552,7 +1442,7 @@ def test_interval_tw_crps_for_ensemble_raises(lower_threshold, upper_threshold):
 def test_interval_tw_crps_for_ensemble_dask():
     """Tests `interval_tw_crps_for_ensemble` works with dask."""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     # Check that it works with xr.Datarrays
@@ -1567,7 +1457,7 @@ def test_interval_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=None,
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DA)
@@ -1584,7 +1474,110 @@ def test_interval_tw_crps_for_ensemble_dask():
         reduce_dims=None,
         weights=crps_test_data.DS_WT_CRPSENS.chunk(),
     )
-    assert isinstance(result_ds["a"].data, da.Array)
+    assert isinstance(result_ds["a"].data, dask.array.Array)
     result_ds = result_ds.compute()
     assert isinstance(result_ds["a"].data, (np.ndarray, np.generic))
     xr.testing.assert_allclose(result_ds, crps_test_data.EXP_CRPSENS_WT_DS)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "v_func", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            v_func1,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            v_func1,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
+        ),
+    ],
+)
+def test_tw_crps_for_ensemble_deprecation(fcst, obs, v_func, expected):
+    """
+    Tests tw_crps_for_ensemble include_components=True emits FutureWarning and
+    returns correct result.
+    """
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        result = tw_crps_for_ensemble(
+            fcst,
+            obs,
+            ensemble_member_dim="ens_member",
+            chaining_func=v_func,
+            method="ecdf",
+            preserve_dims="all",
+            include_components=True,
+        )
+    xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            crps_test_data.EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS,
+        ),
+    ],
+)
+def test_tail_tw_crps_for_ensemble_deprecation(fcst, obs, expected):
+    """
+    Tests tail_tw_crps_for_ensemble include_components=True emits FutureWarning
+    and returns correct result.
+    """
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        result = tail_tw_crps_for_ensemble(
+            fcst,
+            obs,
+            ensemble_member_dim="ens_member",
+            threshold=1,
+            method="ecdf",
+            tail="upper",
+            preserve_dims="all",
+            include_components=True,
+        )
+    xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected"),
+    [
+        (
+            crps_test_data.DA_FCST_CRPSENS,
+            crps_test_data.DA_OBS_CRPSENS,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA,
+        ),
+        (
+            crps_test_data.DS_FCST_CRPSENS,
+            crps_test_data.DS_OBS_CRPSENS,
+            crps_test_data.EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS,
+        ),
+    ],
+)
+def test_interval_tw_crps_for_ensemble_deprecation(fcst, obs, expected):
+    """
+    Tests interval_tw_crps_for_ensemble include_components=True emits
+    FutureWarning and returns correct result.
+    """
+    with pytest.warns(FutureWarning, match="`include_components` is deprecated"):
+        result = interval_tw_crps_for_ensemble(
+            fcst,
+            obs,
+            ensemble_member_dim="ens_member",
+            lower_threshold=2,
+            upper_threshold=5,
+            method="ecdf",
+            preserve_dims="all",
+            include_components=True,
+        )
+    xr.testing.assert_allclose(result, expected)

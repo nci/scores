@@ -150,11 +150,8 @@ def crps_cdf_exact_fast(
         `cdf_fcst`, `cdf_obs` or `threshold_weight`.
     """
     # identify where input arrays have no NaN, collapsing `threshold_dim`
-    # Mypy doesn't realise the isnan and any come from xarray not numpy
     inputs_without_nan = (
-        ~np.isnan(cdf_fcst).any(threshold_dim)  # type: ignore
-        & ~np.isnan(obs)  # type: ignore
-        & ~np.isnan(threshold_weight).any(threshold_dim)  # type: ignore
+        ~np.isnan(cdf_fcst).any(threshold_dim) & ~np.isnan(obs) & ~np.isnan(threshold_weight).any(threshold_dim)
     )
     over, under = xr.apply_ufunc(
         crps_threshold,

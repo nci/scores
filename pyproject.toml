@@ -13,7 +13,7 @@ Scores is a Python package containing mathematical functions \
 for the verification, evaluation and optimisation of forecasts, predictions or models.
 """
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -27,7 +27,7 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "mypy == 1.13.0",
+    "ty",
     "ruff == 0.14.14",
     "dask",
     "h5netcdf",
@@ -43,11 +43,12 @@ tutorial = [
     "plotly",
     "dask",
     "gcsfs",
-    "zarr"
+    "zarr",
+    "h5py"
 ]
 maintainer = ["build",
               "hatch",
-              "sphinx<8",
+              "sphinx",
               "myst-parser",
               "sphinx-book-theme",
               "nbsphinx",
@@ -66,7 +67,6 @@ all = ["scores[dev,tutorial,fast]"]
 
 [tool.hatch.build]
 exclude = [
-    "/tutorials/",
     "/docs/",
     "/tests/"
 ]
@@ -81,7 +81,6 @@ override = true  # This is required to activate the build hook.
 # The pinned versions of these dependencies will be subsituted during package builds.
 # Pinned versions will only be substitued for packages that are already in this package's dependencies list.
 pinned_dependencies = [
-    "python <= 3.13",
     "xarray >= 2024.1",  # xarray follows calver rather than semver, so using >= is the best we can do
     "pandas ~= 2.0",
     "scipy ~= 1.13",
@@ -93,7 +92,7 @@ path = "src/scores/__init__.py"
 
 [tool.ruff]
 src = ["src", "tests"]
-exclude = ["*.ipynb"]
+exclude = ["*.ipynb", "docs/"]
 line-length = 120
 
 [tool.ruff.lint]		
@@ -107,9 +106,6 @@ select = [
 ignore = [
     "E741", # Allow ambiguous variable names
     "S101", # Allow asserts
-    # The ignore below need to be fixed
-    # See GH issue #975
-    "E501", #TODO Line too long (50)
 ]
 
 [tool.ruff.format]
@@ -122,13 +118,25 @@ line-ending = "auto"
 known-first-party = ["scores", "tests"]
 known-third-party = ["pandas"] # fix sorting bug
 
-[tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
+[tool.ty.src]
+include = [
+    "src",
+    "tests",
+]
 
-[[tool.mypy.overrides]]
-module = "scipy.*"
-ignore_missing_imports = true
+[tool.ty.rules]
+# Warnings
+possibly-missing-attribute = "ignore"
+# Errors
+no-matching-overload = "ignore"
+invalid-argument-type = "ignore"
+invalid-type-arguments = "ignore"
+invalid-assignment = "ignore"
+invalid-type-form = "ignore"
+invalid-return-type = "ignore"
+unsupported-operator = "ignore"
+unresolved-import = "ignore"
+unresolved-attribute = "ignore"
 
 [tool.coverage.paths]
 source = ["/src/"]
@@ -150,12 +158,12 @@ addopts = [
     '--cov-report=term-missing',
     '--junitxml=report.xml',
     # Ignore notebooks which depend on external data for E2E tests
-    '--ignore=tutorials/First_Data_Fetching.ipynb',
-    '--ignore=tutorials/Mean_Squared_Error.ipynb',
-    '--ignore=tutorials/Root_Mean_Squared_Error.ipynb',
-    '--ignore=tutorials/Weighting_Results.ipynb',
-    '--ignore=tutorials/Mean_Absolute_Error.ipynb',
-    '--ignore=tutorials/Additive_and_multiplicative_bias.ipynb'
+    '--ignore=docs/tutorials/First_Data_Fetching.ipynb',
+    '--ignore=docs/tutorials/Mean_Squared_Error.ipynb',
+    '--ignore=docs/tutorials/Root_Mean_Squared_Error.ipynb',
+    '--ignore=docs/tutorials/Weighting_Results.ipynb',
+    '--ignore=docs/tutorials/Mean_Absolute_Error.ipynb',
+    '--ignore=docs/tutorials/Additive_and_multiplicative_bias.ipynb'
 ]
 
 [tool.pylint.master]

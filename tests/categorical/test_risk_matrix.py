@@ -2,6 +2,12 @@
 Contains unit tests for scores.categorical.risk_matrix_impl functions
 """
 
+try:
+    import dask
+    import dask.array
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -13,7 +19,6 @@ from scores.categorical.risk_matrix_impl import (
     risk_matrix_score,
     weights_from_warning_scaling,
 )
-from scores.utils import HAS_DASK, da
 from tests.categorical import risk_matrix_test_data as mtd
 
 
@@ -96,7 +101,7 @@ def test_risk_matrix_score_datasets():
 
 scenarios_risk_matrix_score_dask = []
 
-if HAS_DASK:
+if not dask == "Unavailable":
     scenarios_risk_matrix_score_dask = [
         (mtd.DA_RMS_FCST1.chunk(), mtd.DA_RMS_OBS1.chunk()),
         (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1.chunk()),
@@ -108,14 +113,14 @@ if HAS_DASK:
 def test_risk_matrix_score_dask(fcst, obs):
     """Tests `risk_matrix_score` works with dask."""
 
-    if not HAS_DASK:  # pragma: no cover
+    if dask == "Unavailable":  # pragma: no cover
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     expected = mtd.EXP_RMS_CASE3A
     result = risk_matrix_score(
         fcst, obs, mtd.DA_RMS_WT2A, "sev", "prob", threshold_assignment="lower", weights=None, preserve_dims="all"
     )
-    assert isinstance(result.data, da.Array)
+    assert isinstance(result.data, dask.array.Array)
     result = result.compute().transpose(*expected.dims)
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)

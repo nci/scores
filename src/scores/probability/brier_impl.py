@@ -79,8 +79,8 @@ def brier_score(
 
 
 def brier_score_for_ensemble(
-    fcst: XarrayLike,  # type: ignore
-    obs: XarrayLike,  # type: ignore
+    fcst: XarrayLike,
+    obs: XarrayLike,
     ensemble_member_dim: str,
     event_thresholds: Real | Sequence[Real],
     *,  # Force keywords arguments to be keyword-only
@@ -90,7 +90,7 @@ def brier_score_for_ensemble(
     fair_correction: bool = True,
     event_threshold_operator: Callable = operator.ge,
     threshold_dim: str = "threshold",
-) -> XarrayLike:  # type: ignore
+) -> XarrayLike:
     """
     Calculates the Brier score for an ensemble forecast for the provided thresholds. By default,
     the fair Brier score is calculated, which is a modified version of the Brier score that
@@ -219,7 +219,7 @@ def brier_score_for_ensemble(
         score_specific_fcst_dims=ensemble_member_dim,
     )
     if isinstance(event_thresholds, (float, int)):
-        event_thresholds = [event_thresholds]  # type: ignore
+        event_thresholds = [event_thresholds]
     thresholds_xr = xr.DataArray(event_thresholds, dims=[threshold_dim], coords={threshold_dim: event_thresholds})
 
     # calculate i term in equation
@@ -244,4 +244,4 @@ def brier_score_for_ensemble(
     # apply weights and take means across specified dims
     result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
 
-    return result  # type: ignore
+    return result

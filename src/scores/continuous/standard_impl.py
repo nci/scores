@@ -29,7 +29,8 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE for more information.
+    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE
+    for more information.
 
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
@@ -83,9 +84,9 @@ def mse(
         )
 
     if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+        error = scores.functions.angular_difference(fcst, obs)
     else:
-        error = fcst - obs  # type: ignore
+        error = fcst - obs
     squared = error * error
 
     if is_xarraylike(squared):
@@ -155,7 +156,7 @@ def rmse(
 
     _rmse = pow(_mse, (1 / 2))
 
-    return _rmse  # type: ignore
+    return _rmse
 
 
 def mae(
@@ -216,9 +217,9 @@ def mae(
         )
 
     if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+        error = scores.functions.angular_difference(fcst, obs)
     else:
-        error = abs(fcst - obs)  # type: ignore
+        error = abs(fcst - obs)
 
     if is_xarraylike(error):
         result = aggregate(error, reduce_dims=reduce_dims, weights=weights)
@@ -335,7 +336,7 @@ def additive_bias(
 
     score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
 
-    return score  # type: ignore
+    return score
 
 
 def multiplicative_bias(
@@ -391,7 +392,7 @@ def multiplicative_bias(
     )
     # Need to broadcast and match NaNs so that the fcst mean and obs mean are for the
     # same points
-    fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
     multi_bias = aggregate(fcst, reduce_dims=reduce_dims, weights=weights) / aggregate(
         obs, reduce_dims=reduce_dims, weights=weights
     )
@@ -410,10 +411,11 @@ def pbias(
     """
     Calculates the percent bias, which is the ratio of the additive bias to the mean observed value, multiplied by 100.
 
-    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying magnitudes.
-    By expressing the error as a percentage of the observed value, it allows for standardised comparisons, enabling assessment
-    of forecast performance regardless of the absolute scale of values. Like :py:func:`scores.continuous.multiplicative_bias`,
-    ``pbias`` will return a ``np.inf`` where the mean of ``obs`` across the dims to be reduced is 0. It is defined as
+    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying
+    magnitudes. By expressing the error as a percentage of the observed value, it allows for standardised comparisons,
+    enabling assessment of forecast performance regardless of the absolute scale of values. Like
+    :py:func:`scores.continuous.multiplicative_bias`, ``pbias`` will return a ``np.inf`` where the mean of ``obs``
+    across the dims to be reduced is 0. It is defined as
 
     .. math::
         \\text{Percent bias} = 100 \\cdot \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
@@ -470,7 +472,7 @@ def pbias(
     )
     # Need to broadcast and match NaNs so that the mean error and obs mean are for the
     # same points
-    fcst, obs = broadcast_and_match_nan(fcst, obs)  # type: ignore
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
     error = fcst - obs
 
     numerator = 100 * aggregate(error, reduce_dims=reduce_dims, weights=weights)
@@ -517,7 +519,8 @@ def percent_within_x(
         - :math:`y_i` is the observed value at index :math:`i`
         - :math:`\\tau` is the absolute error threshold
         - :math:`\\mathbf{1}(\\cdot)` is the indicator function
-        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not missing (NaN), 0 otherwise
+        - :math:`\\mathbf{1}_{\\text{valid}}` is 1 where both :math:`x_i` and :math:`y_i` are not
+          missing (NaN), 0 otherwise
 
     Args:
         fcst: Forecast or predicted variables.
@@ -613,9 +616,9 @@ def percent_within_x(
     )
 
     if is_angular:
-        error = scores.functions.angular_difference(fcst, obs)  # type: ignore
+        error = scores.functions.angular_difference(fcst, obs)
     else:
-        error = fcst - obs  # type: ignore
+        error = fcst - obs
 
     abs_error = abs(error)
     if decimals:
@@ -727,7 +730,7 @@ def kge(
 
 
 
-    """
+    """  #  noqa: E501
 
     # Type checks as xrray.corr can only handle xr.DataArray
     if not isinstance(fcst, xr.DataArray):
@@ -752,7 +755,7 @@ def kge(
     # same points
     fcst, obs = broadcast_and_match_nan(fcst, obs)
     # compute linear correlation coefficient r between fcst and obs
-    rho = xr.corr(fcst, obs, reduce_dims)  # type: ignore
+    rho = xr.corr(fcst, obs, reduce_dims)
 
     # compute alpha (sigma_sim / sigma_obs)
     sigma_fcst = fcst.std(reduce_dims)
@@ -777,4 +780,4 @@ def kge(
                 "beta": beta,
             }
         )
-    return kge_s  # type: ignore
+    return kge_s

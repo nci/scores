@@ -8,6 +8,7 @@
 
 
 ```{toctree}
+:hidden:
 :caption: 'Index to Documentation:'
 :maxdepth: 2
 

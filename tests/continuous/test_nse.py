@@ -447,15 +447,15 @@ class TestNseInternals(NseSetup):
     """
 
     META_INPUT_DA = nse_impl.NseMetaInput(
-        datasets=[],  # type: ignore
-        gathered_dims=[],  # type: ignore
+        datasets=[],
+        gathered_dims=[],
         is_angular=False,  # doesn't matter
         is_dataarray=True,  # >>> checking for this
     )
 
     META_INPUT_NOT_DA = nse_impl.NseMetaInput(
-        datasets=[],  # type: ignore
-        gathered_dims=[],  # type: ignore
+        datasets=[],
+        gathered_dims=[],
         is_angular=False,  # doesn't matter
         is_dataarray=False,  # >>> checking for this
     )

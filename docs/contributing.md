@@ -112,16 +112,27 @@ An editable installation is recommended. This is deliberate, to make the process
 
 ### Set up `pre-commit` (optional) <a name="pre-commit"></a>
 
-
 To automate linter and fixer checks this project uses `pre-commit` which is set up to execute after every local commit. This ensures that code standards are flagged at the development stage rather than in the project CI/CD pipeline. Although it is optional we highly recommended to use the tool before pushing changes to the remote.
+
+To set up pre-commit, run the following command:
 
 ```bash
 pre-commit install -t pre-commit -t pre-push
 ```
 
-After set up and pre-commit, run the command below to check
+To ensure pre-commit has been configured correctly, run the command below and confirm that pre-commit runs `ruff check`, `ruff format` and `ty-check`. 
+
 ```bash
 pre-commit run --all
+```
+
+### Set up the git commit template (optional)
+Using a git commit template is optional, but can streamline the process of writing the git commit messages. Important information should be put into commit messages rather than left solely to the issue tracker or pull request tracker. While today we rely on the Github system, one day that could change. While we don't ask developers to fully duplicate information between the tracker and the git log, a summary of pertinent information should still be included in the commit messages. The template is a helpful prompt for what you might want to include.
+
+To configure git to use the template for this project, run:
+
+```bash
+git config commit.template commit_template.txt
 ```
 
 ## Pull Request Etiquette
@@ -135,6 +146,24 @@ Not every possibility can be accounted for, and the package maintainers will (if
 Most of these kinds of code change can also be handled as a PR by the reviewer onto the fork of the originator. This is slightly slower (i.e. does not take effect immediately), but allows for more control by the originator. This is probably most developer's general preference.
 
 In short - once you have made a PR, the maintainers may then take it, modify it, or include it as-is. However, every effort will be made to communicate about that process and make sure that the originator of the PR is happy with any modifications made.
+
+
+## Generative AI Usage
+
+Generative AI tools can be helpful, but contributors must be transparent about using them in the `scores` repository.
+
+1.	Contributors must declare any use of generative AI tools in preparing their pull request. Because `scores` is used for academic work and many journals now require authors to declare if generative AI tools are used (see [1](https://joss.readthedocs.io/en/latest/policies.html#ai-usage-policy ), [2](https://www.ametsoc.org/ams/publications/ethical-guidelines-and-ams-policies/author-disclosure-and-obligations/), [3](https://www.egu.eu/news/1031/statement-on-the-use-of-ai-based-tools-for-the-presentation-and-publication-of-research-results-in-earth-planetary-and-space-science/), [4](https://rmets.onlinelibrary.wiley.com/hub/ai-policy)), it is important to keep track of generative AI usage.
+2.	The name of any generative AI tool or system used, and the version, should be included in each pull request, including identifying exactly where they were applied. The pull request template will include this in the checklist.
+3.	A human must be in the loop for all pull requests. Human contributors must understand their code, have reviewed it before submitting the pull request, and be able to explain all changes during review.
+4.	Contributors are responsible for all submitted content, regardless of whether generative AI tools were used.
+5.	If bots wish to propose improvements to the `scores` package, they should create an issue rather than submitting a pull request. The issue should clearly describe the proposed feature or change and may include example code snippets to illustrate how the implementation could be improved.
+6.	All contributions must adhere to the [code of conduct](https://github.com/nci/scores/blob/develop/CODE_OF_CONDUCT.md).
+7.	Given that generative tools are evolving rapidly, this policy will likely be adjusted over time.
+
+[1] https://joss.readthedocs.io/en/latest/policies.html#ai-usage-policy  
+[2] https://www.ametsoc.org/ams/publications/ethical-guidelines-and-ams-policies/author-disclosure-and-obligations/  
+[3] https://www.egu.eu/news/1031/statement-on-the-use-of-ai-based-tools-for-the-presentation-and-publication-of-research-results-in-earth-planetary-and-space-science/  
+[4] https://rmets.onlinelibrary.wiley.com/hub/ai-policy  
 
 ## Review Processes
 

@@ -12,7 +12,6 @@ Please work through the following checklists. Delete anything that isn't relevan
 - [ ] Reference to paper/webpage is in docstring. The preferred referencing style for journal articles is [APA (7th edition)](https://apastyle.apa.org/style-grammar-guidelines/references/examples/journal-article-references)
 - [ ] Code example added
 
-
 ## Testing of new xarray-based metrics
 - [ ] 100% unit test coverage
 - [ ] Test that metric is compatible with dask.
@@ -32,3 +31,17 @@ Please work through the following checklists. Delete anything that isn't relevan
 ## Documentation
 - [ ] Add the score to the [API documentation](https://github.com/nci/scores/blob/develop/docs/api.md)
 - [ ] Add the score to the [included list of metrics and tools](https://github.com/nci/scores/blob/develop/docs/included.md)
+
+## Final Checks:
+
+ - [ ] If no generative AI was used, then tick this box
+
+Alternatively, if generative AI was used, then confirm you have:
+ 
+ - [ ] Attributed any generative AI (such as GitHub Copilot) that was used in this PR. See [our contributing guide](https://github.com/nci/scores?tab=contributing-ov-file#generative-ai-usage) for more information.
+ - [ ] Included the name and version of the tool or system in the pull request
+ - [ ] Described the scope of that use
+
+Finally, 
+
+ - [ ] Mark the PR as ready to review.

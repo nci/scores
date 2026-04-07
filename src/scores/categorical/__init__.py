@@ -18,6 +18,7 @@ from scores.categorical.risk_matrix_impl import (
     risk_matrix_score,
     weights_from_warning_scaling,
 )
+from scores.plotdata.rev_impl import relative_economic_value, relative_economic_value_from_rates
 
 __all__ = [
     "probability_of_detection",
@@ -31,4 +32,6 @@ __all__ = [
     "BinaryContingencyManager",
     "ThresholdEventOperator",
     "EventOperator",
+    "relative_economic_value",
+    "relative_economic_value_from_rates",
 ]
