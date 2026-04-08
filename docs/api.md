@@ -39,6 +39,8 @@
 .. autofunction:: scores.continuous.quantile_interval_score
 .. autofunction:: scores.continuous.interval_score
 .. autofunction:: scores.continuous.qq
+.. autofunction:: scores.continuous.relative_economic_value
+.. autofunction:: scores.continuous.relative_economic_value_from_rates
 ```
 
 ## scores.probability
@@ -57,6 +59,13 @@
 .. autofunction:: scores.probability.brier_score
 .. autofunction:: scores.probability.brier_score_for_ensemble
 .. autofunction:: scores.probability.isotonic_fit
+.. autoclass:: scores.probability.Pit
+    :members:
+.. autoclass:: scores.probability.PitFcstAtObs
+    :members:
+.. autofunction:: scores.probability.rank_histogram
+.. autofunction:: scores.probability.relative_economic_value
+.. autofunction:: scores.probability.relative_economic_value_from_rates
 ```
 
 ## scores.categorical
@@ -76,6 +85,8 @@
 .. autofunction:: scores.categorical.matrix_weights_to_array
 .. autofunction:: scores.categorical.weights_from_warning_scaling
 .. autofunction:: scores.categorical.seeps
+.. autofunction:: scores.categorical.relative_economic_value
+.. autofunction:: scores.categorical.relative_economic_value_from_rates
 ```
 
 ## scores.spatial
@@ -118,6 +129,9 @@
 .. autofunction:: scores.plotdata.murphy_score
 .. autofunction:: scores.plotdata.murphy_thetas
 .. autofunction:: scores.plotdata.qq
+.. autofunction:: scores.plotdata.rank_histogram
+.. autofunction:: scores.plotdata.relative_economic_value
+.. autofunction:: scores.plotdata.relative_economic_value_from_rates
 .. autofunction:: scores.plotdata.roc
 ```
 

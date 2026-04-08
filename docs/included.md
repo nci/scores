@@ -35,20 +35,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
 * -
     - Flip-Flop Index
-  -
-    [API](api.md#scores.continuous.flip_flop_index)
-  -
-    [Tutorial](project:./tutorials/Flip_Flop_Index.md)
-  -
-    [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
+  - [API](api.md#scores.continuous.flip_flop_index)
+  - [Tutorial](project:./tutorials/Flip_Flop_Index.md)
+  - [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
 * -
     - Flip-Flop Index - Proportion Exceeding
-  -
-    [API](api.md#scores.continuous.flip_flop_index_proportion_exceeding)
-  -
-    [Tutorial](project:./tutorials/Flip_Flop_Index.md)
-  -
-    [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
+  - [API](api.md#scores.continuous.flip_flop_index_proportion_exceeding)
+  - [Tutorial](project:./tutorials/Flip_Flop_Index.md)
+  - [Griffiths et al. (2019)](https://doi.org/10.1002/met.1732); [Griffiths et al. (2021)](https://doi.org/10.1071/ES21010)
 * - Interval Score
   - [API](api.md#scores.continuous.interval_score)
   - [Tutorial](project:./tutorials/Quantile_Interval_And_Interval_Score.md)
@@ -91,20 +85,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
 * -
     - Murphy Score (Mean Elementary Score)
-  -
-    [API](api.md#scores.continuous.murphy_score)
-  -
-    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
-  -
-    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+  - [API](api.md#scores.continuous.murphy_score)
+  - [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -
     - Murphy Score (Mean Elementary Score) - Theta Values
-  -
-    [API](api.md#scores.continuous.murphy_thetas)
-  -
-    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
-  -
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+  - [API](api.md#scores.continuous.murphy_thetas)
+  - [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Nash-Sutcliffe Model Efficiency Coefficient (NSE)
   - [API](api.md#scores.continuous.nse)
   - [Tutorial](project:./tutorials/NSE.md)
@@ -140,6 +128,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Quantile Score, *see Quantile Loss*
   - &mdash;
   - &mdash;
+  - &mdash;
+* - Relative Economic Value
+  - [API](api.md#scores.continuous.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.continuous.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
   - &mdash;
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
@@ -224,7 +220,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     - CRPS for Ensembles
   - [API](api.md#scores.probability.crps_for_ensemble)
   - [Tutorial](project:./tutorials/CRPS_for_Ensembles.md)
-  - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting And Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
+  - [Ferro (2014)](https://doi.org/10.1002/qj.2270); [Gneiting and Raftery (2007)](https://doi.org/10.1198/016214506000001437); [Zamo and Naveau (2018)](https://doi.org/10.1007/s11004-017-9709-7)
 * -
     - Threshold-Weighted CRPS (twCRPS) for Ensembles
   - [API](api.md#scores.probability.tw_crps_for_ensemble)
@@ -258,24 +254,44 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
 * -
     - Murphy Score (Mean Elementary Score)
-  -
-    [API](api.md#scores.probability.murphy_score)
-  -
-    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
-  -
-    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+  - [API](api.md#scores.probability.murphy_score)
+  - [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -
     - Murphy Score (Mean Elementary Score) - Theta Values
+  - [API](api.md#scores.probability.murphy_thetas)
+  - [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* - Probability Integral Transform (PIT)
   -
-    [API](api.md#scores.probability.murphy_thetas)
   -
-    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
   -
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+* -
+    - PIT for Ensembles or CDFs
+  - [API](api.md#scores.probability.Pit)
+  - [Tutorial](project:./tutorials/PIT.md)
+  - [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et al. (2010)](https://doi.org/10.1029/2009WR008328)
+* -
+    - PIT for Predictive CDFs Evaluated at Observations
+  - [API](api.md#scores.probability.PitFcstAtObs)
+  - [Tutorial](project:./tutorials/PIT.md)
+  - [Gneiting and Ranjan (2013)](https://doi.org/10.1214/13-EJS823); [Taggart (2022)](https://nla.gov.au/nla.obj-3079961862/view); [Renard et al. (2010)](https://doi.org/10.1029/2009WR008328)
+* - Rank Histogram
+  - [API](api.md#scores.probability.rank_histogram)
+  - [Tutorial](project:./tutorials/Rank_Histogram.md)
+  - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.probability.roc_curve_data)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
+* - Relative Economic Value
+  - [API](api.md#scores.probability.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.probability.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -297,276 +313,174 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [Methods for dichotomous (yes/no) forecasts](https://jwgfvr.github.io/forecastverification/index.html#Dichotomous)
 * -
     - Accuracy (Fraction Correct)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.accuracy)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ACC)
+  - [API](api.md#scores.categorical.BasicContingencyManager.accuracy)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ACC)
 * -
     - Base Rate
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.base_rate)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
+  - [API](api.md#scores.categorical.BasicContingencyManager.base_rate)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
 * -
     - Bias Score (Frequency Bias)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.bias_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#BIAS)
+  - [API](api.md#scores.categorical.BasicContingencyManager.bias_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#BIAS)
 * -
     - Cohen's Kappa (Heidke Skill Score)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.cohens_kappa)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-     [Heidke Skill Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HSS)
+  - [API](api.md#scores.categorical.BasicContingencyManager.cohens_kappa)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Heidke Skill Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HSS)
 * -
     - Critical Success Index (Threat Score)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.critical_success_index)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#CSI)
+  - [API](api.md#scores.categorical.BasicContingencyManager.critical_success_index)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#CSI)
 * -
     - Equitable Threat Score (Gilbert Skill Score)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.equitable_threat_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ETS)
+  - [API](api.md#scores.categorical.BasicContingencyManager.equitable_threat_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ETS)
 * -
     - F1 Score
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.f1_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/F-score)
+  - [API](api.md#scores.categorical.BasicContingencyManager.f1_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/F-score)
 * -
     - False Alarm Rate (Probability of False Detection (POFD))
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.false_alarm_rate)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
+  - [API](api.md#scores.categorical.BasicContingencyManager.false_alarm_rate)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
 * -
     - False Alarm Ratio (FAR)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.false_alarm_ratio)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#FAR)
+  - [API](api.md#scores.categorical.BasicContingencyManager.false_alarm_ratio)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [False alarm ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#FAR)
 * -
     - Forecast Rate
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.forecast_rate)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
+  - [API](api.md#scores.categorical.BasicContingencyManager.forecast_rate)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Hogan and Mason (2011)](https://doi.org/10.1002/9781119960003.ch3)
 * -
     - Fraction Correct (Accuracy)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.fraction_correct)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ACC)
+  - [API](api.md#scores.categorical.BasicContingencyManager.fraction_correct)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Accuracy (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ACC)
 * -
     - Frequency Bias (Bias Score)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.frequency_bias)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#BIAS)
+  - [API](api.md#scores.categorical.BasicContingencyManager.frequency_bias)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Bias Score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#BIAS)
 * -
     - Gilbert Skill Score (Equitable Threat Score)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.gilberts_skill_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ETS)
+  - [API](api.md#scores.categorical.BasicContingencyManager.gilberts_skill_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Hogan et al. (2010)](https://doi.org/10.1175/2009WAF2222350.1); [Equitable Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#ETS)
 * -
     - Hanssen and Kuipers' Discriminant (Peirce's Skill Score, True Skill Statistic)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HK)
+  - [API](api.md#scores.categorical.BasicContingencyManager.hanssen_and_kuipers_discriminant)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HK)
 * -
     - Heidke Skill Score (Cohen's Kappa)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.heidke_skill_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-     [Heidke skill score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HSS)
+  - [API](api.md#scores.categorical.BasicContingencyManager.heidke_skill_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Heidke skill score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HSS)
 * -
     - Hit Rate (True Positive Rate, Probability of Detection (POD), Sensitivity, Recall)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.hit_rate)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
+  - [API](api.md#scores.categorical.BasicContingencyManager.hit_rate)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
 * -
     - Negative Predictive Value
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.negative_predictive_value)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+  - [API](api.md#scores.categorical.BasicContingencyManager.negative_predictive_value)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -
     - Odds Ratio
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.odds_ratio)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
+  - [API](api.md#scores.categorical.BasicContingencyManager.odds_ratio)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
 * -
     - Odds Ratio Skill Score (Yule's Q)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.odds_ratio_skill_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
+  - [API](api.md#scores.categorical.BasicContingencyManager.odds_ratio_skill_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
 * -
     - Peirce's Skill Score (True Skill Statistic, Hanssen and Kuipers' Discriminant)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.peirce_skill_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HK)
+  - [API](api.md#scores.categorical.BasicContingencyManager.peirce_skill_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Peirce (1884)](https://doi.org/10.1126/science.ns-4.93.453.b); [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HK)
 * -
     - Positive Predictive Value (Success Ratio, Precision)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#SR); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+  - [API](api.md#scores.categorical.BasicContingencyManager.positive_predictive_value)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#SR); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -
     - Precision (Success Ratio, Positive Predictive Value)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.precision)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#SR)
+  - [API](api.md#scores.categorical.BasicContingencyManager.precision)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#SR)
 * -
     - Probability of Detection (POD) (Hit Rate, True Positive Rate, Sensitivity, Recall)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.probability_of_detection)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
+  - [API](api.md#scores.categorical.BasicContingencyManager.probability_of_detection)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
 * -
     - Probability of False Detection (POFD) (False Alarm Rate)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.probability_of_false_detection)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
+  - [API](api.md#scores.categorical.BasicContingencyManager.probability_of_false_detection)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
 * -
     - Recall (Hit Rate, Probability of Detection (POD), True Positive Rate, Sensitivity)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.recall)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
+  - [API](api.md#scores.categorical.BasicContingencyManager.recall)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall); [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
 * -
     - Sensitivity (Hit Rate, Probability of Detection (POD), True Positive Rate, Recall)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.sensitivity)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+  - [API](api.md#scores.categorical.BasicContingencyManager.sensitivity)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -
     - Specificity (True Negative Rate)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.specificity)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
+  - [API](api.md#scores.categorical.BasicContingencyManager.specificity)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity); [Monaghan et al. (2021)](https://doi.org/10.3390/medicina57050503)
 * -
     - Success Ratio (Precision, Positive Predictive Value)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.success_ratio)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#SR)
+  - [API](api.md#scores.categorical.BasicContingencyManager.success_ratio)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Success ratio (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#SR)
 * -
     - Symmetric Extremal Dependence Index (SEDI)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
+  - [API](api.md#scores.categorical.BasicContingencyManager.symmetric_extremal_dependence_index)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Ferro and Stephenson (2011)](https://doi.org/10.1175/WAF-D-10-05030.1)
 * -
     - Threat Score (Critical Success Index)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.threat_score)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#CSI)
+  - [API](api.md#scores.categorical.BasicContingencyManager.threat_score)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Threat score (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#CSI)
 * -
     - True Negative Rate (Specificity)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.true_negative_rate)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+  - [API](api.md#scores.categorical.BasicContingencyManager.true_negative_rate)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Wikipedia](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
 * -
     - True Positive Rate (Hit Rate, Probability of Detection (POD), Sensitivity, Recall)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.true_positive_rate)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
+  - [API](api.md#scores.categorical.BasicContingencyManager.true_positive_rate)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Probability of detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POD)
 * -
     - True Skill Statistic (Peirce's Skill Score, Hanssen and Kuipers' Discriminant)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.true_skill_statistic)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HK)
+  - [API](api.md#scores.categorical.BasicContingencyManager.true_skill_statistic)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Hanssen and Kuipers discriminant (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#HK)
 * -
     - Yule's Q (Odds Ratio Skill Score)
-  -
-    [API](api.md#scores.categorical.BasicContingencyManager.yules_q)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
+  - [API](api.md#scores.categorical.BasicContingencyManager.yules_q)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - [Stephenson (2000)](https://doi.org/10.1175/1520-0434(2000)015<0221:UOTORF>2.0.CO;2)
 * - FIxed Risk Multicategorical (FIRM)
   - [API](api.md#scores.categorical.firm)
   - [Tutorial](project:./tutorials/FIRM.md)
@@ -579,6 +493,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.categorical.probability_of_false_detection)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
+* - Relative Economic Value
+  - [API](api.md#scores.categorical.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.categorical.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
 * - Risk Matrix Score
   -
   -
@@ -608,20 +530,14 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - &mdash;
 * -
     - Make Contingency Manager
-  -
-    [API](api.md#scores.categorical.ThresholdEventOperator.make_contingency_manager)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    &mdash;
+  - [API](api.md#scores.categorical.ThresholdEventOperator.make_contingency_manager)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - &mdash;
 * -
     - Make Event Tables
-  -
-    [API](api.md#scores.categorical.ThresholdEventOperator.make_event_tables)
-  -
-    [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
-  -
-    &mdash;
+  - [API](api.md#scores.categorical.ThresholdEventOperator.make_event_tables)
+  - [Tutorial](project:./tutorials/Binary_Contingency_Scores.md)
+  - &mdash;
 ```
 
 ## Spatial
@@ -639,28 +555,19 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
 * -
     - FSS - 2D
-  -
-    [API](api.md#scores.spatial.fss_2d)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
+  - [API](api.md#scores.spatial.fss_2d)
+  - [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
+  - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
 * -
     - FSS - 2D Binary
-  -
-    [API](api.md#scores.spatial.fss_2d_binary)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    &mdash;
+  - [API](api.md#scores.spatial.fss_2d_binary)
+  - [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
+  - &mdash;
 * -
     - FSS - 2D Single Field
-  -
-    [API](api.md#scores.spatial.fss_2d_single_field)
-  -
-    [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  -
-    [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
+  - [API](api.md#scores.spatial.fss_2d_single_field)
+  - [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
+  - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 ```
 
 ## Statistical Tests
@@ -686,6 +593,9 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Name (Alphabetical order)
   - API
   - Utilised For
+* - Aggregate
+  - [API](api.md#scores.processing.aggregate)
+  - Utilised to calculate weighted or unweighted means in most verification scores
 * - Binary Discretise
   - [API](api.md#scores.processing.binary_discretise)
   - Receiver (Relative) Operating Characteristic (ROC)
@@ -781,28 +691,35 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   -
 * -
     - Murphy Score (Mean Elementary Score)
-  -
-    [API](api.md#scores.plotdata.murphy_score)
-  -
-    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
-  -
-    [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
+  - [API](api.md#scores.plotdata.murphy_score)
+  - [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - [Ehm et al. (2016) - Theorem 1](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Theorem 5.3](https://doi.org/10.1214/21-ejs1957)
 * -
     - Murphy Score (Mean Elementary Score) - Theta Values
-  -
-    [API](api.md#scores.plotdata.murphy_thetas)
-  -
-    [Tutorial](project:./tutorials/Murphy_Diagrams.md)
-  -
-    [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
+  - [API](api.md#scores.plotdata.murphy_thetas)
+  - [Tutorial](project:./tutorials/Murphy_Diagrams.md)
+  - [Ehm et al. (2016) - Corollary 2 (p.521)](https://doi.org/10.1111/rssb.12154); [Taggart (2022) - Corollary 5.6](https://doi.org/10.1214/21-ejs1957)
 * - Quantile-Quantile (QQ) Plots
   - [API](api.md#scores.plotdata.qq)
   - [Tutorial](project:./tutorials/Q-Q_plots.md)
   - [Déqué (2011)](https://doi.org/10.1002/9781119960003.ch5)
+* - Rank Histogram
+  - [API](api.md#scores.plotdata.rank_histogram)
+  - [Tutorial](project:./tutorials/Rank_Histogram.md)
+  - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2) 
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.plotdata.roc)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
+* - Relative Economic Value
+  - [API](api.md#scores.plotdata.relative_economic_value)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+* - Relative Economic Value From Rates
+  - [API](api.md#scores.plotdata.relative_economic_value_from_rates)
+  - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
+  - &mdash;
+
 ```
 ## Pandas
 
@@ -846,4 +763,3 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - &mdash;
   - &mdash;
 ```
-

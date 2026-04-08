@@ -6,9 +6,9 @@ report.xml
 # docs
 htmldocs
 
-# Turorial data
-tutorials/*.nc                   
-tutorials/auspopn.zip 
+# Tutorial data
+docs/tutorials/*.nc                   
+docs/tutorials/auspopn.zip 
 
 # Standard .gitignore from https://github.com/github/gitignore/blob/main/Python.gitignore
 

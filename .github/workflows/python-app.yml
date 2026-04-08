@@ -18,9 +18,9 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -33,7 +33,7 @@ jobs:
         # editable is necessary as pytest will run against the installed
         # package rather than the local files creating a coverage report of 0%
         pip install -e .
-        pytest tests/ --cov=src/
+        pytest -W error::RuntimeWarning tests/ --cov=src/
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.3.0
       with:
@@ -41,7 +41,7 @@ jobs:
         parallel: true
     - name: Test tutorial notebooks with pytest
       run: |
-        pytest --nbmake tutorials/
+        pytest --nbmake docs/tutorials/
     - name: Test again with without dask and numba installed
       run: |
         # editable is necessary as pytest will run against the installed

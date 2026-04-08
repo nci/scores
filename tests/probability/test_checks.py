@@ -5,7 +5,7 @@ This module contains unit tests for scores.probability.checks
 import pytest
 
 import scores
-from tests.probabilty import cdf_test_data
+from tests.probability import cdf_test_data
 
 
 @pytest.mark.parametrize(

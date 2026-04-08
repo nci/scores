@@ -35,6 +35,7 @@ from scores.continuous.threshold_weighted_impl import (
 )
 from scores.plotdata.murphy_impl import murphy_score, murphy_thetas
 from scores.plotdata.qq_impl import qq
+from scores.plotdata.rev_impl import relative_economic_value, relative_economic_value_from_rates
 from scores.processing.isoreg_impl import isotonic_fit
 
 __all__ = [
@@ -66,4 +67,6 @@ __all__ = [
     "quantile_interval_score",
     "interval_score",
     "qq",
+    "relative_economic_value",
+    "relative_economic_value_from_rates",
 ]
