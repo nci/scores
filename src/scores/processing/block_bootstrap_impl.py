@@ -341,19 +341,112 @@ def block_bootstrap(
           https://doi.org/10.1016/C2017-0-03921-6
 
     Examples:
-        Bootstrap a fcst and obs dataset along the time and space dimensions with block sizes of 10
-        for each dimension. The bootstrapping is repeated 1000 times.
-
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.processing import block_bootstrap
-        >>> obs = xr.DataArray(np.random.rand(100, 100), dims=["time", "space"])
-        >>> fcst = xr.DataArray(np.random.rand(100, 100), dims=["time", "space"])
-        >>> bootstrapped_obs, bootstrapped_fcst = block_bootstrap(
+        >>> times = np.arange(6)
+        >>> stations = ["S1", "S2", "S3", "S4"]
+        >>> # Create synthetic observations
+        >>> obs_data = np.array([[t + (s/10) for s in range(4)] for t in range(6)])
+        >>> obs = xr.DataArray(obs_data,
+        ...                    coords={"time": times, "station": stations},
+        ...                                dims=["time", "station"])
+        >>> # Create 2 synthetic forecasts, which are the observations plus bias
+        >>> fcst = xr.concat([obs + 10, obs + 20], dim="model")
+        >>> fcst = fcst.assign_coords(model=["ECMWF", "GFS"])
+        >>> blocks = {"time": 3, "station": 2}
+        >>> n_iter = 5
+        >>> np.random.seed(42)
+        >>> boot_obs, boot_fcst = block_bootstrap(
         ...     [obs, fcst],
-        ...     blocks={"time": 10, "space": 10},
-        ...     n_iteration=1000,
+        ...     blocks=blocks,
+        ...     n_iteration=n_iter,
+        ...     circular=True
         ... )
+        >>> boot_obs
+        <xarray.DataArray (time: 6, station: 4, iteration: 5)> Size: 960B
+        array([[[3.3, 2.3, 4.1, 2.1, 2.3],
+                [3. , 2. , 4.2, 2.2, 2. ],
+                [3.3, 2.2, 4. , 2.3, 2.1],
+                [3. , 2.3, 4.1, 2. , 2.2]],
+        <BLANKLINE>
+               [[4.3, 3.3, 5.1, 3.1, 3.3],
+                [4. , 3. , 5.2, 3.2, 3. ],
+                [4.3, 3.2, 5. , 3.3, 3.1],
+                [4. , 3.3, 5.1, 3. , 3.2]],
+        <BLANKLINE>
+               [[5.3, 4.3, 0.1, 4.1, 4.3],
+                [5. , 4. , 0.2, 4.2, 4. ],
+                [5.3, 4.2, 0. , 4.3, 4.1],
+                [5. , 4.3, 0.1, 4. , 4.2]],
+        <BLANKLINE>
+               [[4.1, 4.3, 1. , 2.3, 4.1],
+                [4.2, 4. , 1.1, 2. , 4.2],
+                [4.1, 4.3, 1. , 2.1, 4. ],
+                [4.2, 4. , 1.1, 2.2, 4.1]],
+        <BLANKLINE>
+               [[5.1, 5.3, 2. , 3.3, 5.1],
+                [5.2, 5. , 2.1, 3. , 5.2],
+                [5.1, 5.3, 2. , 3.1, 5. ],
+                [5.2, 5. , 2.1, 3.2, 5.1]],
+        <BLANKLINE>
+               [[0.1, 0.3, 3. , 4.3, 0.1],
+                [0.2, 0. , 3.1, 4. , 0.2],
+                [0.1, 0.3, 3. , 4.1, 0. ],
+                [0.2, 0. , 3.1, 4.2, 0.1]]])
+        Coordinates:
+          * time     (time) int64 48B 0 1 2 3 4 5
+          * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
+        Dimensions without coordinates: iteration
+        >>> boot_fcst
+        <xarray.DataArray (model: 2, time: 6, station: 4, iteration: 5)> Size: 2kB
+        array([[[[13.3, 12.3, 14.1, 12.1, 12.3],
+                 [13. , 12. , 14.2, 12.2, 12. ],
+                 [13.3, 12.2, 14. , 12.3, 12.1],
+                 [13. , 12.3, 14.1, 12. , 12.2]],
+        <BLANKLINE>
+                [[14.3, 13.3, 15.1, 13.1, 13.3],
+                 [14. , 13. , 15.2, 13.2, 13. ],
+                 [14.3, 13.2, 15. , 13.3, 13.1],
+                 [14. , 13.3, 15.1, 13. , 13.2]],
+        <BLANKLINE>
+                [[15.3, 14.3, 10.1, 14.1, 14.3],
+                 [15. , 14. , 10.2, 14.2, 14. ],
+                 [15.3, 14.2, 10. , 14.3, 14.1],
+                 [15. , 14.3, 10.1, 14. , 14.2]],
+        <BLANKLINE>
+                [[14.1, 14.3, 11. , 12.3, 14.1],
+                 [14.2, 14. , 11.1, 12. , 14.2],
+                 [14.1, 14.3, 11. , 12.1, 14. ],
+                 [14.2, 14. , 11.1, 12.2, 14.1]],
+        <BLANKLINE>
+        ...
+        <BLANKLINE>
+                [[25.3, 24.3, 20.1, 24.1, 24.3],
+                 [25. , 24. , 20.2, 24.2, 24. ],
+                 [25.3, 24.2, 20. , 24.3, 24.1],
+                 [25. , 24.3, 20.1, 24. , 24.2]],
+        <BLANKLINE>
+                [[24.1, 24.3, 21. , 22.3, 24.1],
+                 [24.2, 24. , 21.1, 22. , 24.2],
+                 [24.1, 24.3, 21. , 22.1, 24. ],
+                 [24.2, 24. , 21.1, 22.2, 24.1]],
+        <BLANKLINE>
+                [[25.1, 25.3, 22. , 23.3, 25.1],
+                 [25.2, 25. , 22.1, 23. , 25.2],
+                 [25.1, 25.3, 22. , 23.1, 25. ],
+                 [25.2, 25. , 22.1, 23.2, 25.1]],
+        <BLANKLINE>
+                [[20.1, 20.3, 23. , 24.3, 20.1],
+                 [20.2, 20. , 23.1, 24. , 20.2],
+                 [20.1, 20.3, 23. , 24.1, 20. ],
+                 [20.2, 20. , 23.1, 24.2, 20.1]]]])
+        Coordinates:
+          * time     (time) int64 48B 0 1 2 3 4 5
+          * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
+        Dimensions without coordinates: iteration
+
     """
 
     # While the most efficient method involves expanding the iteration dimension withing the

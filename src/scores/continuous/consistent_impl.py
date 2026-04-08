@@ -94,6 +94,29 @@ def consistent_expectile_score(
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
 
+    Examples:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.continuous import consistent_expectile_score
+        >>> # Define convex function phi and its derivative
+        >>> def phi(x): return x ** 2
+        ...
+        >>> def phi_prime(x): return 2 * x
+        ...
+        >>> # Create forecast and observation data
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> # Calculate consistent expectile score for 0.5-expectile (median)
+        >>> consistent_expectile_score(fcst, obs, alpha=0.5, phi=phi, phi_prime=phi_prime)
+        <xarray.DataArray ()> Size: 8B
+        array(0.25)
+        >>> # Calculate score preserving the time dimension
+        >>> consistent_expectile_score(fcst, obs, alpha=0.5, phi=phi, phi_prime=phi_prime,
+        ...                                       preserve_dims='all')
+        <xarray.DataArray (time: 3)> Size: 24B
+        array([0.125, 0.125, 0.5  ])
+        Dimensions without coordinates: time
+
     """
     check_alpha(alpha)
 
@@ -184,6 +207,34 @@ def consistent_huber_score(
         -   Taggart, R. (2022b). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
+
+    Examples:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.continuous import consistent_huber_score
+        >>> # Define convex function phi and its derivative
+        >>>
+        >>> def phi(x): return x ** 2
+        ...
+        >>> def phi_prime(x): return 2 * x
+        ...
+        >>> # Create forecast and observation data
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> # Calculate consistent huber score
+        >>> consistent_huber_score(fcst, obs,
+        ...                        huber_param = 2,
+        ...                        phi=phi, phi_prime=phi_prime)
+        <xarray.DataArray ()> Size: 8B
+        array(0.25)
+        >>> # Calculate score preserving the time dimension
+        >>> consistent_huber_score(fcst, obs,
+        ...                        huber_param = 2,
+        ...                        phi=phi, phi_prime=phi_prime,
+        ...                        preserve_dims='all')
+        <xarray.DataArray (time: 3)> Size: 24B
+        array([0.125, 0.125, 0.5  ])
+        Dimensions without coordinates: time
     """
     check_huber_param(huber_param)
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
@@ -270,6 +321,31 @@ def consistent_quantile_score(
         -   Taggart, R. (2022). Evaluation of point forecasts for extreme events using
             consistent scoring functions. Quarterly Journal of the Royal Meteorological
             Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import consistent_quantile_score
+        >>> # Define nondecreasing function g
+        >>>
+        >>> def g(x): return x ** 2
+        ...
+        >>> # Create forecast and observation data
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> consistent_quantile_score(fcst, obs,
+        ...                           alpha = 0.5,
+        ...                           g=g)
+        <xarray.DataArray ()> Size: 8B
+        array(1.41666667)
+        >>> # Calculate score preserving the time dimension
+        >>> consistent_quantile_score(fcst, obs,
+        ...                           alpha = 0.5,
+        ...                           g=g,
+        ...                           preserve_dims='all')
+        <xarray.DataArray (time: 3)> Size: 24B
+        array([0.625, 1.125, 2.5  ])
+        Dimensions without coordinates: time
+
     """
     check_alpha(alpha)
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)

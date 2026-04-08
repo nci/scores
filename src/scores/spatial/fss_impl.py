@@ -143,6 +143,27 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting
            Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
            https://doi.org/10.1175/mwr-d-18-0106.1.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.spatial import fss_2d
+        >>> # Create simple 3x3 forecast and observation fields
+        >>> fcst = xr.DataArray(
+        ...      [[0, 1, 2], [1, 2, 3], [2, 3, 4]],
+        ...      dims=['x', 'y']
+        ... )
+        >>> obs = xr.DataArray(
+        ...      [[0, 0, 1], [1, 2, 2], [2, 2, 3]],
+        ...      dims=['x', 'y']
+        ... )
+        >>> # Compute FSS with threshold=1.5 and 2x2 window
+        >>> fss_2d(fcst, obs,
+        ...        event_threshold=1.5,
+        ...        window_size=(2, 2),
+        ...        spatial_dims=('x', 'y'))
+        <xarray.DataArray ()> Size: 8B
+        array(0.98461538)
+
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 
@@ -255,6 +276,29 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     .. seealso::
         :py:func:`scores.spatial.fss_2d` for more details and the continuous
         version. As well as detailed argument definitions.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.spatial import fss_2d_binary
+        >>> # Create simple 3x3 forecast and observation fields
+        >>> fcst = xr.DataArray(
+        ...      [[False, True, False],
+        ...      [True, False, True],
+        ...      [False, False, True]],
+        ...      dims=['x', 'y']
+        ... )
+        >>> obs = xr.DataArray(
+        ...      [[False, True, True],
+        ...      [False, False, True],
+        ...      [False, True, True]],
+        ...      dims=['x', 'y']
+        ... )
+        >>> fss_2d_binary(fcst, obs,
+        ...        window_size=(2, 2),
+        ...        spatial_dims=('x', 'y'))
+        <xarray.DataArray ()> Size: 8B
+        array(0.90909091)
+
     """
 
     if check_boolean and not (fcst.dtype == np.bool_ and obs.dtype == np.bool_):
@@ -344,6 +388,15 @@ def fss_2d_single_field(
         2. https://en.wikipedia.org/wiki/Summed-area_table
         3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
            skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+
+    Examples:
+        >>> import numpy as np
+        >>> from scores.spatial import fss_2d_single_field
+        >>> fcst = np.array([[0, 1, 2], [1, 2, 3], [2, 3, 4]], dtype=float)
+        >>> obs = np.array([[0, 0, 1], [1, 2, 2], [2, 2, 3]], dtype=float)
+        >>> fss_2d_single_field(fcst, obs, event_threshold=1.5, window_size=(2, 2))
+        np.float64(0.9846153846153847)
+
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 

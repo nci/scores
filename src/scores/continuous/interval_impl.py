@@ -86,13 +86,34 @@ def quantile_interval_score(  # pylint: disable=R0914
         Calculate the quantile interval score for forecast intervals with lower and upper
         quantile levels of 0.1 and 0.6, respectively.
 
-        >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import quantile_interval_score
-        >>> fcst_lower_level = xr.DataArray(np.random.uniform(10, 15, size=(30, 15)), dims=['time', 'station'])
-        >>> fcst_upper_level = xr.DataArray(np.random.uniform(20, 25, size=(30, 15)), dims=['time', 'station'])
-        >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
-        >>> quantile_interval_score(fcst_lower_level, fcst_upper_level, obs, 0.1, 0.6)
+        >>> times = [1, 2]
+        >>> locations = ['A', 'B', 'C']
+        >>> fcst_lower_level = xr.DataArray(
+        ...    data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...    coords={"time": times, "location": locations},
+        ...    dims=["time", "location"]
+        ...    )
+        >>> fcst_upper_level = xr.DataArray(
+        ...    data=[[0.3, 15., 0.0], [0.8, 14.1, 25.5]],
+        ...    coords={"time": times, "location": locations},
+        ...    dims=["time", "location"]
+        ...    )
+        >>> obs = xr.DataArray(
+        ...    data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...    coords={"time": times, "location": locations},
+        ...    dims=["time", "location"]
+        ...    )
+        >>> quantile_interval_score(fcst_lower_level, fcst_upper_level,
+        ...                         obs, 0.1, 0.6)
+        <xarray.Dataset> Size: 32B
+        Dimensions:                  ()
+        Data variables:
+            interval_width_penalty   float64 8B 5.267
+            overprediction_penalty   float64 8B 3.333
+            underprediction_penalty  float64 8B 0.08333
+            total                    float64 8B 8.683
     """  #  noqa: E501
     if not 0 < lower_qtile_level < upper_qtile_level < 1:
         raise ValueError(
@@ -215,13 +236,33 @@ def interval_score(
         Calculate the interval score for forecast intervals with an interval range of 0.5
         (i.e., lower and upper quantile levels are 0.25 and 0.75, respectively).
 
-        >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import interval_score
-        >>> fcst_lower_level = xr.DataArray(np.random.uniform(10, 15, size=(30, 15)), dims=['time', 'station'])
-        >>> fcst_upper_level = xr.DataArray(np.random.uniform(20, 25, size=(30, 15)), dims=['time', 'station'])
-        >>> obs = xr.DataArray(np.random.uniform(8, 27,size=(30, 15)), dims=['time', 'station'])
+        >>> times = [1, 2]
+        >>> locations = ['A', 'B', 'C']
+        >>> fcst_lower_level = xr.DataArray(
+        ...    data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...    coords={"time": times, "location": locations},
+        ...    dims=["time", "location"]
+        ...    )
+        >>> fcst_upper_level = xr.DataArray(
+        ...    data=[[0.3, 15., 0.0], [0.8, 14.1, 25.5]],
+        ...    coords={"time": times, "location": locations},
+        ...    dims=["time", "location"]
+        ...    )
+        >>> obs = xr.DataArray(
+        ...    data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...    coords={"time": times, "location": locations},
+        ...    dims=["time", "location"]
+        ...    )
         >>> interval_score(fcst_lower_level, fcst_upper_level, obs, 0.5)
+        <xarray.Dataset> Size: 32B
+        Dimensions:                  ()
+        Data variables:
+            interval_width_penalty   float64 8B 5.267
+            overprediction_penalty   float64 8B 1.333
+            underprediction_penalty  float64 8B 0.1333
+            total                    float64 8B 6.733
     """  #  noqa: E501
     if interval_range <= 0 or interval_range >= 1:
         raise ValueError("`interval_range` must be strictly between 0 and 1")

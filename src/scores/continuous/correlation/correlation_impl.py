@@ -61,16 +61,26 @@ def pearsonr(
     See Also:
         :py:func:`scores.continuous.correlation.spearmanr`
 
-    Example:
+    Examples:
         >>> import xarray as xr
-        >>> import numpy as np
         >>> from scores.continuous.correlation.correlation_impl import pearsonr
-        >>> # Create example forecast and observation DataArrays
-        >>> fcst = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
-        >>> obs = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
-        >>> # Calculate Pearson's correlation coefficient
-        >>> result = pearsonr(fcst, obs, reduce_dims="time")
-        >>> print(result)
+        >>> times = [1, 2]
+        >>> locations = ['A', 'B', 'C']
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+        >>> obs = xr.DataArray(
+        ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+        >>> pearsonr(fcst, obs, reduce_dims="location")
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.97856011, 0.85946704])
+        Coordinates:
+          * time     (time) int64 16B 1 2
     """
     if not all_same_xarraylike([fcst, obs]):
         raise TypeError("Both fcst and obs must be either xarray DataArrays or xarray Datasets.")
@@ -139,16 +149,26 @@ def spearmanr(
     See also:
         :py:func:`scores.continuous.correlation.pearsonr`
 
-    Example:
+    Examples:
         >>> import xarray as xr
-        >>> import numpy as np
         >>> from scores.continuous.correlation.correlation_impl import spearmanr
-        >>> # Create example forecast and observation DataArrays
-        >>> fcst = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
-        >>> obs = xr.DataArray(np.random.rand(10, 5), dims=("time", "location"))
-        >>> # Calculate Spearman's rank correlation coefficient
-        >>> result = spearmanr(fcst, obs, reduce_dims="time")
-        >>> print(result)
+        >>> times = [1, 2]
+        >>> locations = ['A', 'B', 'C']
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+        >>> obs = xr.DataArray(
+        ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+        >>> spearmanr(fcst, obs, reduce_dims="location")
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.5, 1. ])
+        Coordinates:
+          * time     (time) int64 16B 1 2
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims

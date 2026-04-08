@@ -252,7 +252,7 @@ def nse(
         >>> # Example 1:
         >>> # reduce over t - time - should produce a xy-grid (4 by 2)
         >>> nse(obs, fcst, reduce_dims=["t"])
-        <xarray.DataArray (x: 4, y: 2)> Size: 64B
+        <xarray.DataArray 'NSE' (x: 4, y: 2)> Size: 64B
         array([[ 0.71180556, -0.28819444],
                [ 0.71180556, -0.28819444],
                [ 0.70982143,  0.85742188],
@@ -261,7 +261,7 @@ def nse(
         >>> # Example 2:
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> nse(obs, fcst, reduce_dims=["x", "y"])
-        <xarray.DataArray (t: 3)> Size: 24B
+        <xarray.DataArray 'NSE' (t: 3)> Size: 24B
         array([0.77469136, 0.90123457, 0.74722222])
         Dimensions without coordinates: t
 
