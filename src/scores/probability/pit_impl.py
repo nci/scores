@@ -274,10 +274,11 @@ class Pit:
         Also useful for generating PIT-uniform probability plots.
 
         Returns:
-            dictionary of xarray objects with the following keys:
+            dictionary of xarray objects with the following keys, with :math:`t` values
+            in the "plotting_point" dimension:
+
             - "x_plotting_position", containing :math:`x(t)` values
             - "y_plotting_position", containing :math:`y(t)` values
-            with :math:`t` values in the "plotting_point" dimension.
         """
         return _get_plotting_points_param(self.left, self.right)
 
@@ -314,11 +315,11 @@ class Pit:
         Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the
         PIT distribution :math:`F` is to the uniform distribution on the closed unit interval :math:`[0,1]`.
         When ``negative_orientation=True``, the formula is for the alpha score is
-            :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
+        :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.
         In this case the alpha score takes values between 0 and 0.5.
         When ``negative_orientation=False``, the formula is for the alpha score is
-            :math:`1 - 2 \\int_0^1 |F(x) - x|\\,\\text{d}x,`
+        :math:`1 - 2 \\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the higher the score, the closer :math:`F` is to the uniform distribution.
         In this case the alpha score takes values between 0 and 1.
 
@@ -503,10 +504,11 @@ class PitFcstAtObs:
         Also useful for generating PIT-uniform probability plots.
 
         Returns:
-            dictionary of xarray objects with the following keys:
+            dictionary of xarray objects with the following keys, with :math:`t` values
+            in the "plotting_point" dimension:
+
             - "x_plotting_position", containing :math:`x(t)` values
             - "y_plotting_position", containing :math:`y(t)` values
-            with :math:`t` values in the "plotting_point" dimension.
         """
         return _get_plotting_points_param(self.left, self.right)
 
@@ -544,11 +546,11 @@ class PitFcstAtObs:
         Returns the 'alpha score' (Renard, et. al., 2010), which is a measure of how close the
         PIT distribution :math:`F` is to the uniform distribution on the closed unit interval :math:`[0,1]`.
         When ``negative_orientation=True``, the formula is for the alpha score is
-            :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
+        :math:`\\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the lower the score, the closer :math:`F` is to the uniform distribution.
         In this case the alpha score takes values between 0 and 0.5.
         When ``negative_orientation=False``, the formula is for the alpha score is
-            :math:`1 - 2 \\int_0^1 |F(x) - x|\\,\\text{d}x,`
+        :math:`1 - 2 \\int_0^1 |F(x) - x|\\,\\text{d}x,`
         so that the higher the score, the closer :math:`F` is to the uniform distribution.
         In this case the alpha score takes values between 0 and 1.
 
