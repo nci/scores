@@ -137,6 +137,16 @@ def flip_flop_index(
         Where :math:`N` is the number of data points, and :math:`x_i` is the
         :math:`i^{{\\text{{th}}}}` data point.
 
+    References:
+        - Griffiths, D., Foley, M., Ioannou, I., & Leeuwenburg, T. (2019).
+          Flip‐flop index: Quantifying revision stability for fixed‐event
+          forecasts. Meteorological Applications, 26(1), 30-35.
+          https://doi.org/10.1002/met.1732
+        - Griffiths, D., Loveday, N., Price, B., Foley, M., & McKelvie, A.
+          (2021). Circular Flip-Flop Index: quantifying revision stability
+          of forecasts of direction. Journal of Southern Hemisphere Earth
+          Systems Science, 71(3), 266–271. https://doi.org/10.1071/ES21010
+
     Examples:
         >>> data = xr.DataArray([50, 20, 40, 80], coords={{'lead_day': [1, 2, 3, 4]}})
 
@@ -408,6 +418,16 @@ def flip_flop_index_proportion_exceeding(
         + 'threshold'. There is a data variable for each keyword in
         `selections`, and corresponds to the Flip-Flop Index proportion
         exceeding for the subset of data specified by the keyword values.
+
+    References:
+        - Griffiths, D., Foley, M., Ioannou, I., & Leeuwenburg, T. (2019).
+          Flip‐flop index: Quantifying revision stability for fixed‐event
+          forecasts. Meteorological Applications, 26(1), 30-35.
+          https://doi.org/10.1002/met.1732
+        - Griffiths, D., Loveday, N., Price, B., Foley, M., & McKelvie, A.
+          (2021). Circular Flip-Flop Index: quantifying revision stability
+          of forecasts of direction. Journal of Southern Hemisphere Earth
+          Systems Science, 71(3), 266–271. https://doi.org/10.1071/ES21010
 
     Examples:
         >>> data = xr.DataArray(

@@ -79,8 +79,8 @@ def quantile_interval_score(  # pylint: disable=R0914
         ValueError: If (fcst_lower_qtile > fcst_upper_qtile).any().
 
     References:
-        Winkler, R. L. (1972). A Decision-Theoretic Approach to Interval Estimation. Journal of the American
-        Statistical Association, 67(337), 187. https://doi.org/10.2307/2284720
+        - Winkler, R. L. (1972). A Decision-Theoretic Approach to Interval Estimation. Journal of the American
+          Statistical Association, 67(337), 187. https://doi.org/10.2307/2284720
 
     Examples:
         Calculate the quantile interval score for forecast intervals with lower and upper
@@ -158,6 +158,7 @@ def interval_score(
         - :math:`y` is the observation
         - :math:`\\mathbb{1}(condition)` is an indicator function that is 1 when the condition is true, and 0 otherwise.
 
+    See Section 6.2 of Gneiting and Raftery (2007) for more information.
 
     Args:
         fcst_lower_qtile: array of forecast values at the lower quantile.
@@ -203,13 +204,13 @@ def interval_score(
         ValueError: If not 0 < interval_range < 1.
         ValueError: If (fcst_lower_qtile > fcst_upper_qtile).any().
 
-    References:
-        Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
-        and estimation. Journal of the American Statistical Association, 102(477), 359-378.
-        Section 6.2. https://doi.org/10.1198/016214506000001437
-
      See also:
         :py:func:`scores.continuous.quantile_interval_score`
+
+    References:
+        - Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
+          and estimation. Journal of the American Statistical Association, 102(477), 359–378.
+          https://doi.org/10.1198/016214506000001437
 
     Examples:
         Calculate the interval score for forecast intervals with an interval range of 0.5

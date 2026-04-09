@@ -78,9 +78,10 @@ def qq(
         TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
 
     References:
-        Déqué, M. (2011). Deterministic forecasts of continuous variables. In I. T.
-        Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner’s
-        guide in atmospheric science (2nd ed., pp. 77–94). Wiley. https://doi.org/10.1002/9781119960003.ch5
+        - Déqué, M. (2011). Deterministic forecasts of continuous variables. In I. T.
+          Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner’s
+          guide in atmospheric science (2nd ed., pp. 77–94). Wiley.
+          https://doi.org/10.1002/9781119960003.ch5
 
     Example:
         >>> import xarray as xr

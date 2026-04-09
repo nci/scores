@@ -387,10 +387,10 @@ def tw_squared_error(
         ValueError: if ``interval_where_one`` and ``interval_where_positive`` do not
             specify a valid trapezoidal weight.
 
-    Reference:
-        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
-        consistent scoring functions. Quarterly Journal of the Royal Meteorological
-        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
+    References:
+        - Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+          consistent scoring functions. Quarterly Journal of the Royal Meteorological
+          Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
     _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     _, phi, phi_prime = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
@@ -472,9 +472,9 @@ def tw_absolute_error(
             specify a valid trapezoidal weight.
 
     References:
-        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
-        consistent scoring functions. Quarterly Journal of the Royal Meteorological
-        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
+        - Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+          consistent scoring functions. Quarterly Journal of the Royal Meteorological
+          Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
     _check_tws_args(interval_where_one=interval_where_one, interval_where_positive=interval_where_positive)
     g, _, _ = _auxiliary_funcs(fcst, obs, interval_where_one, interval_where_positive)
@@ -560,9 +560,9 @@ def tw_quantile_score(
             specify a valid trapezoidal weight.
 
     References:
-        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
-        consistent scoring functions. Quarterly Journal of the Royal Meteorological
-        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
+        - Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+          consistent scoring functions. Quarterly Journal of the Royal Meteorological
+          Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
 
     check_alpha(alpha)
@@ -648,9 +648,9 @@ def tw_expectile_score(
             specify a valid trapezoidal weight.
 
     References:
-        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
-        consistent scoring functions. Quarterly Journal of the Royal Meteorological
-        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
+        - Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+          consistent scoring functions. Quarterly Journal of the Royal Meteorological
+          Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
 
     check_alpha(alpha)
@@ -739,9 +739,9 @@ def tw_huber_loss(
             specify a valid trapezoidal threshold weight.
 
     References:
-        Taggart, R. (2022). Evaluation of point forecasts for extreme events using
-        consistent scoring functions. Quarterly Journal of the Royal Meteorological
-        Society, 148(742), 306-320. https://doi.org/10.1002/qj.4206
+        - Taggart, R. (2022). Evaluation of point forecasts for extreme events using
+          consistent scoring functions. Quarterly Journal of the Royal Meteorological
+          Society, 148(742), 306–320. https://doi.org/10.1002/qj.4206
     """
 
     check_huber_param(huber_param)

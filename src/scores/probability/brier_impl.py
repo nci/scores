@@ -58,7 +58,7 @@ def brier_score(
 
     References:
         - Brier, G. W. (1950). Verification of forecasts expressed in terms of probability.
-          Monthly Weather Review, 78(1), 1-3. https://doi.org/fp62r6
+          Monthly Weather Review, 78(1), 1–3. https://doi.org/fp62r6
         - https://en.wikipedia.org/wiki/Brier_score
 
     See Also:
@@ -174,13 +174,13 @@ def brier_score_for_ensemble(
         ValueError: if ``weights`` contains the dimension provided in ``threshold_dim``.
         ValueError: if ``ensemble_member_dim`` is not in ``fcst`` dimensions.
 
-    References:
-        - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
-            Journal of the Royal Meteorological Society, 140(683), 1917–1923.
-            https://doi.org/10.1002/qj.2270
-
     See Also:
         - :py:func:`scores.probability.brier_score`
+
+    References:
+        - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly
+          Journal of the Royal Meteorological Society, 140(683), 1917–1923.
+          https://doi.org/10.1002/qj.2270
 
     Examples:
         Calculate the Brier score for an ensemble forecast for a single threshold:

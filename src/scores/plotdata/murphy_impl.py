@@ -31,9 +31,10 @@ def murphy_score(  # pylint: disable=R0914
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
 ) -> xr.Dataset:
-    """Returns the mean elementary score (Ehm et. al. 2016), also known as Murphy score,
+    """Returns the mean elementary score (Theorem 1 of Ehm et. al. 2016), also known as Murphy score,
     evaluated at decision thresholds specified by thetas. Optionally returns a decomposition
-    of the score in terms of penalties for over- and under-forecasting.
+    of the score in terms of penalties for over- and under-forecasting. See also Theorem 5.3 of
+    Taggart (2022).
 
     Select ``functional="quantile"`` and ``alpha=0.5`` for the median functional.
     Select ``functional="expectile"`` and ``alpha=0.5`` for the mean (i.e., expectation) functional.
@@ -87,17 +88,13 @@ def murphy_score(  # pylint: disable=R0914
         ValueError: If ``huber_a`` is not strictly greater than 0.
 
     References:
-
-        For mean elementary score definitions, see:
-            - Theorem 1 of Ehm, W., Gneiting, T., Jordan, A., & Krüger, F. (2016).
-              Of quantiles and expectiles: Consistent scoring functions, Choquet
-              representations and forecast rankings.
-              *Journal of the Royal Statistical Society Series B: Statistical Methodology*,
-              78(3), 505–562. https://doi.org/10.1111/rssb.12154
-            - Theorem 5.3 of Taggart, R. J. (2022). Point forecasting and forecast evaluation
-              with generalized Huber loss.
-              *Electronic Journal of Statistics*, 16(1), 201-231.
-              https://doi.org/10.1214/21-EJS1957
+        - Ehm, W., Gneiting, T., Jordan, A., & Krüger, F. (2016). Of quantiles and
+          expectiles: Consistent scoring functions, Choquet representations and forecast
+          rankings. Journal of the Royal Statistical Society Series B: Statistical
+          Methodology, 78(3), 505–562. https://doi.org/10.1111/rssb.12154
+        - Taggart, R. J. (2022). Point forecasting and forecast evaluation with
+          generalized Huber loss. Electronic Journal of Statistics, 16(1), 201–231.
+          https://doi.org/10.1214/21-EJS1957
 
     """
     functional_lower = functional.lower()
@@ -212,17 +209,17 @@ def murphy_thetas(
         ValueError: If ``left_limit_delta`` is not greater than or equal to 0.
 
     Notes:
-        For theta values at which to evaluate elementary scores, see
+        For recommended theta values at which to evaluate elementary scores,
+        see Corollary 2 (p. 521) of Ehm et al. (2016) and Corollary 5.6 of Taggart (2022).
 
-        - Corollary 2 (p.521) of Ehm, W., Gneiting, T., Jordan, A., & Krüger, F. (2016).
-          Of quantiles and expectiles: Consistent scoring functions, Choquet
-          representations and forecast rankings.
-          *Journal of the Royal Statistical Society Series B: Statistical Methodology*,
-          78(3), 505–562. https://doi.org/10.1111/rssb.12154
-        - Corollary 5.6 of Taggart, R. J. (2022). Point forecasting and forecast evaluation
-          with generalized Huber loss. *Electronic Journal of Statistics*, 16(1), 201-231.
-          https://doi.org/10.1214/21-EJS1957
-
+    References:
+        - Ehm, W., Gneiting, T., Jordan, A., & Krüger, F. (2016). Of quantiles and
+        expectiles: Consistent scoring functions, Choquet representations and forecast
+        rankings. Journal of the Royal Statistical Society Series B: Statistical
+        Methodology, 78(3), 505–562. https://doi.org/10.1111/rssb.12154
+        - Taggart, R. J. (2022). Point forecasting and forecast evaluation with
+        generalized Huber loss. Electronic Journal of Statistics, 16(1), 201–231.
+        https://doi.org/10.1214/21-EJS1957
     """
     _check_murphy_inputs(functional=functional, huber_a=huber_a, left_limit_delta=left_limit_delta)
     if (left_limit_delta is None) and (functional in ["huber", "expectile"]):

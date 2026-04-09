@@ -114,6 +114,12 @@ def firm(  # pylint: disable=too-many-arguments
         is always proportional to the distance of the observation from the
         threshold, and similarly for false alarms.
 
+    References:
+        - Taggart, R., Loveday, N., & Griffiths, D. (2022). A scoring framework for tiered
+          warnings and multicategorical forecasts based on fixed risk measures. Quarterly
+          Journal of the Royal Meteorological Society, 148(744), 1389–1406.
+          https://doi.org/10.1002/qj.4266
+
     Example:
         >>> import numpy as np
         >>> import xarray as xr
@@ -123,11 +129,6 @@ def firm(  # pylint: disable=too-many-arguments
         >>> categorical_thresholds = [0.2, 0.5, 0.8]
         >>> risk_parameter = 0.1
         >>> firm_score = firm(fcst, obs, risk_parameter, categorical_thresholds)
-
-    References:
-        Taggart, R., Loveday, N. and Griffiths, D., 2022. A scoring framework for tiered
-        warnings and multicategorical forecasts based on fixed risk measures. Quarterly
-        Journal of the Royal Meteorological Society, 148(744), pp.1389-1406.
     """
     _check_firm_inputs(
         fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
@@ -388,10 +389,10 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         This function raises a warning if any values in `prob_dry` are exactly equal to 0 or 1.
 
     References:
-        Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010).
-        A new equitable score suitable for verifying precipitation in numerical
-        weather prediction. Quarterly Journal of the Royal Meteorological Society,
-        136(650), 1344–1363. https://doi.org/10.1002/qj.656
+        - Rodwell, M. J., Richardson, D. S., Hewson, T. D., & Haiden, T. (2010).
+          A new equitable score suitable for verifying precipitation in numerical
+          weather prediction. Quarterly Journal of the Royal Meteorological Society,
+          136(650), 1344–1363. https://doi.org/10.1002/qj.656
 
     Examples:
         >>> import numpy as np

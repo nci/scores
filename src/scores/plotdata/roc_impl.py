@@ -125,6 +125,12 @@ def roc(  # pylint: disable=too-many-arguments
         Ideally concave ROC curves should be generated rather than traditional
         ROC curves.
 
+    References:
+        - Gneiting, T., & Vogel, P. (2022). Receiver operating characteristic (ROC) curves: Equivalences,
+          beta model, and minimum distance estimation. Machine Learning, 111(6), 2147–2159.
+          https://doi.org/10.1007/s10994-021-06115-2
+        - Jolliffe, I. T., & Stephenson, D. B. (Eds.). (2012). Forecast verification. Oxford: Wiley.
+
     Examples:
         >>> import xarray as xr
         >>> import numpy as np

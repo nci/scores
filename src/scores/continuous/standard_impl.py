@@ -449,23 +449,19 @@ def pbias(
         An xarray object with the percent bias of a forecast.
 
     References:
-        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
-            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
-            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
-        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
-            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
-            https://doi.org/10.1016/j.jhydrol.2014.06.035
-        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
-            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
-            Environmental Modelling and Software, 22(7), 1034-1052.
-            https://doi.org/10.1016/j.envsoft.2006.06.008
-        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
-            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
-            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
-
-
-
-
+        - Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+          Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913–922.
+          https://doi.org/10.1016/j.jhydrol.2014.06.035
+        - Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+          A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+          Environmental Modelling and Software, 22(7), 1034–1052.
+          https://doi.org/10.1016/j.envsoft.2006.06.008
+        - Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+          Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+          Transactions of the ASABE, 50(3), 885–900. https://doi.org/10.13031/2013.23153
+        - Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+          Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+          Water Resources Research, 29(4), 1185–1194. https://doi.org/10.1029/92WR02617
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -714,12 +710,14 @@ def kge(
           because the standard deviation is zero for a single point.
 
     References:
-        -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
-            NSE performance criteria: Implications for improving hydrological modeling. Journal of Hydrology, 377(1-2), 80-91.
-            https://doi.org/10.1016/j.jhydrol.2009.08.003.
-        -   Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
-            Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences, 23(10), 4323-4331.
-            https://doi.org/10.5194/hess-23-4323-2019.
+        - Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean
+          squared error and NSE performance criteria: Implications for improving hydrological modeling.
+          Journal of Hydrology, 377(1-2), 80–91.
+          https://doi.org/10.1016/j.jhydrol.2009.08.003.
+        - Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
+          Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences,
+          23(10), 4323–4331.
+          https://doi.org/10.5194/hess-23-4323-2019.
 
 
     Examples:

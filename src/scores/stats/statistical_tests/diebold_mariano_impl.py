@@ -105,12 +105,14 @@ def diebold_mariano(  # pylint: disable=R0914
         RuntimeWarnning: if there is a NaN in diffs.
 
     References:
-        - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
-          Economic Statistics 13 (1995), 253-265.
-        - Hering and Genton, 'Comparing spatial predictions',
-          Technometrics 53 no. 4 (2011), 414-425.
-        - Harvey, Leybourne and Newbold, 'Testing the equality of prediction mean
-          squared errors', International Journal of Forecasting 13 (1997), 281-291.
+        - Diebold, F. X., & Mariano, R. S. (1995). Comparing predictive accuracy. Journal
+          of Business & Economic Statistics, 13(3), 253–265.
+          https://doi.org/10.1080/07350015.1995.10524599
+        - Harvey, D., Leybourne, S., & Newbold, P. (1997). Testing the equality of
+          prediction mean squared errors. International Journal of Forecasting, 13(2),
+          281–291. https://doi.org/10.1016/S0169-2070(96)00719-4
+        - Hering, A. S., & Genton, M. G. (2011). Comparing spatial predictions.
+          Technometrics, 53(4), 414–425. https://doi.org/10.1198/TECH.2011.10136
 
     Example:
 
@@ -240,12 +242,14 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"
         RuntimeWarnning: if there is a NaN in diffs.
 
     References:
-        - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
-          Economic Statistics 13 (1995), 253-265.
-        - Hering and Genton, 'Comparing spatial predictions',
-          Technometrics 53 no. 4 (2011), 414-425.
-        - Harvey, Leybourne and Newbold, 'Testing the equality of prediction mean
-          squared errors', International Journal of Forecasting 13 (1997), 281-291.
+        - Diebold, F. X., & Mariano, R. S. (1995). Comparing predictive accuracy. Journal
+          of Business & Economic Statistics, 13(3), 253–265.
+          https://doi.org/10.1080/07350015.1995.10524599
+        - Harvey, D., Leybourne, S., & Newbold, P. (1997). Testing the equality of
+          prediction mean squared errors. International Journal of Forecasting, 13(2),
+          281–291. https://doi.org/10.1016/S0169-2070(96)00719-4
+        - Hering, A. S., & Genton, M. G. (2011). Comparing spatial predictions.
+          Technometrics, 53(4), 414–425. https://doi.org/10.1198/TECH.2011.10136
     """
     if method not in ["HLN", "HG"]:
         raise ValueError("`method` must be one of 'HLN' or 'HG'.")
@@ -292,8 +296,9 @@ def _hg_func(pars: list, lag: np.ndarray, acv: np.ndarray) -> np.ndarray:
         Difference between modelled and empirical autocoveriances.
 
     References:
-        Hering and Genton, 'Comparing spatial predictions',
-        Technometrics 53 no. 4 (2011), 414-425.
+        - Hering, A. S., & Genton, M. G. (2011). Comparing spatial predictions.
+          Technometrics, 53(4), 414–425. https://doi.org/10.1198/TECH.2011.10136
+
     """
     return (pars[0] ** 2) * np.exp(-3 * lag / pars[1]) - acv
 

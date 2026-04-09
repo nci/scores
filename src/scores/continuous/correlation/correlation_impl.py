@@ -55,11 +55,11 @@ def pearsonr(
     Note:
         This function isn't set up to take weights.
 
-    Reference:
-        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
-
     See Also:
         :py:func:`scores.continuous.correlation.spearmanr`
+
+    References:
+        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
     Example:
         >>> import xarray as xr
@@ -132,12 +132,13 @@ def spearmanr(
     Note:
         This function isn't set up to take weights.
 
-    Reference:
-        Spearman, C. (1904). The Proof and Measurement of Association between Two Things. The American Journal of
-        Psychology, 15(1), 72–101. https://doi.org/10.2307/1412159
-
     See also:
         :py:func:`scores.continuous.correlation.pearsonr`
+
+    References:
+        - Spearman, C. (1904). The Proof and Measurement of Association
+          between Two Things. The American Journal of Psychology, 15(1), 72–101.
+          https://doi.org/10.2307/1412159
 
     Example:
         >>> import xarray as xr

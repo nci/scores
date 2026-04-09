@@ -103,14 +103,14 @@ def risk_matrix_score(
         ValueError: if ``severity_dim`` coordinates differ for any of ``fcst``, ``obs`` or ``decision_weights``.
         ValueError: if ``threshold_assignment`` is not "upper" or lower".
 
+    See Also:
+        :py:func:`scores.categorical.matrix_weights_to_array`
+        :py:func:`scores.categorical.weights_from_warning_scaling`
+
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
           with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657–2677.
           https://doi.org/10.5194/nhess-25-2657-2025
-
-    See also:
-        :py:func:`scores.categorical.matrix_weights_to_array`
-        :py:func:`scores.categorical.weights_from_warning_scaling`
 
     Examples:
         Calculate the risk matrix score where the risk matrix has three nested severity
@@ -295,14 +295,14 @@ def matrix_weights_to_array(
         ValueError: if number of columns of ``matrix_weights`` doesn't equal length of ``severity_coords``.
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
 
+    See Also:
+        :py:func:`scores.categorical.risk_matrix_score`
+        :py:func:`scores.categorical.weights_from_warning_scaling`
+
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
           with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657–2677.
           https://doi.org/10.5194/nhess-25-2657-2025
-
-    See also:
-        :py:func:`scores.categorical.risk_matrix_score`
-        :py:func:`scores.categorical.weights_from_warning_scaling`
 
     Examples:
         Returns weights for each risk matrix decision point, where weights increase with increasing
@@ -394,14 +394,14 @@ def weights_from_warning_scaling(
         ValueError: if ``prob_threshold_coords`` aren't strictly between 0 and 1.
         ValueError: if ``evaluation_weights`` aren't strictly positive.
 
+    See Also:
+        :py:func:`scores.categorical.matrix_weights_to_array`
+        :py:func:`scores.categorical.risk_matrix_score`
+
     References:
         - Taggart, R. J., & Wilke, D. J. (2025). Warnings based on risk matrices: A coherent framework
           with consistent evaluation. Natural Hazards and Earth System Sciences, 25(8), 2657–2677.
           https://doi.org/10.5194/nhess-25-2657-2025
-
-    See also:
-        :py:func:`scores.categorical.matrix_weights_to_array`
-        :py:func:`scores.categorical.risk_matrix_score`
 
     Examples:
         Returns weights for each risk matrix decision point, for the SHORT-RANGE scaling matrix of

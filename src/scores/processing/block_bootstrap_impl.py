@@ -201,8 +201,9 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         function in blocks using 'block_bootstrap'.
 
     References:
-    Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
-      Academic press, 2011.
+        - Wilks, D. S. (2011). Statistical methods in the atmospheric sciences. Academic press.
+          https://doi.org/10.1016/C2017-0-03921-6
+
     """
     # Rename exclude_dims so they are not bootstrapped
     if exclude_dims is None:

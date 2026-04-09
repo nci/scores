@@ -12,14 +12,14 @@ considered in:
 - `#270 <GITHUB270_>`_.
 
 References:
-1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall Accumulations from
-   High-Resolution Forecasts of Convective Events. Monthly Weather Review, 136, 78–97,
-   https://doi.org/10.1175/2007mwr2123.1.
-2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting Case and
-   Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
-   https://doi.org/10.1175/mwr-d-18-0106.1.
-3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions skill
-   score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+- Faggian, N., Roux, B., Steinle, P., & Ebert, B. (2015). Fast calculation of the
+  fractions skill score. MAUSAM, 66, 457–466. https://doi.org/10.54302/mausam.v66i3.555
+- Mittermaier, M. P. (2021). A "meta" analysis of the fractions skill score: The
+  limiting case and implications for aggregation. Monthly Weather Review, 149,
+  3491–3504. https://doi.org/10.1175/mwr-d-18-0106.1
+- Roberts, N. M., & Lean, H. W. (2008). Scale-selective verification of rainfall accumulations
+  from high-resolution forecasts of convective events. Monthly Weather Review, 136(1), 78–97,
+  https://doi.org/10.1175/2007mwr2123.1.
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270
@@ -137,12 +137,12 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         DimensionWarning: If ``spatial_dims`` are attempting to be preserved e.g. in ``preserve_dims``
 
     References:
-        1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
-           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather
-           Review, 136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
-        2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting
-           Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
-           https://doi.org/10.1175/mwr-d-18-0106.1.
+        - Mittermaier, M. P. (2021). A "meta" analysis of the fractions skill score: The
+          limiting case and implications for aggregation. Monthly Weather Review, 149,
+          3491–3504. https://doi.org/10.1175/mwr-d-18-0106.1
+        - Roberts, N. M., & Lean, H. W. (2008). Scale-selective verification of rainfall accumulations
+          from high-resolution forecasts of convective events. Monthly Weather Review, 136(1), 78–97,
+          https://doi.org/10.1175/2007mwr2123.1.
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 
@@ -308,7 +308,6 @@ def fss_2d_single_field(
     Once the squared sums are computed, the final FSS value can be derived by
     accumulating the squared sums :sup:`[3]`.
 
-
     The caller is responsible for making sure the input fields are in the 2-D
     spatial domain. (Although it should work for any ``np.array`` as long as it's
     2D, and ``window_size`` is appropriately sized.)
@@ -338,12 +337,12 @@ def fss_2d_single_field(
             not match.
 
     References:
-        1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
-           Accumulations from High-Resolution Forecasts of Convective Events. Monthly Weather Review
-           136, 78–97, https://doi.org/10.1175/2007mwr2123.1.
-        2. https://en.wikipedia.org/wiki/Summed-area_table
-        3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
-           skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+        - Faggian, N., Roux, B., Steinle, P., & Ebert, B. (2015). Fast calculation of the
+          fractions skill score. MAUSAM, 66, 457–466. https://doi.org/10.54302/mausam.v66i3.555
+        - https://en.wikipedia.org/wiki/Summed-area_table
+        - Roberts, N. M., & Lean, H. W. (2008). Scale-selective verification of rainfall accumulations
+          from high-resolution forecasts of convective events. Monthly Weather Review, 136(1), 78–97,
+          https://doi.org/10.1175/2007mwr2123.1.
     """
     np_thrsh_op = _make_numpy_threshold_operator(threshold_operator)
 

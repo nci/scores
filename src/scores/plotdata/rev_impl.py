@@ -371,7 +371,7 @@ def relative_economic_value_from_rates(
     References:
         - Richardson, D. S. (2000). Skill and relative economic value of the ECMWF
           ensemble prediction system. Quarterly Journal of the Royal Meteorological
-          Society, 126(563), 649-667. https://doi.org/10.1002/qj.49712656313
+          Society, 126(563), 649–667. https://doi.org/10.1002/qj.49712656313
 
     Examples:
         Calculate REV from pre-computed rates:
@@ -577,7 +577,7 @@ def relative_economic_value(
     References:
         - Richardson, D. S. (2000). Skill and relative economic value of the ECMWF ensemble
           prediction system. Quarterly Journal of the Royal Meteorological Society, 126(563),
-          649-667. https://doi.org/10.1002/qj.49712656313
+          649–667. https://doi.org/10.1002/qj.49712656313
 
     Examples:
         Calculate REV for binary forecasts:

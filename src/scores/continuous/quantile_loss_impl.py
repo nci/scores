@@ -69,10 +69,12 @@ def quantile_score(
             - :math:`\\alpha` is the targeted quantile.
             - :math:`x` is the difference, fcst - obs
 
+        See Theorem 9 of Gneiting (2011).
+
     References:
-        T. Gneiting, "Making and evaluating point forecasts",
-        J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
-        Theorem 9
+        - Gneiting, T. (2011). Making and evaluating point forecasts.
+          Journal of the American Statistical Association, 106(494), 746–762.
+          https://doi.org/10.1198/jasa.2011.r10138
 
     """
     specified_dims = reduce_dims or preserve_dims
