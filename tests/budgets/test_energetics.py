@@ -98,11 +98,11 @@ def vorticity(phi, theta, alpha):
             10.0,
             np.array([30,60], dtype=np.int64),
             4,
-            np.array([-90.0, 0.0]),
+            np.array([90.0, 180.0]),
             np.array([None]),
             0.25 * area_earth * 10.0,
-            2.0,
-            2.0e-2,
+            4.0,
+            1.0e-3,
         ),
         # Sub-domain in latitude and longitude
         (
@@ -111,7 +111,7 @@ def vorticity(phi, theta, alpha):
             10.0,
             np.array([60,120], dtype=np.int64),
             4,
-            np.array([-135.0, -45.0]),
+            np.array([45.0, 135.0]),
             np.array([-60.0, +60.0]),
             rad_earth * rad_earth * np.pi * (135.0 - 45.0) / 180.0 * (np.sin(np.pi/3.0) + np.sin(np.pi/3.0)) * 10.0,
             2.0,

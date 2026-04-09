@@ -26,6 +26,10 @@ def prepare_fields(
 
     fields.sortby("latitude")
 
+    # re-order the longitudes to range between 0 and 360 degrees (global)
+    if fields.longitude.values[0] < -0.1:
+        fields = resort_lon_from_m180to180_to_0to360(fields, 'longitude')
+
     if sub_domain_longitude.any() != None:
         fields = fields.sel(longitude=sub_domain_longitude)
 

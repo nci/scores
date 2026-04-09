@@ -6,10 +6,10 @@ import numpy as np
 
 RAD_EARTH = 6371220.0 # radius of the earth, m
 METERS_PER_DEGREE = 2.0*np.pi*RAD_EARTH/360.0 # conversion from degrees to meters, m
-LON_MIN = -180.0 # minimum permissible longitude, degrees
-LON_MAX = +180.0 # maximum permissible longitude, degrees
-LAT_MIN = -90.0 # minimum permissible latitude, degrees
-LAT_MAX = +90.0 # maximu permissible latitude, degrees
+LON_MIN =    0.0 # minimum permissible longitude, degrees
+LON_MAX = +360.0 # maximum permissible longitude, degrees
+LAT_MIN =  -90.0 # minimum permissible latitude, degrees
+LAT_MAX =  +90.0 # maximu permissible latitude, degrees
 GRAVITY = 9.80665 # gravitational acceleration of the earth, m/s^2
 C_P = 1006.0 # specific heat of dry air at constant pressure, J/kg/K
 C_PV = 1872.0 # specific heat of water vapor at constant pressure, J/kg/K
@@ -69,7 +69,8 @@ def integration_weights(longitude,latitude,sub_domain_lon=np.array([None]),sub_d
 # dimensions are assumed as: field[num_latitudes,num_longitudes]
 def integrate_horizontal(field, dlon, dlat):
     int_lon = np.dot(field, dlon)
-    return np.dot(int_lon, dlat)
+    int_tot = np.dot(int_lon, dlat)
+    return int_tot
 
 def trig_fields(longitude, latitude):
     nlon = len(longitude)
@@ -130,3 +131,25 @@ def integrate_energy_exchange(field_scalar, field_vector_x, field_vector_y, long
     int_f_div_u = integrate_horizontal(f_div_u,dlon,dlat)
 
     return int_grad_f_dot_u, int_f_div_u
+
+def resort_lon_from_m180to180_to_0to360(ds, lon_name):
+    # customised from:
+    # https://stackoverflow.com/questions/53345442/about-changing-longitude-array-from-0-360-to-180-to-180-with-python-xarray
+
+    # Adjust lon values to make sure they are within (0, 360)
+    ds['_longitude_adjusted'] = xr.where(
+        ds[lon_name] < 0,
+        ds[lon_name] + 360,
+        ds[lon_name])
+
+    # reassign the new coords to as the main lon coords
+    # and sort DataArray using new coordinate values
+    ds = (
+        ds
+        .swap_dims({lon_name: '_longitude_adjusted'})
+        .sel(**{'_longitude_adjusted': sorted(ds._longitude_adjusted)})
+        .drop(lon_name))
+
+    ds = ds.rename({'_longitude_adjusted': lon_name})
+
+    return ds
