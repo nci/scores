@@ -214,12 +214,13 @@ def murphy_thetas(
 
     References:
         - Ehm, W., Gneiting, T., Jordan, A., & Krüger, F. (2016). Of quantiles and
-        expectiles: Consistent scoring functions, Choquet representations and forecast
-        rankings. Journal of the Royal Statistical Society Series B: Statistical
-        Methodology, 78(3), 505–562. https://doi.org/10.1111/rssb.12154
+          expectiles: Consistent scoring functions, Choquet representations and forecast
+          rankings. Journal of the Royal Statistical Society Series B: Statistical
+          Methodology, 78(3), 505–562. https://doi.org/10.1111/rssb.12154
         - Taggart, R. J. (2022). Point forecasting and forecast evaluation with
-        generalized Huber loss. Electronic Journal of Statistics, 16(1), 201–231.
-        https://doi.org/10.1214/21-EJS1957
+          generalized Huber loss. Electronic Journal of Statistics, 16(1), 201–231.
+          https://doi.org/10.1214/21-EJS1957
+
     """
     _check_murphy_inputs(functional=functional, huber_a=huber_a, left_limit_delta=left_limit_delta)
     if (left_limit_delta is None) and (functional in ["huber", "expectile"]):

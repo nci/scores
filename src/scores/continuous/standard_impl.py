@@ -73,8 +73,8 @@ def mse(
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#MSE
-        -   https://en.wikipedia.org/wiki/Mean_squared_error
+        - https://jwgfvr.github.io/forecastverification/index.html#MSE
+        - https://en.wikipedia.org/wiki/Mean_squared_error
 
     """
 
@@ -275,7 +275,7 @@ def mean_error(
         An xarray object with the mean error of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+        - https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     """
     return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
@@ -325,7 +325,7 @@ def additive_bias(
         An xarray object with the additive bias of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+        - https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     """
     # Note - mean error call this function
@@ -384,7 +384,7 @@ def multiplicative_bias(
         An xarray object with the multiplicative bias of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
+        - https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
 
     """
     reduce_dims = scores.utils.gather_dimensions(

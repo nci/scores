@@ -59,7 +59,7 @@ def pearsonr(
         :py:func:`scores.continuous.correlation.spearmanr`
 
     References:
-        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+        - https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
     Example:
         >>> import xarray as xr
