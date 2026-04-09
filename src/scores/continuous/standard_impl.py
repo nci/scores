@@ -29,9 +29,6 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE
-    for more information.
-
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
@@ -110,8 +107,6 @@ def rmse(
 ) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error
 
-    A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
-
     .. math ::
         \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2}
 
@@ -151,6 +146,9 @@ def rmse(
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
+    References:
+        - https://en.wikipedia.org/wiki/Root-mean-square_deviation
+
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
 
@@ -169,8 +167,6 @@ def mae(
     is_angular: bool = False,
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
-
-    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
 
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n | \\text{forecast}_i - \\text{observed}_i |
@@ -209,6 +205,10 @@ def mae(
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    References:
+        - https://en.wikipedia.org/wiki/Mean_absolute_error
+
     """
 
     if is_xarraylike(fcst):
@@ -247,10 +247,6 @@ def mean_error(
     .. math::
         \\text{mean error} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
-
-
-    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
-    for more information.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -297,10 +293,6 @@ def additive_bias(
     .. math::
         \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
-
-
-    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
-    for more information.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -357,9 +349,6 @@ def multiplicative_bias(
     .. math::
         \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
-
-    See "(Multiplicative) bias" section at https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
-    for more information.
 
     Args:
         fcst: Forecast or predicted variables.
@@ -424,8 +413,6 @@ def pbias(
         - :math:`x_i` = the values of x in a sample (i.e. forecast values)
         - :math:`y_i` = the values of y in a sample (i.e. observed values)
 
-    See "pbias" section at https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html for more information
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -462,6 +449,7 @@ def pbias(
         - Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
           Application of global optimization to the Sacramento Soil Moisture Accounting Model.
           Water Resources Research, 29(4), 1185–1194. https://doi.org/10.1029/92WR02617
+        - https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims

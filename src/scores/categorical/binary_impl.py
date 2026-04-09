@@ -60,6 +60,9 @@ def probability_of_detection(
         ValueError: if there are values in `fcst` and `obs` that are not in the
             set {0, 1, np.nan} and `check_args` is true.
 
+    References:
+        - https://jwgfvr.github.io/forecastverification/index.html#POD
+
     """
     # fcst & obs must be 0s and 1s
     if check_args:
@@ -129,6 +132,10 @@ def probability_of_false_detection(
     Raises:
         ValueError: if there are values in `fcst` and `obs` that are not in the
             set {0, 1, np.nan} and `check_args` is true.
+
+    References:
+        - https://jwgfvr.github.io/forecastverification/index.html#POFD
+
     """
     # fcst & obs must be 0s and 1s
     if check_args:

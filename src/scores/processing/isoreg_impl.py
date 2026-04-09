@@ -143,7 +143,9 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
           classifiers. Proceedings of the National Academy of Sciences, 118(8), e2016191118.
           https://www.pnas.org/doi/10.1073/pnas.2016191118
         - Jordan, A. I., Mühlemann, A., & Ziegel, J. F. (2020). Optimal solutions to the isotonic regression
-          problem. arXiv preprint arXiv:1904.04761v2. https://doi.org/10.48550/arXiv.1904.04761
+          problem. arXiv preprint arXiv:1904.04761v2.
+          `https://doi.org/10.48550/arXiv.1904.04761 <https://doi.org/10.48550/arXiv.1904.04761>`__
+
     """
 
     if isinstance(fcst, xr.DataArray):

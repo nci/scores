@@ -14,8 +14,6 @@ def mse(
 ) -> PandasType:
     """Calculates the mean squared error from forecast and observed data.
 
-    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_squared_error
-
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
@@ -39,6 +37,9 @@ def mse(
             An object containing a single floating point number representing the mean squared
             error for the supplied data. All dimensions will be reduced.
 
+    References:
+        - https://en.wikipedia.org/wiki/Mean_squared_error
+
     """
     return __continuous.mse(fcst, obs, is_angular=is_angular)
 
@@ -50,8 +51,6 @@ def rmse(
     is_angular: bool = False,
 ) -> PandasType:
     """Calculate the Root Mean Squared Error from xarray or pandas objects.
-
-    A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
     .. math ::
         \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2}
@@ -74,6 +73,9 @@ def rmse(
             An object containing a single floating point number representing the root mean squared
             error for the supplied data. All dimensions will be reduced.
 
+    References:
+        - https://en.wikipedia.org/wiki/Root-mean-square_deviation
+
     """
     return __continuous.rmse(fcst, obs, is_angular=is_angular)
 
@@ -85,8 +87,6 @@ def mae(
     is_angular: bool = False,
 ) -> PandasType:
     """Calculates the mean absolute error from forecast and observed data.
-
-    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
 
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n | \\text{forecast}_i - \\text{observed}_i |
@@ -107,6 +107,9 @@ def mae(
     Returns:
         pandas.Series: An object containing a single floating point number representing
         the mean absolute error for the supplied data. All dimensions will be reduced.
+
+    References:
+        - https://en.wikipedia.org/wiki/Mean_absolute_error
 
     """
     return __continuous.mae(fcst, obs, is_angular=is_angular)

@@ -1032,7 +1032,7 @@ def tw_crps_for_ensemble(
             constructed using the ensemble values.
         - If `method="fair"` then the twCRPS value returned \
             is the approximated twCRPS where the ensemble values can be interpreted as a \
-            random sample from the underlying predictive distribution. See  https://doi.org/10.1002/qj.2270 \
+            random sample from the underlying predictive distribution. See Ferro (2014) \
             for more details on the fair CRPS which are relevant for the fair twCRPS.
 
     The ensemble representation of the empirical twCRPS is
@@ -1098,6 +1098,8 @@ def tw_crps_for_ensemble(
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
           When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
           110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
+        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the \
+          Royal Meteorological Society, 140(683), 1917–1923. https://doi.org/10.1002/qj.2270
 
     Examples:
         Calculate the twCRPS for an ensemble of forecasts where the chaining function is
