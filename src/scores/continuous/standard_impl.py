@@ -64,11 +64,11 @@ def mse(
             degrees rather than radians.
 
     Returns:
-        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]: An object containing
-            a single floating point number representing the mean absolute
-            error for the supplied data. All dimensions will be reduced.
-            Otherwise: Returns an object representing the mean squared error,
-            reduced along the relevant dimensions and weighted appropriately.
+        Union[xr.Dataset, xr.DataArray, pd.Dataframe, pd.Series]
+            The mean squared error, with dimensions reduced as specified by
+            `reduce_dims` or `preserve_dims`. If neither is specified, all
+            dimensions are reduced and a scalar value is returned.
+
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
@@ -76,6 +76,36 @@ def mse(
         -   https://jwgfvr.github.io/forecastverification/index.html#MSE
         -   https://en.wikipedia.org/wiki/Mean_squared_error
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import mse
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> mse(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.1375)
+        >>> mse(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.15333333, 0.12166667])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> mse(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.13657407)
     """
 
     if is_xarraylike(fcst):
@@ -143,14 +173,45 @@ def rmse(
             degrees rather than radians.
 
     Returns:
-        An object containing
-            a single floating point number representing the root mean squared
-            error for the supplied data. All dimensions will be reduced.
-            Otherwise: Returns an object representing the root mean squared error,
-            reduced along the relevant dimensions and weighted appropriately.
+        An object containing a single floating point number representing
+        the root mean squared error for the supplied data. All dimensions
+        will be reduced. Otherwise: Returns an object representing the root
+        mean squared error, reduced along the relevant dimensions and weighted
+        appropriately.
+
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import rmse
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> rmse(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.37080992)
+        >>> rmse(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.391578  , 0.34880749])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> rmse(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.3695593)
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
 
@@ -209,6 +270,38 @@ def mae(
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import mae
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> mae(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.325)
+        >>> mae(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.33333333, 0.31666667])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> mae(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.32314815)
+
     """
 
     if is_xarraylike(fcst):
@@ -272,10 +365,41 @@ def mean_error(
             See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
-        An xarray object with the mean error of a forecast.
+        An object with the mean error of a forecast.
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import mean_error
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> mean_error(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.00833333)
+        >>> mean_error(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 0.16666667, -0.18333333])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> mean_error(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.00462963)
 
     """
     return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
@@ -322,10 +446,41 @@ def additive_bias(
             See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
-        An xarray object with the additive bias of a forecast.
+        An object with the additive bias of a forecast.
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import additive_bias
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> additive_bias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.00833333)
+        >>> additive_bias(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 0.16666667, -0.18333333])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> additive_bias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.00462963)
 
     """
     # Note - mean error call this function
@@ -381,11 +536,41 @@ def multiplicative_bias(
             See the ``scores`` weighting tutorial for more information on how to use weights.
 
     Returns:
-        An xarray object with the multiplicative bias of a forecast.
+        An object with the multiplicative bias of a forecast.
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import multiplicative_bias
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> multiplicative_bias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.99637681)
+        >>> multiplicative_bias(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([1.08130081, 0.92810458])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> multiplicative_bias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(1.00195008)
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -449,22 +634,50 @@ def pbias(
         An xarray object with the percent bias of a forecast.
 
     References:
-        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
-            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
-            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
-        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
-            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
-            https://doi.org/10.1016/j.jhydrol.2014.06.035
-        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
-            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
-            Environmental Modelling and Software, 22(7), 1034-1052.
-            https://doi.org/10.1016/j.envsoft.2006.06.008
-        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
-            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
-            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
+        - Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+          Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+          Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
+        - Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+          Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
+          https://doi.org/10.1016/j.jhydrol.2014.06.035
+        - Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+          A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+          Environmental Modelling and Software, 22(7), 1034-1052.
+          https://doi.org/10.1016/j.envsoft.2006.06.008
+        - Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+          Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+          Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
 
-
-
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import pbias
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> pbias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.36231884)
+        >>> pbias(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 8.1300813 , -7.18954248])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> pbias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.1950078)
 
     """
     reduce_dims = scores.utils.gather_dimensions(
@@ -570,7 +783,8 @@ def percent_within_x(
         >>> # Example 1:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over t - time - should produce an xy-grid (4 by 2)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["t"])
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
+        ...                  is_inclusive=True, reduce_dims=["t"])
         <xarray.DataArray (x: 4, y: 2)> Size: 64B
         array([[66.66666667,  0.        ],
                [66.66666667,  0.        ],
@@ -581,7 +795,8 @@ def percent_within_x(
         >>> # Example 2:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["x","y"])
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
+        ...                  is_inclusive=True, reduce_dims=["x","y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([25., 75., 12.5])
         Dimensions without coordinates: t
@@ -589,7 +804,8 @@ def percent_within_x(
         >>> # Example 3:
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=False, reduce_dims=["x","y"])
+        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
+        ...                  is_inclusive=False, reduce_dims=["x","y"])
         <xarray.DataArray (t: 3)> Size: 24B
         array([12.5., 12.5., 12.5])
         Dimensions without coordinates: t
@@ -603,10 +819,12 @@ def percent_within_x(
         >>> fcst = obs + 0.3
         >>> print(f'fcst {fcst.values}')
         fcst [0.6000000000000001]
-        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=20)
+        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3,
+        ...                              is_inclusive=True, decimals=20)
         >>> print(f'incorrectly creating a penalty: {unrounded.values}')
         incorrectly ignoring a success: 0.0
-        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=5)
+        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3,
+        ...                            is_inclusive=True, decimals=5)
         >>> print(f'correctly recognising a success: {rounded.values}')
         correctly recognising a success: 100.0
 
@@ -723,12 +941,43 @@ def kge(
 
 
     Examples:
-        >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
-        >>> kge_s = kge(forecasts, obs,reduce_dims="time")  # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
-        >>> kge_s = kge(forecasts, obs, include_components=True) # kge_s is dataset of all three components and kge value itself
-        >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0)) # with scaling factors
-
-
+        >>> import xarray as xr
+        >>> from scores.continuous import kge
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> kge(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.80729437)
+        >>> kge(fcst, obs, preserve_dims=['time'])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.8118117 , 0.68668803])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+        >>> kge(fcst, obs, scaling_factors=[0.5, 1.0, 1.5])
+        <xarray.DataArray ()> Size: 8B
+        array(0.81581987)
+        >>> kge(fcst, obs, include_components=True)
+        <xarray.Dataset> Size: 32B
+        Dimensions:  ()
+        Data variables:
+            kge      float64 8B 0.8073
+            rho      float64 8B 0.9344
+            alpha    float64 8B 1.181
+            beta     float64 8B 0.9964
 
     """  #  noqa: E501
 

@@ -67,28 +67,57 @@ def qq(
         preserve_dims: Dimensions to preserve when calculating quantiles.
 
     Returns:
-        An xarray object with a new dimension called "data_source".
+        An xarray object with a new dimension called ``data_source``.
 
     Raises:
         ValueError: If the interpolation method is invalid.
         ValueError: if quantiles are not between 0 and 1.
-        ValueError: If a dimension in the input data has the same name as `data_source_dim`
+        ValueError: If a dimension in the input data has the same name as ``data_source_dim``
         ValueError: If fcst and obs are Datasets with different data variables.
         ValueError: If a user tries to preserve all dimensions.
         TypeError: If fcst and obs are not both xarray DataArrays or Datasets.
 
     References:
-        Déqué, M. (2011). Deterministic forecasts of continuous variables. In I. T.
-        Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner’s
-        guide in atmospheric science (2nd ed., pp. 77–94). Wiley. https://doi.org/10.1002/9781119960003.ch5
+        - Déqué, M. (2011). Deterministic forecasts of continuous variables. In I. T.
+          Jolliffe & D. B. Stephenson (Eds.), Forecast verification: A practitioner's
+          guide in atmospheric science (2nd ed., pp. 77-94). Wiley.
+          https://doi.org/10.1002/9781119960003.ch5
 
-    Example:
+    Examples:
         >>> import xarray as xr
-        >>> import numpy as np
         >>> from scores.plotdata import qq
-        >>> fcst = xr.DataArray(np.random.rand(100), dims='time')
-        >>> obs = xr.DataArray(np.random.rand(100), dims='time')
-        >>> result = qq(fcst, obs, quantiles=[0.1, 0.5, 0.9])
+        >>> times = [1, 2]
+        >>> locations = ['A', 'B', 'C']
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+        >>> obs = xr.DataArray(
+        ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+        >>> qq(fcst, obs, quantiles=[0.1, 0.5, 0.9])
+        <xarray.DataArray (data_source: 2, quantile: 3)> Size: 48B
+        array([[ 0.05,  3.45,  8.55],
+            [-1.65,  2.45, 11.8 ]])
+        Coordinates:
+        * quantile     (quantile) float64 24B 0.1 0.5 0.9
+        * data_source  (data_source) <U4 32B 'fcst' 'obs'
+        >>> qq(fcst, obs, quantiles=[0.1, 0.5, 0.9], preserve_dims="time")
+        <xarray.DataArray (data_source: 2, quantile: 3, time: 2)> Size: 96B
+        array([[[ 0.02,  1.62],
+                [ 0.1 ,  6.5 ],
+                [ 8.02,  6.98]],
+            [[-2.7 ,  1.22],
+                [ 0.1 ,  4.5 ],
+                [10.74,  9.06]]])
+        Coordinates:
+        * time         (time) int64 16B 1 2
+        * quantile     (quantile) float64 24B 0.1 0.5 0.9
+        * data_source  (data_source) <U4 32B 'fcst' 'obs'
+
     """
     reduce_dims = gather_dimensions(
         fcst_dims=fcst.dims,

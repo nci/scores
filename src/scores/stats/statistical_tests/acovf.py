@@ -118,9 +118,9 @@ def acovf(x):
             The estimated autocovariances.
 
     References:
-        [1] Parzen, E., 1963. On spectral analysis with missing observations
-            and amplitude modulation. Sankhya: The Indian Journal of
-            Statistics, Series A, pp.383-392.
+        - Parzen, E., 1963. On spectral analysis with missing observations
+          and amplitude modulation. Sankhya: The Indian Journal of
+          Statistics, Series A, pp.383-392.
     """
 
     xo = x - x.mean()

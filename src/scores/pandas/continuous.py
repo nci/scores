@@ -1,7 +1,3 @@
-"""
-Import the functions from the implementations into the public API
-"""
-
 from scores import continuous as __continuous
 from scores.pandas.typing import PandasType
 
@@ -39,6 +35,14 @@ def mse(
             An object containing a single floating point number representing the mean squared
             error for the supplied data. All dimensions will be reduced.
 
+    Examples:
+        >>> from scores.pandas.continuous import mse
+        >>> import pandas as pd
+        >>> fcst = pd.Series([1.5, 0.7, 1.4], name="forecast")
+        >>> obs = pd.Series([1.2, 0.8, 1.5], name="observed")
+        >>> mse(fcst, obs)
+        np.float64(0.03666666666666669)
+
     """
     return __continuous.mse(fcst, obs, is_angular=is_angular)
 
@@ -74,6 +78,14 @@ def rmse(
             An object containing a single floating point number representing the root mean squared
             error for the supplied data. All dimensions will be reduced.
 
+    Examples:
+        >>> from scores.pandas.continuous import rmse
+        >>> import pandas as pd
+        >>> fcst = pd.Series([1.5, 0.7, 1.4], name="forecast")
+        >>> obs = pd.Series([1.2, 0.8, 1.5], name="observed")
+        >>> rmse(fcst, obs)
+        np.float64(0.1914854215512677)
+
     """
     return __continuous.rmse(fcst, obs, is_angular=is_angular)
 
@@ -108,5 +120,14 @@ def mae(
         pandas.Series: An object containing a single floating point number representing
         the mean absolute error for the supplied data. All dimensions will be reduced.
 
+    Examples:
+        >>> from scores.pandas.continuous import mae
+        >>> import pandas as pd
+        >>> fcst = pd.Series([1.5, 0.7, 1.4], name="forecast")
+        >>> obs = pd.Series([1.2, 0.8, 1.5], name="observed")
+        >>> mae(fcst, obs)
+        np.float64(0.16666666666666674)
+
     """
+
     return __continuous.mae(fcst, obs, is_angular=is_angular)

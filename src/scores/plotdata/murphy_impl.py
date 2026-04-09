@@ -93,11 +93,28 @@ def murphy_score(  # pylint: disable=R0914
               Of quantiles and expectiles: Consistent scoring functions, Choquet
               representations and forecast rankings.
               *Journal of the Royal Statistical Society Series B: Statistical Methodology*,
-              78(3), 505–562. https://doi.org/10.1111/rssb.12154
+              78(3), 505-562. https://doi.org/10.1111/rssb.12154
             - Theorem 5.3 of Taggart, R. J. (2022). Point forecasting and forecast evaluation
               with generalized Huber loss.
               *Electronic Journal of Statistics*, 16(1), 201-231.
               https://doi.org/10.1214/21-EJS1957
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import murphy_score, murphy_thetas
+        >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
+        >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
+        ...                         coords={"time": times}, dims="time")
+        >>> obs = xr.DataArray([1.0, 3.0, 4.5],
+        ...                                coords={"time": times}, dims="time")
+        >>> thetas = murphy_thetas(fcst, obs, 'expectile')
+        >>> murphy_score(fcst, obs, thetas, functional='expectile',alpha=0.5)
+        <xarray.Dataset> Size: 96B
+        Dimensions:  (theta: 6)
+        Coordinates:
+        * theta    (theta) float64 48B 1.0 1.2 2.5 3.0 4.1 4.5
+        Data variables:
+            total    (theta) float64 48B 0.0 0.0 0.08333 0.0 0.06667 0.0
 
     """
     functional_lower = functional.lower()
@@ -218,10 +235,27 @@ def murphy_thetas(
           Of quantiles and expectiles: Consistent scoring functions, Choquet
           representations and forecast rankings.
           *Journal of the Royal Statistical Society Series B: Statistical Methodology*,
-          78(3), 505–562. https://doi.org/10.1111/rssb.12154
+          78(3), 505-562. https://doi.org/10.1111/rssb.12154
         - Corollary 5.6 of Taggart, R. J. (2022). Point forecasting and forecast evaluation
           with generalized Huber loss. *Electronic Journal of Statistics*, 16(1), 201-231.
           https://doi.org/10.1214/21-EJS1957
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import murphy_score, murphy_thetas
+        >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
+        >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
+        ...                         coords={"time": times}, dims="time")
+        >>> obs = xr.DataArray([1.0, 3.0, 4.5],
+        ...                                coords={"time": times}, dims="time")
+        >>> thetas = murphy_thetas(fcst, obs, 'expectile')
+        >>> murphy_score(fcst, obs, thetas, functional='expectile',alpha=0.5)
+        <xarray.Dataset> Size: 96B
+        Dimensions:  (theta: 6)
+        Coordinates:
+        * theta    (theta) float64 48B 1.0 1.2 2.5 3.0 4.1 4.5
+        Data variables:
+            total    (theta) float64 48B 0.0 0.0 0.08333 0.0 0.06667 0.0
 
     """
     _check_murphy_inputs(functional=functional, huber_a=huber_a, left_limit_delta=left_limit_delta)

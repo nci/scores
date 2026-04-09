@@ -86,35 +86,36 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
             result small.
 
     Returns:
-        Dictionary with the following keys:
+        dict
+            Dictionary with the following keys:
 
-        - "unique_fcst_sorted": 1D numpy array of remaining forecast values sorted in
-            ascending order, after any NaNs from `fcst`, `obs` and `weight` are removed,
-            and only unique values are kept to keep the output size reasonably small.
-        - "fcst_counts": 1D numpy array of forecast counts for unique values of forecast sorted
-        - "regression_values": 1D numpy array of regression values corresponding to
-            "unique_fcst_sorted" values.
-        - "regression_func": function that returns the regression fit based on linear
-            interpolation of ("fcst_sorted", "regression_values"), for any supplied
-            argument (1D numpy array) of potential forecast values.
-        - "bootstrap_results": in the case of `report_bootstrap_results=True`, 2D numpy
-            array of bootstrapped regression values is included in return dictionary.
-            Each row gives the interpolated regression values from a particular bootstrapped
-            sample, evaluated at "fcst_sorted" values. If `m` is the number of bootstrap
-            samples and `n = len(fcst_sorted)` then it is has shape `(m, n)`. We emphasise
-            that this array corresponds to `fcst_sorted` not `unique_fcst_sorted`.
-        - "confidence_band_lower_values": values of lower confidence band threshold, evaluated
-            at "unique_fcst_sorted" values.
-        - "confidence_band_upper_values": values of upper confidence band threshold, evaluated
-            at "unique_fcst_sorted" values.
-        - "confidence_band_lower_func": function that returns regression fit based on linear
-            interpolation of ("fcst_sorted", "confidence_band_lower_values"), given any
-            argument (1D numpy array) of potential forecast values.
-        - "confidence_band_upper_func": function that returns regression fit based on linear
-            interpolation of ("fcst_sorted", "confidence_band_upper_values"), given any
-            argument (1D numpy array) of potential forecast values.
-        - "confidence_band_levels": tuple giving the quantile levels used to calculate the
-            confidence band.
+        - **unique_fcst_sorted**: 1D numpy array of remaining forecast values sorted in
+          ascending order, after any NaNs from `fcst`, `obs` and `weight` are removed,
+          and only unique values are kept to keep the output size reasonably small.
+        - **fcst_counts**: 1D numpy array of forecast counts for unique values of forecast sorted
+        - **regression_values**: 1D numpy array of regression values corresponding to
+          "unique_fcst_sorted" values.
+        - **regression_func**: function that returns the regression fit based on linear
+          interpolation of ("fcst_sorted", "regression_values"), for any supplied
+          argument (1D numpy array) of potential forecast values.
+        - **bootstrap_results**: in the case of `report_bootstrap_results=True`, 2D numpy
+          array of bootstrapped regression values is included in return dictionary.
+          Each row gives the interpolated regression values from a particular bootstrapped
+          sample, evaluated at "fcst_sorted" values. If `m` is the number of bootstrap
+          samples and `n = len(fcst_sorted)` then it is has shape `(m, n)`. We emphasise
+          that this array corresponds to `fcst_sorted` not `unique_fcst_sorted`.
+        - **confidence_band_lower_values**: values of lower confidence band threshold, evaluated
+          at "unique_fcst_sorted" values.
+        - **confidence_band_upper_values**: values of upper confidence band threshold, evaluated
+          at "unique_fcst_sorted" values.
+        - **confidence_band_lower_func**: function that returns regression fit based on linear
+          interpolation of ("fcst_sorted", "confidence_band_lower_values"), given any
+          argument (1D numpy array) of potential forecast values.
+        - **confidence_band_upper_func**: function that returns regression fit based on linear
+          interpolation of ("fcst_sorted", "confidence_band_upper_values"), given any
+          argument (1D numpy array) of potential forecast values.
+        - **confidence_band_levels**: tuple giving the quantile levels used to calculate the
+          confidence band.
 
     Raises:
         ValueError: if `fcst` and `obs` are np.arrays and don't have the same shape.
@@ -131,17 +132,38 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         ValueError: if `bootstraps` is not a positive integer.
         ValueError: if `confidence_level` is not strictly between 0 and 1.
 
-    Note: This function only keeps the unique values of `fcst_sorted` to keep the volume of
+    Notes:
+        This function only keeps the unique values of `fcst_sorted` to keep the volume of
         the return dictionary small. The forecast counts is also included, so users can it to
         create forecast histogram (usually displayed in the reliability diagrams).
 
-    References
+    References:
         - de Leeuw, Hornik and Mair. "Isotone Optimization in R: Pool-Adjacent-Violators Algorithm (PAVA)
           and Active Set Methods", Journal of Statistical Software, 2009.
         - Dimitriadis, Gneiting and Jordan. "Stable reliability diagrams for probabilistic classifiers",
           PNAS, Vol. 118 No. 8, 2020. Available at https://www.pnas.org/doi/10.1073/pnas.2016191118
         - Jordan, Mühlemann, and Ziegel. "Optimal solutions to the isotonic regression problem",
           2020 (version 2), available on arxiv at https://arxiv.org/abs/1904.04761
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing import isotonic_fit
+        >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
+        >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
+        ...                         coords={"time": times}, dims="time")
+        >>> obs = xr.DataArray([1.0, 3.0, 4.5],
+        ...                                coords={"time": times}, dims="time")
+        >>> isotonic_fit(fcst, obs)
+        {'fcst_sorted': array([1.2, 2.5, 4.1]),
+        'fcst_counts': array([1, 1, 1]),
+        'regression_values': array([1. , 3. , 4.5]),
+        'regression_func': <function _get_interp1d_func.<locals>.func at 0x7fd89d333f60>,
+        'confidence_band_lower_values': None,
+        'confidence_band_upper_values': None,
+        'confidence_band_lower_func': functools.partial(<function full_like at 0x7fd8d69f54f0>, fill_value=nan),
+        'confidence_band_upper_func': functools.partial(<function full_like at 0x7fd8d69f54f0>, fill_value=nan),
+        'confidence_band_levels': (None, None)}
+
     """
 
     if isinstance(fcst, xr.DataArray):

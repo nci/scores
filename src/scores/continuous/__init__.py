@@ -1,5 +1,5 @@
 """
-Import the functions from the implementations into the public API
+Scores for metrics of continous variables
 """
 
 import scores.continuous.correlation  # noqa: F401

@@ -50,7 +50,7 @@ def quantile_score(
             See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
-        A DataArray with values being the mean generalised piecewise linear (GPL)
+        An xarray object with values being the mean generalised piecewise linear (GPL)
         scoring function, with the dimensions specified in `dims`.
         If `dims` is `None`, the returned DataArray will have only one element,
         the overall mean GPL score.
@@ -70,9 +70,36 @@ def quantile_score(
             - :math:`x` is the difference, fcst - obs
 
     References:
-        T. Gneiting, "Making and evaluating point forecasts",
-        J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
-        Theorem 9
+        - T. Gneiting, "Making and evaluating point forecasts",
+          J. Amer. Stat. Assoc., Vol. 106 No. 494 (June 2011), pp. 754--755,
+          Theorem 9
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import quantile_score
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+        >>> obs = xr.DataArray(
+        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> fcst = xr.DataArray(
+        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
+        ...       coords={"time": times, "lat": lats, "lon": lons},
+        ...       dims=["time", "lat", "lon"]
+        ...       )
+        >>> quantile_score(fcst, obs, alpha=0.5)
+        <xarray.DataArray ()> Size: 8B
+        array(0.1625)
+        >>> quantile_score(fcst, obs, alpha=0.5, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.16666667, 0.15833333])
+        Coordinates:
+        * time     (time) <U10 80B '2024-01-01' '2024-01-02'
 
     """
     specified_dims = reduce_dims or preserve_dims
