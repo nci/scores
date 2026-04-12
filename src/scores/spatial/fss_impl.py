@@ -3,23 +3,13 @@ This module contains methods related to the Fractions Skill Score (FSS).
 
 For an explanation of the FSS, and implementation considerations, see references below.
 
-Currently uses the default score defined Robert and Leans (2008) :sup:`[1,2]`. Fine grained controls are considered
+Currently uses the default score defined Robert and Lean (2008) :sup:`[1,2]`. Fine grained controls are considered
 in `#353 <GITHUB353_>`_.
 
 The default computation is performed using`numpy` :sup:`[3]` and summed-area tables, with future optimization options
 considered in:
 - `#269 <GITHUB269_>`_.
 - `#270 <GITHUB270_>`_.
-
-References:
-- Faggian, N., Roux, B., Steinle, P., & Ebert, B. (2015). Fast calculation of the
-  fractions skill score. MAUSAM, 66, 457–466. https://doi.org/10.54302/mausam.v66i3.555
-- Mittermaier, M. P. (2021). A "meta" analysis of the fractions skill score: The
-  limiting case and implications for aggregation. Monthly Weather Review, 149,
-  3491–3504. https://doi.org/10.1175/mwr-d-18-0106.1
-- Roberts, N. M., & Lean, H. W. (2008). Scale-selective verification of rainfall accumulations
-  from high-resolution forecasts of convective events. Monthly Weather Review, 136(1), 78–97,
-  https://doi.org/10.1175/2007mwr2123.1.
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270

@@ -121,7 +121,7 @@ def rank_histogram(
         - :py:class:`scores.probability.PitFcstAtObs`
 
     References:
-        - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts. \
+        - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts.
           Monthly Weather Review, 129(3), 550–560. https://doi.org/dkkvh3
         - Talagrand, O. (1999). Evaluation of probabilistic prediction systems.
           In Workshop proceedings "Workshop on predictability", 20-22 October 1997, ECMWF, Reading, UK.

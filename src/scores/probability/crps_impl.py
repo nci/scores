@@ -1092,13 +1092,13 @@ def tw_crps_for_ensemble(
         :py:func:`scores.probability.crps_cdf`
 
     References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
           Quantification, 11(3), 906–940. https://doi.org/10.1137/22M1532184.
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-          When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes
+          When Evaluating Probabilistic Forecasts. Journal of Statistical Software,
           110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
-        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the \
+        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the
           Royal Meteorological Society, 140(683), 1917–1923. https://doi.org/10.1002/qj.2270
 
     Examples:
@@ -1206,11 +1206,11 @@ def tail_tw_crps_for_ensemble(
         :py:func:`scores.probability.crps_cdf`
 
     References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
           Quantification, 11(3), 906–940. https://doi.org/10.1137/22M1532184.
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-          When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes
+          When Evaluating Probabilistic Forecasts. Journal of Statistical Software,
           110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
 
     Examples:
@@ -1320,11 +1320,11 @@ def interval_tw_crps_for_ensemble(
         :py:func:`scores.probability.crps_cdf`
 
     References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
           Quantification, 11(3), 906–940. https://doi.org/10.1137/22M1532184.
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-          When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes
+          When Evaluating Probabilistic Forecasts. Journal of Statistical Software,
           110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
 
     Examples:
