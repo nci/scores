@@ -1108,11 +1108,12 @@ def tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import tw_crps_for_ensemble
+        >>> np.random.seed(42)
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
         <xarray.DataArray ()> Size: 8B
-        array(0.15035089)
+        array(0.07993158)
 
     """  # noqa: E501
     if chaining_func_kwargs is None:
@@ -1221,11 +1222,12 @@ def tail_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import tail_tw_crps_for_ensemble
+        >>> np.random.seed(42)
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
         >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
         <xarray.DataArray ()> Size: 8B
-        array(0.08123812)
+        array(0.07993158)
     """
     if tail not in ["upper", "lower"]:
         raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
@@ -1336,11 +1338,12 @@ def interval_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import interval_tw_crps_for_ensemble
+        >>> np.random.seed(42)
         >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
         <xarray.DataArray ()> Size: 8B
-        array(8.22003907)
+        array(7.46973354)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
         if (lower_threshold >= upper_threshold).any().values.item():
