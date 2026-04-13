@@ -29,9 +29,6 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE
-    for more information.
-
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
@@ -73,8 +70,8 @@ def mse(
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#MSE
-        -   https://en.wikipedia.org/wiki/Mean_squared_error
+        - https://jwgfvr.github.io/forecastverification/index.html#MSE
+        - https://en.wikipedia.org/wiki/Mean_squared_error
 
     Examples:
         >>> import xarray as xr
@@ -154,8 +151,6 @@ def rmse(
 ) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error
 
-    A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
-
     .. math ::
         \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2}
 
@@ -194,6 +189,9 @@ def rmse(
             reduced along the relevant dimensions and weighted appropriately.
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    References:
+        - https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
     Examples:
         >>> import xarray as xr
@@ -258,8 +256,6 @@ def mae(
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
 
-    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
-
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n | \\text{forecast}_i - \\text{observed}_i |
 
@@ -297,6 +293,9 @@ def mae(
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    References:
+        - https://en.wikipedia.org/wiki/Mean_absolute_error
 
     Examples:
         >>> import xarray as xr
@@ -382,10 +381,6 @@ def mean_error(
         \\text{mean error} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-
-    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
-    for more information.
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -409,7 +404,7 @@ def mean_error(
         An xarray object with the mean error of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+        - https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     Examples:
         >>> import xarray as xr
@@ -477,10 +472,6 @@ def additive_bias(
         \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-
-    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
-    for more information.
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -504,7 +495,7 @@ def additive_bias(
         An xarray object with the additive bias of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+        - https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     Examples:
         >>> import xarray as xr
@@ -582,9 +573,6 @@ def multiplicative_bias(
         \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-    See "(Multiplicative) bias" section at https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
-    for more information.
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -608,7 +596,7 @@ def multiplicative_bias(
         An xarray object with the multiplicative bias of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
+        - https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
 
     Examples:
         >>> import xarray as xr
@@ -692,8 +680,6 @@ def pbias(
         - :math:`x_i` = the values of x in a sample (i.e. forecast values)
         - :math:`y_i` = the values of y in a sample (i.e. observed values)
 
-    See "pbias" section at https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html for more information
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -717,21 +703,20 @@ def pbias(
         An xarray object with the percent bias of a forecast.
 
     References:
-        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
-            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
-            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
-        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
-            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
-            https://doi.org/10.1016/j.jhydrol.2014.06.035
-        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
-            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
-            Environmental Modelling and Software, 22(7), 1034-1052.
-            https://doi.org/10.1016/j.envsoft.2006.06.008
-        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
-            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
-            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
-
-
+        - Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+          Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913–922.
+          https://doi.org/10.1016/j.jhydrol.2014.06.035
+        - Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+          A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+          Environmental Modelling and Software, 22(7), 1034–1052.
+          https://doi.org/10.1016/j.envsoft.2006.06.008
+        - Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+          Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+          Transactions of the ASABE, 50(3), 885–900. https://doi.org/10.13031/2013.23153
+        - Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+          Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+          Water Resources Research, 29(4), 1185–1194. https://doi.org/10.1029/92WR02617
+        - https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html
 
     Examples:
         >>> import xarray as xr
@@ -1060,14 +1045,17 @@ def kge(
           because the standard deviation is zero for a single point.
 
     References:
-        -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
-            NSE performance criteria: Implications for improving hydrological modeling. Journal of Hydrology, 377(1-2), 80-91.
-            https://doi.org/10.1016/j.jhydrol.2009.08.003.
-        -   Kling, H., Fuchs, M., & Paulin, M. (2012). Runoff conditions in the upper Danube basin under an ensemble of climate
-            change scenarios. Journal of Hydrology. 424: 264–277. https://doi.org/10.1016/j.jhydrol.2012.01.011.
-        -   Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
-            Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences, 23(10), 4323-4331.
-            https://doi.org/10.5194/hess-23-4323-2019.
+        - Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean
+          squared error and NSE performance criteria: Implications for improving hydrological modeling.
+          Journal of Hydrology, 377(1-2), 80–91.
+          https://doi.org/10.1016/j.jhydrol.2009.08.003.
+        - Kling, H., Fuchs, M., & Paulin, M. (2012). Runoff conditions in the upper Danube basin
+          under an ensemble of climate change scenarios. Journal of Hydrology, 424, 264–277.
+          https://doi.org/10.1016/j.jhydrol.2012.01.011.
+        - Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
+          Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences,
+          23(10), 4323–4331.
+          https://doi.org/10.5194/hess-23-4323-2019.
 
 
     Examples:
