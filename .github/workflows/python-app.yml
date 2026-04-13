@@ -39,6 +39,9 @@ jobs:
       with:
         flag-name: run-${{ join(matrix.*, '-') }}
         parallel: true
+    - name: Test doctests in source modules
+      run: |
+        pytest --doctest-modules src/scores/ --override-ini="addopts="
     - name: Test tutorial notebooks with pytest
       run: |
         pytest --nbmake docs/tutorials/
