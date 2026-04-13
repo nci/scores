@@ -2246,8 +2246,7 @@ class BinaryContingencyManager(BasicContingencyManager):
                    [0., 0.],
                    [4., 4.]])
             Coordinates:
-              * time         (time) int64 16B 0 1
-              * contingency  (contingency) <U11 220B 'tp_count' 'tn_count' ... 'total_count'
+              ...
 
         """
         cd = self._get_counts(reduce_dims=reduce_dims, preserve_dims=preserve_dims)

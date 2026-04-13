@@ -603,7 +603,7 @@ def relative_economic_value(
         <xarray.Dataset> Size: 80B
         Dimensions:          (cost_loss_ratio: 5)
         Coordinates:
-          * cost_loss_ratio  (cost_loss_ratio) float64 40B 0.1 0.3 0.5 0.7 0.9
+          ...
         Data variables:
             maximum          (cost_loss_ratio) float64 40B 1.0 1.0 1.0 1.0 1.0
 

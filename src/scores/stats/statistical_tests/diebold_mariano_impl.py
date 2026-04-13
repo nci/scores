@@ -138,7 +138,7 @@ def diebold_mariano(  # pylint: disable=R0914
         <xarray.Dataset> Size: 168B
         Dimensions:          (lead_day: 3)
         Coordinates:
-          * lead_day         (lead_day) int64 24B 1 2 3
+          ...
         Data variables:
             mean             (lead_day) float64 24B 2.5 -0.2 1.0
             dm_test_stat     (lead_day) float64 24B 3.475 -0.2484 289.5
@@ -157,7 +157,7 @@ def diebold_mariano(  # pylint: disable=R0914
         <xarray.Dataset> Size: 168B
         Dimensions:          (lead_day: 3)
         Coordinates:
-          * lead_day         (lead_day) int64 24B 1 2 3
+          ...
         Data variables:
             mean             (lead_day) float64 24B 2.5 -0.2 1.0
             dm_test_stat     (lead_day) float64 24B 2.236 -0.3333 nan

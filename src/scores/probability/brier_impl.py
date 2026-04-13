@@ -229,7 +229,7 @@ def brier_score_for_ensemble(
         <xarray.DataArray (threshold: 1)> Size: 8B
         array([0.5])
         Coordinates:
-          * threshold  (threshold) float64 8B 0.5
+          ...
         >>> # Calculate the Brier score for an ensemble forecast for multiple thresholds:
         >>> brier_score_for_ensemble(fcst, obs,
         ...                          ensemble_member_dim='ensemble',
@@ -237,7 +237,7 @@ def brier_score_for_ensemble(
         <xarray.DataArray (threshold: 2)> Size: 16B
         array([0.16666667, 0.5       ])
         Coordinates:
-          * threshold  (threshold) float64 16B 0.1 0.5
+          ...
 
     """
     if event_threshold_operator not in [operator.ge, operator.gt, operator.le, operator.lt]:

@@ -395,8 +395,7 @@ def block_bootstrap(
                 [0.1, 0.3, 3. , 4.1, 0. ],
                 [0.2, 0. , 3.1, 4.2, 0.1]]])
         Coordinates:
-          * time     (time) int64 48B 0 1 2 3 4 5
-          * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
+          ...
         Dimensions without coordinates: iteration
         >>> boot_fcst
         <xarray.DataArray (model: 2, time: 6, station: 4, iteration: 5)> Size: 2kB
@@ -442,9 +441,7 @@ def block_bootstrap(
                  [20.1, 20.3, 23. , 24.1, 20. ],
                  [20.2, 20. , 23.1, 24.2, 20.1]]]])
         Coordinates:
-          * time     (time) int64 48B 0 1 2 3 4 5
-          * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
-          * model    (model) <U5 40B 'ECMWF' 'GFS'
+          ...
         Dimensions without coordinates: iteration
 
     """

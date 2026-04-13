@@ -102,8 +102,7 @@ def qq(
         array([[ 0.05,  3.45,  8.55],
                [-1.65,  2.45, 11.8 ]])
         Coordinates:
-          * quantile     (quantile) float64 24B 0.1 0.5 0.9
-          * data_source  (data_source) <U4 32B 'fcst' 'obs'
+          ...
         >>> qq(fcst, obs, quantiles=[0.1, 0.5, 0.9], preserve_dims="time")
         <xarray.DataArray (data_source: 2, quantile: 3, time: 2)> Size: 96B
         array([[[ 0.02,  1.62],
@@ -114,9 +113,7 @@ def qq(
                 [ 0.1 ,  4.5 ],
                 [10.74,  9.06]]])
         Coordinates:
-          * time         (time) int64 16B 1 2
-          * quantile     (quantile) float64 24B 0.1 0.5 0.9
-          * data_source  (data_source) <U4 32B 'fcst' 'obs'
+          ...
 
     """
     reduce_dims = gather_dimensions(

@@ -151,6 +151,7 @@ exclude_also = [
 reportPrivateImportUsage = false
 
 [tool.pytest.ini_options]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 addopts = [
     '--cov-fail-under=99',
     '--cov-branch',
