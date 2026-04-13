@@ -148,7 +148,7 @@ def diebold_mariano(  # pylint: disable=R0914
             ci_lower         (lead_day) float64 24B 1.09 -1.778 0.9932
         >>> # Access specific results
         >>> print(result['dm_test_stat'].values)
-        [ 3.47497794e+00 -2.48369569e-01  2.89455668e+02]
+        [ 3.47497794e+00 -2.4836956...e-01  2.89455668e+02]
         >>> # Calculate using HLN method with Student's t distribution
         >>> result_t = diebold_mariano(da_timeseries, "lead_day", "h",
         ...                            method="HLN", statistic_distribution="t",
