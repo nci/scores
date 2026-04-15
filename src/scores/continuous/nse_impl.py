@@ -238,6 +238,7 @@ def nse(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import nse
+
         >>> obs_raw = np.array(
         ...     [
         ...         [[1,2,3], [4,5,6]],
@@ -248,8 +249,10 @@ def nse(
         ...
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
-        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
-        >>> # Example 1:
+
+        >>> # add some synthetic bias and variance
+        >>> fcst = obs * 1.2 + 0.1
+
         >>> # reduce over t - time - should produce a xy-grid (4 by 2)
         >>> nse(obs, fcst, reduce_dims=["t"])
         <xarray.DataArray 'NSE' (x: 4, y: 2)> Size: 64B
@@ -258,7 +261,7 @@ def nse(
                [ 0.70982143,  0.85742188],
                [ 0.70982143,  0.93208333]])
         Dimensions without coordinates: x, y
-        >>> # Example 2:
+
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> nse(obs, fcst, reduce_dims=["x", "y"])
         <xarray.DataArray 'NSE' (t: 3)> Size: 24B

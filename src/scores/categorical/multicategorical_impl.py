@@ -122,18 +122,22 @@ def firm(  # pylint: disable=too-many-arguments
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import firm
+
         >>> times = [1, 2]
         >>> locations = ['A', 'B', 'C']
+
         >>> fcst = xr.DataArray(
         ...    data=[[0.1, 0.8, 0.3], [0.4, 0.9, 0.6]],
         ...    coords={"time": times, "location": locations},
         ...    dims=["time", "location"],
         ...    )
+
         >>> obs = xr.DataArray(
         ...    data=[[0.4, 0.6, 0.1], [0.4, 0.95, 0.45]],
         ...    coords={"time": times, "location": locations},
         ...    dims=["time", "location"],
         ...    )
+
         >>> categorical_thresholds = [0.2, 0.5, 0.8]
         >>> risk_parameter = 0.1
         >>> threshold_weights = [1, 3, 5]
@@ -141,12 +145,14 @@ def firm(  # pylint: disable=too-many-arguments
         ...                   categorical_thresholds, threshold_weights)
         <xarray.DataArray ()> Size: 8B
         array(0.61666667)
+
         >>> firm(fcst, obs, risk_parameter, categorical_thresholds,
         ...                   threshold_weights, include_components=True)
         <xarray.DataArray (components: 3)> Size: 24B
         array([0.61666667, 0.6       , 0.01666667])
         Coordinates:
           * components  (components) <U21 252B 'firm_score' ... 'underforecast_penalty'
+
         >>> firm(fcst, obs, risk_parameter, categorical_thresholds,
         ...                    threshold_weights, preserve_dims='time')
         <xarray.DataArray (time: 2)> Size: 16B
@@ -421,28 +427,34 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import seeps
+
         >>> times = [1, 2]
         >>> locations = ['A', 'B', 'C']
+
         >>> fcst = xr.DataArray(
         ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> obs = xr.DataArray(
         ...     data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> prob_dry = xr.DataArray(
         ...     data=[0.5,0.7,0.9],
         ...     coords={"location": locations},
         ...     dims=["location"]
         ...     )
+
         >>> light_heavy_threshold = xr.DataArray(
         ...     data=[14.0,18.0,6.0],
         ...     coords={"location": locations},
         ...     dims=["location"]
         ...     )
+
         >>> seeps(fcst, obs, prob_dry,
         ...       light_heavy_threshold=light_heavy_threshold)
         <xarray.DataArray ()> Size: 8B

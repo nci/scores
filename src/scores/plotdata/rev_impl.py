@@ -379,33 +379,38 @@ def relative_economic_value_from_rates(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.plotdata import relative_economic_value_from_rates
-        >>>
-        >>> # Pre-computed detection rates
+
+        >>> # Using pre-computed detection rates
         >>> pod = xr.DataArray([0.8, 0.6, 0.4], dims=['threshold'])
         >>> pofd = xr.DataArray([0.2, 0.1, 0.05], dims=['threshold'])
         >>> base_rate = xr.DataArray(0.3)  # 30% base rate
-        >>>
-        >>> # Calculate REV at multiple cost-loss ratios
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
-        >>> rev = relative_economic_value_from_rates(
+
+        >>> relative_economic_value_from_rates(
         ...     pod, pofd, base_rate, cost_loss_ratios
         ... )
-        >>> rev.dims
-        ('cost_loss_ratio', 'threshold')
-
-        Calculate REV values:
-
-        >>> # Perfect forecast scenario
+        <xarray.DataArray (cost_loss_ratio: 5, threshold: 3)> Size: 120B
+        array([[ 0.02857143, -0.64285714, -1.36428571],
+            [ 0.6       ,  0.5       ,  0.35      ],
+            [ 0.33333333,  0.36666667,  0.28333333],
+            [-0.28888889,  0.05555556,  0.12777778],
+            [-3.4       , -1.5       , -0.65      ]])
+        Coordinates:
+        * cost_loss_ratio  (cost_loss_ratio) float64 40B 0.1 0.3 0.5 0.7 0.9
+        Dimensions without coordinates: threshold
+        >>> # Perfect forecast scenario (returns values close to 1)
         >>> pod_perfect = xr.DataArray(1.0)
         >>> pofd_perfect = xr.DataArray(0.0)
         >>> base_rate = xr.DataArray(0.5)
-        >>>
-        >>> rev = relative_economic_value_from_rates(
+
+        >>> relative_economic_value_from_rates(
         ...     pod_perfect, pofd_perfect, base_rate,
         ...     cost_loss_ratios=[0.5],
         ... )
-        >>> rev.values  # Returns finite value close to 1
+        <xarray.DataArray (cost_loss_ratio: 1)> Size: 8B
         array([1.])
+        Coordinates:
+        * cost_loss_ratio  (cost_loss_ratio) float64 8B 0.5
 
     See Also:
         - :py:func:`scores.plotdata.relative_economic_value`
@@ -584,22 +589,23 @@ def relative_economic_value(
 
         >>> import xarray as xr
         >>> from scores.plotdata import relative_economic_value
+
         >>> fcst = xr.DataArray([0, 1, 1, 0, 1], dims=['time'])
         >>> obs = xr.DataArray([0, 1, 0, 0, 1], dims=['time'])
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
+
         >>> rev = relative_economic_value(fcst, obs, cost_loss_ratios = cost_loss_ratios)
 
         Calculate REV for probabilistic forecasts with maximum value:
 
         >>> fcst_prob = xr.DataArray([0.2, 0.8, 0.6, 0.1, 0.9], dims=['time'])
         >>> thresholds = [0.3, 0.5, 0.7]
-        >>> result = relative_economic_value(
+        >>> relative_economic_value(
         ...     fcst_prob, obs,
         ...     cost_loss_ratios=cost_loss_ratios,
         ...     probability_thresholds=thresholds,
         ...     generate_maximum_rev=True,
         ... )
-        >>> result
         <xarray.Dataset> Size: 80B
         Dimensions:          (cost_loss_ratio: 5)
         Coordinates:

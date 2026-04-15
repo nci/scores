@@ -135,8 +135,10 @@ def rank_histogram(
         >>> from scipy.stats import norm
         >>> from scores.probability import rank_histogram
         >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(norm.rvs(size=(500, 10)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=['time'])
+
         >>> rank_histogram(fcst, obs, ens_member_dim='ensemble')
         <xarray.DataArray (rank: 11)> Size: 88B
         array([0.218, 0.098, 0.066, 0.046, 0.068, 0.056, 0.058, 0.06 , 0.046,

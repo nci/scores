@@ -47,14 +47,18 @@ def round_values(array: xr.DataArray, rounding_precision: float, *, final_round_
     Examples:
         >>> from scores.processing.cdf import round_values
         >>> import xarray as xr
+
         >>> data = [3.73, 4.10000001, 37.3]
         >>> coords = {"sample": [1, 2, 3]}
+
         >>> da = xr.DataArray(data, coords=coords, dims="sample")
+
         >>> round_values(da, rounding_precision=0.2)
         <xarray.DataArray (sample: 3)> Size: 24B
         array([ 3.8,  4.2, 37.2])
         Coordinates:
           * sample   (sample) int64 24B 1 2 3
+
         >>> round_values(da, rounding_precision=20)
         <xarray.DataArray (sample: 3)> Size: 24B
         array([ 0.,  0., 40.])
@@ -89,9 +93,12 @@ def propagate_nan(cdf: XarrayLike, threshold_dim: str) -> XarrayLike:
         >>> import xarray as xr
         >>> import numpy as np
         >>> from scores.processing.cdf import propagate_nan
+
         >>> data = [[0.1, 0.4, np.nan, 0.9], [0.2, 0.5, 0.7, 1.0]]
         >>> coords = {"station": [1, 2], "threshold": [10, 20, 30, 40]}
+
         >>> cdf = xr.DataArray(data, coords=coords, dims=["station", "threshold"])
+
         >>> propagate_nan(cdf, "threshold")
         <xarray.DataArray (station: 2, threshold: 4)> Size: 64B
         array([[nan, nan, nan, nan],
@@ -141,8 +148,10 @@ def observed_cdf(
     Examples:
         >>> import xarray as xr
         >>> from scores.processing.cdf import observed_cdf
+
         >>> coords = {"station": ["A", "B", "C"]}
         >>> obs = xr.DataArray([2.09, 5.73, 8.11], coords=coords, dims="station")
+
         >>> # Thresholds are observations
         >>> observed_cdf(obs, "threshold")
         <xarray.DataArray (station: 3, threshold: 3)> Size: 72B
@@ -151,6 +160,7 @@ def observed_cdf(
                [0., 0., 1.]])
         Coordinates:
           ...
+
         >>> # Thresholds are specified but also include observations
         >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10])
         <xarray.DataArray (station: 3, threshold: 6)> Size: 144B
@@ -159,6 +169,7 @@ def observed_cdf(
                [0., 0., 0., 0., 1., 1.]])
         Coordinates:
           ...
+
         >>> # Thresholds are specified but also include
         >>> # observations after rounding to precision
         >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10], precision=1)
@@ -168,6 +179,7 @@ def observed_cdf(
                [0., 0., 0., 0., 1., 1.]])
         Coordinates:
           ...
+
         >>> # Only evaluate at specified thresholds
         >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10],
         ...              include_obs_in_thresholds = False)
@@ -246,17 +258,22 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
     Examples:
         >>> import xarray as xr
         >>> from scores.processing.cdf import integrate_square_piecewise_linear
+
         >>> # Linear function F(t) = t on [0, 2]
         >>> t_vals = [0, 0.5, 1, 1.2, 2]
         >>> f_vals = [0, 0.75, 1, 1.1, 2]
+
         >>> da = xr.DataArray(f_vals, coords={"threshold": t_vals}, dims="threshold")
+
         >>> integrate_square_piecewise_linear(da, "threshold")
         <xarray.DataArray ()> Size: 8B
         array(2.67583333)
+
         >>> # Multiple stations
         >>> data = [[0, 0.75, 1, 1.1, 2], [0, 0.5, 1, 1.2, 2]]
         >>> coords = {"station": [1, 2], "threshold": [0, 0.5, 1, 1.2, 2]}
         >>> da = xr.DataArray(data, coords=coords, dims=["station", "threshold"])
+
         >>> integrate_square_piecewise_linear(da, "threshold")
         <xarray.DataArray (station: 2)> Size: 16B
         array([2.67583333, 2.66666667])
@@ -315,14 +332,17 @@ def add_thresholds(
     Examples:
         >>> import xarray as xr
         >>> from scores.processing.cdf import add_thresholds
+
         >>> data = [0.2, 0.8]
         >>> coords = {"threshold": [10, 30]}
         >>> cdf = xr.DataArray(data, coords=coords, dims="threshold")
+
         >>> add_thresholds(cdf, "threshold", [5, 15, 35], "linear")
         <xarray.DataArray (threshold: 5)> Size: 40B
         array([0.05, 0.2 , 0.35, 0.8 , 0.95])
         Coordinates:
           * threshold  (threshold) int64 40B 5 10 15 30 35
+
         >>> add_thresholds(cdf, "threshold", [5, 15, 35], "step")
         <xarray.DataArray (threshold: 5)> Size: 40B
         array([0. , 0.2, 0.2, 0.8, 0.8])
@@ -381,24 +401,29 @@ def fill_cdf(
         >>> import xarray as xr
         >>> import numpy as np
         >>> from scores.processing.cdf import fill_cdf
+
         >>> data = [np.nan, 0.2, np.nan, 0.8, np.nan]
         >>> coords = {"threshold": [10, 20, 30, 40, 50]}
         >>> cdf = xr.DataArray(data, coords=coords, dims="threshold")
+
         >>> fill_cdf(cdf, "threshold", "linear", min_nonnan = 2)
         <xarray.DataArray (threshold: 5)> Size: 40B
         array([0. , 0.2, 0.5, 0.8, 1. ])
         Coordinates:
           * threshold  (threshold) int64 40B 10 20 30 40 50
+
         >>> fill_cdf(cdf, "threshold", "step", min_nonnan = 1)
         <xarray.DataArray (threshold: 5)> Size: 40B
         array([0. , 0.2, 0.2, 0.8, 0.8])
         Coordinates:
           * threshold  (threshold) int64 40B 10 20 30 40 50
+
         >>> fill_cdf(cdf, "threshold", "forward", min_nonnan = 1)
         <xarray.DataArray (threshold: 5)> Size: 40B
         array([0.2, 0.2, 0.2, 0.8, 0.8])
         Coordinates:
           * threshold  (threshold) int64 40B 10 20 30 40 50
+
         >>> fill_cdf(cdf, "threshold", "backward", min_nonnan = 1)
         <xarray.DataArray (threshold: 5)> Size: 40B
         array([0.2, 0.2, 0.8, 0.8, 0.8])
@@ -476,6 +501,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
     Examples:
         >>> import xarray as xr
         >>> from scores.processing.cdf import decreasing_cdfs
+
         >>> # Well-behaved CDF
         >>> coords = {"threshold": [10, 20, 30, 40]}
         >>> good_cdf = xr.DataArray([0, 0.3, 0.7, 1.0],
@@ -483,6 +509,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
         >>> decreasing_cdfs(good_cdf, "threshold", 0.01)
         <xarray.DataArray ()> Size: 1B
         array(False)
+
         >>> # CDF with small violation within tolerance
         >>> coords = {"threshold": [10, 20, 30, 40, 50]}
         >>> minor_cdf = xr.DataArray([0, 0.4, 0.39, 0.9, 1],
@@ -490,6 +517,7 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
         >>> decreasing_cdfs(minor_cdf, "threshold", 0.05)
         <xarray.DataArray ()> Size: 1B
         array(False)
+
         >>> # CDF with violation exceeding tolerance
         >>> coords = {"threshold": [10, 20, 30, 40, 50, 60]}
         >>> bad_cdf = xr.DataArray([0, 0.4, 0.3, 0.9, 0.88, 1],
@@ -552,22 +580,28 @@ def cdf_envelope(
     Examples:
         >>> import xarray as xr
         >>> from scores.processing.cdf import cdf_envelope
+
         >>> # CDF with violations
         >>> coords = {"threshold": [10, 20, 30, 40, 50]}
         >>> cdf = xr.DataArray([0, 0.5, 0.2, 0.8, 1.0],
         ...                    coords=coords, dims="threshold")
         >>> result = cdf_envelope(cdf, "threshold")
+
         >>> result.sel(cdf_type="original").values
         array([0. , 0.5, 0.2, 0.8, 1. ])
+
         >>> result.sel(cdf_type="upper").values
         array([0. , 0.5, 0.5, 0.8, 1. ])
+
         >>> result.sel(cdf_type="lower").values
         array([0. , 0.2, 0.2, 0.8, 1. ])
+
         >>> # Multiple stations
         >>> data = [[0, 0.6, 0.4, 1.0], [0, 0.3, 0.7, 1.0]]
         >>> coords = {"station": ["A", "B"], "threshold": [10, 20, 30, 40]}
         >>> cdf = xr.DataArray(data,
         ...       coords=coords, dims=["station", "threshold"])
+
         >>> envelope = cdf_envelope(cdf, "threshold")
         >>> envelope.sel(station="A", cdf_type="upper").values
         array([0. , 0.6, 0.6, 1. ])

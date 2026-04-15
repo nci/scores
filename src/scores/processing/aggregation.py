@@ -65,6 +65,7 @@ def aggregate(
         >>> import xarray as xr
         >>> import numpy as np
         >>> from scores.processing import aggregate
+
         >>> # Create sample data
         >>> da = xr.DataArray(np.arange(6).reshape(2, 3),
         ...     dims=['x', 'y'],
@@ -76,12 +77,14 @@ def aggregate(
         Coordinates:
           * x        (x) int64 16B 1 2
           * y        (y) <U1 12B 'A' 'B' 'C'
+
         >>> # Unweighted mean over x dimension
         >>> aggregate(da, reduce_dims='x')
         <xarray.DataArray (y: 3)> Size: 24B
         array([1.5, 2.5, 3.5])
         Coordinates:
           * y        (y) <U1 12B 'A' 'B' 'C'
+
         >>> # Weighted mean over x dimension
         >>> weights = xr.DataArray([1, 2], dims=['x'])
         >>> aggregate(da, reduce_dims='x', weights=weights)
@@ -89,6 +92,7 @@ def aggregate(
         array([2., 3., 4.])
         Coordinates:
           * y        (y) <U1 12B 'A' 'B' 'C'
+
         >>> # Weighted sum over y dimension
         >>> weights_y = xr.DataArray([0.5, 1.0, 1.5], dims=['y'])
         >>> aggregate(da, reduce_dims='y', weights=weights_y, method='sum')

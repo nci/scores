@@ -67,20 +67,24 @@ def brier_score(
     Examples:
         >>> import xarray as xr
         >>> from scores.probability import brier_score
+
         >>> fcst = xr.DataArray([[0.3, 0.5],[0.7, 1.0]],
         ...                            coords=[[33, 45], [-30, 30]],
         ...                            dims=["lat", "lon"])
         >>> obs = xr.DataArray([[0, 1],[0, 1]],
         ...                           coords=[[33, 45], [-30, 30]],
         ...                           dims=["lat", "lon"])
+
         >>> brier_score(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.2075)
+
         >>> brier_score(fcst, obs, preserve_dims=['lon'])
         <xarray.DataArray (lon: 2)> Size: 16B
         array([0.29 , 0.125])
         Coordinates:
           * lon      (lon) int64 16B -30 30
+
         >>> weights = xr.DataArray([0.35, 0.5],
         ...                        coords={"lat": [33, 45]},
         ...                        dims=["lat"])
@@ -210,18 +214,22 @@ def brier_score_for_ensemble(
     Examples:
         >>> import xarray as xr
         >>> from scores.probability import brier_score_for_ensemble
+
         >>> times = [1, 2]
         >>> ensembles = ['A', 'B', 'C']
+
         >>> fcst = xr.DataArray(
         ...     data=[[0.1, 4.2, 0.0], [0.4, -1.2, 0.3]],
         ...     coords={"time": times, "ensemble": ensembles},
         ...     dims=["time", "ensemble"]
         ...     )
+
         >>> obs = xr.DataArray(
         ...     data=[0, 1],
         ...     coords={"time": times},
         ...     dims=["time"]
         ...     )
+
         >>> # Calculate the Brier score for an ensemble forecast for a single threshold:
         >>> brier_score_for_ensemble(fcst, obs,
         ...                          ensemble_member_dim='ensemble',
@@ -230,6 +238,7 @@ def brier_score_for_ensemble(
         array([0.5])
         Coordinates:
           ...
+
         >>> # Calculate the Brier score for an ensemble forecast for multiple thresholds:
         >>> brier_score_for_ensemble(fcst, obs,
         ...                          ensemble_member_dim='ensemble',

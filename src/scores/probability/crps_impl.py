@@ -1109,8 +1109,10 @@ def tw_crps_for_ensemble(
         >>> import xarray as xr
         >>> from scores.probability import tw_crps_for_ensemble
         >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
         <xarray.DataArray ()> Size: 8B
         array(0.07993158)
@@ -1223,8 +1225,10 @@ def tail_tw_crps_for_ensemble(
         >>> import xarray as xr
         >>> from scores.probability import tail_tw_crps_for_ensemble
         >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+
         >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
         <xarray.DataArray ()> Size: 8B
         array(0.07993158)
@@ -1339,8 +1343,10 @@ def interval_tw_crps_for_ensemble(
         >>> import xarray as xr
         >>> from scores.probability import interval_tw_crps_for_ensemble
         >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
         <xarray.DataArray ()> Size: 8B
         array(7.46973354)

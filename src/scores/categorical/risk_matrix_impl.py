@@ -119,21 +119,25 @@ def risk_matrix_score(
 
         >>> import xarray as xr
         >>> from scores.categorical import risk_matrix_score
+
         >>> decision_weights = xr.DataArray(
         ...     data=[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
         ...     dims=["probability_threshold", "severity"],
         ...     coords={'probability_threshold': [0.1, 0.3, 0.5], 'severity': ["MOD+", "SEV+", "EXT"]}
         ... )
+
         >>> fcst = xr.DataArray(
         ...     data=[[0.45, 0.22, 0.05], [0.65, 0.32, 0.09]],
         ...     dims=["time", "severity"],
         ...     coords={'time': [0, 1], 'severity': ["MOD+", "SEV+", "EXT"]}
         ... )
+
         >>> obs = xr.DataArray(
         ...     data=[[1, 1, 0], [1, 0, 0]],
         ...     dims=["time", "severity"],
         ...     coords={'time': [0, 1], 'severity': ["MOD+", "SEV+", "EXT"]}
         ... )
+
         >>> risk_matrix_score(fcst, obs, decision_weights, "severity", "probability_threshold")
         <xarray.DataArray ()> Size: 8B
         array(1.85)
@@ -313,11 +317,13 @@ def matrix_weights_to_array(
 
         >>> import numpy as np
         >>> from scores.categorical import matrix_weights_to_array
+
         >>> matrix_weights = np.array([
         ...     [1, 2, 3],
         ...     [2, 4, 6],
         ...     [3, 6, 9],
         ... ])
+
         >>> matrix_weights_to_array(
         ...     matrix_weights, "severity", ["MOD+", "SEV+", "EXT"],
         ...     "prob_threshold", [0.1, 0.3, 0.5]
@@ -420,12 +426,14 @@ def weights_from_warning_scaling(
 
         >>> import numpy as np
         >>> from scores.categorical import weights_from_warning_scaling
+
         >>> scaling = np.array([
         ...     [0, 2, 3, 3],
         ...     [0, 1, 2, 3],
         ...     [0, 1, 1, 2],
         ...     [0, 0, 0, 0],
         ... ])
+
         >>> weights_from_warning_scaling(
         ...     scaling, [1, 2, 3],  "severity", ["MOD+", "SEV+", "EXT"],
         ...     "prob_threshold", [0.1, 0.3, 0.5]

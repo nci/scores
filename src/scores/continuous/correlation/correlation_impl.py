@@ -64,18 +64,22 @@ def pearsonr(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous.correlation.correlation_impl import pearsonr
+
         >>> times = [1, 2]
         >>> locations = ['A', 'B', 'C']
+
         >>> fcst = xr.DataArray(
         ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> obs = xr.DataArray(
         ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> pearsonr(fcst, obs, reduce_dims="location")
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.97856011, 0.85946704])
@@ -152,18 +156,22 @@ def spearmanr(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous.correlation.correlation_impl import spearmanr
+
         >>> times = [1, 2]
         >>> locations = ['A', 'B', 'C']
+
         >>> fcst = xr.DataArray(
         ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> obs = xr.DataArray(
         ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> spearmanr(fcst, obs, reduce_dims="location")
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.5, 1. ])

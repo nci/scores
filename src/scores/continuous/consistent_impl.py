@@ -98,18 +98,22 @@ def consistent_expectile_score(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import consistent_expectile_score
+
         >>> # Define convex function phi and its derivative
         >>> def phi(x): return x ** 2
         ...
         >>> def phi_prime(x): return 2 * x
         ...
+
         >>> # Create forecast and observation data
         >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
         >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+
         >>> # Calculate consistent expectile score for 0.5-expectile (median)
         >>> consistent_expectile_score(fcst, obs, alpha=0.5, phi=phi, phi_prime=phi_prime)
         <xarray.DataArray ()> Size: 8B
         array(0.25)
+
         >>> # Calculate score preserving the time dimension
         >>> consistent_expectile_score(fcst, obs, alpha=0.5, phi=phi, phi_prime=phi_prime,
         ...                                       preserve_dims='all')
@@ -212,21 +216,24 @@ def consistent_huber_score(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import consistent_huber_score
+
         >>> # Define convex function phi and its derivative
-        >>>
         >>> def phi(x): return x ** 2
         ...
         >>> def phi_prime(x): return 2 * x
         ...
+
         >>> # Create forecast and observation data
         >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
         >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+
         >>> # Calculate consistent huber score
         >>> consistent_huber_score(fcst, obs,
         ...                        huber_param = 2,
         ...                        phi=phi, phi_prime=phi_prime)
         <xarray.DataArray ()> Size: 8B
         array(0.25)
+
         >>> # Calculate score preserving the time dimension
         >>> consistent_huber_score(fcst, obs,
         ...                        huber_param = 2,
@@ -325,18 +332,21 @@ def consistent_quantile_score(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import consistent_quantile_score
+
         >>> # Define nondecreasing function g
-        >>>
         >>> def g(x): return x ** 2
         ...
+
         >>> # Create forecast and observation data
         >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
         >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+
         >>> consistent_quantile_score(fcst, obs,
         ...                           alpha = 0.5,
         ...                           g=g)
         <xarray.DataArray ()> Size: 8B
         array(1.41666667)
+
         >>> # Calculate score preserving the time dimension
         >>> consistent_quantile_score(fcst, obs,
         ...                           alpha = 0.5,

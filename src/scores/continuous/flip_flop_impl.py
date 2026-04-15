@@ -140,12 +140,15 @@ def flip_flop_index(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import flip_flop_index
+
         >>> data = xr.DataArray([50, 20, 40, 80], coords={'lead_day': [1, 2, 3, 4]})
+
         >>> flip_flop_index(data, 'lead_day')
         <xarray.DataArray ()> Size: 8B
         array(15.)
         Attributes:
             sampling_dim:  lead_day
+
         >>> flip_flop_index(data, 'lead_day', days123=[1, 2, 3], all_days=[1, 2, 3, 4])
         <xarray.Dataset> Size: 16B
         Dimensions:   ()
@@ -209,10 +212,12 @@ def iter_selections(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous.flip_flop_impl import iter_selections
+
         >>> data = xr.DataArray(
         ...     [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7],
         ...     coords={'lead_day': [1, 2, 3, 4, 5, 6, 7]}
         ... )
+
         >>> for key, data_subset in iter_selections(
         ...         data, 'lead_day', days123=[1, 2, 3], all_days=[1, 2, 3, 4, 5, 6, 7]
         ... ):
@@ -277,12 +282,14 @@ def encompassing_sector_size(
     Examples:
         >>> from scores.continuous.flip_flop_impl import encompassing_sector_size
         >>> import xarray as xr
+
         >>> # Create a 1D array of directions
         >>> data = xr.DataArray(
         ...     [350, 0, 10],
         ...     dims=["station"],
         ...     coords={"station": ["A", "B", "C"]}
         ... )
+
         >>> # We want to collapse 'station' to get a single value,
         >>> # so 'dims' (the preserved dims) will be empty
         >>> encompassing_sector_size(data, dims=[])
@@ -427,11 +434,13 @@ def flip_flop_index_proportion_exceeding(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import flip_flop_index_proportion_exceeding
+
         >>> data = xr.DataArray(
         ...     [[50, 20, 40, 80], [10, 50, 10, 100], [0, 30, 20, 50]],
         ...     dims=['station_number', 'lead_day'],
         ...     coords=[[10001, 10002, 10003], [1, 2, 3, 4]]
         ... )
+
         >>> flip_flop_index_proportion_exceeding(data, 'lead_day', [20])
         <xarray.DataArray (threshold: 1)> Size: 8B
         array([0.33333333])
@@ -439,6 +448,7 @@ def flip_flop_index_proportion_exceeding(
           * threshold  (threshold) int64 8B 20
         Attributes:
             sampling_dim:  lead_day
+
         >>> flip_flop_index_proportion_exceeding(
         ...     data, 'lead_day', [20], days123=[1, 2, 3], all_days=[1, 2, 3, 4]
         ... )

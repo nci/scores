@@ -344,16 +344,20 @@ def block_bootstrap(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.processing import block_bootstrap
+
         >>> times = np.arange(6)
         >>> stations = ["S1", "S2", "S3", "S4"]
+
         >>> # Create synthetic observations
         >>> obs_data = np.array([[t + (s/10) for s in range(4)] for t in range(6)])
         >>> obs = xr.DataArray(obs_data,
         ...                    coords={"time": times, "station": stations},
         ...                                dims=["time", "station"])
+
         >>> # Create 2 synthetic forecasts, which are the observations plus bias
         >>> fcst = xr.concat([obs + 10, obs + 20], dim="model")
         >>> fcst = fcst.assign_coords(model=["ECMWF", "GFS"])
+
         >>> blocks = {"time": 3, "station": 2}
         >>> n_iter = 5
         >>> np.random.seed(42)
@@ -363,6 +367,7 @@ def block_bootstrap(
         ...     n_iteration=n_iter,
         ...     circular=True
         ... )
+
         >>> boot_obs
         <xarray.DataArray (time: 6, station: 4, iteration: 5)> Size: 960B
         array([[[3.3, 2.3, 4.1, 2.1, 2.3],
@@ -397,6 +402,7 @@ def block_bootstrap(
         Coordinates:
           ...
         Dimensions without coordinates: iteration
+
         >>> boot_fcst
         <xarray.DataArray (model: 2, time: 6, station: 4, iteration: 5)> Size: 2kB
         array([[[[13.3, 12.3, 14.1, 12.1, 12.3],

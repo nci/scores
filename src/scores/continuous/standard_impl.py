@@ -79,30 +79,37 @@ def mse(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import mse
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> mse(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.1375)
+
         >>> mse(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.15333333, 0.12166667])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> mse(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.13657407)
@@ -184,30 +191,37 @@ def rmse(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import rmse
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> rmse(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.37080992)
+
         >>> rmse(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.391578  , 0.34880749])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> rmse(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.3695593)
@@ -273,30 +287,37 @@ def mae(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import mae
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> mae(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.325)
+
         >>> mae(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.33333333, 0.31666667])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> mae(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.32314815)
@@ -372,30 +393,37 @@ def mean_error(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import mean_error
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> mean_error(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(-0.00833333)
+
         >>> mean_error(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([ 0.16666667, -0.18333333])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> mean_error(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.00462963)
@@ -453,30 +481,37 @@ def additive_bias(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import additive_bias
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> additive_bias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(-0.00833333)
+
         >>> additive_bias(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([ 0.16666667, -0.18333333])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> additive_bias(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.00462963)
@@ -543,30 +578,37 @@ def multiplicative_bias(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import multiplicative_bias
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> multiplicative_bias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.99637681)
+
         >>> multiplicative_bias(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([1.08130081, 0.92810458])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> multiplicative_bias(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(1.00195008)
@@ -652,30 +694,37 @@ def pbias(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import pbias
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> pbias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(-0.36231884)
+
         >>> pbias(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([ 8.1300813 , -7.18954248])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> pbias(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.1950078)
@@ -769,6 +818,7 @@ def percent_within_x(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import percent_within_x
+
         >>> obs_raw = np.array(
         ...     [
         ...         [[1,2,3], [4,5,6]],
@@ -779,9 +829,10 @@ def percent_within_x(
         ...
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
-        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
 
-        >>> # Example 1:
+        >>> # add some synthetic bias and variance
+        >>> fcst = obs * 1.2 + 0.1
+
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over t - time - should produce an xy-grid (4 by 2)
         >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
@@ -793,7 +844,6 @@ def percent_within_x(
                [33.33333333, 33.33333333]])
         Dimensions without coordinates: x, y
 
-        >>> # Example 2:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
@@ -802,7 +852,6 @@ def percent_within_x(
         array([25. , 75. , 12.5])
         Dimensions without coordinates: t
 
-        >>> # Example 3:
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
@@ -811,7 +860,6 @@ def percent_within_x(
         array([12.5, 12.5, 12.5])
         Dimensions without coordinates: t
 
-        >>> # Example 4:
         >>> # Controlling floating-point precision issues
         >>> np.set_printoptions(precision=17) # make floating-point precision issues visible
         >>> obs = xr.DataArray([0.1 + 0.2], dims=["t"])
@@ -945,33 +993,41 @@ def kge(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import kge
+
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
         >>> lons = [140, 150]
+
         >>> obs = xr.DataArray(
         ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
         ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> fcst = xr.DataArray(
         ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
         ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
         ...       coords={"time": times, "lat": lats, "lon": lons},
         ...       dims=["time", "lat", "lon"]
         ...       )
+
         >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+
         >>> kge(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.80729437)
+
         >>> kge(fcst, obs, preserve_dims=['time'])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.8118117 , 0.68668803])
         Coordinates:
           * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
         >>> kge(fcst, obs, scaling_factors=[0.5, 1.0, 1.5])
         <xarray.DataArray ()> Size: 8B
         array(0.81581987)
+
         >>> kge(fcst, obs, include_components=True)
         <xarray.Dataset> Size: 32B
         Dimensions:  ()

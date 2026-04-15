@@ -102,12 +102,17 @@ def murphy_score(  # pylint: disable=R0914
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import murphy_score, murphy_thetas
+
         >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
+
         >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
         ...                         coords={"time": times}, dims="time")
+
         >>> obs = xr.DataArray([1.0, 3.0, 4.5],
         ...                                coords={"time": times}, dims="time")
+
         >>> thetas = murphy_thetas(fcst, obs, 'expectile')
+
         >>> murphy_score(fcst, obs, thetas, functional='expectile',alpha=0.5)
         <xarray.Dataset> Size: 96B
         Dimensions:  (theta: 6)
@@ -243,12 +248,17 @@ def murphy_thetas(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import murphy_score, murphy_thetas
+
         >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
+
         >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
         ...                         coords={"time": times}, dims="time")
+
         >>> obs = xr.DataArray([1.0, 3.0, 4.5],
         ...                                coords={"time": times}, dims="time")
+
         >>> thetas = murphy_thetas(fcst, obs, 'expectile')
+
         >>> murphy_score(fcst, obs, thetas, functional='expectile',alpha=0.5)
         <xarray.Dataset> Size: 96B
         Dimensions:  (theta: 6)

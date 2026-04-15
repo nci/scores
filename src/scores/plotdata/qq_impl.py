@@ -85,24 +85,29 @@ def qq(
     Examples:
         >>> import xarray as xr
         >>> from scores.plotdata import qq
+
         >>> times = [1, 2]
         >>> locations = ['A', 'B', 'C']
+
         >>> fcst = xr.DataArray(
         ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> obs = xr.DataArray(
         ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
         ...     coords={"time": times, "location": locations},
         ...     dims=["time", "location"]
         ...     )
+
         >>> qq(fcst, obs, quantiles=[0.1, 0.5, 0.9])
         <xarray.DataArray (data_source: 2, quantile: 3)> Size: 48B
         array([[ 0.05,  3.45,  8.55],
                [-1.65,  2.45, 11.8 ]])
         Coordinates:
           ...
+
         >>> qq(fcst, obs, quantiles=[0.1, 0.5, 0.9], preserve_dims="time")
         <xarray.DataArray (data_source: 2, quantile: 3, time: 2)> Size: 96B
         array([[[ 0.02,  1.62],

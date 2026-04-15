@@ -64,25 +64,31 @@ def probability_of_detection(
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import probability_of_detection
+
         >>> fcst = xr.DataArray(data=[[1, 0], [0, np.nan]], dims=["lat", "time"],
         ...                     coords={"lat": [35, 50], "time": [1, 2]})
+
         >>> obs = xr.DataArray(data=[[1, 0], [1, np.nan]], dims=["lat", "time"],
         ...                     coords={"lat": [35, 50], "time": [1, 2]})
+
         >>> # if data is of dimension {lat,time}, value is computed across the time dimension
         >>> probability_of_detection(fcst, obs, preserve_dims='lat')
         <xarray.DataArray (lat: 2)> Size: 16B
         array([1., 0.])
         Coordinates:
           * lat      (lat) int64 16B 35 50
+
         >>> # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
         >>> probability_of_detection(fcst, obs, reduce_dims="time")
         <xarray.DataArray (lat: 2)> Size: 16B
         array([1., 0.])
         Coordinates:
           * lat      (lat) int64 16B 35 50
+
         >>> probability_of_detection(fcst, obs)  # reduces all dimensions
         <xarray.DataArray ()> Size: 8B
         array(0.5)
+
         >>> weights = xr.DataArray(data=[0.35, 0.50], dims=["lat"], coords={"lat": [35, 50]})
         >>> # apply a weighting along the provided dimension
         probability_of_detection(fcst, obs, weights=weights)
@@ -162,27 +168,33 @@ def probability_of_false_detection(
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import probability_of_false_detection
+
         >>> fcst = xr.DataArray(data=[[0, 0, 0, 0], [1, 1, 1, 1]],
         ...                     dims=["lat", "time"],
         ...                     coords={"lat": [35, 50], "time": [1, 2, 3, 4]})
+
         >>> obs = xr.DataArray(data=[[0, 1, 0, 1], [1, 0, 1, 0]],
         ...                    dims=["lat", "time"],
         ...                    coords={"lat": [35, 50], "time": [1, 2, 3, 4]})
+
         >>> # if data is of dimension {lat,time}, value is computed across the time dimension
         >>> probability_of_false_detection(fcst, obs, preserve_dims='lat')
         <xarray.DataArray (lat: 2)> Size: 16B
         array([0., 1.])
         Coordinates:
           * lat      (lat) int64 16B 35 50
+
         >>> # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
         >>> probability_of_false_detection(fcst, obs, reduce_dims="time")
         <xarray.DataArray (lat: 2)> Size: 16B
         array([0., 1.])
         Coordinates:
           * lat      (lat) int64 16B 35 50
+
         >>> probability_of_false_detection(fcst, obs)  # reduces all dimensions
         <xarray.DataArray ()> Size: 8B
         array(0.5)
+
         >>> weights = xr.DataArray(data=[0.35, 0.50],
         ...                        dims=["lat"], coords={"lat": [35, 50]})
         >>> # applies a weighting along the provided dimension

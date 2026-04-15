@@ -117,6 +117,7 @@ def diebold_mariano(  # pylint: disable=R0914
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.stats.statistical_tests import diebold_mariano
+
         >>> # Create timeseries of score differences for different lead times
         >>> # This array gives three timeseries of score differences.
         >>> # Coordinates in the "lead_day" dimension uniquely identify each timeseries.
@@ -132,6 +133,7 @@ def diebold_mariano(  # pylint: disable=R0914
         ...         "h": ("lead_day", [2, 3, 4]),
         ...     },
         ... )
+
         >>> # Calculate Diebold-Mariano test statistic using default HG method
         >>> result = diebold_mariano(da_timeseries, "lead_day", "h")
         >>> print(result)
@@ -149,11 +151,11 @@ def diebold_mariano(  # pylint: disable=R0914
         >>> # Access specific results
         >>> print(result['dm_test_stat'].values)
         [ 3.47497794e+00 -2.4836956...e-01  2.89455668e+02]
+
         >>> # Calculate using HLN method with Student's t distribution
-        >>> result_t = diebold_mariano(da_timeseries, "lead_day", "h",
+        >>> diebold_mariano(da_timeseries, "lead_day", "h",
         ...                            method="HLN", statistic_distribution="t",
         ...                            confidence_level=0.90)
-        >>> print(result_t)
         <xarray.Dataset> Size: 168B
         Dimensions:          (lead_day: 3)
         Coordinates:
