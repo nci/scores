@@ -164,7 +164,7 @@ def resort_lon_from_m180to180_to_0to360(ds, lon_name):
     ds = (
         ds.swap_dims({lon_name: "_longitude_adjusted"})
         .sel(**{"_longitude_adjusted": sorted(ds._longitude_adjusted)})
-        .drop(lon_name)
+        .drop_vars(lon_name)
     )
 
     ds = ds.rename({"_longitude_adjusted": lon_name})

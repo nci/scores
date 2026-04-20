@@ -10,6 +10,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -19,6 +20,7 @@ from scores.budgets.budgets_utils import (
     integration_weights,
     trig_fields,
 )
+from scores.budgets.energetics_impl import energy_components
 
 # Williamson 5 test case initial condition stream function
 # Reference:
@@ -288,3 +290,135 @@ def test_budgets_gradient(
         xr.DataArray(convergence), xr.DataArray(convergence_rate * np.ones(num_resolutions - 1)), atol=tolerance
     )
     xr.testing.assert_allclose(xr.DataArray(balance_error_at_res), xr.DataArray(np.zeros(num_resolutions)), atol=1.0e-2)
+
+
+def u_velocity(phi, theta, p):
+    u = -1.0e-6 * p * p * d_psi_d_theta(phi, theta, 0.25 * np.pi)
+    return u
+
+
+def v_velocity(phi, theta, p):
+    v = +1.0e-6 * p * p * d_psi_d_phi(phi, theta, 0.25 * np.pi)
+    return v
+
+
+def w_velocity(phi, theta, p):
+    w = 0.0
+    return w
+
+
+def temperature(phi, theta, p):
+    t = 1.0e-3 * p * (90.0 - phi) * (90.0 - phi)
+    return t
+
+
+def humidity(phi, theta, p):
+    q = 1.0e-10 * p
+    return q
+
+
+def geopotential(phi, theta, p):
+    z = 1.0e-9 * p * p * p * vorticity(phi, theta, 0.25 * np.pi)
+    return z
+
+
+def surface_pressure(phi, theta):
+    sp = 1.0e-16 * stream_function(phi, theta, 0.25 * np.pi) * stream_function(phi, theta, 0.25 * np.pi)
+    return sp
+
+
+# test the energy budget against a previously computed solution
+@pytest.mark.parametrize(
+    (
+        "time",
+        "level",
+        "latitude",
+        "longitude",
+        "u_velocity_func",
+        "v_velocity_func",
+        "w_velocity_func",
+        "temperature_func",
+        "humidity_func",
+        "geopotential_func",
+        "surface_pressure_func",
+        "expected",
+    ),
+    [
+        (
+            pd.date_range("2025-01-01", periods=1),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            np.arange(0.0, 360.0, 6),
+            u_velocity,
+            v_velocity,
+            w_velocity,
+            temperature,
+            humidity,
+            geopotential,
+            surface_pressure,
+            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
+        ),
+    ],
+)
+def test_budget(
+    time,
+    level,
+    latitude,
+    longitude,
+    u_velocity_func,
+    v_velocity_func,
+    w_velocity_func,
+    temperature_func,
+    humidity_func,
+    geopotential_func,
+    surface_pressure_func,
+    expected,
+):
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = 1.0e5 * np.ones((nlat, nlon))
+    for ii in np.arange(nlev):
+        for jj in np.arange(nlat):
+            for kk in np.arange(nlon):
+                u[0, ii, jj, kk] = u_velocity(latitude[jj], longitude[kk], level[ii])
+                v[0, ii, jj, kk] = v_velocity(latitude[jj], longitude[kk], level[ii])
+                w[0, ii, jj, kk] = w_velocity(latitude[jj], longitude[kk], level[ii])
+                t[0, ii, jj, kk] = temperature(latitude[jj], longitude[kk], level[ii])
+                q[0, ii, jj, kk] = humidity(latitude[jj], longitude[kk], level[ii])
+                z[0, ii, jj, kk] = geopotential(latitude[jj], longitude[kk], level[ii])
+    for jj in np.arange(nlat):
+        for kk in np.arange(nlon):
+            sp[0, jj, kk] = surface_pressure(latitude[jj], longitude[kk])
+
+    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    E = energy_components(ds, field_names)
+    xr.testing.assert_allclose(E, expected, atol=1.0e-2)
