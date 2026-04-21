@@ -335,8 +335,10 @@ def surface_pressure(phi, theta):
     (
         "time",
         "level",
-        "latitude",
         "longitude",
+        "latitude",
+        "sub_domain_longitude",
+        "sub_domain_latitude",
         "u_velocity_func",
         "v_velocity_func",
         "w_velocity_func",
@@ -350,8 +352,10 @@ def surface_pressure(phi, theta):
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
-            np.linspace(-90.0, 90.0, 31, endpoint=True),
             np.arange(0.0, 360.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            np.array([None]),
+            np.array([None]),
             u_velocity,
             v_velocity,
             w_velocity,
@@ -361,13 +365,47 @@ def surface_pressure(phi, theta):
             surface_pressure,
             xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
         ),
+        (
+            pd.date_range("2025-01-01", periods=1),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.arange(-180.0, 180.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            np.array([None]),
+            np.array([None]),
+            u_velocity,
+            v_velocity,
+            w_velocity,
+            temperature,
+            humidity,
+            geopotential,
+            surface_pressure,
+            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
+        ),
+        (
+            pd.date_range("2025-01-01", periods=1),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.arange(0.0, 360.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            np.array([90.0, 180.0]),
+            np.array([-45.0, 45.0]),
+            u_velocity,
+            v_velocity,
+            w_velocity,
+            temperature,
+            humidity,
+            geopotential,
+            surface_pressure,
+            xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.000000e00]]),
+        ),
     ],
 )
 def test_budget(
     time,
     level,
-    latitude,
     longitude,
+    latitude,
+    sub_domain_longitude,
+    sub_domain_latitude,
     u_velocity_func,
     v_velocity_func,
     w_velocity_func,
@@ -423,7 +461,7 @@ def test_budget(
         },
     )
 
-    E = energy_components(ds, field_names)
+    E = energy_components(ds, field_names, sub_domain_longitude, sub_domain_latitude)
     xr.testing.assert_allclose(E, expected, atol=1.0e-2)
 
 
@@ -438,8 +476,8 @@ def surface_geopotential(phi, theta):
     (
         "time",
         "level",
-        "latitude",
         "longitude",
+        "latitude",
         "u_velocity_func",
         "v_velocity_func",
         "geopotential_func",
@@ -450,8 +488,19 @@ def surface_geopotential(phi, theta):
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
-            np.linspace(-90.0, 90.0, 31, endpoint=True),
             np.arange(0.0, 360.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            u_velocity,
+            v_velocity,
+            geopotential,
+            surface_geopotential,
+            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]),
+        ),
+        (
+            pd.date_range("2025-01-01", periods=1),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.arange(-180, 180.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
             u_velocity,
             v_velocity,
             geopotential,
@@ -463,8 +512,8 @@ def surface_geopotential(phi, theta):
 def test_exchanges(
     time,
     level,
-    latitude,
     longitude,
+    latitude,
     u_velocity_func,
     v_velocity_func,
     geopotential_func,

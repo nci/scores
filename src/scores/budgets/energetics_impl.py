@@ -15,7 +15,9 @@ from scores.budgets.budgets_utils import (
 from scores.typing import XarrayLike
 
 
-def prepare_fields(fields: XarrayLike, sub_domain_longitude=np.array([None]), sub_domain_latitude=np.array([None])):
+def prepare_fields(
+    fields: XarrayLike, longitude, latitude, sub_domain_longitude=np.array([None]), sub_domain_latitude=np.array([None])
+):
     """
     Select the subdomain in longitude and latitude over which the energetic integrals
     are to be computed.
@@ -23,6 +25,8 @@ def prepare_fields(fields: XarrayLike, sub_domain_longitude=np.array([None]), su
     Args:
         fields: Input fields for the 4D space-time quantities, 3D space-time quantities and 2D time only
             quantities used to compute the energetics, and their space time dimensional attributes
+        longitude: array of longitudes
+        latitude: array of latitudes
         sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the longitudinal direction (optional)
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
@@ -34,15 +38,11 @@ def prepare_fields(fields: XarrayLike, sub_domain_longitude=np.array([None]), su
 
     fields.sortby("latitude")
 
-    # re-order the longitudes to range between 0 and 360 degrees (global)
-    if fields.longitude.values[0] < -0.1:
-        fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
+    if sub_domain_longitude[0] is not None:
+        fields = fields.sel(longitude=longitude)
 
-    if sub_domain_longitude.any() is not None:
-        fields = fields.sel(longitude=sub_domain_longitude)
-
-    if sub_domain_latitude.any() is not None:
-        fields = fields.sel(latitude=sub_domain_latitude)
+    if sub_domain_latitude[0] is not None:
+        fields = fields.sel(latitude=latitude)
 
     return fields
 
@@ -92,12 +92,16 @@ def energy_components(
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
+    # re-order the longitudes to range between 0 and 360 degrees (global)
+    if fields.longitude.values[0] < -0.1:
+        fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
+
     dlon, dlat, lon, lat = integration_weights(
         fields.longitude.values, fields.latitude.values, sub_domain_longitude, sub_domain_latitude
     )
 
     # select the latitude and longitude sub-domain
-    fields = prepare_fields(fields, lon, lat)
+    fields = prepare_fields(fields, lon, lat, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
 
@@ -198,6 +202,9 @@ def energy_exchanges(
         Taylor, M. "Conservation of Mass and Energy for the Moist
         Atmospheric Primitive Equations on Unstructured Grids", (2011) Section 12.4.5
     """
+    # re-order the longitudes to range between 0 and 360 degrees (global)
+    if fields.longitude.values[0] < -0.1:
+        fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
 
     dlon, dlat, lon, lat = integration_weights(
         fields.longitude.values, fields.latitude.values, sub_domain_longitude, sub_domain_latitude
@@ -206,7 +213,7 @@ def energy_exchanges(
     cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
 
     # select the temporal, vertical and horizontal sub-domain
-    fields = prepare_fields(fields, lon, lat)
+    fields = prepare_fields(fields, lon, lat, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
 
