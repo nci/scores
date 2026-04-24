@@ -52,7 +52,6 @@ def energy_components(
     fieldnames,
     sub_domain_longitude=np.array([None]),
     sub_domain_latitude=np.array([None]),
-    output_file_name=[],
 ) -> XarrayLike:
     """
     Compute the time series for the energy budget on pressure levels
@@ -76,7 +75,6 @@ def energy_components(
             energy components are to be computed in the longitudinal direction (optional)
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the latitudinal direction (optional)
-        output_file_name: name of the test file to which to write the output (optional)
 
     Returns:
         2D array containing the time series for the domain integrals of the energy components at each time
@@ -105,12 +103,6 @@ def energy_components(
 
     nt = len(fields.time)
 
-    I = np.zeros(nt)  # global integral of the interal energy
-    L = np.zeros(nt)  # global integral of the latent energy
-    P = np.zeros(nt)  # global integral of the potential energy
-    Kh = np.zeros(nt)  # global integral of the kinetic energy (horizontal component)
-    Kv = np.zeros(nt)  # global integral of the kinetic energy (vertical component)
-
     time_array = fields.time.values
     level_array = fields.level.values
 
@@ -119,45 +111,36 @@ def energy_components(
     # get the surface geopotential (constant in time)
     zs = fields[fieldnames[7]]
 
-    tt = 0
-    for _time in time_array:
-        #  From Taylor (2011), eqn (12.8)
-        sp = fields[fieldnames[6]].sel(time=_time)
-        sp_zs = sp * zs
-        P[tt] = integrate_horizontal(sp_zs, dlon, dlat)
+    #  From Taylor (2011), eqn (12.8)
+    sp = fields[fieldnames[6]].sel(time=time_array)
+    sp_zs = sp * zs
+    P = integrate_horizontal(sp_zs, dlon, dlat)
 
-        ll = 0
-        for _level in level_array:
-            ult = fields[fieldnames[0]].sel(level=_level, time=_time)
-            vlt = fields[fieldnames[1]].sel(level=_level, time=_time)
-            wlt = fields[fieldnames[2]].sel(level=_level, time=_time)
-            tlt = fields[fieldnames[3]].sel(level=_level, time=_time)
-            qlt = fields[fieldnames[4]].sel(level=_level, time=_time)
+    ult = fields[fieldnames[0]].sel(level=level_array, time=time_array)
+    vlt = fields[fieldnames[1]].sel(level=level_array, time=time_array)
+    wlt = fields[fieldnames[2]].sel(level=level_array, time=time_array)
+    tlt = fields[fieldnames[3]].sel(level=level_array, time=time_array)
+    qlt = fields[fieldnames[4]].sel(level=level_array, time=time_array)
 
-            khlt = ult * ult + vlt * vlt
-            kvlt = wlt * wlt
-            cpt = (C_P * (1.0 - qlt) + C_PV * qlt) * tlt
+    khlt = ult**2 + vlt**2
+    kvlt = wlt**2
+    cpt = (C_P * (1.0 - qlt) + C_PV * qlt) * tlt
 
-            I[tt] = I[tt] + dp[ll] * integrate_horizontal(cpt, dlon, dlat)
-            L[tt] = L[tt] + dp[ll] * L_V * integrate_horizontal(qlt, dlon, dlat)
-            Kh[tt] = Kh[tt] + dp[ll] * 0.5 * integrate_horizontal(khlt, dlon, dlat)
-            Kv[tt] = Kv[tt] + dp[ll] * 0.5 * integrate_horizontal(kvlt, dlon, dlat)
+    cpt_x = integrate_horizontal(cpt, dlon, dlat)
+    qlt_x = integrate_horizontal(qlt, dlon, dlat)
+    khlt_x = integrate_horizontal(khlt, dlon, dlat)
+    kvlt_x = integrate_horizontal(kvlt, dlon, dlat)
 
-            ll = ll + 1
+    dp_x = np.zeros((nt, len(dp)))
+    dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=("time", "level"))
+    dp_x = dp_x + dp
 
-        if output_file_name != []:
-            I_str = "{:16.15e}".format(I[tt])
-            L_str = "{:16.15e}".format(L[tt])
-            P_str = "{:16.15e}".format(P[tt])
-            Kh_str = "{:16.15e}".format(Kh[tt])
-            Kv_str = "{:16.15e}".format(Kv[tt])
+    I = (dp_x * cpt_x).sum(dim="level")
+    L = (dp_x * L_V * qlt_x).sum(dim="level")
+    Kh = (dp_x * 0.5 * khlt_x).sum(dim="level")
+    Kv = (dp_x * 0.5 * kvlt_x).sum(dim="level")
 
-            with open(output_file_name, "a") as outfile:
-                outfile.write(f"{I_str}\t{L_str}\t{P_str}\t{Kh_str}\t{Kv_str}\n")
-
-        tt = tt + 1
-
-    energy_integrals = xr.DataArray([I, L, P, Kh, Kv])
+    energy_integrals = xr.DataArray([I.data, L.data, P.data, Kh.data, Kv.data])
 
     return energy_integrals
 
@@ -167,7 +150,6 @@ def energy_exchanges(
     fieldnames,
     sub_domain_longitude=np.array([None]),
     sub_domain_latitude=np.array([None]),
-    output_file_name=[],
 ) -> XarrayLike:
     """
     Compute the exchanges between kinetic to internal, internal to kinetic, kinetic to potential and
@@ -193,7 +175,6 @@ def energy_exchanges(
             energy components are to be computed in the longitudinal direction (optional)
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the latitudinal direction (optional)
-        output_file_name: name of the test file to which to write the output (optional)
 
     Returns:
         2D array containing the time series for the domain integrals of the energy exchanges at each time
@@ -254,17 +235,8 @@ def energy_exchanges(
 
             ll = ll + 1
 
-        if output_file_name != []:
-            KtoI_str = "{:16.15e}".format(KtoI[tt])
-            ItoK_str = "{:16.15e}".format(ItoK[tt])
-            KtoP_str = "{:16.15e}".format(KtoP[tt])
-            PtoK_str = "{:16.15e}".format(PtoK[tt])
-
-            with open(output_file_name, "a") as outfile:
-                outfile.write(f"{KtoI_str}\t{ItoK_str}\t{KtoP_str}\t{PtoK_str}\n")
-
         tt = tt + 1
 
-    energy_exchange_integrals = xr.DataArray([KtoI, ItoK, KtoP, PtoK])
+    energy_exchange_integrals = xr.DataArray([KtoI.data, ItoK.data, KtoP.data, PtoK.data])
 
     return energy_exchange_integrals
