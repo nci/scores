@@ -541,7 +541,7 @@ def cdf_envelope(
     cdf: xr.DataArray,
     threshold_dim: str,
 ) -> xr.DataArray:
-    """Forecast cumulative distribution functions (CDFs) for real-valued random variables.
+    """Reconstructs cumulative distribution functions (CDFs) from known points along a predictive distribution.
 
     CDFs that are reconstructed from known points on the distribution should be nondecreasing
     with respect to the threshold dimension. However, sometimes this may fail due to rounding

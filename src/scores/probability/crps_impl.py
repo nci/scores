@@ -500,7 +500,7 @@ def crps_cdf_brier_decomposition(
     If any there are any NaNs along the threshold dimension of `fcst`, then NaNs are
     propagated along this dimension prior to calculating the decomposition. If
     propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
-    `scores.probability.functions.fill_cdf`.
+    :py:func:`scores.processing.cdf.fill_cdf`.
 
     Args:
         fcst (xr.DataArray): DataArray of CDF values with threshold dimension `threshold_dim`.
@@ -628,7 +628,7 @@ def adjust_fcst_for_crps(
     that has the higher (i.e. worse) CRPS is returned. In the event of a tie,
     preference is given in the order `fcst` then upper.
 
-    See `scores.probability.functions.cdf_envelope` for details about the CDF envelope.
+    See :py:func:`scores.processing.cdf.cdf_envelope` for details about the CDF envelope.
 
     The use case for this is when, either due to rounding or poor forecast process, the
     forecast CDF `fcst` fails to be nondecreasing. Rather than simply replacing `fcst`
@@ -652,10 +652,10 @@ def adjust_fcst_for_crps(
             whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
             values give a higher CRPS in which case original values are kept.
 
-    See `scores.probability.functions.cdf_envelope` for a description of the 'CDF envelope'.
+    See :py:func:`scores.processing.cdf.cdf_envelope` for a description of the 'CDF envelope'.
 
-    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
-    `scores.probability.functions.fill_cdf`.
+    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using 
+    :py:func:`scores.processing.cdf.fill_cdf`.
 
     The CRPS for each forecast case is calculated using `crps`, with a weight of 1.
 
