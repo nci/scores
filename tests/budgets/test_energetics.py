@@ -255,23 +255,23 @@ def test_budgets_gradient(
         nlat = len(lat)
         cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
 
-        psi = np.zeros((nlat, nlon))
-        dPsiDx = np.zeros((nlat, nlon))
-        dPsiDy = np.zeros((nlat, nlon))
-        lap_psi = np.zeros((nlat, nlon))
+        psi = np.zeros((1, 1, nlat, nlon))
+        dPsiDx = np.zeros((1, 1, nlat, nlon))
+        dPsiDy = np.zeros((1, 1, nlat, nlon))
+        lap_psi = np.zeros((1, 1, nlat, nlon))
         for ii in np.arange(nlat):
             for jj in np.arange(nlon):
-                psi[ii, jj] = field(lon[jj], lat[ii], alpha)
-                dPsiDx[ii, jj] = zonal_gradient(lon[jj], lat[ii], alpha)
-                dPsiDy[ii, jj] = meridional_gradient(lon[jj], lat[ii], alpha)
-                lap_psi[ii, jj] = div_vec(lon[jj], lat[ii], alpha)
+                psi[0, 0, ii, jj] = field(lon[jj], lat[ii], alpha)
+                dPsiDx[0, 0, ii, jj] = zonal_gradient(lon[jj], lat[ii], alpha)
+                dPsiDy[0, 0, ii, jj] = meridional_gradient(lon[jj], lat[ii], alpha)
+                lap_psi[0, 0, ii, jj] = div_vec(lon[jj], lat[ii], alpha)
 
         grad_f_dot_u, f_div_u = integrate_energy_exchange(
             psi, dPsiDx, dPsiDy, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
         )
 
-        err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)
-        err2 = f_div_u - psi * lap_psi
+        err1 = grad_f_dot_u[:, :] - (dPsiDx[0, 0, :, :] * dPsiDx[0, 0, :, :] + dPsiDy[0, 0, :, :] * dPsiDy[0, 0, :, :])
+        err2 = f_div_u[:, :] - psi[0, 0, :, :] * lap_psi[0, 0, :, :]
         error_at_res_grad_f_dot_u[res] = integrate_horizontal(err1, dlon, dlat)
         error_at_res_f_div_u[res] = integrate_horizontal(err2, dlon, dlat)
         balance_error_at_res[res] = np.abs(error_at_res_grad_f_dot_u[res] + error_at_res_f_div_u[res]) / np.abs(

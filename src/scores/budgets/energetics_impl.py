@@ -131,7 +131,6 @@ def energy_components(
     khlt_x = integrate_horizontal(khlt, dlon, dlat)
     kvlt_x = integrate_horizontal(kvlt, dlon, dlat)
 
-    dp_x = np.zeros((nt, len(dp)))
     dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=("time", "level"))
     dp_x = dp_x + dp
 
@@ -211,31 +210,28 @@ def energy_exchanges(
     # get the surface geopotential (constant in time)
     zs = fields[fieldnames[7]]
 
-    tt = 0
-    for _time in time_array:
-        ll = 0
-        for _level in level_array:
-            ult = fields[fieldnames[0]].sel(level=_level, time=_time)
-            vlt = fields[fieldnames[1]].sel(level=_level, time=_time)
-            zlt = fields[fieldnames[5]].sel(level=_level, time=_time)
+    ult = fields[fieldnames[0]].sel(level=level_array, time=time_array)
+    vlt = fields[fieldnames[1]].sel(level=level_array, time=time_array)
+    zlt = fields[fieldnames[5]].sel(level=level_array, time=time_array)
 
-            z_m_zs = zlt - zs
+    dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=("time", "level"))
+    dp_x = dp_x + dp
 
-            KtoI_t, ItoK_t = integrate_energy_exchange(
-                z_m_zs, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
-            )
-            KtoI[tt] = KtoI[tt] + dp[ll] * KtoI_t
-            ItoK[tt] = ItoK[tt] + dp[ll] * ItoK_t
+    zs_v = xr.DataArray(np.zeros((nt, len(dp), len(lat), len(lon))), dims=("time", "level", "latitude", "longitude"))
+    zs_v = zs_v + zs
 
-            KtoP_t, PtoK_t = integrate_energy_exchange(
-                zs, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
-            )
-            KtoP[tt] = KtoP[tt] + dp[ll] * KtoP_t
-            PtoK[tt] = PtoK[tt] + dp[ll] * PtoK_t
+    z_m_zs = zlt - zs_v
 
-            ll = ll + 1
-
-        tt = tt + 1
+    KtoI_t, ItoK_t = integrate_energy_exchange(
+        z_m_zs, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+    )
+    KtoP_t, PtoK_t = integrate_energy_exchange(
+        zs_v, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+    )
+    KtoP = (dp_x * KtoP_t).sum(dim="level")
+    PtoK = (dp_x * PtoK_t).sum(dim="level")
+    KtoI = (dp_x * KtoI_t).sum(dim="level")
+    ItoK = (dp_x * ItoK_t).sum(dim="level")
 
     energy_exchange_integrals = xr.DataArray([KtoI.data, ItoK.data, KtoP.data, PtoK.data])
 

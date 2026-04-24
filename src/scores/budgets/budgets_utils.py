@@ -137,14 +137,14 @@ def integrate_energy_exchange(
     _dlat = np.abs(np.deg2rad(latitude[1] - latitude[0]) * METERS_PER_DEGREE)
 
     # grad f:  1/(r \cos(\theta)) df/d\lambda, 1/r df/d\theta
-    dfdx = np.gradient(field_scalar, _dlon, axis=1) * cos_theta_inv
-    dfdy = np.gradient(field_scalar, _dlat, axis=0)
+    dfdx = np.gradient(field_scalar, _dlon, axis=3) * cos_theta_inv
+    dfdy = np.gradient(field_scalar, _dlat, axis=2)
     grad_f_dot_u = dfdx * field_vector_x + dfdy * field_vector_y
     int_grad_f_dot_u = integrate_horizontal(grad_f_dot_u, dlon, dlat)
 
     # div(u):  1/(r \cos(\theta)) (du/d\lambda + d(v\cos(\theta))/d\theta)
-    dudx = np.gradient(field_vector_x, _dlon, axis=1)
-    dvdy = np.gradient(field_vector_y, _dlat, axis=0) * cos_theta - sin_theta * field_vector_y / METERS_PER_DEGREE
+    dudx = np.gradient(field_vector_x, _dlon, axis=3)
+    dvdy = np.gradient(field_vector_y, _dlat, axis=2) * cos_theta - sin_theta * field_vector_y / METERS_PER_DEGREE
     div_u = cos_theta_inv * (dudx + dvdy)
     f_div_u = field_scalar * div_u
     int_f_div_u = integrate_horizontal(f_div_u, dlon, dlat)
