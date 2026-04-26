@@ -116,11 +116,11 @@ def energy_components(
     sp_zs = sp * zs
     P = integrate_horizontal(sp_zs, dlon, dlat)
 
-    ult = fields[fieldnames[0]].sel(level=level_array, time=time_array)
-    vlt = fields[fieldnames[1]].sel(level=level_array, time=time_array)
-    wlt = fields[fieldnames[2]].sel(level=level_array, time=time_array)
-    tlt = fields[fieldnames[3]].sel(level=level_array, time=time_array)
-    qlt = fields[fieldnames[4]].sel(level=level_array, time=time_array)
+    ult = fields[fieldnames[0]].sel(time=time_array, level=level_array)
+    vlt = fields[fieldnames[1]].sel(time=time_array, level=level_array)
+    wlt = fields[fieldnames[2]].sel(time=time_array, level=level_array)
+    tlt = fields[fieldnames[3]].sel(time=time_array, level=level_array)
+    qlt = fields[fieldnames[4]].sel(time=time_array, level=level_array)
 
     khlt = ult**2 + vlt**2
     kvlt = wlt**2
@@ -139,7 +139,7 @@ def energy_components(
     Kh = (dp_x * 0.5 * khlt_x).sum(dim="level")
     Kv = (dp_x * 0.5 * kvlt_x).sum(dim="level")
 
-    energy_integrals = xr.DataArray([I.data, L.data, P.data, Kh.data, Kv.data])
+    energy_integrals = xr.DataArray([I.data, L.data, P.data, Kh.data, Kv.data]).transpose()
 
     return energy_integrals
 
@@ -233,6 +233,6 @@ def energy_exchanges(
     KtoI = (dp_x * KtoI_t).sum(dim="level")
     ItoK = (dp_x * ItoK_t).sum(dim="level")
 
-    energy_exchange_integrals = xr.DataArray([KtoI.data, ItoK.data, KtoP.data, PtoK.data])
+    energy_exchange_integrals = xr.DataArray([KtoI.data, ItoK.data, KtoP.data, PtoK.data]).transpose()
 
     return energy_exchange_integrals

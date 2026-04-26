@@ -363,7 +363,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
+            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]).transpose(),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -379,7 +379,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
+            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]).transpose(),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -395,7 +395,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.000000e00]]),
+            xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.0]]).transpose(),
         ),
     ],
 )
@@ -494,7 +494,7 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
-            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]),
+            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]).transpose(),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -505,7 +505,7 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
-            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]),
+            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]).transpose(),
         ),
     ],
 )
