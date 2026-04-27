@@ -43,9 +43,12 @@ def integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), su
         cond_lon = (longitude >= sub_domain_lon[0]) & (longitude <= sub_domain_lon[1])
         longitude = longitude[cond_lon]
 
-    # assume the longitudes are regularly spaced
-    _dlon = (longitude[1] - longitude[0]) * METERS_PER_DEGREE
-    dlon = _dlon * np.ones(len(longitude))
+    dlon = np.zeros(len(longitude))
+    for ii in np.arange(len(longitude) - 2) + 1:
+        dlon[ii] = 0.5 * (longitude[ii + 1] - longitude[ii - 1])
+    dlon[0] = longitude[1] - longitude[0]
+    dlon[-1] = longitude[-1] - longitude[-2]
+    dlon[:] = METERS_PER_DEGREE * dlon[:]
 
     # Check the latitude sub domain is valid if specified
     if sub_domain_lat[0] is not None:
