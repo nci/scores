@@ -72,7 +72,6 @@ def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, 
         positive weight or total negative weight is zero.
     """
     # --- Checks ---
-    # TODO: should be higher up in the call chain...
     valid = ~(np.isnan(fcst_flat) | np.isnan(obs_flat) | np.isnan(weights_flat))
     (f_v, o_v, w_v) = (fcst_flat[valid], obs_flat[valid], weights_flat[valid])
 
@@ -87,37 +86,34 @@ def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, 
     w_u_stat_denom = np.sum(w_p) * np.sum(w_n)
 
     # --- More checks ---
-    # TODO: should be higher up in the call chain...
     if np.isclose(w_u_stat_denom, 0):
         return np.nan
 
     # --- Count equals ---
-    # TODO, optimize:
-    # unique_all does a second sort, even if explicitly told not to, it may
-    # still sort it. Either the result of unique_all can be used to re-form the
-    # sorted index (`ixs` above) OR `f_s` can be used to retrieve the uniques
-    # directly.
-    u = np.unique_all(f_s)
-    ties = u.counts[u.inverse_indices] > 1
-    
+    group_starts = np.concatenate([[0], np.flatnonzero(np.diff(f_s)) + 1])
+    group_counts = np.diff(np.concatenate([group_starts, [n]]))
+    # For each element, the size of its group (used to identify ties)
+    counts_per_element = np.repeat(group_counts, group_counts)
+    ties = counts_per_element > 1
+
     # --- Count greater than or equal to ---
     # 1(f_i >= f_j)
     gte = np.ones(n - 1)
     prefix_gte = np.zeros(n)
     # looking for the preceding negatives
-    prefix_gte[1:] = np.add.accumulate(w_n[0:-1] * gte) 
+    prefix_gte[1:] = np.add.accumulate(w_n[0:-1] * gte)
 
     # --- Transform pos/neg weights into partition space ---
     # sum: 1(f_i == f_j)
-    eq_neg = np.add.reduceat(w_n * ties, u.indices)
-    eq_pos = np.add.reduceat(w_p * ties, u.indices)
+    eq_neg = np.add.reduceat(w_n * ties, group_starts)
+    eq_pos = np.add.reduceat(w_p * ties, group_starts)
     eq_sum = np.linalg.matmul(eq_neg, eq_pos.T)
 
     # sum: 1(f_i > f_j)
     # NOTE: This subtle but critical part is what removes duplicated ties from
     # the prefix sum.
-    gte_neg = prefix_gte[u.indices]
-    acc_pos = np.add.reduceat(w_p, u.indices)
+    gte_neg = prefix_gte[group_starts]
+    acc_pos = np.add.reduceat(w_p, group_starts)
     gt_sum = np.linalg.matmul(gte_neg, acc_pos.T)
 
     # --- Compose result ---
