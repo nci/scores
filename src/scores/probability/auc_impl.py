@@ -71,46 +71,62 @@ def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, 
         The weighted area under the ROC curve as a float, or NaN if the total
         positive weight or total negative weight is zero.
     """
+    # --- Checks ---
+    # TODO: should be higher up in the call chain...
     valid = ~(np.isnan(fcst_flat) | np.isnan(obs_flat) | np.isnan(weights_flat))
-    fcst_v = fcst_flat[valid]
-    obs_v = obs_flat[valid]
-    w_v = weights_flat[valid]
+    (f_v, o_v, w_v) = (fcst_flat[valid], obs_flat[valid], weights_flat[valid])
 
-    w_pos = np.sum(w_v[obs_v == 1])
-    w_neg = np.sum(w_v[obs_v == 0])
+    # --- Pre-sort and find duplicate indices ---
+    n = len(f_v)
+    ixs = np.argsort(f_v, kind="quicksort")
+    f_s, o_s, w_s = f_v[ixs], o_v[ixs], w_v[ixs]
 
-    if w_pos == 0 or w_neg == 0:
+    # --- Decompose weights ---
+    w_p = w_s * (o_s == 1)
+    w_n = w_s * (o_s == 0)
+    w_u_stat_denom = np.sum(w_p) * np.sum(w_n)
+
+    # --- More checks ---
+    # TODO: should be higher up in the call chain...
+    if np.isclose(w_u_stat_denom, 0):
         return np.nan
 
-    order = np.argsort(fcst_v, kind="stable")
-    fcst_s = fcst_v[order]
-    obs_s = obs_v[order]
-    w_s = w_v[order]
+    # --- Count equals ---
+    # TODO, optimize:
+    # unique_all does a second sort, even if explicitly told not to, it may
+    # still sort it. Either the result of unique_all can be used to re-form the
+    # sorted index (`ixs` above) OR `f_s` can be used to retrieve the uniques
+    # directly.
+    u = np.unique_all(f_s)
+    ties = u.counts[u.inverse_indices] > 1
+    
+    # --- Count greater than or equal to ---
+    # 1(f_i >= f_j)
+    gte = np.ones(n - 1)
+    prefix_gte = np.zeros(n)
+    # looking for the preceding negatives
+    prefix_gte[1:] = np.add.accumulate(w_n[0:-1] * gte) 
 
-    u_weighted = 0.0
-    cum_neg = 0.0
-    i = 0
-    n = len(fcst_s)
+    # --- Transform pos/neg weights into partition space ---
+    # sum: 1(f_i == f_j)
+    eq_neg = np.add.reduceat(w_n * ties, u.indices)
+    eq_pos = np.add.reduceat(w_p * ties, u.indices)
+    eq_sum = np.linalg.matmul(eq_neg, eq_pos.T)
 
-    while i < n:
-        # Find the end of the current tie group
-        j = i
-        while j < n and fcst_s[j] == fcst_s[i]:
-            j += 1
+    # sum: 1(f_i > f_j)
+    # NOTE: This subtle but critical part is what removes duplicated ties from
+    # the prefix sum.
+    gte_neg = prefix_gte[u.indices]
+    acc_pos = np.add.reduceat(w_p, u.indices)
+    gt_sum = np.linalg.matmul(gte_neg, acc_pos.T)
 
-        group_obs = obs_s[i:j]
-        group_w = w_s[i:j]
-        tie_neg = np.sum(group_w[group_obs == 0])
+    # --- Compose result ---
+    # Consolidate sums: gt + 0.5 eq
+    ustat = gt_sum + 0.5 * eq_sum
 
-        # Positives in tie group are fully concordant with all negatives seen
-        # before this group and half-concordant with negatives inside this group
-        pos_mask = group_obs == 1
-        u_weighted += np.sum(group_w[pos_mask]) * (cum_neg + 0.5 * tie_neg)
+    res = ustat / w_u_stat_denom
 
-        cum_neg += tie_neg
-        i = j
-
-    return u_weighted / (w_pos * w_neg)
+    return res
 
 
 def _check_roc_auc_args(
