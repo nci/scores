@@ -71,7 +71,7 @@ def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, 
         The weighted area under the ROC curve as a float, or NaN if the total
         positive weight or total negative weight is zero.
     """
-    # --- Checks ---
+    # --- NaN masking ---
     valid = ~(np.isnan(fcst_flat) | np.isnan(obs_flat) | np.isnan(weights_flat))
     f_v, o_v, w_v = (fcst_flat[valid], obs_flat[valid], weights_flat[valid])
 
