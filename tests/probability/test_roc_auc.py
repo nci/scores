@@ -3,19 +3,12 @@ Contains unit tests for scores.probability.auc_impl.roc_auc
 """
 
 import warnings
-from unittest.mock import patch
 
 try:
     import dask
     import dask.array
 except ImportError:
     dask = "Unavailable"
-
-try:
-    import numba
-
-except ImportError:
-    numba = "Unavailable"
 
 import numpy as np
 import pytest
@@ -25,7 +18,6 @@ from scores.probability import roc_auc, roc_curve_data
 from tests.plotdata import roc_test_data as rtd
 
 
-@pytest.mark.parametrize("numba_available", [True, False])
 @pytest.mark.parametrize(
     ("fcst", "obs", "preserve_dims", "reduce_dims", "weights"),
     [
@@ -45,23 +37,17 @@ from tests.plotdata import roc_test_data as rtd
         (rtd.FCST_2X3X2_WITH_NAN, rtd.OBS_3X3_WITH_NAN, ["letter", "lead_day"], None, None),
     ],
 )
-def test_roc_auc(numba_available, fcst, obs, preserve_dims, reduce_dims, weights):
+def test_roc_auc(fcst, obs, preserve_dims, reduce_dims, weights):
     """
-    Tests roc_auc with a variety of inputs, with and without numba.
+    Tests roc_auc with a variety of inputs.
     These are regression tests against the expected AUC values computed by roc_curve_data
     which were calculated by hand.
     """
     expected_auc = roc_curve_data(fcst, obs, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
     expected_auc = expected_auc["AUC"]
     expected_auc.attrs = {}
-    if numba_available:
-        result = roc_auc(fcst, obs, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
-        xr.testing.assert_allclose(result, expected_auc)
-    else:
-        with patch.dict("sys.modules", numba=None), warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="numba is not available")
-            result = roc_auc(fcst, obs, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
-        xr.testing.assert_allclose(result, expected_auc)
+    result = roc_auc(fcst, obs, preserve_dims=preserve_dims, reduce_dims=reduce_dims, weights=weights)
+    xr.testing.assert_allclose(result, expected_auc)
 
 
 @pytest.mark.parametrize("check_args", [True, False])
@@ -141,22 +127,20 @@ def test_roc_auc_preserve_all_dims():
         roc_auc(fcst, obs, preserve_dims="all")
 
 
-def test_roc_auc_all_same_class_no_numba():
+def test_roc_auc_all_same_class():
     """_roc_auc_mann_whitney returns NaN when all obs are the same class"""
     fcst = xr.DataArray([0.9, 0.8, 0.7], dims=["sample"])
     obs = xr.DataArray([1, 1, 1], dims=["sample"])
-    with patch.dict("sys.modules", numba=None):
-        result = roc_auc(fcst, obs, check_args=False)
+    result = roc_auc(fcst, obs, check_args=False)
     assert np.isnan(float(result))
 
 
-def test_roc_auc_zero_pos_weight_no_numba():
+def test_roc_auc_zero_pos_weight():
     """_roc_auc_mann_whitney_weighted returns NaN when total positive weight is zero."""
     fcst = xr.DataArray([0.9, 0.8, 0.3, 0.1], dims=["sample"])
     obs = xr.DataArray([1, 1, 0, 0], dims=["sample"])
     weights = xr.DataArray([0.0, 0.0, 1.0, 1.0], dims=["sample"])  # all positives have zero weight
-    with patch.dict("sys.modules", numba=None):
-        result = roc_auc(fcst, obs, weights=weights, check_args=False)
+    result = roc_auc(fcst, obs, weights=weights, check_args=False)
     assert np.isnan(float(result))
 
 

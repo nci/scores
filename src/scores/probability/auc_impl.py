@@ -20,8 +20,6 @@ def _roc_auc_mann_whitney(fcst_flat: np.ndarray, obs_flat: np.ndarray) -> float:
     This is equivalent to P(fcst_positive > fcst_negative) + 0.5 * P(fcst_positive == fcst_negative)
     and runs in O(n log n) time due to sorting-based ranking.
 
-    This function handles the non-numba-accelerated unweighted case.
-
     Args:
         fcst_flat: 1-D array of forecast probabilities.
         obs_flat: 1-D array of binary observations (0 or 1).
@@ -267,37 +265,11 @@ def roc_auc(
     fcst_stacked = fcst.stack({sample_dim: reduce_dims_tuple})
     obs_stacked = obs.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
 
-    # Try numba-accelerated gufuncs; fall back to numpy if numba is unavailable
-    weighted_numba_gufunc = None
-    try:
-        import numba  # noqa  # ignore unused import
-
-        from scores.probability.auc_numba import _roc_auc_mann_whitney_weighted_gufunc
-
-        weighted_numba_gufunc = _roc_auc_mann_whitney_weighted_gufunc
-    except ImportError:
-        pass
-
     weights_stacked = None
     if weights is not None:
         weights_stacked = weights.broadcast_like(fcst).stack({sample_dim: reduce_dims_tuple})
 
-    if weighted_numba_gufunc is not None:
-        # When numba is available, always use the weighted gufunc.
-        # For the unweighted case, supply constant unit weights — benchmarking
-        # shows the overhead is negligible compared to the speedup from numba.
-        if weights_stacked is None:
-            weights_stacked = xr.ones_like(fcst_stacked)
-        result = xr.apply_ufunc(
-            weighted_numba_gufunc,
-            fcst_stacked,
-            obs_stacked,
-            weights_stacked,
-            input_core_dims=[[sample_dim], [sample_dim], [sample_dim]],
-            dask="parallelized",
-            output_dtypes=[float],
-        )
-    elif weights_stacked is not None:
+    if weights_stacked is not None:
         result = xr.apply_ufunc(
             _roc_auc_mann_whitney_weighted,
             fcst_stacked,
@@ -308,8 +280,6 @@ def roc_auc(
             dask="parallelized",
             output_dtypes=[float],
         )
-    # When numba is not available and weights are not provided, use the unweighted
-    # function which is faster than the weighted version.
     else:
         result = xr.apply_ufunc(
             _roc_auc_mann_whitney,
