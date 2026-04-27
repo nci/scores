@@ -94,13 +94,11 @@ def integrate_horizontal(field, dlon, dlat):
 
 def trig_fields(longitude, latitude):
     nlon = len(longitude)
-    nlat = len(latitude)
 
-    cos_theta = np.zeros((nlat, nlon))
-    sin_theta = np.zeros((nlat, nlon))
-    for ii in np.arange(nlon):
-        cos_theta[:, ii] = np.cos(np.deg2rad(latitude))
-        sin_theta[:, ii] = np.sin(np.deg2rad(latitude))
+    lat_rad = np.deg2rad(latitude)
+
+    cos_theta = np.cos(lat_rad)[:, None] * np.ones((1, nlon))
+    sin_theta = np.sin(lat_rad)[:, None] * np.ones((1, nlon))
 
     cos_theta_inv = 1.0 / cos_theta
 
