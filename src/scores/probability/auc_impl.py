@@ -98,10 +98,9 @@ def _roc_auc_mann_whitney_weighted(fcst_flat: np.ndarray, obs_flat: np.ndarray, 
 
     # --- Count greater than or equal to ---
     # 1(f_i >= f_j)
-    gte = np.ones(n - 1)
     prefix_gte = np.zeros(n)
     # looking for the preceding negatives
-    prefix_gte[1:] = np.add.accumulate(w_n[0:-1] * gte)
+    prefix_gte[1:] = np.add.accumulate(w_n[0:-1])
 
     # --- Transform pos/neg weights into partition space ---
     # sum: 1(f_i == f_j)
