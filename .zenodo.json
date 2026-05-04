@@ -121,6 +121,11 @@
         {
             "affiliation": "Bureau of Meteorology, Australia",
             "name": "Wu, Xiaoxi"
+        },
+        {
+            "orcid": "https://orcid.org/0009-0000-8091-5806",
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Karney, Daniel"
         }
     ],
     "license": "Apache-2.0",
