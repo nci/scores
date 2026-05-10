@@ -282,13 +282,13 @@ def mean_error(
 
 
 def additive_bias(
-    fcst: XarrayLike,
-    obs: XarrayLike,
+    fcst: FlexibleArrayType,
+    obs: FlexibleArrayType,
     *,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    weights: Optional[XarrayLike] = None,
-) -> XarrayLike:
+    weights: Optional[xr.DataArray] = None,
+) -> FlexibleArrayType:
     """
     Calculates the additive bias which is also sometimes called the mean error.
 
@@ -327,14 +327,30 @@ def additive_bias(
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
-    """
-    # Note - mean error call this function
-    reduce_dims = scores.utils.gather_dimensions(
-        fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
-    error = fcst - obs
+    Notes:
+        - For xarray inputs, dimension reduction and optional weights are supported.
+        - For pandas/numpy inputs, reduction is not supported (result is the mean over all values)
+          and weights must be None.
 
-    score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    """
+
+    fcst_is_xr = is_xarraylike(fcst)
+    obs_is_xr = is_xarraylike(obs)
+
+    if not (fcst_is_xr and obs_is_xr) and weights is not None:
+        raise ValueError("If `fcst` and `obs` are not xarray objects, `weights` must be None.")
+
+    if fcst_is_xr:
+        reduce_dims = scores.utils.gather_dimensions(
+            fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+        )
+
+    error = fcst - obs  # type: ignore
+
+    if is_xarraylike(error):
+        score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    else:
+        score = error.mean()
 
     return score
 
