@@ -82,23 +82,33 @@ def integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), su
 
     dlat[:] = METERS_PER_DEGREE * dlat[:]
 
-    return dlon, dlat, longitude, latitude
+    return xr.DataArray(dlon, dims="longitude", coords={"longitude": longitude}), xr.DataArray(
+        dlat, dims="latitude", coords={"latitude": latitude}
+    )
 
 
 # dimensions are assumed as: field[num_latitudes,num_longitudes]
 def integrate_horizontal(field, dlon, dlat):
-    int_lon = np.dot(field, dlon)
-    int_tot = np.dot(int_lon, dlat)
+    int_lon = field.dot(dlon)
+    int_tot = int_lon.dot(dlat)
     return int_tot
 
 
 def trig_fields(longitude, latitude):
     nlon = len(longitude)
 
-    lat_rad = np.deg2rad(latitude)
+    lat_rad = np.deg2rad(latitude).to_numpy()
 
-    cos_theta = np.cos(lat_rad)[:, None] * np.ones((1, nlon))
-    sin_theta = np.sin(lat_rad)[:, None] * np.ones((1, nlon))
+    cos_theta_np = np.cos(lat_rad)[:, None] * np.ones((1, nlon))
+    sin_theta_np = np.sin(lat_rad)[:, None] * np.ones((1, nlon))
+
+    cos_theta = xr.DataArray(
+        cos_theta_np, dims=["latitude", "longitude"], coords={"latitude": latitude, "longitude": longitude}
+    )
+
+    sin_theta = xr.DataArray(
+        sin_theta_np, dims=["latitude", "longitude"], coords={"latitude": latitude, "longitude": longitude}
+    )
 
     cos_theta_inv = 1.0 / cos_theta
 
@@ -123,7 +133,7 @@ def pressure_level_thickness(levels):
 
 
 def integrate_energy_exchange(
-    field_scalar, field_vector_x, field_vector_y, longitude, latitude, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+    field_scalar, field_vector_x, field_vector_y, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
 ):
     r"""
     Williamson et. al., JCP (1992), eqns (3-4):
@@ -134,18 +144,18 @@ def integrate_energy_exchange(
     div(u):  1/(r \cos(theta)) (d u/d lambda + d(v\cos(theta))/d theta)
     """
 
-    _dlon = np.abs(np.deg2rad(longitude[1] - longitude[0]) * METERS_PER_DEGREE)
-    _dlat = np.abs(np.deg2rad(latitude[1] - latitude[0]) * METERS_PER_DEGREE)
-
     # grad f:  1/(r \cos(\theta)) df/d\lambda, 1/r df/d\theta
-    dfdx = np.gradient(field_scalar, _dlon, axis=3) * cos_theta_inv
-    dfdy = np.gradient(field_scalar, _dlat, axis=2)
+    dfdx = field_scalar.differentiate("longitude") * cos_theta_inv / METERS_PER_DEGREE
+    dfdy = field_scalar.differentiate("latitude") / METERS_PER_DEGREE
     grad_f_dot_u = dfdx * field_vector_x + dfdy * field_vector_y
     int_grad_f_dot_u = integrate_horizontal(grad_f_dot_u, dlon, dlat)
 
     # div(u):  1/(r \cos(\theta)) (du/d\lambda + d(v\cos(\theta))/d\theta)
-    dudx = np.gradient(field_vector_x, _dlon, axis=3)
-    dvdy = np.gradient(field_vector_y, _dlat, axis=2) * cos_theta - sin_theta * field_vector_y / METERS_PER_DEGREE
+    dudx = field_vector_x.differentiate("longitude") / METERS_PER_DEGREE
+    dvdy = (
+        field_vector_y.differentiate("latitude") * cos_theta / METERS_PER_DEGREE
+        - sin_theta * field_vector_y / RAD_EARTH
+    )
     div_u = cos_theta_inv * (dudx + dvdy)
     f_div_u = field_scalar * div_u
     int_f_div_u = integrate_horizontal(f_div_u, dlon, dlat)

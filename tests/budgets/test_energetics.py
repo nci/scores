@@ -163,25 +163,20 @@ def test_budgets_integral(
         longitude = np.linspace(-180.0, +180.0, nlon, endpoint=False)
         latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
 
-        dlon, dlat, lon, lat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
-        nlon = len(lon)
-        nlat = len(lat)
+        dlon, dlat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        nlon = len(dlon)
+        nlat = len(dlat)
 
-        psi = np.zeros((nlat, nlon))
-        for ii in np.arange(nlat):
-            for jj in np.arange(nlon):
-                psi[ii, jj] = field(lon[jj], lat[ii], alpha) + offset
+        lon2d, lat2d = np.meshgrid(dlon.longitude, dlat.latitude)
+        _psi = field(lon2d, lat2d, alpha) + offset
+
+        psi = xr.DataArray(
+            _psi, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
+        )
 
         int_psi = integrate_horizontal(psi, dlon, dlat)
 
-        error_at_res[res] = (analytic_solution - int_psi) / analytic_solution
-
-        print(
-            str(res)
-            + ":\t{:.4e}".format(analytic_solution)
-            + "\t{:.4e}".format(int_psi)
-            + "\t{:.4e}".format(error_at_res[res])
-        )
+        error_at_res[res] = (analytic_solution - int_psi.data) / analytic_solution
 
     convergence = np.zeros(num_resolutions - 1)
     for res in np.arange(num_resolutions - 1):
@@ -250,39 +245,40 @@ def test_budgets_gradient(
         longitude = np.linspace(-180.0, +180.0, nlon)
         latitude = np.linspace(-90.0, +90.0, nlat)
 
-        dlon, dlat, lon, lat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
-        nlon = len(lon)
-        nlat = len(lat)
-        cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
+        dlon, dlat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        nlon = len(dlon)
+        nlat = len(dlat)
+        cos_theta, sin_theta, cos_theta_inv = trig_fields(dlon.longitude, dlat.latitude)
 
-        psi = np.zeros((1, 1, nlat, nlon))
-        dPsiDx = np.zeros((1, 1, nlat, nlon))
-        dPsiDy = np.zeros((1, 1, nlat, nlon))
-        lap_psi = np.zeros((1, 1, nlat, nlon))
-        for ii in np.arange(nlat):
-            for jj in np.arange(nlon):
-                psi[0, 0, ii, jj] = field(lon[jj], lat[ii], alpha)
-                dPsiDx[0, 0, ii, jj] = zonal_gradient(lon[jj], lat[ii], alpha)
-                dPsiDy[0, 0, ii, jj] = meridional_gradient(lon[jj], lat[ii], alpha)
-                lap_psi[0, 0, ii, jj] = div_vec(lon[jj], lat[ii], alpha)
+        lon2d, lat2d = np.meshgrid(dlon.longitude, dlat.latitude)
+        _psi = field(lon2d, lat2d, alpha)
+        _dPsiDx = zonal_gradient(lon2d, lat2d, alpha)
+        _dPsiDy = meridional_gradient(lon2d, lat2d, alpha)
+        _lapPsi = div_vec(lon2d, lat2d, alpha)
 
-        grad_f_dot_u, f_div_u = integrate_energy_exchange(
-            psi, dPsiDx, dPsiDy, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+        psi = xr.DataArray(
+            _psi, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
+        )
+        dPsiDx = xr.DataArray(
+            _dPsiDx, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
+        )
+        dPsiDy = xr.DataArray(
+            _dPsiDy, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
+        )
+        lapPsi = xr.DataArray(
+            _lapPsi, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
         )
 
-        err1 = grad_f_dot_u[:, :] - (dPsiDx[0, 0, :, :] * dPsiDx[0, 0, :, :] + dPsiDy[0, 0, :, :] * dPsiDy[0, 0, :, :])
-        err2 = f_div_u[:, :] - psi[0, 0, :, :] * lap_psi[0, 0, :, :]
+        grad_f_dot_u, f_div_u = integrate_energy_exchange(
+            psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+        )
+
+        err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)
+        err2 = f_div_u - psi * lapPsi
         error_at_res_grad_f_dot_u[res] = integrate_horizontal(err1, dlon, dlat)
         error_at_res_f_div_u[res] = integrate_horizontal(err2, dlon, dlat)
         balance_error_at_res[res] = np.abs(error_at_res_grad_f_dot_u[res] + error_at_res_f_div_u[res]) / np.abs(
             error_at_res_grad_f_dot_u[res]
-        )
-
-        print(
-            str(res)
-            + "\t{:.4e}".format(error_at_res_grad_f_dot_u[res])
-            + "\t{:.4e}".format(error_at_res_f_div_u[res])
-            + "\t{:.4e}".format(balance_error_at_res[res])
         )
 
     convergence = np.zeros(num_resolutions - 1)
@@ -428,18 +424,17 @@ def test_budget(
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
     zs = 1.0e5 * np.ones((nlat, nlon))
-    for ii in np.arange(nlev):
-        for jj in np.arange(nlat):
-            for kk in np.arange(nlon):
-                u[0, ii, jj, kk] = u_velocity_func(latitude[jj], longitude[kk], level[ii])
-                v[0, ii, jj, kk] = v_velocity_func(latitude[jj], longitude[kk], level[ii])
-                w[0, ii, jj, kk] = w_velocity_func(latitude[jj], longitude[kk], level[ii])
-                t[0, ii, jj, kk] = temperature_func(latitude[jj], longitude[kk], level[ii])
-                q[0, ii, jj, kk] = humidity_func(latitude[jj], longitude[kk], level[ii])
-                z[0, ii, jj, kk] = geopotential_func(latitude[jj], longitude[kk], level[ii])
-    for jj in np.arange(nlat):
-        for kk in np.arange(nlon):
-            sp[0, jj, kk] = surface_pressure_func(latitude[jj], longitude[kk])
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity_func(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
+    w[0, :, :, :] = w_velocity_func(lat3d, lon3d, lev3d)
+    t[0, :, :, :] = temperature_func(lat3d, lon3d, lev3d)
+    q[0, :, :, :] = humidity_func(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
+    sp[0, :, :] = surface_pressure_func(lat2d, lon2d)
 
     field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
     ds = xr.Dataset(
@@ -494,7 +489,7 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
-            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]).transpose(),
+            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]).transpose(),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -505,7 +500,7 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
-            xr.DataArray([[-2.376601e17], [2.707613e17], [2.523455e17], [-2.854479e17]]).transpose(),
+            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]).transpose(),
         ),
     ],
 )
@@ -533,6 +528,10 @@ def test_exchanges(
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
     zs = np.zeros((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
     for ii in np.arange(nlev):
         for jj in np.arange(nlat):
             for kk in np.arange(nlon):
@@ -563,5 +562,5 @@ def test_exchanges(
         },
     )
 
-    E = energy_exchanges(ds, field_names)
+    E = energy_exchanges(ds, field_names, np.array([None]), np.array([None]))
     xr.testing.assert_allclose(E, expected, atol=1.0e-2)

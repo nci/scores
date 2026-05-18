@@ -80,8 +80,6 @@ def energy_components(
         2D array containing the time series for the domain integrals of the energy components at each time
 
     References:
-        Taylor, M. "Conservation of Mass and Energy for the Moist
-        Atmospheric Primitive Equations on Unstructured Grids", (2011) Section 12.4.5
         Trenberth, K. E., Stepaniak, D. P., Caron, J. M. (2002) "Accuracy of Atmospheric Energy Budgets from Analyses"
           J. Clim. 15 3343--3360
         Sha, Y., Schreck, J. S., Chapman, W., Gagne, D. J. (2025) "Improving AI Weather Prediction Models using Global
@@ -94,12 +92,12 @@ def energy_components(
     if fields.longitude.values[0] < -0.1:
         fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
 
-    dlon, dlat, lon, lat = integration_weights(
+    dlon, dlat = integration_weights(
         fields.longitude.values, fields.latitude.values, sub_domain_longitude, sub_domain_latitude
     )
 
     # select the latitude and longitude sub-domain
-    fields = prepare_fields(fields, lon, lat, sub_domain_longitude, sub_domain_latitude)
+    fields = prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
 
@@ -179,21 +177,22 @@ def energy_exchanges(
         2D array containing the time series for the domain integrals of the energy exchanges at each time
 
     References:
-        Taylor, M. "Conservation of Mass and Energy for the Moist
-        Atmospheric Primitive Equations on Unstructured Grids", (2011) Section 12.4.5
+        Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
+          unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
+          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
         fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
 
-    dlon, dlat, lon, lat = integration_weights(
+    dlon, dlat = integration_weights(
         fields.longitude.values, fields.latitude.values, sub_domain_longitude, sub_domain_latitude
     )
 
-    cos_theta, sin_theta, cos_theta_inv = trig_fields(lon, lat)
+    cos_theta, sin_theta, cos_theta_inv = trig_fields(fields.longitude, fields.latitude)
 
     # select the temporal, vertical and horizontal sub-domain
-    fields = prepare_fields(fields, lon, lat, sub_domain_longitude, sub_domain_latitude)
+    fields = prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
 
@@ -217,17 +216,13 @@ def energy_exchanges(
     dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=("time", "level"))
     dp_x = dp_x + dp
 
-    zs_v = xr.DataArray(np.zeros((nt, len(dp), len(lat), len(lon))), dims=("time", "level", "latitude", "longitude"))
+    zs_v = xr.DataArray(np.zeros((nt, len(dp), len(dlat), len(dlon))), dims=("time", "level", "latitude", "longitude"))
     zs_v = zs_v + zs
 
     z_m_zs = zlt - zs_v
 
-    KtoI_t, ItoK_t = integrate_energy_exchange(
-        z_m_zs, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
-    )
-    KtoP_t, PtoK_t = integrate_energy_exchange(
-        zs_v, ult, vlt, lon, lat, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
-    )
+    KtoI_t, ItoK_t = integrate_energy_exchange(z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
+    KtoP_t, PtoK_t = integrate_energy_exchange(zs_v, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
     KtoP = (dp_x * KtoP_t).sum(dim="level")
     PtoK = (dp_x * PtoK_t).sum(dim="level")
     KtoI = (dp_x * KtoI_t).sum(dim="level")
