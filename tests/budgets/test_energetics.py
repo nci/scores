@@ -477,6 +477,8 @@ def surface_geopotential(phi, theta):
         "v_velocity_func",
         "geopotential_func",
         "surface_geopotential_func",
+        "reduce_dims",
+        "preserve_dims",
         "expected",
     ),
     [
@@ -489,6 +491,8 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
+            None,
+            None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]).transpose(),
         ),
         (
@@ -500,6 +504,8 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
+            None,
+            None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]).transpose(),
         ),
     ],
@@ -513,6 +519,8 @@ def test_exchanges(
     v_velocity_func,
     geopotential_func,
     surface_geopotential_func,
+    reduce_dims,
+    preserve_dims,
     expected,
 ):
     nt = len(time)
@@ -532,15 +540,10 @@ def test_exchanges(
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
 
-    for ii in np.arange(nlev):
-        for jj in np.arange(nlat):
-            for kk in np.arange(nlon):
-                u[0, ii, jj, kk] = u_velocity_func(latitude[jj], longitude[kk], level[ii])
-                v[0, ii, jj, kk] = v_velocity_func(latitude[jj], longitude[kk], level[ii])
-                z[0, ii, jj, kk] = geopotential_func(latitude[jj], longitude[kk], level[ii])
-    for jj in np.arange(nlat):
-        for kk in np.arange(nlon):
-            zs[jj, kk] = surface_geopotential_func(latitude[jj], longitude[kk])
+    u[0, :, :, :] = u_velocity_func(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
+    zs[:, :] = surface_geopotential_func(lat2d, lon2d)
 
     field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
     ds = xr.Dataset(
@@ -562,5 +565,7 @@ def test_exchanges(
         },
     )
 
-    E = energy_exchanges(ds, field_names, np.array([None]), np.array([None]))
+    E = energy_exchanges(
+        ds, field_names, np.array([None]), np.array([None]), reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
     xr.testing.assert_allclose(E, expected, atol=1.0e-2)

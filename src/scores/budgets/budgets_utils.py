@@ -2,6 +2,9 @@
 Common backend functionality required for the energy budget diagnosics
 """
 
+from collections.abc import Iterable
+from typing import Optional
+
 import numpy as np
 import xarray as xr
 
@@ -87,10 +90,13 @@ def integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), su
     )
 
 
-# dimensions are assumed as: field[num_latitudes,num_longitudes]
-def integrate_horizontal(field, dlon, dlat):
-    int_lon = field.dot(dlon)
-    int_tot = int_lon.dot(dlat)
+def integrate_horizontal(field, dlon, dlat, preserve_dims: Optional[Iterable[str]] = None):
+    if preserve_dims is not None and "longitude" in preserve_dims and "latitude" in preserve_dims:
+        int_tot = field * dlon * dlat
+    else:
+        int_lon = field.dot(dlon)
+        int_tot = int_lon.dot(dlat)
+
     return int_tot
 
 
@@ -133,7 +139,15 @@ def pressure_level_thickness(levels):
 
 
 def integrate_energy_exchange(
-    field_scalar, field_vector_x, field_vector_y, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+    field_scalar,
+    field_vector_x,
+    field_vector_y,
+    dlon,
+    dlat,
+    cos_theta,
+    sin_theta,
+    cos_theta_inv,
+    preserve_dims: Optional[Iterable[str]] = None,
 ):
     r"""
     Williamson et. al., JCP (1992), eqns (3-4):
@@ -148,7 +162,7 @@ def integrate_energy_exchange(
     dfdx = field_scalar.differentiate("longitude") * cos_theta_inv / METERS_PER_DEGREE
     dfdy = field_scalar.differentiate("latitude") / METERS_PER_DEGREE
     grad_f_dot_u = dfdx * field_vector_x + dfdy * field_vector_y
-    int_grad_f_dot_u = integrate_horizontal(grad_f_dot_u, dlon, dlat)
+    int_grad_f_dot_u = integrate_horizontal(grad_f_dot_u, dlon, dlat, preserve_dims)
 
     # div(u):  1/(r \cos(\theta)) (du/d\lambda + d(v\cos(\theta))/d\theta)
     dudx = field_vector_x.differentiate("longitude") / METERS_PER_DEGREE
@@ -158,7 +172,7 @@ def integrate_energy_exchange(
     )
     div_u = cos_theta_inv * (dudx + dvdy)
     f_div_u = field_scalar * div_u
-    int_f_div_u = integrate_horizontal(f_div_u, dlon, dlat)
+    int_f_div_u = integrate_horizontal(f_div_u, dlon, dlat, preserve_dims)
 
     return int_grad_f_dot_u, int_f_div_u
 

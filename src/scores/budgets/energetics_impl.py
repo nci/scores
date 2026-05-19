@@ -1,3 +1,6 @@
+from collections.abc import Iterable
+from typing import Optional
+
 import numpy as np
 import xarray as xr
 
@@ -52,6 +55,7 @@ def energy_components(
     fieldnames,
     sub_domain_longitude=np.array([None]),
     sub_domain_latitude=np.array([None]),
+    preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
     """
     Compute the time series for the energy budget on pressure levels
@@ -112,7 +116,7 @@ def energy_components(
     #  From Taylor (2011), eqn (12.8)
     sp = fields[fieldnames[6]].sel(time=time_array)
     sp_zs = sp * zs
-    P = integrate_horizontal(sp_zs, dlon, dlat)
+    P = integrate_horizontal(sp_zs, dlon, dlat, preserve_dims)
 
     ult = fields[fieldnames[0]].sel(time=time_array, level=level_array)
     vlt = fields[fieldnames[1]].sel(time=time_array, level=level_array)
@@ -124,18 +128,24 @@ def energy_components(
     kvlt = wlt**2
     cpt = (C_P * (1.0 - qlt) + C_PV * qlt) * tlt
 
-    cpt_x = integrate_horizontal(cpt, dlon, dlat)
-    qlt_x = integrate_horizontal(qlt, dlon, dlat)
-    khlt_x = integrate_horizontal(khlt, dlon, dlat)
-    kvlt_x = integrate_horizontal(kvlt, dlon, dlat)
+    cpt_x = integrate_horizontal(cpt, dlon, dlat, preserve_dims)
+    qlt_x = integrate_horizontal(qlt, dlon, dlat, preserve_dims)
+    khlt_x = integrate_horizontal(khlt, dlon, dlat, preserve_dims)
+    kvlt_x = integrate_horizontal(kvlt, dlon, dlat, preserve_dims)
 
     dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=("time", "level"))
     dp_x = dp_x + dp
 
-    I = (dp_x * cpt_x).sum(dim="level")
-    L = (dp_x * L_V * qlt_x).sum(dim="level")
-    Kh = (dp_x * 0.5 * khlt_x).sum(dim="level")
-    Kv = (dp_x * 0.5 * kvlt_x).sum(dim="level")
+    if preserve_dims is not None and "level" in preserve_dims:
+        I = dp_x * cpt_x
+        L = dp_x * L_V * qlt_x
+        Kh = dp_x * 0.5 * khlt_x
+        Kv = dp_x * 0.5 * kvlt_x
+    else:
+        I = (dp_x * cpt_x).sum(dim="level")
+        L = (dp_x * L_V * qlt_x).sum(dim="level")
+        Kh = (dp_x * 0.5 * khlt_x).sum(dim="level")
+        Kv = (dp_x * 0.5 * kvlt_x).sum(dim="level")
 
     energy_integrals = xr.DataArray([I.data, L.data, P.data, Kh.data, Kv.data]).transpose()
 
@@ -147,6 +157,8 @@ def energy_exchanges(
     fieldnames,
     sub_domain_longitude=np.array([None]),
     sub_domain_latitude=np.array([None]),
+    reduce_dims: Optional[Iterable[str]] = None,
+    preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
     """
     Compute the exchanges between kinetic to internal, internal to kinetic, kinetic to potential and
@@ -223,10 +235,23 @@ def energy_exchanges(
 
     KtoI_t, ItoK_t = integrate_energy_exchange(z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
     KtoP_t, PtoK_t = integrate_energy_exchange(zs_v, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
-    KtoP = (dp_x * KtoP_t).sum(dim="level")
-    PtoK = (dp_x * PtoK_t).sum(dim="level")
-    KtoI = (dp_x * KtoI_t).sum(dim="level")
-    ItoK = (dp_x * ItoK_t).sum(dim="level")
+
+    if preserve_dims is not None and "level" in preserve_dims:
+        KtoP = dp_x * KtoP_t
+        PtoK = dp_x * PtoK_t
+        KtoI = dp_x * KtoI_t
+        ItoK = dp_x * ItoK_t
+    else:
+        KtoP = (dp_x * KtoP_t).sum(dim="level")
+        PtoK = (dp_x * PtoK_t).sum(dim="level")
+        KtoI = (dp_x * KtoI_t).sum(dim="level")
+        ItoK = (dp_x * ItoK_t).sum(dim="level")
+
+    if reduce_dims is not None and "time" in reduce_dims:
+        KtoP = KtoP.sum(dim="time")
+        PtoK = KtoP.sum(dim="time")
+        KtoI = KtoP.sum(dim="time")
+        ItoK = KtoP.sum(dim="time")
 
     energy_exchange_integrals = xr.DataArray([KtoI.data, ItoK.data, KtoP.data, PtoK.data]).transpose()
 
