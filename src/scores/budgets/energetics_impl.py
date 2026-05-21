@@ -147,7 +147,13 @@ def energy_components(
         Kh = (dp_x * 0.5 * khlt_x).sum(dim="level")
         Kv = (dp_x * 0.5 * kvlt_x).sum(dim="level")
 
-    energy_integrals = xr.DataArray([I.data, L.data, P.data, Kh.data, Kv.data]).transpose()
+    I.name = "Internal"
+    L.name = "Latent"
+    P.name = "Potential"
+    Kh.name = "HorizontalKinetic"
+    Kv.name = "VerticalKinetic"
+
+    energy_integrals = xr.merge([I, L, P, Kh, Kv])
 
     return energy_integrals
 
@@ -253,6 +259,11 @@ def energy_exchanges(
         KtoI = KtoP.sum(dim="time")
         ItoK = KtoP.sum(dim="time")
 
-    energy_exchange_integrals = xr.DataArray([KtoI.data, ItoK.data, KtoP.data, PtoK.data]).transpose()
+    KtoP.name = "KineticToPotential"
+    PtoK.name = "PotentialToKinetic"
+    KtoI.name = "KineticToInternal"
+    ItoK.name = "InternalToKinetic"
+
+    energy_exchange_integrals = xr.merge([KtoI, ItoK, KtoP, PtoK])
 
     return energy_exchange_integrals

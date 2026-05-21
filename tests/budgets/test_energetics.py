@@ -359,7 +359,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]).transpose(),
+            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -375,7 +375,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]).transpose(),
+            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -391,7 +391,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.0]]).transpose(),
+            xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.0]]),
         ),
     ],
 )
@@ -457,7 +457,16 @@ def test_budget(
     )
 
     E = energy_components(ds, field_names, sub_domain_longitude, sub_domain_latitude)
-    xr.testing.assert_allclose(E, expected, atol=1.0e-2)
+    _E = xr.DataArray(
+        [
+            E["Internal"].as_numpy(),
+            E["Latent"].as_numpy(),
+            E["Potential"].as_numpy(),
+            E["HorizontalKinetic"].as_numpy(),
+            E["VerticalKinetic"].as_numpy(),
+        ]
+    )
+    xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
 
 
 def surface_geopotential(phi, theta):
@@ -493,7 +502,7 @@ def surface_geopotential(phi, theta):
             surface_geopotential,
             None,
             None,
-            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]).transpose(),
+            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
         (
             pd.date_range("2025-01-01", periods=1),
@@ -506,7 +515,7 @@ def surface_geopotential(phi, theta):
             surface_geopotential,
             None,
             None,
-            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]).transpose(),
+            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
     ],
 )
@@ -568,4 +577,12 @@ def test_exchanges(
     E = energy_exchanges(
         ds, field_names, np.array([None]), np.array([None]), reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    xr.testing.assert_allclose(E, expected, atol=1.0e-2)
+    _E = xr.DataArray(
+        [
+            E["KineticToInternal"].as_numpy(),
+            E["InternalToKinetic"].as_numpy(),
+            E["KineticToPotential"].as_numpy(),
+            E["PotentialToKinetic"].as_numpy(),
+        ]
+    )
+    xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
