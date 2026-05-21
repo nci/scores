@@ -239,8 +239,12 @@ def energy_exchanges(
 
     z_m_zs = zlt - zs_v
 
-    KtoI_t, ItoK_t = integrate_energy_exchange(z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
-    KtoP_t, PtoK_t = integrate_energy_exchange(zs_v, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv)
+    KtoI_t, ItoK_t = integrate_energy_exchange(
+        z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, preserve_dims
+    )
+    KtoP_t, PtoK_t = integrate_energy_exchange(
+        zs_v, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, preserve_dims
+    )
 
     if preserve_dims is not None and "level" in preserve_dims:
         KtoP = dp_x * KtoP_t
@@ -255,9 +259,9 @@ def energy_exchanges(
 
     if reduce_dims is not None and "time" in reduce_dims:
         KtoP = KtoP.sum(dim="time")
-        PtoK = KtoP.sum(dim="time")
-        KtoI = KtoP.sum(dim="time")
-        ItoK = KtoP.sum(dim="time")
+        PtoK = PtoK.sum(dim="time")
+        KtoI = KtoI.sum(dim="time")
+        ItoK = ItoK.sum(dim="time")
 
     KtoP.name = "KineticToPotential"
     PtoK.name = "PotentialToKinetic"
