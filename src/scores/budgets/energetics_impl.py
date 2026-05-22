@@ -258,10 +258,12 @@ def energy_exchanges(
         ItoK = (dp_x * ItoK_t).sum(dim="level")
 
     if reduce_dims is not None and "time" in reduce_dims:
-        KtoP = KtoP.sum(dim="time")
-        PtoK = PtoK.sum(dim="time")
-        KtoI = KtoI.sum(dim="time")
-        ItoK = ItoK.sum(dim="time")
+        dt = ult.time[-1] - ult.time[0]
+        elapsed_time = float(dt.data * 1.0e-9)
+        KtoP = elapsed_time * KtoP.sum(dim="time")
+        PtoK = elapsed_time * PtoK.sum(dim="time")
+        KtoI = elapsed_time * KtoI.sum(dim="time")
+        ItoK = elapsed_time * ItoK.sum(dim="time")
 
     KtoP.name = "KineticToPotential"
     PtoK.name = "PotentialToKinetic"
