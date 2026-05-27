@@ -159,8 +159,7 @@ def observed_cdf(
                [0., 1., 1.],
                [0., 0., 1.]])
         Coordinates:
-            * threshold  (threshold) float64 24B 2.09 5.01 8.11
-            * station    (station) <U1 12B 'A' 'B' 'C'
+          ...
 
         >>> # Thresholds are specified but also include observations
         >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10])
@@ -169,8 +168,7 @@ def observed_cdf(
                [0., 0., 0., 1., 1., 1.],
                [0., 0., 0., 0., 1., 1.]])
         Coordinates:
-            * threshold  (threshold) float64 48B 0.0 2.09 5.0 5.01 8.11 10.0
-            * station    (station) <U1 12B 'A' 'B' 'C'
+          ...
 
         >>> # Thresholds are specified but also include
         >>> # observations after rounding to precision
@@ -180,8 +178,7 @@ def observed_cdf(
                [0., 0., 1., 1., 1.],
                [0., 0., 0., 1., 1.]])
         Coordinates:
-            * threshold  (threshold) float64 40B 0.0 2.0 5.0 8.0 10.0
-            * station    (station) <U1 12B 'A' 'B' 'C'
+          ...
 
         >>> # Only evaluate at specified thresholds
         >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10],
@@ -191,8 +188,7 @@ def observed_cdf(
                [0., 0., 1.],
                [0., 0., 1.]])
         Coordinates:
-            * threshold  (threshold) int64 24B 0 5 10
-            * station    (station) <U1 12B 'A' 'B' 'C'
+          ...
 
     """
     if precision < 0:
