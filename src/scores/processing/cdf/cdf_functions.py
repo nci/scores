@@ -599,8 +599,11 @@ def cdf_envelope(
         >>> # Multiple stations
         >>> data = [[0, 0.6, 0.4, 1.0], [0, 0.3, 0.7, 1.0]]
         >>> coords = {"station": ["A", "B"], "threshold": [10, 20, 30, 40]}
-        >>> cdf = xr.DataArray(data,
-        ...       coords=coords, dims=["station", "threshold"])
+        >>> cdf = xr.DataArray(
+        ...     data,
+        ...     coords=coords,
+        ...     dims=["station", "threshold"]
+        ... )
 
         >>> envelope = cdf_envelope(cdf, "threshold")
         >>> envelope.sel(station="A", cdf_type="upper").values

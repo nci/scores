@@ -106,10 +106,10 @@ def murphy_score(  # pylint: disable=R0914
         >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
 
         >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
-        ...                         coords={"time": times}, dims="time")
+        ...                      coords={"time": times}, dims="time")
 
         >>> obs = xr.DataArray([1.0, 3.0, 4.5],
-        ...                                coords={"time": times}, dims="time")
+        ...                     coords={"time": times}, dims="time")
 
         >>> thetas = murphy_thetas(fcst, obs, 'expectile')
 
@@ -252,10 +252,10 @@ def murphy_thetas(
         >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
 
         >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
-        ...                         coords={"time": times}, dims="time")
+        ...                      coords={"time": times}, dims="time")
 
         >>> obs = xr.DataArray([1.0, 3.0, 4.5],
-        ...                                coords={"time": times}, dims="time")
+        ...                     coords={"time": times}, dims="time")
 
         >>> thetas = murphy_thetas(fcst, obs, 'expectile')
 

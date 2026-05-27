@@ -64,12 +64,13 @@ def probability_of_detection(
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import probability_of_detection
+        >>> from scores.functions import create_latitude_weights
 
         >>> fcst = xr.DataArray(data=[[1, 0], [0, np.nan]], dims=["lat", "time"],
         ...                     coords={"lat": [35, 50], "time": [1, 2]})
 
         >>> obs = xr.DataArray(data=[[1, 0], [1, np.nan]], dims=["lat", "time"],
-        ...                     coords={"lat": [35, 50], "time": [1, 2]})
+        ...                    coords={"lat": [35, 50], "time": [1, 2]})
 
         >>> # if data is of dimension {lat,time}, value is computed across the time dimension
         >>> probability_of_detection(fcst, obs, preserve_dims='lat')
@@ -89,7 +90,8 @@ def probability_of_detection(
         <xarray.DataArray ()> Size: 8B
         array(0.5)
 
-        >>> weights = xr.DataArray(data=[0.35, 0.50], dims=["lat"], coords={"lat": [35, 50]})
+        >>> lats = [35, 50]
+        >>> weights = xr.DataArray(create_latitude_weights(lats), dims=["lat"], coords={"lat": lats})
         >>> # apply a weighting along the provided dimension
         probability_of_detection(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
@@ -168,6 +170,7 @@ def probability_of_false_detection(
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import probability_of_false_detection
+        >>> from scores.functions import create_latitude_weights
 
         >>> fcst = xr.DataArray(data=[[0, 0, 0, 0], [1, 1, 1, 1]],
         ...                     dims=["lat", "time"],
@@ -195,12 +198,13 @@ def probability_of_false_detection(
         <xarray.DataArray ()> Size: 8B
         array(0.5)
 
-        >>> weights = xr.DataArray(data=[0.35, 0.50],
-        ...                        dims=["lat"], coords={"lat": [35, 50]})
+        >>> lats = [35, 50]
+        >>> weights = xr.DataArray(create_latitude_weights(lats),
+        ...                        dims=["lat"], coords={"lat": lats})
         >>> # applies a weighting along the provided dimension
         >>> probability_of_false_detection(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.58823529)
+        array(0.43968136)
 
 
     """

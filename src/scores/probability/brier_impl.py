@@ -67,13 +67,14 @@ def brier_score(
     Examples:
         >>> import xarray as xr
         >>> from scores.probability import brier_score
+        >>> from scores.functions import create_latitude_weights
 
         >>> fcst = xr.DataArray([[0.3, 0.5],[0.7, 1.0]],
-        ...                            coords=[[33, 45], [-30, 30]],
-        ...                            dims=["lat", "lon"])
+        ...                     coords=[[33, 45], [-30, 30]],
+        ...                     dims=["lat", "lon"])
         >>> obs = xr.DataArray([[0, 1],[0, 1]],
-        ...                           coords=[[33, 45], [-30, 30]],
-        ...                           dims=["lat", "lon"])
+        ...                    coords=[[33, 45], [-30, 30]],
+        ...                    dims=["lat", "lon"])
 
         >>> brier_score(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -85,12 +86,13 @@ def brier_score(
         Coordinates:
           * lon      (lon) int64 16B -30 30
 
-        >>> weights = xr.DataArray([0.35, 0.5],
-        ...                        coords={"lat": [33, 45]},
+        >>> lats = [33, 45]
+        >>> weights = xr.DataArray(create_latitude_weights(lats),
+        ...                        coords={"lat": lats},
         ...                        dims=["lat"])
         >>> brier_score(fcst, obs, weights = weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.21411765)
+        array(0.20430831)
 
     """
     if check_args:
@@ -222,13 +224,13 @@ def brier_score_for_ensemble(
         ...     data=[[0.1, 4.2, 0.0], [0.4, -1.2, 0.3]],
         ...     coords={"time": times, "ensemble": ensembles},
         ...     dims=["time", "ensemble"]
-        ...     )
+        ... )
 
         >>> obs = xr.DataArray(
         ...     data=[0, 1],
         ...     coords={"time": times},
         ...     dims=["time"]
-        ...     )
+        ... )
 
         >>> # Calculate the Brier score for an ensemble forecast for a single threshold:
         >>> brier_score_for_ensemble(fcst, obs,

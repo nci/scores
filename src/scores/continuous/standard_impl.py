@@ -79,6 +79,7 @@ def mse(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import mse
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -98,7 +99,7 @@ def mse(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> mse(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -112,7 +113,7 @@ def mse(
 
         >>> mse(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.13657407)
+        array(0.13707961)
     """
 
     if is_xarraylike(fcst):
@@ -191,6 +192,7 @@ def rmse(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import rmse
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -210,7 +212,7 @@ def rmse(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> rmse(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -224,7 +226,7 @@ def rmse(
 
         >>> rmse(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.3695593)
+        array(0.37024263)
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
 
@@ -287,6 +289,7 @@ def mae(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import mae
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -306,7 +309,7 @@ def mae(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> mae(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -320,7 +323,7 @@ def mae(
 
         >>> mae(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.32314815)
+        array(0.32415921)
 
     """
 
@@ -393,6 +396,7 @@ def mean_error(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import mean_error
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -412,7 +416,7 @@ def mean_error(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> mean_error(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -426,7 +430,7 @@ def mean_error(
 
         >>> mean_error(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.00462963)
+        array(-0.00240542)
 
     """
     return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
@@ -481,6 +485,7 @@ def additive_bias(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import additive_bias
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -500,7 +505,7 @@ def additive_bias(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> additive_bias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -514,7 +519,7 @@ def additive_bias(
 
         >>> additive_bias(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.00462963)
+        array(-0.00240542)
 
     """
     # Note - mean error call this function
@@ -578,6 +583,7 @@ def multiplicative_bias(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import multiplicative_bias
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -597,7 +603,7 @@ def multiplicative_bias(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> multiplicative_bias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -611,7 +617,7 @@ def multiplicative_bias(
 
         >>> multiplicative_bias(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(1.00195008)
+        array(0.99896924)
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -694,6 +700,7 @@ def pbias(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import pbias
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -713,7 +720,7 @@ def pbias(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> pbias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
@@ -727,7 +734,7 @@ def pbias(
 
         >>> pbias(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.1950078)
+        array(-0.10307618)
 
     """
     reduce_dims = scores.utils.gather_dimensions(
@@ -993,6 +1000,7 @@ def kge(
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import kge
+        >>> from scores.functions import create_latitude_weights
 
         >>> times = ["2024-01-01", "2024-01-02"]
         >>> lats = [-35, -30, -25]
@@ -1012,7 +1020,7 @@ def kge(
         ...       dims=["time", "lat", "lon"]
         ...       )
 
-        >>> weights = xr.DataArray([0.8, 0.9, 1.0], coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
 
         >>> kge(fcst, obs)
         <xarray.DataArray ()> Size: 8B
