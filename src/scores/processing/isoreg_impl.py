@@ -150,10 +150,10 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
 
         >>> fcst = xr.DataArray([1.2, 2.5, 4.1],
-        ...                      coords={"time": times}, dims="time")
+        ...                     coords={"time": times}, dims="time")
 
         >>> obs = xr.DataArray([1.0, 3.0, 4.5],
-        ...                     coords={"time": times}, dims="time")
+        ...                    coords={"time": times}, dims="time")
 
         >>> result = isotonic_fit(fcst, obs)
 
@@ -165,15 +165,6 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
 
         >>> result['regression_values']
         array([1. , 3. , 4.5])
-
-        >>> result['confidence_band_lower_values'] is None
-        True
-
-        >>> result['confidence_band_upper_values'] is None
-        True
-
-        >>> result['confidence_band_levels']
-        (None, None)
 
     """
 

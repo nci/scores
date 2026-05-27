@@ -128,8 +128,10 @@ def diebold_mariano(  # pylint: disable=R0914
         ...     dims=["lead_day", "valid_date"],
         ...     coords={
         ...         "lead_day": [1, 2, 3],
-        ...         "valid_date": ["2020-01-01", "2020-01-02",
-        ...                        "2020-01-03", "2020-01-04", "2020-01-05"],
+        ...         "valid_date": [
+        ...             "2020-01-01", "2020-01-02", "2020-01-03",
+        ...             "2020-01-04", "2020-01-05",
+        ...         ],
         ...         "h": ("lead_day", [2, 3, 4]),
         ...     },
         ... )
@@ -154,8 +156,8 @@ def diebold_mariano(  # pylint: disable=R0914
 
         >>> # Calculate using HLN method with Student's t distribution
         >>> diebold_mariano(da_timeseries, "lead_day", "h",
-        ...                            method="HLN", statistic_distribution="t",
-        ...                            confidence_level=0.90)
+        ...                 method="HLN", statistic_distribution="t",
+        ...                 confidence_level=0.90)
         <xarray.Dataset> Size: 168B
         Dimensions:          (lead_day: 3)
         Coordinates:

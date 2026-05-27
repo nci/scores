@@ -300,8 +300,8 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
         ... )
 
         >>> fss_2d_binary(fcst, obs,
-        ...        window_size=(2, 2),
-        ...        spatial_dims=('x', 'y'))
+        ...               window_size=(2, 2),
+        ...               spatial_dims=('x', 'y'))
         <xarray.DataArray ()> Size: 8B
         array(0.90909091)
 
