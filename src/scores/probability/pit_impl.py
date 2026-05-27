@@ -182,9 +182,11 @@ class Pit:
     Examples:
         Calculate the PIT for an under-dispersive ensemble forecast, and calculate various diagnostics and statistics.
 
+        >>> import numpy as np
         >>> import xarray as xr
         >>> from scipy.stats import norm
         >>> from scores.probability import Pit
+        >>> np.random.seed(42)
 
         >>> # generate the forecasts and observations then calculate PIT
         >>> fcst = xr.DataArray(norm.rvs(size=(500, 10)), dims=['time', 'ensemble_member'])
@@ -192,20 +194,33 @@ class Pit:
 
         >>> pit = Pit(fcst, obs, ensemble_member_dim='ensemble_member')
 
-        >>> # bar heights for a PIT histogram
-        >>> histogram_values = pit.hist_values(10)
-
         >>> # plot the CDF of the PIT distribution
         >>> pit.plotting_points().plot() # doctest: +SKIP
 
+        >>> # bar heights for a PIT histogram
+        >>> pit.hist_values(10)
+        <xarray.DataArray (bin_centre: 10)> Size: 80B
+        array([0.316, 0.066, 0.046, 0.068, 0.056, 0.058, 0.06 , 0.046, 0.078,
+            0.206])
+        Coordinates:
+        * bin_centre          (bin_centre) float64 80B 0.05 0.15 0.25 ... 0.85 0.95
+            bin_left_endpoint   (bin_centre) float64 80B 0.0 0.1 0.2 0.3 ... 0.7 0.8 0.9
+            bin_right_endpoint  (bin_centre) float64 80B 0.1 0.2 0.3 0.4 ... 0.8 0.9 1.0
+
         >>> # the expected value of the PIT distribution
-        >>> pit_ev = pit.expected_value()
+        >>> pit.expected_value()
+        <xarray.DataArray ()> Size: 8B
+        array(0.4818)
 
         >>> # the variance of the PIT distribution
-        >>> pit_var = pit.variance()
+        >>> pit.variance()
+        <xarray.DataArray ()> Size: 8B
+        array(0.14940876)
 
         >>> # the alpha score of the PIT distribution
-        >>> pit_alpha = pit.alpha_score()
+        >>> pit.alpha_score()
+        <xarray.DataArray ()> Size: 8B
+        array(0.10262)
 
         Other examples are found in the ``scores`` tutorial for PIT.
     """
