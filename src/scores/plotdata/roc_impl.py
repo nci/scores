@@ -128,7 +128,6 @@ def roc(  # pylint: disable=too-many-arguments
     Examples:
         >>> import xarray as xr
         >>> from scores.probability import roc_curve_data
-<<<<<<< issue-1053-doctest
 
         >>> times = [1, 2]
         >>> locations = ['A', 'B', 'C']
@@ -154,11 +153,6 @@ def roc(  # pylint: disable=too-many-arguments
             POD        (threshold) float64 56B 1.0 0.6667 0.6667 ... 0.6667 0.3333 0.0
             POFD       (threshold) float64 56B 1.0 1.0 0.6667 0.3333 0.0 0.0 0.0
             AUC        float64 8B 0.6667
-=======
-        >>> fcst = xr.DataArray(np.random.rand(3, 4), dims=["time", "location"])
-        >>> obs = xr.DataArray(np.random.randint(0, 2, size=(3, 4)), dims=["time", "location"])
-        >>> result = roc_curve_data(fcst, obs)
->>>>>>> develop
 
     See also:
         :py:func:`scores.probability.roc_auc` which is a much faster implementation for
