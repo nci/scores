@@ -335,6 +335,7 @@ def surface_pressure(phi, theta):
         "latitude",
         "sub_domain_longitude",
         "sub_domain_latitude",
+        "preserve_dims",
         "u_velocity_func",
         "v_velocity_func",
         "w_velocity_func",
@@ -352,6 +353,7 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             np.array([None]),
             np.array([None]),
+            None,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -368,6 +370,7 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             np.array([None]),
             np.array([None]),
+            None,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -384,6 +387,7 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             np.array([90.0, 180.0]),
             np.array([-45.0, 45.0]),
+            None,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -392,6 +396,31 @@ def surface_pressure(phi, theta):
             geopotential,
             surface_pressure,
             xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.0]]),
+        ),
+        (
+            pd.date_range("2025-01-01", periods=1),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.arange(0.0, 360.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            np.array([None]),
+            np.array([None]),
+            "level",
+            u_velocity,
+            v_velocity,
+            w_velocity,
+            temperature,
+            humidity,
+            geopotential,
+            surface_pressure,
+            xr.DataArray(
+                [
+                    [1.258429e23, 7.550573e23, 1.573036e24, 3.523601e24, 6.795516e24, 8.557316e24, 3.775287e24],
+                    [3.249049e15, 1.949429e16, 4.061311e16, 9.097336e16, 1.754486e17, 2.209353e17, 9.747146e16],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [7.059522e14, 1.143643e17, 1.103050e18, 1.012053e19, 6.587382e19, 2.358473e20, 1.694285e20],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                ]
+            ),
         ),
     ],
 )
@@ -402,6 +431,7 @@ def test_budget(
     latitude,
     sub_domain_longitude,
     sub_domain_latitude,
+    preserve_dims,
     u_velocity_func,
     v_velocity_func,
     w_velocity_func,
@@ -456,16 +486,27 @@ def test_budget(
         },
     )
 
-    E = energy_components(ds, field_names, sub_domain_longitude, sub_domain_latitude)
-    _E = xr.DataArray(
-        [
-            E["Internal"].as_numpy(),
-            E["Latent"].as_numpy(),
-            E["Potential"].as_numpy(),
-            E["HorizontalKinetic"].as_numpy(),
-            E["VerticalKinetic"].as_numpy(),
-        ]
-    )
+    E = energy_components(ds, field_names, sub_domain_longitude, sub_domain_latitude, preserve_dims=preserve_dims)
+    if preserve_dims is None:
+        _E = xr.DataArray(
+            [
+                E["Internal"].as_numpy(),
+                E["Latent"].as_numpy(),
+                E["Potential"].as_numpy(),
+                E["HorizontalKinetic"].as_numpy(),
+                E["VerticalKinetic"].as_numpy(),
+            ]
+        )
+    else:
+        _E = xr.DataArray(
+            [
+                E["Internal"].as_numpy()[0, :],
+                E["Latent"].as_numpy()[0, :],
+                np.zeros(E["Internal"].as_numpy().shape[1]),
+                E["HorizontalKinetic"].as_numpy()[0, :],
+                E["VerticalKinetic"].as_numpy()[0, :],
+            ]
+        )
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
 
 
@@ -486,8 +527,8 @@ def surface_geopotential(phi, theta):
         "v_velocity_func",
         "geopotential_func",
         "surface_geopotential_func",
-        "reduce_dims",
         "preserve_dims",
+        "reduce_dims",
         "expected",
     ),
     [
@@ -517,6 +558,26 @@ def surface_geopotential(phi, theta):
             None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
+        (
+            pd.date_range("2025-01-01", periods=1),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.arange(0.0, 360.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            u_velocity,
+            v_velocity,
+            geopotential,
+            surface_geopotential,
+            "level",
+            None,
+            xr.DataArray(
+                [
+                    [-1.625466e12, -2.924816e13, -1.014222e14, -3.616016e14, -1.028833e15, -1.754881e15, -8.703392e14],
+                    [1.838696e12, 3.308629e13, 1.147490e14, 4.093649e14, 1.167004e15, 2.001365e15, 9.982684e14],
+                    [1.625488e12, 2.925878e13, 1.015930e14, 3.641093e14, 1.053316e15, 1.879064e15, 9.752928e14],
+                    [-1.838718e12, -3.309692e13, -1.149199e14, -4.118728e14, -1.191489e15, -2.125558e15, -1.103231e15],
+                ]
+            ),
+        ),
     ],
 )
 def test_exchanges(
@@ -528,8 +589,8 @@ def test_exchanges(
     v_velocity_func,
     geopotential_func,
     surface_geopotential_func,
-    reduce_dims,
     preserve_dims,
+    reduce_dims,
     expected,
 ):
     nt = len(time)
@@ -577,12 +638,22 @@ def test_exchanges(
     E = energy_exchanges(
         ds, field_names, np.array([None]), np.array([None]), reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
-    _E = xr.DataArray(
-        [
-            E["KineticToInternal"].as_numpy(),
-            E["InternalToKinetic"].as_numpy(),
-            E["KineticToPotential"].as_numpy(),
-            E["PotentialToKinetic"].as_numpy(),
-        ]
-    )
+    if preserve_dims is None:
+        _E = xr.DataArray(
+            [
+                E["KineticToInternal"].as_numpy(),
+                E["InternalToKinetic"].as_numpy(),
+                E["KineticToPotential"].as_numpy(),
+                E["PotentialToKinetic"].as_numpy(),
+            ]
+        )
+    else:
+        _E = xr.DataArray(
+            [
+                E["KineticToInternal"].as_numpy()[0, :],
+                E["InternalToKinetic"].as_numpy()[0, :],
+                E["KineticToPotential"].as_numpy()[0, :],
+                E["PotentialToKinetic"].as_numpy()[0, :],
+            ]
+        )
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
