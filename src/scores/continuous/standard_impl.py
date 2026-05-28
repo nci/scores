@@ -86,26 +86,32 @@ def mse(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> mse(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.1375)
 
-        >>> mse(fcst, obs, preserve_dims=['time'])
+        >>> mse(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.15333333, 0.12166667])
         Coordinates:
@@ -199,26 +205,32 @@ def rmse(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> rmse(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.37080992)
 
-        >>> rmse(fcst, obs, preserve_dims=['time'])
+        >>> rmse(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.391578  , 0.34880749])
         Coordinates:
@@ -296,26 +308,32 @@ def mae(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> mae(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.325)
 
-        >>> mae(fcst, obs, preserve_dims=['time'])
+        >>> mae(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.33333333, 0.31666667])
         Coordinates:
@@ -403,26 +421,32 @@ def mean_error(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> mean_error(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(-0.00833333)
 
-        >>> mean_error(fcst, obs, preserve_dims=['time'])
+        >>> mean_error(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([ 0.16666667, -0.18333333])
         Coordinates:
@@ -492,26 +516,32 @@ def additive_bias(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> additive_bias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(-0.00833333)
 
-        >>> additive_bias(fcst, obs, preserve_dims=['time'])
+        >>> additive_bias(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([ 0.16666667, -0.18333333])
         Coordinates:
@@ -590,26 +620,32 @@ def multiplicative_bias(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> multiplicative_bias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.99637681)
 
-        >>> multiplicative_bias(fcst, obs, preserve_dims=['time'])
+        >>> multiplicative_bias(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([1.08130081, 0.92810458])
         Coordinates:
@@ -707,26 +743,32 @@ def pbias(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> pbias(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(-0.36231884)
 
-        >>> pbias(fcst, obs, preserve_dims=['time'])
+        >>> pbias(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([ 8.1300813 , -7.18954248])
         Coordinates:
@@ -828,12 +870,11 @@ def percent_within_x(
 
         >>> obs_raw = np.array(
         ...     [
-        ...         [[1,2,3], [4,5,6]],
-        ...         [[3,2,1], [6,5,4]],
-        ...         [[3,2,5], [2,2,6]],
-        ...         [[5,2,3], [4,-1,4]],
+        ...         [[1, 2, 3], [4, 5, 6]],
+        ...         [[3, 2, 1], [6, 5, 4]],
+        ...         [[3, 2, 5], [2, 2, 6]],
+        ...         [[5, 2, 3], [4, -1, 4]],
         ...     ]
-        ...
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
 
@@ -842,8 +883,13 @@ def percent_within_x(
 
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over t - time - should produce an xy-grid (4 by 2)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
-        ...                  is_inclusive=True, reduce_dims=["t"])
+        >>> percent_within_x(
+        ...     fcst=fcst,
+        ...     obs=obs,
+        ...     threshold=0.5,
+        ...     is_inclusive=True,
+        ...     reduce_dims=["t"],
+        ... )
         <xarray.DataArray (x: 4, y: 2)> Size: 64B
         array([[66.66666667,  0.        ],
                [66.66666667,  0.        ],
@@ -853,35 +899,49 @@ def percent_within_x(
 
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
-        ...                  is_inclusive=True, reduce_dims=["x","y"])
+        >>> percent_within_x(
+        ...     fcst=fcst,
+        ...     obs=obs,
+        ...     threshold=0.5,
+        ...     is_inclusive=True,
+        ...     reduce_dims=["x", "y"],
+        ... )
         <xarray.DataArray (t: 3)> Size: 24B
         array([25. , 75. , 12.5])
         Dimensions without coordinates: t
 
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5,
-        ...                  is_inclusive=False, reduce_dims=["x","y"])
+        >>> percent_within_x(
+        ...     fcst=fcst,
+        ...     obs=obs,
+        ...     threshold=0.5,
+        ...     is_inclusive=False,
+        ...     reduce_dims=["x", "y"],
+        ... )
         <xarray.DataArray (t: 3)> Size: 24B
         array([12.5, 12.5, 12.5])
         Dimensions without coordinates: t
 
         >>> # Controlling floating-point precision issues
-        >>> np.set_printoptions(precision=17) # make floating-point precision issues visible
+        >>> np.set_printoptions(
+        ...     precision=17
+        ... )  # make floating-point precision issues visible
         >>> obs = xr.DataArray([0.1 + 0.2], dims=["t"])
-        >>> print(f'obs {obs.values}')
+        >>> print(f"obs {obs.values}")
         obs [0.30000000000000004]
         >>> fcst = obs + 0.3
-        >>> print(f'fcst {fcst.values}')
+        >>> print(f"fcst {fcst.values}")
         fcst [0.6000000000000001]
-        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3,
-        ...                              is_inclusive=True, decimals=20)
-        >>> print(f'incorrectly ignoring a success: {unrounded.values}')
+        >>> unrounded = percent_within_x(
+        ...     fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=20
+        ... )
+        >>> print(f"incorrectly ignoring a success: {unrounded.values}")
         incorrectly ignoring a success: 0.0
-        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3,
-        ...                            is_inclusive=True, decimals=5)
-        >>> print(f'correctly recognising a success: {rounded.values}')
+        >>> rounded = percent_within_x(
+        ...     fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=5
+        ... )
+        >>> print(f"correctly recognising a success: {rounded.values}")
         correctly recognising a success: 100.0
         >>> np.set_printoptions(precision=8)  # reset to defaults
 
@@ -1007,26 +1067,32 @@ def kge(
         >>> lons = [140, 150]
 
         >>> obs = xr.DataArray(
-        ...       [[[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
-        ...       [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
         >>> fcst = xr.DataArray(
-        ...       [[[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
-        ...       [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]]],
-        ...       coords={"time": times, "lat": lats, "lon": lons},
-        ...       dims=["time", "lat", "lon"]
-        ...       )
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-        >>> weights = xr.DataArray(create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"])
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
 
         >>> kge(fcst, obs)
         <xarray.DataArray ()> Size: 8B
         array(0.80729437)
 
-        >>> kge(fcst, obs, preserve_dims=['time'])
+        >>> kge(fcst, obs, preserve_dims=["time"])
         <xarray.DataArray (time: 2)> Size: 16B
         array([0.8118117 , 0.68668803])
         Coordinates:

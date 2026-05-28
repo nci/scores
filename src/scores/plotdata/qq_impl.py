@@ -87,19 +87,19 @@ def qq(
         >>> from scores.plotdata import qq
 
         >>> times = [1, 2]
-        >>> locations = ['A', 'B', 'C']
+        >>> locations = ["A", "B", "C"]
 
         >>> fcst = xr.DataArray(
-        ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...     data=[[0.1, 10.0, 0.0], [0.4, 7.1, 6.5]],
         ...     coords={"time": times, "location": locations},
-        ...     dims=["time", "location"]
-        ...     )
+        ...     dims=["time", "location"],
+        ... )
 
         >>> obs = xr.DataArray(
         ...     data=[[-3.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
         ...     coords={"time": times, "location": locations},
-        ...     dims=["time", "location"]
-        ...     )
+        ...     dims=["time", "location"],
+        ... )
 
         >>> qq(fcst, obs, quantiles=[0.1, 0.5, 0.9])
         <xarray.DataArray (data_source: 2, quantile: 3)> Size: 48B

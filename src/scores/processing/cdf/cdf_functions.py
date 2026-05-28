@@ -181,8 +181,12 @@ def observed_cdf(
           ...
 
         >>> # Only evaluate at specified thresholds
-        >>> observed_cdf(obs, "threshold", threshold_values=[0, 5, 10],
-        ...              include_obs_in_thresholds = False)
+        >>> observed_cdf(
+        ...     obs,
+        ...     "threshold",
+        ...     threshold_values=[0, 5, 10],
+        ...     include_obs_in_thresholds=False,
+        ... )
         <xarray.DataArray (station: 3, threshold: 3)> Size: 72B
         array([[0., 1., 1.],
                [0., 0., 1.],
@@ -263,7 +267,9 @@ def integrate_square_piecewise_linear(function_values: xr.DataArray, threshold_d
         >>> t_vals = [0, 0.5, 1, 1.2, 2]
         >>> f_vals = [0, 0.75, 1, 1.1, 2]
 
-        >>> da = xr.DataArray(f_vals, coords={"threshold": t_vals}, dims="threshold")
+        >>> da = xr.DataArray(
+        ...     f_vals, coords={"threshold": t_vals}, dims="threshold"
+        ... )
 
         >>> integrate_square_piecewise_linear(da, "threshold")
         <xarray.DataArray ()> Size: 8B
@@ -504,24 +510,27 @@ def decreasing_cdfs(cdf: xr.DataArray, threshold_dim: str, tolerance: float) -> 
 
         >>> # Well-behaved CDF
         >>> coords = {"threshold": [10, 20, 30, 40]}
-        >>> good_cdf = xr.DataArray([0, 0.3, 0.7, 1.0],
-        ...                         coords=coords, dims="threshold")
+        >>> good_cdf = xr.DataArray(
+        ...     [0, 0.3, 0.7, 1.0], coords=coords, dims="threshold"
+        ... )
         >>> decreasing_cdfs(good_cdf, "threshold", 0.01)
         <xarray.DataArray ()> Size: 1B
         array(False)
 
         >>> # CDF with small violation within tolerance
         >>> coords = {"threshold": [10, 20, 30, 40, 50]}
-        >>> minor_cdf = xr.DataArray([0, 0.4, 0.39, 0.9, 1],
-        ...                          coords=coords, dims="threshold")
+        >>> minor_cdf = xr.DataArray(
+        ...     [0, 0.4, 0.39, 0.9, 1], coords=coords, dims="threshold"
+        ... )
         >>> decreasing_cdfs(minor_cdf, "threshold", 0.05)
         <xarray.DataArray ()> Size: 1B
         array(False)
 
         >>> # CDF with violation exceeding tolerance
         >>> coords = {"threshold": [10, 20, 30, 40, 50, 60]}
-        >>> bad_cdf = xr.DataArray([0, 0.4, 0.3, 0.9, 0.88, 1],
-        ...                        coords=coords, dims="threshold")
+        >>> bad_cdf = xr.DataArray(
+        ...     [0, 0.4, 0.3, 0.9, 0.88, 1], coords=coords, dims="threshold"
+        ... )
         >>> decreasing_cdfs(bad_cdf, "threshold", 0.05)
         <xarray.DataArray ()> Size: 1B
         array(True)

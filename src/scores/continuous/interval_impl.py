@@ -87,29 +87,30 @@ def quantile_interval_score(  # pylint: disable=R0914
         >>> from scores.continuous import quantile_interval_score
 
         >>> times = [1, 2]
-        >>> locations = ['A', 'B', 'C']
+        >>> locations = ["A", "B", "C"]
 
         >>> fcst_lower_level = xr.DataArray(
-        ...    data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
-        ...    coords={"time": times, "location": locations},
-        ...    dims=["time", "location"]
-        ...    )
+        ...     data=[[0.1, 10.0, 0.0], [0.4, 7.1, 6.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
         >>> fcst_upper_level = xr.DataArray(
-        ...    data=[[0.3, 15., 0.0], [0.8, 14.1, 25.5]],
-        ...    coords={"time": times, "location": locations},
-        ...    dims=["time", "location"]
-        ...    )
+        ...     data=[[0.3, 15.0, 0.0], [0.8, 14.1, 25.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
 
         >>> obs = xr.DataArray(
-        ...    data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
-        ...    coords={"time": times, "location": locations},
-        ...    dims=["time", "location"]
-        ...    )
+        ...     data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
 
         >>> # Calculate the quantile interval score for forecast intervals
         >>> # with lower and upper quantile levels of 0.1 and 0.6, respectively.
-        >>> quantile_interval_score(fcst_lower_level, fcst_upper_level,
-        ...                         obs, 0.1, 0.6)
+        >>> quantile_interval_score(
+        ...     fcst_lower_level, fcst_upper_level, obs, 0.1, 0.6
+        ... )
         <xarray.Dataset> Size: 32B
         Dimensions:                  ()
         Data variables:
@@ -240,24 +241,24 @@ def interval_score(
         >>> from scores.continuous import interval_score
 
         >>> times = [1, 2]
-        >>> locations = ['A', 'B', 'C']
+        >>> locations = ["A", "B", "C"]
 
         >>> fcst_lower_level = xr.DataArray(
-        ...    data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
-        ...    coords={"time": times, "location": locations},
-        ...    dims=["time", "location"]
-        ...    )
+        ...     data=[[0.1, 10.0, 0.0], [0.4, 7.1, 6.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
         >>> fcst_upper_level = xr.DataArray(
-        ...    data=[[0.3, 15., 0.0], [0.8, 14.1, 25.5]],
-        ...    coords={"time": times, "location": locations},
-        ...    dims=["time", "location"]
-        ...    )
+        ...     data=[[0.3, 15.0, 0.0], [0.8, 14.1, 25.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
 
         >>> obs = xr.DataArray(
-        ...    data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
-        ...    coords={"time": times, "location": locations},
-        ...    dims=["time", "location"]
-        ...    )
+        ...     data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
 
         >>> # Calculate the interval score for forecast intervals with an
         >>> # interval range of 0.5 (i.e., lower and upper quantile levels

@@ -338,10 +338,10 @@ def proportion_exceeding(
 
         >>> coords = {"station": ["A", "B", "C", "D"], "time": [0, 1, 2]}
         >>> data = xr.DataArray(
-        ...      [[10, 15, 20], [25, 30, 35], [18, 22, 28], [12, 16, 24]],
-        ...      coords=coords,
-        ...      dims=["station", "time"]
-        ...  )
+        ...     [[10, 15, 20], [25, 30, 35], [18, 22, 28], [12, 16, 24]],
+        ...     coords=coords,
+        ...     dims=["station", "time"],
+        ... )
 
         >>> proportion_exceeding(data, [15, 20, 25], reduce_dims="time")
         <xarray.DataArray (station: 4, threshold: 3)> Size: 96B

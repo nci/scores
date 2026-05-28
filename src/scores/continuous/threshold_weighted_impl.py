@@ -398,15 +398,16 @@ def tw_squared_error(
         >>> from scores.continuous import tw_squared_error
 
         >>> # Create forecast and observation data
-        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
-        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=["time"])
 
         >>> tw_squared_error(fcst, obs, interval_where_one=(0, 3))
         <xarray.DataArray ()> Size: 8B
         array(0.5)
 
-        >>> tw_squared_error(fcst, obs, interval_where_one=(1, 2),
-        ...                  interval_where_positive=(0, 3))
+        >>> tw_squared_error(
+        ...     fcst, obs, interval_where_one=(1, 2), interval_where_positive=(0, 3)
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.26388889)
     """
@@ -498,15 +499,16 @@ def tw_absolute_error(
         >>> import xarray as xr
         >>> from scores.continuous import tw_absolute_error
 
-        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
-        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=["time"])
 
         >>> tw_absolute_error(fcst, obs, interval_where_one=(0, 3))
         <xarray.DataArray ()> Size: 8B
         array(0.66666667)
 
-        >>> tw_absolute_error(fcst, obs, interval_where_one=(1, 2),
-        ...                   interval_where_positive=(0, 3))
+        >>> tw_absolute_error(
+        ...     fcst, obs, interval_where_one=(1, 2), interval_where_positive=(0, 3)
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.45833333)
     """
@@ -602,17 +604,20 @@ def tw_quantile_score(
         >>> import xarray as xr
         >>> from scores.continuous import tw_quantile_score
 
-        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
-        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=["time"])
 
-        >>> tw_quantile_score(fcst, obs, interval_where_one=(0, 3),
-        ...                               alpha = 0.5)
+        >>> tw_quantile_score(fcst, obs, interval_where_one=(0, 3), alpha=0.5)
         <xarray.DataArray ()> Size: 8B
         array(0.33333333)
 
-        >>> tw_quantile_score(fcst, obs, interval_where_one=(1, 2),
-        ...                   interval_where_positive=(0, 3),
-        ...                               alpha = 0.5)
+        >>> tw_quantile_score(
+        ...     fcst,
+        ...     obs,
+        ...     interval_where_one=(1, 2),
+        ...     interval_where_positive=(0, 3),
+        ...     alpha=0.5,
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.22916667)
 
@@ -709,17 +714,20 @@ def tw_expectile_score(
         >>> import xarray as xr
         >>> from scores.continuous import tw_expectile_score
 
-        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
-        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=["time"])
 
-        >>> tw_expectile_score(fcst, obs, interval_where_one=(0, 3),
-        ...                               alpha = 0.5)
+        >>> tw_expectile_score(fcst, obs, interval_where_one=(0, 3), alpha=0.5)
         <xarray.DataArray ()> Size: 8B
         array(0.25)
 
-        >>> tw_expectile_score(fcst, obs, interval_where_one=(1, 2),
-        ...                   interval_where_positive=(0, 3),
-        ...                               alpha = 0.5)
+        >>> tw_expectile_score(
+        ...     fcst,
+        ...     obs,
+        ...     interval_where_one=(1, 2),
+        ...     interval_where_positive=(0, 3),
+        ...     alpha=0.5,
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.13194444)
 
@@ -819,15 +827,20 @@ def tw_huber_loss(
         >>> import xarray as xr
         >>> from scores.continuous import tw_huber_loss
 
-        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
-        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=["time"])
 
         >>> tw_huber_loss(fcst, obs, huber_param=0.5, interval_where_one=(0, 3))
         <xarray.DataArray ()> Size: 8B
         array(0.20833333)
 
-        >>> tw_huber_loss(fcst, obs, huber_param=1.0, interval_where_one=(1, 2),
-        ...               interval_where_positive=(0, 3))
+        >>> tw_huber_loss(
+        ...     fcst,
+        ...     obs,
+        ...     huber_param=1.0,
+        ...     interval_where_one=(1, 2),
+        ...     interval_where_positive=(0, 3),
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.13194444)
 

@@ -124,13 +124,20 @@ def diebold_mariano(  # pylint: disable=R0914
         >>> # The "h" coordinates specify that the timeseries are for 2, 3 and 4-step
         >>> # ahead forecasts respectively.
         >>> da_timeseries = xr.DataArray(
-        ...     data=[[1, 2, 3.0, 4, np.nan], [2.0, 1, -3, -1, 0], [1.0, 1, 1, 1, 1]],
+        ...     data=[
+        ...         [1, 2, 3.0, 4, np.nan],
+        ...         [2.0, 1, -3, -1, 0],
+        ...         [1.0, 1, 1, 1, 1],
+        ...     ],
         ...     dims=["lead_day", "valid_date"],
         ...     coords={
         ...         "lead_day": [1, 2, 3],
         ...         "valid_date": [
-        ...             "2020-01-01", "2020-01-02", "2020-01-03",
-        ...             "2020-01-04", "2020-01-05",
+        ...             "2020-01-01",
+        ...             "2020-01-02",
+        ...             "2020-01-03",
+        ...             "2020-01-04",
+        ...             "2020-01-05",
         ...         ],
         ...         "h": ("lead_day", [2, 3, 4]),
         ...     },
@@ -151,13 +158,18 @@ def diebold_mariano(  # pylint: disable=R0914
             ci_upper         (lead_day) float64 24B 3.91 1.378 1.007
             ci_lower         (lead_day) float64 24B 1.09 -1.778 0.9932
         >>> # Access specific results
-        >>> print(result['dm_test_stat'].values)
+        >>> print(result["dm_test_stat"].values)
         [ 3.47497794e+00 -2.4836956...e-01  2.89455668e+02]
 
         >>> # Calculate using HLN method with Student's t distribution
-        >>> diebold_mariano(da_timeseries, "lead_day", "h",
-        ...                 method="HLN", statistic_distribution="t",
-        ...                 confidence_level=0.90)
+        >>> diebold_mariano(
+        ...     da_timeseries,
+        ...     "lead_day",
+        ...     "h",
+        ...     method="HLN",
+        ...     statistic_distribution="t",
+        ...     confidence_level=0.90,
+        ... )
         <xarray.Dataset> Size: 168B
         Dimensions:          (lead_day: 3)
         Coordinates:

@@ -130,21 +130,21 @@ def roc(  # pylint: disable=too-many-arguments
         >>> from scores.probability import roc_curve_data
 
         >>> times = [1, 2]
-        >>> locations = ['A', 'B', 'C']
+        >>> locations = ["A", "B", "C"]
 
         >>> fcst = xr.DataArray(
         ...     data=[[0.1, 0.7, 0.0], [0.4, 0.6, 0.3]],
         ...     coords={"time": times, "location": locations},
-        ...     dims=["time", "location"]
-        ...     )
+        ...     dims=["time", "location"],
+        ... )
 
         >>> obs = xr.DataArray(
         ...     data=[[0, 1, 1], [0, 1, 0]],
         ...     coords={"time": times, "location": locations},
-        ...     dims=["time", "location"]
-        ...     )
+        ...     dims=["time", "location"],
+        ... )
 
-        >>> roc_curve_data(fcst,obs)
+        >>> roc_curve_data(fcst, obs)
         <xarray.Dataset> Size: 176B
         Dimensions:    (threshold: 7)
         Coordinates:

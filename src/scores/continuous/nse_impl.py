@@ -241,12 +241,11 @@ def nse(
 
         >>> obs_raw = np.array(
         ...     [
-        ...         [[1,2,3], [4,5,6]],
-        ...         [[3,2,1], [6,5,4]],
-        ...         [[3,2,5], [2,2,6]],
-        ...         [[5,2,3], [4,-1,4]],
+        ...         [[1, 2, 3], [4, 5, 6]],
+        ...         [[3, 2, 1], [6, 5, 4]],
+        ...         [[3, 2, 5], [2, 2, 6]],
+        ...         [[5, 2, 3], [4, -1, 4]],
         ...     ]
-        ...
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
 
@@ -576,7 +575,9 @@ class NseMetaHandler(SimpleNamespace):
                 NseUtils.do_some_post_scoring_checks(meta_input, meta_score)
 
                 # [Undo Transform]: revert to original form
-                raw_result: XarrayLike = NseMetaHandler.extract_result_from_metascore(meta_score)
+                raw_result: XarrayLike = NseMetaHandler.extract_result_from_metascore(
+                    meta_score
+                )
 
                 # return result (of isomorphic type - same as input) back to
                 # the user.

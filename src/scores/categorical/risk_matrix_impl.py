@@ -318,15 +318,20 @@ def matrix_weights_to_array(
         >>> import numpy as np
         >>> from scores.categorical import matrix_weights_to_array
 
-        >>> matrix_weights = np.array([
-        ...     [1, 2, 3],
-        ...     [2, 4, 6],
-        ...     [3, 6, 9],
-        ... ])
+        >>> matrix_weights = np.array(
+        ...     [
+        ...         [1, 2, 3],
+        ...         [2, 4, 6],
+        ...         [3, 6, 9],
+        ...     ]
+        ... )
 
         >>> matrix_weights_to_array(
-        ...     matrix_weights, "severity", ["MOD+", "SEV+", "EXT"],
-        ...     "prob_threshold", [0.1, 0.3, 0.5]
+        ...     matrix_weights,
+        ...     "severity",
+        ...     ["MOD+", "SEV+", "EXT"],
+        ...     "prob_threshold",
+        ...     [0.1, 0.3, 0.5],
         ... )
         <xarray.DataArray (prob_threshold: 3, severity: 3)> Size: 72B
         array([[1, 2, 3],
@@ -427,16 +432,22 @@ def weights_from_warning_scaling(
         >>> import numpy as np
         >>> from scores.categorical import weights_from_warning_scaling
 
-        >>> scaling = np.array([
-        ...     [0, 2, 3, 3],
-        ...     [0, 1, 2, 3],
-        ...     [0, 1, 1, 2],
-        ...     [0, 0, 0, 0],
-        ... ])
+        >>> scaling = np.array(
+        ...     [
+        ...         [0, 2, 3, 3],
+        ...         [0, 1, 2, 3],
+        ...         [0, 1, 1, 2],
+        ...         [0, 0, 0, 0],
+        ...     ]
+        ... )
 
         >>> weights_from_warning_scaling(
-        ...     scaling, [1, 2, 3],  "severity", ["MOD+", "SEV+", "EXT"],
-        ...     "prob_threshold", [0.1, 0.3, 0.5]
+        ...     scaling,
+        ...     [1, 2, 3],
+        ...     "severity",
+        ...     ["MOD+", "SEV+", "EXT"],
+        ...     "prob_threshold",
+        ...     [0.1, 0.3, 0.5],
         ... )
         <xarray.DataArray (prob_threshold: 3, severity: 3)> Size: 72B
         array([[2., 3., 0.],

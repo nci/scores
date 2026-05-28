@@ -44,17 +44,25 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
         >>> import xarray as xr
         >>> from scores.processing import broadcast_and_match_nan
 
-        >>> da1 = xr.DataArray([1.0, np.nan, 3.0], dims=['x'], coords={'x': [0, 1, 2]})
+        >>> da1 = xr.DataArray(
+        ...     [1.0, np.nan, 3.0], dims=["x"], coords={"x": [0, 1, 2]}
+        ... )
 
-        >>> ds = xr.Dataset({
-        ...      'temp': xr.DataArray([[10, 20, 30], [40, 50, 60]],
-        ...      dims=['model', 'x'],
-        ...      coords={'model': ['ECMWF', 'GFS'], 'x': [0, 1, 2]})
-        ... })
+        >>> ds = xr.Dataset(
+        ...     {
+        ...         "temp": xr.DataArray(
+        ...             [[10, 20, 30], [40, 50, 60]],
+        ...             dims=["model", "x"],
+        ...             coords={"model": ["ECMWF", "GFS"], "x": [0, 1, 2]},
+        ...         )
+        ...     }
+        ... )
 
-        >>> da2 = xr.DataArray([4.0, 5.0, 6.0], dims=['x'], coords={'x': [0, 1, 2]})
+        >>> da2 = xr.DataArray([4.0, 5.0, 6.0], dims=["x"], coords={"x": [0, 1, 2]})
 
-        >>> da1_matched, ds_matched, da2_matched = broadcast_and_match_nan(da1, ds, da2)
+        >>> da1_matched, ds_matched, da2_matched = broadcast_and_match_nan(
+        ...     da1, ds, da2
+        ... )
         >>> da1_matched
         <xarray.DataArray (x: 3, model: 2)> Size: 48B
         array([[ 1.,  1.],

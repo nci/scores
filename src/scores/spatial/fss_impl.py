@@ -149,21 +149,18 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         >>> from scores.spatial import fss_2d
 
         >>> # Create simple 3x3 forecast and observation fields
-        >>> fcst = xr.DataArray(
-        ...      [[0, 1, 2], [1, 2, 3], [2, 3, 4]],
-        ...      dims=['x', 'y']
-        ... )
+        >>> fcst = xr.DataArray([[0, 1, 2], [1, 2, 3], [2, 3, 4]], dims=["x", "y"])
 
-        >>> obs = xr.DataArray(
-        ...      [[0, 0, 1], [1, 2, 2], [2, 2, 3]],
-        ...      dims=['x', 'y']
-        ... )
+        >>> obs = xr.DataArray([[0, 0, 1], [1, 2, 2], [2, 2, 3]], dims=["x", "y"])
 
         >>> # Compute FSS with threshold=1.5 and 2x2 window
-        >>> fss_2d(fcst, obs,
-        ...        event_threshold=1.5,
-        ...        window_size=(2, 2),
-        ...        spatial_dims=('x', 'y'))
+        >>> fss_2d(
+        ...     fcst,
+        ...     obs,
+        ...     event_threshold=1.5,
+        ...     window_size=(2, 2),
+        ...     spatial_dims=("x", "y"),
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.98461538)
 
@@ -286,22 +283,16 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
         >>> # Create simple 3x3 forecast and observation fields
         >>> fcst = xr.DataArray(
-        ...      [[False, True, False],
-        ...      [True, False, True],
-        ...      [False, False, True]],
-        ...      dims=['x', 'y']
+        ...     [[False, True, False], [True, False, True], [False, False, True]],
+        ...     dims=["x", "y"],
         ... )
 
         >>> obs = xr.DataArray(
-        ...      [[False, True, True],
-        ...      [False, False, True],
-        ...      [False, True, True]],
-        ...      dims=['x', 'y']
+        ...     [[False, True, True], [False, False, True], [False, True, True]],
+        ...     dims=["x", "y"],
         ... )
 
-        >>> fss_2d_binary(fcst, obs,
-        ...               window_size=(2, 2),
-        ...               spatial_dims=('x', 'y'))
+        >>> fss_2d_binary(fcst, obs, window_size=(2, 2), spatial_dims=("x", "y"))
         <xarray.DataArray ()> Size: 8B
         array(0.90909091)
 

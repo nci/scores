@@ -381,8 +381,8 @@ def relative_economic_value_from_rates(
         >>> from scores.plotdata import relative_economic_value_from_rates
 
         >>> # Using pre-computed detection rates
-        >>> pod = xr.DataArray([0.8, 0.6, 0.4], dims=['threshold'])
-        >>> pofd = xr.DataArray([0.2, 0.1, 0.05], dims=['threshold'])
+        >>> pod = xr.DataArray([0.8, 0.6, 0.4], dims=["threshold"])
+        >>> pofd = xr.DataArray([0.2, 0.1, 0.05], dims=["threshold"])
         >>> base_rate = xr.DataArray(0.3)  # 30% base rate
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
 
@@ -404,7 +404,9 @@ def relative_economic_value_from_rates(
         >>> base_rate = xr.DataArray(0.5)
 
         >>> relative_economic_value_from_rates(
-        ...     pod_perfect, pofd_perfect, base_rate,
+        ...     pod_perfect,
+        ...     pofd_perfect,
+        ...     base_rate,
         ...     cost_loss_ratios=[0.5],
         ... )
         <xarray.DataArray (cost_loss_ratio: 1)> Size: 8B
@@ -590,18 +592,21 @@ def relative_economic_value(
         >>> import xarray as xr
         >>> from scores.plotdata import relative_economic_value
 
-        >>> fcst = xr.DataArray([0, 1, 1, 0, 1], dims=['time'])
-        >>> obs = xr.DataArray([0, 1, 0, 0, 1], dims=['time'])
+        >>> fcst = xr.DataArray([0, 1, 1, 0, 1], dims=["time"])
+        >>> obs = xr.DataArray([0, 1, 0, 0, 1], dims=["time"])
         >>> cost_loss_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
 
-        >>> rev = relative_economic_value(fcst, obs, cost_loss_ratios = cost_loss_ratios)
+        >>> rev = relative_economic_value(
+        ...     fcst, obs, cost_loss_ratios=cost_loss_ratios
+        ... )
 
         Calculate REV for probabilistic forecasts with maximum value:
 
-        >>> fcst_prob = xr.DataArray([0.2, 0.8, 0.6, 0.1, 0.9], dims=['time'])
+        >>> fcst_prob = xr.DataArray([0.2, 0.8, 0.6, 0.1, 0.9], dims=["time"])
         >>> thresholds = [0.3, 0.5, 0.7]
         >>> relative_economic_value(
-        ...     fcst_prob, obs,
+        ...     fcst_prob,
+        ...     obs,
         ...     cost_loss_ratios=cost_loss_ratios,
         ...     probability_thresholds=thresholds,
         ...     generate_maximum_rev=True,

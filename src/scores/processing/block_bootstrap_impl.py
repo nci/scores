@@ -349,10 +349,14 @@ def block_bootstrap(
         >>> stations = ["S1", "S2", "S3", "S4"]
 
         >>> # Create synthetic observations
-        >>> obs_data = np.array([[t + (s/10) for s in range(4)] for t in range(6)])
-        >>> obs = xr.DataArray(obs_data,
-        ...                    coords={"time": times, "station": stations},
-        ...                    dims=["time", "station"])
+        >>> obs_data = np.array(
+        ...     [[t + (s / 10) for s in range(4)] for t in range(6)]
+        ... )
+        >>> obs = xr.DataArray(
+        ...     obs_data,
+        ...     coords={"time": times, "station": stations},
+        ...     dims=["time", "station"],
+        ... )
 
         >>> # Create 2 synthetic forecasts, which are the observations plus bias
         >>> ecmwf = obs + 10
@@ -362,10 +366,7 @@ def block_bootstrap(
         >>> n_iter = 5
         >>> np.random.seed(42)
         >>> boot_obs, boot_ecmwf, boot_gfs = block_bootstrap(
-        ...     [obs, ecmwf, gfs],
-        ...     blocks=blocks,
-        ...     n_iteration=n_iter,
-        ...     circular=True
+        ...     [obs, ecmwf, gfs], blocks=blocks, n_iteration=n_iter, circular=True
         ... )
 
         >>> boot_obs

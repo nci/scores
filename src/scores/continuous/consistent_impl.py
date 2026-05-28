@@ -218,27 +218,31 @@ def consistent_huber_score(
         >>> from scores.continuous import consistent_huber_score
 
         >>> # Define convex function phi and its derivative
-        >>> def phi(x): return x ** 2
-        ...
-        >>> def phi_prime(x): return 2 * x
-        ...
+        >>> def phi(x):
+        ...     return x**2
+        >>> def phi_prime(x):
+        ...     return 2 * x
 
         >>> # Create forecast and observation data
-        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=['time'])
-        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=['time'])
+        >>> fcst = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+        >>> obs = xr.DataArray([1.5, 2.5, 2.0], dims=["time"])
 
         >>> # Calculate consistent huber score
-        >>> consistent_huber_score(fcst, obs,
-        ...                        huber_param = 2,
-        ...                        phi=phi, phi_prime=phi_prime)
+        >>> consistent_huber_score(
+        ...     fcst, obs, huber_param=2, phi=phi, phi_prime=phi_prime
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.25)
 
         >>> # Calculate score preserving the time dimension
-        >>> consistent_huber_score(fcst, obs,
-        ...                        huber_param = 2,
-        ...                        phi=phi, phi_prime=phi_prime,
-        ...                        preserve_dims='all')
+        >>> consistent_huber_score(
+        ...     fcst,
+        ...     obs,
+        ...     huber_param=2,
+        ...     phi=phi,
+        ...     phi_prime=phi_prime,
+        ...     preserve_dims="all",
+        ... )
         <xarray.DataArray (time: 3)> Size: 24B
         array([0.125, 0.125, 0.5  ])
         Dimensions without coordinates: time
