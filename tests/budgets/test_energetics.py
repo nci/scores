@@ -578,6 +578,19 @@ def surface_geopotential(phi, theta):
                 ]
             ),
         ),
+        (
+            pd.date_range("2025-01-01", periods=3),
+            np.array([50, 150, 250, 400, 600, 850, 1000]),
+            np.arange(0.0, 360.0, 6),
+            np.linspace(-90.0, 90.0, 31, endpoint=True),
+            u_velocity,
+            v_velocity,
+            geopotential,
+            surface_geopotential,
+            None,
+            "time",
+            xr.DataArray(3 * 24 * 60 * 60 * np.array([-4.147951e15, 4.725676e15, 4.404260e15, -4.982006e15])),
+        ),
     ],
 )
 def test_exchanges(
@@ -614,6 +627,11 @@ def test_exchanges(
     v[0, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
     z[0, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
     zs[:, :] = surface_geopotential_func(lat2d, lon2d)
+    if reduce_dims is not None and "time" in reduce_dims:
+        for ii in np.arange(nt - 1):
+            u[ii + 1, :, :, :] = u_velocity_func(lat3d, lon3d, lev3d)
+            v[ii + 1, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
+            z[ii + 1, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
 
     field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
     ds = xr.Dataset(

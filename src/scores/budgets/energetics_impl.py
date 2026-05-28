@@ -257,13 +257,14 @@ def energy_exchanges(
         KtoI = (dp_x * KtoI_t).sum(dim="level")
         ItoK = (dp_x * ItoK_t).sum(dim="level")
 
-    if reduce_dims is not None and "time" in reduce_dims:
-        dt = ult.time[-1] - ult.time[0]
-        elapsed_time = float(dt.data * 1.0e-9)
-        KtoP = elapsed_time * KtoP.sum(dim="time")
-        PtoK = elapsed_time * PtoK.sum(dim="time")
-        KtoI = elapsed_time * KtoI.sum(dim="time")
-        ItoK = elapsed_time * ItoK.sum(dim="time")
+    if reduce_dims is not None and "time" in reduce_dims and len(ult.time) > 0:
+        dt = ult.time[1] - ult.time[0]
+        dt_seconds = float(dt.data * 1.0e-9)
+        weights = xr.DataArray(dt_seconds * np.ones(len(ult.time)), dims=["time"])
+        KtoP = KtoP.weighted(weights).sum(dim="time")
+        PtoK = PtoK.weighted(weights).sum(dim="time")
+        KtoI = KtoI.weighted(weights).sum(dim="time")
+        ItoK = ItoK.weighted(weights).sum(dim="time")
 
     KtoP.name = "KineticToPotential"
     PtoK.name = "PotentialToKinetic"
