@@ -39,8 +39,6 @@ def prepare_fields(
         The fields within the sub-domain region.
     """
 
-    fields.sortby("latitude")
-
     if sub_domain_longitude[0] is not None:
         fields = fields.sel(longitude=longitude)
 
