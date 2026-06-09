@@ -949,6 +949,84 @@ def test_budget(
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
 
 
+def test_budgets_dask():
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+    expected = xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = 1.0e5 * np.ones((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    w[0, :, :, :] = w_velocity(lat3d, lon3d, lev3d)
+    t[0, :, :, :] = temperature(lat3d, lon3d, lev3d)
+    q[0, :, :, :] = humidity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    sp[0, :, :] = surface_pressure(lat2d, lon2d)
+
+    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+    E = energy_components(ds.chunk(), field_names, np.array([None]), np.array([None]))
+    assert isinstance(E["Internal"].data, dask.array.Array)
+    assert isinstance(E["Latent"].data, dask.array.Array)
+    assert isinstance(E["Potential"].data, dask.array.Array)
+    assert isinstance(E["HorizontalKinetic"].data, dask.array.Array)
+    assert isinstance(E["VerticalKinetic"].data, dask.array.Array)
+    E = E.compute()
+    assert isinstance(E["Internal"].data, (np.ndarray, np.generic))
+    assert isinstance(E["Latent"].data, (np.ndarray, np.generic))
+    assert isinstance(E["Potential"].data, (np.ndarray, np.generic))
+    assert isinstance(E["HorizontalKinetic"].data, (np.ndarray, np.generic))
+    assert isinstance(E["VerticalKinetic"].data, (np.ndarray, np.generic))
+    _E = xr.DataArray(
+        [
+            E["Internal"].as_numpy(),
+            E["Latent"].as_numpy(),
+            E["Potential"].as_numpy(),
+            E["HorizontalKinetic"].as_numpy(),
+            E["VerticalKinetic"].as_numpy(),
+        ]
+    )
+    xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
+
+
 def surface_geopotential(phi, theta):
     w = vorticity(phi, theta, 0.25 * np.pi)
     zs = 10.0 + w * w
@@ -1113,4 +1191,74 @@ def test_exchanges(
                 E["PotentialToKinetic"].as_numpy()[0, :],
             ]
         )
+    xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
+
+
+def test_exchanges_dask():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+    expected = xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = np.zeros((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    zs[:, :] = surface_geopotential(lat2d, lon2d)
+
+    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    E = energy_exchanges(ds.chunk(), field_names, np.array([None]), np.array([None]))
+    assert isinstance(E["KineticToInternal"].data, dask.array.Array)
+    assert isinstance(E["InternalToKinetic"].data, dask.array.Array)
+    assert isinstance(E["KineticToPotential"].data, dask.array.Array)
+    assert isinstance(E["PotentialToKinetic"].data, dask.array.Array)
+    E = E.compute()
+    assert isinstance(E["KineticToInternal"].data, (np.ndarray, np.generic))
+    assert isinstance(E["InternalToKinetic"].data, (np.ndarray, np.generic))
+    assert isinstance(E["KineticToPotential"].data, (np.ndarray, np.generic))
+    assert isinstance(E["PotentialToKinetic"].data, (np.ndarray, np.generic))
+    _E = xr.DataArray(
+        [
+            E["KineticToInternal"].as_numpy(),
+            E["InternalToKinetic"].as_numpy(),
+            E["KineticToPotential"].as_numpy(),
+            E["PotentialToKinetic"].as_numpy(),
+        ]
+    )
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
