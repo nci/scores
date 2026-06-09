@@ -19,7 +19,7 @@ from scores.typing import XarrayLike
 
 
 def _prepare_fields(
-    fields: XarrayLike,
+    fields: xr.Dataset,
     longitude: np.ndarray,
     latitude: np.ndarray,
     sub_domain_longitude: np.ndarray | None = None,
@@ -53,7 +53,7 @@ def _prepare_fields(
 
 
 def energy_components(
-    fields: XarrayLike,
+    fields: xr.Dataset,
     fieldnames: list,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,
@@ -161,7 +161,7 @@ def energy_components(
 
 
 def energy_exchanges(
-    fields: XarrayLike,
+    fields: xr.Dataset,
     fieldnames: list,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,

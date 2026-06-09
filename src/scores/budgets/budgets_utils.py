@@ -26,8 +26,8 @@ the surface of the sphere
 
 
 def _integration_weights(
-    longitude,
-    latitude,
+    longitude: np.ndarray,
+    latitude: np.ndarray,
     sub_domain_lon: np.ndarray | None = None,
     sub_domain_lat: np.ndarray | None = None,
 ):
