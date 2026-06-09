@@ -25,9 +25,14 @@ the surface of the sphere
 """
 
 
-def _integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), sub_domain_lat=np.array([None])):
+def _integration_weights(
+    longitude,
+    latitude,
+    sub_domain_lon: np.ndarray | None = None,
+    sub_domain_lat: np.ndarray | None = None,
+):
     # Check the longitude sub domain is valid if specified
-    if sub_domain_lon[0] is not None:
+    if sub_domain_lon is not None:
         error_msg = ValueError(
             "sub-domain longitude outside valid range: "
             + f"{LON_MIN} <= minimum longitude < maximum longitude < {LON_MAX}"
@@ -54,7 +59,7 @@ def _integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), s
     dlon[:] = METERS_PER_DEGREE * dlon[:]
 
     # Check the latitude sub domain is valid if specified
-    if sub_domain_lat[0] is not None:
+    if sub_domain_lat is not None:
         error_msg = ValueError(
             "sub-domain latitude outside valid range: "
             + f"{LAT_MIN} <= minimum latitude < maximum latitude < {LAT_MAX}"

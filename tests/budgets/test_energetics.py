@@ -95,8 +95,8 @@ def vorticity(phi, theta, alpha):
             10.0,
             np.array([30, 60], dtype=np.int64),
             4,
-            np.array([None]),
-            np.array([None]),
+            None,
+            None,
             area_earth * 10.0,
             4.0,
             1.0e-3,
@@ -108,7 +108,7 @@ def vorticity(phi, theta, alpha):
             10.0,
             np.array([30, 60], dtype=np.int64),
             4,
-            np.array([None]),
+            None,
             np.array([0.0, 90.0]),
             0.5 * area_earth * 10.0,
             2.0,
@@ -122,7 +122,7 @@ def vorticity(phi, theta, alpha):
             np.array([30, 60], dtype=np.int64),
             4,
             np.array([90.0, 180.0]),
-            np.array([None]),
+            None,
             0.25 * area_earth * 10.0,
             4.0,
             1.0e-3,
@@ -214,8 +214,8 @@ def test_budgets_integral(
             0.25 * np.pi,
             np.array([60, 120], dtype=np.int64),
             3,
-            np.array([None]),
-            np.array([None]),
+            None,
+            None,
             2.0,
             2.0e-2,
         ),
@@ -351,8 +351,8 @@ def surface_pressure(phi, theta):
             np.array([50, 150, 250, 400, 600, 850, 1000]),
             np.arange(0.0, 360.0, 6),
             np.linspace(-90.0, 90.0, 31, endpoint=True),
-            np.array([None]),
-            np.array([None]),
+            None,
+            None,
             None,
             u_velocity,
             v_velocity,
@@ -368,8 +368,8 @@ def surface_pressure(phi, theta):
             np.array([50, 150, 250, 400, 600, 850, 1000]),
             np.arange(-180.0, 180.0, 6),
             np.linspace(-90.0, 90.0, 31, endpoint=True),
-            np.array([None]),
-            np.array([None]),
+            None,
+            None,
             None,
             u_velocity,
             v_velocity,
@@ -402,8 +402,8 @@ def surface_pressure(phi, theta):
             np.array([50, 150, 250, 400, 600, 850, 1000]),
             np.arange(0.0, 360.0, 6),
             np.linspace(-90.0, 90.0, 31, endpoint=True),
-            np.array([None]),
-            np.array([None]),
+            None,
+            None,
             "level",
             u_velocity,
             v_velocity,
@@ -427,8 +427,8 @@ def surface_pressure(phi, theta):
             np.array([50, 150, 250, 400, 600, 850, 1000]),
             np.arange(0.0, 360.0, 30),
             np.linspace(-90.0, 90.0, 7, endpoint=True),
-            np.array([None]),
-            np.array([None]),
+            None,
+            None,
             ["latitude", "longitude"],
             u_velocity,
             v_velocity,
@@ -1003,7 +1003,7 @@ def test_budgets_dask():
             "longitude": longitude,
         },
     )
-    E = energy_components(ds.chunk(), field_names, np.array([None]), np.array([None]))
+    E = energy_components(ds.chunk(), field_names)
     assert isinstance(E["Internal"].data, dask.array.Array)
     assert isinstance(E["Latent"].data, dask.array.Array)
     assert isinstance(E["Potential"].data, dask.array.Array)
@@ -1170,9 +1170,7 @@ def test_exchanges(
         },
     )
 
-    E = energy_exchanges(
-        ds, field_names, np.array([None]), np.array([None]), reduce_dims=reduce_dims, preserve_dims=preserve_dims
-    )
+    E = energy_exchanges(ds, field_names, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     if preserve_dims is None:
         _E = xr.DataArray(
             [
@@ -1243,7 +1241,7 @@ def test_exchanges_dask():
         },
     )
 
-    E = energy_exchanges(ds.chunk(), field_names, np.array([None]), np.array([None]))
+    E = energy_exchanges(ds.chunk(), field_names)
     assert isinstance(E["KineticToInternal"].data, dask.array.Array)
     assert isinstance(E["InternalToKinetic"].data, dask.array.Array)
     assert isinstance(E["KineticToPotential"].data, dask.array.Array)

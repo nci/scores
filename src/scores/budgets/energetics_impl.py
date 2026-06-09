@@ -19,7 +19,11 @@ from scores.typing import XarrayLike
 
 
 def _prepare_fields(
-    fields: XarrayLike, longitude, latitude, sub_domain_longitude=np.array([None]), sub_domain_latitude=np.array([None])
+    fields: XarrayLike,
+    longitude: np.ndarray,
+    latitude: np.ndarray,
+    sub_domain_longitude: np.ndarray | None = None,
+    sub_domain_latitude: np.ndarray | None = None,
 ):
     """
     Select the subdomain in longitude and latitude over which the energetic integrals
@@ -39,10 +43,10 @@ def _prepare_fields(
         The fields within the sub-domain region.
     """
 
-    if sub_domain_longitude[0] is not None:
+    if sub_domain_longitude is not None:
         fields = fields.sel(longitude=longitude)
 
-    if sub_domain_latitude[0] is not None:
+    if sub_domain_latitude is not None:
         fields = fields.sel(latitude=latitude)
 
     return fields
@@ -50,9 +54,9 @@ def _prepare_fields(
 
 def energy_components(
     fields: XarrayLike,
-    fieldnames,
-    sub_domain_longitude=np.array([None]),
-    sub_domain_latitude=np.array([None]),
+    fieldnames: list,
+    sub_domain_longitude: np.ndarray | None = None,
+    sub_domain_latitude: np.ndarray | None = None,
     preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
     """
@@ -158,9 +162,9 @@ def energy_components(
 
 def energy_exchanges(
     fields: XarrayLike,
-    fieldnames,
-    sub_domain_longitude=np.array([None]),
-    sub_domain_latitude=np.array([None]),
+    fieldnames: list,
+    sub_domain_longitude: np.ndarray | None = None,
+    sub_domain_latitude: np.ndarray | None = None,
     reduce_dims: Optional[Iterable[str]] = None,
     preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
