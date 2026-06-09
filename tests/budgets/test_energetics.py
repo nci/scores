@@ -15,10 +15,10 @@ import pytest
 import xarray as xr
 
 from scores.budgets.budgets_utils import (
-    integrate_energy_exchange,
-    integrate_horizontal,
-    integration_weights,
-    trig_fields,
+    _integrate_energy_exchange,
+    _integrate_horizontal,
+    _integration_weights,
+    _trig_fields,
 )
 from scores.budgets.energetics_impl import (
     energy_components,
@@ -163,7 +163,7 @@ def test_budgets_integral(
         longitude = np.linspace(-180.0, +180.0, nlon, endpoint=False)
         latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
 
-        dlon, dlat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        dlon, dlat = _integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
         nlon = len(dlon)
         nlat = len(dlat)
 
@@ -174,7 +174,7 @@ def test_budgets_integral(
             _psi, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
         )
 
-        int_psi = integrate_horizontal(psi, dlon, dlat)
+        int_psi = _integrate_horizontal(psi, dlon, dlat)
 
         error_at_res[res] = (analytic_solution - int_psi.data) / analytic_solution
 
@@ -245,10 +245,10 @@ def test_budgets_gradient(
         longitude = np.linspace(-180.0, +180.0, nlon)
         latitude = np.linspace(-90.0, +90.0, nlat)
 
-        dlon, dlat = integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        dlon, dlat = _integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
         nlon = len(dlon)
         nlat = len(dlat)
-        cos_theta, sin_theta, cos_theta_inv = trig_fields(dlon.longitude, dlat.latitude)
+        cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude)
 
         lon2d, lat2d = np.meshgrid(dlon.longitude, dlat.latitude)
         _psi = field(lon2d, lat2d, alpha)
@@ -269,14 +269,14 @@ def test_budgets_gradient(
             _lapPsi, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
         )
 
-        grad_f_dot_u, f_div_u = integrate_energy_exchange(
+        grad_f_dot_u, f_div_u = _integrate_energy_exchange(
             psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
         )
 
         err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)
         err2 = f_div_u - psi * lapPsi
-        error_at_res_grad_f_dot_u[res] = integrate_horizontal(err1, dlon, dlat)
-        error_at_res_f_div_u[res] = integrate_horizontal(err2, dlon, dlat)
+        error_at_res_grad_f_dot_u[res] = _integrate_horizontal(err1, dlon, dlat)
+        error_at_res_f_div_u[res] = _integrate_horizontal(err2, dlon, dlat)
         balance_error_at_res[res] = np.abs(error_at_res_grad_f_dot_u[res] + error_at_res_f_div_u[res]) / np.abs(
             error_at_res_grad_f_dot_u[res]
         )

@@ -8,17 +8,17 @@ from scores.budgets.budgets_utils import (
     C_P,
     C_PV,
     L_V,
-    integrate_energy_exchange,
-    integrate_horizontal,
-    integration_weights,
-    pressure_level_thickness,
-    resort_lon_from_m180to180_to_0to360,
-    trig_fields,
+    _integrate_energy_exchange,
+    _integrate_horizontal,
+    _integration_weights,
+    _pressure_level_thickness,
+    _resort_lon_from_m180to180_to_0to360,
+    _trig_fields,
 )
 from scores.typing import XarrayLike
 
 
-def prepare_fields(
+def _prepare_fields(
     fields: XarrayLike, longitude, latitude, sub_domain_longitude=np.array([None]), sub_domain_latitude=np.array([None])
 ):
     """
@@ -92,21 +92,21 @@ def energy_components(
     """
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
-        fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
+        fields = _resort_lon_from_m180to180_to_0to360(fields, "longitude")
 
-    dlon, dlat = integration_weights(
+    dlon, dlat = _integration_weights(
         fields.longitude.values, fields.latitude.values, sub_domain_longitude, sub_domain_latitude
     )
 
     # select the latitude and longitude sub-domain
-    fields = prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
+    fields = _prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
 
     time_array = fields.time.values
     level_array = fields.level.values
 
-    dp = pressure_level_thickness(level_array)
+    dp = _pressure_level_thickness(level_array)
 
     # get the surface geopotential (constant in time)
     zs = fields[fieldnames[7]]
@@ -114,7 +114,7 @@ def energy_components(
     #  From Taylor (2011), eqn (12.8)
     sp = fields[fieldnames[6]].sel(time=time_array)
     sp_zs = sp * zs
-    P = integrate_horizontal(sp_zs, dlon, dlat, preserve_dims)
+    P = _integrate_horizontal(sp_zs, dlon, dlat, preserve_dims)
 
     ult = fields[fieldnames[0]].sel(time=time_array, level=level_array)
     vlt = fields[fieldnames[1]].sel(time=time_array, level=level_array)
@@ -126,10 +126,10 @@ def energy_components(
     kvlt = wlt**2
     cpt = (C_P * (1.0 - qlt) + C_PV * qlt) * tlt
 
-    cpt_x = integrate_horizontal(cpt, dlon, dlat, preserve_dims)
-    qlt_x = integrate_horizontal(qlt, dlon, dlat, preserve_dims)
-    khlt_x = integrate_horizontal(khlt, dlon, dlat, preserve_dims)
-    kvlt_x = integrate_horizontal(kvlt, dlon, dlat, preserve_dims)
+    cpt_x = _integrate_horizontal(cpt, dlon, dlat, preserve_dims)
+    qlt_x = _integrate_horizontal(qlt, dlon, dlat, preserve_dims)
+    khlt_x = _integrate_horizontal(khlt, dlon, dlat, preserve_dims)
+    kvlt_x = _integrate_horizontal(kvlt, dlon, dlat, preserve_dims)
 
     dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=("time", "level"))
     dp_x = dp_x + dp
@@ -199,16 +199,16 @@ def energy_exchanges(
     """
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
-        fields = resort_lon_from_m180to180_to_0to360(fields, "longitude")
+        fields = _resort_lon_from_m180to180_to_0to360(fields, "longitude")
 
-    dlon, dlat = integration_weights(
+    dlon, dlat = _integration_weights(
         fields.longitude.values, fields.latitude.values, sub_domain_longitude, sub_domain_latitude
     )
 
-    cos_theta, sin_theta, cos_theta_inv = trig_fields(fields.longitude, fields.latitude)
+    cos_theta, sin_theta, cos_theta_inv = _trig_fields(fields.longitude, fields.latitude)
 
     # select the temporal, vertical and horizontal sub-domain
-    fields = prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
+    fields = _prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
 
@@ -220,7 +220,7 @@ def energy_exchanges(
     time_array = fields.time.values
     level_array = fields.level.values
 
-    dp = pressure_level_thickness(level_array)
+    dp = _pressure_level_thickness(level_array)
 
     # get the surface geopotential (constant in time)
     zs = fields[fieldnames[7]]
@@ -237,10 +237,10 @@ def energy_exchanges(
 
     z_m_zs = zlt - zs_v
 
-    KtoI_t, ItoK_t = integrate_energy_exchange(
+    KtoI_t, ItoK_t = _integrate_energy_exchange(
         z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, preserve_dims
     )
-    KtoP_t, PtoK_t = integrate_energy_exchange(
+    KtoP_t, PtoK_t = _integrate_energy_exchange(
         zs_v, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, preserve_dims
     )
 

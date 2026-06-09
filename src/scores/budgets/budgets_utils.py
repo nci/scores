@@ -25,7 +25,7 @@ the surface of the sphere
 """
 
 
-def integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), sub_domain_lat=np.array([None])):
+def _integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), sub_domain_lat=np.array([None])):
     # Check the longitude sub domain is valid if specified
     if sub_domain_lon[0] is not None:
         error_msg = ValueError(
@@ -90,7 +90,7 @@ def integration_weights(longitude, latitude, sub_domain_lon=np.array([None]), su
     )
 
 
-def integrate_horizontal(field, dlon, dlat, preserve_dims: Optional[Iterable[str]] = None):
+def _integrate_horizontal(field, dlon, dlat, preserve_dims: Optional[Iterable[str]] = None):
     if preserve_dims is not None and "longitude" in preserve_dims and "latitude" in preserve_dims:
         int_tot = field * dlon * dlat
     else:
@@ -100,7 +100,7 @@ def integrate_horizontal(field, dlon, dlat, preserve_dims: Optional[Iterable[str
     return int_tot
 
 
-def trig_fields(longitude, latitude):
+def _trig_fields(longitude, latitude):
     nlon = len(longitude)
 
     lat_rad = np.deg2rad(latitude).to_numpy()
@@ -121,7 +121,7 @@ def trig_fields(longitude, latitude):
     return cos_theta, sin_theta, cos_theta_inv
 
 
-def pressure_level_thickness(levels):
+def _pressure_level_thickness(levels):
     nl = len(levels)
     dp = np.zeros(nl)
     for ll in np.arange(nl):
@@ -138,7 +138,7 @@ def pressure_level_thickness(levels):
     return dp
 
 
-def integrate_energy_exchange(
+def _integrate_energy_exchange(
     field_scalar,
     field_vector_x,
     field_vector_y,
@@ -162,7 +162,7 @@ def integrate_energy_exchange(
     dfdx = field_scalar.differentiate("longitude") * cos_theta_inv / METERS_PER_DEGREE
     dfdy = field_scalar.differentiate("latitude") / METERS_PER_DEGREE
     grad_f_dot_u = dfdx * field_vector_x + dfdy * field_vector_y
-    int_grad_f_dot_u = integrate_horizontal(grad_f_dot_u, dlon, dlat, preserve_dims)
+    int_grad_f_dot_u = _integrate_horizontal(grad_f_dot_u, dlon, dlat, preserve_dims)
 
     # div(u):  1/(r \cos(\theta)) (du/d\lambda + d(v\cos(\theta))/d\theta)
     dudx = field_vector_x.differentiate("longitude") / METERS_PER_DEGREE
@@ -172,12 +172,12 @@ def integrate_energy_exchange(
     )
     div_u = cos_theta_inv * (dudx + dvdy)
     f_div_u = field_scalar * div_u
-    int_f_div_u = integrate_horizontal(f_div_u, dlon, dlat, preserve_dims)
+    int_f_div_u = _integrate_horizontal(f_div_u, dlon, dlat, preserve_dims)
 
     return int_grad_f_dot_u, int_f_div_u
 
 
-def resort_lon_from_m180to180_to_0to360(ds, lon_name):
+def _resort_lon_from_m180to180_to_0to360(ds, lon_name):
     # customised from:
     # https://stackoverflow.com/questions/53345442/about-changing-longitude-array-from-0-360-to-180-to-180-with-python-xarray
 
