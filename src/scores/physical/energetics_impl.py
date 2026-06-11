@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 import xarray as xr
 
-from scores.budgets.budgets_utils import (
+from scores.physical.budgets_utils import (
     C_P,
     C_PV,
     L_V,

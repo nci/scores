@@ -4,12 +4,12 @@ The philosphy is to import the public API during the init phase rather than leav
 
 # pylint: disable=E0603
 
-import scores.budgets
 import scores.categorical
 import scores.continuous
 import scores.emerging
 import scores.functions
 import scores.pandas
+import scores.physical
 import scores.plotdata
 import scores.probability
 import scores.processing
@@ -25,9 +25,9 @@ __all__ = [
     "scores.emerging",
     "scores.functions",
     "scores.pandas",
+    "scores.physical",
     "scores.probability",
     "scores.processing",
     "scores.sample_data",
     "scores.stats.statistical_tests",
-    "scores.budgets",
 ]
