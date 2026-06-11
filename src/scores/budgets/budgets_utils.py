@@ -52,8 +52,7 @@ def _integration_weights(
         longitude = longitude[cond_lon]
 
     dlon = np.zeros(len(longitude))
-    for ii in np.arange(len(longitude) - 2) + 1:
-        dlon[ii] = 0.5 * (longitude[ii + 1] - longitude[ii - 1])
+    dlon[1:-1] = 0.5 * (longitude[2:] - longitude[:-2])
     dlon[0] = longitude[1] - longitude[0]
     dlon[-1] = longitude[-1] - longitude[-2]
     dlon[:] = METERS_PER_DEGREE * dlon[:]
