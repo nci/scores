@@ -94,6 +94,12 @@ def energy_components(
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
+    # test for NaN values in input data
+    for fieldname in fieldnames:
+        error_msg = ValueError("NaN value found in field: {fieldname}")
+        if np.any(np.isnan(fields[fieldname].as_numpy())):
+            raise error_msg
+
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
         fields = _resort_lon_from_m180to180_to_0to360(fields, "longitude")
@@ -201,6 +207,12 @@ def energy_exchanges(
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
+    # test for NaN values in input data
+    for fieldname in fieldnames:
+        error_msg = ValueError(f"NaN value found in field: {fieldname}")
+        if np.any(np.isnan(fields[fieldname].as_numpy())):
+            raise error_msg
+
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
         fields = _resort_lon_from_m180to180_to_0to360(fields, "longitude")
