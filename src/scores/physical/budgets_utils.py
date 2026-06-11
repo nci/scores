@@ -28,6 +28,7 @@ the surface of the sphere
 def _integration_weights(
     longitude: np.ndarray,
     latitude: np.ndarray,
+    dimension_names: dict,
     sub_domain_lon: np.ndarray | None = None,
     sub_domain_lat: np.ndarray | None = None,
 ):
@@ -89,12 +90,12 @@ def _integration_weights(
 
     dlat[:] = METERS_PER_DEGREE * dlat[:]
 
-    return xr.DataArray(dlon, dims="longitude", coords={"longitude": longitude}), xr.DataArray(
-        dlat, dims="latitude", coords={"latitude": latitude}
-    )
+    return xr.DataArray(
+        dlon, dims=dimension_names["longitude"], coords={dimension_names["longitude"]: longitude}
+    ), xr.DataArray(dlat, dims=dimension_names["latitude"], coords={dimension_names["latitude"]: latitude})
 
 
-def _integrate_horizontal(field, dlon, dlat, preserve_dims: Optional[Iterable[str]] = None):
+def _integrate_horizontal(field: xr.DataArray, dlon, dlat, preserve_dims: Optional[Iterable[str]] = None):
     if preserve_dims is not None and "longitude" in preserve_dims and "latitude" in preserve_dims:
         int_tot = field * dlon * dlat
     else:
@@ -104,7 +105,7 @@ def _integrate_horizontal(field, dlon, dlat, preserve_dims: Optional[Iterable[st
     return int_tot
 
 
-def _trig_fields(longitude, latitude):
+def _trig_fields(longitude, latitude, dimension_names: list):
     nlon = len(longitude)
 
     lat_rad = np.deg2rad(latitude).to_numpy()
@@ -113,11 +114,15 @@ def _trig_fields(longitude, latitude):
     sin_theta_np = np.sin(lat_rad)[:, None] * np.ones((1, nlon))
 
     cos_theta = xr.DataArray(
-        cos_theta_np, dims=["latitude", "longitude"], coords={"latitude": latitude, "longitude": longitude}
+        cos_theta_np,
+        dims=[dimension_names["latitude"], dimension_names["longitude"]],
+        coords={dimension_names["latitude"]: latitude, dimension_names["longitude"]: longitude},
     )
 
     sin_theta = xr.DataArray(
-        sin_theta_np, dims=["latitude", "longitude"], coords={"latitude": latitude, "longitude": longitude}
+        sin_theta_np,
+        dims=[dimension_names["latitude"], dimension_names["longitude"]],
+        coords={dimension_names["latitude"]: latitude, dimension_names["longitude"]: longitude},
     )
 
     cos_theta_inv = 1.0 / cos_theta
@@ -151,6 +156,7 @@ def _integrate_energy_exchange(
     cos_theta,
     sin_theta,
     cos_theta_inv,
+    dimension_names: dict,
     preserve_dims: Optional[Iterable[str]] = None,
 ):
     r"""
@@ -163,15 +169,15 @@ def _integrate_energy_exchange(
     """
 
     # grad f:  1/(r \cos(\theta)) df/d\lambda, 1/r df/d\theta
-    dfdx = field_scalar.differentiate("longitude") * cos_theta_inv / METERS_PER_DEGREE
-    dfdy = field_scalar.differentiate("latitude") / METERS_PER_DEGREE
+    dfdx = field_scalar.differentiate(dimension_names["longitude"]) * cos_theta_inv / METERS_PER_DEGREE
+    dfdy = field_scalar.differentiate(dimension_names["latitude"]) / METERS_PER_DEGREE
     grad_f_dot_u = dfdx * field_vector_x + dfdy * field_vector_y
     int_grad_f_dot_u = _integrate_horizontal(grad_f_dot_u, dlon, dlat, preserve_dims)
 
     # div(u):  1/(r \cos(\theta)) (du/d\lambda + d(v\cos(\theta))/d\theta)
-    dudx = field_vector_x.differentiate("longitude") / METERS_PER_DEGREE
+    dudx = field_vector_x.differentiate(dimension_names["longitude"]) / METERS_PER_DEGREE
     dvdy = (
-        field_vector_y.differentiate("latitude") * cos_theta / METERS_PER_DEGREE
+        field_vector_y.differentiate(dimension_names["latitude"]) * cos_theta / METERS_PER_DEGREE
         - sin_theta * field_vector_y / RAD_EARTH
     )
     div_u = cos_theta_inv * (dudx + dvdy)

@@ -36,6 +36,8 @@ rad_earth = 6371220.0
 area_earth = 4.0 * np.pi * rad_earth * rad_earth
 u_0 = 2.0 * np.pi * rad_earth / (12.0 * 24.0 * 60.0 * 60.0)
 
+dimension_names = {"longitude": "longitude", "latitude": "latitude", "time": "time", "level": "level"}
+
 
 def stream_function(phi, theta, alpha):
     _phi = np.deg2rad(phi)
@@ -163,7 +165,9 @@ def test_budgets_integral(
         longitude = np.linspace(-180.0, +180.0, nlon, endpoint=False)
         latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
 
-        dlon, dlat = _integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        dlon, dlat = _integration_weights(
+            longitude, latitude, dimension_names, sub_domain_longitude, sub_domain_latitude
+        )
         nlon = len(dlon)
         nlat = len(dlat)
 
@@ -245,10 +249,12 @@ def test_budgets_gradient(
         longitude = np.linspace(-180.0, +180.0, nlon)
         latitude = np.linspace(-90.0, +90.0, nlat)
 
-        dlon, dlat = _integration_weights(longitude, latitude, sub_domain_longitude, sub_domain_latitude)
+        dlon, dlat = _integration_weights(
+            longitude, latitude, dimension_names, sub_domain_longitude, sub_domain_latitude
+        )
         nlon = len(dlon)
         nlat = len(dlat)
-        cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude)
+        cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude, dimension_names)
 
         lon2d, lat2d = np.meshgrid(dlon.longitude, dlat.latitude)
         _psi = field(lon2d, lat2d, alpha)
@@ -270,7 +276,7 @@ def test_budgets_gradient(
         )
 
         grad_f_dot_u, f_div_u = _integrate_energy_exchange(
-            psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv
+            psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, dimension_names
         )
 
         err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)
@@ -915,7 +921,9 @@ def test_budget(
         },
     )
 
-    E = energy_components(ds, field_names, sub_domain_longitude, sub_domain_latitude, preserve_dims=preserve_dims)
+    E = energy_components(
+        ds, field_names, dimension_names, sub_domain_longitude, sub_domain_latitude, preserve_dims=preserve_dims
+    )
     if preserve_dims is None:
         _E = xr.DataArray(
             [
@@ -1003,7 +1011,7 @@ def test_budgets_dask():
             "longitude": longitude,
         },
     )
-    E = energy_components(ds.chunk(), field_names)
+    E = energy_components(ds.chunk(), field_names, dimension_names)
     assert isinstance(E["Internal"].data, dask.array.Array)
     assert isinstance(E["Latent"].data, dask.array.Array)
     assert isinstance(E["Potential"].data, dask.array.Array)
@@ -1170,7 +1178,7 @@ def test_exchanges(
         },
     )
 
-    E = energy_exchanges(ds, field_names, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    E = energy_exchanges(ds, field_names, dimension_names, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     if preserve_dims is None:
         _E = xr.DataArray(
             [
@@ -1241,7 +1249,7 @@ def test_exchanges_dask():
         },
     )
 
-    E = energy_exchanges(ds.chunk(), field_names)
+    E = energy_exchanges(ds.chunk(), field_names, dimension_names)
     assert isinstance(E["KineticToInternal"].data, dask.array.Array)
     assert isinstance(E["InternalToKinetic"].data, dask.array.Array)
     assert isinstance(E["KineticToPotential"].data, dask.array.Array)
