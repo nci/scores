@@ -74,18 +74,20 @@ def energy_components(
         fields: Input fields for the 4D space-time quantities used to compute the energy components (specifically
             the water vapor, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
             surface pressure, and the 2D space only surface geopotential), and their space time dimensional
-            attributes
+            attributes.
         field_names: list of strings denoting the names for the different fields, specifically - 0: zonal velocity,
             1: meridional velocity, 2: vertical velocity, 3: temperature, 4: water vapor, 6: surface pressure,
-            7: surface geopotential
-        dimension_names: list of names for the spatio-temporal dimensions
+            7: surface geopotential.
+        dimension_names: list of names for the spatio-temporal dimensions.
         sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the longitudinal direction (optional)
+            energy components are to be computed in the longitudinal direction (optional).
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the latitudinal direction (optional)
+            energy components are to be computed in the latitudinal direction (optional).
+        preserve_dims: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
+            to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
 
     Returns:
-        2D array containing the time series for the domain integrals of the energy components at each time
+        2D array containing the time series for the domain integrals of the energy components at each time.
 
     References:
         Trenberth, K. E., Stepaniak, D. P., Caron, J. M. (2002) "Accuracy of Atmospheric Energy Budgets from Analyses"
@@ -174,7 +176,7 @@ def energy_exchanges(
     dimension_names: dict,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,
-    reduce_dims: Optional[Iterable[str]] = None,
+    reduce_time: bool = False,
     preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
     """
@@ -202,6 +204,9 @@ def energy_exchanges(
             energy components are to be computed in the longitudinal direction (optional)
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the latitudinal direction (optional)
+        reduce_time: Integrate over the temporal dimension rather than return a time series.
+        preserve_dims: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
+            to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
 
     Returns:
         2D array containing the time series for the domain integrals of the energy exchanges at each time
@@ -216,6 +221,15 @@ def energy_exchanges(
         error_msg = ValueError(f"NaN value found in field: {field_name}")
         if np.any(np.isnan(fields[field_name].as_numpy())):
             raise error_msg
+
+    # cannot integrate over time if less than two time values
+    error_msg = ValueError(
+        f"Length of time dimension is {len(fields.time)},"
+        + "can only run with 'reduce_time=True' if the"
+        + "temporal dimension has two entries or more."
+    )
+    if reduce_time and len(fields.time) < 2:
+        raise error_msg
 
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
@@ -283,7 +297,7 @@ def energy_exchanges(
         KtoI = (dp_x * KtoI_t).sum(dim=dimension_names["level"])
         ItoK = (dp_x * ItoK_t).sum(dim=dimension_names["level"])
 
-    if reduce_dims is not None and "time" in reduce_dims and len(ult.time) > 0:
+    if reduce_time and len(ult.time) > 0:
         dt = ult.time[1] - ult.time[0]
         dt_seconds = float(dt.data * 1.0e-9)
         weights = xr.DataArray(dt_seconds * np.ones(len(ult.time)), dims=["time"])

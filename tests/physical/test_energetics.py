@@ -1052,8 +1052,8 @@ def surface_geopotential(phi, theta):
         "v_velocity_func",
         "geopotential_func",
         "surface_geopotential_func",
+        "reduce_time",
         "preserve_dims",
-        "reduce_dims",
         "expected",
     ),
     [
@@ -1066,7 +1066,7 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
-            None,
+            False,
             None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
@@ -1079,7 +1079,7 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
-            None,
+            False,
             None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
@@ -1092,8 +1092,8 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
+            False,
             "level",
-            None,
             xr.DataArray(
                 [
                     [-1.625466e12, -2.924816e13, -1.014222e14, -3.616016e14, -1.028833e15, -1.754881e15, -8.703392e14],
@@ -1112,8 +1112,8 @@ def surface_geopotential(phi, theta):
             v_velocity,
             geopotential,
             surface_geopotential,
+            True,
             None,
-            "time",
             xr.DataArray(3 * 24 * 60 * 60 * np.array([-4.147951e15, 4.725676e15, 4.404260e15, -4.982006e15])),
         ),
     ],
@@ -1127,8 +1127,8 @@ def test_exchanges(
     v_velocity_func,
     geopotential_func,
     surface_geopotential_func,
+    reduce_time,
     preserve_dims,
-    reduce_dims,
     expected,
 ):
     nt = len(time)
@@ -1152,7 +1152,7 @@ def test_exchanges(
     v[0, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
     z[0, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
     zs[:, :] = surface_geopotential_func(lat2d, lon2d)
-    if reduce_dims is not None and "time" in reduce_dims:
+    if reduce_time is True:
         for ii in np.arange(nt - 1):
             u[ii + 1, :, :, :] = u_velocity_func(lat3d, lon3d, lev3d)
             v[ii + 1, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
@@ -1178,7 +1178,7 @@ def test_exchanges(
         },
     )
 
-    E = energy_exchanges(ds, field_names, dimension_names, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    E = energy_exchanges(ds, field_names, dimension_names, reduce_time=reduce_time, preserve_dims=preserve_dims)
     if preserve_dims is None:
         _E = xr.DataArray(
             [
