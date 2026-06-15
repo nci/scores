@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "nbsphinx",
     "sphinx_gallery.load_style",
+    'notfound.extension',
 ]
 source_suffix = [".rst", ".md"]
 
