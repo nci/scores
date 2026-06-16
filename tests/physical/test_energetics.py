@@ -90,7 +90,7 @@ def vorticity(phi, theta, alpha):
         "tolerance",
     ),
     [
-        # Global integral
+        # Global integral - test latitude/longitude integration for full domain
         (
             vorticity,
             0.25 * np.pi,
@@ -103,7 +103,7 @@ def vorticity(phi, theta, alpha):
             4.0,
             1.0e-3,
         ),
-        # Northern hemisphere
+        # Northern hemisphere - test latitude/longitude integration for latitudinal sub-domain
         (
             vorticity,
             0.5 * np.pi,
@@ -352,6 +352,7 @@ def surface_pressure(phi, theta):
         "expected",
     ),
     [
+        # test energy budget for full domain
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -369,6 +370,7 @@ def surface_pressure(phi, theta):
             surface_pressure,
             xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
         ),
+        # test energy budget for full domain with shifted longitudinal coordinate
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -386,6 +388,7 @@ def surface_pressure(phi, theta):
             surface_pressure,
             xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
         ),
+        # test energy budget for sub domain in latitude and longitude
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -403,6 +406,7 @@ def surface_pressure(phi, theta):
             surface_pressure,
             xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.0]]),
         ),
+        # test energy budget while preserving the vertical dimension
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -428,6 +432,7 @@ def surface_pressure(phi, theta):
                 ]
             ),
         ),
+        # test energy budget while preserving the horizontal dimensions
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -957,6 +962,7 @@ def test_budget(
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
 
 
+# test that the energy budget computation is compatible with Dask
 def test_budgets_dask():
     if dask == "Unavailable":
         pytest.skip("Dask unavailable, could not run test")
@@ -1057,6 +1063,7 @@ def surface_geopotential(phi, theta):
         "expected",
     ),
     [
+        # global domain over single time period
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -1070,6 +1077,7 @@ def surface_geopotential(phi, theta):
             None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
+        # global domain over single time period on shifted longitudinal domain
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -1083,6 +1091,8 @@ def surface_geopotential(phi, theta):
             None,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
+        # preserve the vertical dimension for horizontal energy exchanges in each
+        # vertical column
         (
             pd.date_range("2025-01-01", periods=1),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -1103,6 +1113,7 @@ def surface_geopotential(phi, theta):
                 ]
             ),
         ),
+        # integrate energy exchanges in time over several time periods
         (
             pd.date_range("2025-01-01", periods=3),
             np.array([50, 150, 250, 400, 600, 850, 1000]),
@@ -1200,6 +1211,7 @@ def test_exchanges(
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
 
 
+# test that the energy exchanges computation is compatible with Dask
 def test_exchanges_dask():
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
