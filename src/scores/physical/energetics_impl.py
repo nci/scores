@@ -102,7 +102,7 @@ def energy_components(
     for field_name in field_names:
         error_msg = ValueError("NaN value found in field: {field_name}")
         if np.any(np.isnan(fields[field_name].as_numpy())):
-            raise error_msg
+            raise error_msg  # pragma: no cover
 
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:
@@ -220,7 +220,7 @@ def energy_exchanges(
     for field_name in field_names:
         error_msg = ValueError(f"NaN value found in field: {field_name}")
         if np.any(np.isnan(fields[field_name].as_numpy())):
-            raise error_msg
+            raise error_msg  # pragma: no cover
 
     # cannot integrate over time if less than two time values
     error_msg = ValueError(
@@ -229,7 +229,7 @@ def energy_exchanges(
         + "temporal dimension has two entries or more."
     )
     if reduce_time and len(fields.time) < 2:
-        raise error_msg
+        raise error_msg  # pragma: no cover
 
     # re-order the longitudes to range between 0 and 360 degrees (global)
     if fields.longitude.values[0] < -0.1:

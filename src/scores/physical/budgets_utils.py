@@ -39,7 +39,7 @@ def _integration_weights(
             + f"{LON_MIN} <= minimum longitude < maximum longitude < {LON_MAX}"
         )
         if len(sub_domain_lon) != 2:
-            raise error_msg
+            raise error_msg  # pragma: no cover
         if (
             sub_domain_lon[1] <= sub_domain_lon[0]
             or sub_domain_lon[0] < LON_MIN
@@ -47,7 +47,7 @@ def _integration_weights(
             or sub_domain_lon[1] < LON_MIN
             or sub_domain_lon[1] > LON_MAX
         ):
-            raise error_msg
+            raise error_msg  # pragma: no cover
 
         cond_lon = (longitude >= sub_domain_lon[0]) & (longitude <= sub_domain_lon[1])
         longitude = longitude[cond_lon]
@@ -65,7 +65,7 @@ def _integration_weights(
             + f"{LAT_MIN} <= minimum latitude < maximum latitude < {LAT_MAX}"
         )
         if len(sub_domain_lat) != 2:
-            raise error_msg
+            raise error_msg  # pragma: no cover
         if (
             sub_domain_lat[1] <= sub_domain_lat[0]
             or sub_domain_lat[0] < LAT_MIN
@@ -73,7 +73,7 @@ def _integration_weights(
             or sub_domain_lat[1] < LAT_MIN
             or sub_domain_lat[1] > LAT_MAX
         ):
-            raise error_msg
+            raise error_msg  # pragma: no cover
 
         cond_lat = (latitude >= sub_domain_lat[0]) & (latitude <= sub_domain_lat[1])
         latitude = latitude[cond_lat]
@@ -133,13 +133,10 @@ def _trig_fields(longitude, latitude, dimension_names: list):
 def _pressure_level_thickness(levels):
     nl = len(levels)
     dp = np.zeros(nl)
-    for ll in np.arange(nl):
-        if ll == 0:
-            dp[ll] = 0.5 * (levels[ll + 1] - levels[ll])
-        elif ll == nl - 1:
-            dp[ll] = 0.5 * (levels[ll] - levels[ll - 1])
-        else:
-            dp[ll] = 0.5 * (levels[ll + 1] - levels[ll - 1])
+
+    dp[1:-1] = 0.5 * (levels[2:] - levels[:-2])
+    dp[0] = 0.5 * (levels[1] - levels[0])
+    dp[-1] = 0.5 * (levels[-1] - levels[-2])
 
     # convert pressure level thickness from hPa to Pa and normalise by gravity to get \rho dz
     dp = 100.0 * dp / GRAVITY
