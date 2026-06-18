@@ -54,7 +54,7 @@ def _prepare_fields(
 
 def energy_components(
     fields: xr.Dataset,
-    field_names: list,
+    field_names: dict,
     dimension_names: dict,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,
@@ -75,9 +75,9 @@ def energy_components(
             the water vapor, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
             surface pressure, and the 2D space only surface geopotential), and their space time dimensional
             attributes.
-        field_names: list of strings denoting the names for the different fields, specifically - 0: zonal velocity,
-            1: meridional velocity, 2: vertical velocity, 3: temperature, 4: water vapor, 6: surface pressure,
-            7: surface geopotential.
+        field_names: dictionary of strings denoting the names for the different fields, specifically - zonal velocity
+            (u), meridional velocity (v), vertical velocity (w), temperature (t), water mass fraction (q), surface
+            pressure (sp), surface geopotential (zs).
         dimension_names: list of names for the spatio-temporal dimensions.
         sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the longitudinal direction (optional).
@@ -99,8 +99,8 @@ def energy_components(
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
     # test for NaN values in input data
-    for field_name in field_names:
-        error_msg = ValueError("NaN value found in field: {field_name}")
+    for field_name_long, field_name in field_names.items():
+        error_msg = ValueError("NaN value found in field: {field_name_long}")
         if np.any(np.isnan(fields[field_name].as_numpy())):
             raise error_msg  # pragma: no cover
 
@@ -123,18 +123,18 @@ def energy_components(
     dp = _pressure_level_thickness(level_array)
 
     # get the surface geopotential (constant in time)
-    zs = fields[field_names[7]]
+    zs = fields[field_names["surface_geopotential"]]
 
     #  From Taylor (2011), eqn (12.8)
-    sp = fields[field_names[6]].sel(time=time_array)
+    sp = fields[field_names["surface_pressure"]].sel(time=time_array)
     sp_zs = sp * zs
     P = _integrate_horizontal(sp_zs, dlon, dlat, preserve_dims)
 
-    ult = fields[field_names[0]].sel(time=time_array, level=level_array)
-    vlt = fields[field_names[1]].sel(time=time_array, level=level_array)
-    wlt = fields[field_names[2]].sel(time=time_array, level=level_array)
-    tlt = fields[field_names[3]].sel(time=time_array, level=level_array)
-    qlt = fields[field_names[4]].sel(time=time_array, level=level_array)
+    ult = fields[field_names["zonal_velocity"]].sel(time=time_array, level=level_array)
+    vlt = fields[field_names["meridional_velocity"]].sel(time=time_array, level=level_array)
+    wlt = fields[field_names["vertical_velocity"]].sel(time=time_array, level=level_array)
+    tlt = fields[field_names["temperature"]].sel(time=time_array, level=level_array)
+    qlt = fields[field_names["water_mass_fraction"]].sel(time=time_array, level=level_array)
 
     khlt = ult**2 + vlt**2
     kvlt = wlt**2
@@ -172,7 +172,7 @@ def energy_components(
 
 def energy_exchanges(
     fields: xr.Dataset,
-    field_names: list,
+    field_names: dict,
     dimension_names: dict,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,
@@ -197,8 +197,8 @@ def energy_exchanges(
         fields: Input fields for the 4D space-time quantities used to compute the energy components (specifically
             the zonal and meridional velocities, and the geopotential, and the 2D space only surface geopotential),
             and their space time dimensional attributes
-        field_names: list of strings denoting the names for the different fields, specifically - 0: zonal velocity,
-            1: meridional velocity, 2: vertical velocity, 5: geopotential, 7: surface geopotential
+        field_names: dictionary of strings denoting the names for the different fields, specifically - zonal velocity
+            (u), meridional velocity (v), vertical velocity (w), geopotential (z), surface geopotential (zs)
         dimension_names: list of names for the spatio-temporal dimensions
         sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the longitudinal direction (optional)
@@ -217,8 +217,8 @@ def energy_exchanges(
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
     # test for NaN values in input data
-    for field_name in field_names:
-        error_msg = ValueError(f"NaN value found in field: {field_name}")
+    for field_name_long, field_name in field_names.items():
+        error_msg = ValueError(f"NaN value found in field: {field_name_long}")
         if np.any(np.isnan(fields[field_name].as_numpy())):
             raise error_msg  # pragma: no cover
 
@@ -257,11 +257,11 @@ def energy_exchanges(
     dp = _pressure_level_thickness(level_array)
 
     # get the surface geopotential (constant in time)
-    zs = fields[field_names[7]]
+    zs = fields[field_names["surface_geopotential"]]
 
-    ult = fields[field_names[0]].sel(level=level_array, time=time_array)
-    vlt = fields[field_names[1]].sel(level=level_array, time=time_array)
-    zlt = fields[field_names[5]].sel(level=level_array, time=time_array)
+    ult = fields[field_names["zonal_velocity"]].sel(level=level_array, time=time_array)
+    vlt = fields[field_names["meridional_velocity"]].sel(level=level_array, time=time_array)
+    zlt = fields[field_names["geopotential"]].sel(level=level_array, time=time_array)
 
     dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=(dimension_names["time"], dimension_names["level"]))
     dp_x = dp_x + dp

@@ -906,7 +906,16 @@ def test_budget(
     z[0, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
     sp[0, :, :] = surface_pressure_func(lat2d, lon2d)
 
-    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    field_names = {
+        "zonal_velocity": "u",
+        "meridional_velocity": "v",
+        "vertical_velocity": "w",
+        "temperature": "t",
+        "water_mass_fraction": "q",
+        "geopotential": "z",
+        "surface_pressure": "sp",
+        "surface_geopotential": "zs",
+    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -998,7 +1007,16 @@ def test_budgets_dask():
     z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
     sp[0, :, :] = surface_pressure(lat2d, lon2d)
 
-    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    field_names = {
+        "zonal_velocity": "u",
+        "meridional_velocity": "v",
+        "vertical_velocity": "w",
+        "temperature": "t",
+        "water_mass_fraction": "q",
+        "geopotential": "z",
+        "surface_pressure": "sp",
+        "surface_geopotential": "zs",
+    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -1169,7 +1187,16 @@ def test_exchanges(
             v[ii + 1, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
             z[ii + 1, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
 
-    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    field_names = {
+        "zonal_velocity": "u",
+        "meridional_velocity": "v",
+        "vertical_velocity": "w",
+        "temperature": "t",
+        "water_mass_fraction": "q",
+        "geopotential": "z",
+        "surface_pressure": "sp",
+        "surface_geopotential": "zs",
+    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -1241,7 +1268,16 @@ def test_exchanges_dask():
     z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
     zs[:, :] = surface_geopotential(lat2d, lon2d)
 
-    field_names = ["u", "v", "w", "t", "q", "z", "sp", "zs"]
+    field_names = {
+        "zonal_velocity": "u",
+        "meridional_velocity": "v",
+        "vertical_velocity": "w",
+        "temperature": "t",
+        "water_mass_fraction": "q",
+        "geopotential": "z",
+        "surface_pressure": "sp",
+        "surface_geopotential": "zs",
+    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
