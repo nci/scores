@@ -241,7 +241,7 @@ def energy_exchanges(
 
     cos_theta, sin_theta, cos_theta_inv = _trig_fields(fields.longitude, fields.latitude, dimension_names)
 
-    # select the temporal, vertical and horizontal sub-domain
+    # select the latitude and longitude sub-domain
     fields = _prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(fields.time)
