@@ -19,11 +19,6 @@ C_P = 1006.0  # specific heat of dry air at constant pressure, J/kg/K
 C_PV = 1872.0  # specific heat of water vapor at constant pressure, J/kg/K
 L_V = 2.5008e6  # specific latent heat of vaporisation, J/kg
 
-"""
-Integration weights for a two dimensional latitude-longitude field on
-the surface of the sphere
-"""
-
 
 def _integration_weights(
     longitude: np.ndarray,
@@ -32,6 +27,21 @@ def _integration_weights(
     sub_domain_lon: np.ndarray | None = None,
     sub_domain_lat: np.ndarray | None = None,
 ):
+    """
+    Integration weights for a two dimensional latitude-longitude field on
+    the surface of the sphere
+
+    Args:
+        longitude: zonal coordinate
+        latitude: meridional coordinate
+        dimension_names: dictionary denoting the names of the dimensions within the xarray dataarray
+        sub_domain_lon: extents of the sub-domain over which to compute the weights in the zonal direction (optional)
+        sub_domain_lat: extents of the sub-domain over which to compute the weights in the meidional direction
+            (optional)
+
+    Returns:
+        two xarray dataarrays containing the integration weights at the domain latitudes and longitudes
+    """
     # Check the longitude sub domain is valid if specified
     if sub_domain_lon is not None:
         error_msg = ValueError(
@@ -96,6 +106,21 @@ def _integration_weights(
 
 
 def _integrate_horizontal(field: xr.DataArray, dlon, dlat, preserve_dims: Optional[Iterable[str]] = None):
+    """
+    Integrate an xarray dataarray in the horizontal (latitude, longitude) dimensions
+
+    Args:
+        field: data to integrate in the horizontal dimensions
+        dlon: xarray dataarray containing the integration weights in the zonal direction
+        dlat: xarray dataarray containing the integration weights in the meridional direction
+        preserve_dims: list of dimensions to preserve with the integration. If includes both horizontal dimensions
+            (latitude and longitude), then do not apply the global integral (sum), just apply the integration
+            weights at each horizontal location.
+
+    Returns:
+        int_tot: xarray dataarray containing a weighted integral of the input field. May be either a global integal
+            (sum) over the domain, or a 2D field weighted by the integration weights
+    """
     if preserve_dims is not None and "longitude" in preserve_dims and "latitude" in preserve_dims:
         int_tot = field * dlon * dlat
     else:
@@ -106,6 +131,19 @@ def _integrate_horizontal(field: xr.DataArray, dlon, dlat, preserve_dims: Option
 
 
 def _trig_fields(longitude, latitude, dimension_names: list):
+    """
+    Compute metric terms for integration and differentiation on the sphere in latitude/longitude coorinds
+
+    Args:
+        longitude: zonal coordinate
+        latitude: meridional coordinate
+        dimension_names: dictionary denoting the names of the dimensions within the xarray dataarray
+
+    Returns:
+        xarray dataarrays for the cosine, sine and inverse cosine of the latitude as two dimensional fields
+            over the domain
+    """
+
     nlon = len(longitude)
 
     lat_rad = np.deg2rad(latitude).to_numpy()
@@ -131,6 +169,15 @@ def _trig_fields(longitude, latitude, dimension_names: list):
 
 
 def _pressure_level_thickness(levels):
+    """
+    Compute the physical thickness (in meters) of each (hydrostatic) pressure level for vertical integration
+
+    Args:
+        levels: hydrostatic pressure levels (the vertical dimension)
+
+    Returns:
+        dp: the vertical integration weights
+    """
     nl = len(levels)
     dp = np.zeros(nl)
 
@@ -185,8 +232,17 @@ def _integrate_energy_exchange(
 
 
 def _resort_lon_from_m180to180_to_0to360(ds, lon_name):
-    # customised from:
-    # https://stackoverflow.com/questions/53345442/about-changing-longitude-array-from-0-360-to-180-to-180-with-python-xarray
+    """
+    Ensure the global zonal dimension starts from 0 degrees longitude (not -180 degrees). Customised from:
+    https://stackoverflow.com/questions/53345442/about-changing-longitude-array-from-0-360-to-180-to-180-with-python-xarray
+
+    Args:
+        ds: xarray dataset
+        lon_name: name of the longitude dimension in the dataset
+
+    Returns:
+        ds: the original dataset with the global longitude ranging from 0 to 360 degrees
+    """
 
     # Adjust lon values to make sure they are within (0, 360)
     ds["_longitude_adjusted"] = xr.where(ds[lon_name] < 0, ds[lon_name] + 360, ds[lon_name])
