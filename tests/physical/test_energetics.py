@@ -19,10 +19,11 @@ from scores.physical.budgets_utils import (
     _integrate_horizontal,
     _integration_weights,
     _trig_fields,
+    planet_constants,
 )
 from scores.physical.energetics_impl import (
-    energy_components,
-    energy_exchanges,
+    energy_components_lat_lon,
+    energy_exchanges_lat_lon,
 )
 
 # Williamson 5 test case initial condition stream function
@@ -32,18 +33,16 @@ from scores.physical.energetics_impl import (
 # phi: azimuthal angle
 # theta: polar angle (from the equator)
 
-rad_earth = 6371220.0
-area_earth = 4.0 * np.pi * rad_earth * rad_earth
-u_0 = 2.0 * np.pi * rad_earth / (12.0 * 24.0 * 60.0 * 60.0)
-
-dimension_names = {"longitude": "longitude", "latitude": "latitude", "time": "time", "level": "level"}
+constants = planet_constants()
+area_earth = 4.0 * np.pi * constants.RAD_EARTH * constants.RAD_EARTH
+u_0 = 2.0 * np.pi * constants.RAD_EARTH / (12.0 * 24.0 * 60.0 * 60.0)
 
 
 def stream_function(phi, theta, alpha):
     _phi = np.deg2rad(phi)
     _theta = np.deg2rad(theta)
 
-    return -rad_earth * u_0 * (np.sin(_theta) * np.cos(alpha) - np.cos(_phi) * np.cos(_theta) * np.sin(alpha))
+    return -constants.RAD_EARTH * u_0 * (np.sin(_theta) * np.cos(alpha) - np.cos(_phi) * np.cos(_theta) * np.sin(alpha))
 
 
 # derived from the stream function, \psi as:
@@ -138,7 +137,13 @@ def vorticity(phi, theta, alpha):
             4,
             np.array([45.0, 135.0]),
             np.array([-60.0, +60.0]),
-            rad_earth * rad_earth * np.pi * (135.0 - 45.0) / 180.0 * (np.sin(np.pi / 3.0) + np.sin(np.pi / 3.0)) * 10.0,
+            constants.RAD_EARTH
+            * constants.RAD_EARTH
+            * np.pi
+            * (135.0 - 45.0)
+            / 180.0
+            * (np.sin(np.pi / 3.0) + np.sin(np.pi / 3.0))
+            * 10.0,
             2.0,
             1.0e-2,
         ),
@@ -166,7 +171,7 @@ def test_budgets_integral(
         latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
 
         dlon, dlat = _integration_weights(
-            longitude, latitude, dimension_names, sub_domain_longitude, sub_domain_latitude
+            longitude, latitude, "longitude", "latitude", constants, sub_domain_longitude, sub_domain_latitude
         )
         nlon = len(dlon)
         nlat = len(dlat)
@@ -178,7 +183,7 @@ def test_budgets_integral(
             _psi, dims=["latitude", "longitude"], coords={"latitude": dlat.latitude, "longitude": dlon.longitude}
         )
 
-        int_psi = _integrate_horizontal(psi, dlon, dlat)
+        int_psi = _integrate_horizontal(psi, dlon, dlat, False)
 
         error_at_res[res] = (analytic_solution - int_psi.data) / analytic_solution
 
@@ -250,11 +255,11 @@ def test_budgets_gradient(
         latitude = np.linspace(-90.0, +90.0, nlat)
 
         dlon, dlat = _integration_weights(
-            longitude, latitude, dimension_names, sub_domain_longitude, sub_domain_latitude
+            longitude, latitude, "longitude", "latitude", constants, sub_domain_longitude, sub_domain_latitude
         )
         nlon = len(dlon)
         nlat = len(dlat)
-        cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude, dimension_names)
+        cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude, "longitude", "latitude")
 
         lon2d, lat2d = np.meshgrid(dlon.longitude, dlat.latitude)
         _psi = field(lon2d, lat2d, alpha)
@@ -276,13 +281,13 @@ def test_budgets_gradient(
         )
 
         grad_f_dot_u, f_div_u = _integrate_energy_exchange(
-            psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, dimension_names
+            psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, "longitude", "latitude", constants
         )
 
         err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)
         err2 = f_div_u - psi * lapPsi
-        error_at_res_grad_f_dot_u[res] = _integrate_horizontal(err1, dlon, dlat)
-        error_at_res_f_div_u[res] = _integrate_horizontal(err2, dlon, dlat)
+        error_at_res_grad_f_dot_u[res] = _integrate_horizontal(err1, dlon, dlat, False)
+        error_at_res_f_div_u[res] = _integrate_horizontal(err2, dlon, dlat, False)
         balance_error_at_res[res] = np.abs(error_at_res_grad_f_dot_u[res] + error_at_res_f_div_u[res]) / np.abs(
             error_at_res_grad_f_dot_u[res]
         )
@@ -341,7 +346,8 @@ def surface_pressure(phi, theta):
         "latitude",
         "sub_domain_longitude",
         "sub_domain_latitude",
-        "preserve_dims",
+        "preserve_horizontal",
+        "preserve_vertical",
         "u_velocity_func",
         "v_velocity_func",
         "w_velocity_func",
@@ -360,7 +366,8 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             None,
             None,
-            None,
+            False,
+            False,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -378,7 +385,8 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             None,
             None,
-            None,
+            False,
+            False,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -396,7 +404,8 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             np.array([90.0, 180.0]),
             np.array([-45.0, 45.0]),
-            None,
+            False,
+            False,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -414,7 +423,8 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 31, endpoint=True),
             None,
             None,
-            "level",
+            False,
+            True,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -440,7 +450,8 @@ def surface_pressure(phi, theta):
             np.linspace(-90.0, 90.0, 7, endpoint=True),
             None,
             None,
-            ["latitude", "longitude"],
+            True,
+            False,
             u_velocity,
             v_velocity,
             w_velocity,
@@ -871,7 +882,8 @@ def test_budget(
     latitude,
     sub_domain_longitude,
     sub_domain_latitude,
-    preserve_dims,
+    preserve_horizontal,
+    preserve_vertical,
     u_velocity_func,
     v_velocity_func,
     w_velocity_func,
@@ -906,16 +918,6 @@ def test_budget(
     z[0, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
     sp[0, :, :] = surface_pressure_func(lat2d, lon2d)
 
-    field_names = {
-        "zonal_velocity": "u",
-        "meridional_velocity": "v",
-        "vertical_velocity": "w",
-        "temperature": "t",
-        "water_mass_fraction": "q",
-        "geopotential": "z",
-        "surface_pressure": "sp",
-        "surface_geopotential": "zs",
-    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -935,10 +937,14 @@ def test_budget(
         },
     )
 
-    E = energy_components(
-        ds, field_names, dimension_names, sub_domain_longitude, sub_domain_latitude, preserve_dims=preserve_dims
+    E = energy_components_lat_lon(
+        ds,
+        sub_domain_longitude=sub_domain_longitude,
+        sub_domain_latitude=sub_domain_latitude,
+        preserve_horizontal=preserve_horizontal,
+        preserve_vertical=preserve_vertical,
     )
-    if preserve_dims is None:
+    if not preserve_horizontal and not preserve_vertical:
         _E = xr.DataArray(
             [
                 E["Internal"].as_numpy(),
@@ -948,7 +954,7 @@ def test_budget(
                 E["VerticalKinetic"].as_numpy(),
             ]
         )
-    elif preserve_dims is not None and "latitude" in preserve_dims:
+    elif preserve_horizontal:
         _E = xr.DataArray(
             [
                 E["Internal"].as_numpy()[0, :, :],
@@ -1007,16 +1013,6 @@ def test_budgets_dask():
     z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
     sp[0, :, :] = surface_pressure(lat2d, lon2d)
 
-    field_names = {
-        "zonal_velocity": "u",
-        "meridional_velocity": "v",
-        "vertical_velocity": "w",
-        "temperature": "t",
-        "water_mass_fraction": "q",
-        "geopotential": "z",
-        "surface_pressure": "sp",
-        "surface_geopotential": "zs",
-    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -1035,7 +1031,7 @@ def test_budgets_dask():
             "longitude": longitude,
         },
     )
-    E = energy_components(ds.chunk(), field_names, dimension_names)
+    E = energy_components_lat_lon(ds.chunk())
     assert isinstance(E["Internal"].data, dask.array.Array)
     assert isinstance(E["Latent"].data, dask.array.Array)
     assert isinstance(E["Potential"].data, dask.array.Array)
@@ -1077,7 +1073,8 @@ def surface_geopotential(phi, theta):
         "geopotential_func",
         "surface_geopotential_func",
         "reduce_time",
-        "preserve_dims",
+        "preserve_horizontal",
+        "preserve_vertical",
         "expected",
     ),
     [
@@ -1092,7 +1089,8 @@ def surface_geopotential(phi, theta):
             geopotential,
             surface_geopotential,
             False,
-            None,
+            False,
+            False,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
         # global domain over single time period on shifted longitudinal domain
@@ -1106,7 +1104,8 @@ def surface_geopotential(phi, theta):
             geopotential,
             surface_geopotential,
             False,
-            None,
+            False,
+            False,
             xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
         ),
         # preserve the vertical dimension for horizontal energy exchanges in each
@@ -1121,7 +1120,8 @@ def surface_geopotential(phi, theta):
             geopotential,
             surface_geopotential,
             False,
-            "level",
+            False,
+            True,
             xr.DataArray(
                 [
                     [-1.625466e12, -2.924816e13, -1.014222e14, -3.616016e14, -1.028833e15, -1.754881e15, -8.703392e14],
@@ -1142,7 +1142,8 @@ def surface_geopotential(phi, theta):
             geopotential,
             surface_geopotential,
             True,
-            None,
+            False,
+            False,
             xr.DataArray(3 * 24 * 60 * 60 * np.array([-4.147951e15, 4.725676e15, 4.404260e15, -4.982006e15])),
         ),
     ],
@@ -1157,7 +1158,8 @@ def test_exchanges(
     geopotential_func,
     surface_geopotential_func,
     reduce_time,
-    preserve_dims,
+    preserve_horizontal,
+    preserve_vertical,
     expected,
 ):
     nt = len(time)
@@ -1187,16 +1189,6 @@ def test_exchanges(
             v[ii + 1, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d)
             z[ii + 1, :, :, :] = geopotential_func(lat3d, lon3d, lev3d)
 
-    field_names = {
-        "zonal_velocity": "u",
-        "meridional_velocity": "v",
-        "vertical_velocity": "w",
-        "temperature": "t",
-        "water_mass_fraction": "q",
-        "geopotential": "z",
-        "surface_pressure": "sp",
-        "surface_geopotential": "zs",
-    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -1216,8 +1208,10 @@ def test_exchanges(
         },
     )
 
-    E = energy_exchanges(ds, field_names, dimension_names, reduce_time=reduce_time, preserve_dims=preserve_dims)
-    if preserve_dims is None:
+    E = energy_exchanges_lat_lon(
+        ds, reduce_time=reduce_time, preserve_horizontal=preserve_horizontal, preserve_vertical=preserve_vertical
+    )
+    if not preserve_horizontal and not preserve_vertical:
         _E = xr.DataArray(
             [
                 E["KineticToInternal"].as_numpy(),
@@ -1268,16 +1262,6 @@ def test_exchanges_dask():
     z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
     zs[:, :] = surface_geopotential(lat2d, lon2d)
 
-    field_names = {
-        "zonal_velocity": "u",
-        "meridional_velocity": "v",
-        "vertical_velocity": "w",
-        "temperature": "t",
-        "water_mass_fraction": "q",
-        "geopotential": "z",
-        "surface_pressure": "sp",
-        "surface_geopotential": "zs",
-    }
     ds = xr.Dataset(
         data_vars={
             "u": (["time", "level", "latitude", "longitude"], u),
@@ -1297,7 +1281,7 @@ def test_exchanges_dask():
         },
     )
 
-    E = energy_exchanges(ds.chunk(), field_names, dimension_names)
+    E = energy_exchanges_lat_lon(ds.chunk())
     assert isinstance(E["KineticToInternal"].data, dask.array.Array)
     assert isinstance(E["InternalToKinetic"].data, dask.array.Array)
     assert isinstance(E["KineticToPotential"].data, dask.array.Array)

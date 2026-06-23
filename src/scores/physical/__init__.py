@@ -2,9 +2,9 @@
 Import the functions from the implementations into the public API
 """
 
-from scores.physical.energetics_impl import energy_components, energy_exchanges
+from scores.physical.energetics_impl import energy_components_lat_lon, energy_exchanges_lat_lon
 
 __all__ = [
-    "energy_components",
-    "energy_exchanges",
+    "energy_components_lat_lon",
+    "energy_exchanges_lat_lon",
 ]

@@ -1,25 +1,20 @@
-from collections.abc import Iterable
-from typing import Optional
-
 import numpy as np
 import xarray as xr
 
 from scores.physical.budgets_utils import (
-    C_P,
-    C_PV,
-    L_V,
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
     _pressure_level_thickness,
     _resort_lon_from_m180to180_to_0to360,
     _trig_fields,
+    planet_constants,
 )
 from scores.typing import XarrayLike
 
 
 def _prepare_fields(
-    fields: xr.Dataset,
+    data: xr.Dataset,
     longitude: np.ndarray,
     latitude: np.ndarray,
     sub_domain_longitude: np.ndarray | None = None,
@@ -30,7 +25,7 @@ def _prepare_fields(
     are to be computed.
 
     Args:
-        fields: Input fields for the 4D space-time quantities, 3D space-time quantities and 2D time only
+        data: Input fields for the 4D space-time quantities, 3D space-time quantities and 2D time only
             quantities used to compute the energetics, and their space time dimensional attributes
         longitude: array of longitudes
         latitude: array of latitudes
@@ -44,21 +39,35 @@ def _prepare_fields(
     """
 
     if sub_domain_longitude is not None:
-        fields = fields.sel(longitude=longitude)
+        data = data.sel(longitude=longitude)
 
     if sub_domain_latitude is not None:
-        fields = fields.sel(latitude=latitude)
+        data = data.sel(latitude=latitude)
 
-    return fields
+    return data
 
 
-def energy_components(
-    fields: xr.Dataset,
-    field_names: dict,
-    dimension_names: dict,
+def energy_components_lat_lon(
+    data: xr.Dataset,
+    *,
+    preserve_horizontal: bool = False,
+    preserve_vertical: bool = False,
+    longitude_name: str = "longitude",
+    latitude_name: str = "latitude",
+    pressure_level_name: str = "level",
+    time_name: str = "time",
+    zonal_velocity_name: str = "u",
+    meridional_velocity_name: str = "v",
+    vertical_velocity_name: str = "w",
+    temperature_name: str = "t",
+    vapour_mass_fraction_name: str = "q",
+    liquid_mass_fraction_name: str | None = None,
+    ice_mass_fraction_name: str | None = None,
+    surface_pressure_name: str = "sp",
+    surface_geopotential_name: str = "zs",
+    constants: planet_constants | None = None,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,
-    preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
     """
     Compute the time series for the energy budget on pressure levels
@@ -71,19 +80,20 @@ def energy_components(
                             \\frac{1}{2}(u^2 + v^2 + w^2)\\text{d}\\Omega\\text{d}p
 
     Args:
-        fields: Input fields for the 4D space-time quantities used to compute the energy components (specifically
+        data: Input fields for the 4D space-time quantities used to compute the energy components (specifically
             the water vapor, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
             surface pressure, and the 2D space only surface geopotential), and their space time dimensional
             attributes.
         field_names: dictionary of strings denoting the names for the different fields, specifically - zonal velocity
-            (u), meridional velocity (v), vertical velocity (w), temperature (t), water mass fraction (q), surface
-            pressure (sp), surface geopotential (zs).
-        dimension_names: list of names for the spatio-temporal dimensions.
+            (u), meridional velocity (v), vertical velocity (w), temperature (t), vapour mass fraction (q), liquid
+            mass fraction (ql), ice mass fraction (qi), surface pressure (sp), surface geopotential (zs).
+        longitude_name: string giving the textual name of the longitude coordinate
+        latitude_name: string giving the textual name of the latitude coordinate
         sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the longitudinal direction (optional).
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the latitudinal direction (optional).
-        preserve_dims: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
+        prese: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
             to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
 
     Returns:
@@ -96,68 +106,91 @@ def energy_components(
           Mass and Energy Conservation Schemes" arXiv:2501.05648v2
         Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
-          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
+          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
     """
     # test for NaN values in input data
-    for field_name_long, field_name in field_names.items():
-        error_msg = ValueError("NaN value found in field: {field_name_long}")
-        if np.any(np.isnan(fields[field_name].as_numpy())):
+    field_names = [
+        zonal_velocity_name,
+        meridional_velocity_name,
+        vertical_velocity_name,
+        temperature_name,
+        vapour_mass_fraction_name,
+        liquid_mass_fraction_name,
+        ice_mass_fraction_name,
+        surface_pressure_name,
+        surface_geopotential_name,
+    ]
+    for field_name in field_names:
+        if field_name is None:
+            continue
+        error_msg = ValueError("NaN value found in field: {field_name}")
+        if np.any(np.isnan(data[field_name].as_numpy())):
             raise error_msg  # pragma: no cover
 
     # re-order the longitudes to range between 0 and 360 degrees (global)
-    if fields.longitude.values[0] < -0.1:
-        fields = _resort_lon_from_m180to180_to_0to360(fields, dimension_names["longitude"])
+    if data.longitude.values[0] < -0.1:
+        data = _resort_lon_from_m180to180_to_0to360(data, longitude_name)
+
+    # iniitialise the planetary constants with their default values if not supplied
+    if constants is None:
+        constants = planet_constants()
 
     dlon, dlat = _integration_weights(
-        fields.longitude.values, fields.latitude.values, dimension_names, sub_domain_longitude, sub_domain_latitude
+        data.longitude.values,
+        data.latitude.values,
+        longitude_name,
+        latitude_name,
+        constants,
+        sub_domain_longitude,
+        sub_domain_latitude,
     )
 
     # select the latitude and longitude sub-domain
-    fields = _prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
+    data = _prepare_fields(data, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
-    nt = len(fields.time)
+    nt = len(data.time)
 
-    time_array = fields.time.values
-    level_array = fields.level.values
+    time_array = data.time.values
+    level_array = data.level.values
 
-    dp = _pressure_level_thickness(level_array)
+    dp = _pressure_level_thickness(level_array, constants)
 
     # get the surface geopotential (constant in time)
-    zs = fields[field_names["surface_geopotential"]]
+    zs = data[surface_geopotential_name]
 
     #  From Taylor (2011), eqn (12.8)
-    sp = fields[field_names["surface_pressure"]].sel(time=time_array)
+    sp = data[surface_pressure_name].sel(time=time_array)
     sp_zs = sp * zs
-    P = _integrate_horizontal(sp_zs, dlon, dlat, preserve_dims)
+    P = _integrate_horizontal(sp_zs, dlon, dlat, preserve_horizontal)
 
-    ult = fields[field_names["zonal_velocity"]].sel(time=time_array, level=level_array)
-    vlt = fields[field_names["meridional_velocity"]].sel(time=time_array, level=level_array)
-    wlt = fields[field_names["vertical_velocity"]].sel(time=time_array, level=level_array)
-    tlt = fields[field_names["temperature"]].sel(time=time_array, level=level_array)
-    qlt = fields[field_names["water_mass_fraction"]].sel(time=time_array, level=level_array)
+    ult = data[zonal_velocity_name].sel(time=time_array, level=level_array)
+    vlt = data[meridional_velocity_name].sel(time=time_array, level=level_array)
+    wlt = data[vertical_velocity_name].sel(time=time_array, level=level_array)
+    tlt = data[temperature_name].sel(time=time_array, level=level_array)
+    qlt = data[vapour_mass_fraction_name].sel(time=time_array, level=level_array)
 
     khlt = ult**2 + vlt**2
     kvlt = wlt**2
-    cpt = (C_P * (1.0 - qlt) + C_PV * qlt) * tlt
+    cpt = (constants.C_PD * (1.0 - qlt) + constants.C_PV * qlt) * tlt
 
-    cpt_x = _integrate_horizontal(cpt, dlon, dlat, preserve_dims)
-    qlt_x = _integrate_horizontal(qlt, dlon, dlat, preserve_dims)
-    khlt_x = _integrate_horizontal(khlt, dlon, dlat, preserve_dims)
-    kvlt_x = _integrate_horizontal(kvlt, dlon, dlat, preserve_dims)
+    cpt_x = _integrate_horizontal(cpt, dlon, dlat, preserve_horizontal)
+    qlt_x = _integrate_horizontal(qlt, dlon, dlat, preserve_horizontal)
+    khlt_x = _integrate_horizontal(khlt, dlon, dlat, preserve_horizontal)
+    kvlt_x = _integrate_horizontal(kvlt, dlon, dlat, preserve_horizontal)
 
-    dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=(dimension_names["time"], dimension_names["level"]))
+    dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=(time_name, pressure_level_name))
     dp_x = dp_x + dp
 
-    if preserve_dims is not None and "level" in preserve_dims:
+    if preserve_vertical:
         I = dp_x * cpt_x
-        L = dp_x * L_V * qlt_x
+        L = dp_x * constants.L_V * qlt_x
         Kh = dp_x * 0.5 * khlt_x
         Kv = dp_x * 0.5 * kvlt_x
     else:
-        I = (dp_x * cpt_x).sum(dim=dimension_names["level"])
-        L = (dp_x * L_V * qlt_x).sum(dim=dimension_names["level"])
-        Kh = (dp_x * 0.5 * khlt_x).sum(dim=dimension_names["level"])
-        Kv = (dp_x * 0.5 * kvlt_x).sum(dim=dimension_names["level"])
+        I = (dp_x * cpt_x).sum(dim=pressure_level_name)
+        L = (dp_x * constants.L_V * qlt_x).sum(dim=pressure_level_name)
+        Kh = (dp_x * 0.5 * khlt_x).sum(dim=pressure_level_name)
+        Kv = (dp_x * 0.5 * kvlt_x).sum(dim=pressure_level_name)
 
     I.name = "Internal"
     L.name = "Latent"
@@ -170,14 +203,23 @@ def energy_components(
     return energy_integrals
 
 
-def energy_exchanges(
-    fields: xr.Dataset,
-    field_names: dict,
-    dimension_names: dict,
+def energy_exchanges_lat_lon(
+    data: xr.Dataset,
+    *,
+    preserve_horizontal: bool = False,
+    preserve_vertical: bool = False,
+    reduce_time: bool = False,
+    latitude_name: str = "latitude",
+    longitude_name: str = "longitude",
+    pressure_level_name: str = "level",
+    time_name: str = "time",
+    zonal_velocity_name: str = "u",
+    meridional_velocity_name: str = "v",
+    geopotential_name: str = "z",
+    surface_geopotential_name: str = "zs",
+    constants: planet_constants | None = None,
     sub_domain_longitude: np.ndarray | None = None,
     sub_domain_latitude: np.ndarray | None = None,
-    reduce_time: bool = False,
-    preserve_dims: Optional[Iterable[str]] = None,
 ) -> XarrayLike:
     """
     Compute the exchanges between kinetic to internal, internal to kinetic, kinetic to potential and
@@ -194,12 +236,13 @@ def energy_exchanges(
                                        \\text{d}\\Omega\\text{d}p
 
     Args:
-        fields: Input fields for the 4D space-time quantities used to compute the energy components (specifically
+        data: Input fields for the 4D space-time quantities used to compute the energy components (specifically
             the zonal and meridional velocities, and the geopotential, and the 2D space only surface geopotential),
             and their space time dimensional attributes
         field_names: dictionary of strings denoting the names for the different fields, specifically - zonal velocity
             (u), meridional velocity (v), vertical velocity (w), geopotential (z), surface geopotential (zs)
-        dimension_names: list of names for the spatio-temporal dimensions
+        longitude_name: string giving the textual name of the longitude coordinate
+        latitude_name: string giving the textual name of the latitude coordinate
         sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
             energy components are to be computed in the longitudinal direction (optional)
         sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
@@ -217,62 +260,73 @@ def energy_exchanges(
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
     """
     # test for NaN values in input data
-    for field_name_long, field_name in field_names.items():
-        error_msg = ValueError(f"NaN value found in field: {field_name_long}")
-        if np.any(np.isnan(fields[field_name].as_numpy())):
+    field_names = [zonal_velocity_name, meridional_velocity_name, geopotential_name, surface_geopotential_name]
+    for field_name in field_names:
+        error_msg = ValueError(f"NaN value found in field: {field_name}")
+        if np.any(np.isnan(data[field_name].as_numpy())):
             raise error_msg  # pragma: no cover
 
     # cannot integrate over time if less than two time values
     error_msg = ValueError(
-        f"Length of time dimension is {len(fields.time)},"
+        f"Length of time dimension is {len(data.time)},"
         + "can only run with 'reduce_time=True' if the"
         + "temporal dimension has two entries or more."
     )
-    if reduce_time and len(fields.time) < 2:
+    if reduce_time and len(data.time) < 2:
         raise error_msg  # pragma: no cover
 
+    # iniitialise the planetary constants with their default values if not supplied
+    if constants is None:
+        constants = planet_constants()
+
     # re-order the longitudes to range between 0 and 360 degrees (global)
-    if fields.longitude.values[0] < -0.1:
-        fields = _resort_lon_from_m180to180_to_0to360(fields, dimension_names["longitude"])
+    if data.longitude.values[0] < -0.1:
+        data = _resort_lon_from_m180to180_to_0to360(data, longitude_name)
 
     dlon, dlat = _integration_weights(
-        fields.longitude.values, fields.latitude.values, dimension_names, sub_domain_longitude, sub_domain_latitude
+        data.longitude.values,
+        data.latitude.values,
+        longitude_name,
+        latitude_name,
+        constants,
+        sub_domain_longitude,
+        sub_domain_latitude,
     )
 
-    cos_theta, sin_theta, cos_theta_inv = _trig_fields(fields.longitude, fields.latitude, dimension_names)
+    cos_theta, sin_theta, cos_theta_inv = _trig_fields(data.longitude, data.latitude, longitude_name, latitude_name)
 
     # select the latitude and longitude sub-domain
-    fields = _prepare_fields(fields, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
+    data = _prepare_fields(data, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
-    nt = len(fields.time)
+    nt = len(data.time)
 
     KtoI = np.zeros(nt)  # kinetic to internal energy exchange (horizontal)
     ItoK = np.zeros(nt)  # internal to kinetic energy exchange (horizontal)
     KtoP = np.zeros(nt)  # kinetic to potential energy exchange (horizontal)
     PtoK = np.zeros(nt)  # potential to kinetic energy exchange (horizontal)
 
-    time_array = fields.time.values
-    level_array = fields.level.values
+    time_array = data.time.values
+    level_array = data.level.values
 
-    dp = _pressure_level_thickness(level_array)
+    dp = _pressure_level_thickness(level_array, constants)
 
     # get the surface geopotential (constant in time)
-    zs = fields[field_names["surface_geopotential"]]
+    zs = data[surface_geopotential_name]
 
-    ult = fields[field_names["zonal_velocity"]].sel(level=level_array, time=time_array)
-    vlt = fields[field_names["meridional_velocity"]].sel(level=level_array, time=time_array)
-    zlt = fields[field_names["geopotential"]].sel(level=level_array, time=time_array)
+    ult = data[zonal_velocity_name].sel(level=level_array, time=time_array)
+    vlt = data[meridional_velocity_name].sel(level=level_array, time=time_array)
+    zlt = data[geopotential_name].sel(level=level_array, time=time_array)
 
-    dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=(dimension_names["time"], dimension_names["level"]))
+    dp_x = xr.DataArray(np.zeros((nt, len(dp))), dims=(time_name, pressure_level_name))
     dp_x = dp_x + dp
 
     zs_v = xr.DataArray(
         np.zeros((nt, len(dp), len(dlat), len(dlon))),
         dims=(
-            dimension_names["time"],
-            dimension_names["level"],
-            dimension_names["latitude"],
-            dimension_names["longitude"],
+            time_name,
+            pressure_level_name,
+            latitude_name,
+            longitude_name,
         ),
     )
     zs_v = zs_v + zs
@@ -280,31 +334,53 @@ def energy_exchanges(
     z_m_zs = zlt - zs_v
 
     KtoI_t, ItoK_t = _integrate_energy_exchange(
-        z_m_zs, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, dimension_names, preserve_dims
+        z_m_zs,
+        ult,
+        vlt,
+        dlon,
+        dlat,
+        cos_theta,
+        sin_theta,
+        cos_theta_inv,
+        longitude_name,
+        latitude_name,
+        constants,
+        preserve_horizontal,
     )
     KtoP_t, PtoK_t = _integrate_energy_exchange(
-        zs_v, ult, vlt, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, dimension_names, preserve_dims
+        zs_v,
+        ult,
+        vlt,
+        dlon,
+        dlat,
+        cos_theta,
+        sin_theta,
+        cos_theta_inv,
+        longitude_name,
+        latitude_name,
+        constants,
+        preserve_horizontal,
     )
 
-    if preserve_dims is not None and "level" in preserve_dims:
+    if preserve_vertical:
         KtoP = dp_x * KtoP_t
         PtoK = dp_x * PtoK_t
         KtoI = dp_x * KtoI_t
         ItoK = dp_x * ItoK_t
     else:
-        KtoP = (dp_x * KtoP_t).sum(dim=dimension_names["level"])
-        PtoK = (dp_x * PtoK_t).sum(dim=dimension_names["level"])
-        KtoI = (dp_x * KtoI_t).sum(dim=dimension_names["level"])
-        ItoK = (dp_x * ItoK_t).sum(dim=dimension_names["level"])
+        KtoP = (dp_x * KtoP_t).sum(dim=pressure_level_name)
+        PtoK = (dp_x * PtoK_t).sum(dim=pressure_level_name)
+        KtoI = (dp_x * KtoI_t).sum(dim=pressure_level_name)
+        ItoK = (dp_x * ItoK_t).sum(dim=pressure_level_name)
 
     if reduce_time and len(ult.time) > 0:
         dt = ult.time[1] - ult.time[0]
         dt_seconds = float(dt.data * 1.0e-9)
-        weights = xr.DataArray(dt_seconds * np.ones(len(ult.time)), dims=["time"])
-        KtoP = KtoP.weighted(weights).sum(dim=dimension_names["time"])
-        PtoK = PtoK.weighted(weights).sum(dim=dimension_names["time"])
-        KtoI = KtoI.weighted(weights).sum(dim=dimension_names["time"])
-        ItoK = ItoK.weighted(weights).sum(dim=dimension_names["time"])
+        weights = xr.DataArray(dt_seconds * np.ones(len(ult.time)), dims=[time_name])
+        KtoP = KtoP.weighted(weights).sum(dim=time_name)
+        PtoK = PtoK.weighted(weights).sum(dim=time_name)
+        KtoI = KtoI.weighted(weights).sum(dim=time_name)
+        ItoK = ItoK.weighted(weights).sum(dim=time_name)
 
     KtoP.name = "KineticToPotential"
     PtoK.name = "PotentialToKinetic"
