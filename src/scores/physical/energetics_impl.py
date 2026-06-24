@@ -119,12 +119,30 @@ def energy_components_lat_lon(
     tlt = data[temperature_name].sel(time=time_array, level=level_array)
     qlt = data[vapour_mass_fraction_name].sel(time=time_array, level=level_array)
 
+    # Eldred, et. al., QJRMS (2022), eqn 65, internal energy:
+    #   \int\rho ( (c_vd * q_d + c_vv * q_l + c_l * q_l + c_i * q_i) * (T - T_0)
+    #              - q_v * R_v * T_0 + q_v * (L_v0 + L_f0) + q_l * L_f0 ) d\Omega
+    cpt = constants.C_PV * qlt * tlt
+    qdlt = 1.0 - qlt
+    # increment the specific heat at constant pressure by the liquid component if present
+    if liquid_mass_fraction_name is not None and liquid_mass_fraction_name in data:
+        qllt = data[liquid_mass_fraction_name].sel(time=time_array, level=level_array)
+        cpt += constants.C_L * qllt * tlt
+        qdlt -= qllt
+    # increment the specific heat at constant pressure by the ice component if present
+    if ice_mass_fraction_name is not None and ice_mass_fraction_name in data:
+        qilt = data[ice_mass_fraction_name].sel(time=time_array, level=level_array)
+        cpt += constants.C_I * qilt * tlt
+        qdlt -= qilt
+    cpt += constants.C_PD * qdlt * tlt
+
     khlt = ult**2 + vlt**2
     kvlt = wlt**2
-    cpt = (constants.C_PD * (1.0 - qlt) + constants.C_PV * qlt) * tlt
 
     cpt_x = _integrate_horizontal(cpt, dlon, dlat, preserve_horizontal)
     qlt_x = _integrate_horizontal(qlt, dlon, dlat, preserve_horizontal)
+    if liquid_mass_fraction_name is not None and liquid_mass_fraction_name in data:
+        qllt_x = _integrate_horizontal(qllt, dlon, dlat, preserve_horizontal)
     khlt_x = _integrate_horizontal(khlt, dlon, dlat, preserve_horizontal)
     kvlt_x = _integrate_horizontal(kvlt, dlon, dlat, preserve_horizontal)
 
@@ -133,12 +151,16 @@ def energy_components_lat_lon(
 
     if preserve_vertical:
         I = dp_x * cpt_x
-        L = dp_x * constants.L_V * qlt_x
+        L = dp_x * (constants.L_V - constants.R_V * constants.T_0) * qlt_x
+        if liquid_mass_fraction_name is not None and liquid_mass_fraction_name in data:
+            L += dp_x * constants.L_F * (qlt_x + qllt_x)
         Kh = dp_x * 0.5 * khlt_x
         Kv = dp_x * 0.5 * kvlt_x
     else:
         I = (dp_x * cpt_x).sum(dim=pressure_level_name)
-        L = (dp_x * constants.L_V * qlt_x).sum(dim=pressure_level_name)
+        L = (dp_x * (constants.L_V - constants.R_V * constants.T_0) * qlt_x).sum(dim=pressure_level_name)
+        if liquid_mass_fraction_name is not None and liquid_mass_fraction_name in data:
+            L += (dp_x * constants.L_F * (qlt_x + qllt_x)).sum(dim=pressure_level_name)
         Kh = (dp_x * 0.5 * khlt_x).sum(dim=pressure_level_name)
         Kv = (dp_x * 0.5 * kvlt_x).sum(dim=pressure_level_name)
 
