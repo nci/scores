@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-from scores.physical.budgets_utils import (
+from scores.dynamics.budgets_utils import (
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,

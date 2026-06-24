@@ -1,5 +1,5 @@
 """
-Contains unit tests for scores.physical.energetics_impl
+Contains unit tests for scores.dynamics.energetics_impl
 """
 
 try:
@@ -14,14 +14,14 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from scores.physical.budgets_utils import (
+from scores.dynamics.budgets_utils import (
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
     _trig_fields,
     planet_constants,
 )
-from scores.physical.energetics_impl import (
+from scores.dynamics.energetics_impl import (
     energy_components_lat_lon,
     energy_exchanges_lat_lon,
 )
