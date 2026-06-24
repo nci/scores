@@ -963,17 +963,23 @@ def test_budget(
         ds = ds.sel(latitude=sub_latitude)
 
     # test with some alternative thermodynamic constants
-    _constants = planet_constants()
     if preserve_horizontal:
+        _constants = planet_constants()
         _constants.C_PD = 1006.0
         _constants.C_PV = 1872.0
 
-    E = energy_components_lat_lon(
-        ds,
-        preserve_horizontal=preserve_horizontal,
-        preserve_vertical=preserve_vertical,
-        constants=_constants,
-    )
+        E = energy_components_lat_lon(
+            ds,
+            preserve_horizontal=preserve_horizontal,
+            preserve_vertical=preserve_vertical,
+            constants=_constants,
+        )
+    else:
+        E = energy_components_lat_lon(
+            ds,
+            preserve_horizontal=preserve_horizontal,
+            preserve_vertical=preserve_vertical,
+        )
     if not preserve_horizontal and not preserve_vertical:
         _E = xr.DataArray(
             [
@@ -1080,6 +1086,161 @@ def test_budgets_dask():
             E["Potential"].as_numpy(),
             E["HorizontalKinetic"].as_numpy(),
             E["VerticalKinetic"].as_numpy(),
+        ]
+    )
+    xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
+
+
+# test for internal and latent energy with multipltle phases
+def test_budgets_multiphase_moisture():
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+    expected = xr.DataArray([[2.505575e25], [7.518202e17], [1.285482e20], [4.824884e20], [0.000000e00]])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    ql = np.zeros((nt, nlev, nlat, nlon))
+    qi = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = 1.0e5 * np.ones((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    w[0, :, :, :] = w_velocity(lat3d, lon3d, lev3d)
+    t[0, :, :, :] = temperature(lat3d, lon3d, lev3d)
+    q[0, :, :, :] = humidity(lat3d, lon3d, lev3d)
+    ql[0, :, :, :] = 0.2 * humidity(lat3d, lon3d, lev3d)
+    qi[0, :, :, :] = 0.1 * humidity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    sp[0, :, :] = surface_pressure(lat2d, lon2d)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "ql": (["time", "level", "latitude", "longitude"], ql),
+            "qi": (["time", "level", "latitude", "longitude"], qi),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+    E = energy_components_lat_lon(ds, liquid_mass_fraction_name="ql", ice_mass_fraction_name="qi")
+    _E = xr.DataArray(
+        [
+            E["Internal"].as_numpy(),
+            E["Latent"].as_numpy(),
+            E["Potential"].as_numpy(),
+            E["HorizontalKinetic"].as_numpy(),
+            E["VerticalKinetic"].as_numpy(),
+        ]
+    )
+    xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
+
+
+def test_budgets_multiphase_moisture_vertical():
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+    expected = xr.DataArray(
+        [
+            [1.255927e23, 7.535562e23, 1.569909e24, 3.516596e24, 6.782006e24, 8.540304e24, 3.767781e24],
+            [3.768522e15, 2.261113e16, 4.710653e16, 1.055186e17, 2.035002e17, 2.562595e17, 1.130557e17],
+            [0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00],
+            [7.059522e14, 1.143643e17, 1.103050e18, 1.012053e19, 6.587382e19, 2.358473e20, 1.694285e20],
+            [0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00],
+        ]
+    )
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    ql = np.zeros((nt, nlev, nlat, nlon))
+    qi = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = 1.0e5 * np.ones((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    w[0, :, :, :] = w_velocity(lat3d, lon3d, lev3d)
+    t[0, :, :, :] = temperature(lat3d, lon3d, lev3d)
+    q[0, :, :, :] = humidity(lat3d, lon3d, lev3d)
+    ql[0, :, :, :] = 0.2 * humidity(lat3d, lon3d, lev3d)
+    qi[0, :, :, :] = 0.1 * humidity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    sp[0, :, :] = surface_pressure(lat2d, lon2d)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "ql": (["time", "level", "latitude", "longitude"], ql),
+            "qi": (["time", "level", "latitude", "longitude"], qi),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+    E = energy_components_lat_lon(
+        ds, preserve_vertical=True, liquid_mass_fraction_name="ql", ice_mass_fraction_name="qi"
+    )
+    _E = xr.DataArray(
+        [
+            E["Internal"].as_numpy()[0],
+            E["Latent"].as_numpy()[0],
+            np.zeros(E["Internal"].as_numpy().shape[1:]),
+            E["HorizontalKinetic"].as_numpy()[0],
+            E["VerticalKinetic"].as_numpy()[0],
         ]
     )
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
