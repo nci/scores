@@ -12,40 +12,6 @@ from scores.physical.budgets_utils import (
 from scores.typing import XarrayLike
 
 
-def _prepare_fields(
-    data: xr.Dataset,
-    longitude: np.ndarray,
-    latitude: np.ndarray,
-    sub_domain_longitude: np.ndarray | None = None,
-    sub_domain_latitude: np.ndarray | None = None,
-):
-    """
-    Select the subdomain in longitude and latitude over which the energetic integrals
-    are to be computed.
-
-    Args:
-        data: Input fields for the 4D space-time quantities, 3D space-time quantities and 2D time only
-            quantities used to compute the energetics, and their space time dimensional attributes
-        longitude: array of longitudes
-        latitude: array of latitudes
-        sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the longitudinal direction (optional)
-        sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the latitudinal direction (optional)
-
-    Returns:
-        The fields within the sub-domain region.
-    """
-
-    if sub_domain_longitude is not None:
-        data = data.sel(longitude=longitude)
-
-    if sub_domain_latitude is not None:
-        data = data.sel(latitude=latitude)
-
-    return data
-
-
 def energy_components_lat_lon(
     data: xr.Dataset,
     *,
@@ -65,8 +31,6 @@ def energy_components_lat_lon(
     surface_pressure_name: str = "sp",
     surface_geopotential_name: str = "zs",
     constants: planet_constants | None = None,
-    sub_domain_longitude: np.ndarray | None = None,
-    sub_domain_latitude: np.ndarray | None = None,
 ) -> XarrayLike:
     """
     Compute the time series for the energy budget on pressure levels
@@ -88,10 +52,6 @@ def energy_components_lat_lon(
             mass fraction (ql), ice mass fraction (qi), surface pressure (sp), surface geopotential (zs).
         longitude_name: string giving the textual name of the longitude coordinate
         latitude_name: string giving the textual name of the latitude coordinate
-        sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the longitudinal direction (optional).
-        sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the latitudinal direction (optional).
         prese: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
             to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
 
@@ -136,12 +96,7 @@ def energy_components_lat_lon(
         longitude_name,
         latitude_name,
         constants,
-        sub_domain_longitude,
-        sub_domain_latitude,
     )
-
-    # select the latitude and longitude sub-domain
-    data = _prepare_fields(data, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(data.time)
 
@@ -213,8 +168,6 @@ def energy_exchanges_lat_lon(
     geopotential_name: str = "z",
     surface_geopotential_name: str = "zs",
     constants: planet_constants | None = None,
-    sub_domain_longitude: np.ndarray | None = None,
-    sub_domain_latitude: np.ndarray | None = None,
 ) -> XarrayLike:
     """
     Compute the exchanges between kinetic to internal, internal to kinetic, kinetic to potential and
@@ -238,10 +191,6 @@ def energy_exchanges_lat_lon(
             (u), meridional velocity (v), vertical velocity (w), geopotential (z), surface geopotential (zs)
         longitude_name: string giving the textual name of the longitude coordinate
         latitude_name: string giving the textual name of the latitude coordinate
-        sub_domain_longitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the longitudinal direction (optional)
-        sub_domain_latitude: array containing the minimum and maximum values of the sub-domain over which the
-            energy components are to be computed in the latitudinal direction (optional)
         reduce_time: Integrate over the temporal dimension rather than return a time series.
         preserve_dims: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
             to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
@@ -280,14 +229,9 @@ def energy_exchanges_lat_lon(
         longitude_name,
         latitude_name,
         constants,
-        sub_domain_longitude,
-        sub_domain_latitude,
     )
 
     cos_theta, sin_theta, cos_theta_inv = _trig_fields(data.longitude, data.latitude, longitude_name, latitude_name)
-
-    # select the latitude and longitude sub-domain
-    data = _prepare_fields(data, dlon.longitude, dlat.latitude, sub_domain_longitude, sub_domain_latitude)
 
     nt = len(data.time)
 

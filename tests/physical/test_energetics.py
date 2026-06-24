@@ -168,11 +168,18 @@ def test_budgets_integral(
         nlat = low_resolution[0] * np.power(2, res)
 
         longitude = np.linspace(-180.0, +180.0, nlon, endpoint=False)
-        latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
+        if sub_domain_longitude is not None:
+            longitude = longitude[
+                (longitude > sub_domain_longitude[0] - 1.0e-6) & (longitude < sub_domain_longitude[1] + 1.0e-6)
+            ]
 
-        dlon, dlat = _integration_weights(
-            longitude, latitude, "longitude", "latitude", constants, sub_domain_longitude, sub_domain_latitude
-        )
+        latitude = np.linspace(-90.0, +90.0, nlat, endpoint=False)
+        if sub_domain_latitude is not None:
+            latitude = latitude[
+                (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
+            ]
+
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", constants)
         nlon = len(dlon)
         nlat = len(dlat)
 
@@ -252,11 +259,17 @@ def test_budgets_gradient(
         nlat = low_resolution[0] * np.power(2, res)
 
         longitude = np.linspace(-180.0, +180.0, nlon)
+        if sub_domain_longitude is not None:
+            longitude = longitude[
+                (longitude > sub_domain_longitude[0] - 1.0e-6) & (longitude < sub_domain_longitude[1] + 1.0e-6)
+            ]
         latitude = np.linspace(-90.0, +90.0, nlat)
+        if sub_domain_latitude is not None:
+            latitude = latitude[
+                (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
+            ]
 
-        dlon, dlat = _integration_weights(
-            longitude, latitude, "longitude", "latitude", constants, sub_domain_longitude, sub_domain_latitude
-        )
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", constants)
         nlon = len(dlon)
         nlat = len(dlat)
         cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude, "longitude", "latitude")
@@ -937,10 +950,20 @@ def test_budget(
         },
     )
 
+    if sub_domain_longitude is not None:
+        sub_longitude = longitude[
+            (longitude > sub_domain_longitude[0] - 1.0e-6) & (longitude < sub_domain_longitude[1] + 1.0e-6)
+        ]
+        ds = ds.sel(longitude=sub_longitude)
+
+    if sub_domain_latitude is not None:
+        sub_latitude = latitude[
+            (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
+        ]
+        ds = ds.sel(latitude=sub_latitude)
+
     E = energy_components_lat_lon(
         ds,
-        sub_domain_longitude=sub_domain_longitude,
-        sub_domain_latitude=sub_domain_latitude,
         preserve_horizontal=preserve_horizontal,
         preserve_vertical=preserve_vertical,
     )

@@ -33,8 +33,6 @@ def _integration_weights(
     longitude_name: str,
     latitude_name: str,
     constants: planet_constants,
-    sub_domain_lon: np.ndarray | None = None,
-    sub_domain_lat: np.ndarray | None = None,
 ):
     """
     Integration weights for a two dimensional latitude-longitude field on
@@ -45,32 +43,10 @@ def _integration_weights(
         latitude: meridional coordinate
         longitude_name: string giving the textual name of the longitude coordinate
         latitude_name: string giving the textual name of the latitude coordinate
-        sub_domain_lon: extents of the sub-domain over which to compute the weights in the zonal direction (optional)
-        sub_domain_lat: extents of the sub-domain over which to compute the weights in the meidional direction
-            (optional)
 
     Returns:
         two xarray dataarrays containing the integration weights at the domain latitudes and longitudes
     """
-    # Check the longitude sub domain is valid if specified
-    if sub_domain_lon is not None:
-        error_msg = ValueError(
-            "sub-domain longitude outside valid range: "
-            + f"{LON_MIN} <= minimum longitude < maximum longitude < {LON_MAX}"
-        )
-        if len(sub_domain_lon) != 2:
-            raise error_msg  # pragma: no cover
-        if (
-            sub_domain_lon[1] <= sub_domain_lon[0]
-            or sub_domain_lon[0] < LON_MIN
-            or sub_domain_lon[0] > LON_MAX
-            or sub_domain_lon[1] < LON_MIN
-            or sub_domain_lon[1] > LON_MAX
-        ):
-            raise error_msg  # pragma: no cover
-
-        cond_lon = (longitude >= sub_domain_lon[0]) & (longitude <= sub_domain_lon[1])
-        longitude = longitude[cond_lon]
 
     dlon = np.zeros(len(longitude))
     dlon[1:-1] = 0.5 * (longitude[2:] - longitude[:-2])
@@ -80,26 +56,6 @@ def _integration_weights(
     error_msg = ValueError("-ve value detected in longitudinal weights")
     if (dlon < 0.0).any():
         raise error_msg  # pragma: no cover
-
-    # Check the latitude sub domain is valid if specified
-    if sub_domain_lat is not None:
-        error_msg = ValueError(
-            "sub-domain latitude outside valid range: "
-            + f"{LAT_MIN} <= minimum latitude < maximum latitude < {LAT_MAX}"
-        )
-        if len(sub_domain_lat) != 2:
-            raise error_msg  # pragma: no cover
-        if (
-            sub_domain_lat[1] <= sub_domain_lat[0]
-            or sub_domain_lat[0] < LAT_MIN
-            or sub_domain_lat[0] > LAT_MAX
-            or sub_domain_lat[1] < LAT_MIN
-            or sub_domain_lat[1] > LAT_MAX
-        ):
-            raise error_msg  # pragma: no cover
-
-        cond_lat = (latitude >= sub_domain_lat[0]) & (latitude <= sub_domain_lat[1])
-        latitude = latitude[cond_lat]
 
     dlat = np.zeros(len(latitude))
     for ii in np.arange(len(latitude) - 2) + 1:
