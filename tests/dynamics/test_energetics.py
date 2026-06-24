@@ -388,7 +388,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
+            xr.DataArray([[2.505574e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.000000e00]]),
         ),
         # test energy budget for full domain with shifted longitudinal coordinate
         (
@@ -407,7 +407,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]]),
+            xr.DataArray([[2.505574e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.000000e00]]),
         ),
         # test energy budget for sub domain in latitude and longitude
         (
@@ -426,7 +426,7 @@ def surface_pressure(phi, theta):
             humidity,
             geopotential,
             surface_pressure,
-            xr.DataArray([[4.290417e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.0]]),
+            xr.DataArray([[4.281888e24], [1.223907e17], [4.243540e19], [4.237897e19], [0.000000e00]]),
         ),
         # test energy budget while preserving the vertical dimension
         (
@@ -447,11 +447,11 @@ def surface_pressure(phi, theta):
             surface_pressure,
             xr.DataArray(
                 [
-                    [1.258429e23, 7.550573e23, 1.573036e24, 3.523601e24, 6.795516e24, 8.557316e24, 3.775287e24],
+                    [1.255927e23, 7.535562e23, 1.569909e24, 3.516596e24, 6.782006e24, 8.540304e24, 3.767781e24],
                     [3.249049e15, 1.949429e16, 4.061311e16, 9.097336e16, 1.754486e17, 2.209353e17, 9.747146e16],
-                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00],
                     [7.059522e14, 1.143643e17, 1.103050e18, 1.012053e19, 6.587382e19, 2.358473e20, 1.694285e20],
-                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00, 0.000000e00],
                 ]
             ),
         ),
@@ -962,10 +962,17 @@ def test_budget(
         ]
         ds = ds.sel(latitude=sub_latitude)
 
+    # test with some alternative thermodynamic constants
+    _constants = planet_constants()
+    if preserve_horizontal:
+        _constants.C_PD = 1006.0
+        _constants.C_PV = 1872.0
+
     E = energy_components_lat_lon(
         ds,
         preserve_horizontal=preserve_horizontal,
         preserve_vertical=preserve_vertical,
+        constants=_constants,
     )
     if not preserve_horizontal and not preserve_vertical:
         _E = xr.DataArray(
@@ -1009,7 +1016,7 @@ def test_budgets_dask():
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
     longitude = np.arange(0.0, 360.0, 6)
     latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
-    expected = xr.DataArray([[2.510566e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.0]])
+    expected = xr.DataArray([[2.505574e25], [6.481852e17], [1.285482e20], [4.824884e20], [0.000000e00]])
 
     nt = len(time)
     nlev = len(level)
@@ -1054,7 +1061,7 @@ def test_budgets_dask():
             "longitude": longitude,
         },
     )
-    E = energy_components_lat_lon(ds.chunk())
+    E = energy_components_lat_lon(ds.chunk(), constants=constants)
     assert isinstance(E["Internal"].data, dask.array.Array)
     assert isinstance(E["Latent"].data, dask.array.Array)
     assert isinstance(E["Potential"].data, dask.array.Array)
@@ -1304,7 +1311,7 @@ def test_exchanges_dask():
         },
     )
 
-    E = energy_exchanges_lat_lon(ds.chunk())
+    E = energy_exchanges_lat_lon(ds.chunk(), constants=constants)
     assert isinstance(E["KineticToInternal"].data, dask.array.Array)
     assert isinstance(E["InternalToKinetic"].data, dask.array.Array)
     assert isinstance(E["KineticToPotential"].data, dask.array.Array)

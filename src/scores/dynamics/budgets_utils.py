@@ -16,8 +16,8 @@ class planet_constants:
     def __init__(self):
         self.RAD_EARTH = 6371220.0  # radius of the earth, m
         self.GRAVITY = 9.80665  # gravitational acceleration of the earth, m/s^2
-        self.C_PD = 1006.0  # specific heat of dry air at constant pressure, J/kg/K       (1004.0)
-        self.C_PV = 1872.0  # specific heat of vapour water at constant pressure, J/kg/K  (1885.0)
+        self.C_PD = 1004.0  # specific heat of dry air at constant pressure, J/kg/K
+        self.C_PV = 1885.0  # specific heat of vapour water at constant pressure, J/kg/K
         self.C_L = 4186.0  # specific heat of liquid water at constant pressure, J/kg/K
         self.C_I = 2106.0  # specific heat of ice water at constant pressure, J/kg/K
         self.T_0 = 0.0  # reference temperature, K
