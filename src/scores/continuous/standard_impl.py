@@ -983,7 +983,7 @@ def kge(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     scaling_factors: Optional[Union[list[float], np.ndarray]] = None,
     include_components: Optional[bool] = False,
-    method: Literal["original", "modified"] = "original",
+    method: Literal["2009", "2012"] = "2009",
 ) -> XarrayLike:
     # pylint: disable=too-many-locals
     """
@@ -1002,7 +1002,7 @@ def kge(
         \\gamma = \\frac{\\alpha}{\\beta}
 
     .. math::
-        {vr} = \\alpha \\text{ if original KGE else } \\gamma \\text{ (modified KGE)}
+        {vr} = \\alpha \\text{ if original 2009 KGE else } \\gamma \\text{ (modified 2012 KGE)}
 
     The KGE is computed as
 
@@ -1037,7 +1037,7 @@ def kge(
             the variability term :math:`{vr}` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0).
         include_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
         method: Whether to compute the original KGE as defined in Gupta et al. (2009) or the modified KGE as defined in Kling et al. (2012).
-            Default is original.
+            Default is "2009".
 
     Returns:
         If ``include_components`` is False, the function returns the KGE score as an ``xarray.DataArray``.
@@ -1046,8 +1046,8 @@ def kge(
 
         - `kge`: The KGE score.
         - `rho`: The Pearson correlation coefficient.
-        - (if original KGE) `alpha`: The variability ratio.
-        - (if modified KGE) `gamma`: The coefficient of variation ratio.
+        - (if original 2009 KGE) `alpha`: The variability ratio.
+        - (if modified 2012 KGE) `gamma`: The coefficient of variation ratio.
         - `beta`: The bias term.
 
     Notes:
@@ -1124,7 +1124,7 @@ def kge(
             alpha    float64 8B 1.181
             beta     float64 8B 0.9964
 
-        >>> kge(fcst, obs, include_components=True, method="modified")
+        >>> kge(fcst, obs, include_components=True, method="2012")
         <xarray.Dataset> Size: 32B
         Dimensions:  ()
         Data variables:
@@ -1140,8 +1140,8 @@ def kge(
         raise TypeError("kge: fcst must be an xarray.DataArray")
     if not isinstance(obs, xr.DataArray):
         raise TypeError("kge: obs must be an xarray.DataArray")
-    if method not in ["original", "modified"]:
-        raise ValueError("kge: method must be either 'original' or 'modified'")
+    if method not in ["2009", "2012"]:
+        raise ValueError("kge: method must be either '2009' or '2012'")
     if scaling_factors is not None:
         if isinstance(scaling_factors, (list, np.ndarray)):
             # Check if the input has exactly 3 elements
@@ -1172,7 +1172,7 @@ def kge(
     mu_obs = obs.mean(reduce_dims)
     beta = mu_fcst / mu_obs
 
-    vr = alpha if method == "original" else alpha / beta
+    vr = alpha if method == "2009" else alpha / beta
 
     ed_s = np.sqrt((s_rho * (rho - 1)) ** 2 + (s_vr * (vr - 1)) ** 2 + (s_beta * (beta - 1)) ** 2)
 
@@ -1180,7 +1180,7 @@ def kge(
 
     if include_components:
         # Create dataset of all components
-        vr_name = "alpha" if method == "original" else "gamma"
+        vr_name = "alpha" if method == "2009" else "gamma"
         component_names = ["kge", "rho", vr_name, "beta"]
         components = [kge_s, rho, vr, beta]
         kge_dict = dict(zip(component_names, components))

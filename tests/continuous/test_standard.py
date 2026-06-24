@@ -790,7 +790,7 @@ EXP_KGE_message1 = "kge: fcst must be an xarray.DataArray"
 EXP_KGE_message2 = "kge: obs must be an xarray.DataArray"
 EXP_KGE_message3 = "kge: scaling_factors must be a list of floats or a numpy array"
 EXP_KGE_message4 = "kge: scaling_factors must contain exactly 3 elements"
-EXP_KGE_message5 = "kge: method must be either 'original' or 'modified'"
+EXP_KGE_message5 = "kge: method must be either '2009' or '2012'"
 
 
 @pytest.mark.parametrize(
@@ -1082,19 +1082,19 @@ def test_percent_within_x_dask():
     ("fcst", "obs", "reduce_dims", "preserve_dims", "include_components", "scaling_factors", "method", "expected"),
     [
         # Check reduce dim arg
-        (DA1_KGE, DA2_KGE, None, "space", False, None, "original", EXP_KGE_KEEP_SPACE_DIM),
+        (DA1_KGE, DA2_KGE, None, "space", False, None, "2009", EXP_KGE_KEEP_SPACE_DIM),
         # Check preserve dim arg
-        (DA1_KGE, DA2_KGE, "time", None, False, None, "original", EXP_KGE_KEEP_SPACE_DIM),
+        (DA1_KGE, DA2_KGE, "time", None, False, None, "2009", EXP_KGE_KEEP_SPACE_DIM),
         # Check reduce all
-        (DA3_KGE, DA2_KGE, None, None, False, None, "original", EXP_KGE_REDUCE_ALL),
+        (DA3_KGE, DA2_KGE, None, None, False, None, "2009", EXP_KGE_REDUCE_ALL),
         # returning components
-        (DA3_KGE, DA2_KGE, None, None, True, None, "original", EXP_KGE_returns_components),
+        (DA3_KGE, DA2_KGE, None, None, True, None, "2009", EXP_KGE_returns_components),
         # Check scaling_factors
-        (DA3_KGE, DA2_KGE, None, None, False, [0.5, 1.0, 2.0], "original", EXP_KGE_Scaling_Factors),
+        (DA3_KGE, DA2_KGE, None, None, False, [0.5, 1.0, 2.0], "2009", EXP_KGE_Scaling_Factors),
         # Check different size arrays as input
-        (DA4_KGE, DA5_KGE, "space", None, False, None, "original", EXP_KGE_DIFF_SIZE),
+        (DA4_KGE, DA5_KGE, "space", None, False, None, "2009", EXP_KGE_DIFF_SIZE),
         # Check method arguments
-        (DA3_KGE, DA2_KGE, None, None, True, None, "modified", EXP_KGE_returns_components_modified),
+        (DA3_KGE, DA2_KGE, None, None, True, None, "2012", EXP_KGE_returns_components_modified),
     ],
 )
 def test_kge(fcst, obs, reduce_dims, preserve_dims, include_components, scaling_factors, method, expected):
@@ -1134,15 +1134,15 @@ def test_kge_dask():
     "fcst, obs, scaling_factors, method, expected_exception, expected_message",
     [
         # Test case for fcst with incorrect type (list instead of xr.DataArray)
-        (Incorrect_Input_KGE, DA2_KGE, None, "original", TypeError, EXP_KGE_message1),
+        (Incorrect_Input_KGE, DA2_KGE, None, "2009", TypeError, EXP_KGE_message1),
         # Test case for obs with incorrect type (list instead of xr.DataArray)
-        (DA1_KGE, Incorrect_Input_KGE, None, "original", TypeError, EXP_KGE_message2),
+        (DA1_KGE, Incorrect_Input_KGE, None, "2009", TypeError, EXP_KGE_message2),
         # Test case for scaling_factors with incorrect type (string instead of list or np.ndarray)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, "original", TypeError, EXP_KGE_message3),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, "2009", TypeError, EXP_KGE_message3),
         # Test case for scaling_factors with incorrect number of elements (list with 2 elements)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, "original", ValueError, EXP_KGE_message4),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, "2009", ValueError, EXP_KGE_message4),
         # Test case for scaling_factors with incorrect number of elements (numpy array with 4 elements)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "original", ValueError, EXP_KGE_message4),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "2009", ValueError, EXP_KGE_message4),
         # Test case for method with incorrect value (not 'original' or 'modified')
         (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "invalid_method", ValueError, EXP_KGE_message5),
     ],
