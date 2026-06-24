@@ -77,6 +77,9 @@ def _integration_weights(
     dlon[0] = longitude[1] - longitude[0]
     dlon[-1] = longitude[-1] - longitude[-2]
     dlon[:] = constants.meters_per_degree() * dlon[:]
+    error_msg = ValueError("-ve value detected in longitudinal weights")
+    if (dlon < 0.0).any():
+        raise error_msg  # pragma: no cover
 
     # Check the latitude sub domain is valid if specified
     if sub_domain_lat is not None:
@@ -109,6 +112,9 @@ def _integration_weights(
         dlat[-1] = np.abs(latitude[-1] - latitude[-2]) * np.cos(np.deg2rad(latitude[-1]))
 
     dlat[:] = constants.meters_per_degree() * dlat[:]
+    error_msg = ValueError("-ve value detected in latitudinal weights")
+    if (dlat < 0.0).any():
+        raise error_msg  # pragma: no cover
 
     return xr.DataArray(dlon, dims=longitude_name, coords={longitude_name: longitude}), xr.DataArray(
         dlat, dims=latitude_name, coords={latitude_name: latitude}
@@ -245,32 +251,3 @@ def _integrate_energy_exchange(
     int_f_div_u = _integrate_horizontal(f_div_u, dlon, dlat, preserve_horizontal)
 
     return int_grad_f_dot_u, int_f_div_u
-
-
-def _resort_lon_from_m180to180_to_0to360(ds, lon_name):
-    """
-    Ensure the global zonal dimension starts from 0 degrees longitude (not -180 degrees). Customised from:
-    https://stackoverflow.com/questions/53345442/about-changing-longitude-array-from-0-360-to-180-to-180-with-python-xarray
-
-    Args:
-        ds: xarray dataset
-        lon_name: name of the longitude dimension in the dataset
-
-    Returns:
-        ds: the original dataset with the global longitude ranging from 0 to 360 degrees
-    """
-
-    # Adjust lon values to make sure they are within (0, 360)
-    ds["_longitude_adjusted"] = xr.where(ds[lon_name] < 0, ds[lon_name] + 360, ds[lon_name])
-
-    # reassign the new coords to as the main lon coords
-    # and sort DataArray using new coordinate values
-    ds = (
-        ds.swap_dims({lon_name: "_longitude_adjusted"})
-        .sel(**{"_longitude_adjusted": sorted(ds._longitude_adjusted)})
-        .drop_vars(lon_name)
-    )
-
-    ds = ds.rename({"_longitude_adjusted": lon_name})
-
-    return ds

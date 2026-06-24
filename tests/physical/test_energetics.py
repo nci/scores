@@ -1106,7 +1106,7 @@ def surface_geopotential(phi, theta):
             False,
             False,
             False,
-            xr.DataArray([[-4.147951e15], [4.725676e15], [4.404260e15], [-4.982006e15]]),
+            xr.DataArray([[-4.114057e15], [4.730493e15], [4.370366e15], [-4.986823e15]]),
         ),
         # preserve the vertical dimension for horizontal energy exchanges in each
         # vertical column

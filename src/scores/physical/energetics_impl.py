@@ -6,7 +6,6 @@ from scores.physical.budgets_utils import (
     _integrate_horizontal,
     _integration_weights,
     _pressure_level_thickness,
-    _resort_lon_from_m180to180_to_0to360,
     _trig_fields,
     planet_constants,
 )
@@ -126,10 +125,6 @@ def energy_components_lat_lon(
         error_msg = ValueError("NaN value found in field: {field_name}")
         if np.any(np.isnan(data[field_name].as_numpy())):
             raise error_msg  # pragma: no cover
-
-    # re-order the longitudes to range between 0 and 360 degrees (global)
-    if data.longitude.values[0] < -0.1:
-        data = _resort_lon_from_m180to180_to_0to360(data, longitude_name)
 
     # iniitialise the planetary constants with their default values if not supplied
     if constants is None:
@@ -278,10 +273,6 @@ def energy_exchanges_lat_lon(
     # iniitialise the planetary constants with their default values if not supplied
     if constants is None:
         constants = planet_constants()
-
-    # re-order the longitudes to range between 0 and 360 degrees (global)
-    if data.longitude.values[0] < -0.1:
-        data = _resort_lon_from_m180to180_to_0to360(data, longitude_name)
 
     dlon, dlat = _integration_weights(
         data.longitude.values,
