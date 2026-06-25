@@ -47,6 +47,7 @@ def _integration_weights(
         latitude: meridional coordinate
         longitude_name: string giving the textual name of the longitude coordinate
         latitude_name: string giving the textual name of the latitude coordinate
+        constants: planetary constants used for integration
 
     Returns:
         two xarray dataarrays containing the integration weights at the domain latitudes and longitudes
@@ -89,9 +90,8 @@ def _integrate_horizontal(data: xr.DataArray, dlon, dlat, preserve_horizontal):
         data: physical field to integrate in the horizontal dimensions
         dlon: xarray dataarray containing the integration weights in the zonal direction
         dlat: xarray dataarray containing the integration weights in the meridional direction
-        preserve_dims: list of dimensions to preserve with the integration. If includes both horizontal dimensions
-            (latitude and longitude), then do not apply the global integral (sum), just apply the integration
-            weights at each horizontal location.
+        preserve_horizontal: apply area weighting to the energy components in the horizontal dimensions (latitude,
+            longitude), but do not sum these area weighted components in the horizontal (optional, default is false).
 
     Returns:
         int_tot: xarray dataarray containing a weighted integral of the input field. May be either a global integal
@@ -183,13 +183,34 @@ def _integrate_energy_exchange(
     constants: planet_constants,
     preserve_horizontal: bool = False,
 ):
-    r"""
+    """
+    Compute the two volumetric components of the divergence theorem on the sphere in latitude, longitude coordinates
+    for scalar field (f) and two dimensional horizontal vector field (u,v).
+
     Williamson et. al., JCP (1992), eqns (3-4):
 
     lambda: longitude
     theta:  latitude (from the equator)
-    grad f:  1/(r \cos(theta)) d f/d lambda, 1/r df/d theta
-    div(u):  1/(r \cos(theta)) (d u/d lambda + d(v\cos(theta))/d theta)
+    grad f:  1/(r cos(theta)) d f/d lambda, 1/r df/d theta
+    div(u):  1/(r cos(theta)) (d u/d lambda + d(v cos(theta))/d theta)
+
+    Args:
+        field_scaler: scalar field (f)
+        field_vector_x: zonal component of the vector field (u)
+        field_vector_y: meridional component of the vector field (v)
+        dlon: integration weights in the zonal direction
+        dlat: integration weights in the meridional direction
+        cos_theta: two dimensional field for the cosine of the zonal and meridional coordinates
+        sin_theta: two dimensional field for the sine of the zonal and meridional coordinates
+        cos_theta_inv: two dimensional field for the inverse of the cosine of the zonal and meridional coordinates
+        longitude_name: string giving the textual name of the zonal coordinate in the xarray DataArray fields
+        latitude_name: string giving the textual name of the meridional coordinate in the xarray DataArray fields
+        constants: planetary constants used for differentiation
+        preserve_horizontal: apply area weighting to the energy components in the horizontal dimensions (latitude,
+            longitude), but do not sum these area weighted components in the horizontal (optional, default is false).
+
+    Returns:
+        Xarray DataArrays for grad f . (u,v) and f div (u,v)
     """
 
     mpd_inv = 1.0 / constants.meters_per_degree()

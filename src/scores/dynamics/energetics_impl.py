@@ -11,6 +11,9 @@ from scores.dynamics.budgets_utils import (
 )
 from scores.typing import XarrayLike
 
+# @overload
+# def energy_components_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+
 
 def energy_components_lat_lon(
     data: xr.Dataset,
@@ -47,13 +50,32 @@ def energy_components_lat_lon(
             the water vapor, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
             surface pressure, and the 2D space only surface geopotential), and their space time dimensional
             attributes.
-        field_names: dictionary of strings denoting the names for the different fields, specifically - zonal velocity
-            (u), meridional velocity (v), vertical velocity (w), temperature (t), vapour mass fraction (q), liquid
-            mass fraction (ql), ice mass fraction (qi), surface pressure (sp), surface geopotential (zs).
-        longitude_name: string giving the textual name of the longitude coordinate
-        latitude_name: string giving the textual name of the latitude coordinate
-        prese: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
-            to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
+        preserve_horizontal: apply area weighting to the energy components in the horizontal dimensions (latitude,
+            longitude), but do not sum these area weighted components in the horizontal (optional, default is false).
+        preserve_vertical: apply area weighting to the energy components in the vertical dimension (pressure level),
+            but do not sum these area weighted components in the vertical (optional, default is false).
+        longitude_name: string giving the textual name of the longitude coordinate (optional, default is "longitude").
+        latitude_name: string giving the textual name of the latitude coordinate (optional, default is "latitude").
+        pressure_level_name: string giving the textual name of the vertical coordinate on pressure levels (optional,
+            default is "level").
+        time_name: string giving the textual name of the time coordinate (optional, default is "time").
+        zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v")
+        vertical_velocity_name: string giving the textual name of the vertical velocity (optonal, default is "w")
+        temperature_name: string giving the textual name of the temperature (optional, default is "t")
+        vapour_mass_fraction_name: string giving the textual name of the water vapour mass fraction (optional, default
+            is "q")
+        liquid_mass_fraction_name: string giving the textual name of the liquid water mass fration. If not supplied it
+            is assumed that this is not present in the data and will not be used in the computation of the energy
+            components (optional, default is None)
+        ice_mass_fraction_name: string giving the textual name of the ice water mass fration. If not supplied it is
+            assumed that this is not present in the data and will not be used in the computation of the energy
+            components (optional, default is None)
+        surface_pressure_name: string giving the textual name of the surface pressure (optional, default is "sp")
+        surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
+            "zs")
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
+            will instantiate a version of the planet_constants class with default values if not supplied).
 
     Returns:
         2D array containing the time series for the domain integrals of the energy components at each time.
@@ -175,6 +197,10 @@ def energy_components_lat_lon(
     return energy_integrals
 
 
+# @overload
+# def energy_exchanges_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+
+
 def energy_exchanges_lat_lon(
     data: xr.Dataset,
     *,
@@ -206,16 +232,26 @@ def energy_exchanges_lat_lon(
                                        \\text{d}\\Omega\\text{d}p
 
     Args:
-        data: Input fields for the 4D space-time quantities used to compute the energy components (specifically
+        data: input fields for the 4D space-time quantities used to compute the energy components (specifically
             the zonal and meridional velocities, and the geopotential, and the 2D space only surface geopotential),
-            and their space time dimensional attributes
-        field_names: dictionary of strings denoting the names for the different fields, specifically - zonal velocity
-            (u), meridional velocity (v), vertical velocity (w), geopotential (z), surface geopotential (zs)
-        longitude_name: string giving the textual name of the longitude coordinate
-        latitude_name: string giving the textual name of the latitude coordinate
-        reduce_time: Integrate over the temporal dimension rather than return a time series.
-        preserve_dims: textual list of dimensions not to integrate over (optional). May be "latitude" and "longitude"
-            to preserve the horizontal dimensions and/or "level" to preserve the vertical pressure level.
+            and their space time dimensional attributes.
+        preserve_horizontal: apply area weighting to the energy components in the horizontal dimensions (latitude,
+            longitude), but do not sum these area weighted components in the horizontal (optional, default is false).
+        preserve_vertical: apply area weighting to the energy components in the vertical dimension (pressure level),
+            but do not sum these area weighted components in the vertical (optional, default is false).
+        reduce_time: integrate over the temporal dimension rather than return a time series.
+        longitude_name: string giving the textual name of the longitude coordinate.
+        latitude_name: string giving the textual name of the latitude coordinate.
+        pressure_level_name: string giving the textual name of the vertical coordinate on pressure levels (optional,
+            default is "level").
+        time_name: string giving the textual name of the time coordinate (optional, default is "time").
+        zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v")
+        geopotential_name: string giving the textual name of the geopotential (optional, default is "z")
+        surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
+            "zs")
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
+            will instantiate a version of the planet_constants class with default values if not supplied).
 
     Returns:
         2D array containing the time series for the domain integrals of the energy exchanges at each time
