@@ -1,3 +1,5 @@
+from typing import overload
+
 import numpy as np
 import xarray as xr
 
@@ -11,8 +13,32 @@ from scores.dynamics.budgets_utils import (
 )
 from scores.typing import XarrayLike
 
-# @overload
-# def energy_components_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+
+@overload
+def energy_components_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+
+
+@overload
+def energy_components_lat_lon(
+    data: xr.Dataset,
+    *,
+    preserve_horizontal: bool = False,
+    preserve_vertical: bool = False,
+    longitude_name: str = "longitude",
+    latitude_name: str = "latitude",
+    pressure_level_name: str = "level",
+    time_name: str = "time",
+    zonal_velocity_name: str = "u",
+    meridional_velocity_name: str = "v",
+    vertical_velocity_name: str = "w",
+    temperature_name: str = "t",
+    vapour_mass_fraction_name: str = "q",
+    liquid_mass_fraction_name: str | None = None,
+    ice_mass_fraction_name: str | None = None,
+    surface_pressure_name: str = "sp",
+    surface_geopotential_name: str = "zs",
+    constants: planet_constants | None = None,
+) -> XarrayLike: ...
 
 
 def energy_components_lat_lon(
@@ -197,8 +223,27 @@ def energy_components_lat_lon(
     return energy_integrals
 
 
-# @overload
-# def energy_exchanges_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+@overload
+def energy_exchanges_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+
+
+@overload
+def energy_exchanges_lat_lon(
+    data: xr.Dataset,
+    *,
+    preserve_horizontal: bool = False,
+    preserve_vertical: bool = False,
+    reduce_time: bool = False,
+    latitude_name: str = "latitude",
+    longitude_name: str = "longitude",
+    pressure_level_name: str = "level",
+    time_name: str = "time",
+    zonal_velocity_name: str = "u",
+    meridional_velocity_name: str = "v",
+    geopotential_name: str = "z",
+    surface_geopotential_name: str = "zs",
+    constants: planet_constants | None = None,
+) -> XarrayLike: ...
 
 
 def energy_exchanges_lat_lon(
