@@ -2,7 +2,7 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -76,6 +76,50 @@ def mse(
         -   https://jwgfvr.github.io/forecastverification/index.html#MSE
         -   https://en.wikipedia.org/wiki/Mean_squared_error
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import mse
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> mse(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.1375)
+
+        >>> mse(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.15333333, 0.12166667])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> mse(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.13707961)
     """
 
     if is_xarraylike(fcst):
@@ -151,6 +195,50 @@ def rmse(
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import rmse
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> rmse(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.37080992)
+
+        >>> rmse(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.391578  , 0.34880749])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> rmse(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.37024263)
     """
     _mse = mse(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights, is_angular=is_angular)
 
@@ -209,6 +297,52 @@ def mae(
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import mae
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> mae(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.325)
+
+        >>> mae(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.33333333, 0.31666667])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> mae(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.32415921)
+
     """
 
     if is_xarraylike(fcst):
@@ -277,6 +411,51 @@ def mean_error(
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import mean_error
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> mean_error(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.00833333)
+
+        >>> mean_error(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 0.16666667, -0.18333333])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> mean_error(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.00240542)
+
     """
     return additive_bias(fcst, obs, reduce_dims=reduce_dims, preserve_dims=preserve_dims, weights=weights)
 
@@ -326,6 +505,51 @@ def additive_bias(
 
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import additive_bias
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> additive_bias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.00833333)
+
+        >>> additive_bias(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 0.16666667, -0.18333333])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> additive_bias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.00240542)
 
     """
     # Note - mean error call this function
@@ -386,6 +610,50 @@ def multiplicative_bias(
     References:
         -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import multiplicative_bias
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> multiplicative_bias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.99637681)
+
+        >>> multiplicative_bias(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([1.08130081, 0.92810458])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> multiplicative_bias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.99896924)
     """
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
@@ -465,6 +733,50 @@ def pbias(
 
 
 
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import pbias
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> pbias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.36231884)
+
+        >>> pbias(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 8.1300813 , -7.18954248])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> pbias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.10307618)
 
     """
     reduce_dims = scores.utils.gather_dimensions(
@@ -554,23 +866,30 @@ def percent_within_x(
     Examples:
         >>> import numpy as np
         >>> import xarray as xr
-        >>> from scores.standard_impl import percent_within_x
+        >>> from scores.continuous import percent_within_x
+
         >>> obs_raw = np.array(
         ...     [
-        ...         [[1,2,3], [4,5,6]],
-        ...         [[3,2,1], [6,5,4]],
-        ...         [[3,2,5], [2,2,6]],
-        ...         [[5,2,3], [4,-1,4]],
+        ...         [[1, 2, 3], [4, 5, 6]],
+        ...         [[3, 2, 1], [6, 5, 4]],
+        ...         [[3, 2, 5], [2, 2, 6]],
+        ...         [[5, 2, 3], [4, -1, 4]],
         ...     ]
-        ...
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
-        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
 
-        >>> # Example 1:
+        >>> # add some synthetic bias and variance
+        >>> fcst = obs * 1.2 + 0.1
+
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over t - time - should produce an xy-grid (4 by 2)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["t"])
+        >>> percent_within_x(
+        ...     fcst=fcst,
+        ...     obs=obs,
+        ...     threshold=0.5,
+        ...     is_inclusive=True,
+        ...     reduce_dims=["t"],
+        ... )
         <xarray.DataArray (x: 4, y: 2)> Size: 64B
         array([[66.66666667,  0.        ],
                [66.66666667,  0.        ],
@@ -578,37 +897,53 @@ def percent_within_x(
                [33.33333333, 33.33333333]])
         Dimensions without coordinates: x, y
 
-        >>> # Example 2:
         >>> # percent of forecasts with less than or equal to 0.5 absolute error
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=True, reduce_dims=["x","y"])
+        >>> percent_within_x(
+        ...     fcst=fcst,
+        ...     obs=obs,
+        ...     threshold=0.5,
+        ...     is_inclusive=True,
+        ...     reduce_dims=["x", "y"],
+        ... )
         <xarray.DataArray (t: 3)> Size: 24B
-        array([25., 75., 12.5])
+        array([25. , 75. , 12.5])
         Dimensions without coordinates: t
 
-        >>> # Example 3:
         >>> # percent of forecasts with less than 0.5 absolute error (is_inclusive=False)
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
-        >>> percent_within_x(fcst=fcst, obs=obs, threshold=0.5, is_inclusive=False, reduce_dims=["x","y"])
+        >>> percent_within_x(
+        ...     fcst=fcst,
+        ...     obs=obs,
+        ...     threshold=0.5,
+        ...     is_inclusive=False,
+        ...     reduce_dims=["x", "y"],
+        ... )
         <xarray.DataArray (t: 3)> Size: 24B
-        array([12.5., 12.5., 12.5])
+        array([12.5, 12.5, 12.5])
         Dimensions without coordinates: t
 
-        >>> # Example 4:
         >>> # Controlling floating-point precision issues
-        >>> np.set_printoptions(precision=17) # make floating-point precision issues visible
+        >>> np.set_printoptions(
+        ...     precision=17
+        ... )  # make floating-point precision issues visible
         >>> obs = xr.DataArray([0.1 + 0.2], dims=["t"])
-        >>> print(f'obs {obs.values}')
+        >>> print(f"obs {obs.values}")
         obs [0.30000000000000004]
         >>> fcst = obs + 0.3
-        >>> print(f'fcst {fcst.values}')
+        >>> print(f"fcst {fcst.values}")
         fcst [0.6000000000000001]
-        >>> unrounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=20)
-        >>> print(f'incorrectly creating a penalty: {unrounded.values}')
+        >>> unrounded = percent_within_x(
+        ...     fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=20
+        ... )
+        >>> print(f"incorrectly ignoring a success: {unrounded.values}")
         incorrectly ignoring a success: 0.0
-        >>> rounded = percent_within_x(fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=5)
-        >>> print(f'correctly recognising a success: {rounded.values}')
+        >>> rounded = percent_within_x(
+        ...     fcst=fcst, obs=obs, threshold=0.3, is_inclusive=True, decimals=5
+        ... )
+        >>> print(f"correctly recognising a success: {rounded.values}")
         correctly recognising a success: 100.0
+        >>> np.set_printoptions(precision=8)  # reset to defaults
 
     """
     reduce_dims = scores.utils.gather_dimensions(
@@ -648,6 +983,7 @@ def kge(
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     scaling_factors: Optional[Union[list[float], np.ndarray]] = None,
     include_components: Optional[bool] = False,
+    method: Literal["2009", "2012"] = "2009",
 ) -> XarrayLike:
     # pylint: disable=too-many-locals
     """
@@ -655,11 +991,6 @@ def kge(
 
     KGE is a performance metric that decomposes the error into three components:
     correlation, variability, and bias.
-    It is computed as:
-
-    .. math::
-        \\text{KGE} = 1 - \\sqrt{\\left[s_\\rho \\cdot (\\rho - 1)\\right]^2 +
-        \\left[s_\\alpha \\cdot (\\alpha - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
 
     .. math::
         \\alpha = \\frac{\\sigma_x}{\\sigma_y}
@@ -667,16 +998,29 @@ def kge(
     .. math::
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
+    .. math::
+        \\gamma = \\frac{\\alpha}{\\beta}
+
+    .. math::
+        {vr} = \\alpha \\text{ if original 2009 KGE else } \\gamma \\text{ (modified 2012 KGE)}
+
+    The KGE is computed as
+
+    .. math::
+        \\text{KGE} = 1 - \\sqrt{\\left[s_\\rho \\cdot (\\rho - 1)\\right]^2 +
+        \\left[s_{vr} \\cdot ({vr} - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
+
     where:
         - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as
           defined in :py:func:`scores.continuous.correlation.pearsonr`
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
+        - :math:`\\gamma` is the ratio of the coefficients of variation (relative variability ratio/coefficient of variation ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
-        - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
-          the variability term :math:`\\alpha` and the bias term :math:`\\beta`
+        - :math:`s_\\rho`, :math:`s_{vr}`, and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
+          the variability term :math:`{vr}`, and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.
@@ -688,27 +1032,29 @@ def kge(
             special case, 'all' will allow all dimensions to be preserved. In
             this case, the result will be all NaN with the same shape/dimensionality
             as the forecast because the standard deviation is zero for a single point.
-        scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
-            Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_\\alpha`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
-            the variability term :math:`\\alpha` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0). (*See
-            equation 10 in Gupta et al. (2009) for definitions of them*).
+        scaling_factors: A 3-element vector or list describing the weights for each term in the KGE.
+            Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_{vr}`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
+            the variability term :math:`{vr}` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0).
         include_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
+        method: Whether to compute the original KGE as defined in Gupta et al. (2009) or the modified KGE as defined in Kling et al. (2012).
+            Default is "2009".
 
     Returns:
-        The Kling-Gupta Efficiency (KGE) score as an xarray DataArray.
+        If ``include_components`` is False, the function returns the KGE score as an ``xarray.DataArray``.
 
-        If ``include_components`` is True, the function returns ``xarray.Dataset`` kge_s with the following variables:
+        If ``include_components`` is True, the function returns ``xarray.Dataset`` with the following variables:
 
         - `kge`: The KGE score.
         - `rho`: The Pearson correlation coefficient.
-        - `alpha`: The variability ratio.
+        - (if original 2009 KGE) `alpha`: The variability ratio.
+        - (if modified 2012 KGE) `gamma`: The coefficient of variation ratio.
         - `beta`: The bias term.
 
     Notes:
         - Statistics are calculated only from values for which both observations and
           simulations are not null values.
         - This function isn't set up to take weights.
-        - Currently this function is working only on xr.DataArray.
+        - Currently this function is working only on ``xarray.DataArray``.
         - When preserve_dims is set to 'all', the function returns NaN,
           similar to the Pearson correlation coefficient calculation for a single data point
           because the standard deviation is zero for a single point.
@@ -717,26 +1063,85 @@ def kge(
         -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
             NSE performance criteria: Implications for improving hydrological modeling. Journal of Hydrology, 377(1-2), 80-91.
             https://doi.org/10.1016/j.jhydrol.2009.08.003.
+        -   Kling, H., Fuchs, M., & Paulin, M. (2012). Runoff conditions in the upper Danube basin under an ensemble of climate
+            change scenarios. Journal of Hydrology. 424: 264–277. https://doi.org/10.1016/j.jhydrol.2012.01.011.
         -   Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
             Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences, 23(10), 4323-4331.
             https://doi.org/10.5194/hess-23-4323-2019.
 
 
     Examples:
-        >>> kge_s = kge(forecasts, obs,preserve_dims='lat')  # if data is of dimension {lat,time}, kge value is computed across the time dimension
-        >>> kge_s = kge(forecasts, obs,reduce_dims="time")  # if data is of dimension {lat,time}, reduce_dims="time" is same as preserve_dims='lat'
-        >>> kge_s = kge(forecasts, obs, include_components=True) # kge_s is dataset of all three components and kge value itself
-        >>> kge_s_weighted = kge(forecasts, obs, scaling_factors=(0.5, 1.0, 2.0)) # with scaling factors
+        >>> import xarray as xr
+        >>> from scores.continuous import kge
+        >>> from scores.functions import create_latitude_weights
 
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
 
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
 
-    """  #  noqa: E501
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> kge(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.80729437)
+
+        >>> kge(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.8118117 , 0.68668803])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> kge(fcst, obs, scaling_factors=[0.5, 1.0, 1.5])
+        <xarray.DataArray ()> Size: 8B
+        array(0.81581987)
+
+        >>> kge(fcst, obs, include_components=True)
+        <xarray.Dataset> Size: 32B
+        Dimensions:  ()
+        Data variables:
+            kge      float64 8B 0.8073
+            rho      float64 8B 0.9344
+            alpha    float64 8B 1.181
+            beta     float64 8B 0.9964
+
+        >>> kge(fcst, obs, include_components=True, method="2012")
+        <xarray.Dataset> Size: 32B
+        Dimensions:  ()
+        Data variables:
+            kge      float64 8B 0.8033
+            rho      float64 8B 0.9344
+            gamma    float64 8B 1.185
+            beta     float64 8B 0.9964
+
+    """  # noqa: E501
 
     # Type checks as xrray.corr can only handle xr.DataArray
     if not isinstance(fcst, xr.DataArray):
         raise TypeError("kge: fcst must be an xarray.DataArray")
     if not isinstance(obs, xr.DataArray):
         raise TypeError("kge: obs must be an xarray.DataArray")
+    if method not in ["2009", "2012"]:
+        raise ValueError("kge: method must be either '2009' or '2012'")
     if scaling_factors is not None:
         if isinstance(scaling_factors, (list, np.ndarray)):
             # Check if the input has exactly 3 elements
@@ -747,7 +1152,7 @@ def kge(
     else:
         scaling_factors = [1.0, 1.0, 1.0]
 
-    s_rho, s_alpha, s_beta = scaling_factors
+    s_rho, s_vr, s_beta = scaling_factors
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
@@ -767,17 +1172,17 @@ def kge(
     mu_obs = obs.mean(reduce_dims)
     beta = mu_fcst / mu_obs
 
-    # compute Euclidian distance from the ideal point in the scaled space
-    ed_s = np.sqrt((s_rho * (rho - 1)) ** 2 + (s_alpha * (alpha - 1)) ** 2 + (s_beta * (beta - 1)) ** 2)
+    vr = alpha if method == "2009" else alpha / beta
+
+    ed_s = np.sqrt((s_rho * (rho - 1)) ** 2 + (s_vr * (vr - 1)) ** 2 + (s_beta * (beta - 1)) ** 2)
+
     kge_s = 1 - ed_s
+
     if include_components:
         # Create dataset of all components
-        kge_s = xr.Dataset(
-            {
-                "kge": kge_s,
-                "rho": rho,
-                "alpha": alpha,
-                "beta": beta,
-            }
-        )
+        vr_name = "alpha" if method == "2009" else "gamma"
+        component_names = ["kge", "rho", vr_name, "beta"]
+        components = [kge_s, rho, vr, beta]
+        kge_dict = dict(zip(component_names, components))
+        kge_s = xr.Dataset(kge_dict)
     return kge_s

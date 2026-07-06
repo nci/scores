@@ -129,7 +129,7 @@ class BinaryOperator(Generic[T]):
         # EVEN BETTER:
         # basic numpy operators are already vectorized so this will work fine.
         binary_items = numpy_op(x, threshold)
-        vec_do_stuff(binary_items) # vectorized version
+        vec_do_stuff(binary_items)  # vectorized version
 
     Key takeaway - unwrap the operator using ``.get()`` as early as possible
     """

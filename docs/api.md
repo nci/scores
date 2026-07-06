@@ -55,6 +55,7 @@
 .. autofunction:: scores.probability.interval_tw_crps_for_ensemble
 .. autofunction:: scores.probability.murphy_score
 .. autofunction:: scores.probability.murphy_thetas
+.. autofunction:: scores.probability.roc_auc
 .. autofunction:: scores.probability.roc_curve_data
 .. autofunction:: scores.probability.brier_score
 .. autofunction:: scores.probability.brier_score_for_ensemble

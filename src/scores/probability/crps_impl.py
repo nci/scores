@@ -500,7 +500,7 @@ def crps_cdf_brier_decomposition(
     If any there are any NaNs along the threshold dimension of `fcst`, then NaNs are
     propagated along this dimension prior to calculating the decomposition. If
     propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
-    `scores.probability.functions.fill_cdf`.
+    :py:func:`scores.processing.cdf.fill_cdf`.
 
     Args:
         fcst (xr.DataArray): DataArray of CDF values with threshold dimension `threshold_dim`.
@@ -628,7 +628,7 @@ def adjust_fcst_for_crps(
     that has the higher (i.e. worse) CRPS is returned. In the event of a tie,
     preference is given in the order `fcst` then upper.
 
-    See `scores.probability.functions.cdf_envelope` for details about the CDF envelope.
+    See :py:func:`scores.processing.cdf.cdf_envelope` for details about the CDF envelope.
 
     The use case for this is when, either due to rounding or poor forecast process, the
     forecast CDF `fcst` fails to be nondecreasing. Rather than simply replacing `fcst`
@@ -652,10 +652,10 @@ def adjust_fcst_for_crps(
             whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
             values give a higher CRPS in which case original values are kept.
 
-    See `scores.probability.functions.cdf_envelope` for a description of the 'CDF envelope'.
+    See :py:func:`scores.processing.cdf.cdf_envelope` for a description of the 'CDF envelope'.
 
-    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
-    `scores.probability.functions.fill_cdf`.
+    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using 
+    :py:func:`scores.processing.cdf.fill_cdf`.
 
     The CRPS for each forecast case is calculated using `crps`, with a weight of 1.
 
@@ -1108,9 +1108,14 @@ def tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import tw_crps_for_ensemble
+        >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
+        <xarray.DataArray ()> Size: 8B
+        array(0.07993158)
 
     """  # noqa: E501
     if chaining_func_kwargs is None:
@@ -1219,10 +1224,14 @@ def tail_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import tail_tw_crps_for_ensemble
+        >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
-        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
 
+        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+        <xarray.DataArray ()> Size: 8B
+        array(0.07993158)
     """
     if tail not in ["upper", "lower"]:
         raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
@@ -1333,9 +1342,14 @@ def interval_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import interval_tw_crps_for_ensemble
+        >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+        <xarray.DataArray ()> Size: 8B
+        array(7.46973354)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
         if (lower_threshold >= upper_threshold).any().values.item():

@@ -238,30 +238,32 @@ def nse(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.continuous import nse
+
         >>> obs_raw = np.array(
         ...     [
-        ...         [[1,2,3], [4,5,6]],
-        ...         [[3,2,1], [6,5,4]],
-        ...         [[3,2,5], [2,2,6]],
-        ...         [[5,2,3], [4,-1,4]],
+        ...         [[1, 2, 3], [4, 5, 6]],
+        ...         [[3, 2, 1], [6, 5, 4]],
+        ...         [[3, 2, 5], [2, 2, 6]],
+        ...         [[5, 2, 3], [4, -1, 4]],
         ...     ]
-        ...
         ... )  # dimension lengths: x=4, y=2, t=3
         >>> obs = xr.DataArray(obs_raw, dims=["x", "y", "t"])
-        >>> fcst = obs * 1.2 + 0.1  # add some synthetic bias and variance
-        >>> # Example 1:
+
+        >>> # add some synthetic bias and variance
+        >>> fcst = obs * 1.2 + 0.1
+
         >>> # reduce over t - time - should produce a xy-grid (4 by 2)
         >>> nse(obs, fcst, reduce_dims=["t"])
-        <xarray.DataArray (x: 4, y: 2)> Size: 64B
+        <xarray.DataArray 'NSE' (x: 4, y: 2)> Size: 64B
         array([[ 0.71180556, -0.28819444],
                [ 0.71180556, -0.28819444],
                [ 0.70982143,  0.85742188],
                [ 0.70982143,  0.93208333]])
         Dimensions without coordinates: x, y
-        >>> # Example 2:
+
         >>> # reduce over (x, y) - space - should be a t-vector (3 by 1)
         >>> nse(obs, fcst, reduce_dims=["x", "y"])
-        <xarray.DataArray (t: 3)> Size: 24B
+        <xarray.DataArray 'NSE' (t: 3)> Size: 24B
         array([0.77469136, 0.90123457, 0.74722222])
         Dimensions without coordinates: t
 
@@ -573,7 +575,9 @@ class NseMetaHandler(SimpleNamespace):
                 NseUtils.do_some_post_scoring_checks(meta_input, meta_score)
 
                 # [Undo Transform]: revert to original form
-                raw_result: XarrayLike = NseMetaHandler.extract_result_from_metascore(meta_score)
+                raw_result: XarrayLike = NseMetaHandler.extract_result_from_metascore(
+                    meta_score
+                )
 
                 # return result (of isomorphic type - same as input) back to
                 # the user.
