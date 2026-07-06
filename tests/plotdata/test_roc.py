@@ -177,9 +177,9 @@ def test_roc_dask(check_args):
             check_args=check_args,
         )
 
-    assert isinstance(result.POD.data, dask.array.Array)
-    assert isinstance(result.POFD.data, dask.array.Array)
-    assert isinstance(result.AUC.data, dask.array.Array)
+    assert isinstance(result.POD.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
+    assert isinstance(result.POFD.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
+    assert isinstance(result.AUC.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
 
     result = result.compute()
 
