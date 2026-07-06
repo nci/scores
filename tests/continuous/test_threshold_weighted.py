@@ -806,7 +806,7 @@ def test_threshold_weighted_scores_dask(scoring_func, kwargs, expected):
         preserve_dims=["date", "station"],
         **kwargs,
     )
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
     result = result.compute()
     assert isinstance(result.data, np.ndarray)
     xr.testing.assert_allclose(result, expected)

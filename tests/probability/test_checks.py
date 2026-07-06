@@ -51,4 +51,4 @@ from tests.probability import cdf_test_data
 def test_check_nan_decreasing_inputs(cdf, threshold_dim, tolerance, error_msg_snippet):
     """Tests that `_check_nan_decreasing_inputs` raises an exception as expected."""
     with pytest.raises(ValueError, match=error_msg_snippet):
-        scores.probability.checks.check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)
+        scores.probability.checks.check_nan_decreasing_inputs(cdf, threshold_dim, tolerance)  # ty: ignore[possibly-missing-submodule]

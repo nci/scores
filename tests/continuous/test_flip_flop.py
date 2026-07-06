@@ -411,7 +411,7 @@ def test_flip_flop_index_is_dask_compatible():
 
     dask_array = ntd.DATA_FFI_1D_6.chunk()
     result = flip_flop_index(dask_array, "letter")
-    assert isinstance(result.data, dask.array.Array)
+    assert isinstance(result.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
     result = result.compute()
     xr.testing.assert_allclose(result, ntd.EXP_FFI_SUB_CASE0)
     assert isinstance(result.data, (np.ndarray, np.generic))
@@ -427,7 +427,7 @@ def test_flip_flop_index_proportion_exceeding_is_dask_compatible():
 
     dask_array = ntd.DATA_FFI_2X2X4.chunk()
     result = flip_flop_index_proportion_exceeding(dask_array, "int", [0, 1, 5], **{"one": [1, 2, 3], "two": [2, 3, 4]})
-    assert isinstance(result.data_vars["one"].data, dask.array.Array)
+    assert isinstance(result.data_vars["one"].data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
     result = result.compute()
     xr.testing.assert_allclose(result, ntd.EXP_FFI_PE_NONE)
     assert isinstance(result.one.data, np.ndarray)
