@@ -142,7 +142,7 @@ def comparative_discretise(
 
     # do the discretisation
     if mode in INEQUALITY_MODES:
-        operator_func, factor = INEQUALITY_MODES[mode]  # type: ignore[index]
+        operator_func, factor = INEQUALITY_MODES[mode]
         discrete_data = operator_func(data, comparison + (abs_tolerance * factor)).where(notnull_mask)
     elif mode in EQUALITY_MODES:
         operator_func = EQUALITY_MODES[mode]
