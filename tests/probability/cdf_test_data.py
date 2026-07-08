@@ -1,12 +1,13 @@
 """
-Generation of the test data used to test scores.probability.functions.cdfs
+Generation of the test data used to test scores.processing.cdf in
+tests/processing/cdf/test_functions.py and tests/probability/test_checks.py
 """
 
 import xarray as xr
 from numpy import nan
 
 ###
-# Test data for cdfvalues_from_probs
+# Test data for cdf values_from_probs
 ###
 DA_CDF_FROM_PROBS = xr.DataArray(  # nonexceedance probabilities
     data=[0.4, 0.9, 0.6, 0.8, nan], dims=["x"], coords={"x": [0, 10, 5, 6, 11]}
