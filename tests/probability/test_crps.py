@@ -1599,5 +1599,4 @@ def test_crps_for_ensemble_decomposition(fcst, obs, expected, decomposition_meth
         reduce_dims=[],
         include_components=True,
     )
-
     xr.testing.assert_allclose(result, expected)

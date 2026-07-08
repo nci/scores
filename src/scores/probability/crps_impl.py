@@ -996,45 +996,68 @@ def crps_for_ensemble(
                 }
             )
         else:
-            ens_count = fcst.sizes[ensemble_member_dim]
-            components_coords = np.arange(1, ens_count + 2)
+            # reference is Hersbach 2000
+            components_coords = np.arange(1, m_total + 2)
+
+            # Allocate arrays for the N+1 intervals
             alpha = xr.concat(
-                [xr.zeros_like(fcst_sorted[{ensemble_member_dim: 0}])] * (ens_count + 1), dim=ensemble_member_dim
+                [xr.zeros_like(fcst_sorted.isel({ensemble_member_dim: 0}))] * (m_total + 1),
+                dim=ensemble_member_dim,
             )
             beta = alpha.copy(deep=True)
-            # note the order in operations between forecasts and observations matters
-            # for the broadcasting to work correctly
-            obs_below_ens = fcst_sorted[{ensemble_member_dim: 0}] > obs
-            alpha[{ensemble_member_dim: 0}] = alpha[{ensemble_member_dim: 0}].where(~obs_below_ens, 1.0)
-            beta[{ensemble_member_dim: 0}] = (fcst_sorted[{ensemble_member_dim: 0}] - obs).where(obs_below_ens, 0.0)
 
-            rhs = (
-                fcst_sorted.diff(dim=ensemble_member_dim)
-                .where(
-                    fcst_sorted[{ensemble_member_dim: slice(1, None)}] <= obs,
-                    -fcst_sorted[{ensemble_member_dim: slice(None, -1)}] + obs,
-                )
-                .where(fcst_sorted[{ensemble_member_dim: slice(None, -1)}] <= obs, 0.0)
+            # Left interval (-∞, x_(1))
+            first = fcst_sorted.isel({ensemble_member_dim: 0})
+
+            alpha[{ensemble_member_dim: 0}] = xr.where(
+                obs < first,
+                1.0,
+                0.0,
             )
-            rhs = rhs.transpose(*alpha.dims)
-            alpha[{ensemble_member_dim: slice(1, -1)}] = rhs
 
-            rhs = (
-                fcst_sorted.diff(dim=ensemble_member_dim)
-                .where(
-                    fcst_sorted[{ensemble_member_dim: slice(None, -1)}] > obs,
-                    fcst_sorted[{ensemble_member_dim: slice(1, None)}] - obs,
-                )
-                .where(fcst_sorted[{ensemble_member_dim: slice(1, None)}] > obs, 0.0)
+            beta[{ensemble_member_dim: 0}] = xr.where(
+                obs < first,
+                first - obs,
+                0.0,
             )
-            rhs = rhs.transpose(*beta.dims)
-            beta[{ensemble_member_dim: slice(1, -1)}] = rhs
 
-            obs_above_ens = fcst_sorted[{ensemble_member_dim: -1}] < obs
-            alpha[{ensemble_member_dim: -1}] = (-fcst_sorted[{ensemble_member_dim: -1}] + obs).where(obs_above_ens, 0.0)
-            beta[{ensemble_member_dim: -1}] = beta[{ensemble_member_dim: -1}].where(~obs_above_ens, 1.0)
+            # Interior intervals (x_(i), x_(i+1)), i = 1,...,N-1
+            L = fcst_sorted.isel({ensemble_member_dim: slice(None, -1)})
+            U = fcst_sorted.isel({ensemble_member_dim: slice(1, None)})
+
+            alpha[{ensemble_member_dim: slice(1, -1)}] = (
+                (xr.ufuncs.minimum(obs, U) - L).clip(min=0).transpose(*alpha.dims)
+            )
+
+            beta[{ensemble_member_dim: slice(1, -1)}] = (
+                (U - xr.ufuncs.maximum(obs, L)).clip(min=0).transpose(*beta.dims)
+            )
+
+            # Right interval (x_(N), +∞)
+            last = fcst_sorted.isel({ensemble_member_dim: -1})
+
+            alpha[{ensemble_member_dim: -1}] = xr.where(
+                obs > last,
+                obs - last,
+                0.0,
+            )
+
+            beta[{ensemble_member_dim: -1}] = xr.where(
+                obs > last,
+                1.0,
+                0.0,
+            )
+
             alpha = alpha.assign_coords({ensemble_member_dim: components_coords})
             beta = beta.assign_coords({ensemble_member_dim: components_coords})
+
+            # Probabilities associated with each interval
+            p = xr.DataArray(
+                np.arange(m_total + 1) / m_total,
+                dims=[ensemble_member_dim],
+                coords={ensemble_member_dim: components_coords},
+            )
+            result = (alpha * p**2 + beta * (1.0 - p) ** 2).sum(dim=ensemble_member_dim)
 
             result = xr.Dataset(
                 {
