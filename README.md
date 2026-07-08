@@ -12,8 +12,7 @@ Source code: [github.com/nci/scores](https://github.com/nci/scores)
 Tutorial gallery: [available here](https://scores.readthedocs.io/en/stable/tutorials/Tutorial_Gallery.html)  
 Journal paper: [*scores: A Python package for verifying and evaluating models and predictions with xarray*](https://doi.org/10.21105/joss.06889)  
 
-**If you use `scores` for your work or a publication, [please cite](https://scores.readthedocs.io/en/stable/#acknowledging-or-citing-scores)
-both our [paper](https://doi.org/10.21105/joss.06889) and the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you use.**
+**If you use `scores` for your work or a publication, [please cite](https://github.com/nci/scores#acknowledging-or-citing-scores) both our [paper](https://doi.org/10.21105/joss.06889) and the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you use.**
 
 ## Overview
 
