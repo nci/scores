@@ -1581,3 +1581,23 @@ def test_interval_tw_crps_for_ensemble_deprecation(fcst, obs, expected):
             include_components=True,
         )
     xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("fcst", "obs", "expected", "decomposition_method"),
+    [
+        (crps_test_data.DA_FCST_DECOMP, crps_test_data.DA_OBS_DECOMP, crps_test_data.DA_HERSBACH_DECOMP, "hersbach"),
+        (crps_test_data.DA_FCST_DECOMP, crps_test_data.DA_OBS_DECOMP, crps_test_data.DA_UNDEROVER_DECOMP, "underover"),
+    ],
+)
+def test_crps_for_ensemble_decomposition(fcst, obs, expected, decomposition_method):
+    result = crps_for_ensemble(
+        fcst,
+        obs,
+        ensemble_member_dim="number",
+        decomposition_method=decomposition_method,
+        reduce_dims=[],
+        include_components=True,
+    )
+
+    xr.testing.assert_allclose(result, expected)

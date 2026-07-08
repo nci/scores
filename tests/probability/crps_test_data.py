@@ -2,6 +2,8 @@
 Generation of the test data used to test scores.probability.crps
 """
 
+import datetime
+
 import numpy as np
 import xarray as xr
 from numpy import nan
@@ -801,4 +803,197 @@ EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = xr.Dataset(
 # )
 EXP_VAR_INTERVAL_CRPSENS_ECDF_DA = EXP_INTERVAL_CRPSENS_ECDF_DA * xr.DataArray(
     data=[np.nan, 1, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+
+DA_FCST_DECOMP = xr.DataArray(
+    np.array(
+        [
+            [
+                [
+                    [2.0, 2.0, 2.0, 2.0, 2.0],
+                    [1.0, 2.0, 0.0, 2.0, 1.0],
+                ],
+                [
+                    [-5.0, 0.0, 5.0, 10.0, 15.0],
+                    [1.0, 2.0, 3.0, 4.0, 5.0],
+                ],
+            ],
+            [
+                [
+                    [-3.0, -2.0, -1.0, -1.0, -2.0],
+                    [4.0, 1.0, 3.0, 1.0, 2.0],
+                ],
+                [
+                    [-2.0, -1.0, 0.0, 1.0, 2.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0],
+                ],
+            ],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude", "number"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+        "number": np.arange(5),
+    },
+)
+
+DA_OBS_DECOMP = xr.DataArray(
+    np.array(
+        [
+            [
+                [0.0, 1.0],
+                [7.0, 10.0],
+            ],
+            [
+                [-5.0, 2.5],
+                [0.0, 0.0],
+            ],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+
+alpha = xr.DataArray(
+    np.array(
+        [
+            [[[1.0, 0.0], [0.0, 0.0]], [[1.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 1.0], [5.0, 1.0]], [[0.0, 0.0], [1.0, 0.0]]],
+            [[[0.0, 0.0], [5.0, 1.0]], [[0.0, 1.0], [1.0, 0.0]]],
+            [[[0.0, 0.0], [2.0, 1.0]], [[0.0, 0.5], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 1.0]], [[0.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 5.0]], [[0.0, 0.0], [0.0, 0.0]]],
+        ],
+        dtype=float,
+    ),
+    dims=["number", "valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+        "number": np.arange(1, 7),
+    },
+)
+beta = xr.DataArray(
+    np.array(
+        [
+            [[[2.0, 0.0], [0.0, 0.0]], [[2.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 0.0]], [[1.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 0.0]], [[0.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 1.0], [3.0, 0.0]], [[1.0, 0.5], [1.0, 0.0]]],
+            [[[0.0, 0.0], [5.0, 0.0]], [[0.0, 1.0], [1.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 1.0]], [[0.0, 0.0], [0.0, 0.0]]],
+        ],
+        dtype=float,
+    ),
+    dims=["number", "valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+        "number": np.arange(1, 7),
+    },
+)
+
+crps = xr.DataArray(
+    np.array(
+        [[[2.0, 0.2], [2.4, 6.2]], [[2.8, 0.46], [0.4, 0.0]]],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+
+DA_HERSBACH_DECOMP = xr.Dataset({"total": crps, "alpha": alpha, "beta": beta})
+
+expected_under = xr.DataArray(
+    np.array(
+        [
+            [[0.0, 0.2], [4.2, 7.0]],
+            [[0.0, 0.7], [0.6, 0.0]],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+expected_over = xr.DataArray(
+    np.array(
+        [
+            [[2.0, 0.4], [2.2, 0.0]],
+            [[3.2, 0.4], [0.6, 0.0]],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+expected_spread = xr.DataArray(
+    np.array(
+        [
+            [[0.0, 0.4], [4.0, 0.8]],
+            [[0.4, 0.64], [0.8, 0.0]],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+
+
+DA_UNDEROVER_DECOMP = xr.Dataset(
+    {
+        "total": crps,
+        "underforecast_penalty": expected_under,
+        "overforecast_penalty": expected_over,
+        "spread": expected_spread,
+    }
 )

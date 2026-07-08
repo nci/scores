@@ -996,6 +996,7 @@ def crps_for_ensemble(
                 }
             )
         else:
+            ens_count = fcst.sizes[ensemble_member_dim]
             components_coords = np.arange(1, ens_count + 2)
             alpha = xr.concat(
                 [xr.zeros_like(fcst_sorted[{ensemble_member_dim: 0}])] * (ens_count + 1), dim=ensemble_member_dim
