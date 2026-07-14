@@ -19,7 +19,7 @@ import pytest
 import xarray as xr
 from numpy import typing as npt
 
-import scores.continuous.nse_impl as nse_impl
+import scores.continuous.hydro_impl as hydro_impl
 
 DASK_AVAILABLE = False
 try:
@@ -368,7 +368,7 @@ class TestNsePublicApi(NseSetup):
         Tests dimension incompatibility raises errors
         """
         with expect_context:
-            nse_impl.nse(
+            hydro_impl.nse(
                 fcst,
                 obs,
                 reduce_dims=reduce_dims,
@@ -384,7 +384,7 @@ class TestNsePublicApi(NseSetup):
         the case.
         """
         with pytest.raises(ValueError):
-            nse_impl.nse(fcst, obs, reduce_dims=reduce_dims)
+            hydro_impl.nse(fcst, obs, reduce_dims=reduce_dims)
 
     def test_error_invalid_weights(self, fcst, obs, weights, reduce_dims):
         """
@@ -395,7 +395,7 @@ class TestNsePublicApi(NseSetup):
             - are all zeros (everything is zero forced - score is NaN)
         """
         with pytest.raises(ValueError):
-            nse_impl.nse(
+            hydro_impl.nse(
                 fcst,
                 obs,
                 weights=weights,
@@ -410,7 +410,7 @@ class TestNsePublicApi(NseSetup):
         """
         # should have one fabricated -Inf entry at t=1
         with pytest.warns(RuntimeWarning):
-            ret = nse_impl.nse(
+            ret = hydro_impl.nse(
                 fcst,
                 obs,
                 reduce_dims=reduce_dims,
@@ -425,7 +425,7 @@ class TestNsePublicApi(NseSetup):
         Tests the typical behaviour of NSE with some different argument combinations
         - should not raise any warnings or errors.
         """
-        ret = nse_impl.nse(fcst, obs, **nse_kwargs)
+        ret = hydro_impl.nse(fcst, obs, **nse_kwargs)
         assert np.all(ret <= 1.0)
         assert isinstance(ret, xr.DataArray)
         assert ret.name == "NSE"
@@ -437,7 +437,7 @@ class TestNsePublicApi(NseSetup):
         """
         Tests that nans are matched properly between fcst and obs.
         """
-        res = nse_impl.nse(fcst, obs)
+        res = hydro_impl.nse(fcst, obs)
         assert np.abs(res - expect_nse) <= 1e-6
 
 
@@ -447,14 +447,14 @@ class TestNsePublicApi(NseSetup):
 #     Only things missed by the public API test suite will be covered here.
 #     """
 
-#     META_INPUT_DA = nse_impl.NseMetaInput(
+#     META_INPUT_DA = hydro_impl.NseMetaInput(
 #         datasets=[],
 #         gathered_dims=[],
 #         is_angular=False,  # doesn't matter
 #         is_dataarray=True,  # >>> checking for this
 #     )
 
-#     META_INPUT_NOT_DA = nse_impl.NseMetaInput(
+#     META_INPUT_NOT_DA = hydro_impl.NseMetaInput(
 #         datasets=[],
 #         gathered_dims=[],
 #         is_angular=False,  # doesn't matter
@@ -494,8 +494,8 @@ class TestNsePublicApi(NseSetup):
 #         "test_check_metadata_consistency_error": [
 #             # is_dataarray do not match
 #             dict(
-#                 meta_score=nse_impl.NseMetaScore(
-#                     components=nse_impl.NseComponents(
+#                 meta_score=hydro_impl.NseMetaScore(
+#                     components=hydro_impl.NseComponents(
 #                         fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         # give it a value in case nse check happens first:
@@ -507,8 +507,8 @@ class TestNsePublicApi(NseSetup):
 #             ),
 #             # is_dataarray do not match - flipped
 #             dict(
-#                 meta_score=nse_impl.NseMetaScore(
-#                     components=nse_impl.NseComponents(
+#                 meta_score=hydro_impl.NseMetaScore(
+#                     components=hydro_impl.NseComponents(
 #                         fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         # give it a valid value in case nse check happens first:
@@ -520,8 +520,8 @@ class TestNsePublicApi(NseSetup):
 #             ),
 #             # is data array but has multiple keys
 #             dict(
-#                 meta_score=nse_impl.NseMetaScore(
-#                     components=nse_impl.NseComponents(
+#                 meta_score=hydro_impl.NseMetaScore(
+#                     components=hydro_impl.NseComponents(
 #                         fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         # >>> checking for this: multiple keys
@@ -533,8 +533,8 @@ class TestNsePublicApi(NseSetup):
 #             ),
 #             # is data array but has no keys
 #             dict(
-#                 meta_score=nse_impl.NseMetaScore(
-#                     components=nse_impl.NseComponents(
+#                 meta_score=hydro_impl.NseMetaScore(
+#                     components=hydro_impl.NseComponents(
 #                         fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         # >>> checking for this: empty
@@ -548,8 +548,8 @@ class TestNsePublicApi(NseSetup):
 #         "test_check_metadata_consistency_okay": [
 #             # both datasets - nothing to check/not possible to detect errors
 #             dict(
-#                 meta_score=nse_impl.NseMetaScore(
-#                     components=nse_impl.NseComponents(
+#                 meta_score=hydro_impl.NseMetaScore(
+#                     components=hydro_impl.NseComponents(
 #                         fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         # give it a value in case nse check happens first:
@@ -561,8 +561,8 @@ class TestNsePublicApi(NseSetup):
 #             ),
 #             # both is_dataarray and score only has one key
 #             dict(
-#                 meta_score=nse_impl.NseMetaScore(
-#                     components=nse_impl.NseComponents(
+#                 meta_score=hydro_impl.NseMetaScore(
+#                     components=hydro_impl.NseComponents(
 #                         fcst_error=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         obs_variance=xr.Dataset(dict(x=xr.DataArray([1]))),
 #                         # >>> checking for this:
@@ -580,7 +580,7 @@ class TestNsePublicApi(NseSetup):
 #         Try to extract from dataset with multiple keys or no keys - should trigger an
 #         error.
 #         """
-#         maybe_da = nse_impl.NseUtils.try_extract_singleton_dataarray(ds)
+#         maybe_da = hydro_impl.NseUtils.try_extract_singleton_dataarray(ds)
 
 #         if expect_da is None:
 #             assert maybe_da is None
@@ -594,7 +594,7 @@ class TestNsePublicApi(NseSetup):
 #         The success & failure conditions are already checked by ``tests_typing.py``
 #         """
 #         with pytest.raises(TypeError):
-#             nse_impl.NseUtils.check_all_same_type(
+#             hydro_impl.NseUtils.check_all_same_type(
 #                 xr.DataArray([1]),
 #                 xr.Dataset(dict(y=xr.DataArray([1]))),
 #             )
@@ -603,7 +603,7 @@ class TestNsePublicApi(NseSetup):
 #         """
 #         Optionals are allowed in this check
 #         """
-#         nse_impl.NseUtils.check_all_same_type(
+#         hydro_impl.NseUtils.check_all_same_type(
 #             xr.DataArray([1]),
 #             None,
 #         )
@@ -615,7 +615,7 @@ class TestNsePublicApi(NseSetup):
 #             - Both are datasets but score has either no keys or multiple keys
 #         """
 #         with pytest.raises(RuntimeError):
-#             nse_impl.NseUtils.check_metadata_consistency(meta_score, meta_input)
+#             hydro_impl.NseUtils.check_metadata_consistency(meta_score, meta_input)
 
 #     def test_check_metadata_consistency_okay(self, meta_input, meta_score):
 #         """
@@ -623,7 +623,7 @@ class TestNsePublicApi(NseSetup):
 #             - both are datasets or
 #             - both are dataarrays and score as single key
 #         """
-#         nse_impl.NseUtils.check_metadata_consistency(meta_score, meta_input)
+#         hydro_impl.NseUtils.check_metadata_consistency(meta_score, meta_input)
 
 
 # class TestNseScore(NseSetup):
@@ -974,9 +974,9 @@ class TestNsePublicApi(NseSetup):
 #         cls.reduce_dims = ("t", "l")
 
 #         # get scores (with components) from the inner score function
-#         cls.nse_score = nse_impl._nse_metascore(
-#             nse_impl.NseMetaInput(
-#                 nse_impl.NseDatasets(
+#         cls.nse_score = hydro_impl._nse_metascore(
+#             hydro_impl.NseMetaInput(
+#                 hydro_impl.NseDatasets(
 #                     fcst=cls.ds_fcst,
 #                     obs=cls.ds_obs,
 #                     weights=None,
@@ -987,9 +987,9 @@ class TestNsePublicApi(NseSetup):
 #             )
 #         )
 
-#         cls.nse_score_weights = nse_impl._nse_metascore(
-#             nse_impl.NseMetaInput(
-#                 nse_impl.NseDatasets(
+#         cls.nse_score_weights = hydro_impl._nse_metascore(
+#             hydro_impl.NseMetaInput(
+#                 hydro_impl.NseDatasets(
 #                     fcst=cls.ds_fcst,
 #                     obs=cls.ds_obs,
 #                     weights=cls.ds_weights,
@@ -1102,7 +1102,7 @@ class TestNseDataset(NseSetup):
             ),
         )
         reduce_dims = ["x", "y"]
-        res = nse_impl.nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
+        res = hydro_impl.nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
         # result is a dataset
         assert isinstance(res, xr.Dataset)
         # variables are data arrays
@@ -1147,7 +1147,7 @@ class TestNseDask(NseSetup):
         da1 = self.make_random_xr_array((100, 100, 10), ("x", "y", "t")).chunk(chunks)
         da2 = da1 * 0.99  # make them almost equal - [1]
 
-        res = nse_impl.nse(da1, da2, reduce_dims=("x", "y"))
+        res = hydro_impl.nse(da1, da2, reduce_dims=("x", "y"))
         assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
 
         # Load into memory and perform computation
