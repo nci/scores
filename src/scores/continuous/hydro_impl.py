@@ -135,8 +135,9 @@ def nse(
             (e.g. all zeros or all NaNs).
 
         UserWarning: If attempting to divide by 0. The computation will still
-            succeed but produce ``np.nan`` (numerator is also 0) or ``-np.inf``
-            where divide by zero would occur.
+            succeed but produce ``np.nan`` (numerator is also 0),
+            ``-np.inf`` (numerator is negative) or ``np.inf``
+            (numerator is positive) where divide by zero would occur.
 
         Exception: Any other errors or warnings not otherwise listed due to
             calculations associated with utility functions such as
@@ -212,7 +213,7 @@ def nse(
         Divide by zero *is allowed* - to accomodate scenarios where all obs
         entries in the group being reduced is constant (0 obs variance).
 
-        While these may cause divide by zero errors, they should not halt
+        While these may cause divide by zero warnings, they should not halt
         execution of computations for other valid coordinates - so a warning is
         issued instead to prompt the user to double check the data.
 
@@ -222,9 +223,10 @@ def nse(
 
         .. code-block::
 
-            # note: psuedocode
-            n / 0  =  NaN   : if n == 0  (represented by np.nan)
-                   = -Inf   : if n == 0  (represented by -np.inf)
+            np.divide(n, 0) = np.nan    # if n == 0
+                            = np.inf    # if n > 0
+                            = -np.inf   # if n > 0
+
 
     .. tip::
 
