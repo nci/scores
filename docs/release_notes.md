@@ -24,14 +24,18 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 - Added "Relative Economic Value (REV)" tutorial. See [PR #999](https://github.com/nci/scores/pull/999).
 - Updated the "Contributing Guide" to include guidelines for generative tool usage. See [PR #1027](https://github.com/nci/scores/pull/1027). 
+- Added a commit template to the `scores` repository and added instructions in the "Contribuing Guide" for setting up and using the commit template. See [PR #1045](https://github.com/nci/scores/pull/1045) and [PR #1048](https://github.com/nci/scores/pull/1048).
+- Added an entry for "Aggregate" to the "Processing" table in `docs/included.md`. See [PR #1038](https://github.com/nci/scores/pull/1038).
 - Updated docstrings (e.g. added examples and improved grammar) for multiple binary contingency scores. See [PR #996](https://github.com/nci/scores/pull/996).
 - Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `tutorials/Additive_and_multiplicative_bias.ipynb`, `tutorials/Binary_Contingency_Scores.ipynb` and `src/scores/categorical/contingency_impl.py`. See [PR #1029](https://github.com/nci/scores/pull/1029), [PR #1030](https://github.com/nci/scores/pull/1030) and [PR #1031](https://github.com/nci/scores/pull/1031).
 
 ### Internal Changes
 
+- Moved tutorial files from a top-level directory, `tutorials`, into the `docs/tutorials/` subdirectory. This change was made to support how recent Sphinx versions handle symbolic links to files out of the `docs` subdirectory. Users may wish to note this change of directory. If they are running the tutorials themselves, they will need to use the updated location. There is no change to how the tutorials render in the documentation. See [PR #1042](https://github.com/nci/scores/pull/1042).
+
 ### Contributors to this Release
 
-Thomas C. Pagano ([@thomaspagano](https://github.com/thomaspagano)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)). 
+Daniel Karney* ([@danielkarney](https://github.com/danielkarney)), Thomas C. Pagano ([@thomaspagano](https://github.com/thomaspagano)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
