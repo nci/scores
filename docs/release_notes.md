@@ -38,6 +38,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 - Corrected erroneous namespaces and added :py:func: before the correct namespaces in `src/scores/probability/crps_impl.py`. Specifically, changed `scores.probability.functions.fill_cdf` to ``:py:func:`scores.processing.cdf.fill_cdf` `` and changed `scores.probability.functions.cdf_envelope` to ``:py:func:`scores.processing.cdf.cdf_envelope` ``. See [PR #1050](https://github.com/nci/scores/pull/1050).
 - Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `tutorials/Additive_and_multiplicative_bias.ipynb`, `tutorials/Binary_Contingency_Scores.ipynb` and `src/scores/categorical/contingency_impl.py`. See [PR #1029](https://github.com/nci/scores/pull/1029), [PR #1030](https://github.com/nci/scores/pull/1030) and [PR #1031](https://github.com/nci/scores/pull/1031).
 - Updated the "Quantile Interval Score and Interval Score" tutorial to use the updated lower-case "h" date range syntax, due to changes in `pandas`. See [PR #1065](https://github.com/nci/scores/pull/1065).
+- Fixed integration of tutorials with `Binder`. See [PR #1083](https://github.com/nci/scores/pull/1083).
 
 ### Internal Changes
 
