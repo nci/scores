@@ -16,7 +16,7 @@ from scores.typing import XarrayLike
 
 
 @overload
-def energy_components_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+def energy_components_lat_lon(data: xr.Dataset) -> XarrayLike: ...
 
 
 @overload
@@ -225,7 +225,7 @@ def energy_components_lat_lon(
 
 
 @overload
-def energy_exchanges_lat_lon(data: xr.Dataset, **kwargs) -> XarrayLike: ...
+def energy_exchanges_lat_lon(data: xr.Dataset) -> XarrayLike: ...
 
 
 @overload
