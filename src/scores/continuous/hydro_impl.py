@@ -46,7 +46,7 @@ def merge_sizes(*ds) -> dict[Hashable, int]:
     return ret_sizes
 
 
-@validate_inputs_outputs(same_input_types=True)
+@validate_inputs_outputs(same_input_types=True, same_input_and_output_type=True)
 def nse(
     fcst: XarrayLike,
     obs: XarrayLike,
