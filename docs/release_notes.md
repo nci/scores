@@ -6,9 +6,10 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
-- Added two new metrics:
+- Added three new metrics:
 	- Relative economic value: `scores.continuous.relative_economic_value`, `scores.probability.relative_economic_value`, `scores.categorical.relative_economic_value` and `scores.plotdata.relative_economic_value`. See [PR #999](https://github.com/nci/scores/pull/999).
 	- Relative economic value from rates: `scores.continuous.relative_economic_value_from_rates`, `scores.probability.relative_economic_value_from_rates` , `scores.categorical.relative_economic_value_from_rates` and `scores.plotdata.relative_economic_value_from_rates`. See [PR #999](https://github.com/nci/scores/pull/999).
+	- Receiver (relative) operating characteristic area under curve (ROC AUC): `scores.probability.roc_auc`. This is significantly computationally more efficient than calculating the area under the curve using `scores.probability.roc_curve_data`. See [PR #1036](https://github.com/nci/scores/pull/1036).
 
 ### Deprecations
 
@@ -20,9 +21,13 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Bug Fixes
 
+- Improved `NaN` handling in `scores.probability.roc_curve_data`. See [PR #1036](https://github.com/nci/scores/pull/1036).
+- Improved dimension reduction code to ensure consistent dimension ordering in returned objects in  `scores.probability.roc_curve_data`. See [PR #1036](https://github.com/nci/scores/pull/1036).
+
 ### Documentation
 
 - Added "Relative Economic Value (REV)" tutorial. See [PR #999](https://github.com/nci/scores/pull/999).
+- Updated the "Receiver Operating Characteristic (ROC)" to include information about the newly-added `scores.probability.roc_auc` function (which is significantly more computationally efficient). See [PR #1036](https://github.com/nci/scores/pull/1036).
 - Updated the "Contributing Guide" to include guidelines for generative tool usage. See [PR #1027](https://github.com/nci/scores/pull/1027). 
 - Added a commit template to the `scores` repository and added instructions in the "Contribuing Guide" for setting up and using the commit template. See [PR #1045](https://github.com/nci/scores/pull/1045) and [PR #1048](https://github.com/nci/scores/pull/1048).
 - Added an entry for "Aggregate" to the "Processing" table in `docs/included.md`. See [PR #1038](https://github.com/nci/scores/pull/1038).
