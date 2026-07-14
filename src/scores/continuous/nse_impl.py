@@ -101,6 +101,8 @@ def nse(
         )
 
     nse = 1.0 - (fcst_error / obs_variance)
-    nse.name = "NSE"
+
+    if isinstance(nse, xr.DataArray):
+        nse.name = "NSE"
 
     return nse

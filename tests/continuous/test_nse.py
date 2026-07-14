@@ -21,14 +21,14 @@ from numpy import typing as npt
 
 import scores.continuous.nse_impl as nse_impl
 
-# DASK_AVAILABLE = False
-# try:
-#     import dask
-#     import dask.array
+DASK_AVAILABLE = False
+try:
+    import dask
+    import dask.array
 
-#     DASK_AVAILABLE = True
-# except ImportError:
-#     pass
+    DASK_AVAILABLE = True
+except ImportError:
+    pass
 
 
 # Metafunction used to generate tests from TestClasses
@@ -1070,96 +1070,96 @@ class TestNsePublicApi(NseSetup):
 #         assert np.allclose(res.data_vars[var_].to_numpy(), exp)
 
 
-# class TestNseDataset(NseSetup):
-#     """
-#     Basic testing for compatibility with xarray datasets. Only variables & dimensions that match
-#     between datasets will be computed. This is just a safety test to see that NSE still works fine
-#     with datasets.
+class TestNseDataset(NseSetup):
+    """
+    Basic testing for compatibility with xarray datasets. Only variables & dimensions that match
+    between datasets will be computed. This is just a safety test to see that NSE still works fine
+    with datasets.
 
-#     NOTE: failure conditions will not be the responsibility of this test, as there are utility
-#     functions that should handle this.
-#     """
+    NOTE: failure conditions will not be the responsibility of this test, as there are utility
+    functions that should handle this.
+    """
 
-#     def test_nse_with_datasets(self):
-#         """
-#         expected behaviour:
-#         - reduce_dims must be specified such that the dimensions being reduced exist in both arrays
-#         - the result can then be broadcast to the remaining dimensions appropriately
-#         - tapioca is ignored i.e. variables that do not exist in both datasets
-#         - no raised errors are tested here as they should be handled by utility calls
-#         """
-#         ds_obs = xr.Dataset(
-#             data_vars=dict(
-#                 temp=NseSetup.make_random_xr_array((3, 5, 2), ["x", "y", "t"]),
-#                 precip=NseSetup.make_random_xr_array((3, 5, 2), ["x", "y", "t"]),
-#             ),
-#         )
-#         ds_fcst = xr.Dataset(
-#             data_vars=dict(
-#                 temp=NseSetup.make_random_xr_array((3, 5, 2, 4), ["x", "y", "t", "h"]),
-#                 precip=NseSetup.make_random_xr_array((3, 5), ["x", "y"]),
-#                 tapioca=NseSetup.make_random_xr_array((2, 5), ["t", "y"]),
-#             ),
-#         )
-#         reduce_dims = ["x", "y"]
-#         res = nse_impl.nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
-#         # result is a dataset
-#         assert isinstance(res, xr.Dataset)
-#         # variables are data arrays
-#         assert isinstance(res["precip"], xr.DataArray)
-#         assert isinstance(res["temp"], xr.DataArray)
-#         # precip should only have "t", since "h" isn't defined for either obs or fcst in precip
-#         # HOWEVER, because of broadcasting, nan values get added in to match temp.
-#         assert set(res["precip"].dims) == set(["t", "h"])
-#         assert res["precip"].shape == (2, 4)
-#         # temp should have both "t" and "h"
-#         assert set(res["temp"].dims) == set(["t", "h"])
-#         assert res["temp"].shape == (2, 4)
-#         # tapioca is ignored
-#         assert "tapioca" not in res.data_vars.keys()
+    def test_nse_with_datasets(self):
+        """
+        expected behaviour:
+        - reduce_dims must be specified such that the dimensions being reduced exist in both arrays
+        - the result can then be broadcast to the remaining dimensions appropriately
+        - tapioca is ignored i.e. variables that do not exist in both datasets
+        - no raised errors are tested here as they should be handled by utility calls
+        """
+        ds_obs = xr.Dataset(
+            data_vars=dict(
+                temp=NseSetup.make_random_xr_array((3, 5, 2), ["x", "y", "t"]),
+                precip=NseSetup.make_random_xr_array((3, 5, 2), ["x", "y", "t"]),
+            ),
+        )
+        ds_fcst = xr.Dataset(
+            data_vars=dict(
+                temp=NseSetup.make_random_xr_array((3, 5, 2, 4), ["x", "y", "t", "h"]),
+                precip=NseSetup.make_random_xr_array((3, 5), ["x", "y"]),
+                tapioca=NseSetup.make_random_xr_array((2, 5), ["t", "y"]),
+            ),
+        )
+        reduce_dims = ["x", "y"]
+        res = nse_impl.nse(ds_fcst, ds_obs, reduce_dims=reduce_dims)
+        # result is a dataset
+        assert isinstance(res, xr.Dataset)
+        # variables are data arrays
+        assert isinstance(res["precip"], xr.DataArray)
+        assert isinstance(res["temp"], xr.DataArray)
+        # precip should only have "t", since "h" isn't defined for either obs or fcst in precip
+        # HOWEVER, because of broadcasting, nan values get added in to match temp.
+        assert set(res["precip"].dims) == set(["t", "h"])
+        assert res["precip"].shape == (2, 4)
+        # temp should have both "t" and "h"
+        assert set(res["temp"].dims) == set(["t", "h"])
+        assert res["temp"].shape == (2, 4)
+        # tapioca is ignored
+        assert "tapioca" not in res.data_vars.keys()
 
 
-# class TestNseDask(NseSetup):
-#     """
-#     Basic testing if dask is available and used appropriately by NSE.
+class TestNseDask(NseSetup):
+    """
+    Basic testing if dask is available and used appropriately by NSE.
 
-#     NOTE: failure conditions will not be the responsibility of this test, this suite just exists to
-#     check if dask computes things appropriately with non-dask as a compatiblity measure.
-#     """
+    NOTE: failure conditions will not be the responsibility of this test, this suite just exists to
+    check if dask computes things appropriately with non-dask as a compatiblity measure.
+    """
 
-#     @pytest.fixture(scope="class", autouse=True)
-#     def skip_if_dask_unavailable(self):
-#         """
-#         fixture to skip dask if it doesn't exist
-#         """
-#         if not DASK_AVAILABLE:
-#             pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    @pytest.fixture(scope="class", autouse=True)
+    def skip_if_dask_unavailable(self):
+        """
+        fixture to skip dask if it doesn't exist
+        """
+        if not DASK_AVAILABLE:
+            pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
-#     def test_nse_with_dask_inputs(self, tmpdir):
-#         """
-#         Basic test to see if NSE works with dask. This is a contrived setup, and we're just looking
-#         at whether compatiblity exists.
+    def test_nse_with_dask_inputs(self, tmpdir):
+        """
+        Basic test to see if NSE works with dask. This is a contrived setup, and we're just looking
+        at whether compatiblity exists.
 
-#         Detailed analysis is currently out of scope.
-#         """
-#         # prep dataarrays - probably not very optimal chunk strategy
-#         chunks = {"x": 25, "y": 25}
-#         da1 = self.make_random_xr_array((100, 100, 10), ("x", "y", "t")).chunk(chunks)
-#         da2 = da1 * 0.99  # make them almost equal - [1]
+        Detailed analysis is currently out of scope.
+        """
+        # prep dataarrays - probably not very optimal chunk strategy
+        chunks = {"x": 25, "y": 25}
+        da1 = self.make_random_xr_array((100, 100, 10), ("x", "y", "t")).chunk(chunks)
+        da2 = da1 * 0.99  # make them almost equal - [1]
 
-#         res = nse_impl.nse(da1, da2, reduce_dims=("x", "y"))
-#         assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
+        res = nse_impl.nse(da1, da2, reduce_dims=("x", "y"))
+        assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
 
-#         # Load into memory and perform computation
-#         true_res = res.compute()
+        # Load into memory and perform computation
+        true_res = res.compute()
 
-#         # SHOULD be a regular DataArray after compute()
-#         assert isinstance(true_res, xr.DataArray)
-#         # SHOULD be close to 1 ~= NSE >> 0 see: [1]
-#         # using "any" instead of "all" as a weak check, so this is unlikely to fail
-#         not_terrible = (true_res > 0).any().item()
-#         not_wrong = (true_res <= 1).all().item()
-#         # SHOULD NOT be dask anymore, typecheck: bool
-#         assert isinstance(not_terrible and not_wrong, bool)
-#         # Do the actual assertion for [1]
-#         assert not_terrible and not_wrong
+        # SHOULD be a regular DataArray after compute()
+        assert isinstance(true_res, xr.DataArray)
+        # SHOULD be close to 1 ~= NSE >> 0 see: [1]
+        # using "any" instead of "all" as a weak check, so this is unlikely to fail
+        not_terrible = (true_res > 0).any().item()
+        not_wrong = (true_res <= 1).all().item()
+        # SHOULD NOT be dask anymore, typecheck: bool
+        assert isinstance(not_terrible and not_wrong, bool)
+        # Do the actual assertion for [1]
+        assert not_terrible and not_wrong
