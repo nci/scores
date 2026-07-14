@@ -110,7 +110,8 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 		}
 		```
 - **Please also cite the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
-	- For example, below is the citation for Version 2.5.0 of `scores`:  
+	- Please make sure to include the version number, e.g. (Version 2.5.0), and the publisher (Zenodo).
+  	- For example, below is the citation for Version 2.5.0 of `scores`:  
 	- Leeuwenburg, T., Loveday, N., Ramanathan, N., Chong, S., Taggart, R. J., Shrestha, D., Khanarmuei, M., Cook, H., Bluett, L., Ebert, E. E., Carroll, M., Trotta, B., Sharples, J., Bishop, S., Squire, D. T., Griffiths, A., Pagano, T. C., Fisher, A. J., Mandelbaum, T., … Wu, X. (2026). scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models (Version 2.5.0). Zenodo. [https://doi.org/10.5281/zenodo.18638494](https://doi.org/10.5281/zenodo.18638494)
 	- BibTeX:
 		```
