@@ -7,7 +7,7 @@ import numpy as np
 import xarray as xr
 
 import scores.continuous
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import (
     FlexibleDimensionTypes,
     XarrayLike,
@@ -529,3 +529,126 @@ def kge(
         kge_dict = dict(zip(component_names, components))
         kge_s = xr.Dataset(kge_dict)
     return kge_s
+
+
+def pbias(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    *,
+    reduce_dims: Optional[FlexibleDimensionTypes] = None,
+    preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[XarrayLike] = None,
+) -> XarrayLike:
+    """
+    Calculates the percent bias, which is the ratio of the additive bias to the mean observed value, multiplied by 100.
+
+    Percent bias is used for evaluating and comparing forecast accuracy across stations or datasets with varying
+    magnitudes. By expressing the error as a percentage of the observed value, it allows for standardised comparisons,
+    enabling assessment of forecast performance regardless of the absolute scale of values. Like
+    :py:func:`scores.continuous.multiplicative_bias`, ``pbias`` will return a ``np.inf`` where the mean of ``obs``
+    across the dims to be reduced is 0. It is defined as
+
+    .. math::
+        \\text{Percent bias} = 100 \\cdot \\frac{\\sum_{i=1}^{N}(x_i - y_i)}{\\sum_{i=1}^{N} y_i}
+
+    where:
+        - :math:`x_i` = the values of x in a sample (i.e. forecast values)
+        - :math:`y_i` = the values of y in a sample (i.e. observed values)
+
+    See "pbias" section at https://search.r-project.org/CRAN/refmans/hydroGOF/html/pbias.html for more information
+
+    Args:
+        fcst: Forecast or predicted variables.
+        obs: Observed variables.
+        reduce_dims: Optionally specify which dimensions to reduce when
+            calculating the percent bias. All other dimensions will be preserved.
+        preserve_dims: Optionally specify which dimensions to preserve when
+            calculating the percent bias. All other dimensions will be reduced. As a
+            special case, 'all' will allow all dimensions to be preserved. In
+            this case, the result will be in the same shape/dimensionality
+            as the forecast, and the errors will be the error at each
+            point (i.e. single-value comparison against observed), and the
+            forecast and observed dimensions must match precisely.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights  can be replaced by ``weights.fillna(0)``.
+            The weighting approach follows :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
+
+    Returns:
+        An xarray object with the percent bias of a forecast.
+
+    References:
+        -   Sorooshian, S., Duan, Q., & Gupta, V. K. (1993). Calibration of rainfall-runoff models:
+            Application of global optimization to the Sacramento Soil Moisture Accounting Model.
+            Water Resources Research, 29(4), 1185-1194. https://doi.org/10.1029/92WR02617
+        -   Alfieri, L., Pappenberger, F., Wetterhall, F., Haiden, T., Richardson, D., & Salamon, P. (2014).
+            Evaluation of ensemble streamflow predictions in Europe. Journal of Hydrology, 517, 913-922.
+            https://doi.org/10.1016/j.jhydrol.2014.06.035
+        -   Dawson, C. W., Abrahart, R. J., & See, L. M. (2007). HydroTest:
+            A web-based toolbox of evaluation metrics for the standardised assessment of hydrological forecasts.
+            Environmental Modelling and Software, 22(7), 1034-1052.
+            https://doi.org/10.1016/j.envsoft.2006.06.008
+        -   Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., & Veith, T. L. (2007).
+            Model evaluation guidelines for systematic quantification of accuracy in watershed simulations.
+            Transactions of the ASABE, 50(3), 885-900. https://doi.org/10.13031/2013.23153
+
+
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import pbias
+        >>> from scores.functions import create_latitude_weights
+
+        >>> times = ["2024-01-01", "2024-01-02"]
+        >>> lats = [-35, -30, -25]
+        >>> lons = [140, 150]
+
+        >>> obs = xr.DataArray(
+        ...     [
+        ...         [[1.0, 1.1], [2.0, 2.1], [3.0, 3.1]],
+        ...         [[1.5, 1.6], [2.5, 2.6], [3.5, 3.6]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> fcst = xr.DataArray(
+        ...     [
+        ...         [[1.3, 1.0], [1.7, 2.7], [3.6, 3.0]],
+        ...         [[1.0, 1.1], [2.2, 2.7], [3.3, 3.9]],
+        ...     ],
+        ...     coords={"time": times, "lat": lats, "lon": lons},
+        ...     dims=["time", "lat", "lon"],
+        ... )
+
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+
+        >>> pbias(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.36231884)
+
+        >>> pbias(fcst, obs, preserve_dims=["time"])
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([ 8.1300813 , -7.18954248])
+        Coordinates:
+          * time     (time) <U10 80B '2024-01-01' '2024-01-02'
+
+        >>> pbias(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(-0.10307618)
+
+    """
+    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
+    # Need to broadcast and match NaNs so that the mean error and obs mean are for the
+    # same points
+    fcst, obs = broadcast_and_match_nan(fcst, obs)
+    error = fcst - obs
+
+    numerator = 100 * aggregate(error, reduce_dims=reduce_dims, weights=weights)
+    denominator = aggregate(obs, reduce_dims=reduce_dims, weights=weights)
+    _pbias = numerator / denominator
+    return _pbias
