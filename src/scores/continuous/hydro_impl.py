@@ -46,7 +46,7 @@ def merge_sizes(*ds) -> dict[Hashable, int]:
     return ret_sizes
 
 
-@validate_inputs_outputs()
+@validate_inputs_outputs(same_input_types=True)
 def nse(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -120,32 +120,6 @@ def nse(
 
         See comments below for more information on mixed xarray data types
         (which this score does **not** handle)  and type isomorphism.
-
-    Raises:
-
-        DimensionError: If any dimension checks fail.
-
-        KeyError: If no dimensions are being reduced - NSE requries at least 1
-            dimension to be reduced to compute the observation variance.
-
-        IndexError: If the dimensions being reduced only have 1 value - not
-            sufficient for computation of obs variance.
-
-        UserWarning: If weights are negative, or invalid
-            (e.g. all zeros or all NaNs).
-
-        UserWarning: If attempting to divide by 0. The computation will still
-            succeed but produce ``np.nan`` (numerator is also 0),
-            ``-np.inf`` (numerator is negative) or ``np.inf``
-            (numerator is positive) where divide by zero would occur.
-
-        Exception: Any other errors or warnings not otherwise listed due to
-            calculations associated with utility functions such as
-            ``gather_dimensions``.
-
-        RuntimeError: If something went wrong with the underlying
-            implementation. The user will be prompted to report this as a
-            github issue.
 
     Supplementary details:
         - Nash-Sutcliffe efficiencies range from -Inf to 1. Essentially, the

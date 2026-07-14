@@ -15,7 +15,7 @@ def is_xarraylike(*args, same_types):
     if not same_types:
         return _check_isinstance(*args, classes=(xr.Dataset, xr.DataArray))
     else:
-        return _check_isinstance(*args, classes=xr.Dataset) or _check_isinstance(args, classes=xr.DataArray)
+        return _check_isinstance(*args, classes=xr.Dataset) or _check_isinstance(*args, classes=xr.DataArray)
 
 
 def _check_dims_exist_da(da, dims):
