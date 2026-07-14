@@ -320,6 +320,7 @@ def nse(
     return nse
 
 
+@validate_inputs_outputs()
 def kge(
     fcst: xr.DataArray,
     obs: xr.DataArray,
@@ -531,6 +532,7 @@ def kge(
     return kge_s
 
 
+@validate_inputs_outputs()
 def pbias(
     fcst: XarrayLike,
     obs: XarrayLike,

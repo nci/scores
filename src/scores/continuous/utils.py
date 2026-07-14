@@ -66,7 +66,6 @@ def validate_inputs_outputs(same_input_types=False, same_input_and_output_type=F
             reduce_dims = all_args.pop("reduce_dims", None)
             preserve_dims = all_args.pop("preserve_dims", None)
 
-            # raise Exception(type(fcst), type(obs), type(weights))
             assert is_xarraylike(fcst, obs, weights, same_types=same_input_types)
             assert isinstance(is_angular, bool) and isinstance(include_components, bool)
 

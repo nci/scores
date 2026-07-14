@@ -781,7 +781,14 @@ EXP_KGE_DIFF_SIZE = xr.DataArray(
 )
 
 ## Parametrized test for kge function to check various incorrect types and sizes
-Incorrect_Input_KGE = [1, 2, 3]
+Incorrect_Input_KGE = xr.Dataset(
+    data_vars={
+        "temperature": ("x", [10, 20, 30]),
+    },
+    coords={
+        "x": [0, 1, 2],
+    },
+)
 Incorrect_SFactors_Type_KGE = "incorrect_type"
 Incorrect_SFactors_List_KGE = [1, 2]
 Incorrect_SFactors_Numpy_KGE = np.array([1, 2, 3, 4])
