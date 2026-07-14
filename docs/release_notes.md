@@ -6,6 +6,10 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
+- Added two new metrics:
+	- Relative economic value: `scores.continuous.relative_economic_value`, `scores.probability.relative_economic_value`, `scores.categorical.relative_economic_value` and `scores.plotdata.relative_economic_value`. See [PR #999](https://github.com/nci/scores/pull/999).
+	- Relative economic value from rates: `scores.continuous.relative_economic_value_from_rates`, `scores.probability.relative_economic_value_from_rates` , `scores.categorical.relative_economic_value_from_rates` and `scores.plotdata.relative_economic_value_from_rates`. See [PR #999](https://github.com/nci/scores/pull/999).
+
 ### Deprecations
 
 - First introduced in Version 2.5.0. Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
@@ -18,6 +22,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
+- Added "Relative Economic Value (REV)" tutorial. See [PR #999](https://github.com/nci/scores/pull/999).
 - Updated the "Contributing Guide" to include guidelines for generative tool usage. See [PR #1027](https://github.com/nci/scores/pull/1027). 
 - Updated docstrings (e.g. added examples and improved grammar) for multiple binary contingency scores. See [PR #996](https://github.com/nci/scores/pull/996).
 - Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `tutorials/Additive_and_multiplicative_bias.ipynb`, `tutorials/Binary_Contingency_Scores.ipynb` and `src/scores/categorical/contingency_impl.py`. See [PR #1029](https://github.com/nci/scores/pull/1029), [PR #1030](https://github.com/nci/scores/pull/1030) and [PR #1031](https://github.com/nci/scores/pull/1031).
@@ -26,17 +31,9 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Contributors to this Release
 
-Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), Thomas C. Pagano ([@thomaspagano](https://github.com/thomaspagano)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)). 
+Thomas C. Pagano ([@thomaspagano](https://github.com/thomaspagano)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)). 
 
 \* indicates that this release contains their first contribution to `scores`.
-
-
-
-Felix Esperson* ([@fesperson](https://github.com/fesperson)), Jurian Beunk* ([@jurianbeunk](https://github.com/jurianbeunk)), Xiaoxi Wu* ([@wuxx66](https://github.com/wuxx66)), Robert J. Taggart ([@rob-taggart](https://github.com/rob-taggart)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Belinda Trotta ([@btrotta-bom](https://github.com/btrotta-bom)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)),, Durga Shrestha ([@durgals](https://github.com/durgals)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
-
-
-
-
 
 ## Version 2.5.0 (February 14, 2026)
 
