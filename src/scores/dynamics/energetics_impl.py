@@ -1,6 +1,7 @@
 from typing import overload
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from scores.dynamics.budgets_utils import (
@@ -413,7 +414,7 @@ def energy_exchanges_lat_lon(
 
     if reduce_time and len(ult.time) > 0:
         dt = ult.time[1] - ult.time[0]
-        dt_seconds = float(dt.data * 1.0e-9)
+        dt_seconds = pd.Timedelta(np.asarray(dt.data).item()).total_seconds()
         weights = xr.DataArray(dt_seconds * np.ones(len(ult.time)), dims=[time_name])
         KtoP = KtoP.weighted(weights).sum(dim=time_name)
         PtoK = PtoK.weighted(weights).sum(dim=time_name)
