@@ -287,10 +287,16 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [Tutorial](project:./tutorials/Rank_Histogram.md)
   - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
 * - Receiver (Relative) Operating Characteristic (ROC)
+  -
+  -
+  -  
+* - 
+    - ROC Curve Data
   - [API](api.md#scores.probability.roc_curve_data)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
-* - Receiver (Relative) Operating Characteristic Area Under Curve (ROC AUC)
+* -
+    - ROC Area Under Curve (ROC AUC)
   - [API](api.md#scores.probability.roc_auc)
   - [Tutorial](project:./tutorials/ROC.md)
   - [Hanley and McNeil (1982)](https://doi.org/10.1148/radiology.143.1.7063747); [Mason and Graham (2002)](https://doi.org/10.1256/003590002320603584); [Mann and Whitney (1947)](https://doi.org/10.1214/aoms/1177730491)
