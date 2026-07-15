@@ -51,7 +51,7 @@ Point-based observations (e.g. from weather stations or buoys) are shared routin
 
 Reanalysis datasets provide a reliable and detailed reconstruction of past weather and climate conditions, spanning years if not decades.
 
-The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5). ERA5 is also included in [WeatherBench 2](https://sites.research.google/weatherbench/), see [this section](https://weatherbench2.readthedocs.io/en/latest/data-guide.html#era5) of their documentation.
+The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global reanalysis dataset. For more information see [https://doi.org/10.24381/cds.adbb2d47](https://doi.org/10.24381/cds.adbb2d47). ERA5 is also included in [WeatherBench 2](https://sites.research.google/weatherbench/), see [this section](https://weatherbench2.readthedocs.io/en/latest/data-guide.html#era5) of their documentation.
 
 #### Gridded Radar (Observation) Data
 
