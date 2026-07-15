@@ -57,7 +57,7 @@ The ECMWF Reanalysis v5 (ERA5) dataset is a well known and widely used global re
 
 Radar data provides remotely sensed precipitation estimates at high spatial and temporal resolution. Radar data varies according to region and is not a globally standardised dataset. 
 
-Information on Australian radar data can be found at [https://www.openradar.io/](https://www.openradar.io/).
+Information on Australian radar data can be found at [https://nci.org.au/aura](https://nci.org.au/aura/).
 
 ### Software for Accessing Data
 
