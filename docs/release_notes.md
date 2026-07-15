@@ -29,7 +29,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 ### Documentation
 
 - Added "Relative Economic Value (REV)" tutorial. See [PR #999](https://github.com/nci/scores/pull/999).
-- Updated the "Receiver Operating Characteristic (ROC)" to include information about the newly-added `scores.probability.roc_auc` function (which is significantly more computationally efficient). See [PR #1036](https://github.com/nci/scores/pull/1036).
+- Updated the "Receiver Operating Characteristic (ROC)" tutorial to include information about the newly-added `scores.probability.roc_auc` function (which is significantly more computationally efficient). See [PR #1036](https://github.com/nci/scores/pull/1036).
 - Updated the "Kling–Gupta Efficiency (KGE)" tutorial to include information about the newly-added kwarg which allows users to switch between the original KGE formulation of [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003) and the modified formulation of [Kling et al. (2012)](https://doi.org/10.1016/j.jhydrol.2012.01.011). See [PR #1069](https://github.com/nci/scores/pull/1069).
 - Updated the "Contributing Guide" to include guidelines for generative tool usage. See [PR #1027](https://github.com/nci/scores/pull/1027). 
 - Added a commit template to the `scores` repository and added instructions in the "Contribuing Guide" for setting up and using the commit template. See [PR #1045](https://github.com/nci/scores/pull/1045) and [PR #1048](https://github.com/nci/scores/pull/1048).
