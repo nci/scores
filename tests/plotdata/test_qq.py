@@ -5,12 +5,7 @@ import pytest
 import xarray as xr
 
 from scores.plotdata import qq
-
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+from scores.utils import HAS_DASK, dask
 
 NP_INTERP_METHODS = [
     "inverted_cdf",
@@ -292,12 +287,11 @@ def test_all_dims_preserved_error(sample_dataarray1, sample_dataarray2):  # pyli
         qq(sample_dataarray1, sample_dataarray2, quantiles=[0.1, 0.5, 0.9], preserve_dims="all")
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_empirical_qq_dask(sample_dataarray4, expected_result5):  # pylint: disable=redefined-outer-name
     """
     Tests continuous.qq works with dask
     """
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
     result = qq(sample_dataarray4.chunk(), sample_dataarray4.chunk(), quantiles=[0, 0.5, 1])
     assert isinstance(result.data, dask.array.Array)
     result = result.compute()

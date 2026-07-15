@@ -6,12 +6,6 @@ Contains unit tests for scores.continuous.standard
 # pylint: disable=line-too-long
 # pylint: disable=R0801
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import numpy.random
 import pandas as pd
@@ -19,6 +13,7 @@ import pytest
 import xarray as xr
 
 import scores.continuous
+from scores.utils import HAS_DASK, dask
 
 PRECISION = 4
 
@@ -437,13 +432,11 @@ def test_xarray_dimension_preservations_with_arrays():
 
 
 # Dask tests
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_mse_with_dask():
     """
     Test that mse works with dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
         data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
@@ -460,13 +453,11 @@ def test_mse_with_dask():
     xr.testing.assert_equal(result, expected)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_mae_with_dask():
     """
     Test that mae works with dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
         data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
@@ -483,13 +474,11 @@ def test_mae_with_dask():
     xr.testing.assert_equal(result, expected)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_rmse_with_dask():
     """
     Test that rmse works with dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst_chunked = xr.DataArray(
         data=np.array([[1, 2], [3, 10]]), dims=["dim1", "dim2"], coords={"dim1": [1, 2], "dim2": [1, 2]}
@@ -823,13 +812,11 @@ def test_additive_bias(fcst, obs, reduce_dims, preserve_dims, weights, expected)
     xr.testing.assert_equal(result, result2)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_additive_bias_dask():
     """
     Tests that continuous.additive_bias works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA2_BIAS.chunk()
@@ -868,13 +855,11 @@ def test_multiplicative_bias(fcst, obs, reduce_dims, preserve_dims, weights, exp
     xr.testing.assert_equal(result, expected)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_multiplicative_bias_dask():
     """
     Tests that continuous.multiplicative_bias works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
@@ -912,13 +897,11 @@ def test_pbias(fcst, obs, reduce_dims, preserve_dims, weights, expected):
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_pbias_dask():
     """
     Tests that continuous.pbias works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
@@ -1059,13 +1042,11 @@ def test_percent_within_x_tolerance(decimals, expected):
     assert result == expected
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_percent_within_x_dask():
     """
     Tests that continuous.within works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA1_BIAS.chunk()
     obs = DA3_BIAS.chunk()
@@ -1113,13 +1094,11 @@ def test_kge(fcst, obs, reduce_dims, preserve_dims, include_components, scaling_
     xr.testing.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_kge_dask():
     """
     Tests that continuous.kge works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     fcst = DA3_KGE.chunk()
     obs = DA2_KGE.chunk()

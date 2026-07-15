@@ -10,12 +10,7 @@ import pytest
 import xarray as xr
 
 import scores
-
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+from scores.utils import HAS_DASK, dask
 
 # Provides a basic forecast data structure in three dimensions
 simple_forecast = xr.DataArray(
@@ -350,15 +345,13 @@ def test_categorical_table_dims_handling():
     assert acc_withheight.sel(height=20).sum().values.item() == 7 / 9
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_dask_if_available_categorical():
     """
     A basic smoke test on a dask object. More rigorous exploration of dask
     is probably needed beyond this. Performance is not explored here, just
     compatibility.
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run dask tests")  # pragma: no cover
 
     fcst = simple_forecast.chunk()
     obs = simple_obs.chunk()

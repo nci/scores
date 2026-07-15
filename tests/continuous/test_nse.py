@@ -20,16 +20,7 @@ import xarray as xr
 from numpy import typing as npt
 
 import scores.continuous.nse_impl as nse_impl
-from scores.utils import DimensionError
-
-DASK_AVAILABLE = False
-try:
-    import dask
-    import dask.array
-
-    DASK_AVAILABLE = True
-except ImportError:
-    pass
+from scores.utils import HAS_DASK, DimensionError, is_dask_collection
 
 
 # Metafunction used to generate tests from TestClasses
@@ -1128,14 +1119,7 @@ class TestNseDask(NseSetup):
     check if dask computes things appropriately with non-dask as a compatiblity measure.
     """
 
-    @pytest.fixture(scope="class", autouse=True)
-    def skip_if_dask_unavailable(self):
-        """
-        fixture to skip dask if it doesn't exist
-        """
-        if not DASK_AVAILABLE:
-            pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
-
+    @pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
     def test_nse_with_dask_inputs(self, tmpdir):
         """
         Basic test to see if NSE works with dask. This is a contrived setup, and we're just looking
@@ -1149,7 +1133,7 @@ class TestNseDask(NseSetup):
         da2 = da1 * 0.99  # make them almost equal - [1]
 
         res = nse_impl.nse(da1, da2, reduce_dims=("x", "y"))
-        assert dask.is_dask_collection(res)  # SHOULD return a dask array if chunked
+        assert is_dask_collection(res)  # SHOULD return a dask array if chunked
 
         # Load into memory and perform computation
         true_res = res.compute()

@@ -2,12 +2,6 @@
 Contains unit tests for scores.categorical.risk_matrix_impl functions
 """
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -19,6 +13,7 @@ from scores.categorical.risk_matrix_impl import (
     risk_matrix_score,
     weights_from_warning_scaling,
 )
+from scores.utils import HAS_DASK, dask
 from tests.categorical import risk_matrix_test_data as mtd
 
 
@@ -101,7 +96,7 @@ def test_risk_matrix_score_datasets():
 
 scenarios_risk_matrix_score_dask = []
 
-if not dask == "Unavailable":
+if HAS_DASK:
     scenarios_risk_matrix_score_dask = [
         (mtd.DA_RMS_FCST1.chunk(), mtd.DA_RMS_OBS1.chunk()),
         (mtd.DA_RMS_FCST1, mtd.DA_RMS_OBS1.chunk()),
@@ -109,12 +104,10 @@ if not dask == "Unavailable":
     ]
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 @pytest.mark.parametrize(("fcst", "obs"), scenarios_risk_matrix_score_dask)
 def test_risk_matrix_score_dask(fcst, obs):
     """Tests `risk_matrix_score` works with dask."""
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     expected = mtd.EXP_RMS_CASE3A
     result = risk_matrix_score(

@@ -4,12 +4,6 @@ import re
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -21,6 +15,7 @@ from scores.plotdata.murphy_impl import (
     _huber_thetas,
     _quantile_thetas,
 )
+from scores.utils import HAS_DASK, dask
 
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),
@@ -115,6 +110,7 @@ thetas_nc = xr.DataArray(
 )
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 @pytest.mark.parametrize(
     ("functional", "score_function", "thetas", "daskinput"),
     [
@@ -127,9 +123,6 @@ thetas_nc = xr.DataArray(
 )
 def test_murphy_score_operations(functional, score_function, monkeypatch, thetas, daskinput):
     """murphy_score makes the expected operations on the scoring function output."""
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable - could not run test")  # pragma: no cover
 
     fcst = _test_array([1.0, 2.0, 3.0, 4.0])
     obs = _test_array([0.0, np.nan, 0.6, 137.4])

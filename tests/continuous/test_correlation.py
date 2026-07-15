@@ -7,12 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.continuous.correlation import pearsonr, spearmanr
-
-try:
-    import dask
-    import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+from scores.utils import HAS_DASK, dask
 
 DA1_CORR = xr.DataArray(
     np.array([[1, 2, 3], [0, 1, 0], [0.5, -0.5, 0.5], [3, 6, 3]]),
@@ -144,13 +139,11 @@ def test_pearson_correlation_raises(da1, da2, preserve_dims, err, err_msg):
         pearsonr(da1, da2, preserve_dims=preserve_dims)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_correlation_dask():
     """
     Tests continuous.correlation works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = pearsonr(DA3_CORR.chunk(), DA2_CORR.chunk())
     assert isinstance(result.data, dask.array.Array)
@@ -213,13 +206,11 @@ def test_spearman_correlation_raises(da1, da2, preserve_dims, err, err_msg):
         spearmanr(da1, da2, preserve_dims=preserve_dims)
 
 
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
 def test_spearman_correlation_dask():
     """
     Tests continuous.correlation.spearmanr works with Dask
     """
-
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     result = spearmanr(DA3_CORR.chunk(), DA2_CORR.chunk())
     assert isinstance(result.data, dask.array.Array)

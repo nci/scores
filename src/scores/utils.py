@@ -13,6 +13,20 @@ import xarray as xr
 
 from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
 
+try:
+    import dask
+
+    HAS_DASK = True
+    from dask.base import is_dask_collection
+except ImportError:
+    HAS_DASK = False
+    # Provide safe fallbacks
+    dask = None
+
+    def is_dask_collection(obj):
+        return False
+
+
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
 In this case, 'all' is also a named dimension in your data, leading to an ambiguity.
