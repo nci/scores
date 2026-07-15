@@ -2,12 +2,15 @@
 Contains tests for weighting scores appropriately.
 """
 
+from contextlib import nullcontext
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from scores.processing import aggregate
-from scores.utils import ERROR_INVALID_WEIGHTS
+from scores.processing.aggregation import _add_assertion_dependency
+from scores.utils import ERROR_INVALID_WEIGHTS, HAS_DASK, da
 
 DA_3x3 = xr.DataArray(
     [[0, 0.5, 1], [2, np.nan, 1], [97, 1, 1]],
@@ -259,7 +262,13 @@ def test_agg_warns():
             ValueError,
         ),
         # Wrong method
-        (DA_3x3, None, "agg", "Method must be either 'mean' or 'sum', got 'agg'", ValueError),
+        (
+            DA_3x3,
+            None,
+            "agg",
+            "Method must be either 'mean' or 'sum', got 'agg'",
+            ValueError,
+        ),
         # DS weights missing data var
         (
             xr.Dataset(({"var1": DA_3x3, "var2": DA_3x3})),
@@ -285,3 +294,65 @@ def test_aggregate_raises(values, weights, method, msg, err_type):
 
     with pytest.raises(err_type, match=msg):
         aggregate(values, reduce_dims=["x"], weights=weights, method=method)
+
+
+def to_dask_array(da_in, chunks=2):
+    """Converts an xr.DataArray to a Dask-backed xr.DataArray."""
+    # Use da.from_array and assign back to the DataArray
+    data = da.from_array(da_in.values, chunks=chunks)
+    # Preserve dimensions and coordinates
+    return xr.DataArray(data, dims=da_in.dims, coords=da_in.coords)
+
+
+@pytest.mark.skipif(not HAS_DASK, reason="Dask not installed")
+def test_eager_weight_check_must_be_deferred():
+    """
+    Tests that the check for invalid (negative) weights is deferred until
+    .compute() is called.
+
+    """
+
+    # 1. Convert inputs to Dask-backed arrays
+    dask_values = to_dask_array(DA_3x3)
+    dask_weights = to_dask_array(NEGATIVE_WEIGHTS)
+
+    # --- Check 1: Eager Failure Assertion ---
+    # We assert that the function call itself must NOT raise an error.
+    # If the code is currently EAGER, it will raise ValueError and fail this check.
+    try:
+        # Use nullcontext() to assert no immediate error is raised
+        with nullcontext():
+            result = aggregate(dask_values, reduce_dims=["x"], weights=dask_weights, method="mean")
+
+        # Verify that a lazy Dask object was returned
+        assert isinstance(result.data, da.Array)
+
+        # --- Check 2: Deferred Error Assertion (Only for Lazy Code) ---
+        # Now, force the computation, which should trigger the deferred check and raise the error.
+        with pytest.raises(ValueError, match=ERROR_INVALID_WEIGHTS):
+            result.compute()
+
+    except ValueError as exc:
+        if ERROR_INVALID_WEIGHTS in str(exc):
+            # If we catch the error here, it means the error was raised immediately (EAGER).
+            # This confirms the pre-fix state of the code and makes the test FAIL as expected.
+            # Use pytest.fail to report the failure clearly.
+            pytest.fail(
+                "The current 'aggregate' is EAGER: ValueError was raised immediately "
+                "upon function call, not deferred. Test failed as designed for pre-fix code."
+            )
+        else:
+            # Re-raise any unexpected error
+            raise
+
+
+def test_add_assertion_dependency_non_dask_passthrough():
+    """Test that non-Dask arrays pass through unchanged."""
+    result = xr.DataArray([1.0, 2.0, 3.0], dims=["time"])
+    assertion_graph = xr.DataArray(True)  # Dummy assertion
+
+    output = _add_assertion_dependency(result, assertion_graph)
+
+    # Should return the same object since it's not Dask
+    assert output is result
+    xr.testing.assert_identical(output, result)

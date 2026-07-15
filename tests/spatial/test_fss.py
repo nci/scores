@@ -275,6 +275,7 @@ def test_fss_2d_binary(window_size, event_threshold, reduce_dims, preserve_dims,
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_fss_2d_binary_bool_check():
+    """Test fractional skill score with boolean check raises FieldTypeError"""
     da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
     da_obs = sd.continuous_observations(large_size=False)
     with pytest.raises(FieldTypeError):
