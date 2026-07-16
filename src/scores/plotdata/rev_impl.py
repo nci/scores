@@ -15,7 +15,7 @@ from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylik
 from scores.utils import check_binary, check_weights, gather_dimensions
 
 REV_DASK_MESSAGE = """
-"REV relies on xarray methods not yet implemented in Dask. Calling compute() on input arrays.
+"REV relies on xarray methods not yet implemented in Dask. As a result, `scores` will call compute() on input arrays.
 Alternatively, use check_args=False to skip the incompatible code and avoid the .compute() call."
 """
 
