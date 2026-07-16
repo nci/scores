@@ -58,7 +58,7 @@ def test_rev_rates_dask_handling():
     """Test REV from rates with dask."""
 
     try:
-        import dask  # noqa
+        import dask.array  # noqa
     except ImportError:
         pytest.skip()
 
