@@ -48,9 +48,11 @@ def test_rev_dask_handling():
 
     # Test condition 2 - no warning raised when check_args is False when passed dask arrays
     resultd2 = relative_economic_value(fcstd, obsd, check_args=False)
-    assert (
-        result == resultd2
-    ).all()  # For some reason xr.testing.assert_equal doesn't like this, even when .compute() is called
+    assert isinstance(resultd2.data, dask.array.Array)
+    resultd2 = resultd2.compute()
+    assert isinstance(resultd2.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(resultd2, result)  # or an alternative approach if this still doesn't work
+
 
 
 def test_rev_rates_dask_handling():
