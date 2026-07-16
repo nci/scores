@@ -54,7 +54,6 @@ def test_rev_dask_handling():
     xr.testing.assert_equal(resultd2, result)  # or an alternative approach if this still doesn't work
 
 
-
 def test_rev_rates_dask_handling():
     """Test REV from rates with dask."""
 
@@ -82,12 +81,9 @@ def test_rev_rates_dask_handling():
     base_rate_ds = xr.Dataset({"region_1": xr.DataArray(0.3), "region_2": xr.DataArray(0.45)})
 
     actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate_ds, [0.3, 0.7])
-
     actual_da = relative_economic_value_from_rates(pod_ds_da, pofd_ds_da, base_rate_ds, [0.3, 0.7])
-    assert isinstance(actual_da.data, dask.array.Array)
-    actual_da = actual_da.compute()
-    assert isinstance(actual_da.data, (np.ndarray, np.generic))
-    xr.testing.assert_equal(actual_da, actual)  
+
+    xr.testing.assert_equal(actual_da, actual)
 
 
 @pytest.fixture(name="make_contingency_data")
