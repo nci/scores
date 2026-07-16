@@ -2,6 +2,7 @@
 Relative Economic Value metrics for forecast evaluation
 """
 
+import warnings
 from collections.abc import Sequence
 from typing import Optional, Union, cast
 
@@ -12,6 +13,11 @@ from scores.categorical import probability_of_detection, probability_of_false_de
 from scores.processing import aggregate, binary_discretise, broadcast_and_match_nan
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import check_binary, check_weights, gather_dimensions
+
+REV_DASK_MESSAGE = """
+"REV relies on xarray methods not yet implemented in Dask. Calling compute() on input arrays.
+Alternatively, use check_args=False to skip the incompatible code and avoid the .compute() call."
+"""
 
 # INPUT VALIDATION
 
@@ -420,6 +426,12 @@ def relative_economic_value_from_rates(
         - :py:func:`scores.categorical.probability_of_false_detection`
     """
 
+    # if pod.chunks is not None or pofd.chunks is not None or base_rate.chunks is not None:
+    #     warnings.warn(REV_DASK_MESSAGE)
+    #     pod = pod.compute()
+    #     obs = obs.compute()
+    #     base_rate = base_rate.compute()
+
     if not all_same_xarraylike([pod, pofd]):
         raise TypeError("Both pod and pofd must be either xarray DataArrays or xarray Datasets.")
 
@@ -625,6 +637,11 @@ def relative_economic_value(
         - :py:func:`scores.categorical.probability_of_false_detection`
         - :py:func:`scores.processing.binary_discretise`
     """
+
+    if check_args and fcst.chunks is not None or obs.chunks is not None:
+        warnings.warn(REV_DASK_MESSAGE)
+        fcst = fcst.compute()
+        obs = obs.compute()
 
     if cost_loss_ratios is None:
         cost_loss_ratios = list(np.arange(0.01, 1.0, 0.01))

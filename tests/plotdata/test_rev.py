@@ -24,6 +24,69 @@ from scores.utils import ERROR_INVALID_WEIGHTS
 from tests.plotdata import rev_test_data as rtd
 
 
+def test_rev_dask_handling():
+    """Test REV supports dask data structures"""
+
+    try:
+        import dask  # noqa
+    except ImportError:
+        pytest.skip()
+
+    fcst = xr.DataArray([0, 1, 1, 0, 1], dims=["time"])
+    obs = xr.DataArray([0, 1, 0, 0, 1], dims=["time"])
+    result = relative_economic_value(fcst, obs)
+
+    fcstd = fcst.chunk()
+    obsd = obs.chunk()
+
+    # Test condition 1 - warning raised as expected when passed dask arrays
+    with pytest.warns(UserWarning):
+        resultd = relative_economic_value(fcstd, obsd)
+        assert (
+            result == resultd
+        ).all()  # For some reason xr.testing.assert_equal doesn't like this, even when .compute() is called
+
+    # Test condition 2 - no warning raised when check_args is False when passed dask arrays
+    resultd2 = relative_economic_value(fcstd, obsd, check_args=False)
+    assert (
+        result == resultd2
+    ).all()  # For some reason xr.testing.assert_equal doesn't like this, even when .compute() is called
+
+
+def test_rev_rates_dask_handling():
+    """Test REV from rates with dask."""
+
+    try:
+        import dask  # noqa
+    except ImportError:
+        pytest.skip()
+
+    pod_ds = xr.Dataset(
+        {
+            "region_1": xr.DataArray([0.8], dims=["threshold"]),
+            "region_2": xr.DataArray([0.6], dims=["threshold"]),
+        }
+    )
+    pod_ds_da = pod_ds.chunk()
+
+    pofd_ds = xr.Dataset(
+        {
+            "region_1": xr.DataArray([0.15], dims=["threshold"]),
+            "region_2": xr.DataArray([0.15], dims=["threshold"]),
+        }
+    )
+    pofd_ds_da = pofd_ds.chunk()
+
+    base_rate_ds = xr.Dataset({"region_1": xr.DataArray(0.3), "region_2": xr.DataArray(0.45)})
+
+    actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate_ds, [0.3, 0.7])
+
+    actual_da = relative_economic_value_from_rates(pod_ds_da, pofd_ds_da, base_rate_ds, [0.3, 0.7])
+    assert (
+        actual == actual_da
+    ).all()  # For some reason xr.testing.assert_equal doesn't like this, even when .compute() is called
+
+
 @pytest.fixture(name="make_contingency_data")
 def _make_contingency_data():
     """
