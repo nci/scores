@@ -44,7 +44,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Internal Changes
 
-- Moved tutorial files from a top-level directory, `tutorials`, into the `docs/tutorials/` subdirectory. This change was made to support how recent Sphinx versions handle symbolic links to files out of the `docs` subdirectory. Users may wish to note this change of directory. If they are running the tutorials themselves, they will need to use the updated location. There is no change to how the tutorials render in the documentation. See [PR #1042](https://github.com/nci/scores/pull/1042).
+- Moved tutorial files from a top-level directory, `tutorials`, into the `docs/tutorials/` subdirectory. This change was made to support how recent `Sphinx` versions handle symbolic links to files located outside of the `docs` subdirectory. Users who run the tutorials will need to use the updated location. There is no change to how the tutorials render in the documentation. Unpinned the version of `Sphinx` used by `scores`, so that the most recent versions of `Sphinx` can be used. See [PR #1042](https://github.com/nci/scores/pull/1042).
 - Introduced the use of the Python [`doctest`](https://docs.python.org/3/library/doctest.html
 ) module for automated testing of examples in API documentation (docstrings). Revised existing docstrings as appropriate to meet `doctest` tool requirements. Added the `doctest` tool to CI/CD and developer tooling via pre-commit. See [PR #1056](https://github.com/nci/scores/pull/1056).
 - Update CI pipeline to run tests against all versions of Python even if one fails. See [PR #1063](
