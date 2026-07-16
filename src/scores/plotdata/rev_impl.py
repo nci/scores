@@ -632,7 +632,7 @@ def relative_economic_value(
         - :py:func:`scores.processing.binary_discretise`
     """
 
-    if check_args and fcst.chunks is not None or obs.chunks is not None:
+    if check_args and (getattr(fcst, "chunks", None) or getattr(obs, "chunks", None)):
         warnings.warn(REV_DASK_MESSAGE)
         fcst = fcst.compute()
         obs = obs.compute()
