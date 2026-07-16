@@ -84,9 +84,10 @@ def test_rev_rates_dask_handling():
     actual = relative_economic_value_from_rates(pod_ds, pofd_ds, base_rate_ds, [0.3, 0.7])
 
     actual_da = relative_economic_value_from_rates(pod_ds_da, pofd_ds_da, base_rate_ds, [0.3, 0.7])
-    assert (
-        actual == actual_da
-    ).all()  # For some reason xr.testing.assert_equal doesn't like this, even when .compute() is called
+    assert isinstance(actual_da.data, dask.array.Array)
+    actual_da = actual_da.compute()
+    assert isinstance(actual_da.data, (np.ndarray, np.generic))
+    xr.testing.assert_equal(actual_da, actual)  
 
 
 @pytest.fixture(name="make_contingency_data")
