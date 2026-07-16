@@ -426,12 +426,6 @@ def relative_economic_value_from_rates(
         - :py:func:`scores.categorical.probability_of_false_detection`
     """
 
-    # if pod.chunks is not None or pofd.chunks is not None or base_rate.chunks is not None:
-    #     warnings.warn(REV_DASK_MESSAGE)
-    #     pod = pod.compute()
-    #     obs = obs.compute()
-    #     base_rate = base_rate.compute()
-
     if not all_same_xarraylike([pod, pofd]):
         raise TypeError("Both pod and pofd must be either xarray DataArrays or xarray Datasets.")
 
