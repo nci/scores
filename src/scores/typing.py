@@ -108,7 +108,7 @@ def all_same_xarraylike(
 
         For internal use only:
 
-            - TypeGuards help mypy resolve complex static type checks - avoids
+            - TypeGuards help resolve complex static type checks - avoids
               the need to use "type: ignore" when types are ambiguous.
 
             - Often used in conjunction with, type-based control flow, asserts

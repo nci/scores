@@ -199,17 +199,17 @@ def crps_cdf(
         - The usual CRPS is the threshold-weighted CRPS with :math:`\\text{threshold_weight}(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) - 
+        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) -
         \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
 
     and an under-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) - 
+        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) -
         \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
 
-    To obtain the components of the CRPS score, set ``include_components`` to ``True``.  
+    To obtain the components of the CRPS score, set ``include_components`` to ``True``.
 
     Note that there are several ways to decompose the CRPS and this decomposition differs from
-    the one used in the :py:func:`scores.probability.crps_for_ensemble` function. 
+    the one used in the :py:func:`scores.probability.crps_for_ensemble` function.
 
     Note that the function `crps_cdf` is designed so that the `obs` argument contains
     actual observed values. `crps_cdf` will convert `obs` into CDF form in order to
@@ -223,12 +223,12 @@ def crps_cdf(
         - (with NaN values excluded)
 
     There are two methods of integration:
-        - "exact" gives the exact integral under that assumption that that `fcst` is 
-          continuous and piecewise linear between its specified values, and that 
-          `threshold_weight` (if supplied) is piecewise constant and right-continuous 
+        - "exact" gives the exact integral under that assumption that that `fcst` is
+          continuous and piecewise linear between its specified values, and that
+          `threshold_weight` (if supplied) is piecewise constant and right-continuous
           between its specified values.
-        - "trapz" simply uses a trapezoidal rule using the specified values, and so is 
-          an approximation of the CRPS. To get an accurate approximation, the density 
+        - "trapz" simply uses a trapezoidal rule using the specified values, and so is
+          an approximation of the CRPS. To get an accurate approximation, the density
           of threshold values can be increased by supplying `additional_thresholds`.
 
     Both methods of calculating CRPS may require adding additional values to the
@@ -245,25 +245,25 @@ def crps_cdf(
         fcst: array of forecast CDFs, with the threshold dimension given by `threshold_dim`.
         obs: array of observations, not in CDF form.
         threshold_dim: name of the dimension in `fcst` that indexes the thresholds.
-        threshold_weight: weight to be applied along `threshold_dim` to calculate 
-            threshold-weighted CRPS. Must contain `threshold_dim` as a dimension, and may 
-            also include other dimensions from `fcst`. If `weight=None`, a weight of 1 
+        threshold_weight: weight to be applied along `threshold_dim` to calculate
+            threshold-weighted CRPS. Must contain `threshold_dim` as a dimension, and may
+            also include other dimensions from `fcst`. If `weight=None`, a weight of 1
             is applied everywhere, which gives the usual CRPS.
-        additional_thresholds: additional thresholds values to add to `fcst` and (if 
+        additional_thresholds: additional thresholds values to add to `fcst` and (if
             applicable) `threshold_weight` prior to calculating CRPS.
-        propagate_nans: If `True`, propagate NaN values along `threshold_dim` in `fcst` 
-            and `threshold_weight` prior to calculating CRPS. This will result in CRPS 
-            being NaN for these cases. If `False`, NaN values in `fcst` and `weight` will 
-            be replaced, wherever possible, with non-NaN values using the fill method 
+        propagate_nans: If `True`, propagate NaN values along `threshold_dim` in `fcst`
+            and `threshold_weight` prior to calculating CRPS. This will result in CRPS
+            being NaN for these cases. If `False`, NaN values in `fcst` and `weight` will
+            be replaced, wherever possible, with non-NaN values using the fill method
             specified by `fcst_fill_method` and `threshold_weight_fill_method`.
-        fcst_fill_method: how to fill values in `fcst` when NaNs have been introduced 
-            (by including additional thresholds) or are specified to be removed (by 
-            setting `propagate_nans=False`). Select one of: 
+        fcst_fill_method: how to fill values in `fcst` when NaNs have been introduced
+            (by including additional thresholds) or are specified to be removed (by
+            setting `propagate_nans=False`). Select one of:
 
             - "linear": use linear interpolation, then replace any leading or \
             trailing NaNs using linear extrapolation. Afterwards, all values are \
             clipped to the closed interval [0, 1].
-            - "step": apply forward filling, then replace any leading NaNs with 0. 
+            - "step": apply forward filling, then replace any leading NaNs with 0.
             - "forward": first apply forward filling, then remove any leading NaNs by \
             back filling.
             - "backward": first apply back filling, then remove any trailing NaNs by \
@@ -272,9 +272,9 @@ def crps_cdf(
 
         threshold_weight_fill_method: how to fill values in `threshold_weight` when NaNs
             have been introduced (by including additional thresholds) or are specified
-            to be removed (by setting `propagate_nans=False`). Select one of "linear", 
-            "step", "forward" or "backward". If the weight function is continuous, 
-            "linear" is probably the best choice. If it is an increasing step function, 
+            to be removed (by setting `propagate_nans=False`). Select one of "linear",
+            "step", "forward" or "backward". If the weight function is continuous,
+            "linear" is probably the best choice. If it is an increasing step function,
             "forward" may be best.
 
         integration_method (str): one of "exact" or "trapz".
@@ -440,7 +440,6 @@ def crps_cdf_exact_slow(
         `cdf_fcst`, `cdf_obs` or `threshold_weight`.
     """
     # identify where input arrays have no NaN, collapsing `threshold_dim`
-    # Mypy doesn't realise the isnan and any come from xarray not numpy
     inputs_without_nan = (
         ~np.isnan(cdf_fcst).any(threshold_dim)
         & ~np.isnan(cdf_obs).any(threshold_dim)
@@ -501,7 +500,7 @@ def crps_cdf_brier_decomposition(
     If any there are any NaNs along the threshold dimension of `fcst`, then NaNs are
     propagated along this dimension prior to calculating the decomposition. If
     propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
-    `scores.probability.functions.fill_cdf`.
+    :py:func:`scores.processing.cdf.fill_cdf`.
 
     Args:
         fcst (xr.DataArray): DataArray of CDF values with threshold dimension `threshold_dim`.
@@ -629,7 +628,7 @@ def adjust_fcst_for_crps(
     that has the higher (i.e. worse) CRPS is returned. In the event of a tie,
     preference is given in the order `fcst` then upper.
 
-    See `scores.probability.functions.cdf_envelope` for details about the CDF envelope.
+    See :py:func:`scores.processing.cdf.cdf_envelope` for details about the CDF envelope.
 
     The use case for this is when, either due to rounding or poor forecast process, the
     forecast CDF `fcst` fails to be nondecreasing. Rather than simply replacing `fcst`
@@ -638,7 +637,7 @@ def adjust_fcst_for_crps(
 
     Whether a CDF is decreasing outside specified tolerance is determined as follows.
     For each CDF in `fcst`, the sum of incremental decreases along the threshold dimension
-    is calculated. For example, if the CDF values are 
+    is calculated. For example, if the CDF values are
 
     `[0, 0.4, 0.3, 0.9, 0.88, 1]`
 
@@ -653,10 +652,10 @@ def adjust_fcst_for_crps(
             whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
             values give a higher CRPS in which case original values are kept.
 
-    See `scores.probability.functions.cdf_envelope` for a description of the 'CDF envelope'.
+    See :py:func:`scores.processing.cdf.cdf_envelope` for a description of the 'CDF envelope'.
 
-    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
-    `scores.probability.functions.fill_cdf`.
+    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using 
+    :py:func:`scores.processing.cdf.fill_cdf`.
 
     The CRPS for each forecast case is calculated using `crps`, with a weight of 1.
 
@@ -1007,7 +1006,7 @@ def tw_crps_for_ensemble(
 ) -> xr.DataArray:
     """
     Calculates the threshold weighted continuous ranked probability score (twCRPS) given
-    ensemble input using a chaining function ``chaining_func`` (see below). An ensemble of 
+    ensemble input using a chaining function ``chaining_func`` (see below). An ensemble of
     forecasts can also be thought of as a random sample from the predictive distribution.
 
     The twCRPS is calculated by the formula
@@ -1026,7 +1025,7 @@ def tw_crps_for_ensemble(
     where :math:`\\mathbb{1}` is the indicator function which returns a value of 1 if the condition
     is true and 0 otherwise. A chaining function would then be :math:`v(x) = \\text{max}(x, t)`.
 
-    There are currently two methods available for calculating the twCRPS: "ecdf" and "fair". 
+    There are currently two methods available for calculating the twCRPS: "ecdf" and "fair".
         - If `method="ecdf"` then the twCRPS value returned is \
             the exact twCRPS value for the empirical cumulative distribution function \
             constructed using the ensemble values.
@@ -1088,7 +1087,7 @@ def tw_crps_for_ensemble(
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
             events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
             When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
             110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
@@ -1102,16 +1101,21 @@ def tw_crps_for_ensemble(
 
 
     Examples:
-        Calculate the twCRPS for an ensemble of forecasts where the chaining function is 
+        Calculate the twCRPS for an ensemble of forecasts where the chaining function is
         derived from a weight function that assigns a weight of 1 to thresholds above
         0.5 and a weight of 0 to thresholds below 0.5.
 
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import tw_crps_for_ensemble
+        >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+
         >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
+        <xarray.DataArray ()> Size: 8B
+        array(0.07993158)
 
     """  # noqa: E501
     if chaining_func_kwargs is None:
@@ -1202,7 +1206,7 @@ def tail_tw_crps_for_ensemble(
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
             events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
             When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
             110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
@@ -1220,10 +1224,14 @@ def tail_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import tail_tw_crps_for_ensemble
+        >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
-        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
 
+        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+        <xarray.DataArray ()> Size: 8B
+        array(0.07993158)
     """
     if tail not in ["upper", "lower"]:
         raise ValueError(f"'{tail}' is not one of 'upper' or 'lower'")
@@ -1316,7 +1324,7 @@ def interval_tw_crps_for_ensemble(
     References:
         - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
             events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184. 
+            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
         - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
             When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
             110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
@@ -1334,9 +1342,14 @@ def interval_tw_crps_for_ensemble(
         >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import interval_tw_crps_for_ensemble
+        >>> np.random.seed(42)
+
         >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+
         >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+        <xarray.DataArray ()> Size: 8B
+        array(7.46973354)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
         if (lower_threshold >= upper_threshold).any().values.item():

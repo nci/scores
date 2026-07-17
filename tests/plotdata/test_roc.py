@@ -125,20 +125,20 @@ def test_roc_curve_auc():
 def test_roc_auto_threshold():
     """Test roc with auto threshold and 2-D input array."""
     fcst = xr.DataArray(
-        data=[[0.1, 0.4, 0.3, 0.9], [0.2, 0.9, 0.5, 0.2]],
+        data=[[0.1, 0.4, 0.3, 0.9, 0.3], [0.2, 0.9, 0.5, 0.2, 0.3]],
         dims=["station", "time"],
         coords={
             "station": ["A", "B"],
-            "time": list(range(4)),
+            "time": list(range(5)),
         },
     )
 
     obs = xr.DataArray(
-        data=[[0, 0, 1, 1], [0, 1, 1, 0]],
+        data=[[0, 0, 1, 1, np.nan], [0, 1, 1, 0, np.nan]],
         dims=["station", "time"],
         coords={
             "station": ["A", "B"],
-            "time": list(range(4)),
+            "time": list(range(5)),
         },
     )
     # Test with check_args=False
@@ -177,9 +177,9 @@ def test_roc_dask(check_args):
             check_args=check_args,
         )
 
-    assert isinstance(result.POD.data, dask.array.Array)
-    assert isinstance(result.POFD.data, dask.array.Array)
-    assert isinstance(result.AUC.data, dask.array.Array)
+    assert isinstance(result.POD.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
+    assert isinstance(result.POFD.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
+    assert isinstance(result.AUC.data, dask.array.Array)  # ty: ignore[possibly-missing-submodule]
 
     result = result.compute()
 

@@ -3,7 +3,12 @@ Import the functions from the implementations into the public API
 """
 
 from scores.plotdata.murphy_impl import murphy_score, murphy_thetas
+from scores.plotdata.rev_impl import (
+    relative_economic_value,
+    relative_economic_value_from_rates,
+)
 from scores.plotdata.roc_impl import roc as roc_curve_data
+from scores.probability.auc_impl import roc_auc
 from scores.probability.brier_impl import brier_score, brier_score_for_ensemble
 from scores.probability.crps_impl import (
     adjust_fcst_for_crps,
@@ -28,6 +33,9 @@ __all__ = [
     "crps_cdf",
     "crps_cdf_brier_decomposition",
     "crps_for_ensemble",
+    "relative_economic_value",
+    "relative_economic_value_from_rates",
+    "roc_auc",
     "roc_curve_data",
     "isotonic_fit",
     "crps_step_threshold_weight",

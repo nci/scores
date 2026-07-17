@@ -40,16 +40,85 @@ def broadcast_and_match_nan(*args: XarrayLike) -> tuple[XarrayLike, ...]:
             object.
 
     Examples:
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> from scores.processing import broadcast_and_match_nan
 
-        >>> # Matching xarray data objects
-        >>> da1_matched, ds_matched, da2_matched = scores.processing.broadcast_and_match_nan(da1, ds, da2)
+        >>> da1 = xr.DataArray(
+        ...     [1.0, np.nan, 3.0], dims=["x"], coords={"x": [0, 1, 2]}
+        ... )
 
-        >>> # Matching a tuple of xarray data objects
+        >>> ds = xr.Dataset(
+        ...     {
+        ...         "temp": xr.DataArray(
+        ...             [[10, 20, 30], [40, 50, 60]],
+        ...             dims=["model", "x"],
+        ...             coords={"model": ["ECMWF", "GFS"], "x": [0, 1, 2]},
+        ...         )
+        ...     }
+        ... )
+
+        >>> da2 = xr.DataArray([4.0, 5.0, 6.0], dims=["x"], coords={"x": [0, 1, 2]})
+
+        >>> da1_matched, ds_matched, da2_matched = broadcast_and_match_nan(
+        ...     da1, ds, da2
+        ... )
+        >>> da1_matched
+        <xarray.DataArray (x: 3, model: 2)> Size: 48B
+        array([[ 1.,  1.],
+               [nan, nan],
+               [ 3.,  3.]])
+        Coordinates:
+          * x        (x) int64 24B 0 1 2
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
+
+        >>> ds_matched
+        <xarray.Dataset> Size: 112B
+        Dimensions:  (model: 2, x: 3)
+        Coordinates:
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
+          * x        (x) int64 24B 0 1 2
+        Data variables:
+            temp     (model, x) float64 48B 10.0 nan 30.0 40.0 nan 60.0
+
+        >>> da2_matched
+        <xarray.DataArray (x: 3, model: 2)> Size: 48B
+        array([[ 4.,  4.],
+               [nan, nan],
+               [ 6.,  6.]])
+        Coordinates:
+          * x        (x) int64 24B 0 1 2
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
+
         >>> input_tuple = (da1, ds, da2)
         >>> matched_tuple = broadcast_and_match_nan(*input_tuple)
-        >>> da1_matched = matched_tuple[0]
-        >>> ds_matched = matched_tuple[1]
-        >>> da2_matched = matched_tuple[2]
+
+        >>> matched_tuple[0]
+        <xarray.DataArray (x: 3, model: 2)> Size: 48B
+        array([[ 1.,  1.],
+               [nan, nan],
+               [ 3.,  3.]])
+        Coordinates:
+          * x        (x) int64 24B 0 1 2
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
+
+        >>> matched_tuple[1]
+        <xarray.Dataset> Size: 112B
+        Dimensions:  (model: 2, x: 3)
+        Coordinates:
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
+          * x        (x) int64 24B 0 1 2
+        Data variables:
+            temp     (model, x) float64 48B 10.0 nan 30.0 40.0 nan 60.0
+
+        >>> matched_tuple[2]
+        <xarray.DataArray (x: 3, model: 2)> Size: 48B
+        array([[ 4.,  4.],
+               [nan, nan],
+               [ 6.,  6.]])
+        Coordinates:
+          * x        (x) int64 24B 0 1 2
+          * model    (model) <U5 40B 'ECMWF' 'GFS'
     """
 
     # sanitise inputs

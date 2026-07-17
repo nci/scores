@@ -63,6 +63,39 @@ def brier_score(
 
     See Also:
         - :py:func:`scores.probability.brier_score_for_ensemble`
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.probability import brier_score
+        >>> from scores.functions import create_latitude_weights
+
+        >>> fcst = xr.DataArray(
+        ...     [[0.3, 0.5], [0.7, 1.0]],
+        ...     coords=[[33, 45], [-30, 30]],
+        ...     dims=["lat", "lon"],
+        ... )
+        >>> obs = xr.DataArray(
+        ...     [[0, 1], [0, 1]], coords=[[33, 45], [-30, 30]], dims=["lat", "lon"]
+        ... )
+
+        >>> brier_score(fcst, obs)
+        <xarray.DataArray ()> Size: 8B
+        array(0.2075)
+
+        >>> brier_score(fcst, obs, preserve_dims=["lon"])
+        <xarray.DataArray (lon: 2)> Size: 16B
+        array([0.29 , 0.125])
+        Coordinates:
+          * lon      (lon) int64 16B -30 30
+
+        >>> lats = [33, 45]
+        >>> weights = xr.DataArray(
+        ...     create_latitude_weights(lats), coords={"lat": lats}, dims=["lat"]
+        ... )
+        >>> brier_score(fcst, obs, weights=weights)
+        <xarray.DataArray ()> Size: 8B
+        array(0.20430831)
+
     """
     if check_args:
         error_msg = ValueError("`fcst` contains values outside of the range [0, 1]")
@@ -183,18 +216,40 @@ def brier_score_for_ensemble(
         - :py:func:`scores.probability.brier_score`
 
     Examples:
-        Calculate the Brier score for an ensemble forecast for a single threshold:
-
-        >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.probability import brier_score_for_ensemble
-        >>> fcst = 10 * xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = 10 * xr.DataArray(np.random.rand(10), dims=['time'])
-        >>> brier_score_for_ensemble(fcst, obs, ensemble_member_dim='ensemble', thresholds=0.5)
 
-        Calculate the Brier score for an ensemble forecast for multiple thresholds:
-        >>> thresholds = [0.1, 5, 9]
-        >>> brier_score_for_ensemble(fcst, obs, ensemble_member_dim='ensemble', thresholds=thresholds)
+        >>> times = [1, 2]
+        >>> ensembles = ["A", "B", "C"]
+
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 4.2, 0.0], [0.4, -1.2, 0.3]],
+        ...     coords={"time": times, "ensemble": ensembles},
+        ...     dims=["time", "ensemble"],
+        ... )
+
+        >>> obs = xr.DataArray(data=[0, 1], coords={"time": times}, dims=["time"])
+
+        >>> # Calculate the Brier score for an ensemble forecast for a single threshold:
+        >>> brier_score_for_ensemble(
+        ...     fcst, obs, ensemble_member_dim="ensemble", event_thresholds=0.5
+        ... )
+        <xarray.DataArray (threshold: 1)> Size: 8B
+        array([0.5])
+        Coordinates:
+          ...
+
+        >>> # Calculate the Brier score for an ensemble forecast for multiple thresholds:
+        >>> brier_score_for_ensemble(
+        ...     fcst,
+        ...     obs,
+        ...     ensemble_member_dim="ensemble",
+        ...     event_thresholds=[0.1, 0.5],
+        ... )
+        <xarray.DataArray (threshold: 2)> Size: 16B
+        array([0.16666667, 0.5       ])
+        Coordinates:
+          ...
 
     """
     if event_threshold_operator not in [operator.ge, operator.gt, operator.le, operator.lt]:

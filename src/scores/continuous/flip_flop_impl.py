@@ -138,25 +138,28 @@ def flip_flop_index(
         :math:`i^{{\\text{{th}}}}` data point.
 
     Examples:
-        >>> data = xr.DataArray([50, 20, 40, 80], coords={{'lead_day': [1, 2, 3, 4]}})
+        >>> import xarray as xr
+        >>> from scores.continuous import flip_flop_index
 
-        >>> flip_flop_index(data, 'lead_day')
-        <xarray.DataArray ()>
-        array(15.0)
+        >>> data = xr.DataArray([50, 20, 40, 80], coords={"lead_day": [1, 2, 3, 4]})
+
+        >>> flip_flop_index(data, "lead_day")
+        <xarray.DataArray ()> Size: 8B
+        array(15.)
         Attributes:
-            sampling_dim: lead_day
+            sampling_dim:  lead_day
 
-        >>> flip_flop_index(data, 'lead_day', days123=[1, 2, 3], all_days=[1, 2, 3, 4])
-        <xarray.Dataset>
+        >>> flip_flop_index(
+        ...     data, "lead_day", days123=[1, 2, 3], all_days=[1, 2, 3, 4]
+        ... )
+        <xarray.Dataset> Size: 16B
         Dimensions:   ()
-        Coordinates:
-            *empty*
         Data variables:
-            days123   float64 20.0
-            all_days  float64 15.0
+            days123   float64 8B 20.0
+            all_days  float64 8B 15.0
         Attributes:
-            selections: {{'days123': [1, 2, 3], 'all_days': [1, 2, 3, 4]}}
-            sampling_dim: lead_day
+            selections:    {'days123': [1, 2, 3], 'all_days': [1, 2, 3, 4]}
+            sampling_dim:  lead_day
 
     """
 
@@ -209,22 +212,26 @@ def iter_selections(
         KeyError: values in selections are not in data[sampling_dim]
 
     Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous.flip_flop_impl import iter_selections
+
         >>> data = xr.DataArray(
         ...     [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7],
-        ...     coords={'lead_day': [1, 2, 3, 4, 5, 6, 7]}
+        ...     coords={"lead_day": [1, 2, 3, 4, 5, 6, 7]},
         ... )
+
         >>> for key, data_subset in iter_selections(
-        ...         data, 'lead_day', days123=[1, 2, 3], all_days=[1, 2, 3, 4, 5, 6, 7]
+        ...     data, "lead_day", days123=[1, 2, 3], all_days=[1, 2, 3, 4, 5, 6, 7]
         ... ):
-        ...     print(key, ':', data_subset)
-        all_days : <xarray.DataArray (lead_day: 7)>
-        array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.7])
+        ...     print(key, ":", data_subset)
+        days123 : <xarray.DataArray (lead_day: 3)> Size: 24B
+        array([0. , 0.1, 0.2])
         Coordinates:
-          * lead_day  (lead_day) int64 1 2 3 4 5 6 7
-        days123 : <xarray.DataArray (lead_day: 3)>
-        array([ 0. ,  0.1,  0.2])
+          * lead_day  (lead_day) int64 24B 1 2 3
+        all_days : <xarray.DataArray (lead_day: 7)> Size: 56B
+        array([0. , 0.1, 0.2, 0.3, 0.4, 0.5, 0.7])
         Coordinates:
-          * lead_day  (lead_day) int64 1 2 3
+          * lead_day  (lead_day) int64 56B 1 2 3 4 5 6 7
 
     """
     check_dims(data, [sampling_dim], mode="superset")
@@ -273,6 +280,21 @@ def encompassing_sector_size(
 
             - the set of data dimensions is not a proper superset of `dims`
             - dimension to be collapsed isn't 1
+
+    Examples:
+        >>> from scores.continuous.flip_flop_impl import encompassing_sector_size
+        >>> import xarray as xr
+
+        >>> # Create a 1D array of directions
+        >>> data = xr.DataArray(
+        ...     [350, 0, 10], dims=["station"], coords={"station": ["A", "B", "C"]}
+        ... )
+
+        >>> # We want to collapse 'station' to get a single value,
+        >>> # so 'dims' (the preserved dims) will be empty
+        >>> encompassing_sector_size(data, dims=[])
+        <xarray.DataArray ()> Size: 8B
+        array(20)
     """
     check_dims(data, dims, mode="proper superset")
     dims_to_collapse = dims_complement(data, dims=dims)
@@ -410,33 +432,36 @@ def flip_flop_index_proportion_exceeding(
         exceeding for the subset of data specified by the keyword values.
 
     Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous import flip_flop_index_proportion_exceeding
+
         >>> data = xr.DataArray(
         ...     [[50, 20, 40, 80], [10, 50, 10, 100], [0, 30, 20, 50]],
-        ...     dims=['station_number', 'lead_day'],
-        ...     coords=[[10001, 10002, 10003], [1, 2, 3, 4]]
+        ...     dims=["station_number", "lead_day"],
+        ...     coords=[[10001, 10002, 10003], [1, 2, 3, 4]],
         ... )
 
-        >>> flip_flop_index_proportion_exceeding(data, 'lead_day', [20])
-        <xarray.DataArray (threshold: 1)>
-        array([ 0.33333333])
+        >>> flip_flop_index_proportion_exceeding(data, "lead_day", [20])
+        <xarray.DataArray (threshold: 1)> Size: 8B
+        array([0.33333333])
         Coordinates:
-          * threshold  (threshold) int64 20
+          * threshold  (threshold) int64 8B 20
         Attributes:
-            sampling_dim: lead_day
+            sampling_dim:  lead_day
 
         >>> flip_flop_index_proportion_exceeding(
-        ...     data, 'lead_day', [20], days123=[1, 2, 3], all_days=[1, 2, 3, 4]
+        ...     data, "lead_day", [20], days123=[1, 2, 3], all_days=[1, 2, 3, 4]
         ... )
-        <xarray.Dataset>
+        <xarray.Dataset> Size: 24B
         Dimensions:    (threshold: 1)
         Coordinates:
-          * threshold  (threshold) int64 20
+          * threshold  (threshold) int64 8B 20
         Data variables:
-            days123    (threshold) float64 0.6667
-            all_days   (threshold) float64 0.3333
+            days123    (threshold) float64 8B 0.6667
+            all_days   (threshold) float64 8B 0.3333
         Attributes:
-            selections: {{'days123': [1, 2, 3], 'all_days': [1, 2, 3, 4]}}
-            sampling_dim: lead_day
+            selections:    {'days123': [1, 2, 3], 'all_days': [1, 2, 3, 4]}
+            sampling_dim:  lead_day
 
     See also:
         :py:func:`scores.continuous.flip_flop_index`

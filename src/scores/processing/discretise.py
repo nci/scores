@@ -84,6 +84,47 @@ def comparative_discretise(
        ValueError: if abs_tolerance is not a non-negative float.
        ValueError: if `mode` is not valid.
        TypeError: if `comparison` is not a float, int or xarray.DataArray.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing import comparative_discretise
+
+        >>> coords = {"station": ["A", "B", "C"]}
+        >>> data = xr.DataArray([15.2, 20.0, 18.9], coords=coords, dims="station")
+
+        >>> comparative_discretise(data, 20.0, ">=")
+        <xarray.DataArray (station: 3)> Size: 24B
+        array([0., 1., 0.])
+        Coordinates:
+          * station  (station) <U1 12B 'A' 'B' 'C'
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       >=
+
+        >>> thresholds = xr.DataArray([15, 20, 25],
+        ...                           coords={"threshold": [15, 20, 25]},
+        ...                           dims="threshold")
+        >>> comparative_discretise(data, thresholds, ">=")
+        <xarray.DataArray (station: 3, threshold: 3)> Size: 72B
+        array([[1., 0., 0.],
+               [1., 1., 0.],
+               [1., 0., 0.]])
+        Coordinates:
+          * station    (station) <U1 12B 'A' 'B' 'C'
+          * threshold  (threshold) int64 24B 15 20 25
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       >=
+
+        >>> comparative_discretise(data, 20.0, "==", abs_tolerance=0.5)
+        <xarray.DataArray (station: 3)> Size: 24B
+        array([0., 1., 0.])
+        Coordinates:
+          * station  (station) <U1 12B 'A' 'B' 'C'
+        Attributes:
+            discretisation_tolerance:  0.5
+            discretisation_mode:       ==
+
     """
 
     # sanitise abs_tolerance
@@ -196,6 +237,50 @@ def binary_discretise(
     Raises:
         ValueError: if 'threshold' is a dimension in `data`.
         ValueError: if "Values in `thresholds` are not monotonic increasing"
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing import binary_discretise
+
+        >>> coords = {"station": ["A", "B", "C", "D"]}
+        >>> data = xr.DataArray([12.3, 18.7, 25.1, 30.2], coords=coords, dims="station")
+
+        >>> binary_discretise(data, [15, 20, 25], ">=")
+        <xarray.DataArray (station: 4, threshold: 3)> Size: 96B
+        array([[0., 0., 0.],
+               [1., 0., 0.],
+               [1., 1., 1.],
+               [1., 1., 1.]])
+        Coordinates:
+          * station    (station) <U1 16B 'A' 'B' 'C' 'D'
+          * threshold  (threshold) int64 24B 15 20 25
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       >=
+
+        >>> binary_discretise(data, 20.0, ">=", autosqueeze=True)
+        <xarray.DataArray (station: 4)> Size: 32B
+        array([0., 0., 1., 1.])
+        Coordinates:
+          * station    (station) <U1 16B 'A' 'B' 'C' 'D'
+            threshold  float64 8B 20.0
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       >=
+
+        >>> binary_discretise(data, [25], "<=")
+        <xarray.DataArray (station: 4, threshold: 1)> Size: 32B
+        array([[1.],
+               [1.],
+               [0.],
+               [0.]])
+        Coordinates:
+          * station    (station) <U1 16B 'A' 'B' 'C' 'D'
+          * threshold  (threshold) int64 8B 25
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       <=
+
     """
     if "threshold" in data.dims:
         raise ValueError("'threshold' must not be in the supplied data object dimensions")
@@ -247,6 +332,39 @@ def proportion_exceeding(
         An xarray data object with the type of `data` and dimensions
         `dims` + 'threshold'. The values are the proportion of `data`
         that are greater than or equal to the corresponding threshold.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.processing import proportion_exceeding
+
+        >>> coords = {"station": ["A", "B", "C", "D"], "time": [0, 1, 2]}
+        >>> data = xr.DataArray(
+        ...     [[10, 15, 20], [25, 30, 35], [18, 22, 28], [12, 16, 24]],
+        ...     coords=coords,
+        ...     dims=["station", "time"],
+        ... )
+
+        >>> proportion_exceeding(data, [15, 20, 25], reduce_dims="time")
+        <xarray.DataArray (station: 4, threshold: 3)> Size: 96B
+        array([[0.66666667, 0.33333333, 0.        ],
+               [1.        , 1.        , 1.        ],
+               [1.        , 0.66666667, 0.33333333],
+               [0.66666667, 0.33333333, 0.        ]])
+        Coordinates:
+          * station    (station) <U1 16B 'A' 'B' 'C' 'D'
+          * threshold  (threshold) int64 24B 15 20 25
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       >=
+
+        >>> proportion_exceeding(data, [20], reduce_dims=["station", "time"])
+        <xarray.DataArray (threshold: 1)> Size: 8B
+        array([0.58333333])
+        Coordinates:
+          * threshold  (threshold) int64 8B 20
+        Attributes:
+            discretisation_tolerance:  0
+            discretisation_mode:       >=
 
     """
     return binary_discretise_proportion(data, thresholds, ">=", reduce_dims=reduce_dims, preserve_dims=preserve_dims)
@@ -324,24 +442,26 @@ def binary_discretise_proportion(
         >>> import operator
         >>> import xarray as xr
         >>> from scores.processing import binary_discretise_proportion
+
         >>> data = xr.DataArray([0, 0.5, 0.5, 1])
+
         >>> binary_discretise_proportion(data, [0, 0.5, 1], operator.eq)
-        <xarray.DataArray (threshold: 3)>
-        array([ 0.25,  0.5 ,  0.25])
+        <xarray.DataArray (threshold: 3)> Size: 24B
+        array([0.25, 0.5 , 0.25])
         Coordinates:
-          * threshold  (threshold) float64 0.0 0.5 1.0
+          * threshold  (threshold) float64 24B 0.0 0.5 1.0
         Attributes:
-            discretisation_tolerance: 0
-            discretisation_mode: ==
+            discretisation_tolerance:  0
+            discretisation_mode:       <built-in function eq>
 
         >>> binary_discretise_proportion(data, [0, 0.5, 1], operator.ge)
-        <xarray.DataArray (threshold: 3)>
-        array([ 1.  ,  0.75,  0.25])
+        <xarray.DataArray (threshold: 3)> Size: 24B
+        array([1.  , 0.75, 0.25])
         Coordinates:
-          * threshold  (threshold) float64 0.0 0.5 1.0
+          * threshold  (threshold) float64 24B 0.0 0.5 1.0
         Attributes:
-            discretisation_tolerance: 0
-            discretisation_mode: >=
+            discretisation_tolerance:  0
+            discretisation_mode:       <built-in function ge>
 
     See also:
         :py:func:`scores.processing.binary_discretise`

@@ -114,20 +114,64 @@ def firm(  # pylint: disable=too-many-arguments
         is always proportional to the distance of the observation from the
         threshold, and similarly for false alarms.
 
-    Example:
-        >>> import numpy as np
-        >>> import xarray as xr
-        >>> from scores.categorical import firm
-        >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> categorical_thresholds = [0.2, 0.5, 0.8]
-        >>> risk_parameter = 0.1
-        >>> firm_score = firm(fcst, obs, risk_parameter, categorical_thresholds)
-
     References:
         Taggart, R., Loveday, N. and Griffiths, D., 2022. A scoring framework for tiered
         warnings and multicategorical forecasts based on fixed risk measures. Quarterly
         Journal of the Royal Meteorological Society, 148(744), pp.1389-1406.
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.categorical import firm
+
+        >>> times = [1, 2]
+        >>> locations = ["A", "B", "C"]
+
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 0.8, 0.3], [0.4, 0.9, 0.6]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
+
+        >>> obs = xr.DataArray(
+        ...     data=[[0.4, 0.6, 0.1], [0.4, 0.95, 0.45]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"],
+        ... )
+
+        >>> categorical_thresholds = [0.2, 0.5, 0.8]
+        >>> risk_parameter = 0.1
+        >>> threshold_weights = [1, 3, 5]
+        >>> firm(
+        ...     fcst, obs, risk_parameter, categorical_thresholds, threshold_weights
+        ... )
+        <xarray.DataArray ()> Size: 8B
+        array(0.61666667)
+
+        >>> firm(
+        ...     fcst,
+        ...     obs,
+        ...     risk_parameter,
+        ...     categorical_thresholds,
+        ...     threshold_weights,
+        ...     include_components=True,
+        ... )
+        <xarray.DataArray (components: 3)> Size: 24B
+        array([0.61666667, 0.6       , 0.01666667])
+        Coordinates:
+          * components  (components) <U21 252B 'firm_score' ... 'underforecast_penalty'
+
+        >>> firm(
+        ...     fcst,
+        ...     obs,
+        ...     risk_parameter,
+        ...     categorical_thresholds,
+        ...     threshold_weights,
+        ...     preserve_dims="time",
+        ... )
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.33333333, 0.9       ])
+        Coordinates:
+          * time     (time) int64 16B 1 2
     """
     _check_firm_inputs(
         fcst, obs, risk_parameter, categorical_thresholds, threshold_weights, discount_distance, threshold_assignment
@@ -394,17 +438,40 @@ def seeps(  # pylint: disable=too-many-arguments, too-many-locals
         136(650), 1344–1363. https://doi.org/10.1002/qj.656
 
     Examples:
-        >>> import numpy as np
         >>> import xarray as xr
         >>> from scores.categorical import seeps
-        >>> fcst = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> obs = xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> prob_dry = xr.DataArray(np.random.rand(6, 8), dims=['lat', 'lon'])
-        >>> light_heavy_threshold = 2 * xr.DataArray(np.random.rand(4, 6, 8), dims=['time', 'lat', 'lon'])
-        >>> seeps(fcst, obs, prob_dry, light_heavy_threshold=light_heavy_threshold)
-        <xarray.DataArray ()>
-        Size: 8B
-        array(0.84333334)
+
+        >>> times = [1, 2]
+        >>> locations = ['A', 'B', 'C']
+
+        >>> fcst = xr.DataArray(
+        ...     data=[[0.1, 10., 0.0], [0.4, 7.1, 6.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+
+        >>> obs = xr.DataArray(
+        ...     data=[[0.4, 13.4, 0.1], [0.4, 10.2, 4.5]],
+        ...     coords={"time": times, "location": locations},
+        ...     dims=["time", "location"]
+        ...     )
+
+        >>> prob_dry = xr.DataArray(
+        ...     data=[0.5,0.7,0.9],
+        ...     coords={"location": locations},
+        ...     dims=["location"]
+        ...     )
+
+        >>> light_heavy_threshold = xr.DataArray(
+        ...     data=[14.0,18.0,6.0],
+        ...     coords={"location": locations},
+        ...     dims=["location"]
+        ...     )
+
+        >>> seeps(fcst, obs, prob_dry,
+        ...       light_heavy_threshold=light_heavy_threshold)
+        <xarray.DataArray ()> Size: 8B
+        array(0.25)
     """
     if prob_dry.min() < 0 or prob_dry.max() > 1:
         raise ValueError("`prob_dry` must not contain values outside the range [0, 1]")
