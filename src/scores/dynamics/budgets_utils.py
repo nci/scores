@@ -14,7 +14,7 @@ LAT_MAX = +90.0  # maximum permissible latitude, degrees
 
 
 @dataclass
-class planet_constants:
+class PlanetConstants:
     # physical constants
     RAD_EARTH: float = 6371220.0  # radius of the earth, m
     GRAVITY: float = 9.80665  # gravitational acceleration of the earth, m/s^2
@@ -57,7 +57,7 @@ class planet_constants:
         return 2.0 * np.pi * self.RAD_EARTH / 360.0
 
 
-StandardConstants = planet_constants()
+standard_constants = PlanetConstants()
 
 
 def _integration_weights(
@@ -65,7 +65,7 @@ def _integration_weights(
     latitude: np.ndarray,
     longitude_name: str,
     latitude_name: str,
-    constants: planet_constants,
+    constants: PlanetConstants,
 ):
     """
     Integration weights for a two dimensional latitude-longitude field on
@@ -174,7 +174,7 @@ def _trig_fields(longitude, latitude, longitude_name, latitude_name):
     return cos_theta, sin_theta, cos_theta_inv
 
 
-def _pressure_level_thickness(levels, constants: planet_constants):
+def _pressure_level_thickness(levels, constants: PlanetConstants):
     """
     Compute the physical thickness (in meters) of each (hydrostatic) pressure level for vertical integration
 
@@ -209,7 +209,7 @@ def _integrate_energy_exchange(
     cos_theta_inv,
     longitude_name,
     latitude_name,
-    constants: planet_constants,
+    constants: PlanetConstants,
     preserve_horizontal: bool = False,
 ):
     """
