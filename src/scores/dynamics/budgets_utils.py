@@ -2,6 +2,8 @@
 Common backend functionality required for the energy budget diagnosics
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 import xarray as xr
 
@@ -11,24 +13,51 @@ LAT_MIN = -90.0  # minimum permissible latitude, degrees
 LAT_MAX = +90.0  # maximum permissible latitude, degrees
 
 
-# physical constants
+@dataclass
 class planet_constants:
-    def __init__(self):
-        self.RAD_EARTH = 6371220.0  # radius of the earth, m
-        self.GRAVITY = 9.80665  # gravitational acceleration of the earth, m/s^2
-        self.C_PD = 1004.0  # specific heat of dry air at constant pressure, J/kg/K
-        self.C_PV = 1885.0  # specific heat of vapour water at constant pressure, J/kg/K
-        self.C_L = 4186.0  # specific heat of liquid water at constant pressure, J/kg/K
-        self.C_I = 2106.0  # specific heat of ice water at constant pressure, J/kg/K
-        self.T_0 = 0.0  # reference temperature, K
-        self.R_V = 461.0  # gas constant for vapour, J/kg/K
-        self.L_V = 2.5008e6  # specific latent heat of vaporisation, J/kg
-        self.L_S = 2.834e6  # specific latent heat of vaporisation, J/kg
+    # physical constants
+    RAD_EARTH: float = 6371220.0  # radius of the earth, m
+    GRAVITY: float = 9.80665  # gravitational acceleration of the earth, m/s^2
+    C_PD: float = 1004.0  # specific heat of dry air at constant pressure, J/kg/K
+    C_PV: float = 1885.0  # specific heat of vapour water at constant pressure, J/kg/K
+    C_L: float = 4186.0  # specific heat of liquid water at constant pressure, J/kg/K
+    C_I: float = 2106.0  # specific heat of ice water at constant pressure, J/kg/K
+    T_0: float = 0.0  # reference temperature, K
+    R_V: float = 461.0  # gas constant for vapour, J/kg/K
+    L_V: float = 2.5008e6  # specific latent heat of vaporisation, J/kg
+    L_S: float = 2.834e6  # specific latent heat of vaporisation, J/kg
+
+    def __init__(
+        self,
+        RAD_EARTH: float = 6371220.0,
+        GRAVITY: float = 9.80665,
+        C_PD: float = 1004.0,
+        C_PV: float = 1885.0,
+        C_L: float = 4186.0,
+        C_I: float = 2106.0,
+        T_0: float = 0.0,
+        R_V: float = 461.0,
+        L_V: float = 2.5008e6,
+        L_S: float = 2.834e6,
+    ):
+        self.RAD_EARTH = RAD_EARTH
+        self.GRAVITY = GRAVITY
+        self.C_PD = C_PD
+        self.C_PV = C_PV
+        self.C_L = C_L
+        self.C_I = C_I
+        self.T_0 = T_0
+        self.R_V = R_V
+        self.L_V = L_V
+        self.L_S = L_S
         self.L_F = self.L_S - self.L_V  # specific latent heat of freezing, J/kg
 
     # conversion from degrees to meters, m
     def meters_per_degree(self):
         return 2.0 * np.pi * self.RAD_EARTH / 360.0
+
+
+StandardConstants = planet_constants()
 
 
 def _integration_weights(

@@ -15,6 +15,7 @@ import pytest
 import xarray as xr
 
 from scores.dynamics.budgets_utils import (
+    StandardConstants,
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
@@ -33,16 +34,19 @@ from scores.dynamics.energetics_impl import (
 # phi: azimuthal angle
 # theta: polar angle (from the equator)
 
-constants = planet_constants()
-area_earth = 4.0 * np.pi * constants.RAD_EARTH * constants.RAD_EARTH
-u_0 = 2.0 * np.pi * constants.RAD_EARTH / (12.0 * 24.0 * 60.0 * 60.0)
+area_earth = 4.0 * np.pi * StandardConstants.RAD_EARTH * StandardConstants.RAD_EARTH
+u_0 = 2.0 * np.pi * StandardConstants.RAD_EARTH / (12.0 * 24.0 * 60.0 * 60.0)
 
 
 def stream_function(phi, theta, alpha):
     _phi = np.deg2rad(phi)
     _theta = np.deg2rad(theta)
 
-    return -constants.RAD_EARTH * u_0 * (np.sin(_theta) * np.cos(alpha) - np.cos(_phi) * np.cos(_theta) * np.sin(alpha))
+    return (
+        -StandardConstants.RAD_EARTH
+        * u_0
+        * (np.sin(_theta) * np.cos(alpha) - np.cos(_phi) * np.cos(_theta) * np.sin(alpha))
+    )
 
 
 # derived from the stream function, \psi as:
@@ -137,8 +141,8 @@ def vorticity(phi, theta, alpha):
             4,
             np.array([45.0, 135.0]),
             np.array([-60.0, +60.0]),
-            constants.RAD_EARTH
-            * constants.RAD_EARTH
+            StandardConstants.RAD_EARTH
+            * StandardConstants.RAD_EARTH
             * np.pi
             * (135.0 - 45.0)
             / 180.0
@@ -179,7 +183,7 @@ def test_budgets_integral(
                 (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
             ]
 
-        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", constants)
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", StandardConstants)
         nlon = len(dlon)
         nlat = len(dlat)
 
@@ -269,7 +273,7 @@ def test_budgets_gradient(
                 (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
             ]
 
-        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", constants)
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", StandardConstants)
         nlon = len(dlon)
         nlat = len(dlat)
         cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude, "longitude", "latitude")
@@ -294,7 +298,17 @@ def test_budgets_gradient(
         )
 
         grad_f_dot_u, f_div_u = _integrate_energy_exchange(
-            psi, dPsiDx, dPsiDy, dlon, dlat, cos_theta, sin_theta, cos_theta_inv, "longitude", "latitude", constants
+            psi,
+            dPsiDx,
+            dPsiDy,
+            dlon,
+            dlat,
+            cos_theta,
+            sin_theta,
+            cos_theta_inv,
+            "longitude",
+            "latitude",
+            StandardConstants,
         )
 
         err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)
@@ -1067,7 +1081,7 @@ def test_budgets_dask():
             "longitude": longitude,
         },
     )
-    E = energy_components_lat_lon(ds.chunk(), constants=constants)
+    E = energy_components_lat_lon(ds.chunk())
     assert isinstance(E["Internal"].data, dask.array.Array)
     assert isinstance(E["Latent"].data, dask.array.Array)
     assert isinstance(E["Potential"].data, dask.array.Array)
@@ -1472,7 +1486,7 @@ def test_exchanges_dask():
         },
     )
 
-    E = energy_exchanges_lat_lon(ds.chunk(), constants=constants)
+    E = energy_exchanges_lat_lon(ds.chunk())
     assert isinstance(E["KineticToInternal"].data, dask.array.Array)
     assert isinstance(E["InternalToKinetic"].data, dask.array.Array)
     assert isinstance(E["KineticToPotential"].data, dask.array.Array)
