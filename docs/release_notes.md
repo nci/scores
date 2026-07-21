@@ -1,5 +1,61 @@
 # Release Notes (What's New)
 
+## Version 2.6.0 (July 17, 2026)
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.5.0...2.6.0). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+- `scores` has introduced support for `pandas` version 3. See [PR #1062](https://github.com/nci/scores/pull/1062).
+- Added three new metrics:
+	- Relative economic value: `scores.continuous.relative_economic_value`, `scores.probability.relative_economic_value`, `scores.categorical.relative_economic_value` and `scores.plotdata.relative_economic_value`. See [PR #999](https://github.com/nci/scores/pull/999) and [PR #1088](https://github.com/nci/scores/pull/1088).
+	- Relative economic value from rates: `scores.continuous.relative_economic_value_from_rates`, `scores.probability.relative_economic_value_from_rates` , `scores.categorical.relative_economic_value_from_rates` and `scores.plotdata.relative_economic_value_from_rates`. See [PR #999](https://github.com/nci/scores/pull/999).
+	- Receiver (relative) operating characteristic area under curve (ROC AUC): `scores.probability.roc_auc`. This is significantly computationally more efficient than calculating the area under the curve using `scores.probability.roc_curve_data`. See [PR #1036](https://github.com/nci/scores/pull/1036).
+- Added a kwarg to `scores.continuous.kge` to allow switching between the original Kling-Gupta Efficiency (KGE) formulation of [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003) and the modified formulation of [Kling et al. (2012)](https://doi.org/10.1016/j.jhydrol.2012.01.011). The default remains the original implementation. See [PR #1069](https://github.com/nci/scores/pull/1069).
+
+### Deprecations
+
+- *This deprecation was first introduced in Version 2.5.0.* Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
+	- support for `include_components` in `scores.probability.tw_crps_for_ensemble`, 
+	- support for `include_components` in `scores.probability.tail_tw_crps_for_ensemble` and
+	- support for `include_components` in `scores.probability.interval_tw_crps_for_ensemble`.  
+	See [PR #991](https://github.com/nci/scores/pull/991). 
+
+### Bug Fixes
+
+- Improved `NaN` handling in `scores.probability.roc_curve_data`. See [PR #1036](https://github.com/nci/scores/pull/1036).
+- Improved dimension reduction code to ensure consistent dimension ordering in returned objects in  `scores.probability.roc_curve_data`. See [PR #1036](https://github.com/nci/scores/pull/1036).
+
+### Documentation
+
+- Added "Relative Economic Value (REV)" tutorial. See [PR #999](https://github.com/nci/scores/pull/999).
+- Updated the "Receiver Operating Characteristic (ROC)" tutorial to include information about the newly-added `scores.probability.roc_auc` function (which is significantly more computationally efficient). See [PR #1036](https://github.com/nci/scores/pull/1036).
+- Updated the "Kling–Gupta Efficiency (KGE)" tutorial to include information about the newly-added kwarg which allows users to switch between the original KGE formulation of [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003) and the modified formulation of [Kling et al. (2012)](https://doi.org/10.1016/j.jhydrol.2012.01.011). See [PR #1069](https://github.com/nci/scores/pull/1069).
+- Updated the "Contributing Guide" to include guidelines for generative tool usage. See [PR #1027](https://github.com/nci/scores/pull/1027). 
+- Added a commit template to the `scores` repository and added instructions in the "Contribuing Guide" for setting up and using the commit template. See [PR #1045](https://github.com/nci/scores/pull/1045) and [PR #1048](https://github.com/nci/scores/pull/1048).
+- Added an entry for "Aggregate" to the "Processing" table in `docs/included.md`. See [PR #1038](https://github.com/nci/scores/pull/1038).
+- Updated docstrings (e.g. added examples and improved grammar) for multiple functions in the API documentation. See [PR #996](https://github.com/nci/scores/pull/996) and [PR #1056](https://github.com/nci/scores/pull/1056).
+- Corrected erroneous namespaces and added :py:func: before the correct namespaces in `src/scores/probability/crps_impl.py`. Specifically, changed `scores.probability.functions.fill_cdf` to ``:py:func:`scores.processing.cdf.fill_cdf` `` and changed `scores.probability.functions.cdf_envelope` to ``:py:func:`scores.processing.cdf.cdf_envelope` ``. See [PR #1050](https://github.com/nci/scores/pull/1050).
+- Updated links to the new verification site [https://jwgfvr.github.io/forecastverification](https://jwgfvr.github.io/forecastverification) (which will replace the prior site: https://www.cawcr.gov.au/projects/verification) in `tutorials/Additive_and_multiplicative_bias.ipynb`, `tutorials/Binary_Contingency_Scores.ipynb` and `src/scores/categorical/contingency_impl.py`. See [PR #1029](https://github.com/nci/scores/pull/1029), [PR #1030](https://github.com/nci/scores/pull/1030) and [PR #1031](https://github.com/nci/scores/pull/1031).
+- Updated link from https://www.openradar.io/ (which is no longer active) to [https://nci.org.au/aura/](https://nci.org.au/aura/) in `docs/data.md`. See [PR #1081](https://github.com/nci/scores/pull/1081).
+- Replaced link to ERA5 dataset in `docs/data.md` from https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5 to [https://doi.org/10.24381/cds.adbb2d47](https://doi.org/10.24381/cds.adbb2d47). See [PR #1081](https://github.com/nci/scores/pull/1081).
+- Updated the "Quantile Interval Score and Interval Score" tutorial to use the updated lower-case "h" date range syntax, due to changes in `pandas`. See [PR #1065](https://github.com/nci/scores/pull/1065).
+- Fixed integration of tutorials with `Binder`. See [PR #1083](https://github.com/nci/scores/pull/1083).
+
+### Internal Changes
+
+- Moved tutorial files from a top-level directory, `tutorials`, into the `docs/tutorials/` subdirectory. This change was made to support how recent `Sphinx` versions handle symbolic links to files located outside of the `docs` subdirectory. Users who run the tutorials will need to use the updated location. There is no change to how the tutorials render in the documentation. Unpinned the version of `Sphinx` used by `scores`, so that the most recent versions of `Sphinx` can be used. See [PR #1042](https://github.com/nci/scores/pull/1042).
+- Introduced the use of the Python [`doctest`](https://docs.python.org/3/library/doctest.html
+) module for automated testing of examples in API documentation (docstrings). Revised existing docstrings as appropriate to meet `doctest` tool requirements. Added the `doctest` tool to CI/CD and developer tooling via pre-commit. See [PR #1056](https://github.com/nci/scores/pull/1056).
+- Update CI pipeline to run tests against all versions of Python even if one fails. See [PR #1063](
+https://github.com/nci/scores/pull/1063). 
+
+### Contributors to this Release
+
+Oisín M. Morrison* ([@Oisin-M](https://github.com/Oisin-M)), Daniel Karney* ([@danielkarney](https://github.com/danielkarney)), Thomas C. Pagano ([@thomaspagano](https://github.com/thomaspagano)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)), John Sharples ([@John-Sharples](https://github.com/John-Sharples)), Mohammadreza Khanarmuei ([@reza-armuei](https://github.com/reza-armuei)), Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)) and Durga Shrestha ([@durgals](https://github.com/durgals)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.5.0 (February 14, 2026)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.4.0...2.5.0). Below are the changes we think users may wish to be aware of.
