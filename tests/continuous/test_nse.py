@@ -1128,13 +1128,7 @@ class TestNseDask(NseSetup):
     check if dask computes things appropriately with non-dask as a compatiblity measure.
     """
 
-    @pytest.fixture(scope="class", autouse=True)
-    def skip_if_dask_unavailable(self):
-        """
-        fixture to skip dask if it doesn't exist
-        """
-        if not DASK_AVAILABLE:
-            pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    pytestmark = pytest.mark.skipif(not DASK_AVAILABLE, reason="Dask unavailable, could not run test")
 
     def test_nse_with_dask_inputs(self, tmpdir):
         """
