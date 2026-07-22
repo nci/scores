@@ -1437,6 +1437,9 @@ def test_exchanges(
 
 # test that the energy exchanges computation is compatible with Dask
 def test_exchanges_dask():
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
     longitude = np.arange(0.0, 360.0, 6)
