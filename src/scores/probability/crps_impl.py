@@ -945,7 +945,7 @@ def crps_for_ensemble(
     #
     # The idea of sorting the ensemble members to compute the CRPS spread term
     # can be found in Hersbach, H. (2000). Decomposition of the Continuous Ranked Probability
-    # Score for Ensemble Prediction Systems. Weather and Forecasting, 15(5), 559=570.
+    # Score for Ensemble Prediction Systems. Weather and Forecasting, 15(5), 559–570.
     # https://doi.org/10.1175/1520-0434(2000)015<0559:dotcrp>2.0.co;2
 
     # Calculate forecast spread term
@@ -1227,10 +1227,10 @@ def tail_tw_crps_for_ensemble(
         >>> from scores.probability import tail_tw_crps_for_ensemble
         >>> np.random.seed(42)
 
-        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=["time", "ensemble"])
+        >>> obs = xr.DataArray(np.random.rand(10), dims=["time"])
 
-        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+        >>> tail_tw_crps_for_ensemble(fcst, obs, "ensemble", 0.5, tail="upper")
         <xarray.DataArray ()> Size: 8B
         array(0.07993158)
     """
@@ -1346,10 +1346,12 @@ def interval_tw_crps_for_ensemble(
         >>> from scores.probability import interval_tw_crps_for_ensemble
         >>> np.random.seed(42)
 
-        >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+        >>> fcst = xr.DataArray(
+        ...     np.random.uniform(-40, 20, size=(30, 15)), dims=["time", "ensemble"]
+        ... )
+        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=["time"])
 
-        >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+        >>> interval_tw_crps_for_ensemble(fcst, obs, "ensemble", -20, 10)
         <xarray.DataArray ()> Size: 8B
         array(7.46973354)
     """
