@@ -169,15 +169,16 @@ class Pit:
         UserWarning: when ``cdf_threshold_dim`` has been supplied and there are any NaN values in ``fcst`` or
             ``fcst_left``.
 
-    References:
-        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
-            https://doi.org/10.1214/13-EJS823
-        - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
-            Bureau Research Report 64, https://nla.gov.au/nla.obj-3079961862/view
-
     See also:
             - :py:func:`scores.probability.PitFcstAtObs`
             - :py:func:`scores.probability.rank_histogram`
+
+    References:
+        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions.
+          Electronic Journal of Statistics, 7, 1747–1782. https://doi.org/10.1214/13-EJS823
+        - Taggart, R. J. (2022). Assessing calibration when predictive distributions
+          have discontinuities (Bureau Research Report No. 64). Bureau of Meteorology.
+          https://nla.gov.au/nla.obj-3079961862/view
 
     Examples:
         Calculate the PIT for an under-dispersive ensemble forecast, and calculate various diagnostics and statistics.
@@ -355,10 +356,10 @@ class Pit:
         In this case the alpha score takes values between 0 and 1.
 
         References:
-            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
-                Understanding predictive uncertainty in hydrologic modeling: \
-                The challenge of identifying input and structural errors. \
-                Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
+              Understanding predictive uncertainty in hydrologic modeling:
+              The challenge of identifying input and structural errors.
+              Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
         return _alpha_score(self.left, self.right, negative_orientation=negative_orientation)
 
@@ -454,15 +455,16 @@ class PitFcstAtObs:
         ValueError: when ``fcst_at_obs_left`` is not ``None`` and
             any values of ``fcst_at_obs_left`` are greater than ``fcst``.
 
-    References:
-        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
-            https://doi.org/10.1214/13-EJS823
-        - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
-            Bureau Research Report 64, https://nla.gov.au/nla.obj-3079961862/view
-
     See also:
             - :py:func:`scores.probability.Pit`
             - :py:func:`scores.probability.rank_histogram`
+
+    References:
+        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions.
+          Electronic Journal of Statistics, 7, 1747–1782. https://doi.org/10.1214/13-EJS823
+        - Taggart, R. J. (2022). Assessing calibration when predictive distributions
+          have discontinuities (Bureau Research Report No. 64). Bureau of Meteorology.
+          https://nla.gov.au/nla.obj-3079961862/view
 
     Examples:
         Calculate the PIT for an under-dispersive forecast, and calculate various diagnostics and statistics.
@@ -616,10 +618,10 @@ class PitFcstAtObs:
         In this case the alpha score takes values between 0 and 1.
 
         References:
-            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
-                Understanding predictive uncertainty in hydrologic modeling: \
-                The challenge of identifying input and structural errors. \
-                Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
+              Understanding predictive uncertainty in hydrologic modeling:
+              The challenge of identifying input and structural errors.
+              Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
         return _alpha_score(self.left, self.right, negative_orientation=negative_orientation)
 
