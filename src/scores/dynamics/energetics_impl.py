@@ -38,9 +38,10 @@ def energy_components_lat_lon(
     Compute the time series for the energy budget on pressure levels
 
     .. math::
-        \\text{Internal}  = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}(C_p(1-q) + C_{pv}q)T\\text{d}\\Omega\\text{d}p
-        \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p
-        \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega
+        \\text{Internal}  = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}(C_p(1-q) + C_{pv}q)T\\text{d}
+        \\Omega\\text{d}p\\
+        \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p\\
+        \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega\\
         \\text{Kinetic}   = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}
                             \\frac{1}{2}(u^2 + v^2 + w^2)\\text{d}\\Omega\\text{d}p
 
@@ -80,11 +81,11 @@ def energy_components_lat_lon(
         2D array containing the time series for the domain integrals of the energy components at each time.
 
     References:
-        Trenberth, K. E., Stepaniak, D. P., Caron, J. M. (2002) "Accuracy of Atmospheric Energy Budgets from Analyses"
+        - Trenberth, K. E., Stepaniak, D. P., Caron, J. M. (2002) "Accuracy of Atmospheric Energy Budgets from Analyses"
           J. Clim. 15 3343--3360
-        Sha, Y., Schreck, J. S., Chapman, W., Gagne, D. J. (2025) "Improving AI Weather Prediction Models using Global
+        - Sha, Y., Schreck, J. S., Chapman, W., Gagne, D. J. (2025) "Improving AI Weather Prediction Models using Global
           Mass and Energy Conservation Schemes" Journal of Advances in Modelling Earth Systems, 17, e2025MS005138
-        Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
+        - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
     """
@@ -214,11 +215,11 @@ def energy_exchanges_lat_lon(
 
     .. math::
         \\text{Kinetic to Internal}  = \\int_{p_1}^{p_0}\\int_{\\Omega}\\nabla (z-z_s)\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p
+                                       \\text{d}\\Omega\\text{d}p\\
         \\text{Internal to Kinetic}  = \\int_{p_1}^{p_0}\\int_{\\Omega}(z-z_s) \\nabla\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p
+                                       \\text{d}\\Omega\\text{d}p\\
         \\text{Kinetic to Potential} = \\int_{p_1}^{p_0}\\int_{\\Omega}\\nabla z_s\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p
+                                       \\text{d}\\Omega\\text{d}p\\
         \\text{Potential to Kinetic} = \\int_{p_1}^{p_0}\\int_{\\Omega}z_s \\nabla\\cdot\\boldsymbol{u}
                                        \\text{d}\\Omega\\text{d}p
 
@@ -248,9 +249,9 @@ def energy_exchanges_lat_lon(
         2D array containing the time series for the domain integrals of the energy exchanges at each time
 
     References:
-        Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
+        - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
-          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357–380). Heidelberg, Germany: Springer.
+          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
     """
     # test for NaN values in input data
     field_names = [zonal_velocity_name, meridional_velocity_name, geopotential_name, surface_geopotential_name]
