@@ -234,8 +234,6 @@ def test_weights_error():
         "alpha",
         "low_resolution",
         "num_resolutions",
-        "sub_domain_longitude",
-        "sub_domain_latitude",
         "convergence_rate",
         "tolerance",
     ),
@@ -249,8 +247,6 @@ def test_weights_error():
             0.25 * np.pi,
             np.array([60, 120], dtype=np.int64),
             3,
-            None,
-            None,
             2.0,
             2.0e-2,
         ),
@@ -264,8 +260,6 @@ def test_budgets_gradient(
     alpha,
     low_resolution,
     num_resolutions,
-    sub_domain_longitude,
-    sub_domain_latitude,
     convergence_rate,
     tolerance,
 ):
@@ -278,15 +272,7 @@ def test_budgets_gradient(
         nlat = low_resolution[0] * np.power(2, res)
 
         longitude = np.linspace(-180.0, +180.0, nlon)
-        if sub_domain_longitude is not None:
-            longitude = longitude[
-                (longitude > sub_domain_longitude[0] - 1.0e-6) & (longitude < sub_domain_longitude[1] + 1.0e-6)
-            ]
         latitude = np.linspace(-90.0, +90.0, nlat)
-        if sub_domain_latitude is not None:
-            latitude = latitude[
-                (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
-            ]
 
         dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", STANDARD_CONSTANTS)
         nlon = len(dlon)
@@ -1043,7 +1029,7 @@ def test_budget(
 # test that the energy budget computation is compatible with Dask
 def test_budgets_dask():
     if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
@@ -1120,7 +1106,7 @@ def test_budgets_dask():
 
 def test_budgets_nan():
     if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
@@ -1178,7 +1164,7 @@ def test_budgets_nan():
 # test for internal and latent energy with multipltle phases
 def test_budgets_multiphase_moisture():
     if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
@@ -1250,7 +1236,7 @@ def test_budgets_multiphase_moisture():
 
 def test_budgets_multiphase_moisture_vertical():
     if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
@@ -1510,7 +1496,7 @@ def test_exchanges(
 # test that the energy exchanges computation is compatible with Dask
 def test_exchanges_dask():
     if dask == "Unavailable":
-        pytest.skip("Dask unavailable, could not run test")
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
