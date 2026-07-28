@@ -88,9 +88,9 @@ def _integration_weights(
     dlon[0] = longitude[1] - longitude[0]
     dlon[-1] = longitude[-1] - longitude[-2]
     dlon[:] = constants.meters_per_degree() * dlon[:]
-    error_msg = ValueError("-ve value detected in longitudinal weights")
-    if (dlon < 0.0).any():
-        raise error_msg  # pragma: no cover
+    error_msg = ValueError("Inconsistent ordering leading to error in longitudinal weights")
+    if (dlon < 0.0).any() or np.any(longitude[:-1] > longitude[1:]):
+        raise error_msg
 
     dlat = np.zeros(len(latitude))
     for ii in np.arange(len(latitude) - 2) + 1:
@@ -103,9 +103,9 @@ def _integration_weights(
         dlat[-1] = np.abs(latitude[-1] - latitude[-2]) * np.cos(np.deg2rad(latitude[-1]))
 
     dlat[:] = constants.meters_per_degree() * dlat[:]
-    error_msg = ValueError("-ve value detected in latitudinal weights")
-    if (dlat < 0.0).any():
-        raise error_msg  # pragma: no cover
+    error_msg = ValueError("Inconsistent ordering leading to error in latitudinal weights")
+    if (dlat < 0.0).any() or np.any(latitude[:-1] > latitude[1:]):
+        raise error_msg
 
     return xr.DataArray(dlon, dims=longitude_name, coords={longitude_name: longitude}), xr.DataArray(
         dlat, dims=latitude_name, coords={latitude_name: latitude}

@@ -209,6 +209,21 @@ def test_budgets_integral(
     )
 
 
+# test the raised exceptions
+def test_weights_error():
+    # longitudinal array error
+    longitude = np.array([-180.0, -120.0, 0.0, -60.0, 60.0, 120.0])
+    latitude = np.linspace(-90.0, +90.0, 9, endpoint=True)
+    with pytest.raises(ValueError, match="Inconsistent ordering leading to error in longitudinal weights"):
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", STANDARD_CONSTANTS)
+
+    # longitudinal array error
+    longitude = np.linspace(-180.0, 180.0, 6, endpoint=False)
+    latitude = np.array([-90.0, -60.0, -30.0, 0.0, 30.0, 90.0, 60.0])
+    with pytest.raises(ValueError, match="Inconsistent ordering leading to error in latitudinal weights"):
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", STANDARD_CONSTANTS)
+
+
 # unit test for the energy exchanges
 @pytest.mark.parametrize(
     (
