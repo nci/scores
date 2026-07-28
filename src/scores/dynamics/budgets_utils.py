@@ -5,6 +5,7 @@ Common backend functionality required for the energy budget diagnosics
 from dataclasses import dataclass
 
 import numpy as np
+import scipy as sp
 import xarray as xr
 
 LON_MIN = 0.0  # minimum permissible longitude, degrees
@@ -17,7 +18,7 @@ LAT_MAX = +90.0  # maximum permissible latitude, degrees
 class PlanetConstants:
     # physical constants
     RAD_EARTH: float = 6371220.0  # radius of the earth, m
-    GRAVITY: float = 9.80665  # gravitational acceleration of the earth, m/s^2
+    GRAVITY: float = sp.constants.g  # gravitational acceleration of the earth, m/s^2
     C_PD: float = 1004.0  # specific heat of dry air at constant pressure, J/kg/K
     C_PV: float = 1885.0  # specific heat of vapour water at constant pressure, J/kg/K
     C_L: float = 4186.0  # specific heat of liquid water at constant pressure, J/kg/K
@@ -30,7 +31,7 @@ class PlanetConstants:
     def __init__(
         self,
         RAD_EARTH: float = 6371220.0,
-        GRAVITY: float = 9.80665,
+        GRAVITY: float = sp.constants.g,
         C_PD: float = 1004.0,
         C_PV: float = 1885.0,
         C_L: float = 4186.0,
