@@ -3,13 +3,13 @@ import pandas as pd
 import xarray as xr
 
 from scores.dynamics.budgets_utils import (
+    STANDARD_CONSTANTS,
     PlanetConstants,
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
     _pressure_level_thickness,
     _trig_fields,
-    standard_constants,
 )
 from scores.typing import XarrayLike
 
@@ -32,7 +32,7 @@ def energy_components_lat_lon(
     ice_mass_fraction_name: str | None = None,
     surface_pressure_name: str = "sp",
     surface_geopotential_name: str = "zs",
-    constants: PlanetConstants = standard_constants,
+    constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
     Compute the time series for the energy budget on pressure levels
@@ -207,7 +207,7 @@ def energy_exchanges_lat_lon(
     meridional_velocity_name: str = "v",
     geopotential_name: str = "z",
     surface_geopotential_name: str = "zs",
-    constants: PlanetConstants = standard_constants,
+    constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
     Compute the exchanges between kinetic to internal, internal to kinetic, kinetic to potential and

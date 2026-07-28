@@ -15,12 +15,12 @@ import pytest
 import xarray as xr
 
 from scores.dynamics.budgets_utils import (
+    STANDARD_CONSTANTS,
     PlanetConstants,
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
     _trig_fields,
-    standard_constants,
 )
 from scores.dynamics.energetics_impl import (
     energy_components_lat_lon,
@@ -34,8 +34,8 @@ from scores.dynamics.energetics_impl import (
 # phi: azimuthal angle
 # theta: polar angle (from the equator)
 
-area_earth = 4.0 * np.pi * standard_constants.RAD_EARTH * standard_constants.RAD_EARTH
-u_0 = 2.0 * np.pi * standard_constants.RAD_EARTH / (12.0 * 24.0 * 60.0 * 60.0)
+area_earth = 4.0 * np.pi * STANDARD_CONSTANTS.RAD_EARTH * STANDARD_CONSTANTS.RAD_EARTH
+u_0 = 2.0 * np.pi * STANDARD_CONSTANTS.RAD_EARTH / (12.0 * 24.0 * 60.0 * 60.0)
 
 
 def stream_function(phi, theta, alpha):
@@ -43,7 +43,7 @@ def stream_function(phi, theta, alpha):
     _theta = np.deg2rad(theta)
 
     return (
-        -standard_constants.RAD_EARTH
+        -STANDARD_CONSTANTS.RAD_EARTH
         * u_0
         * (np.sin(_theta) * np.cos(alpha) - np.cos(_phi) * np.cos(_theta) * np.sin(alpha))
     )
@@ -141,8 +141,8 @@ def vorticity(phi, theta, alpha):
             4,
             np.array([45.0, 135.0]),
             np.array([-60.0, +60.0]),
-            standard_constants.RAD_EARTH
-            * standard_constants.RAD_EARTH
+            STANDARD_CONSTANTS.RAD_EARTH
+            * STANDARD_CONSTANTS.RAD_EARTH
             * np.pi
             * (135.0 - 45.0)
             / 180.0
@@ -183,7 +183,7 @@ def test_budgets_integral(
                 (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
             ]
 
-        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", standard_constants)
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", STANDARD_CONSTANTS)
         nlon = len(dlon)
         nlat = len(dlat)
 
@@ -273,7 +273,7 @@ def test_budgets_gradient(
                 (latitude > sub_domain_latitude[0] - 1.0e-6) & (latitude < sub_domain_latitude[1] + 1.0e-6)
             ]
 
-        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", standard_constants)
+        dlon, dlat = _integration_weights(longitude, latitude, "longitude", "latitude", STANDARD_CONSTANTS)
         nlon = len(dlon)
         nlat = len(dlat)
         cos_theta, sin_theta, cos_theta_inv = _trig_fields(dlon.longitude, dlat.latitude, "longitude", "latitude")
@@ -308,7 +308,7 @@ def test_budgets_gradient(
             cos_theta_inv,
             "longitude",
             "latitude",
-            standard_constants,
+            STANDARD_CONSTANTS,
         )
 
         err1 = grad_f_dot_u - (dPsiDx * dPsiDx + dPsiDy * dPsiDy)

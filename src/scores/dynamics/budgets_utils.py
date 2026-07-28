@@ -57,7 +57,7 @@ class PlanetConstants:
         return 2.0 * np.pi * self.RAD_EARTH / 360.0
 
 
-standard_constants = PlanetConstants()
+STANDARD_CONSTANTS = PlanetConstants()
 
 
 def _integration_weights(
