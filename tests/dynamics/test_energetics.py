@@ -1118,6 +1118,63 @@ def test_budgets_dask():
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
 
 
+def test_budgets_nan():
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
+
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = 1.0e5 * np.ones((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    w[0, :, :, :] = w_velocity(lat3d, lon3d, lev3d)
+    t[0, :, :, :] = temperature(lat3d, lon3d, lev3d)
+    q[0, :, :, :] = humidity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    sp[0, :, :] = surface_pressure(lat2d, lon2d)
+    t[0, 1, 1, 1] = np.nan
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+    with pytest.raises(ValueError, match="NaN value found in field: t"):
+        energy_components_lat_lon(ds)
+
+
 # test for internal and latent energy with multipltle phases
 def test_budgets_multiphase_moisture():
     if dask == "Unavailable":
@@ -1521,3 +1578,106 @@ def test_exchanges_dask():
         ]
     )
     xr.testing.assert_allclose(_E, expected, atol=1.0e-2)
+
+
+def test_exchanges_nan():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = np.zeros((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    zs[:, :] = surface_geopotential(lat2d, lon2d)
+    z[0, 1, 1, 1] = np.nan
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="NaN value found in field: z"):
+        energy_exchanges_lat_lon(ds)
+
+
+def test_exchanges_time_reduce_single_time():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 6)
+    latitude = np.linspace(-90.0, 90.0, 31, endpoint=True)
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+    t = np.zeros((nt, nlev, nlat, nlon))
+    q = np.zeros((nt, nlev, nlat, nlon))
+    z = np.zeros((nt, nlev, nlat, nlon))
+    sp = np.zeros((nt, nlat, nlon))
+    zs = np.zeros((nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :] = u_velocity(lat3d, lon3d, lev3d)
+    v[0, :, :, :] = v_velocity(lat3d, lon3d, lev3d)
+    z[0, :, :, :] = geopotential(lat3d, lon3d, lev3d)
+    zs[:, :] = surface_geopotential(lat2d, lon2d)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+            "t": (["time", "level", "latitude", "longitude"], t),
+            "q": (["time", "level", "latitude", "longitude"], q),
+            "z": (["time", "level", "latitude", "longitude"], z),
+            "sp": (["time", "latitude", "longitude"], sp),
+            "zs": (["latitude", "longitude"], zs),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="Length of time dimension is 1"):
+        energy_exchanges_lat_lon(ds, reduce_time=True)

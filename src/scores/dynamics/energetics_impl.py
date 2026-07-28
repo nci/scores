@@ -104,9 +104,9 @@ def energy_components_lat_lon(
     for field_name in field_names:
         if field_name is None:
             continue
-        error_msg = ValueError("NaN value found in field: {field_name}")
+        error_msg = ValueError(f"NaN value found in field: {field_name}")
         if np.any(np.isnan(data[field_name].as_numpy())):
-            raise error_msg  # pragma: no cover
+            raise error_msg
 
     dlon, dlat = _integration_weights(
         data.longitude.values,
@@ -258,7 +258,7 @@ def energy_exchanges_lat_lon(
     for field_name in field_names:
         error_msg = ValueError(f"NaN value found in field: {field_name}")
         if np.any(np.isnan(data[field_name].as_numpy())):
-            raise error_msg  # pragma: no cover
+            raise error_msg
 
     # cannot integrate over time if less than two time values
     error_msg = ValueError(
@@ -267,7 +267,7 @@ def energy_exchanges_lat_lon(
         + "temporal dimension has two entries or more."
     )
     if reduce_time and len(data.time) < 2:
-        raise error_msg  # pragma: no cover
+        raise error_msg
 
     dlon, dlat = _integration_weights(
         data.longitude.values,
