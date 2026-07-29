@@ -100,6 +100,12 @@
 .. autofunction:: scores.spatial.fss_2d_single_field
 ```
 
+## scores.dynamics
+```{eval-rst}
+.. autofunction:: scores.dynamics.energy_components_lat_lon
+.. autofunction:: scores.dynamics.energy_exchanges_lat_lon
+```
+
 ## scores.stats
 ```{eval-rst}
 .. autofunction:: scores.stats.statistical_tests.diebold_mariano

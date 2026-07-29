@@ -598,6 +598,25 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
 ```
 
+## Dynamics
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Energy Budget
+  - [API](api.md#scores.dynamics.energy_components_lat_lon)
+  - [Tutorial](project:./tutorials/Energy_Budgets.md)
+  - [Trenberth et al. (2002)](https://doi.org/10.1175/1520-0442(2002)015<3343:AOAEBF>2.0.CO;2); [Sha et al. (2025)](https://doi.org/10.1029/2025MS005138); [Taylor (2011)](https://doi.org/10.1007/978-3-642-11640-7_12); [Eldred et al. (2022)](https://doi.org/10.1002/qj.4353)
+* - Energy Exchanges
+  - [API](api.md#scores.dynamics.energy_exchanges_lat_lon)
+  - [Tutorial](project:./tutorials/Energy_Budgets.md)
+  - [Taylor (2011)](https://doi.org/10.1007/978-3-642-11640-7_12)
+```
+
 ## Statistical Tests
 
 ```{list-table}
