@@ -222,11 +222,14 @@ def energy_exchanges_lat_lon(
 
     .. math::
         \\text{Kinetic to Internal}  = \\int_{p_1}^{p_0}\\int_{\\Omega}\\nabla (z-z_s)\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p\\
+                                       \\text{d}\\Omega\\text{d}p
+
         \\text{Internal to Kinetic}  = \\int_{p_1}^{p_0}\\int_{\\Omega}(z-z_s) \\nabla\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p\\
+                                       \\text{d}\\Omega\\text{d}p
+
         \\text{Kinetic to Potential} = \\int_{p_1}^{p_0}\\int_{\\Omega}\\nabla z_s\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p\\
+                                       \\text{d}\\Omega\\text{d}p
+
         \\text{Potential to Kinetic} = \\int_{p_1}^{p_0}\\int_{\\Omega}z_s \\nabla\\cdot\\boldsymbol{u}
                                        \\text{d}\\Omega\\text{d}p
 
