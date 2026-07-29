@@ -493,9 +493,9 @@ def _contiguous_ir(
 
                 # regression value for current block
                 if weight is None:
-                    y_out[index] = solver(y[index:idx_next_block])  # type: ignore
+                    y_out[index] = solver(y[index:idx_next_block])  # type: ignore[ty:missing-argument]
                 else:
-                    y_out[index] = solver(y[index:idx_next_block], weight[index:idx_next_block])  # type: ignore
+                    y_out[index] = solver(y[index:idx_next_block], weight[index:idx_next_block])  # type: ignore[ty:too-many-positional-arguments]
 
                 if index > 0:
                     # Backtrack if we can.  This makes the algorithm
