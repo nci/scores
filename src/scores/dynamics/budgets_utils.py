@@ -16,6 +16,12 @@ LAT_MAX = +90.0  # maximum permissible latitude, degrees
 
 @dataclass
 class PlanetConstants:
+    """
+    Data class for representing various physical constants used in the calculation
+    of energy budgets. Please refer to the tutorial for details on how and why
+    to vary these if necessary.
+    """
+
     # physical constants
     RAD_EARTH: float = 6371220.0  # radius of the earth, m
     GRAVITY: float = sp.constants.g  # gravitational acceleration of the earth, m/s^2

@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
-    STANDARD_CONSTANTS,
-    PlanetConstants,
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
@@ -38,10 +37,14 @@ def energy_components_lat_lon(
     Compute the time series for the energy budget on pressure levels
 
     .. math::
+
         \\text{Internal}  = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}(C_p(1-q) + C_{pv}q)T\\text{d}
-        \\Omega\\text{d}p\\
-        \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p\\
-        \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega\\
+        \\Omega\\text{d}p
+
+        \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p
+
+        \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega
+
         \\text{Kinetic}   = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}
                             \\frac{1}{2}(u^2 + v^2 + w^2)\\text{d}\\Omega\\text{d}p
 
