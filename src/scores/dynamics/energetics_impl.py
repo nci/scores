@@ -82,12 +82,16 @@ def energy_components_lat_lon(
 
     References:
         - Trenberth, K. E., Stepaniak, D. P., Caron, J. M. (2002) "Accuracy of Atmospheric Energy Budgets from Analyses"
-          J. Clim. 15 3343--3360
+          J. Clim. 15 3343--3360. https://doi.org/10.1175/1520-0442(2002)015<3343:AOAEBF>2.0.CO;2
         - Sha, Y., Schreck, J. S., Chapman, W., Gagne, D. J. (2025) "Improving AI Weather Prediction Models using Global
-          Mass and Energy Conservation Schemes" Journal of Advances in Modelling Earth Systems, 17, e2025MS005138
+          Mass and Energy Conservation Schemes" Journal of Advances in Modelling Earth Systems, 17, e2025MS005138.
+          https://doi.org/10.1175/1520-0442(2002)015<3343:AOAEBF>2.0.CO;2
         - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
+          https://doi.org/10.1007/978-3-642-11640-7_12
+        - Eldred, C., Taylor, M., Guba, O. (2022) "Thermodynamically consistent versions of approximations used in
+          modelling moist air" Q. J. Royal Meteorol. Soc. 148(748) 3184--3210. https://doi.org/10.1002/qj.4353
     """
     # test for NaN values in input data
     field_names = [
@@ -252,6 +256,7 @@ def energy_exchanges_lat_lon(
         - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
           unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
           Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
+          https://doi.org/10.1007/978-3-642-11640-7_12
     """
     # test for NaN values in input data
     field_names = [zonal_velocity_name, meridional_velocity_name, geopotential_name, surface_geopotential_name]

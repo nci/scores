@@ -218,8 +218,10 @@ def _integrate_energy_exchange(
     for scalar field (f) and two dimensional horizontal vector field (u,v).
 
     D. L. Williamson, J. B. Drake, J. J. Hack, R. Jakob, P. N. Swarztrauber, A standard test set for numerical
-    approximations to the shallow water eqations in spherical geometry, J. Comp. Phys. 102 (1992) 211–224.,
-    Equations (3-4).
+    approximations to the shallow water eqations in spherical geometry, J. Comp. Phys. 102 (1992) 211–224.
+    https://doi.org/10.1016/S0021-9991(05)80016-6
+
+    Equations (3-4)
 
     lambda: longitude
     theta:  latitude (from the equator)
