@@ -217,7 +217,9 @@ def _integrate_energy_exchange(
     Compute the two volumetric components of the divergence theorem on the sphere in latitude, longitude coordinates
     for scalar field (f) and two dimensional horizontal vector field (u,v).
 
-    Williamson et. al., JCP (1992), eqns (3-4):
+    D. L. Williamson, J. B. Drake, J. J. Hack, R. Jakob, P. N. Swarztrauber, A standard test set for numerical
+    approximations to the shallow water eqations in spherical geometry, J. Comp. Phys. 102 (1992) 211–224.,
+    Equations (3-4).
 
     lambda: longitude
     theta:  latitude (from the equator)
