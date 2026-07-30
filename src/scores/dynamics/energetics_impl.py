@@ -50,7 +50,7 @@ def energy_components_lat_lon(
 
     Args:
         data: Input fields for the 4D space-time quantities used to compute the energy components (specifically
-            the water vapor, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
+            the water vapour, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
             surface pressure, and the 2D space only surface geopotential), and their space time dimensional
             attributes.
         preserve_horizontal: apply area weighting to the energy components in the horizontal dimensions (latitude,

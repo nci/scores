@@ -31,8 +31,8 @@ class PlanetConstants:
     C_I: float = 2106.0  # specific heat of ice water at constant pressure, J/kg/K
     T_0: float = 0.0  # reference temperature, K
     R_V: float = 461.0  # gas constant for vapour, J/kg/K
-    L_V: float = 2.5008e6  # specific latent heat of vaporisation, J/kg
-    L_S: float = 2.834e6  # specific latent heat of vaporisation, J/kg
+    L_V: float = 2.5008e6  # specific latent heat of vapourisation, J/kg
+    L_S: float = 2.834e6  # specific latent heat of vapourisation, J/kg
 
     def __post_init__(self):
         self.L_F = self.L_S - self.L_V  # specific latent heat of freezing, J/kg
