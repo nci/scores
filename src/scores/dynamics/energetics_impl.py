@@ -63,20 +63,20 @@ def energy_components_lat_lon(
             default is "level").
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
-        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v")
-        vertical_velocity_name: string giving the textual name of the vertical velocity (optonal, default is "w")
-        temperature_name: string giving the textual name of the temperature (optional, default is "t")
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
+        vertical_velocity_name: string giving the textual name of the vertical velocity (optonal, default is "w").
+        temperature_name: string giving the textual name of the temperature (optional, default is "t").
         vapour_mass_fraction_name: string giving the textual name of the water vapour mass fraction (optional, default
-            is "q")
+            is "q").
         liquid_mass_fraction_name: string giving the textual name of the liquid water mass fration. If not supplied it
             is assumed that this is not present in the data and will not be used in the computation of the energy
-            components (optional, default is None)
+            components (optional, default is None).
         ice_mass_fraction_name: string giving the textual name of the ice water mass fration. If not supplied it is
             assumed that this is not present in the data and will not be used in the computation of the energy
-            components (optional, default is None)
-        surface_pressure_name: string giving the textual name of the surface pressure (optional, default is "sp")
+            components (optional, default is None).
+        surface_pressure_name: string giving the textual name of the surface pressure (optional, default is "sp").
         surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
-            "zs")
+            "zs").
         constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
@@ -248,10 +248,10 @@ def energy_exchanges_lat_lon(
             default is "level").
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
-        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v")
-        geopotential_name: string giving the textual name of the geopotential (optional, default is "z")
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
+        geopotential_name: string giving the textual name of the geopotential (optional, default is "z").
         surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
-            "zs")
+            "zs").
         constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
