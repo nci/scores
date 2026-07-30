@@ -64,7 +64,7 @@ def energy_components_lat_lon(
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
         meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
-        vertical_velocity_name: string giving the textual name of the vertical velocity (optonal, default is "w").
+        vertical_velocity_name: string giving the textual name of the vertical velocity (optional, default is "w").
         temperature_name: string giving the textual name of the temperature (optional, default is "t").
         vapour_mass_fraction_name: string giving the textual name of the water vapour mass fraction (optional, default
             is "q").
@@ -77,7 +77,7 @@ def energy_components_lat_lon(
         surface_pressure_name: string giving the textual name of the surface pressure (optional, default is "sp").
         surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
             "zs").
-        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optional,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
     Returns:
@@ -252,7 +252,7 @@ def energy_exchanges_lat_lon(
         geopotential_name: string giving the textual name of the geopotential (optional, default is "z").
         surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
             "zs").
-        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optional,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
     Returns:
