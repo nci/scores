@@ -260,10 +260,10 @@ def energy_exchanges_lat_lon(
 
     References:
         - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
-          unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
-          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
-          https://doi.org/10.1007/978-3-642-11640-7_12
+          unstructured grids. In P. Lauritzen, C. Jablonowski, M. Taylor, & R. Nair (Eds.), *Numerical techniques for
+          global atmospheric models* (pp. 357-380). Springer. https://doi.org/10.1007/978-3-642-11640-7_12
     """
+
     # test for NaN values in input data
     field_names = [zonal_velocity_name, meridional_velocity_name, geopotential_name, surface_geopotential_name]
     for field_name in field_names:
