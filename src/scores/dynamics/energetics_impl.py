@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
-    STANDARD_CONSTANTS,
-    PlanetConstants,
     _integrate_energy_exchange,
     _integrate_horizontal,
     _integration_weights,
@@ -38,16 +37,20 @@ def energy_components_lat_lon(
     Compute the time series for the energy budget on pressure levels
 
     .. math::
+
         \\text{Internal}  = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}(C_p(1-q) + C_{pv}q)T\\text{d}
-        \\Omega\\text{d}p\\
-        \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p\\
-        \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega\\
+        \\Omega\\text{d}p
+
+        \\text{Latent}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p
+
+        \\text{Potential} = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega
+
         \\text{Kinetic}   = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}
                             \\frac{1}{2}(u^2 + v^2 + w^2)\\text{d}\\Omega\\text{d}p
 
     Args:
         data: Input fields for the 4D space-time quantities used to compute the energy components (specifically
-            the water vapor, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
+            the water vapour, temperature and the zonal, meridional and vertical velocities, and the 3D space-time
             surface pressure, and the 2D space only surface geopotential), and their space time dimensional
             attributes.
         preserve_horizontal: apply area weighting to the energy components in the horizontal dimensions (latitude,
@@ -60,38 +63,38 @@ def energy_components_lat_lon(
             default is "level").
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
-        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v")
-        vertical_velocity_name: string giving the textual name of the vertical velocity (optonal, default is "w")
-        temperature_name: string giving the textual name of the temperature (optional, default is "t")
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
+        vertical_velocity_name: string giving the textual name of the vertical velocity (optional, default is "w").
+        temperature_name: string giving the textual name of the temperature (optional, default is "t").
         vapour_mass_fraction_name: string giving the textual name of the water vapour mass fraction (optional, default
-            is "q")
+            is "q").
         liquid_mass_fraction_name: string giving the textual name of the liquid water mass fration. If not supplied it
             is assumed that this is not present in the data and will not be used in the computation of the energy
-            components (optional, default is None)
+            components (optional, default is None).
         ice_mass_fraction_name: string giving the textual name of the ice water mass fration. If not supplied it is
             assumed that this is not present in the data and will not be used in the computation of the energy
-            components (optional, default is None)
-        surface_pressure_name: string giving the textual name of the surface pressure (optional, default is "sp")
+            components (optional, default is None).
+        surface_pressure_name: string giving the textual name of the surface pressure (optional, default is "sp").
         surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
-            "zs")
-        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
+            "zs").
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optional,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
     Returns:
         2D array containing the time series for the domain integrals of the energy components at each time.
 
     References:
-        - Trenberth, K. E., Stepaniak, D. P., Caron, J. M. (2002) "Accuracy of Atmospheric Energy Budgets from Analyses"
-          J. Clim. 15 3343--3360. https://doi.org/10.1175/1520-0442(2002)015<3343:AOAEBF>2.0.CO;2
-        - Sha, Y., Schreck, J. S., Chapman, W., Gagne, D. J. (2025) "Improving AI Weather Prediction Models using Global
-          Mass and Energy Conservation Schemes" Journal of Advances in Modelling Earth Systems, 17, e2025MS005138.
-          https://doi.org/10.1175/1520-0442(2002)015<3343:AOAEBF>2.0.CO;2
+        - Trenberth, K. E., Stepaniak, D. P., & Caron, J. M. (2002). Accuracy of atmospheric energy budgets from
+          analyses. *Journal of Climate*, 15(23), 3343-3360. https://doi.org/bm7kkz
+        - Sha, Y., Schreck, J. S., Chapman, W., & Gagne, D. J. (2025). Improving AI weather prediction models using
+          global mass and energy conservation schemes. *Journal of Advances in Modeling Earth Systems*, 17(11),
+          Article e2025MS005138. https://doi.org/10.1029/2025MS005138
         - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
-          unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
-          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
-          https://doi.org/10.1007/978-3-642-11640-7_12
-        - Eldred, C., Taylor, M., Guba, O. (2022) "Thermodynamically consistent versions of approximations used in
-          modelling moist air" Q. J. Royal Meteorol. Soc. 148(748) 3184--3210. https://doi.org/10.1002/qj.4353
+          unstructured grids. In P. Lauritzen, C. Jablonowski, M. Taylor, & R. Nair (Eds.), *Numerical techniques for
+          global atmospheric models* (pp. 357-380). Springer. https://doi.org/10.1007/978-3-642-11640-7_12
+        - Eldred, C., Taylor, M., & Guba, O. (2022). Thermodynamically consistent versions of approximations used in
+          modelling moist air. *Quarterly Journal of the Royal Meteorological Society*, 148(748) 3184-3210.
+          https://doi.org/10.1002/qj.4353
     """
     # test for NaN values in input data
     field_names = [
@@ -219,11 +222,14 @@ def energy_exchanges_lat_lon(
 
     .. math::
         \\text{Kinetic to Internal}  = \\int_{p_1}^{p_0}\\int_{\\Omega}\\nabla (z-z_s)\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p\\
+                                       \\text{d}\\Omega\\text{d}p
+
         \\text{Internal to Kinetic}  = \\int_{p_1}^{p_0}\\int_{\\Omega}(z-z_s) \\nabla\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p\\
+                                       \\text{d}\\Omega\\text{d}p
+
         \\text{Kinetic to Potential} = \\int_{p_1}^{p_0}\\int_{\\Omega}\\nabla z_s\\cdot\\boldsymbol{u}
-                                       \\text{d}\\Omega\\text{d}p\\
+                                       \\text{d}\\Omega\\text{d}p
+
         \\text{Potential to Kinetic} = \\int_{p_1}^{p_0}\\int_{\\Omega}z_s \\nabla\\cdot\\boldsymbol{u}
                                        \\text{d}\\Omega\\text{d}p
 
@@ -242,11 +248,11 @@ def energy_exchanges_lat_lon(
             default is "level").
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
-        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v")
-        geopotential_name: string giving the textual name of the geopotential (optional, default is "z")
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
+        geopotential_name: string giving the textual name of the geopotential (optional, default is "z").
         surface_geopotential_name: string giving the textual name of the surface geopotential (optional, default is
-            "zs")
-        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optonal,
+            "zs").
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optional,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
     Returns:
@@ -254,10 +260,10 @@ def energy_exchanges_lat_lon(
 
     References:
         - Taylor, M. A. (2011). Conservation of mass and energy for the moist atmospheric primitive equations on
-          unstructured grids. In P. H. Lauritzen, et al. (Eds.), Numerical techniques for global atmospheric models,
-          Lecture Notes Comput. Sci. Eng. (Vol. 80, pp. 357--380). Heidelberg, Germany: Springer.
-          https://doi.org/10.1007/978-3-642-11640-7_12
+          unstructured grids. In P. Lauritzen, C. Jablonowski, M. Taylor, & R. Nair (Eds.), *Numerical techniques for
+          global atmospheric models* (pp. 357-380). Springer. https://doi.org/10.1007/978-3-642-11640-7_12
     """
+
     # test for NaN values in input data
     field_names = [zonal_velocity_name, meridional_velocity_name, geopotential_name, surface_geopotential_name]
     for field_name in field_names:
