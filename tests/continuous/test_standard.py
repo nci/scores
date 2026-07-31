@@ -795,9 +795,8 @@ Incorrect_SFactors_Numpy_KGE = np.array([1, 2, 3, 4])
 
 EXP_KGE_message1 = "kge: fcst must be an xarray.DataArray"
 EXP_KGE_message2 = "kge: obs must be an xarray.DataArray"
-EXP_KGE_message3 = "kge: scaling_factors must be a list of floats or a numpy array"
-EXP_KGE_message4 = "kge: scaling_factors must contain exactly 3 elements"
-EXP_KGE_message5 = "kge: method must be either '2009' or '2012'"
+EXP_KGE_message3 = "kge: scaling_factors must be an iterable of exactly 3 elements"
+EXP_KGE_message4 = "kge: method must be either '2009' or '2012'"
 
 
 @pytest.mark.parametrize(
@@ -1145,13 +1144,13 @@ def test_kge_dask():
         # Test case for obs with incorrect type (list instead of xr.DataArray)
         (DA1_KGE, Incorrect_Input_KGE, None, "2009", TypeError, EXP_KGE_message2),
         # Test case for scaling_factors with incorrect type (string instead of list or np.ndarray)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, "2009", TypeError, EXP_KGE_message3),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Type_KGE, "2009", ValueError, EXP_KGE_message3),
         # Test case for scaling_factors with incorrect number of elements (list with 2 elements)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, "2009", ValueError, EXP_KGE_message4),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_List_KGE, "2009", ValueError, EXP_KGE_message3),
         # Test case for scaling_factors with incorrect number of elements (numpy array with 4 elements)
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "2009", ValueError, EXP_KGE_message4),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "2009", ValueError, EXP_KGE_message3),
         # Test case for method with incorrect value (not 'original' or 'modified')
-        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "invalid_method", ValueError, EXP_KGE_message5),
+        (DA1_KGE, DA2_KGE, Incorrect_SFactors_Numpy_KGE, "invalid_method", ValueError, EXP_KGE_message4),
     ],
 )
 def test_kge_errors(fcst, obs, scaling_factors, method, expected_exception, expected_message):

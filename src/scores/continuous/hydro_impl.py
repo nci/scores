@@ -1,7 +1,7 @@
 import functools
 import warnings
 from collections.abc import Hashable
-from typing import Literal, Optional, Union
+from typing import Iterable, Literal, Optional
 
 import numpy as np
 import xarray as xr
@@ -327,7 +327,7 @@ def kge(
     *,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    scaling_factors: Optional[Union[list[float], np.ndarray]] = None,
+    scaling_factors: Optional[Iterable[float]] = None,
     include_components: Optional[bool] = False,
     method: Literal["2009", "2012"] = "2009",
 ) -> XarrayLike:
@@ -488,17 +488,13 @@ def kge(
         raise TypeError("kge: obs must be an xarray.DataArray")
     if method not in ["2009", "2012"]:
         raise ValueError("kge: method must be either '2009' or '2012'")
-    if scaling_factors is not None:
-        if isinstance(scaling_factors, (list, np.ndarray)):
-            # Check if the input has exactly 3 elements
-            if len(scaling_factors) != 3:
-                raise ValueError("kge: scaling_factors must contain exactly 3 elements")
-        else:
-            raise TypeError("kge: scaling_factors must be a list of floats or a numpy array")
-    else:
-        scaling_factors = [1.0, 1.0, 1.0]
+    if scaling_factors is None:
+        scaling_factors = (1.0, 1.0, 1.0)
+    try:
+        s_rho, s_vr, s_beta = scaling_factors
+    except ValueError as e:
+        raise ValueError("kge: scaling_factors must be an iterable of exactly 3 elements") from e
 
-    s_rho, s_vr, s_beta = scaling_factors
     reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     # Need to broadcast and match NaNs so that the fcst and obs are for the
     # same points
