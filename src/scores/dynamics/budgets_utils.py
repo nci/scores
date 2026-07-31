@@ -16,6 +16,11 @@ LAT_MAX = +90.0  # maximum permissible latitude, degrees
 
 @dataclass
 class PlanetConstants:
+    """
+    Data class for representing various physical constants used in the calculation
+    of energy budgets.
+    """
+
     # physical constants
     RAD_EARTH: float = 6371220.0  # radius of the earth, m
     GRAVITY: float = sp.constants.g  # gravitational acceleration of the earth, m/s^2
@@ -25,32 +30,10 @@ class PlanetConstants:
     C_I: float = 2106.0  # specific heat of ice water at constant pressure, J/kg/K
     T_0: float = 0.0  # reference temperature, K
     R_V: float = 461.0  # gas constant for vapour, J/kg/K
-    L_V: float = 2.5008e6  # specific latent heat of vaporisation, J/kg
-    L_S: float = 2.834e6  # specific latent heat of vaporisation, J/kg
+    L_V: float = 2.5008e6  # specific latent heat of vapourisation, J/kg
+    L_S: float = 2.834e6  # specific latent heat of vapourisation, J/kg
 
-    def __init__(
-        self,
-        RAD_EARTH: float = 6371220.0,
-        GRAVITY: float = sp.constants.g,
-        C_PD: float = 1004.0,
-        C_PV: float = 1885.0,
-        C_L: float = 4186.0,
-        C_I: float = 2106.0,
-        T_0: float = 0.0,
-        R_V: float = 461.0,
-        L_V: float = 2.5008e6,
-        L_S: float = 2.834e6,
-    ):
-        self.RAD_EARTH = RAD_EARTH
-        self.GRAVITY = GRAVITY
-        self.C_PD = C_PD
-        self.C_PV = C_PV
-        self.C_L = C_L
-        self.C_I = C_I
-        self.T_0 = T_0
-        self.R_V = R_V
-        self.L_V = L_V
-        self.L_S = L_S
+    def __post_init__(self):
         self.L_F = self.L_S - self.L_V  # specific latent heat of freezing, J/kg
 
     # conversion from degrees to meters, m

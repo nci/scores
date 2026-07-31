@@ -104,6 +104,8 @@
 ```{eval-rst}
 .. autofunction:: scores.dynamics.energy_components_lat_lon
 .. autofunction:: scores.dynamics.energy_exchanges_lat_lon
+.. autofunction:: scores.dynamics.PlanetConstants
+.. autodata:: scores.dynamics.STANDARD_CONSTANTS
 ```
 
 ## scores.stats
