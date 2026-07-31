@@ -18,8 +18,7 @@ LAT_MAX = +90.0  # maximum permissible latitude, degrees
 class PlanetConstants:
     """
     Data class for representing various physical constants used in the calculation
-    of energy budgets. Please refer to the tutorial for details on how and why
-    to vary these if necessary.
+    of energy budgets.
     """
 
     # physical constants
