@@ -2,7 +2,7 @@
 
 This page lists all the metrics, statistical techniques and data processing tools included in `scores`.
 
-It is divided into the following sections: [continuous](#continuous), [probability](#probability), [categorical](#categorical), [spatial](#spatial), [statistical tests](#statistical-tests), [processing (tools for preparing data)](#processing-tools-for-preparing-data), [plotting data](#plotting-data), [pandas](#pandas) and [emerging](#emerging).
+It is divided into the following sections: [continuous](#continuous), [probability](#probability), [categorical](#categorical), [spatial](#spatial), [dynamics](#dynamics), [statistical tests](#statistical-tests), [processing (tools for preparing data)](#processing-tools-for-preparing-data), [plotting data](#plotting-data), [pandas](#pandas) and [emerging](#emerging).
 
 ## Continuous
 
@@ -58,7 +58,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Kling–Gupta Efficiency (KGE)
   - [API](api.md#scores.continuous.kge)
   - [Tutorial](project:./tutorials/Kling_Gupta_Efficiency.md)
-  - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)
+  - [Gupta et al. (2009)](https://doi.org/10.1016/j.jhydrol.2009.08.003); [Kling et al. (2012)](https://doi.org/10.1016/j.jhydrol.2012.01.011); [Knoben et al. (2019)](https://doi.org/10.5194/hess-23-4323-2019)
 * - Mean Absolute Error (MAE)
   - [API](api.md#scores.continuous.mae)
   - [Tutorial](project:./tutorials/Mean_Absolute_Error.md)
@@ -130,13 +130,19 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - &mdash;
   - &mdash;
 * - Relative Economic Value
+  -
+  -
+  -
+* -
+    - Relative Economic Value
   - [API](api.md#scores.continuous.relative_economic_value)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
-* - Relative Economic Value From Rates
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
+* -
+    - Relative Economic Value From Rates
   - [API](api.md#scores.continuous.relative_economic_value_from_rates)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -281,21 +287,33 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [Tutorial](project:./tutorials/Rank_Histogram.md)
   - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
 * - Receiver (Relative) Operating Characteristic (ROC)
-  - [API](api.md#scores.probability.roc_curve_data)
-  - [Tutorial](project:./tutorials/ROC.md)
-  - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
-* - Receiver (Relative) Operating Characteristic Area Under Curve (ROC AUC)
+  -
+  -
+  -
+* -
+    - ROC Area Under Curve (ROC AUC)
   - [API](api.md#scores.probability.roc_auc)
   - [Tutorial](project:./tutorials/ROC.md)
-  - [Hanley and McNeil (1982)](https://doi.org/10.1148/radiology.143.1.7063747); [Mason and Graham (2002)](https://doi.org/10.1256/003590002320603584); [Mann and Whitney (1947)](https://doi.org/10.1214/aoms/1177730491)
+  - [Hanley and McNeil (1982)](https://doi.org/10.1148/radiology.143.1.7063747); [Mason and Graham (2002)](https://doi.org/10.1256/003590002320603584); [Mann and Whitney (1947)](https://doi.org/10.1214/aoms/1177730491)  
+* - 
+    - ROC Curve Data
+  - [API](api.md#scores.probability.roc_curve_data)
+  - [Tutorial](project:./tutorials/ROC.md)
+  - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
 * - Relative Economic Value
+  -
+  -
+  -
+* -
+    - Relative Economic Value
   - [API](api.md#scores.probability.relative_economic_value)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
-* - Relative Economic Value From Rates
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
+* -
+    - Relative Economic Value From Rates
   - [API](api.md#scores.probability.relative_economic_value_from_rates)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -498,13 +516,19 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [Tutorial](project:./tutorials/ROC.md)
   - [Probability of false detection (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#POFD)
 * - Relative Economic Value
+  -
+  -
+  -
+* -
+    - Relative Economic Value
   - [API](api.md#scores.categorical.relative_economic_value)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
-* - Relative Economic Value From Rates
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
+* -
+    - Relative Economic Value From Rates
   - [API](api.md#scores.categorical.relative_economic_value_from_rates)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
 * - Risk Matrix Score
   -
   -
@@ -572,6 +596,25 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.spatial.fss_2d_single_field)
   - [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
   - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
+```
+
+## Dynamics
+
+```{list-table}
+:header-rows: 1
+
+* - Name (Alphabetical order)
+  - API
+  - Tutorial
+  - Reference(s)
+* - Energy Budget
+  - [API](api.md#scores.dynamics.energy_components_lat_lon)
+  - [Tutorial](project:./tutorials/Energy_Budgets.md)
+  - [Trenberth et al. (2002)](https://doi.org/10.1175/1520-0442(2002)015<3343:AOAEBF>2.0.CO;2); [Sha et al. (2025)](https://doi.org/10.1029/2025MS005138); [Taylor (2011)](https://doi.org/10.1007/978-3-642-11640-7_12); [Eldred et al. (2022)](https://doi.org/10.1002/qj.4353)
+* - Energy Exchanges
+  - [API](api.md#scores.dynamics.energy_exchanges_lat_lon)
+  - [Tutorial](project:./tutorials/Energy_Budgets.md)
+  - [Taylor (2011)](https://doi.org/10.1007/978-3-642-11640-7_12)
 ```
 
 ## Statistical Tests
@@ -714,15 +757,21 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.plotdata.roc)
   - [Tutorial](project:./tutorials/ROC.md)
-  - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004)); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
+  - [Fawcett and Niculescu-Mizil (2007)](https://doi.org/10.1007/s10994-007-5011-0); [Gneiting and Vogel (2022)](https://doi.org/10.1007/s10994-021-06115-2); [Hand (2009)](https://doi.org/10.1007/s10994-009-5119-5); [Hand and Anagnostopoulos (2013)](https://doi.org/10.1016/j.patrec.2012.12.004); [Hand and Anagnostopoulos (2023)](https://doi.org/10.1007/s11634-021-00490-3); [Pesce et al. (2010)](https://doi.org/10.1016/j.acra.2010.04.001)
 * - Relative Economic Value
+  -
+  -
+  -
+* -
+    - Relative Economic Value
   - [API](api.md#scores.plotdata.relative_economic_value)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
-* - Relative Economic Value From Rates
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
+* -
+    - Relative Economic Value From Rates
   - [API](api.md#scores.plotdata.relative_economic_value_from_rates)
   - [Tutorial](project:./tutorials/Relative_Economic_Value_Score.md)
-  - &mdash;
+  - [Richardson (2000)](https://doi.org/10.1002/qj.49712656313)
 
 ```
 ## Pandas

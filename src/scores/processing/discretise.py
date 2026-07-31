@@ -2,6 +2,7 @@
 
 import operator
 from collections.abc import Iterable, Sequence
+from numbers import Real
 from typing import Callable, Optional, Union
 
 import numpy as np
@@ -158,7 +159,7 @@ def comparative_discretise(
             factor = -1
         else:
             factor = 1
-        discrete_data = mode(data, comparison + (abs_tolerance * factor)).where(notnull_mask)  # type: ignore
+        discrete_data = mode(data, comparison + (abs_tolerance * factor)).where(notnull_mask)  # type: ignore[ty:call-non-callable]
     else:
         raise ValueError(
             f"'{mode}' is not a valid mode. Available modes are: "
@@ -173,7 +174,7 @@ def comparative_discretise(
 
 def binary_discretise(
     data: XarrayLike,
-    thresholds: float | Sequence[float],
+    thresholds: Real | Sequence[Real],
     mode: Union[Callable, str],
     *,  # Force keywords arguments to be keyword-only
     abs_tolerance: Optional[float] = None,

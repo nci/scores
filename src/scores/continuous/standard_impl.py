@@ -2,7 +2,7 @@
 This module contains standard methods which may be used for continuous scoring
 """
 
-from typing import Optional, Union
+from typing import Iterable, Literal, Optional
 
 import numpy as np
 import xarray as xr
@@ -981,8 +981,9 @@ def kge(
     *,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
-    scaling_factors: Optional[Union[list[float], np.ndarray]] = None,
+    scaling_factors: Optional[Iterable[float]] = None,
     include_components: Optional[bool] = False,
+    method: Literal["2009", "2012"] = "2009",
 ) -> XarrayLike:
     # pylint: disable=too-many-locals
     """
@@ -990,11 +991,6 @@ def kge(
 
     KGE is a performance metric that decomposes the error into three components:
     correlation, variability, and bias.
-    It is computed as:
-
-    .. math::
-        \\text{KGE} = 1 - \\sqrt{\\left[s_\\rho \\cdot (\\rho - 1)\\right]^2 +
-        \\left[s_\\alpha \\cdot (\\alpha - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
 
     .. math::
         \\alpha = \\frac{\\sigma_x}{\\sigma_y}
@@ -1002,16 +998,29 @@ def kge(
     .. math::
         \\beta = \\frac{\\mu_x}{\\mu_y}
 
+    .. math::
+        \\gamma = \\frac{\\alpha}{\\beta}
+
+    .. math::
+        {vr} = \\alpha \\text{ if original 2009 KGE else } \\gamma \\text{ (modified 2012 KGE)}
+
+    The KGE is computed as
+
+    .. math::
+        \\text{KGE} = 1 - \\sqrt{\\left[s_\\rho \\cdot (\\rho - 1)\\right]^2 +
+        \\left[s_{vr} \\cdot ({vr} - 1)\\right]^2 + \\left[s_\\beta \\cdot (\\beta - 1)\\right]^2}
+
     where:
         - :math:`\\rho`  = Pearson's correlation coefficient between observed and forecast values as
           defined in :py:func:`scores.continuous.correlation.pearsonr`
         - :math:`\\alpha` is the ratio of the standard deviations (variability ratio)
+        - :math:`\\gamma` is the ratio of the coefficients of variation (relative variability ratio/coefficient of variation ratio)
         - :math:`\\beta` is the ratio of the means (bias)
         - :math:`x` and :math:`y` are forecast and observed values, respectively
         - :math:`\\mu_x` and :math:`\\mu_y` are the means of forecast and observed values, respectively
         - :math:`\\sigma_x` and :math:`\\sigma_y` are the standard deviations of forecast and observed values, respectively
-        - :math:`s_\\rho`, :math:`s_\\alpha` and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
-          the variability term :math:`\\alpha` and the bias term :math:`\\beta`
+        - :math:`s_\\rho`, :math:`s_{vr}`, and :math:`s_\\beta` are the scaling factors for the correlation coefficient :math:`\\rho`,
+          the variability term :math:`{vr}`, and the bias term :math:`\\beta`
 
     Args:
         fcst: Forecast or predicted variables.
@@ -1023,27 +1032,29 @@ def kge(
             special case, 'all' will allow all dimensions to be preserved. In
             this case, the result will be all NaN with the same shape/dimensionality
             as the forecast because the standard deviation is zero for a single point.
-        scaling_factors : A 3-element vector or list describing the weights for each term in the KGE.
-            Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_\\alpha`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
-            the variability term :math:`\\alpha` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0). (*See
-            equation 10 in Gupta et al. (2009) for definitions of them*).
+        scaling_factors: A 3-element vector or list describing the weights for each term in the KGE.
+            Defined by: scaling_factors = [:math:`s_\\rho`, :math:`s_{vr}`, :math:`s_\\beta`] to apply to the correlation term :math:`\\rho`,
+            the variability term :math:`{vr}` and the bias term :math:`\\beta` respectively. Defaults to (1.0, 1.0, 1.0).
         include_components (bool | False): If True, the function also returns the individual terms contributing to the KGE score.
+        method: Whether to compute the original KGE as defined in Gupta et al. (2009) or the modified KGE as defined in Kling et al. (2012).
+            Default is "2009".
 
     Returns:
-        The Kling-Gupta Efficiency (KGE) score as an xarray DataArray.
+        If ``include_components`` is False, the function returns the KGE score as an ``xarray.DataArray``.
 
-        If ``include_components`` is True, the function returns ``xarray.Dataset`` kge_s with the following variables:
+        If ``include_components`` is True, the function returns ``xarray.Dataset`` with the following variables:
 
         - `kge`: The KGE score.
         - `rho`: The Pearson correlation coefficient.
-        - `alpha`: The variability ratio.
+        - (if original 2009 KGE) `alpha`: The variability ratio.
+        - (if modified 2012 KGE) `gamma`: The coefficient of variation ratio.
         - `beta`: The bias term.
 
     Notes:
         - Statistics are calculated only from values for which both observations and
           simulations are not null values.
         - This function isn't set up to take weights.
-        - Currently this function is working only on xr.DataArray.
+        - Currently this function is working only on ``xarray.DataArray``.
         - When preserve_dims is set to 'all', the function returns NaN,
           similar to the Pearson correlation coefficient calculation for a single data point
           because the standard deviation is zero for a single point.
@@ -1052,6 +1063,8 @@ def kge(
         -   Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean squared error and
             NSE performance criteria: Implications for improving hydrological modeling. Journal of Hydrology, 377(1-2), 80-91.
             https://doi.org/10.1016/j.jhydrol.2009.08.003.
+        -   Kling, H., Fuchs, M., & Paulin, M. (2012). Runoff conditions in the upper Danube basin under an ensemble of climate
+            change scenarios. Journal of Hydrology. 424: 264–277. https://doi.org/10.1016/j.jhydrol.2012.01.011.
         -   Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
             Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences, 23(10), 4323-4331.
             https://doi.org/10.5194/hess-23-4323-2019.
@@ -1111,6 +1124,15 @@ def kge(
             alpha    float64 8B 1.181
             beta     float64 8B 0.9964
 
+        >>> kge(fcst, obs, include_components=True, method="2012")
+        <xarray.Dataset> Size: 32B
+        Dimensions:  ()
+        Data variables:
+            kge      float64 8B 0.8033
+            rho      float64 8B 0.9344
+            gamma    float64 8B 1.185
+            beta     float64 8B 0.9964
+
     """  # noqa: E501
 
     # Type checks as xrray.corr can only handle xr.DataArray
@@ -1118,17 +1140,15 @@ def kge(
         raise TypeError("kge: fcst must be an xarray.DataArray")
     if not isinstance(obs, xr.DataArray):
         raise TypeError("kge: obs must be an xarray.DataArray")
-    if scaling_factors is not None:
-        if isinstance(scaling_factors, (list, np.ndarray)):
-            # Check if the input has exactly 3 elements
-            if len(scaling_factors) != 3:
-                raise ValueError("kge: scaling_factors must contain exactly 3 elements")
-        else:
-            raise TypeError("kge: scaling_factors must be a list of floats or a numpy array")
-    else:
-        scaling_factors = [1.0, 1.0, 1.0]
+    if method not in ["2009", "2012"]:
+        raise ValueError("kge: method must be either '2009' or '2012'")
+    if scaling_factors is None:
+        scaling_factors = (1.0, 1.0, 1.0)
+    try:
+        s_rho, s_vr, s_beta = scaling_factors
+    except ValueError as e:
+        raise ValueError("kge: scaling_factors must be an iterable of exactly 3 elements") from e
 
-    s_rho, s_alpha, s_beta = scaling_factors
     reduce_dims = scores.utils.gather_dimensions(
         fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
     )
@@ -1148,17 +1168,17 @@ def kge(
     mu_obs = obs.mean(reduce_dims)
     beta = mu_fcst / mu_obs
 
-    # compute Euclidian distance from the ideal point in the scaled space
-    ed_s = np.sqrt((s_rho * (rho - 1)) ** 2 + (s_alpha * (alpha - 1)) ** 2 + (s_beta * (beta - 1)) ** 2)
+    vr = alpha if method == "2009" else alpha / beta
+
+    ed_s = np.sqrt((s_rho * (rho - 1)) ** 2 + (s_vr * (vr - 1)) ** 2 + (s_beta * (beta - 1)) ** 2)
+
     kge_s = 1 - ed_s
+
     if include_components:
         # Create dataset of all components
-        kge_s = xr.Dataset(
-            {
-                "kge": kge_s,
-                "rho": rho,
-                "alpha": alpha,
-                "beta": beta,
-            }
-        )
+        vr_name = "alpha" if method == "2009" else "gamma"
+        component_names = ["kge", "rho", vr_name, "beta"]
+        components = [kge_s, rho, vr, beta]
+        kge_dict = dict(zip(component_names, components))
+        kge_s = xr.Dataset(kge_dict)
     return kge_s

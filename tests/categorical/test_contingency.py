@@ -138,7 +138,7 @@ def test_str_view():
     """
     Smoke test for string representation
     """
-    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     _stringrep = str(table)
 
@@ -147,7 +147,7 @@ def test_categorical_table():  # pylint: disable=too-many-statements
     """
     Test the basic calculations of the contingency table
     """
-    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table = match.make_contingency_manager(simple_forecast, simple_obs)
     table2 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3, op_fn=operator.gt)
     counts = table.get_counts()
@@ -242,7 +242,7 @@ def test_dimension_broadcasting():
     base_forecasts = [simple_forecast + i * 0.5 for i in range(5)]
     complex_forecast = xr.concat(base_forecasts, dim="time")
     complex_obs = xr.concat([simple_obs, simple_obs + 1], dim="source")
-    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
 
     # Check dimension broadcasting for forecasts
     table = match.make_contingency_manager(complex_forecast, simple_obs)
@@ -291,7 +291,7 @@ def test_nan_handling():
     nan observation.
     """
 
-    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=1.3, default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table = match.make_contingency_manager(simple_forecast_with_nan, simple_obs_with_nan)
     counts = table.get_counts()
 
@@ -312,7 +312,7 @@ def test_threshold_variation():
     variations in event thredhold which should override the default
     """
 
-    match = scores.categorical.ThresholdEventOperator(default_event_threshold=0.5, default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_event_threshold=0.5, default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table_05 = match.make_contingency_manager(simple_forecast, simple_obs)
     table_13 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     table_15 = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.5)
@@ -337,7 +337,7 @@ def test_categorical_table_dims_handling():
     """
     Test that the transform function correctly allows dimensional transforms
     """
-    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     transformed = table.transform(preserve_dims=["height"])
     transformed2 = table.transform(reduce_dims=["lat", "lon"])
@@ -363,7 +363,7 @@ def test_dask_if_available_categorical():
     fcst = simple_forecast.chunk()
     obs = simple_obs.chunk()
 
-    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table = match.make_contingency_manager(fcst, obs, event_threshold=1.3)
 
     # Assert things start life as dask types
@@ -388,7 +388,7 @@ def test_examples_with_finley():
     """
 
     table = finleys_table
-    cm = scores.categorical.BasicContingencyManager(table)
+    cm = scores.categorical.BasicContingencyManager(table)  # ty: ignore[possibly-missing-submodule]
     heidke = cm.heidke_skill_score()
     gilbert = cm.gilberts_skill_score()
 
@@ -412,7 +412,7 @@ def test_format_data():
 
     # Simple 2x2 Example
 
-    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)
+    match = scores.categorical.ThresholdEventOperator(default_op_fn=operator.gt)  # ty: ignore[possibly-missing-submodule]
     table = match.make_contingency_manager(simple_forecast, simple_obs, event_threshold=1.3)
     expected_df = pd.DataFrame(
         {"Positive Observed": [9, 1, 10], "Negative Observed": [2, 6, 8], "Total": [11, 7, 18]},
@@ -427,7 +427,7 @@ def test_format_data():
     with pytest.warns(UserWarning) as warning_object:
         format_table = table.format_table()
 
-    assert scores.categorical.contingency_impl.HIGH_DIMENSION_HTML_CONTINGENCY_WARNING in str(
+    assert scores.categorical.contingency_impl.HIGH_DIMENSION_HTML_CONTINGENCY_WARNING in str(  # ty: ignore[possibly-missing-submodule]
         warning_object.list[0].message
     )
     get_table = table.get_table()
