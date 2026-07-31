@@ -6,6 +6,7 @@ The philosphy is to import the public API during the init phase rather than leav
 
 import scores.categorical
 import scores.continuous
+import scores.dynamics
 import scores.emerging
 import scores.functions
 import scores.pandas
@@ -15,12 +16,13 @@ import scores.processing
 import scores.sample_data
 import scores.stats.statistical_tests  # noqa: F401
 
-__version__ = "2.6.0"
+__version__ = "2.7.0"
 
 __all__ = [
     "scores.categorical",
     "scores.contingency",
     "scores.continuous",
+    "scores.dynamics",
     "scores.emerging",
     "scores.functions",
     "scores.pandas",
