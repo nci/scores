@@ -200,8 +200,8 @@ def _integrate_energy_exchange(
     Compute the two volumetric components of the divergence theorem on the sphere in latitude, longitude coordinates
     for scalar field (f) and two dimensional horizontal vector field (u,v).
 
-    Williamson, D. L., Drake, J. B., Hack, J. J., Jakob, R., & Swarztrauber, P. N. (1992). A standard test set for 
-    numerical approximations to the shallow water eqations in spherical geometry, *Journal of Computational Physics*, 
+    Williamson, D. L., Drake, J. B., Hack, J. J., Jakob, R., & Swarztrauber, P. N. (1992). A standard test set for
+    numerical approximations to the shallow water eqations in spherical geometry, *Journal of Computational Physics*,
     102(1), 211–224. https://doi.org/10.1016/S0021-9991(05)80016-6 , see Equations (3-4)
 
     lambda: longitude
