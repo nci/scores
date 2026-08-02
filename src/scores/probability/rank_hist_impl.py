@@ -123,7 +123,7 @@ def rank_histogram(
     References:
         - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts.
           Monthly Weather Review, 129(3), 550–560.
-          https://doi.org/10.1175/1520-0493(2001)129%3C0550:IORHFV%3E2.0.CO;2
+          https://doi.org/dkkvh3
         - Talagrand, O., Vautard, R., & Strauss, B. (1999). Evaluation of probabilistic prediction
           systems. In Proceedings of the ECMWF Workshop on Predictability, 20–22 October 1997
           (pp. 1–25). ECMWF.
