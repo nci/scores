@@ -190,13 +190,15 @@ class Pit:
         >>> np.random.seed(42)
 
         >>> # generate the forecasts and observations then calculate PIT
-        >>> fcst = xr.DataArray(norm.rvs(size=(500, 10)), dims=['time', 'ensemble_member'])
-        >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=['time'])
+        >>> fcst = xr.DataArray(
+        ...     norm.rvs(size=(500, 10)), dims=["time", "ensemble_member"]
+        ... )
+        >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=["time"])
 
-        >>> pit = Pit(fcst, obs, ensemble_member_dim='ensemble_member')
+        >>> pit = Pit(fcst, obs, ensemble_member_dim="ensemble_member")
 
         >>> # plot the CDF of the PIT distribution
-        >>> pit.plotting_points().plot() # doctest: +SKIP
+        >>> pit.plotting_points().plot()  # doctest: +SKIP
 
         >>> # bar heights for a PIT histogram
         >>> pit.hist_values(10)
@@ -475,11 +477,13 @@ class PitFcstAtObs:
 
         >>> # observations generated from a normal distribution with
         >>> # mean 0 and standard deviation 2
-        >>> obs = xr.DataArray(norm.rvs(scale=2, size=500, random_state=42), dims=['time'])
+        >>> obs = xr.DataArray(
+        ...     norm.rvs(scale=2, size=500, random_state=42), dims=["time"]
+        ... )
 
         >>> # forecasts are normal distributions with mean 0 and standard deviation 1
         >>> # evaluate the forecast CDFs at the observations
-        >>> fcst_at_obs = xr.DataArray(norm.cdf(obs), dims=['time'])
+        >>> fcst_at_obs = xr.DataArray(norm.cdf(obs), dims=["time"])
 
         >>> pit = PitFcstAtObs(fcst_at_obs)
 
@@ -494,7 +498,7 @@ class PitFcstAtObs:
             bin_right_endpoint  (bin_centre) float64 80B 0.1 0.2 0.3 0.4 ... 0.8 0.9 1.0
 
         >>> # plot the CDF of the PIT distribution
-        >>> pit.plotting_points().plot() # doctest: +SKIP
+        >>> pit.plotting_points().plot()  # doctest: +SKIP
 
         >>> # the expected value of the PIT distribution
         >>> pit.expected_value()
