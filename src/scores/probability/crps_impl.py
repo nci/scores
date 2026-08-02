@@ -892,7 +892,7 @@ def crps_for_ensemble(
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
 
     References:
-        - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly Journal of the
+        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the
           Royal Meteorological Society, 140(683), 1917–1923. https://doi.org/10.1002/qj.2270
         - Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
           and estimation. Journal of the American Statistical Association, 102(477), 359–378.
@@ -1098,7 +1098,7 @@ def tw_crps_for_ensemble(
         - Allen, S. (2024). Weighted scoringRules: Emphasizing particular outcomes
           when evaluating probabilistic forecasts. Journal of Statistical Software,
           110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
-        - Ferro, C. A. T. (2013). Fair scores for ensemble forecasts. Quarterly Journal of the
+        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the
           Royal Meteorological Society, 140(683), 1917–1923. https://doi.org/10.1002/qj.2270
 
     Examples:
