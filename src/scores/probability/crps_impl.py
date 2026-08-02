@@ -325,7 +325,7 @@ def crps_cdf(
           quantile-weighted scoring rules.
           Journal of Business & Economic Statistics, 29(3), 411–422. https://doi.org/10.1198/jbes.2010.08110
         - Matheson, J. E., & Winkler, R. L. (1976). Scoring rules for continuous
-          probability distributions. Management Science, 22(10), 1087–1095.
+          probability distributions. Management Science, 22(10), 1087–1096.
           https://doi.org/10.1287/mnsc.22.10.1087
     """
 
