@@ -1050,7 +1050,7 @@ def kge(
           Journal of Hydrology, 377(1-2), 80–91.
           https://doi.org/10.1016/j.jhydrol.2009.08.003.
         - Kling, H., Fuchs, M., & Paulin, M. (2012). Runoff conditions in the upper Danube basin
-          under an ensemble of climate change scenarios. Journal of Hydrology, 424, 264–277.
+          under an ensemble of climate change scenarios. Journal of Hydrology, 424–425, 264–277.
           https://doi.org/10.1016/j.jhydrol.2012.01.011.
         - Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
           Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences,
