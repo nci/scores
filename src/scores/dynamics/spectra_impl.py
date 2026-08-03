@@ -60,6 +60,12 @@ def power_spectra(
             raise error_msg
 
     else:
+        L_theta = np.max(K.longitude.values) - np.min(K.longitude.values)
+        d_theta = L_theta / (len(K.longitude.values) - 1)
+        L = np.pi * constants.RAD_EARTH / 180.0 * len(K.longitude.values) * d_theta
+        if L < 2.0 * np.pi * constants.RAD_EARTH - 1.0e-6:
+            # regional domain, apply cosine bell filtering
+
         lon_index = K.get_index(longitude_name)
         fft_lon = xr.apply_ufunc(
                 _scaled_rfft,
@@ -71,9 +77,8 @@ def power_spectra(
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(K.latitude.values)
-        equator_freq = np.fft.rttffreq(len(K.longitude.values), constants.RAD_EARTH)
+        equator_freq = np.fft.rttffreq(len(K.longitude.values), L / 2.0 / np.pi)
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
-        freq = freq.flatten()
-        inds = np.argsort(freq)
-        freq = freq[inds]
+        fft_lon.["frequency"] = (["waqvenumber", "latitude"], freq_2d)
 
+        return fft_lon
