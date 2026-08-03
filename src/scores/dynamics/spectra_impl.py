@@ -9,7 +9,6 @@ from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
     _integration_weights,
     _pressure_level_thickness,
-    _integration_weights,
     _scaled_rfft,
 )
 from scores.typing import XarrayLike
@@ -70,12 +69,11 @@ def power_spectra(
                 kwargs={index: lon_index, norm="forward"},
         )
 
-        dlon, dlat = _integration_weights(
-            data.longitude.values,
-            data.latitude.values,
-            longitude_name,
-            latitude_name,
-            constants,
-        )
-
         # ensure that the wavelengths are consistent for each latitude
+        cos_theta_inv = 1.0 / np.cos(K.latitude.values)
+        equator_freq = np.fft.rttffreq(len(K.longitude.values), constants.RAD_EARTH)
+        freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
+        freq = freq.flatten()
+        inds = np.argsort(freq)
+        freq = freq[inds]
+
