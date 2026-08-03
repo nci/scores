@@ -1,11 +1,16 @@
 import numpy as np
 import xarray as xr
+try:
+    import pyshtools as pysh
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
     _integration_weights,
     _pressure_level_thickness,
-    _trig_fields,
+    _integration_weights,
+    _scaled_rfft,
 )
 from scores.typing import XarrayLike
 
@@ -13,8 +18,8 @@ def power_spectra(
     data: xr.Dataset,
     *,
     preserve_vertial: bool = False,
-    preserve_meridional: bool = False,
     reduce_time: bool = False,
+    spherical_harmonic: bool = False,
     longitude_name: str = "longitude",
     latitude_name: str = "latitude",
     pressure_level_name: str = "level",
@@ -43,4 +48,34 @@ def power_spectra(
         K = (dp_x * K).sum(dim=pressure_level_name)
         K = K / np.sum(dp)
 
-    
+    # average over the time dimension
+    nt = len(data.time.values)
+    if reduce_time and nt > 1:
+        K = K.sum(dim=time_name)
+        K = K / nt
+
+    if spherical_harmonic:
+        error_msg = ImportError("The 'pyshtools' package in not installed, "
+                + "cannot perform a spherical harmonic transform.")
+        if pysh == "Unavailable":
+            raise error_msg
+
+    else:
+        lon_index = K.get_index(longitude_name)
+        fft_lon = xr.apply_ufunc(
+                _scaled_rfft,
+                K,
+                input_core_dims=[[longitude_name]],
+                output_core_dims=[["wavenumber"]],
+                kwargs={index: lon_index, norm="forward"},
+        )
+
+        dlon, dlat = _integration_weights(
+            data.longitude.values,
+            data.latitude.values,
+            longitude_name,
+            latitude_name,
+            constants,
+        )
+
+        # ensure that the wavelengths are consistent for each latitude
