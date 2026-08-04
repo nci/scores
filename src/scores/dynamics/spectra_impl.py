@@ -26,6 +26,7 @@ def power_spectra(
     zonal_velocity_name: str = "u",
     meridional_velocity_name: str = "v",
     custom_field_name: str = "none",
+    zonal_filter_width: float = 0.125,
     constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
@@ -60,11 +61,29 @@ def power_spectra(
             raise error_msg
 
     else:
+        n_lon = len(K.longitude.values)
+        n_lat = len(K.latitude.values)
         L_theta = np.max(K.longitude.values) - np.min(K.longitude.values)
-        d_theta = L_theta / (len(K.longitude.values) - 1)
-        L = np.pi * constants.RAD_EARTH / 180.0 * len(K.longitude.values) * d_theta
+        d_theta = L_theta / (n_lon - 1)
+        L = np.pi * constants.RAD_EARTH / 180.0 * n_lon * d_theta
         if L < 2.0 * np.pi * constants.RAD_EARTH - 1.0e-6:
             # regional domain, apply cosine bell filtering
+	    error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_with}, must be < 0.5.")
+	    if zonal_filter_width >= 0.5:
+		    raise error_msg
+
+	    theta_l = np.min(K.longitude.values)
+	    theta_r = theta_l + L
+	    filter_l = 0.5 * (1.0 - np.cos(np.pi * (K.longitude.values - theta_l) / (zonal_filter_width * L)))
+	    filter_r = 0.5 * (1.0 - np.cos(np.pi * (theta_r - K.longitude.values) / (zonal_filter_width * L)))
+	    mask_l = K.longitude.values < theta_l + zonal_filter_width * L
+	    mask_r = K.longitude.values > theta_r - zonal_filter_width * L
+	    filter_1d = np.ones(n_lon)
+	    filter_1d[mask_l] = filter_l
+	    filter_1d[mask_r] = filter_r
+	    filter_2d = np.ones((nlat, 1)) * filter_1d[None, :]
+	    filter_xr = xr.DataArray(filter_2d, dims=[latitude_name, longitude_name], coords={latitude_name: K.latitude, longitude_name: K.longitude})
+	    K = filter_xr * K
 
         lon_index = K.get_index(longitude_name)
         fft_lon = xr.apply_ufunc(
@@ -77,8 +96,8 @@ def power_spectra(
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(K.latitude.values)
-        equator_freq = np.fft.rttffreq(len(K.longitude.values), L / 2.0 / np.pi)
+        equator_freq = np.fft.rttffreq(n_lon, L / 2.0 / np.pi)
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
-        fft_lon.["frequency"] = (["waqvenumber", "latitude"], freq_2d)
+        fft_lon.["frequency"] = (["waqvenumber", latitude_name], freq_2d)
 
         return fft_lon
