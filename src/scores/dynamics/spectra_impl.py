@@ -35,24 +35,19 @@ def power_spectra(
     components (u,v), but may alternatively be computed for a custom field.
     """
 
-    # get the kinetic energy, K
-    if custom_field_name != "none":
-        K = data[custom_field_name]
-    else:
-        K = 0.5 * (data[zonal_velocity_name] + data[meridional_velocity_name])
+    _data = data.copy(deep=True)
 
     # average over the vertical dimension (pressure levels)
-    if not preserve_vertical and len(data.level.values) > 1:
-        dp = _pressure_level_thickness(data.level.values, constants)
+    if not preserve_vertical and len(_data.level.values) > 1:
+        dp = _pressure_level_thickness(_data.level.values, constants)
+        dp = dp / np.sum(dp)
         dp_x = xr.DataArray(dp, dims=(pressure_level_name))
-        K = (dp_x * K).sum(dim=pressure_level_name)
-        K = K / np.sum(dp)
+        _data = (dp_x * _data).sum(dim=pressure_level_name)
 
     # average over the time dimension
     nt = len(data.time.values)
     if reduce_time:
-        K = K.sum(dim=time_name)
-        K = K / nt
+        _data = _data.sum(dim=time_name) / nt
 
     if spherical_harmonic:
         error_msg = ImportError(
@@ -62,9 +57,9 @@ def power_spectra(
             raise error_msg
 
     else:
-        n_lon = len(K.longitude.values)
-        n_lat = len(K.latitude.values)
-        L_theta = np.max(K.longitude.values) - np.min(K.longitude.values)
+        n_lon = len(_data.longitude.values)
+        n_lat = len(_data.latitude.values)
+        L_theta = np.max(_data.longitude.values) - np.min(_data.longitude.values)
         d_theta = L_theta / (n_lon - 1)
         L = np.pi * constants.RAD_EARTH / 180.0 * n_lon * d_theta
         if L < 2.0 * np.pi * constants.RAD_EARTH - 1.0e-6:
@@ -73,12 +68,12 @@ def power_spectra(
             if zonal_filter_width >= 0.5:
                 raise error_msg
 
-            theta_l = np.min(K.longitude.values)
+            theta_l = np.min(_data.longitude.values)
             theta_r = theta_l + L
-            filter_l = 0.5 * (1.0 - np.cos(np.pi * (K.longitude.values - theta_l) / (zonal_filter_width * L)))
-            filter_r = 0.5 * (1.0 - np.cos(np.pi * (theta_r - K.longitude.values) / (zonal_filter_width * L)))
-            mask_l = K.longitude.values < theta_l + zonal_filter_width * L
-            mask_r = K.longitude.values > theta_r - zonal_filter_width * L
+            filter_l = 0.5 * (1.0 - np.cos(np.pi * (_data.longitude.values - theta_l) / (zonal_filter_width * L)))
+            filter_r = 0.5 * (1.0 - np.cos(np.pi * (theta_r - _data.longitude.values) / (zonal_filter_width * L)))
+            mask_l = _data.longitude.values < theta_l + zonal_filter_width * L
+            mask_r = _data.longitude.values > theta_r - zonal_filter_width * L
             filter_1d = np.ones(n_lon)
             filter_1d[mask_l] = filter_l
             filter_1d[mask_r] = filter_r
@@ -86,27 +81,48 @@ def power_spectra(
             filter_xr = xr.DataArray(
                 filter_2d,
                 dims=[latitude_name, longitude_name],
-                coords={latitude_name: K.latitude, longitude_name: K.longitude},
+                coords={latitude_name: _data.latitude, longitude_name: _data.longitude},
             )
-            K = filter_xr * K
-
-        lon_index = K.get_axis_num(longitude_name)
-        fft_lon = xr.apply_ufunc(
-            _scaled_rfft,
-            K,
-            input_core_dims=[[longitude_name]],
-            output_core_dims=[["wavenumber"]],
-            exclude_dims={longitude_name},
-            kwargs={"axis": lon_index},
-        )
-        nw = fft_lon.sizes["wavenumber"]
-        fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
+            _data = filter_xr * _data
 
         # ensure that the wavelengths are consistent for each latitude
-        cos_theta_inv = 1.0 / np.cos(K.latitude.values)
+        cos_theta_inv = 1.0 / np.cos(_data.latitude.values)
         equator_freq = np.fft.rfftfreq(n_lon, L / 2.0 / np.pi)
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
         freq_2d = xr.DataArray(freq_2d, dims=(longitude_name, "wavenumber"))
+
+        if custom_field_name == "none":
+            lon_index = _data[zonal_velocity_name].get_axis_num(longitude_name)
+            fft_lon_u = xr.apply_ufunc(
+                _scaled_rfft,
+                _data[zonal_velocity_name],
+                input_core_dims=[[longitude_name]],
+                output_core_dims=[["wavenumber"]],
+                exclude_dims={longitude_name},
+                kwargs={"axis": lon_index},
+            )
+            fft_lon_v = xr.apply_ufunc(
+                _scaled_rfft,
+                _data[meridional_velocity_name],
+                input_core_dims=[[longitude_name]],
+                output_core_dims=[["wavenumber"]],
+                exclude_dims={longitude_name},
+                kwargs={"axis": lon_index},
+            )
+            fft_lon = 0.5 * (fft_lon_u + fft_lon_v)
+        else:
+            lon_index = _data[custom_field_name].get_axis_num(longitude_name)
+            fft_lon = xr.apply_ufunc(
+                _scaled_rfft,
+                _data[custom_field_name],
+                input_core_dims=[[longitude_name]],
+                output_core_dims=[["wavenumber"]],
+                exclude_dims={longitude_name},
+                kwargs={"axis": lon_index},
+            )
+
+        nw = fft_lon.sizes["wavenumber"]
+        fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
 
         ds = xr.Dataset(
             data_vars={
@@ -114,7 +130,5 @@ def power_spectra(
                 "freqency": (freq_2d.dims, freq_2d.data),
             },
         )
-
-        print(ds["amplitude_squared"])
 
         return ds
