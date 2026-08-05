@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+
 try:
     import pyshtools as pysh
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
@@ -7,16 +8,16 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 
 from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
-    _integration_weights,
     _pressure_level_thickness,
     _scaled_rfft,
 )
 from scores.typing import XarrayLike
 
+
 def power_spectra(
     data: xr.Dataset,
     *,
-    preserve_vertial: bool = False,
+    preserve_vertical: bool = False,
     reduce_time: bool = False,
     spherical_harmonic: bool = False,
     longitude_name: str = "longitude",
@@ -30,7 +31,7 @@ def power_spectra(
     constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
-    Compute the spectra. By default this is done by first computing the kinetic energy from the horizontal velocity 
+    Compute the spectra. By default this is done by first computing the kinetic energy from the horizontal velocity
     components (u,v), but may alternatively be computed for a custom field.
     """
 
@@ -38,7 +39,7 @@ def power_spectra(
     if custom_field_name != "none":
         K = data[custom_field_name]
     else:
-        K = 0.5 * (data[zonal_velocity_name] + data[meridional_field_name])
+        K = 0.5 * (data[zonal_velocity_name] + data[meridional_velocity_name])
 
     # average over the vertical dimension (pressure levels)
     if not preserve_vertical and len(data.level.values) > 1:
@@ -55,8 +56,9 @@ def power_spectra(
         K = K / nt
 
     if spherical_harmonic:
-        error_msg = ImportError("The 'pyshtools' package in not installed, "
-                + "cannot perform a spherical harmonic transform.")
+        error_msg = ImportError(
+            "The 'pyshtools' package in not installed, " + "cannot perform a spherical harmonic transform."
+        )
         if pysh == "Unavailable":
             raise error_msg
 
@@ -68,7 +70,7 @@ def power_spectra(
         L = np.pi * constants.RAD_EARTH / 180.0 * n_lon * d_theta
         if L < 2.0 * np.pi * constants.RAD_EARTH - 1.0e-6:
             # regional domain, apply cosine bell filtering
-            error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_with}, must be < 0.5.")
+            error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_width}, must be < 0.5.")
             if zonal_filter_width >= 0.5:
                 raise error_msg
 
@@ -81,22 +83,22 @@ def power_spectra(
             filter_1d = np.ones(n_lon)
             filter_1d[mask_l] = filter_l
             filter_1d[mask_r] = filter_r
-            filter_2d = np.ones((nlat, 1)) * filter_1d[None, :]
+            filter_2d = np.ones((n_lat, 1)) * filter_1d[None, :]
             filter_xr = xr.DataArray(
-                    filter_2d, 
-                    dims=[latitude_name, longitude_name], 
-                    coords={latitude_name: K.latitude, longitude_name: K.longitude}
-                )
+                filter_2d,
+                dims=[latitude_name, longitude_name],
+                coords={latitude_name: K.latitude, longitude_name: K.longitude},
+            )
             K = filter_xr * K
 
         lon_index = K.get_index(longitude_name)
         fft_lon = xr.apply_ufunc(
-                _scaled_rfft,
-                K,
-                input_core_dims=[[longitude_name]],
-                output_core_dims=[["wavenumber"]],
-                kwargs={index: lon_index, norm: "forward"},
-            )
+            _scaled_rfft,
+            K,
+            input_core_dims=[[longitude_name]],
+            output_core_dims=[["wavenumber"]],
+            kwargs={"axis": lon_index},
+        )
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(K.latitude.values)
