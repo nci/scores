@@ -44,14 +44,13 @@ def power_spectra(
     # average over the vertical dimension (pressure levels)
     if not preserve_vertical and len(data.level.values) > 1:
         dp = _pressure_level_thickness(data.level.values, constants)
-        dp_x = xr.zeros_like(K)
-        dp_x = dp_x + dp
+        dp_x = xr.DataArray(dp, dims=(pressure_level_name))
         K = (dp_x * K).sum(dim=pressure_level_name)
         K = K / np.sum(dp)
 
     # average over the time dimension
     nt = len(data.time.values)
-    if reduce_time and nt > 1:
+    if reduce_time:
         K = K.sum(dim=time_name)
         K = K / nt
 
@@ -91,19 +90,31 @@ def power_spectra(
             )
             K = filter_xr * K
 
-        lon_index = K.get_index(longitude_name)
+        lon_index = K.get_axis_num(longitude_name)
         fft_lon = xr.apply_ufunc(
             _scaled_rfft,
             K,
             input_core_dims=[[longitude_name]],
             output_core_dims=[["wavenumber"]],
+            exclude_dims={longitude_name},
             kwargs={"axis": lon_index},
         )
+        nw = fft_lon.sizes["wavenumber"]
+        fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(K.latitude.values)
-        equator_freq = np.fft.rttffreq(n_lon, L / 2.0 / np.pi)
+        equator_freq = np.fft.rfftfreq(n_lon, L / 2.0 / np.pi)
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
-        fft_lon["frequency"] = (["waqvenumber", latitude_name], freq_2d)
+        freq_2d = xr.DataArray(freq_2d, dims=(longitude_name, "wavenumber"))
 
-        return fft_lon
+        ds = xr.Dataset(
+            data_vars={
+                "amplitude_squared": (fft_lon.dims, fft_lon.data),
+                "freqency": (freq_2d.dims, freq_2d.data),
+            },
+        )
+
+        print(ds["amplitude_squared"])
+
+        return ds
