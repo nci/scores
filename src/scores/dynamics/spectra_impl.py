@@ -93,10 +93,11 @@ def power_spectra(
         cos_theta_inv = 1.0 / np.cos(_data.latitude.values)
         equator_freq = np.fft.rfftfreq(n_lon, L / 2.0 / np.pi)
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
-        freq_2d = xr.DataArray(freq_2d, dims=(longitude_name, "wavenumber"))
+        freq_2d = xr.DataArray(freq_2d, dims=(latitude_name, "wavenumber"))
 
         if dask != "Unavailable":
             _data = _data.compute()
+
         if custom_field_name == "none":
             lon_index = _data[zonal_velocity_name].get_axis_num(longitude_name)
             fft_lon_u = xr.apply_ufunc(
@@ -142,6 +143,5 @@ def power_spectra(
             ds = ds.assign_coords(level=_data.level)
         ds = ds.assign_coords(latitude=_data.latitude)
         ds = ds.assign_coords(wavenumber=fft_lon.wavenumber)
-        ds = ds.drop_dims(longitude_name)
 
         return ds

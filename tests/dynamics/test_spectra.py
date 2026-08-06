@@ -8,6 +8,10 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
+try:
+    import pyshtools as pysh
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
 import pandas as pd
@@ -363,7 +367,7 @@ def test_spectra(
 
 
 # test that the energy budget computation is compatible with Dask
-def test_budgets_dask():
+def test_spectra_dask():
     if dask == "Unavailable":
         pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
 
@@ -405,3 +409,81 @@ def test_budgets_dask():
     assert isinstance(spectra["amplitude_squared"].data, (np.ndarray, np.generic))
     expected = xr.DataArray(np.array([[8.0, 0.0, 12.5, 0.0, 0.0], [0.0, 0.0, 0.0, 12.5, 0.0]]))
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+
+
+def test_spectra_filter_width_error():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(90.0, 270.0, 10)
+    latitude = np.array([-60.0, 0.0, +60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="The zonal_filter_width is: 0.55, must be < 0.5."):
+        power_spectra(ds, zonal_filter_width=0.55)
+
+
+def test_spectra_spherical_harmonic():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(90.0, 270.0, 10)
+    latitude = np.array([-60.0, 0.0, +60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    if pysh == "Unavailable":
+        with pytest.raises(
+            ImportError,
+            match="The 'pyshtools' package is not installed, cannot perform a spherical harmonic transform.",
+        ):
+            power_spectra(ds, spherical_harmonic=True)
