@@ -197,6 +197,113 @@ def omega(phi, theta, p, phi1d):
                 )
             ),
         ),
+        (
+            ux,
+            uy,
+            None,
+            True,
+            False,
+            pd.date_range("2025-01-01", periods=3),
+            np.array([500, 1000]),
+            np.arange(0.0, 360.0, 20),
+            np.array([-60.0]),
+            xr.DataArray(
+                np.array(
+                    [
+                        [
+                            [
+                                [
+                                    8.000000e00,
+                                    0.000000e00,
+                                    1.250000e01,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ]
+                            ],
+                            [
+                                [
+                                    8.000000e00,
+                                    0.000000e00,
+                                    1.250000e01,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ]
+                            ],
+                        ],
+                        [
+                            [
+                                [
+                                    8.000000e00,
+                                    0.000000e00,
+                                    1.250000e01,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ]
+                            ],
+                            [
+                                [
+                                    8.000000e00,
+                                    0.000000e00,
+                                    1.250000e01,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ]
+                            ],
+                        ],
+                        [
+                            [
+                                [
+                                    8.000000e00,
+                                    0.000000e00,
+                                    1.250000e01,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ]
+                            ],
+                            [
+                                [
+                                    8.000000e00,
+                                    0.000000e00,
+                                    1.250000e01,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ]
+                            ],
+                        ],
+                    ]
+                )
+            ),
+        ),
     ],
 )
 def test_spectra(
@@ -222,8 +329,8 @@ def test_spectra(
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
 
-    u[0, :, :, :] = u_velocity_func(lat3d, lon3d, lev3d, latitude)
-    v[0, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d, latitude)
+    u[:, :, :, :] = u_velocity_func(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = v_velocity_func(lat3d, lon3d, lev3d, latitude)
 
     ds = xr.Dataset(
         data_vars={
@@ -239,7 +346,7 @@ def test_spectra(
     )
     if custom_field_func is not None:
         w = np.zeros((nt, nlev, nlat, nlon))
-        w[0, :, :, :] = custom_field_func(lat3d, lon3d, lev3d, latitude)
+        w[:, :, :, :] = custom_field_func(lat3d, lon3d, lev3d, latitude)
         custom_field_name = "w"
         ds["w"] = (["time", "level", "latitude", "longitude"], w)
     else:

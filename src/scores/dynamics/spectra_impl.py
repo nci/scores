@@ -51,7 +51,7 @@ def power_spectra(
 
     if spherical_harmonic:
         error_msg = ImportError(
-            "The 'pyshtools' package in not installed, " + "cannot perform a spherical harmonic transform."
+            "The 'pyshtools' package is not installed, cannot perform a spherical harmonic transform."
         )
         if pysh == "Unavailable":
             raise error_msg
