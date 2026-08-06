@@ -360,3 +360,48 @@ def test_spectra(
     )
 
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+
+
+# test that the energy budget computation is compatible with Dask
+def test_budgets_dask():
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(0.0, 360.0, 40)
+    latitude = np.array([-60.0, 0.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    spectra = power_spectra(ds.chunk(), reduce_time=True).chunk()
+    assert isinstance(spectra["amplitude_squared"].data, dask.array.Array)
+    spectra = spectra.compute()
+    assert isinstance(spectra["amplitude_squared"].data, (np.ndarray, np.generic))
+    expected = xr.DataArray(np.array([[8.0, 0.0, 12.5, 0.0, 0.0], [0.0, 0.0, 0.0, 12.5, 0.0]]))
+    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)

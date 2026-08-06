@@ -2,6 +2,11 @@ import numpy as np
 import xarray as xr
 
 try:
+    import dask
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
+    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+
+try:
     import pyshtools as pysh
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
@@ -90,6 +95,8 @@ def power_spectra(
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
         freq_2d = xr.DataArray(freq_2d, dims=(longitude_name, "wavenumber"))
 
+        if dask != "Unavailable":
+            _data = _data.compute()
         if custom_field_name == "none":
             lon_index = _data[zonal_velocity_name].get_axis_num(longitude_name)
             fft_lon_u = xr.apply_ufunc(
@@ -126,8 +133,15 @@ def power_spectra(
         ds = xr.Dataset(
             data_vars={
                 "amplitude_squared": (fft_lon.dims, fft_lon.data),
-                "freqency": (freq_2d.dims, freq_2d.data),
+                "frequency": (freq_2d.dims, freq_2d.data),
             },
         )
+        if time_name in _data.dims and not reduce_time:
+            ds = ds.assign_coords(time=_data.time)
+        if pressure_level_name in _data.dims and preserve_vertical:
+            ds = ds.assign_coords(level=_data.level)
+        ds = ds.assign_coords(latitude=_data.latitude)
+        ds = ds.assign_coords(wavenumber=fft_lon.wavenumber)
+        ds = ds.drop_dims(longitude_name)
 
         return ds
