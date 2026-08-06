@@ -58,11 +58,10 @@ def power_spectra(
 
     else:
         n_lon = len(_data.longitude.values)
-        n_lat = len(_data.latitude.values)
         L_theta = np.max(_data.longitude.values) - np.min(_data.longitude.values)
         d_theta = L_theta / (n_lon - 1)
-        L = np.pi * constants.RAD_EARTH / 180.0 * n_lon * d_theta
-        if L < 2.0 * np.pi * constants.RAD_EARTH - 1.0e-6:
+        L = n_lon * d_theta
+        if L < 360.0 - 1.0e-6:
             # regional domain, apply cosine bell filtering
             error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_width}, must be < 0.5.")
             if zonal_filter_width >= 0.5:
@@ -75,15 +74,15 @@ def power_spectra(
             mask_l = _data.longitude.values < theta_l + zonal_filter_width * L
             mask_r = _data.longitude.values > theta_r - zonal_filter_width * L
             filter_1d = np.ones(n_lon)
-            filter_1d[mask_l] = filter_l
-            filter_1d[mask_r] = filter_r
-            filter_2d = np.ones((n_lat, 1)) * filter_1d[None, :]
+            filter_1d[mask_l] = filter_l[mask_l]
+            filter_1d[mask_r] = filter_r[mask_r]
             filter_xr = xr.DataArray(
-                filter_2d,
-                dims=[latitude_name, longitude_name],
-                coords={latitude_name: _data.latitude, longitude_name: _data.longitude},
+                filter_1d,
+                dims=[longitude_name],
+                coords={longitude_name: _data.longitude},
             )
-            _data = filter_xr * _data
+            _dims = _data.dims
+            _data = (filter_xr * _data).transpose(*_dims)
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(_data.latitude.values)

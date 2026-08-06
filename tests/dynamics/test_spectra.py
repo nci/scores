@@ -62,7 +62,19 @@ def uy(phi, theta, p, phi1d):
 
 
 def omega(phi, theta, p, phi1d):
-    return 0.0
+    _w = np.zeros(phi.shape)
+
+    mask1 = phi1d < -1.0e-6
+    _w[:, mask1, :] = 4.0 + 3.0 * np.cos(2.0 * np.pi * theta[:, mask1, :] / 90.0)
+
+    mask2 = phi1d > -1.0e-6
+    mask3 = phi1d < +1.0e-6
+    mask2 = np.logical_and(mask2, mask3)
+    _w[:, mask2, :] = 3.0 * np.cos(3.0 * np.pi * theta[:, mask2, :] / 90.0) + 4.0 * np.sin(
+        3.0 * np.pi * theta[:, mask2, :] / 90.0
+    )
+
+    return _w
 
 
 @pytest.mark.parametrize(
@@ -132,6 +144,59 @@ def omega(phi, theta, p, phi1d):
                 )
             ),
         ),
+        (
+            ux,
+            uy,
+            omega,
+            False,
+            True,
+            pd.date_range("2025-01-01", periods=1),
+            np.array([200, 800, 1000]),
+            np.arange(0.0, 180.0, 10),
+            np.array([-60.0, 0.0, 60.0]),
+            xr.DataArray(
+                np.array(
+                    [
+                        [
+                            1.014619e01,
+                            2.473585e00,
+                            2.521114e00,
+                            1.376600e00,
+                            7.955386e-01,
+                            3.680748e-01,
+                            1.238868e-01,
+                            2.367847e-02,
+                            8.529394e-04,
+                            1.752576e-04,
+                        ],
+                        [
+                            6.731174e-02,
+                            2.882387e-01,
+                            3.298907e-01,
+                            1.945190e01,
+                            3.469772e-01,
+                            2.862770e-01,
+                            1.955920e-01,
+                            1.045931e-01,
+                            3.959687e-02,
+                            1.630067e-02,
+                        ],
+                        [
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                        ],
+                    ]
+                )
+            ),
+        ),
     ],
 )
 def test_spectra(
@@ -174,7 +239,7 @@ def test_spectra(
     )
     if custom_field_func is not None:
         w = np.zeros((nt, nlev, nlat, nlon))
-        w[0, :, :, :] = custom_field_func(lat3d, lon3d, lev3d)
+        w[0, :, :, :] = custom_field_func(lat3d, lon3d, lev3d, latitude)
         custom_field_name = "w"
         ds["w"] = (["time", "level", "latitude", "longitude"], w)
     else:
