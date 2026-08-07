@@ -542,9 +542,9 @@ def _check_dims_exist_ds(ds, dims):
     return all(_check_dims_exist_da(ds[var], dims) for var in ds.data_vars)
 
 
-def check_dims_exist(*args, dims):
+def assert_dims_exist(*args, dims):
     if len(list(dims)) == 0:
-        return True
+        return
 
     checks = []
     for arg in args:
@@ -555,7 +555,10 @@ def check_dims_exist(*args, dims):
         else:
             checks.append(_check_dims_exist_da(arg, dims))
 
-    return all(checks)
+    if not all(checks):
+        raise DimensionError(
+            f"At least one of `fcst`, `obs` or `weights` (if applicable) missing all gathered dimensions {dims}"
+        )
 
 
 def get_full_signature(func, *args, **kwargs):
@@ -598,7 +601,7 @@ def validate_inputs_outputs(same_input_types=False, same_input_and_output_type=F
                 preserve_dims=preserve_dims,
             )
 
-            assert check_dims_exist(fcst, obs, weights, dims=gathered_dims)
+            assert_dims_exist(fcst, obs, weights, dims=gathered_dims)
 
             out = func(*args, **kwargs)
 
