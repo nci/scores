@@ -64,8 +64,8 @@ def validate_inputs_outputs(same_input_types=False, same_input_and_output_type=F
             # Inspect the function signature and bind all arguments
             all_args = get_full_signature(func, *args, **kwargs)
 
-            fcst = all_args.pop("fcst", None)
-            obs = all_args.pop("obs", None)
+            fcst = all_args.pop("fcst")
+            obs = all_args.pop("obs")
             weights = all_args.pop("weights", None)
 
             is_angular = all_args.pop("is_angular", False)
