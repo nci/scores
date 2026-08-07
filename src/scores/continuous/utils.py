@@ -11,11 +11,19 @@ def _check_isinstance(*args, classes):
     return all(isinstance(arg, classes) for arg in args if arg is not None)
 
 
-def is_xarraylike(*args, same_types):
+def assert_is_xarraylike(*args, same_types):
     if not same_types:
-        return _check_isinstance(*args, classes=(xr.Dataset, xr.DataArray))
+        if not _check_isinstance(*args, classes=(xr.Dataset, xr.DataArray)):
+            raise TypeError(
+                "Inputs are not of type `xr.Dataset` or `xr.DataArray`. "
+                "Check the inputted `fcst`, `obs` and `weights` (if applicable)."
+            )
     else:
-        return _check_isinstance(*args, classes=xr.Dataset) or _check_isinstance(*args, classes=xr.DataArray)
+        if not (_check_isinstance(*args, classes=xr.Dataset) or _check_isinstance(*args, classes=xr.DataArray)):
+            raise TypeError(
+                "Inputs must all be of type `xr.Dataset`, or must all be of type `xr.DataArray`. "
+                "Check the inputted `fcst`, `obs` and `weights` (if applicable)."
+            )
 
 
 def _check_dims_exist_da(da, dims):
@@ -66,8 +74,11 @@ def validate_inputs_outputs(same_input_types=False, same_input_and_output_type=F
             reduce_dims = all_args.pop("reduce_dims", None)
             preserve_dims = all_args.pop("preserve_dims", None)
 
-            assert is_xarraylike(fcst, obs, weights, same_types=same_input_types)
-            assert isinstance(is_angular, bool) and isinstance(include_components, bool)
+            assert_is_xarraylike(fcst, obs, weights, same_types=same_input_types)
+            if not isinstance(is_angular, bool):
+                raise TypeError("`is_angular` must be boolean.")
+            if not isinstance(include_components, bool):
+                raise TypeError("`include_components` must be boolean.")
 
             check_weights(weights) if weights is not None else None
 
