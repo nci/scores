@@ -22,7 +22,7 @@ from scores.typing import XarrayLike
 def power_spectra(
     data: xr.Dataset,
     *,
-    preserve_vertical: bool = False,
+    reduce_vertical: bool = False,
     reduce_time: bool = False,
     spherical_harmonic: bool = False,
     longitude_name: str = "longitude",
@@ -43,7 +43,7 @@ def power_spectra(
     _data = data.copy(deep=True)
 
     # average over the vertical dimension (pressure levels)
-    if not preserve_vertical and len(_data.level.values) > 1:
+    if reduce_vertical and len(_data.level.values) > 1:
         dp = _pressure_level_thickness(_data.level.values, constants)
         dp = dp / np.sum(dp)
         dp_x = xr.DataArray(dp, dims=(pressure_level_name))
@@ -139,7 +139,7 @@ def power_spectra(
         )
         if time_name in _data.dims and not reduce_time:
             ds = ds.assign_coords(time=_data.time)
-        if pressure_level_name in _data.dims and preserve_vertical:
+        if pressure_level_name in _data.dims and not reduce_vertical:
             ds = ds.assign_coords(level=_data.level)
         ds = ds.assign_coords(latitude=_data.latitude)
         ds = ds.assign_coords(wavenumber=fft_lon.wavenumber)

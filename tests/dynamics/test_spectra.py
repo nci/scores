@@ -86,7 +86,7 @@ def omega(phi, theta, p, phi1d):
         "u_velocity_func",
         "v_velocity_func",
         "custom_field_func",
-        "preserve_vertical",
+        "reduce_vertical",
         "reduce_time",
         "time",
         "level",
@@ -99,7 +99,7 @@ def omega(phi, theta, p, phi1d):
             ux,
             uy,
             None,
-            False,
+            True,
             True,
             pd.date_range("2025-01-01", periods=1),
             np.array([200, 800, 1000]),
@@ -152,7 +152,7 @@ def omega(phi, theta, p, phi1d):
             ux,
             uy,
             omega,
-            False,
+            True,
             True,
             pd.date_range("2025-01-01", periods=1),
             np.array([200, 800, 1000]),
@@ -205,7 +205,7 @@ def omega(phi, theta, p, phi1d):
             ux,
             uy,
             None,
-            True,
+            False,
             False,
             pd.date_range("2025-01-01", periods=3),
             np.array([500, 1000]),
@@ -314,7 +314,7 @@ def test_spectra(
     u_velocity_func,
     v_velocity_func,
     custom_field_func,
-    preserve_vertical,
+    reduce_vertical,
     reduce_time,
     time,
     level,
@@ -358,7 +358,7 @@ def test_spectra(
 
     spectra = power_spectra(
         ds,
-        preserve_vertical=preserve_vertical,
+        reduce_vertical=reduce_vertical,
         reduce_time=reduce_time,
         custom_field_name=custom_field_name,
     )
@@ -403,7 +403,7 @@ def test_spectra_dask():
         },
     )
 
-    spectra = power_spectra(ds.chunk(), reduce_time=True).chunk()
+    spectra = power_spectra(ds.chunk(), reduce_vertical=True, reduce_time=True).chunk()
     assert isinstance(spectra["amplitude_squared"].data, dask.array.Array)
     spectra = spectra.compute()
     assert isinstance(spectra["amplitude_squared"].data, (np.ndarray, np.generic))
