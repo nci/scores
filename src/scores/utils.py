@@ -7,7 +7,7 @@ from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
 from functools import wraps
 from inspect import signature
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -515,11 +515,20 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
             _check_single_array(da_weights)
 
 
-def _check_isinstance(*args, classes):
+def _check_isinstance(*args, classes: type[Any] | tuple[type[Any], ...]):
+    """
+    Helper function to check if all args are instances of the inputted classes.
+    """
     return all(isinstance(arg, classes) for arg in args if arg is not None)
 
 
-def assert_is_xarraylike(*args, same_types):
+def assert_is_xarraylike(*args, same_types: bool):
+    """
+    Helper function to assert that inputs are xarrays.
+
+    If same_types, inputs must all be xr.DataArray, or must all be xr.Dataset.
+    Otherwise, inputs must all be one of xr.DataArray or xr.Dataset.
+    """
     if not same_types:
         if not _check_isinstance(*args, classes=(xr.Dataset, xr.DataArray)):
             raise TypeError(
@@ -534,15 +543,24 @@ def assert_is_xarraylike(*args, same_types):
             )
 
 
-def _check_dims_exist_da(da, dims):
+def _check_dims_exist_da(da, dims: Iterable[str]):
+    """
+    Helper function to check if at least one dimension from dims exists in the dataarray.
+    """
     return np.intersect1d(da.dims, tuple(dims)).size > 0
 
 
-def _check_dims_exist_ds(ds, dims):
+def _check_dims_exist_ds(ds, dims: Iterable[str]):
+    """
+    Helper function to check if at least one dimension from dims exists in the each data variable of the dataset.
+    """
     return all(_check_dims_exist_da(ds[var], dims) for var in ds.data_vars)
 
 
-def assert_dims_exist(*args, dims):
+def assert_dims_exist(*args, dims: Iterable[str]):
+    """
+    Helper function to assert that at least one dimension from dims exists in each input.
+    """
     if len(list(dims)) == 0:
         return
 
@@ -561,15 +579,32 @@ def assert_dims_exist(*args, dims):
         )
 
 
-def get_full_signature(func, *args, **kwargs):
+def get_full_signature(func: Callable, *args, **kwargs) -> dict[str, Any]:
+    """
+    Helper function to generate full function signature of func including defaults etc.
+    """
     sig = signature(func)
     bound_args = sig.bind(*args, **kwargs)
     bound_args.apply_defaults()
     return bound_args.arguments
 
 
-def validate_inputs_outputs(same_input_types=False, same_input_and_output_type=False):
-    def decorator(func):
+def validate_inputs_outputs(same_input_types: bool = False, same_input_and_output_type: bool = False) -> Callable:
+    """
+    Decorator that performs common input and output validation for score functions.
+
+    Before calling the wrapped function, the decorator validates:
+
+    - ``fcst``, ``obs``, and ``weights`` are xarray objects (and of same types if ``same_input_types``)
+    - ``is_angular`` and ``include_components`` are boolean types.
+    - ``weights`` are validated.
+    - gathered reduction dimensions exist in the inputs
+
+    Then if ``same_input_and_output_type``, the decorator additionally validates that the returned object is the same
+    type as the inputted ``fcst``.
+    """
+
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Inspect the function signature and bind all arguments
