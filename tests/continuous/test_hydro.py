@@ -15,7 +15,7 @@ try:
 
     DASK_AVAILABLE = True
 except ImportError:
-    pass
+    dask = "Unavailable"
 
 
 # Metafunction used to generate tests from TestClasses
