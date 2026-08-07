@@ -12,9 +12,7 @@ from scores.typing import (
     FlexibleDimensionTypes,
     XarrayLike,
 )
-from scores.utils import gather_dimensions
-
-from .utils import validate_inputs_outputs
+from scores.utils import gather_dimensions, validate_inputs_outputs
 
 
 def merge_sizes(*ds) -> dict[Hashable, int]:
