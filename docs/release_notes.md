@@ -6,6 +6,15 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
+- Added two new metrics:
+	- Energy budget: `scores.dynamics.energy_components_lat_lon`.
+	- Energy exchanges: `scores.dynamics.energy_exchanges_lat_lon`.  
+	See [PR #1033](https://github.com/nci/scores/pull/1033) and [PR #1106](https://github.com/nci/scores/pull/1106).
+- Added a new class and a new instance of the class:
+	- `scores.dynamics.PlanetConstants` (a data class for representing various physical constants used in the calculation of energy budgets).
+	- `scores.dynamics.STANDARD_CONSTANTS` (a default set of planet constants for use by `scores.dynamics.energy_components_lat_lon` and `scores.dynamics.energy_exchanges_lat_lon`).  
+	See [PR #1106](https://github.com/nci/scores/pull/1106). 
+- Added a new `scores.dynamics` section to the API. See [PR #1033](https://github.com/nci/scores/pull/1033).
 - Implemented a small change to the handling of `scaling_factors` in `scores.continuous.kge`. The type hint has been changed from `Optional[Union[list[float], np.ndarray]]` to `Optional[Iterable[float]]` to accept a wider range of inputs. See [PR #1078](https://github.com/nci/scores/pull/1078).
 
 ### Deprecations
@@ -20,6 +29,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Documentation
 
+- Added "Energy budgets" tutorial. See [PR #1033](https://github.com/nci/scores/pull/1033).
 - Fixed two broken links - for the `Binder` badge in the README (`README.md`) and for the `Binder` badge in the tutorials README (`docs/tutorials/README.md)`. See [PR #1096](https://github.com/nci/scores/pull/1096).
 
 ### Internal Changes
@@ -28,7 +38,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Contributors to this Release
 
-Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Oisín M. Morrison ([@Oisin-M](https://github.com/Oisin-M)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)) and Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
+David Lee* ([@davelee2804](https://github.com/davelee2804)), Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Oisín M. Morrison ([@Oisin-M](https://github.com/Oisin-M)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)), Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)) and Nikeeth Ramanathan ([@nikeethr](https://github.com/nikeethr)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
