@@ -1,6 +1,6 @@
 cff-version: "1.2.0"
 message: "If you use this software, please cite both our article in the Journal of Open Source Software, and the software itself. To cite the software itself, cite the Zenodo entry for the specific version you used. See https://doi.org/10.5281/zenodo.12697241 to find the citation information for the version you used. As an example, below is the citation for Version 2.6.0 of `scores`."
-  authors:
+authors:
   - affiliation: Bureau of Meteorology, Australia
     family-names: Leeuwenburg
     given-names: Tennessee
@@ -105,20 +105,20 @@ message: "If you use this software, please cite both our article in the Journal 
     family-names: Morrison
     given-names: "Oisín M."
     orcid: 0000-0002-6098-9362
-  date-released: '2026-07-17'
-  doi: 10.5281/zenodo.21403944
-  keywords:
+date-released: '2026-07-17'
+doi: 10.5281/zenodo.21403944
+keywords:
   - verification
   - statistics
   - modelling
   - geoscience
   - earth system science
-  license:
+license:
   - apache-2.0
-  title: 'scores: Metrics for the verification, evaluation and optimisation of forecasts,
+title: 'scores: Metrics for the verification, evaluation and optimisation of forecasts,
     predictions or models'
-  type: software
-  version: 2.6.0
+type: software
+version: 2.6.0
 preferred-citation:
   authors:
   - family-names: Leeuwenburg
