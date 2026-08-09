@@ -124,7 +124,6 @@ As an example, below is the citation for Version 2.6.0 of `scores`."
   type: software
   version: 2.6.0
 preferred-citation:
-  type: article
   authors:
   - family-names: Leeuwenburg
     given-names: Tennessee
@@ -166,5 +165,6 @@ preferred-citation:
   start: 6889
   title: "scores: A Python package for verifying and evaluating models
     and predictions with xarray"  
+  type: article
   url: "https://joss.theoj.org/papers/10.21105/joss.06889"
   volume: 9
