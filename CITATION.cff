@@ -164,7 +164,7 @@ preferred-citation:
     name: Open Journals
   start: 6889
   title: "scores: A Python package for verifying and evaluating models
-    and predictions with xarray"  
+    and predictions with xarray"
   type: article
   url: "https://joss.theoj.org/papers/10.21105/joss.06889"
   volume: 9
