@@ -1,40 +1,130 @@
 cff-version: "1.2.0"
-authors:
-- family-names: Leeuwenburg
-  given-names: Tennessee
-  orcid: "https://orcid.org/0009-0008-2024-1967"
-- family-names: Loveday
-  given-names: Nicholas
-  orcid: "https://orcid.org/0009-0000-5796-7069"
-- family-names: Ebert
-  given-names: Elizabeth E.
-- family-names: Cook
-  given-names: Harrison
-  orcid: "https://orcid.org/0009-0009-3207-4876"
-- family-names: Khanarmuei
-  given-names: Mohammadreza
-  orcid: "https://orcid.org/0000-0002-5017-9622"
-- family-names: Taggart
-  given-names: Robert J.
-  orcid: "https://orcid.org/0000-0002-0067-5687"
-- family-names: Ramanathan
-  given-names: Nikeeth
-  orcid: "https://orcid.org/0009-0002-7406-7438"
-- family-names: Carroll
-  given-names: Maree
-  orcid: "https://orcid.org/0009-0008-6830-8251"
-- family-names: Chong
-  given-names: Stephanie
-  orcid: "https://orcid.org/0009-0007-0796-4127"
-- family-names: Griffiths
-  given-names: Aidan
-- family-names: Sharples
-  given-names: John
-message: If you use this software, please cite our article in the
-  Journal of Open Source Software.
-title: "scores: A Python package for verifying and evaluating models and
-  predictions with xarray"  
+message: "If you use this software, please cite both our article in the 
+Journal of Open Source Software, and the software itself. 
+To cite the software itself, cite the Zenodo entry for the specific version you used. 
+See https://doi.org/10.5281/zenodo.12697241 to find the citation information for the version you used.
+As an example, below is the citation for Version 2.6.0 of `scores`."
+  authors:
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Leeuwenburg
+    given-names: Tennessee
+    orcid: 0009-0008-2024-1967
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Loveday
+    given-names: Nicholas
+    orcid: 0009-0000-5796-7069
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Ramanathan
+    given-names: Nikeeth
+    orcid: 0009-0002-7406-7438
+  - affiliation: Independent Contributor, Australia
+    family-names: Chong
+    given-names: Stephanie
+    orcid: 0009-0007-0796-4127
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Taggart
+    given-names: Robert J.
+    orcid: 0000-0002-0067-5687
+  - affiliation: CSIRO, Australia
+    family-names: Shrestha
+    given-names: Durga
+    orcid: 0000-0002-5545-1736
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Khanarmuei
+    given-names: Mohammadreza
+    orcid: 0000-0002-5017-9622
+  - affiliation: Work undertaken while at the Bureau of Meteorology, Australia
+    family-names: Cook
+    given-names: Harrison
+    orcid: 0009-0009-3207-4876
+  - affiliation: Independent Contributor, Australia
+    family-names: Bluett
+    given-names: Liam
+    orcid: 0009-0006-7361-163X
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Ebert
+    given-names: Elizabeth E.
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Carroll
+    given-names: Maree
+    orcid: 0009-0008-6830-8251
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Trotta
+    given-names: Belinda
+    orcid: 0009-0007-7082-7029
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Sharples
+    given-names: John
+  - affiliation: Independent Contributor, Australia
+    family-names: Bishop
+    given-names: Sam
+    orcid: 0009-0002-8569-1439
+  - affiliation: Australian National University, Australia
+    family-names: Squire
+    given-names: Dougal T.
+    orcid: 0000-0003-3271-6874
+  - affiliation: Work undertaken while at the Bureau of Meteorology, Australia
+    family-names: Griffiths
+    given-names: Aidan
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Pagano
+    given-names: Thomas C.
+    orcid: 0009-0003-0771-4671
+  - affiliation: Independent Contributor, Australia
+    family-names: Fisher
+    given-names: A.J.
+  - affiliation: Independent Contributor, United States
+    family-names: Mandelbaum
+    given-names: Taylor
+    orcid: 0009-0006-5628-565X
+  - affiliation: Independent Contributor, Australia
+    family-names: Jinghan
+    given-names: Fu
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Smith
+    given-names: Paul R.
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Abellan
+    given-names: Esteban
+    orcid: 0000-0003-0610-2510
+  - affiliation: Deltares, the Netherlands
+    family-names: Beunk
+    given-names: Jurian
+    orcid: 0009-0004-0604-3623
+  - affiliation: Work undertaken while at the Bureau of Meteorology, Australia
+    family-names: Esperson
+    given-names: Felix
+  - affiliation: Swinburne University, Australia
+    family-names: Smallwood
+    given-names: J.
+    orcid: 0009-0006-4111-7610
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Wu
+    given-names: Xiaoxi
+  - affiliation: Bureau of Meteorology, Australia
+    family-names: Karney
+    given-names: Daniel
+    orcid: 0009-0000-8091-5806
+  - affiliation: European Centre for Medium-Range Weather Forecasts, Germany
+    family-names: Morrison
+    given-names: "Ois\xEDn M."
+    orcid: 0000-0002-6098-9362
+  date-released: '2026-07-17'
+  doi: 10.5281/zenodo.21403944
+  keywords:
+  - verification
+  - statistics
+  - modelling
+  - geoscience
+  - earth system science
+  license:
+  - apache-2.0
+  title: 'scores: Metrics for the verification, evaluation and optimisation of forecasts,
+    predictions or models'
+  type: software
+  version: 2.6.0
 preferred-citation:
+  type: article
   authors:
   - family-names: Leeuwenburg
     given-names: Tennessee
@@ -75,8 +165,6 @@ preferred-citation:
     name: Open Journals
   start: 6889
   title: "scores: A Python package for verifying and evaluating models
-    and predictions with xarray"
-  type: article
+    and predictions with xarray"  
   url: "https://joss.theoj.org/papers/10.21105/joss.06889"
   volume: 9
-
