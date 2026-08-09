@@ -1,7 +1,7 @@
 cff-version: "1.2.0"
-message: "If you use this software, please cite both our article in the Journal of Open Source Software, and the software itself. 
-To cite the software itself, cite the Zenodo entry for the specific version you used. 
-See https://doi.org/10.5281/zenodo.12697241 to find the citation information for the version you used. 
+message: "If you use this software, please cite both our article in the Journal of Open Source Software, and the software itself.\ 
+To cite the software itself, cite the Zenodo entry for the specific version you used.\ 
+See https://doi.org/10.5281/zenodo.12697241 to find the citation information for the version you used.\ 
 As an example, below is the citation for Version 2.6.0 of `scores`."
 authors:
   - affiliation: Bureau of Meteorology, Australia
