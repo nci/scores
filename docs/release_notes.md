@@ -6,6 +6,8 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Features
 
+- Implemented a small change to the handling of `scaling_factors` in `scores.continuous.kge`. The type hint has been changed from `Optional[Union[list[float], np.ndarray]]` to `Optional[Iterable[float]]` to accept a wider range of inputs. See [PR #1078](https://github.com/nci/scores/pull/1078).
+
 ### Deprecations
 
 - *This deprecation was first introduced in Version 2.5.0.* Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
@@ -22,11 +24,11 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 ### Internal Changes
 
-- Update three type hints with a more specific indicator. See [PR #1067](https://github.com/nci/scores/pull/1067/changes).
+- Updated three type hints with a more specific indicator. See [PR #1067](https://github.com/nci/scores/pull/1067).
 
 ### Contributors to this Release
 
-Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)) and Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
+Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Oisín M. Morrison ([@Oisin-M](https://github.com/Oisin-M)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)) and Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
 
 \* indicates that this release contains their first contribution to `scores`.
 
