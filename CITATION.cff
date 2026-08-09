@@ -118,7 +118,7 @@ keywords:
   - geoscience
   - earth system science
 license:
-  - apache-2.0
+  - Apache-2.0
 title: 'scores: Metrics for the verification, evaluation and optimisation of forecasts,
     predictions or models'
 type: software
