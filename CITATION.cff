@@ -107,7 +107,7 @@ As an example, below is the citation for Version 2.6.0 of `scores`."
     orcid: 0009-0000-8091-5806
   - affiliation: European Centre for Medium-Range Weather Forecasts, Germany
     family-names: Morrison
-    given-names: "Ois\xEDn M."
+    given-names: "Oisín M."
     orcid: 0000-0002-6098-9362
   date-released: '2026-07-17'
   doi: 10.5281/zenodo.21403944
