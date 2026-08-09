@@ -1,5 +1,35 @@
 # Release Notes (What's New)
 
+## Version 2.7.0 (Upcoming Release) 
+
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.6.0...develop). Below are the changes we think users may wish to be aware of.
+
+### Features
+
+### Deprecations
+
+- *This deprecation was first introduced in Version 2.5.0.* Support for `include_components` will be removed from threshold-weighted continuous ranked probability score (twCRPS) functions in a future version of `scores`. The `scores` development team believe using `include_components=True` may lead to misleading results when used with twCRPS functions.  As such, the following are now deprecated:
+	- support for `include_components` in `scores.probability.tw_crps_for_ensemble`, 
+	- support for `include_components` in `scores.probability.tail_tw_crps_for_ensemble` and
+	- support for `include_components` in `scores.probability.interval_tw_crps_for_ensemble`.  
+	See [PR #991](https://github.com/nci/scores/pull/991). 
+
+### Bug Fixes
+
+### Documentation
+
+- Fixed two broken links - for the `Binder` badge in the README (`README.md`) and for the `Binder` badge in the tutorials README (`docs/tutorials/README.md)`. See [PR #1096](https://github.com/nci/scores/pull/1096).
+
+### Internal Changes
+
+- Update three type hints with a more specific indicator. See [PR #1067](https://github.com/nci/scores/pull/1067/changes).
+
+### Contributors to this Release
+
+Tennessee Leeuwenburg ([@tennlee](https://github.com/tennlee)), Stephanie Chong ([@Steph-Chong](https://github.com/Steph-Chong)), Maree Carroll ([@mareecarroll](https://github.com/mareecarroll)) and Nicholas Loveday ([@nicholasloveday](https://github.com/nicholasloveday)).
+
+\* indicates that this release contains their first contribution to `scores`.
+
 ## Version 2.6.0 (July 17, 2026)
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.5.0...2.6.0). Below are the changes we think users may wish to be aware of.
