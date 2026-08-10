@@ -31,7 +31,7 @@ def power_spectra(
     time_name: str = "time",
     zonal_velocity_name: str = "u",
     meridional_velocity_name: str = "v",
-    custom_field_name: str = "none",
+    custom_field_name: str | None = None,
     zonal_filter_width: float = 0.125,
     constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
@@ -60,6 +60,35 @@ def power_spectra(
         )
         if pysh == "Unavailable":
             raise error_msg
+
+        if custom_field_name is None:
+            K = 0.5 * (
+                _data[zonal_velocity_name] * _data[zonal_velocity_name]
+                + _data[meridional_velocity_name] * _data[meridional_velocity_name]
+            )
+        else:
+            K = _data[custom_field_name]
+
+        coeffs = pysh.expand.SHExpandDH(K)
+        spec = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+        _coeffs = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
+        if custom_field_name is None:
+            _coeffs = np.sqrt(_coeffs)
+
+        k_lat = np.arange(len(K.latitude) // 2)
+        k_lon = np.arange(len(K.longitude) // 4)
+        ds = xr.Dataset(
+            data_vars={
+                "amplitude_squared": (("meridional_wavenumber", "zonal_wavenumber"), _coeffs),
+                "frequency": (("zonal_wavenumber"), spec),
+            },
+            coords={
+                "meridional_wavenumber": k_lat,
+                "zonal_wavenumber": k_lon,
+            },
+        )
+
+        return ds
 
     else:
         n_lon = len(_data.longitude.values)
@@ -98,7 +127,7 @@ def power_spectra(
         if dask != "Unavailable":
             _data = _data.compute()
 
-        if custom_field_name == "none":
+        if custom_field_name is None:
             lon_index = _data[zonal_velocity_name].get_axis_num(longitude_name)
             fft_lon_u = xr.apply_ufunc(
                 _scaled_rfft,
