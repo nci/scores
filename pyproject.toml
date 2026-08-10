@@ -19,7 +19,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["xarray", "pandas", "scipy", "bottleneck"]
+dependencies = ["xarray", "pandas", "scipy", "bottleneck", "narwhals"]
 
 [project.optional-dependencies]
 dev = [
@@ -32,6 +32,7 @@ dev = [
     "dask",
     "h5netcdf",
     "pandas-stubs",
+    "polars",
     "nbmake"
 ]
 tutorial = [
