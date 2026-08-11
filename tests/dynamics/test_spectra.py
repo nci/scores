@@ -14,6 +14,7 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
     pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
 import numpy as np
+import scipy as sp
 import pandas as pd
 import pytest
 import xarray as xr
@@ -489,59 +490,59 @@ def test_spectra_spherical_harmonic():
             power_spectra(ds, spherical_harmonic=True)
 
 
-# def f_sh(lat, lon, lev):
-#    _lat = np.pi / 180.0 * lat + 0.5 * np.pi
-#    _lon = np.pi / 180.0 * lon
+def f_sh(lat, lon, lev):
+    _lat = np.pi / 180.0 * lat + 0.5 * np.pi
+    _lon = np.pi / 180.0 * lon
 
-#    f = (
-#        8.0 * sp.special.sph_harm_y(0, 0, _lat, _lon).real
-#        + 4.0 * sp.special.sph_harm_y(1, 2, _lat, _lon).imag
-#        - 5.0 * sp.special.sph_harm_y(2, 3, _lat, _lon).real
-#    )
+    f = (
+        8.0 * sp.special.sph_harm_y(0, 0, _lat, _lon).real
+        + 4.0 * sp.special.sph_harm_y(2, 1, _lat, _lon).imag
+        - 5.0 * sp.special.sph_harm_y(3, 2, _lat, _lon).real
+    )
 
-#    return f
+    return f
 
 
-# def test_spectra_pysh():
-#    time = pd.date_range("2025-01-01", periods=1)
-#    level = np.array([200, 800, 1000])
-#    longitude = np.arange(0.0, 360.0, 10)
-#    latitude = np.linspace(-90.0, +90.0, 18, endpoint=False)
+def test_spectra_pysh():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 360.0, 10)
+    latitude = np.linspace(-90.0, +90.0, 18, endpoint=False)
 
-#    nt = len(time)
-#    nlev = len(level)
-#    nlat = len(latitude)
-#    nlon = len(longitude)
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
 
-#    u = np.zeros((nt, nlev, nlat, nlon))
-#    v = np.zeros((nt, nlev, nlat, nlon))
-#    w = np.zeros((nt, nlev, nlat, nlon))
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
 
-#    lon2d, lat2d = np.meshgrid(longitude, latitude)
-#    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
 
-#    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
-#    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
-#    w[:, :, :, :] = f_sh(lat3d, lon3d, lev3d)
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[:, :, :, :] = f_sh(lat3d, lon3d, lev3d)
 
-#    ds = xr.Dataset(
-#        data_vars={
-#            "u": (["time", "level", "latitude", "longitude"], u),
-#            "v": (["time", "level", "latitude", "longitude"], v),
-#            "w": (["time", "level", "latitude", "longitude"], w),
-#        },
-#        coords={
-#            "time": time,
-#            "level": level,
-#            "latitude": latitude,
-#            "longitude": longitude,
-#        },
-#    )
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
 
-#    exp_np = np.zeros((nlat // 2, nlon // 4))
-#    exp_np[0, 0] = +8.0
-#    exp_np[1, 2] = +4.0
-#    exp_np[2, 3] = -5.0
-#    expected = xr.DataArray(exp_np)
-#    spectra = power_spectra(ds, reduce_vertical=True, reduce_time=True, spherical_harmonic=True, custom_field_name="w")
-#    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+    exp_np = np.zeros((nlat // 2, nlon // 4))
+    exp_np[0, 0] = +8.0
+    exp_np[1, 2] = +4.0
+    exp_np[2, 3] = -5.0
+    expected = xr.DataArray(exp_np)
+    spectra = power_spectra(ds, reduce_time=True, reduce_vertical=True, spherical_harmonic=True, custom_field_name="w")
+    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)

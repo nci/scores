@@ -69,23 +69,58 @@ def power_spectra(
         else:
             K = _data[custom_field_name]
 
-        coeffs = pysh.expand.SHExpandDH(K)
-        spec = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-        _coeffs = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
-        if custom_field_name is None:
-            _coeffs = np.sqrt(_coeffs)
+        k_lat = np.arange(len(K.latitude)//2)
+        k_lon = np.arange(len(K.longitude)//4)
+        _dims = ("meridional_wavenumber", "zonal_wavenumber")
+        _coords = {"meridional_wavenumber": k_lat, "zonal_wavenumber": k_lon}
+        _shape = [len(k_lat), len(k_lon)]
+        if pressure_level_name in K.dims:
+            _dims = (pressure_level_name,) + _dims
+            _coords = {pressure_level_name: K.level} | _coords
+            _shape = [len(K.level)] + _shape
+        if time_name in K.dims:
+            _dims = (time_name,) + _dims
+            _coords = {time_name: K.time} | _coords
+            _shape = [len(K.time)] + _shape
+        _spec_dims = list(_dims)
+        _spec_dims.remove('meridional_wavenumber')
+        _spec_dims = tuple(_spec_dims)
+        _spec_shape = _shape.copy()
+        _spec_shape.pop(-2)
 
-        k_lat = np.arange(len(K.latitude) // 2)
-        k_lon = np.arange(len(K.longitude) // 4)
+        _sh_k = np.zeros(_shape)
+        _sh_s = np.zeros(_spec_shape)
+        K_np = K.to_numpy()
+        if time_name in K.dims and pressure_level_name in K.dims:
+            for t in np.arange(len(K.time)):
+                for l in np.arange(len(K.level)):
+                    coeffs = pysh.expand.SHExpandDH(K_np[t,l,:,:])
+                    _sh_s[t,l,:] = pysh.spectralanalysis.spectrum(coeffs[t,l,:,:], unit="per_l")
+                    _sh_k[t,l,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
+        elif time_name in K.dims:
+            for t in np.arange(len(K.time)):
+                coeffs = pysh.expand.SHExpandDH(K_np[t,:,:])
+                _sh_s[t,:] = pysh.spectralanalysis.spectrum(coeffs[t,:,:], unit="per_l")
+                _sh_k[t,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
+        elif pressure_level_name in K.dims:
+            for l in np.arange(len(K.level)):
+                coeffs = pysh.expand.SHExpandDH(K_np[l,:,:])
+                _sh_s[l,:] = pysh.spectralanalysis.spectrum(coeffs[l,:,:], unit="per_l")
+                _sh_k[l,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
+        else:
+            coeffs = pysh.expand.SHExpandDH(K_np)
+            _sh_s[:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+            _sh_k[:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
+
+        if custom_field_name is None:
+            _sh_k = np.sqrt(_sh_k)
+
         ds = xr.Dataset(
             data_vars={
-                "amplitude_squared": (("meridional_wavenumber", "zonal_wavenumber"), _coeffs),
-                "frequency": (("zonal_wavenumber"), spec),
+                "amplitude_squared": (_dims, _sh_k),
+                "frequency": (_spec_dims, _sh_s),
             },
-            coords={
-                "meridional_wavenumber": k_lat,
-                "zonal_wavenumber": k_lon,
-            },
+            coords=_coords,
         )
 
         return ds
