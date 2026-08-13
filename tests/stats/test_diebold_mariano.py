@@ -440,8 +440,7 @@ def test_diebold_mariano_1d():
     due to a NaN in the data.
     """
     timeseries = np.array([1, 2, 3.0, 4, np.nan])
-    h = 2
     with pytest.warns(RuntimeWarning):
-        result = diebold_mariano_1d(timeseries, h)
+        result = diebold_mariano_1d(timeseries, 2)
     expected = DM1D_TEST_STATS_NORMAL_EXP
     xr.testing.assert_allclose(result, expected, atol=7)

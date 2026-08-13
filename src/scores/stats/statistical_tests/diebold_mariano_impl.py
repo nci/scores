@@ -346,15 +346,15 @@ def diebold_mariano_1d(
         >>> # forecasts.
         >>> result = diebold_mariano_1d([1, 2, 3.0, 4, np.nan], 2)
         >>> print(result)
-        >>> <xarray.Dataset> Size: 48B
-        ...    Dimensions:          ()
-        ...    Data variables:
-        ...        mean             float64 8B 2.5
-        ...        dm_test_stat     float64 8B 2.236
-        ...        timeseries_len   int64 8B 4
-        ...        confidence_gt_0  float64 8B 0.9873
-        ...        ci_upper         float64 8B 4.339
-        ...        ci_lower         float64 8B 0.661
+        <xarray.Dataset> Size: 48B
+        Dimensions:          ()
+        Data variables:
+            mean             float64 8B 2.5
+            dm_test_stat     float64 8B 2.236
+            timeseries_len   int64 8B 4
+            confidence_gt_0  float64 8B 0.9873
+            ci_upper         float64 8B 4.339
+            ci_lower         float64 8B 0.661
     """
     _dm_common_checks(method, statistic_distribution, confidence_level)
 
