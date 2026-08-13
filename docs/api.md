@@ -111,6 +111,7 @@
 ## scores.stats
 ```{eval-rst}
 .. autofunction:: scores.stats.statistical_tests.diebold_mariano
+.. autofunction:: scores.stats.statistical_tests.diebold_mariano_1d
 ```
 
 ## scores.processing
