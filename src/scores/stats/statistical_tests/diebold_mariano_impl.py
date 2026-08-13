@@ -183,14 +183,7 @@ def diebold_mariano(  # pylint: disable=R0914
             ci_lower         (lead_day) float64 24B -0.1311 -1.479 nan
 
     """
-    if method not in ["HLN", "HG"]:
-        raise ValueError("`method` must be one of 'HLN' or 'HG'.")
-
-    if statistic_distribution not in ["normal", "t"]:
-        raise ValueError("`statistic_distribution` must be one of 'normal' or 't'.")
-
-    if not 0 < confidence_level < 1:
-        raise ValueError("`confidence_level` must be strictly between 0 and 1.")
+    _dm_common_checks(method, statistic_distribution, confidence_level)
 
     if len(da_timeseries.dims) != 2:
         raise ValueError("`da_timeseries` must have exactly two dimensions.")
@@ -230,7 +223,9 @@ def diebold_mariano(  # pylint: disable=R0914
         ci_quantile = sp.stats.norm.ppf(1 - (1 - confidence_level) / 2)
     else:
         pvals = sp.stats.t.cdf(test_stats, da_timeseries_len.values - 1)
-        ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, da_timeseries_len.values - 1)
+        ci_quantile = sp.stats.t.ppf(
+            1 - (1 - confidence_level) / 2, da_timeseries_len.values - 1
+        )
 
     result = xr.Dataset(
         data_vars={
@@ -247,7 +242,26 @@ def diebold_mariano(  # pylint: disable=R0914
     return result
 
 
-def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG") -> float:
+def _dm_common_checks(
+    method: str, statistic_distribution: str, confidence_level: float
+) -> None:
+    """
+    Performs common checks on some arguments for diebold_mariano and diebold_mariano_1d
+    functions. Raises a ValueError if any checks fail.
+    """
+    if method not in ["HLN", "HG"]:
+        raise ValueError("`method` must be one of 'HLN' or 'HG'.")
+
+    if statistic_distribution not in ["normal", "t"]:
+        raise ValueError("`statistic_distribution` must be one of 'normal' or 't'.")
+
+    if not 0 < confidence_level < 1:
+        raise ValueError("`confidence_level` must be strictly between 0 and 1.")
+
+
+def _dm_test_statistic(
+    diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG"
+) -> float:
     """
     Given a timeseries of score differences for h-step ahead forecasts, as a 1D numpy
     array, returns a modified Diebold-Mariano test statistic. NaNs are removed prior
@@ -310,7 +324,9 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"
     diffs = diffs[~np.isnan(diffs)]
 
     if not 0 < h < len(diffs):
-        raise ValueError("The condition `0 < h < len(diffs)`, after NaNs removed, failed.")
+        raise ValueError(
+            "The condition `0 < h < len(diffs)`, after NaNs removed, failed."
+        )
 
     nonzero_diffs = diffs[diffs != 0]
 
@@ -367,7 +383,9 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     max_lag = int(max(np.floor((n - 1) / 2), h))
     sample_autocvs = acovf(diffs)[0:max_lag]
     sample_lags = np.arange(max_lag)
-    model_params = least_squares(_hg_func, [1, 1], args=(sample_lags, sample_autocvs), bounds=(0, np.inf)).x
+    model_params = least_squares(
+        _hg_func, [1, 1], args=(sample_lags, sample_autocvs), bounds=(0, np.inf)
+    ).x
 
     # use the model autocovariances to estimate spectral density at 0
     all_lags = np.arange(n)
