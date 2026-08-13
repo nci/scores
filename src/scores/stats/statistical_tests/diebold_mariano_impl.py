@@ -358,7 +358,6 @@ def diebold_mariano_1d(  # pylint: disable=R0914
     """
     _dm_common_checks(method, statistic_distribution, confidence_level)
 
-    # TO DO: test that the following raises if h is NaN
     if (h <= 0) or not isinstance(h, int):
         raise ValueError("`h` must be a positive integer.")
 
