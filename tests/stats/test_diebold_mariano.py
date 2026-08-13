@@ -42,9 +42,7 @@ from scores.stats.statistical_tests.diebold_mariano_impl import (
             "`da_timeseries` must have exactly two dimensions.",
         ),
         (
-            xr.DataArray(
-                data=[[1], [2]], dims=["x", "y"], coords={"x": [0, 1], "y": [1]}
-            ),
+            xr.DataArray(data=[[1], [2]], dims=["x", "y"], coords={"x": [0, 1], "y": [1]}),
             "z",
             "y",
             "HLN",
@@ -172,9 +170,7 @@ def test_diebold_mariano_raises(
         ),
     ],
 )
-def test__dm_common_checks_raises(
-    method, confidence_level, statistic_distribution, error_msg
-):
+def test__dm_common_checks_raises(method, confidence_level, statistic_distribution, error_msg):
     """Tests that _dm_common_checks raises a ValueError as expected."""
     with pytest.raises(ValueError, match=error_msg):
         _dm_common_checks(
@@ -190,11 +186,7 @@ def test__dm_common_checks_raises(
         ([2.1, 3.6, np.nan, 0]),
         (pd.Series([2.1, 3.6, np.nan, 0], index=[0, 1, 2, 3])),
         (np.array([2.1, 3.6, np.nan, 0])),
-        (
-            xr.DataArray(
-                data=[2.1, 3.6, np.nan, 0], dims=["x"], coords={"x": [0, 1, 2, 3]}
-            )
-        ),
+        (xr.DataArray(data=[2.1, 3.6, np.nan, 0], dims=["x"], coords={"x": [0, 1, 2, 3]})),
     ],
 )
 def test__to_1d_float_array(timeseries):
@@ -297,9 +289,7 @@ def test__dm_gamma_hat_k(k, expected):
 def test__dm_v_hat(diffs, h, expected):
     """Tests that _dm_v_hat returns values as expected."""
 
-    np.testing.assert_allclose(
-        _dm_v_hat(diffs, np.mean(diffs), len(diffs), h), expected
-    )
+    np.testing.assert_allclose(_dm_v_hat(diffs, np.mean(diffs), len(diffs), h), expected)
 
 
 # DM test stat when timeseries is [1, 2, 3, 4] and h = 2

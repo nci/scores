@@ -230,9 +230,7 @@ def diebold_mariano(  # pylint: disable=R0914
         ci_quantile = sp.stats.norm.ppf(1 - (1 - confidence_level) / 2)
     else:
         pvals = sp.stats.t.cdf(test_stats, da_timeseries_len.values - 1)
-        ci_quantile = sp.stats.t.ppf(
-            1 - (1 - confidence_level) / 2, da_timeseries_len.values - 1
-        )
+        ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, da_timeseries_len.values - 1)
 
     result = xr.Dataset(
         data_vars={
@@ -346,7 +344,7 @@ def diebold_mariano_1d(
         >>> # Calculate Diebold-Mariano test statistic for the timeseries
         >>> # [1, 2, 3.0, 4, np.nan]  of score differentials for 2-step ahead
         >>> # forecasts.
-        >>> result = diebold_mariano([1, 2, 3.0, 4, np.nan], 2)
+        >>> result = diebold_mariano_1d([1, 2, 3.0, 4, np.nan], 2)
         >>> print(result)
         >>> <xarray.Dataset> Size: 48B
         ...    Dimensions:          ()
@@ -370,9 +368,7 @@ def diebold_mariano_1d(
     timeseries_len = np.sum(~np.isnan(timeseries))
 
     if timeseries_len <= h:
-        raise ValueError(
-            "`h` must be less than the length of `timeseries` after NaNs are removed."
-        )
+        raise ValueError("`h` must be less than the length of `timeseries` after NaNs are removed.")
 
     ts_mean = np.nanmean(timeseries)
     test_stat = _dm_test_statistic(timeseries, h, method=method)
@@ -398,9 +394,7 @@ def diebold_mariano_1d(
     return result
 
 
-def _dm_common_checks(
-    method: str, statistic_distribution: str, confidence_level: float
-) -> None:
+def _dm_common_checks(method: str, statistic_distribution: str, confidence_level: float) -> None:
     """
     Performs common checks on some arguments for diebold_mariano and diebold_mariano_1d
     functions. Raises a ValueError if any checks fail.
@@ -415,9 +409,7 @@ def _dm_common_checks(
         raise ValueError("`confidence_level` must be strictly between 0 and 1.")
 
 
-def _to_1d_float_array(
-    timeseries: Union[xr.DataArray, pd.Series, np.ndarray, List]
-) -> np.ndarray:
+def _to_1d_float_array(timeseries: Union[xr.DataArray, pd.Series, np.ndarray, List]) -> np.ndarray:
     """
     Converts a timeseries (list, pandas Series, numpy array, or xarray DataArray)
     to a 1D numpy array of floats.
@@ -436,25 +428,15 @@ def _to_1d_float_array(
         raise ValueError(f"Could not convert `timeseries` to a numpy array: {e}") from e
 
     if arr.ndim != 1:
-        raise ValueError(
-            f"`timeseries` must be 1-dimensional, "
-            "but got array with {arr.ndim} dimensions."
-        )
+        raise ValueError("`timeseries` must be 1-dimensional, but got array with {arr.ndim} dimensions.")
 
-    if not np.issubdtype(arr.dtype, np.integer) and not np.issubdtype(
-        arr.dtype, np.floating
-    ):
-        raise ValueError(
-            f"`timeseries` must contain numeric (int or float) values, "
-            "but got dtype '{arr.dtype}'."
-        )
+    if not np.issubdtype(arr.dtype, np.integer) and not np.issubdtype(arr.dtype, np.floating):
+        raise ValueError("`timeseries` must contain numeric (int or float) values, but got dtype '{arr.dtype}'.")
 
     return arr.astype(float)
 
 
-def _dm_test_statistic(
-    diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG"
-) -> float:
+def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG") -> float:
     """
     Given a timeseries of score differences for h-step ahead forecasts, as a 1D numpy
     array, returns a modified Diebold-Mariano test statistic. NaNs are removed prior
@@ -517,9 +499,7 @@ def _dm_test_statistic(
     diffs = diffs[~np.isnan(diffs)]
 
     if not 0 < h < len(diffs):
-        raise ValueError(
-            "The condition `0 < h < len(diffs)`, after NaNs removed, failed."
-        )
+        raise ValueError("The condition `0 < h < len(diffs)`, after NaNs removed, failed.")
 
     nonzero_diffs = diffs[diffs != 0]
 
@@ -576,9 +556,7 @@ def _hg_method_stat(diffs: np.ndarray, h: int) -> float:
     max_lag = int(max(np.floor((n - 1) / 2), h))
     sample_autocvs = acovf(diffs)[0:max_lag]
     sample_lags = np.arange(max_lag)
-    model_params = least_squares(
-        _hg_func, [1, 1], args=(sample_lags, sample_autocvs), bounds=(0, np.inf)
-    ).x
+    model_params = least_squares(_hg_func, [1, 1], args=(sample_lags, sample_autocvs), bounds=(0, np.inf)).x
 
     # use the model autocovariances to estimate spectral density at 0
     all_lags = np.arange(n)
