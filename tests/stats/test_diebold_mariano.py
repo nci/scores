@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from scores.stats.statistical_tests.diebold_mariano_impl import (
+    _dm_common_checks,
     _dm_gamma_hat_k,
     _dm_test_statistic,
     _dm_v_hat,
@@ -32,49 +33,15 @@ from scores.stats.statistical_tests.diebold_mariano_impl import (
             xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
             "x",
             "h",
-            "KEV",
-            -0.4,
-            "t",
-            "`method` must be one of",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "HG",
-            -0.4,
-            "chi_sq",
-            "`statistic_distribution` must be one of",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "HLN",
-            -0.4,
-            "t",
-            "`confidence_level` must be strictly between 0 and 1.",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "HLN",
-            1.0,
-            "t",
-            "`confidence_level` must be strictly between 0 and 1.",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
             "HLN",
             0.95,
             "t",
             "`da_timeseries` must have exactly two dimensions.",
         ),
         (
-            xr.DataArray(data=[[1], [2]], dims=["x", "y"], coords={"x": [0, 1], "y": [1]}),
+            xr.DataArray(
+                data=[[1], [2]], dims=["x", "y"], coords={"x": [0, 1], "y": [1]}
+            ),
             "z",
             "y",
             "HLN",
@@ -183,6 +150,40 @@ def test_diebold_mariano_raises(
         )
 
 
+@pytest.mark.parametrize(
+    (
+        "method",
+        "confidence_level",
+        "statistic_distribution",
+        "error_msg",
+    ),
+    [
+        ("KEV", -0.4, "t", "`method` must be one of"),
+        ("HG", -0.4, "chi_sq", "`statistic_distribution` must be one of"),
+        (
+            "HLN",
+            -0.4,
+            "t",
+            "`confidence_level` must be strictly between 0 and 1.",
+        ),
+        (
+            "HLN",
+            1.0,
+            "t",
+            "`confidence_level` must be strictly between 0 and 1.",
+        ),
+    ],
+)
+def test__dm_common_checks(method, confidence_level, statistic_distribution, error_msg):
+    """Tests that _dm_common_checks raises a ValueError as expected."""
+    with pytest.raises(ValueError, match=error_msg):
+        _dm_common_checks(
+            method=method,
+            confidence_level=confidence_level,
+            statistic_distribution=statistic_distribution,
+        )
+
+
 def test__hg_func():
     """Tests that _hg_func returns as expected."""
     pars = [2, 0.5]
@@ -247,7 +248,9 @@ def test__dm_gamma_hat_k(k, expected):
 def test__dm_v_hat(diffs, h, expected):
     """Tests that _dm_v_hat returns values as expected."""
 
-    np.testing.assert_allclose(_dm_v_hat(diffs, np.mean(diffs), len(diffs), h), expected)
+    np.testing.assert_allclose(
+        _dm_v_hat(diffs, np.mean(diffs), len(diffs), h), expected
+    )
 
 
 # DM test stat when timeseries is [1, 2, 3, 4] and h = 2
