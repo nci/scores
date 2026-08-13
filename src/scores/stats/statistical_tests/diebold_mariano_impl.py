@@ -30,16 +30,17 @@ def diebold_mariano(  # pylint: disable=R0914
     statistic for each timeseries. Several other statistics are also returned such as
     the confidence that the population mean of score differences is greater than zero
     and confidence intervals for that mean. For a handling a single timeseries, see
-    `scores.stats.statistical_tests.diebold_mariano_1d`.
+    ``scores.stats.statistical_tests.diebold_mariano_1d``.
 
     Two methods for calculating the test statistic have been implemented: the "HG"
     method Hering and Genton (2011) and the "HLN" method of Harvey, Leybourne and
     Newbold (1997). The default "HG" method has an advantage of only generating positive
     estimates for the spectral density contribution to the test statistic. For further
-    details see `scores.stats.confidence_intervals.impl._dm_test_statistic`.
+    details see ``scores.stats.statistical_tests.diebold_mariano_impl._dm_test_statistic``
+    (note: this is a private function and cannot be imported via the public API).
 
     Prior to any calculations, NaNs are removed from each timeseries. If there are NaNs
-    in `da_timeseries` then a warning will occur. This is because NaNs may impact the
+    in ``da_timeseries`` then a warning will occur. This is because NaNs may impact the
     autocovariance calculation.
 
     To determine the value of h for each timeseries of score differences of h-step ahead
@@ -56,18 +57,18 @@ def diebold_mariano(  # pylint: disable=R0914
     Confidence intervals and "confidence_gt_0" statistics are calculated using the
     test statistic, which is assumed to have either the standard normal distribution
     or Student's t distribution with n - 1 degrees of freedom (where n is the length of
-    the timeseries). The distribution used is specified by `statistic_distribution`. See
-    Harvey, Leybourne and Newbold (1997) for why the t distribution may be preferred,
+    the timeseries). The distribution used is specified by ``statistic_distribution``.
+    See Harvey, Leybourne and Newbold (1997) for why the t distribution may be preferred,
     especially for shorter timeseries.
 
-    If `da_timeseries` is a chunked array, data will be brought into memory during
+    If ``da_timeseries`` is a chunked array, data will be brought into memory during
     this calculation due to the autocovariance implementation.
 
     Args:
         da_timeseries: a 2 dimensional array containing the timeseries.
         ts_dim: name of the dimension which identifies each timeseries in the array.
         h_coord: name of the coordinate specifying, for each timeseries, that the
-            timeseries is an h-step ahead forecast. `h_coord` coordinates must be
+            timeseries is an h-step ahead forecast. ``h_coord`` coordinates must be
             indexed by the dimension `ts_dim`.
         method: method for calculating the test statistic, one of "HG" or "HLN".
         confidence_level: the confidence level, between 0 and 1 exclusive, at which to
@@ -78,33 +79,33 @@ def diebold_mariano(  # pylint: disable=R0914
             distribution).
 
     Returns:
-        Dataset, indexed by `ts_dim`, with six variables:
+        Dataset, indexed by ``ts_dim``, with six variables:
         - "mean": the mean value for each timeseries, ignoring NaNs
         - "dm_test_stat": the modified Diebold-Mariano test statistic for each
           timeseries
         - "timeseries_len": the length of each timeseries, with NaNs removed.
         - "confidence_gt_0": the confidence that the mean value of the population is
-          greater than zero, based on the specified `statistic_distribution`.
+          greater than zero, based on the specified ``statistic_distribution``.
           Precisely, it is the value of the cumululative distribution function
-          evaluated at `dm_test_stat`.
+          evaluated at ``dm_test_stat``.
         - "ci_upper": the upper end point of a confidence interval about the mean at
-          specified `confidence_level`.
+          specified ``confidence_level``.
         - "ci_lower": the lower end point of a confidence interval about the mean at
-          specified `confidence_level`.
+          specified ``confidence_level``.
 
     Raises:
-        ValueError: if `method` is not one of "HG" or "HLN".
-        ValueError: if `statistic_distribution` is not one of "normal" or "t".
-        ValueError: if `0 < confidence_level < 1` fails.
-        ValueError: if `len(da_timeseries.dims) != 2`.
-        ValueError: if `ts_dim` is not a dimension of `da_timeseries`.
-        ValueError: if `h_coord` is not a coordinate of `da_timeseries`.
-        ValueError: if `ts_dim` is not the only dimension of
-            `da_timeseries[h_coord]`.
-        ValueError: if `h_coord` values aren't positive integers.
-        ValueError: if `h_coord` values aren't less than the lengths of the
+        ValueError: if ``method`` is not one of "HG" or "HLN".
+        ValueError: if ``statistic_distribution`` is not one of "normal" or "t".
+        ValueError: if ``0 < confidence_level < 1`` fails.
+        ValueError: if ``len(da_timeseries.dims) != 2``.
+        ValueError: if ``ts_dim`` is not a dimension of ``da_timeseries``.
+        ValueError: if ``h_coord`` is not a coordinate of ``da_timeseries``.
+        ValueError: if ``ts_dim`` is not the only dimension of
+            ``da_timeseries[h_coord]``.
+        ValueError: if ``h_coord`` values aren't positive integers.
+        ValueError: if ``h_coord`` values aren't less than the lengths of the
             timeseries after NaNs are removed.
-        RuntimeWarnning: if there is a NaN in diffs.
+        RuntimeWarning: if there is a NaN in diffs.
 
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
@@ -115,7 +116,7 @@ def diebold_mariano(  # pylint: disable=R0914
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
 
     See also:
-        - `scores.stats.statistical_tests.diebold_mariano_1d` for calculating
+        - ``scores.stats.statistical_tests.diebold_mariano_1d`` for calculating
           Diebold-Mariano test results for a single timeseries.
 
 
@@ -248,7 +249,7 @@ def diebold_mariano(  # pylint: disable=R0914
     return result
 
 
-def diebold_mariano_1d(  # pylint: disable=R0914
+def diebold_mariano_1d(
     timeseries: Union[xr.DataArray, pd.Series, np.ndarray, List],
     h: int,
     *,  # Force keywords arguments to be keyword-only
@@ -262,19 +263,20 @@ def diebold_mariano_1d(  # pylint: disable=R0914
     timeseries. Several other statistics are also returned such as the confidence that
     the population mean of score differences is greater than zero and confidence
     intervals for that mean. For a handling multiple timeseries, see also
-    `scores.stats.statistical_tests.diebold_mariano`.
+    ``scores.stats.statistical_tests.diebold_mariano``.
 
     Two methods for calculating the test statistic have been implemented: the "HG"
     method Hering and Genton (2011) and the "HLN" method of Harvey, Leybourne and
     Newbold (1997). The default "HG" method has an advantage of only generating positive
     estimates for the spectral density contribution to the test statistic. For further
-    details see `scores.stats.confidence_intervals.impl._dm_test_statistic`.
+    details see ``scores.stats.statistical_tests.diebold_mariano_impl._dm_test_statistic``
+    (note: this is a private function and cannot be imported via the public API).
 
     Prior to any calculations, NaNs are removed from the timeseries. If there are NaNs
-    in `timeseries` then a warning will occur. This is because NaNs may impact the
+    in ``timeseries`` then a warning will occur. This is because NaNs may impact the
     autocovariance calculation.
 
-    To determine the value of `h` for the timeseries of score differences of h-step
+    To determine the value of ``h`` for the timeseries of score differences of h-step
     ahead forecasts, one may ask 'How many observations of the phenomenon will be made
     between making the forecast and having the observation that will validate the
     forecast?' For example, suppose that the phenomenon is afternoon precipitation
@@ -287,7 +289,7 @@ def diebold_mariano_1d(  # pylint: disable=R0914
     test statistic, which is assumed to have either the standard normal distribution
     or Student's t distribution with n - 1 degrees of freedom (where n is the length of
     the timeseries) when NaNs are removed. The distribution used is specified by
-    `statistic_distribution`. See Harvey, Leybourne and Newbold (1997) for why the
+    ``statistic_distribution``. See Harvey, Leybourne and Newbold (1997) for why the
     t distribution may be preferred, especially for shorter timeseries.
 
     Args:
@@ -310,11 +312,11 @@ def diebold_mariano_1d(  # pylint: disable=R0914
         - "confidence_gt_0": the confidence that the mean value of the population is
           greater than zero, based on the specified `statistic_distribution`.
           Precisely, it is the value of the cumululative distribution function
-          evaluated at `dm_test_stat`.
+          evaluated at ``dm_test_stat``.
         - "ci_upper": the upper end point of a confidence interval about the mean at
-          specified `confidence_level`.
+          specified ``confidence_level``.
         - "ci_lower": the lower end point of a confidence interval about the mean at
-          specified `confidence_level`.
+          specified ``confidence_level``.
 
     Raises:
         ValueError: if `method` is not one of "HG" or "HLN".
@@ -324,7 +326,7 @@ def diebold_mariano_1d(  # pylint: disable=R0914
         ValueError: if `h` is not a positive integer.
         ValueError: if `h` is not less than the length of the timeseries after NaNs are
             removed.
-        RuntimeWarnning: if there is a NaN in diffs.
+        RuntimeWarning: if there is a NaN in diffs.
 
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
@@ -335,7 +337,7 @@ def diebold_mariano_1d(  # pylint: disable=R0914
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
 
     See also:
-        - `scores.stats.statistical_tests.diebold_mariano` for calculating
+        - ``scores.stats.statistical_tests.diebold_mariano`` for calculating
           Diebold-Mariano test results for multiple timeseries at once.
 
     Example:
