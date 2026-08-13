@@ -3,9 +3,10 @@ Functions for calculating a modified Diebold-Mariano test statistic
 """
 
 import warnings
-from typing import Literal
+from typing import List, Literal, Union
 
 import numpy as np
+import pandas as pd
 import scipy as sp
 import xarray as xr
 from scipy.optimize import least_squares
@@ -28,16 +29,18 @@ def diebold_mariano(  # pylint: disable=R0914
     differences for h-step ahead forecasts, calculates a modified Diebold-Mariano test
     statistic for each timeseries. Several other statistics are also returned such as
     the confidence that the population mean of score differences is greater than zero
-    and confidence intervals for that mean.
+    and confidence intervals for that mean. For a handling a single timeseries, see
+    ``scores.stats.statistical_tests.diebold_mariano_1d``.
 
     Two methods for calculating the test statistic have been implemented: the "HG"
     method Hering and Genton (2011) and the "HLN" method of Harvey, Leybourne and
     Newbold (1997). The default "HG" method has an advantage of only generating positive
     estimates for the spectral density contribution to the test statistic. For further
-    details see `scores.stats.confidence_intervals.impl._dm_test_statistic`.
+    details see ``scores.stats.statistical_tests.diebold_mariano_impl._dm_test_statistic``
+    (note: this is a private function and cannot be imported via the public API).
 
     Prior to any calculations, NaNs are removed from each timeseries. If there are NaNs
-    in `da_timeseries` then a warning will occur. This is because NaNs may impact the
+    in ``da_timeseries`` then a warning will occur. This is because NaNs may impact the
     autocovariance calculation.
 
     To determine the value of h for each timeseries of score differences of h-step ahead
@@ -54,18 +57,18 @@ def diebold_mariano(  # pylint: disable=R0914
     Confidence intervals and "confidence_gt_0" statistics are calculated using the
     test statistic, which is assumed to have either the standard normal distribution
     or Student's t distribution with n - 1 degrees of freedom (where n is the length of
-    the timeseries). The distribution used is specified by `statistic_distribution`. See
-    Harvey, Leybourne and Newbold (1997) for why the t distribution may be preferred,
+    the timeseries). The distribution used is specified by ``statistic_distribution``.
+    See Harvey, Leybourne and Newbold (1997) for why the t distribution may be preferred,
     especially for shorter timeseries.
 
-    If `da_timeseries` is a chunked array, data will be brought into memory during
+    If ``da_timeseries`` is a chunked array, data will be brought into memory during
     this calculation due to the autocovariance implementation.
 
     Args:
         da_timeseries: a 2 dimensional array containing the timeseries.
         ts_dim: name of the dimension which identifies each timeseries in the array.
         h_coord: name of the coordinate specifying, for each timeseries, that the
-            timeseries is an h-step ahead forecast. `h_coord` coordinates must be
+            timeseries is an h-step ahead forecast. ``h_coord`` coordinates must be
             indexed by the dimension `ts_dim`.
         method: method for calculating the test statistic, one of "HG" or "HLN".
         confidence_level: the confidence level, between 0 and 1 exclusive, at which to
@@ -76,33 +79,33 @@ def diebold_mariano(  # pylint: disable=R0914
             distribution).
 
     Returns:
-        Dataset, indexed by `ts_dim`, with six variables:
+        Dataset, indexed by ``ts_dim``, with six variables:
         - "mean": the mean value for each timeseries, ignoring NaNs
         - "dm_test_stat": the modified Diebold-Mariano test statistic for each
           timeseries
         - "timeseries_len": the length of each timeseries, with NaNs removed.
         - "confidence_gt_0": the confidence that the mean value of the population is
-          greater than zero, based on the specified `statistic_distribution`.
+          greater than zero, based on the specified ``statistic_distribution``.
           Precisely, it is the value of the cumululative distribution function
-          evaluated at `dm_test_stat`.
+          evaluated at ``dm_test_stat``.
         - "ci_upper": the upper end point of a confidence interval about the mean at
-          specified `confidence_level`.
+          specified ``confidence_level``.
         - "ci_lower": the lower end point of a confidence interval about the mean at
-          specified `confidence_level`.
+          specified ``confidence_level``.
 
     Raises:
-        ValueError: if `method` is not one of "HG" or "HLN".
-        ValueError: if `statistic_distribution` is not one of "normal" or "t".
-        ValueError: if `0 < confidence_level < 1` fails.
-        ValueError: if `len(da_timeseries.dims) != 2`.
-        ValueError: if `ts_dim` is not a dimension of `da_timeseries`.
-        ValueError: if `h_coord` is not a coordinate of `da_timeseries`.
-        ValueError: if `ts_dim` is not the only dimension of
-            `da_timeseries[h_coord]`.
-        ValueError: if `h_coord` values aren't positive integers.
-        ValueError: if `h_coord` values aren't less than the lengths of the
+        ValueError: if ``method`` is not one of "HG" or "HLN".
+        ValueError: if ``statistic_distribution`` is not one of "normal" or "t".
+        ValueError: if ``0 < confidence_level < 1`` fails.
+        ValueError: if ``len(da_timeseries.dims) != 2``.
+        ValueError: if ``ts_dim`` is not a dimension of ``da_timeseries``.
+        ValueError: if ``h_coord`` is not a coordinate of ``da_timeseries``.
+        ValueError: if ``ts_dim`` is not the only dimension of
+            ``da_timeseries[h_coord]``.
+        ValueError: if ``h_coord`` values aren't positive integers.
+        ValueError: if ``h_coord`` values aren't less than the lengths of the
             timeseries after NaNs are removed.
-        RuntimeWarnning: if there is a NaN in diffs.
+        RuntimeWarning: if there is a NaN in diffs.
 
     References:
         - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
@@ -111,6 +114,10 @@ def diebold_mariano(  # pylint: disable=R0914
           Technometrics 53 no. 4 (2011), 414-425.
         - Harvey, Leybourne and Newbold, 'Testing the equality of prediction mean
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
+
+    See also:
+        - ``scores.stats.statistical_tests.diebold_mariano_1d`` for calculating
+          Diebold-Mariano test results for a single timeseries.
 
 
     Examples:
@@ -183,14 +190,7 @@ def diebold_mariano(  # pylint: disable=R0914
             ci_lower         (lead_day) float64 24B -0.1311 -1.479 nan
 
     """
-    if method not in ["HLN", "HG"]:
-        raise ValueError("`method` must be one of 'HLN' or 'HG'.")
-
-    if statistic_distribution not in ["normal", "t"]:
-        raise ValueError("`statistic_distribution` must be one of 'normal' or 't'.")
-
-    if not 0 < confidence_level < 1:
-        raise ValueError("`confidence_level` must be strictly between 0 and 1.")
+    _dm_common_checks(method, statistic_distribution, confidence_level)
 
     if len(da_timeseries.dims) != 2:
         raise ValueError("`da_timeseries` must have exactly two dimensions.")
@@ -245,6 +245,195 @@ def diebold_mariano(  # pylint: disable=R0914
     )
 
     return result
+
+
+def diebold_mariano_1d(
+    timeseries: Union[xr.DataArray, pd.Series, np.ndarray, List],
+    h: int,
+    *,  # Force keywords arguments to be keyword-only
+    method: Literal["HG", "HLN"] = "HG",
+    confidence_level: float = 0.95,
+    statistic_distribution: Literal["normal", "t"] = "normal",
+) -> xr.Dataset:
+    """
+    Given a single timeseries (1-dimensional data), consisting of score differences for
+    h-step ahead forecasts, calculates a modified Diebold-Mariano test statistic for the
+    timeseries. Several other statistics are also returned such as the confidence that
+    the population mean of score differences is greater than zero and confidence
+    intervals for that mean. For a handling multiple timeseries, see also
+    ``scores.stats.statistical_tests.diebold_mariano``.
+
+    Two methods for calculating the test statistic have been implemented: the "HG"
+    method Hering and Genton (2011) and the "HLN" method of Harvey, Leybourne and
+    Newbold (1997). The default "HG" method has an advantage of only generating positive
+    estimates for the spectral density contribution to the test statistic. For further
+    details see ``scores.stats.statistical_tests.diebold_mariano_impl._dm_test_statistic``
+    (note: this is a private function and cannot be imported via the public API).
+
+    Prior to any calculations, NaNs are removed from the timeseries. If there are NaNs
+    in ``timeseries`` then a warning will occur. This is because NaNs may impact the
+    autocovariance calculation.
+
+    To determine the value of ``h`` for the timeseries of score differences of h-step
+    ahead forecasts, one may ask 'How many observations of the phenomenon will be made
+    between making the forecast and having the observation that will validate the
+    forecast?' For example, suppose that the phenomenon is afternoon precipitation
+    accumulation in New Zealand (00z to 06z each day). Then a Day+1 forecast issued at
+    03z on Day+0 will be a 2-ahead forecast, since Day+0 and Day+1 accumulations will be
+    observed before the forecast can be validated. On the other hand, a Day+1 forecast
+    issued at 09z on Day+0 will be a 1-step ahead forecast.
+
+    Confidence intervals and "confidence_gt_0" statistics are calculated using the
+    test statistic, which is assumed to have either the standard normal distribution
+    or Student's t distribution with n - 1 degrees of freedom (where n is the length of
+    the timeseries) when NaNs are removed. The distribution used is specified by
+    ``statistic_distribution``. See Harvey, Leybourne and Newbold (1997) for why the
+    t distribution may be preferred, especially for shorter timeseries.
+
+    Args:
+        timeseries: one dimensional data representing the timeseries.
+        h: integer indicating that forecasts are h-step ahead, assumed to be positive.
+        method: method for calculating the test statistic, one of "HG" or "HLN".
+        confidence_level: the confidence level, between 0 and 1 exclusive, at which to
+            calculate confidence intervals.
+        statistic_distribution: the distribution of the test-statistic under the null
+            hypothesis of equipredictive skill. Used to calculate the "confidence_gt_0"
+            statistic and confidence intervals. One of "normal" or "t" (for Student's t
+            distribution).
+
+    Returns:
+        Dataset with six variables:
+        - "mean": the mean value for the timeseries, ignoring NaNs.
+        - "dm_test_stat": the modified Diebold-Mariano test statistic for the
+          timeseries.
+        - "timeseries_len": the length of the timeseries, with NaNs removed.
+        - "confidence_gt_0": the confidence that the mean value of the population is
+          greater than zero, based on the specified `statistic_distribution`.
+          Precisely, it is the value of the cumululative distribution function
+          evaluated at ``dm_test_stat``.
+        - "ci_upper": the upper end point of a confidence interval about the mean at
+          specified ``confidence_level``.
+        - "ci_lower": the lower end point of a confidence interval about the mean at
+          specified ``confidence_level``.
+
+    Raises:
+        ValueError: if `method` is not one of "HG" or "HLN".
+        ValueError: if `statistic_distribution` is not one of "normal" or "t".
+        ValueError: if `0 < confidence_level < 1` fails.
+        ValueError: if `timeseries` cannot be converted to a 1-dimensional numpy array.
+        ValueError: if `h` is not a positive integer.
+        ValueError: if `h` is not less than the length of the timeseries after NaNs are
+            removed.
+        RuntimeWarning: if there is a NaN in diffs.
+
+    References:
+        - Diebold and Mariano, 'Comparing predictive accuracy', Journal of Business and
+          Economic Statistics 13 (1995), 253-265.
+        - Hering and Genton, 'Comparing spatial predictions',
+          Technometrics 53 no. 4 (2011), 414-425.
+        - Harvey, Leybourne and Newbold, 'Testing the equality of prediction mean
+          squared errors', International Journal of Forecasting 13 (1997), 281-291.
+
+    See also:
+        - ``scores.stats.statistical_tests.diebold_mariano`` for calculating
+          Diebold-Mariano test results for multiple timeseries at once.
+
+    Example:
+        >>> import numpy as np
+        >>> from scores.stats.statistical_tests import diebold_mariano_1d
+        >>> # Calculate Diebold-Mariano test statistic for the timeseries
+        >>> # [1, 2, 3.0, 4, np.nan]  of score differentials for 2-step ahead
+        >>> # forecasts.
+        >>> result = diebold_mariano_1d([1, 2, 3.0, 4, np.nan], 2)
+        >>> print(result)
+        <xarray.Dataset> Size: 48B
+        Dimensions:          ()
+        Data variables:
+            mean             float64 8B 2.5
+            dm_test_stat     float64 8B 2.236
+            timeseries_len   int64 8B 4
+            confidence_gt_0  float64 8B 0.9873
+            ci_upper         float64 8B 4.339
+            ci_lower         float64 8B 0.661
+    """
+    _dm_common_checks(method, statistic_distribution, confidence_level)
+
+    if (h <= 0) or not isinstance(h, int):
+        raise ValueError("`h` must be a positive integer.")
+
+    timeseries = _to_1d_float_array(timeseries)
+
+    # Don't remove NaNs from timeseries here, because _dm_test_statistic will do that
+    # and raise a warning if there are any NaNs.
+    timeseries_len = np.sum(~np.isnan(timeseries))
+
+    if timeseries_len <= h:
+        raise ValueError("`h` must be less than the length of `timeseries` after NaNs are removed.")
+
+    ts_mean = np.nanmean(timeseries)
+    test_stat = _dm_test_statistic(timeseries, h, method=method)
+
+    if statistic_distribution == "normal":
+        pval = sp.stats.norm.cdf(test_stat)
+        ci_quantile = sp.stats.norm.ppf(1 - (1 - confidence_level) / 2)
+    else:
+        pval = sp.stats.t.cdf(test_stat, timeseries_len - 1)
+        ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, timeseries_len - 1)
+
+    result = xr.Dataset(
+        {
+            "mean": ts_mean,
+            "dm_test_stat": test_stat,
+            "timeseries_len": timeseries_len,
+            "confidence_gt_0": pval,
+            "ci_upper": ts_mean * (1 + ci_quantile / test_stat),
+            "ci_lower": ts_mean * (1 - ci_quantile / test_stat),
+        },
+    )
+
+    return result
+
+
+def _dm_common_checks(method: str, statistic_distribution: str, confidence_level: float) -> None:
+    """
+    Performs common checks on some arguments for diebold_mariano and diebold_mariano_1d
+    functions. Raises a ValueError if any checks fail.
+    """
+    if method not in ["HLN", "HG"]:
+        raise ValueError("`method` must be one of 'HLN' or 'HG'.")
+
+    if statistic_distribution not in ["normal", "t"]:
+        raise ValueError("`statistic_distribution` must be one of 'normal' or 't'.")
+
+    if not 0 < confidence_level < 1:
+        raise ValueError("`confidence_level` must be strictly between 0 and 1.")
+
+
+def _to_1d_float_array(timeseries: Union[xr.DataArray, pd.Series, np.ndarray, List]) -> np.ndarray:
+    """
+    Converts a timeseries (list, pandas Series, numpy array, or xarray DataArray)
+    to a 1D numpy array of floats.
+
+    Raises:
+        ValueError: if the input cannot be converted to a 1D float numpy array.
+    """
+    try:
+        if isinstance(timeseries, xr.DataArray):
+            arr = timeseries.values
+        elif isinstance(timeseries, pd.Series):
+            arr = timeseries.to_numpy()
+        else:
+            arr = np.asarray(timeseries)
+    except Exception as e:
+        raise ValueError(f"Could not convert `timeseries` to a numpy array: {e}") from e
+
+    if arr.ndim != 1:
+        raise ValueError("`timeseries` must be 1-dimensional, but got array with {arr.ndim} dimensions.")
+
+    if not np.issubdtype(arr.dtype, np.integer) and not np.issubdtype(arr.dtype, np.floating):
+        raise ValueError("`timeseries` must contain numeric (int or float) values, but got dtype '{arr.dtype}'.")
+
+    return arr.astype(float)
 
 
 def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"] = "HG") -> float:
@@ -302,8 +491,8 @@ def _dm_test_statistic(diffs: np.ndarray, h: int, *, method: Literal["HG", "HLN"
     if np.isnan(np.sum(diffs)):
         warnings.warn(
             RuntimeWarning(
-                "A least one NaN value was detected in `da_timeseries`. This may impact the "
-                "calculation of autocovariances."
+                "A least one NaN value was detected in timeseries data."
+                "This may impact the calculation of autocovariances."
             )
         )
 
