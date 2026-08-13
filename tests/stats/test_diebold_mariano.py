@@ -2,8 +2,6 @@
 This module contains unit tests for scores.stats.tests.diebold_mariano_impl
 """
 
-from turtle import pd
-
 import numpy as np
 import pandas as pd
 import pytest
