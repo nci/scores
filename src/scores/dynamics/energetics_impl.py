@@ -48,7 +48,7 @@ def energy_components_lat_lon(
         \\text{Kinetic (horizontal)} = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}\\frac{1}{2}(u^2 + v^2)\\text{d}
         \\Omega\\text{d}p
 
-        \\text{Kinetic (verical)}    = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}\\frac{1}{2}w^2\\text{d}\\Omega
+        \\text{Kinetic (vertical)}   = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}\\frac{1}{2}w^2\\text{d}\\Omega
         \\text{d}p
 
     Args:
