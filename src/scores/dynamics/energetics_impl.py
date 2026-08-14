@@ -43,7 +43,7 @@ def energy_components_lat_lon(
 
         \\text{Latent}               = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}L_v q\\text{d}\\Omega\\text{d}p
 
-        \\text{Potential}            = \\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega
+        \\text{Potential}            = \\frac{1}{g}\\int_{\\Omega}z_s\\Phi_s\\text{d}\\Omega
 
         \\text{Kinetic (horizontal)} = \\frac{1}{g}\\int_{p_1}^{p_0}\\int_{\\Omega}\\frac{1}{2}(u^2 + v^2)\\text{d}
         \\Omega\\text{d}p
@@ -138,7 +138,7 @@ def energy_components_lat_lon(
 
     #  From Taylor (2011), eqn (12.8)
     sp = data[surface_pressure_name].sel(time=time_array)
-    sp_zs = sp * zs
+    sp_zs = sp * zs / constants.GRAVITY
     P = _integrate_horizontal(sp_zs, dlon, dlat, preserve_horizontal)
 
     ult = data[zonal_velocity_name].sel(time=time_array, level=level_array)
