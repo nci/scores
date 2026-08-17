@@ -1,6 +1,7 @@
 """
 Import the functions from the implementations into the public API
 """
+# type: ignore[invalid-return-type]
 
 from scores import continuous as __continuous
 from scores.pandas.typing import PandasType

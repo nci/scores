@@ -127,17 +127,11 @@ include = [
 ]
 
 [tool.ty.rules]
-# Warnings
-possibly-missing-attribute = "ignore"
-# Errors
 no-matching-overload = "ignore"
 invalid-argument-type = "ignore"
-invalid-type-arguments = "ignore"
 invalid-assignment = "ignore"
-invalid-type-form = "ignore"
 invalid-return-type = "ignore"
 unsupported-operator = "ignore"
-unresolved-import = "ignore"
 unresolved-attribute = "ignore"
 
 [tool.coverage.paths]
