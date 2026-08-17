@@ -97,7 +97,7 @@ def crps_at_point(
 
 def crps_threshold(
     observations: np.ndarray, forecasts: np.ndarray, thresholds: np.ndarray, weights: np.ndarray
-) -> (np.ndarray, np.ndarray):
+) -> tuple[np.ndarray, np.ndarray]:
     """Pointwise calculation of CRPS for a thresholded probabilistic forecast.
 
     Args:
