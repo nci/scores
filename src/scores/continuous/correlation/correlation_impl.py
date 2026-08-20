@@ -7,7 +7,211 @@ from typing import Optional
 import xarray as xr
 
 import scores.utils
-from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike, is_xarraylike
+from scores.utils import check_weights
+
+
+def anomaly_correlation_coefficient(
+    fcst: XarrayLike,
+    obs: XarrayLike,
+    climatology: XarrayLike,
+    *,
+    centered: bool = False,
+    reduce_dims: FlexibleDimensionTypes | None = None,
+    preserve_dims: FlexibleDimensionTypes | None = None,
+    weights: XarrayLike | None = None,
+) -> XarrayLike:
+    """Calculate the anomaly correlation coefficient (ACC).
+
+    ACC measures the similarity between forecast and observed anomalies, where
+    each anomaly is calculated relative to the same climatology. This function
+    defaults to uncentred ACC. Set ``centered=True`` for centred ACC.
+
+    The uncentred form is
+
+    .. math::
+
+        \\operatorname{ACC} =
+        \\frac{\\sum_{i \\in D} w_i (x_i - c_i)(y_i - c_i)}
+        {\\sqrt{
+            \\sum_{i \\in D} w_i (x_i - c_i)^2
+            \\sum_{i \\in D} w_i (y_i - c_i)^2
+        }}
+
+    where :math:`x_i` is the forecast, :math:`y_i` is the observation,
+    :math:`c_i` is the climatology, :math:`w_i` is the optional weight, and
+    :math:`D` is the set of points along the reduced dimensions. With no
+    weights, :math:`w_i = 1`.
+
+    For centred ACC, replace each anomaly :math:`a_i = x_i - c_i` and
+    :math:`b_i = y_i - c_i` in the formula above by :math:`a_i - \\bar{a}_w`
+    and :math:`b_i - \\bar{b}_w`, respectively, where
+    :math:`\\bar{a}_w = \\sum_{i \\in D} w_i a_i / \\sum_{i \\in D} w_i`
+    and similarly for :math:`\\bar{b}_w`. These means use the same valid
+    pairs and reduction dimensions as the correlation. Centring removes
+    uniform offsets in either anomaly field over those dimensions; uncentred
+    ACC retains the mean anomalies and can change with such offsets.
+
+    ACC ranges from -1 to 1 when it is defined. A value of 1 indicates that the
+    anomaly fields point in the same direction, 0 indicates no projection of
+    one anomaly field onto the other, and -1 indicates opposing anomaly
+    fields. ACC evaluates pattern agreement; a high value does not by itself
+    imply small errors or unbiased forecasts. The result is ``NaN`` wherever
+    either anomaly field has zero weighted magnitude (after centring, if
+    requested). In particular, centred ACC is undefined if either anomaly
+    field is constant over the positively weighted valid points.
+
+    Inputs are aligned on their shared coordinates. Missing values are handled
+    using pairwise-complete samples. If ``fcst``,
+    ``obs``, or ``climatology`` is missing at a point, that point is omitted
+    from every sum and mean. The result is ``NaN`` if no valid, positively weighted
+    points remain in a reduced group.
+
+    Args:
+        fcst: Forecast or predicted values.
+        obs: Observed values.
+        climatology: Climatological reference values subtracted from both
+            ``fcst`` and ``obs``. Dimensions omitted from ``climatology`` are
+            broadcast by xarray.
+        centered: If ``True``, subtract the weighted sample mean of each
+            anomaly field before calculating ACC. Defaults to ``False``
+            (uncentred ACC).
+        reduce_dims: Dimensions to reduce when calculating ACC. All other
+            dimensions are preserved. By default, all dimensions are reduced.
+        preserve_dims: Dimensions to preserve when calculating ACC. All other
+            dimensions are reduced. This argument is mutually exclusive with
+            ``reduce_dims``. Preserving all dimensions is not supported because
+            ACC requires at least one dimension of every data variable to be
+            reduced.
+        weights: Non-negative weights applied to the reduced points, such as
+            grid-cell area weights. Weights must be broadcastable to the input
+            data, contain no missing values, and contain at least one positive
+            value. A ``DataArray`` can weight either ``DataArray`` or
+            ``Dataset`` inputs. Dataset weights must contain the same data
+            variables as the other Dataset inputs.
+
+    Returns:
+        An xarray object containing ACC values for each combination of the
+        preserved dimensions. The return type matches the forecast type.
+
+    Raises:
+        TypeError: If ``fcst``, ``obs``, and ``climatology`` are not all
+            ``DataArray`` objects or all ``Dataset`` objects, if ``weights`` is
+            not an xarray object, or if Dataset weights are supplied for
+            DataArray inputs.
+        ValueError: If Dataset inputs do not contain the same data variables,
+            if no dimensions are reduced for one or more data variables, if
+            dimension arguments are invalid, or if weights are negative,
+            contain missing values, or do not contain a positive value.
+
+    References:
+        - WWRP/WGNE Joint Working Group on Forecast Verification Research.
+          (n.d.). *Forecast verification: Methods, issues and FAQ*.
+          https://jwgfvr.github.io/forecastverification/
+        - Jolliffe, I. T., & Stephenson, D. B. (Eds.). (2012).
+          *Forecast verification: A practitioner's guide in atmospheric
+          science* (2nd ed.). Wiley. https://doi.org/10.1002/9781119960003
+
+    See Also:
+        :py:func:`scores.continuous.correlation.pearsonr`
+
+    Examples:
+        >>> import xarray as xr
+        >>> from scores.continuous.correlation import (
+        ...     anomaly_correlation_coefficient,
+        ... )
+
+        >>> climatology = xr.DataArray(
+        ...     [10.0, 10.0, 10.0],
+        ...     dims="location",
+        ...     coords={"location": ["A", "B", "C"]},
+        ... )
+        >>> fcst = xr.DataArray(
+        ...     [[12.0, 11.0, 9.0], [11.0, 10.0, 7.0]],
+        ...     dims=["time", "location"],
+        ... )
+        >>> obs = xr.DataArray(
+        ...     [[11.0, 12.0, 9.0], [12.0, 10.0, 8.0]],
+        ...     dims=["time", "location"],
+        ... )
+        >>> anomaly_correlation_coefficient(
+        ...     fcst, obs, climatology, reduce_dims="location"
+        ... )
+        <xarray.DataArray (time: 2)> Size: 16B
+        array([0.83333333, 0.89442719])
+        Dimensions without coordinates: time
+    """
+    if not all_same_xarraylike([fcst, obs, climatology]):
+        raise TypeError("fcst, obs, and climatology must all be xarray DataArrays or all be xarray Datasets.")
+
+    if weights is not None and not is_xarraylike(weights):
+        raise TypeError("weights must be an xarray DataArray or xarray Dataset.")
+
+    if isinstance(fcst, xr.DataArray) and isinstance(weights, xr.Dataset):
+        raise TypeError("weights cannot be an xarray Dataset when the other inputs are xarray DataArrays.")
+
+    if isinstance(fcst, xr.Dataset):
+        data_vars = set(fcst.data_vars)
+        if set(obs.data_vars) != data_vars or set(climatology.data_vars) != data_vars:
+            raise ValueError("fcst, obs, and climatology Datasets must contain the same variables.")
+        if isinstance(weights, xr.Dataset) and set(weights.data_vars) != data_vars:
+            raise ValueError("Dataset weights must contain the same variables as the other inputs.")
+
+    if weights is not None:
+        check_weights(weights)
+
+    # Use weights_dims to include broadcast dimensions from both climatology and weights.
+    extra_dims = set(climatology.dims)
+    if weights is not None:
+        extra_dims.update(weights.dims)
+    dims_to_reduce = scores.utils.gather_dimensions(
+        fcst.dims,
+        obs.dims,
+        weights_dims=extra_dims,
+        reduce_dims=reduce_dims,
+        preserve_dims=preserve_dims,
+    )
+    if not dims_to_reduce:
+        raise ValueError("You cannot preserve all dimensions with anomaly_correlation_coefficient.")
+
+    fcst_anomaly = fcst - climatology
+    obs_anomaly = obs - climatology
+    valid = fcst_anomaly.notnull() & obs_anomaly.notnull()
+    if weights is not None:
+        # Include the weights' coordinates and broadcast dimensions before centring.
+        valid = valid & weights.notnull()
+    fcst_anomaly = fcst_anomaly.where(valid)
+    obs_anomaly = obs_anomaly.where(valid)
+
+    # Dataset reductions ignore dimensions absent from a variable. Check that
+    # each variable still has at least one dimension to reduce after broadcasting.
+    if isinstance(valid, xr.Dataset) and any(
+        dims_to_reduce.isdisjoint(variable.dims) for variable in valid.data_vars.values()
+    ):
+        raise ValueError("At least one dimension must be reduced for every data variable when calculating ACC.")
+
+    if centered:
+        sample_weights = valid if weights is None else valid * weights
+        weight_sum = sample_weights.sum(dim=dims_to_reduce)
+        weight_sum = weight_sum.where(weight_sum > 0)
+        fcst_anomaly = fcst_anomaly - (fcst_anomaly * sample_weights).sum(dim=dims_to_reduce) / weight_sum
+        obs_anomaly = obs_anomaly - (obs_anomaly * sample_weights).sum(dim=dims_to_reduce) / weight_sum
+
+    cross_product = fcst_anomaly * obs_anomaly
+    fcst_squared = fcst_anomaly**2
+    obs_squared = obs_anomaly**2
+
+    if weights is not None:
+        cross_product = cross_product * weights
+        fcst_squared = fcst_squared * weights
+        obs_squared = obs_squared * weights
+
+    numerator = cross_product.sum(dim=dims_to_reduce, skipna=True)
+    fcst_magnitude = fcst_squared.sum(dim=dims_to_reduce, skipna=True) ** 0.5
+    obs_magnitude = obs_squared.sum(dim=dims_to_reduce, skipna=True) ** 0.5
+    denominator = fcst_magnitude * obs_magnitude
+
+    return numerator / denominator.where(denominator > 0)
 
 
 def pearsonr(
