@@ -818,6 +818,7 @@ def crps_for_ensemble(
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
     include_components: Optional[bool] = False,
+    decomposition_method: Literal["underover", "hersbach"] = "underover",
 ) -> XarrayLike:
     """
     Calculates the continuous ranked probability score (CRPS) given an ensemble of forecasts.
@@ -900,7 +901,9 @@ def crps_for_ensemble(
             Score with Limited Information and Applications to Ensemble Weather Forecasts", \
             Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
     """  # noqa: E501
-    if method not in ["ecdf", "fair"]:
+    if decomposition_method not in {"underover", "hersbach"}:
+        raise ValueError("`decomposition_method` must be one of 'underover' or 'hersbach'")
+    if method not in {"ecdf", "fair"}:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
     weights_dims = None
@@ -963,6 +966,7 @@ def crps_for_ensemble(
         dask_gufunc_kwargs={"output_sizes": {ensemble_member_dim: m_total}},
     )
 
+    # gini's mean diff
     i = xr.DataArray(np.arange(m_total), dims=[ensemble_member_dim])
     coeffs = 2 * i - ens_count + 1
     fcst_spread_term_numerator = 2 * (fcst_sorted * coeffs).sum(dim=ensemble_member_dim, skipna=True)
@@ -977,13 +981,91 @@ def crps_for_ensemble(
     result = fcst_obs_term - fcst_spread_term
 
     if include_components:
-        mask = np.logical_and(~np.isnan(fcst), ~np.isnan(obs))  # create mask so that we can preserve NaNs
-        under_penalty = (obs - fcst).where(fcst < obs, 0).where(mask).mean(dim=ensemble_member_dim)
-        over_penalty = (fcst - obs).where(fcst > obs, 0).where(mask).mean(dim=ensemble_member_dim)
-        # Match NaNs between spread terms and other terms
-        fcst_spread_term = fcst_spread_term.where(~np.isnan(fcst_obs_term))
-        result = xr.concat([result, under_penalty, over_penalty, fcst_spread_term], dim="component")
-        result = result.assign_coords(component=["total", "underforecast_penalty", "overforecast_penalty", "spread"])
+        if decomposition_method == "underover":
+            mask = np.logical_and(~np.isnan(fcst), ~np.isnan(obs))  # create mask so that we can preserve NaNs
+            under_penalty = (obs - fcst).where(fcst < obs, 0).where(mask).mean(dim=ensemble_member_dim)
+            over_penalty = (fcst - obs).where(fcst > obs, 0).where(mask).mean(dim=ensemble_member_dim)
+            # Match NaNs between spread terms and other terms
+            fcst_spread_term = fcst_spread_term.where(~np.isnan(fcst_obs_term))
+            result = xr.Dataset(
+                {
+                    "total": result,
+                    "underforecast_penalty": under_penalty,
+                    "overforecast_penalty": over_penalty,
+                    "spread": fcst_spread_term,
+                }
+            )
+        else:
+            # reference is Hersbach 2000
+            components_coords = np.arange(1, m_total + 2)
+
+            # Allocate arrays for the N+1 intervals
+            alpha = xr.concat(
+                [xr.zeros_like(fcst_sorted.isel({ensemble_member_dim: 0}))] * (m_total + 1),
+                dim=ensemble_member_dim,
+            )
+            beta = alpha.copy(deep=True)
+
+            # Left interval (-∞, x_(1))
+            first = fcst_sorted.isel({ensemble_member_dim: 0})
+
+            alpha[{ensemble_member_dim: 0}] = xr.where(
+                obs < first,
+                1.0,
+                0.0,
+            )
+
+            beta[{ensemble_member_dim: 0}] = xr.where(
+                obs < first,
+                first - obs,
+                0.0,
+            )
+
+            # Interior intervals (x_(i), x_(i+1)), i = 1,...,N-1
+            L = fcst_sorted.isel({ensemble_member_dim: slice(None, -1)})
+            U = fcst_sorted.isel({ensemble_member_dim: slice(1, None)})
+
+            alpha[{ensemble_member_dim: slice(1, -1)}] = (
+                (xr.ufuncs.minimum(obs, U) - L).clip(min=0).transpose(*alpha.dims)
+            )
+
+            beta[{ensemble_member_dim: slice(1, -1)}] = (
+                (U - xr.ufuncs.maximum(obs, L)).clip(min=0).transpose(*beta.dims)
+            )
+
+            # Right interval (x_(N), +∞)
+            last = fcst_sorted.isel({ensemble_member_dim: -1})
+
+            alpha[{ensemble_member_dim: -1}] = xr.where(
+                obs > last,
+                obs - last,
+                0.0,
+            )
+
+            beta[{ensemble_member_dim: -1}] = xr.where(
+                obs > last,
+                1.0,
+                0.0,
+            )
+
+            alpha = alpha.assign_coords({ensemble_member_dim: components_coords})
+            beta = beta.assign_coords({ensemble_member_dim: components_coords})
+
+            # Probabilities associated with each interval
+            p = xr.DataArray(
+                np.arange(m_total + 1) / m_total,
+                dims=[ensemble_member_dim],
+                coords={ensemble_member_dim: components_coords},
+            )
+            result = (alpha * p**2 + beta * (1.0 - p) ** 2).sum(dim=ensemble_member_dim)
+
+            result = xr.Dataset(
+                {
+                    "total": result,
+                    "alpha": alpha,
+                    "beta": beta,
+                }
+            )
 
     # apply weights and take means across specified dims
     result = aggregate(result, reduce_dims=dims_for_mean, weights=weights)
