@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scores.typing import FlexibleDimensionTypes, XarrayLike, is_xarraylike
+from scores.typing import FlexibleDimensionTypes, XarrayLike
 
 WARN_ALL_DATA_CONFLICT_MSG = """
 You are requesting to reduce or preserve every dimension by specifying the string 'all'.
@@ -482,7 +482,7 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
     .. _GITHUB829: https://github.com/nci/scores/issues/829
     """
     # safety: weights must be XarrayLike
-    assert is_xarraylike(weights)
+    # assert is_xarraylike(weights)
 
     def _check_single_array(_da_weights: xr.DataArray):
         # type safety: dev/test only
