@@ -2,7 +2,7 @@
 Methods for the probability integral transform (PIT) classes Pit and PitFcstAtObs.
 
 The implementation follows the theoretical approach of Gneiting and Ranjan (2013) and
-Taggart (2023) (see https://nla.gov.au/nla.obj-3079961862/view) which interprets the PIT
+Taggart (2022) (see https://nla.gov.au/nla.obj-3079961862/view) which interprets the PIT
 of a forecast--observation pair as a CDF. Details of this approach are described in this docstring.
 
 For a forecast--observation pair (G,y), where G is a CDF,
@@ -169,15 +169,16 @@ class Pit:
         UserWarning: when ``cdf_threshold_dim`` has been supplied and there are any NaN values in ``fcst`` or
             ``fcst_left``.
 
-    References:
-        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
-            https://doi.org/10.1214/13-EJS823
-        - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
-            Bureau Research Report 64, https://nla.gov.au/nla.obj-3079961862/view
-
     See also:
             - :py:func:`scores.probability.PitFcstAtObs`
             - :py:func:`scores.probability.rank_histogram`
+
+    References:
+        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions.
+          Electronic Journal of Statistics, 7, 1747–1782. https://doi.org/10.1214/13-EJS823
+        - Taggart, R. J. (2022). Assessing calibration when predictive distributions
+          have discontinuities (Bureau Research Report No. 64). Bureau of Meteorology.
+          https://nla.gov.au/nla.obj-3079961862/view
 
     Examples:
         Calculate the PIT for an under-dispersive ensemble forecast, and calculate various diagnostics and statistics.
@@ -189,13 +190,15 @@ class Pit:
         >>> np.random.seed(42)
 
         >>> # generate the forecasts and observations then calculate PIT
-        >>> fcst = xr.DataArray(norm.rvs(size=(500, 10)), dims=['time', 'ensemble_member'])
-        >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=['time'])
+        >>> fcst = xr.DataArray(
+        ...     norm.rvs(size=(500, 10)), dims=["time", "ensemble_member"]
+        ... )
+        >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=["time"])
 
-        >>> pit = Pit(fcst, obs, ensemble_member_dim='ensemble_member')
+        >>> pit = Pit(fcst, obs, ensemble_member_dim="ensemble_member")
 
         >>> # plot the CDF of the PIT distribution
-        >>> pit.plotting_points().plot() # doctest: +SKIP
+        >>> pit.plotting_points().plot()  # doctest: +SKIP
 
         >>> # bar heights for a PIT histogram
         >>> pit.hist_values(10)
@@ -355,10 +358,10 @@ class Pit:
         In this case the alpha score takes values between 0 and 1.
 
         References:
-            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
-                Understanding predictive uncertainty in hydrologic modeling: \
-                The challenge of identifying input and structural errors. \
-                Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
+              Understanding predictive uncertainty in hydrologic modeling:
+              The challenge of identifying input and structural errors.
+              Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
         return _alpha_score(self.left, self.right, negative_orientation=negative_orientation)
 
@@ -454,15 +457,16 @@ class PitFcstAtObs:
         ValueError: when ``fcst_at_obs_left`` is not ``None`` and
             any values of ``fcst_at_obs_left`` are greater than ``fcst``.
 
-    References:
-        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions. Electron. J. Statist. 7: 1747-1782 \
-            https://doi.org/10.1214/13-EJS823
-        - Taggart, R. J. (2022). Assessing calibration when predictive distributions have discontinuities. \
-            Bureau Research Report 64, https://nla.gov.au/nla.obj-3079961862/view
-
     See also:
             - :py:func:`scores.probability.Pit`
             - :py:func:`scores.probability.rank_histogram`
+
+    References:
+        - Gneiting, T., & Ranjan, R. (2013). Combining predictive distributions.
+          Electronic Journal of Statistics, 7, 1747–1782. https://doi.org/10.1214/13-EJS823
+        - Taggart, R. J. (2022). Assessing calibration when predictive distributions
+          have discontinuities (Bureau Research Report No. 64). Bureau of Meteorology.
+          https://nla.gov.au/nla.obj-3079961862/view
 
     Examples:
         Calculate the PIT for an under-dispersive forecast, and calculate various diagnostics and statistics.
@@ -473,11 +477,13 @@ class PitFcstAtObs:
 
         >>> # observations generated from a normal distribution with
         >>> # mean 0 and standard deviation 2
-        >>> obs = xr.DataArray(norm.rvs(scale=2, size=500, random_state=42), dims=['time'])
+        >>> obs = xr.DataArray(
+        ...     norm.rvs(scale=2, size=500, random_state=42), dims=["time"]
+        ... )
 
         >>> # forecasts are normal distributions with mean 0 and standard deviation 1
         >>> # evaluate the forecast CDFs at the observations
-        >>> fcst_at_obs = xr.DataArray(norm.cdf(obs), dims=['time'])
+        >>> fcst_at_obs = xr.DataArray(norm.cdf(obs), dims=["time"])
 
         >>> pit = PitFcstAtObs(fcst_at_obs)
 
@@ -492,7 +498,7 @@ class PitFcstAtObs:
             bin_right_endpoint  (bin_centre) float64 80B 0.1 0.2 0.3 0.4 ... 0.8 0.9 1.0
 
         >>> # plot the CDF of the PIT distribution
-        >>> pit.plotting_points().plot() # doctest: +SKIP
+        >>> pit.plotting_points().plot()  # doctest: +SKIP
 
         >>> # the expected value of the PIT distribution
         >>> pit.expected_value()
@@ -616,10 +622,10 @@ class PitFcstAtObs:
         In this case the alpha score takes values between 0 and 1.
 
         References:
-            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010). \
-                Understanding predictive uncertainty in hydrologic modeling: \
-                The challenge of identifying input and structural errors. \
-                Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
+            - Renard, B., Kavetski, D., Kuczera, G., Thyer, M., & Franks, S. W. (2010).
+              Understanding predictive uncertainty in hydrologic modeling:
+              The challenge of identifying input and structural errors.
+              Water Resources Research, 46(5). https://doi.org/10.1029/2009WR008328
         """
         return _alpha_score(self.left, self.right, negative_orientation=negative_orientation)
 
