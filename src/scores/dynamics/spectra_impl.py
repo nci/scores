@@ -95,17 +95,17 @@ def power_spectra(
             for t in np.arange(len(K.time)):
                 for l in np.arange(len(K.level)):
                     coeffs = pysh.expand.SHExpandDH(K_np[t,l,:,:])
-                    _sh_s[t,l,:] = pysh.spectralanalysis.spectrum(coeffs[t,l,:,:], unit="per_l")
+                    _sh_s[t,l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
                     _sh_k[t,l,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
         elif time_name in K.dims:
             for t in np.arange(len(K.time)):
                 coeffs = pysh.expand.SHExpandDH(K_np[t,:,:])
-                _sh_s[t,:] = pysh.spectralanalysis.spectrum(coeffs[t,:,:], unit="per_l")
+                _sh_s[t,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
                 _sh_k[t,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
         elif pressure_level_name in K.dims:
             for l in np.arange(len(K.level)):
                 coeffs = pysh.expand.SHExpandDH(K_np[l,:,:])
-                _sh_s[l,:] = pysh.spectralanalysis.spectrum(coeffs[l,:,:], unit="per_l")
+                _sh_s[l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
                 _sh_k[l,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
         else:
             coeffs = pysh.expand.SHExpandDH(K_np)
