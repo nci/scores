@@ -88,40 +88,59 @@ def power_spectra(
         _spec_shape = _shape.copy()
         _spec_shape.pop(-2)
 
-        _sh_k = np.zeros(_shape)
-        _sh_s = np.zeros(_spec_shape)
-        K_np = K.to_numpy()
-        if time_name in K.dims and pressure_level_name in K.dims:
-            for t in np.arange(len(K.time)):
-                for l in np.arange(len(K.level)):
-                    coeffs = pysh.expand.SHExpandDH(K_np[t,l,:,:])
-                    _sh_s[t,l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-                    _sh_k[t,l,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
-        elif time_name in K.dims:
-            for t in np.arange(len(K.time)):
-                coeffs = pysh.expand.SHExpandDH(K_np[t,:,:])
-                _sh_s[t,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-                _sh_k[t,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
-        elif pressure_level_name in K.dims:
-            for l in np.arange(len(K.level)):
-                coeffs = pysh.expand.SHExpandDH(K_np[l,:,:])
-                _sh_s[l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-                _sh_k[l,:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
-        else:
-            coeffs = pysh.expand.SHExpandDH(K_np)
-            _sh_s[:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-            _sh_k[:,:] = coeffs[0, :, :] * coeffs[0, :, :] + coeffs[1, :, :] * coeffs[1, :, :]
+        #_sh_k = np.zeros(_shape)
+        #_sh_s = np.zeros(_spec_shape)
+        #K_np = K.to_numpy()
+        #if time_name in K.dims and pressure_level_name in K.dims:
+        #    for t in np.arange(len(K.time)):
+        #        for l in np.arange(len(K.level)):
+        #            coeffs = pysh.expand.SHExpandDH(K_np[t,l,:,:])
+        #            _sh_s[t,l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+        #            _sh_k[t,l,:,:] = coeffs[0, :, :] ** 2 + coeffs[1, :, :] **2
+        #elif time_name in K.dims:
+        #    for t in np.arange(len(K.time)):
+        #        coeffs = pysh.expand.SHExpandDH(K_np[t,:,:])
+        #        _sh_s[t,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+        #        _sh_k[t,:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
+        #elif pressure_level_name in K.dims:
+        #    for l in np.arange(len(K.level)):
+        #        coeffs = pysh.expand.SHExpandDH(K_np[l,:,:])
+        #        _sh_s[l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+        #        _sh_k[l,:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
+        #else:
+        #    coeffs = pysh.expand.SHExpandDH(K_np)
+        #    _sh_s[:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+        #    _sh_k[:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
+
+        def _sh_transform(field):
+            coeffs = pysh.expand.SHExpandDH(field)
+            spectrum = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
+
+            energy = coeffs[0, :, :]**2 + coeffs[1, :, :]**2
+
+            return spectrum, energy
+
+        _sh_s, _sh_k = xr.apply_ufunc(
+            _sh_transform,
+            K,
+            input_core_dims=[[latitude_name,longitude_name]],
+            output_core_dims=[["meridional_wavenumber"],["meridional_wavenumber","order"]],
+            vectorize=True,
+            dask="parallelized",
+            output_dtypes=[float,float],
+        )
 
         if custom_field_name is None:
             _sh_k = np.sqrt(_sh_k)
 
-        ds = xr.Dataset(
-            data_vars={
-                "amplitude_squared": (_dims, _sh_k),
-                "frequency": (_spec_dims, _sh_s),
-            },
-            coords=_coords,
-        )
+        #ds = xr.Dataset(
+        #    data_vars={
+        #        "amplitude_squared": (_dims, _sh_k),
+        #        "frequency": (_spec_dims, _sh_s),
+        #    },
+        #    coords=_coords,
+        #)
+        ds = xr.Dataset({"amplitude_squared": _sh_k, "frequency": _sh_s})
 
         return ds
 
