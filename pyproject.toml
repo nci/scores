@@ -9,7 +9,7 @@ maintainers = [
   { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
 ]
 authors = [
-  { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
+  { name="Tennessee Leeuwenburg" },
   { name="Nicholas Loveday" },
   { name="Nikeeth Ramanathan" },
   { name="Stephanie Chong" },
