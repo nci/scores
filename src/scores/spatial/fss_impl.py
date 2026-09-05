@@ -322,8 +322,8 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
 
 def fss_2d_single_field(
-    fcst: npt.NDArray[float],
-    obs: npt.NDArray[float],
+    fcst: npt.NDArray[np.float64],
+    obs: npt.NDArray[np.float64],
     *,
     event_threshold: float,
     window_size: Tuple[int, int],
@@ -458,4 +458,4 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     fss_clamped = max(min(fss, 1.0), 0.0)
 
-    return fss_clamped
+    return np.float64(fss_clamped)
