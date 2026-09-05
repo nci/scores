@@ -131,6 +131,10 @@
             "orcid": "https://orcid.org/0000-0002-6098-9362",
             "affiliation": "European Centre for Medium-Range Weather Forecasts, Germany",
             "name": "Morrison, Oisín M."
+        },
+        {
+            "affiliation": "Bureau of Meteorology, Australia",
+            "name": "Lee, David"
         }
     ],
     "license": "Apache-2.0",

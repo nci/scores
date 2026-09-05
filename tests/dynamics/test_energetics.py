@@ -933,7 +933,7 @@ def test_budget(
     q = np.zeros((nt, nlev, nlat, nlon))
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
-    zs = 1.0e5 * np.ones((nlat, nlon))
+    zs = STANDARD_CONSTANTS.GRAVITY * 1.0e5 * np.ones((nlat, nlon))
 
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
@@ -1049,7 +1049,7 @@ def test_budgets_dask():
     q = np.zeros((nt, nlev, nlat, nlon))
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
-    zs = 1.0e5 * np.ones((nlat, nlon))
+    zs = STANDARD_CONSTANTS.GRAVITY * 1.0e5 * np.ones((nlat, nlon))
 
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
@@ -1125,7 +1125,7 @@ def test_budgets_nan():
     q = np.zeros((nt, nlev, nlat, nlon))
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
-    zs = 1.0e5 * np.ones((nlat, nlon))
+    zs = STANDARD_CONSTANTS.GRAVITY * 1.0e5 * np.ones((nlat, nlon))
 
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
@@ -1186,7 +1186,7 @@ def test_budgets_multiphase_moisture():
     qi = np.zeros((nt, nlev, nlat, nlon))
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
-    zs = 1.0e5 * np.ones((nlat, nlon))
+    zs = STANDARD_CONSTANTS.GRAVITY * 1.0e5 * np.ones((nlat, nlon))
 
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
@@ -1266,7 +1266,7 @@ def test_budgets_multiphase_moisture_vertical():
     qi = np.zeros((nt, nlev, nlat, nlon))
     z = np.zeros((nt, nlev, nlat, nlon))
     sp = np.zeros((nt, nlat, nlon))
-    zs = 1.0e5 * np.ones((nlat, nlon))
+    zs = STANDARD_CONSTANTS.GRAVITY * 1.0e5 * np.ones((nlat, nlon))
 
     lon2d, lat2d = np.meshgrid(longitude, latitude)
     lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
