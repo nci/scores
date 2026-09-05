@@ -1,6 +1,6 @@
 # Release Notes (What's New)
 
-## Version 2.7.0 (September 5, 2026) 
+## Version 2.8.0 (September 5, 2026) 
 
 For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.6.0...2.7.0). Below are the changes we think users may wish to be aware of.
 
