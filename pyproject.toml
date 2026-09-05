@@ -5,8 +5,38 @@ build-backend = "hatchling.build"
 [project]
 name = "scores"
 dynamic = ["version"]
+maintainers = [
+  { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
+]
 authors = [
   { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
+  { name="Nicholas Loveday" },
+  { name="Nikeeth Ramanathan" },
+  { name="Stephanie Chong" },
+  { name="Robert J. Taggart" },
+  { name="Durga Shrestha" },
+  { name="Mohammadreza Khanarmuei" },
+  { name="Harrison Cook" },
+  { name="Liam Bluett" },
+  { name="Elizabeth E. Ebert" },
+  { name="Maree Carroll" },
+  { name="Belinda Trotta" },
+  { name="John Sharples" },
+  { name="Sam Bishop" },
+  { name="Dougal T. Squire" },
+  { name="Aidan Griffiths" },
+  { name="A.J. Fisher" },
+  { name="Taylor Mandelbaum" },
+  { name="Jinghan Fu" },
+  { name="Paul R. Smith" },
+  { name="Esteban Abellan" },
+  { name="Jurian Beunk" },
+  { name="Felix Esperson" },
+  { name="J. Smallwood" },
+  { name="Xiaoxi Wu" },
+  { name="Daniel Karney" },
+  { name="Oisín M. Morrison" },
+  { name="David Lee" },
 ]
 description = """\
 Scores is a Python package containing mathematical functions \
