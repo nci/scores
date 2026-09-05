@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "scores"
 dynamic = ["version"]
-authors = [
+maintainers = [
   { name="Tennessee Leeuwenburg", email="tennessee.leeuwenburg@bom.gov.au" },
 ]
 description = """\
