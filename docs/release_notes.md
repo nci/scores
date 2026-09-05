@@ -29,7 +29,7 @@ For a list of all changes in this release, see the [full changelog](https://gith
 
 - Added "Energy budgets" tutorial. See [PR #1105](https://github.com/nci/scores/pull/1105) and [PR #1115](https://github.com/nci/scores/pull/1115).
 - Fixed two broken links - for the `Binder` badge in the README (`README.md`) and for the `Binder` badge in the tutorials README (`docs/tutorials/README.md)`. See [PR #1096](https://github.com/nci/scores/pull/1096).
-- Added a `maintainers` field and added additional contributors to the `authors` field in `pyproject.toml`. See [PR #1120](https://github.com/nci/scores/pull/1120).
+- Added a `maintainers` field and added additional contributors to the `authors` field in `pyproject.toml`. See [PR #1120](https://github.com/nci/scores/pull/1120) and [PR #1122](https://github.com/nci/scores/pull/1122).
 
 ### Internal Changes
 
