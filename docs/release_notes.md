@@ -1,20 +1,20 @@
 # Release Notes (What's New)
 
-## Version 2.7.0 (Upcoming Release) 
+## Version 2.7.0 (September 5, 2026) 
 
-For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.6.0...develop). Below are the changes we think users may wish to be aware of.
+For a list of all changes in this release, see the [full changelog](https://github.com/nci/scores/compare/2.6.0...2.7.0). Below are the changes we think users may wish to be aware of.
 
 ### Features
 
 - Added two new metrics:
 	- Energy budget: `scores.dynamics.energy_components_lat_lon`.
 	- Energy exchanges: `scores.dynamics.energy_exchanges_lat_lon`.  
-	See [PR #1033](https://github.com/nci/scores/pull/1033) and [PR #1106](https://github.com/nci/scores/pull/1106).
+	See [PR #1105](https://github.com/nci/scores/pull/1105) and [PR #1115](https://github.com/nci/scores/pull/1115).
 - Added a new class and a new instance of the class:
 	- `scores.dynamics.PlanetConstants` (a data class for representing various physical constants used in the calculation of energy budgets).
 	- `scores.dynamics.STANDARD_CONSTANTS` (a default set of planet constants for use by `scores.dynamics.energy_components_lat_lon` and `scores.dynamics.energy_exchanges_lat_lon`).  
-	See [PR #1106](https://github.com/nci/scores/pull/1106). 
-- Added a new `scores.dynamics` section to the API. See [PR #1033](https://github.com/nci/scores/pull/1033).
+	See [PR #1105](https://github.com/nci/scores/pull/1105). 
+- Added a new `scores.dynamics` section to the API. See [PR #1105](https://github.com/nci/scores/pull/1105).
 - Implemented a small change to the handling of `scaling_factors` in `scores.continuous.kge`. The type hint has been changed from `Optional[Union[list[float], np.ndarray]]` to `Optional[Iterable[float]]` to accept a wider range of inputs. See [PR #1078](https://github.com/nci/scores/pull/1078).
 
 ### Deprecations
@@ -25,12 +25,11 @@ For a list of all changes in this release, see the [full changelog](https://gith
 	- support for `include_components` in `scores.probability.interval_tw_crps_for_ensemble`.  
 	See [PR #991](https://github.com/nci/scores/pull/991). 
 
-### Bug Fixes
-
 ### Documentation
 
-- Added "Energy budgets" tutorial. See [PR #1033](https://github.com/nci/scores/pull/1033).
+- Added "Energy budgets" tutorial. See [PR #1105](https://github.com/nci/scores/pull/1105) and [PR #1115](https://github.com/nci/scores/pull/1115).
 - Fixed two broken links - for the `Binder` badge in the README (`README.md`) and for the `Binder` badge in the tutorials README (`docs/tutorials/README.md)`. See [PR #1096](https://github.com/nci/scores/pull/1096).
+- Added a `maintainers` field and added additional contributors to the `authors` field in `pyproject.toml`. See [PR #1120](https://github.com/nci/scores/pull/1120).
 
 ### Internal Changes
 
