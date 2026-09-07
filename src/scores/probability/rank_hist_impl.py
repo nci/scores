@@ -116,16 +116,18 @@ def rank_histogram(
         UserWarning
             if there are any NaNs in ``fcst``.
 
-    References:
-        - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts. \
-            Monthly Weather Review, 129(3), 550-560. \
-            https://doi.org/dkkvh3
-        - Talagrand, O. (1999). Evaluation of probabilistic prediction systems. \
-            In Workshop proceedings "Workshop on predictability", 20-22 October 1997, ECMWF, Reading, UK.
-
     See also:
         - :py:class:`scores.probability.Pit`
         - :py:class:`scores.probability.PitFcstAtObs`
+
+    References:
+        - Hamill, T. M. (2001). Interpretation of rank histograms for verifying ensemble forecasts.
+          Monthly Weather Review, 129(3), 550–560.
+          https://doi.org/dkkvh3
+        - Talagrand, O., Vautard, R., & Strauss, B. (1999). Evaluation of probabilistic prediction
+          systems. In Proceedings of the ECMWF Workshop on Predictability, 20–22 October 1997
+          (pp. 1–25). ECMWF.
+          https://www.ecmwf.int/en/elibrary/76596-evaluation-probabilistic-prediction-systems
 
     Examples:
         Calculate and plot the rank histogram for an under-dispersive ensemble forecast:
@@ -136,10 +138,10 @@ def rank_histogram(
         >>> from scores.probability import rank_histogram
         >>> np.random.seed(42)
 
-        >>> fcst = xr.DataArray(norm.rvs(size=(500, 10)), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=['time'])
+        >>> fcst = xr.DataArray(norm.rvs(size=(500, 10)), dims=["time", "ensemble"])
+        >>> obs = xr.DataArray(norm.rvs(scale=2, size=(500)), dims=["time"])
 
-        >>> rank_histogram(fcst, obs, ens_member_dim='ensemble')
+        >>> rank_histogram(fcst, obs, ens_member_dim="ensemble")
         <xarray.DataArray (rank: 11)> Size: 88B
         array([0.218, 0.098, 0.066, 0.046, 0.068, 0.056, 0.058, 0.06 , 0.046,
                0.078, 0.206])
