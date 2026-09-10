@@ -38,6 +38,34 @@ def power_spectra(
     """
     Compute the spectra. By default this is done by first computing the kinetic energy from the horizontal velocity
     components (u,v), but may alternatively be computed for a custom field.
+
+    Args:
+        data: Xarray Dataset containing the field to transform (maybe derived from the zonal and meridional velocity
+            components, or froma custom field.
+        reduce_vertical: average over the vertical pressure levels (default is False).
+        reduce_time: average over the time levels (default is False).
+        spherical_harmonic: compute spectra using spherical harmonics in both the zonal and meridional dimensions,
+            instead of just using a Fourier transform in the zonal dimension (default is False). Requires that the
+            'pyshtools' python library be installed.
+        longitude_name: string giving the textual name of the longitude coordinate (optional, default is "longitude").
+        latitude_name: string giving the textual name of the latitude coordinate (optional, default is "latitude").
+        pressure_level_name: string giving the textual name of the vertical coordinate on pressure levels (optional,
+            default is "level").
+        time_name: string giving the textual name of the time coordinate (optional, default is "time").
+        zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
+        meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
+        custom_field_name: string giving the textual name of the field from which to compute the spectra. If absent
+            then compute the spectra for the kinetic energy as determined from the zonal and meridional velocity
+            components.
+        zonal_filter_width: ratio of the left and right domain size to the total zonal domain size over which to apply
+            a filter to the input data in the case that the Fourier spectra is to be computed for a zonal sub-domain
+            (default is 0.125).
+        constants: class containing the planetary constants used to specify the geometry and thermodynamics (optional,
+            will instantiate a version of the planet_constants class with default values if not supplied).
+
+    Returns:
+        ds: an Xarray Dataset containing the square of the amplitudes of the input data transformed into frequency
+            space, and the corresponding frequencies.
     """
 
     _data = data.copy(deep=True)
@@ -113,7 +141,7 @@ def power_spectra(
         #    _sh_k[:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
 
         def _sh_transform(field):
-            coeffs = pysh.expand.SHExpandDH(field)
+            coeffs = pysh.expand.SHExpandDH(field, norm=4, sampling=1, csphase=-1, lmax_calc=1)
             spectrum = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
 
             energy = coeffs[0, :, :]**2 + coeffs[1, :, :]**2
