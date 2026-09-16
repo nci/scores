@@ -312,11 +312,12 @@ EXP_WEIGHTED_ACC_BY_STATION = xr.DataArray(
     ],
 )
 def test_anomaly_correlation_coefficient(reduce_dims, preserve_dims, weights, expected):
-    """Check the formula, dimension handling and broadcasting of weights."""
+    """Check the uncentred formula, dimension handling and broadcasting of weights."""
     result = anomaly_correlation_coefficient(
         ACC_FCST,
         ACC_OBS,
         ACC_CLIMATOLOGY,
+        centered=False,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
@@ -332,6 +333,7 @@ def test_anomaly_correlation_coefficient_broadcasting_and_alignment():
         climatology + ACC_FCST_ANOMALIES,
         obs,
         climatology,
+        centered=False,
         reduce_dims="time",
     )
     expected = xr.DataArray(
@@ -386,7 +388,7 @@ def test_anomaly_correlation_coefficient_missing_and_zero(fcst, obs, climatology
     fcst, obs, climatology, weights = [
         xr.DataArray(values, dims="time") for values in (fcst, obs, climatology, weights)
     ]
-    result = anomaly_correlation_coefficient(fcst, obs, climatology, weights=weights)
+    result = anomaly_correlation_coefficient(fcst, obs, climatology, centered=False, weights=weights)
     xr.testing.assert_allclose(result, xr.DataArray(expected))
 
 
@@ -406,7 +408,7 @@ def test_anomaly_correlation_coefficient_dataset(weights, expected):
     fcst = xr.Dataset({"a": ACC_FCST, "b": ACC_CLIMATOLOGY + 2 * ACC_FCST_ANOMALIES})
     obs = xr.Dataset({"a": ACC_OBS, "b": ACC_OBS})
     climatology = xr.Dataset({"a": ACC_CLIMATOLOGY, "b": ACC_CLIMATOLOGY})
-    result = anomaly_correlation_coefficient(fcst, obs, climatology, reduce_dims="time", weights=weights)
+    result = anomaly_correlation_coefficient(fcst, obs, climatology, centered=False, reduce_dims="time", weights=weights)
     xr.testing.assert_allclose(result, expected)
 
 
@@ -494,16 +496,17 @@ def test_anomaly_correlation_coefficient_dask(centered):
         ("time", None, ACC_WEIGHTS, [6 / np.sqrt(116), 1.0]),
     ],
 )
-def test_anomaly_correlation_coefficient_centered(reduce_dims, preserve_dims, weights, expected):
-    """Centre anomalies independently within each preserved group, using weighted means."""
+@pytest.mark.parametrize("centering_kwargs", [{}, {"centered": True}], ids=["default", "explicit"])
+def test_anomaly_correlation_coefficient_centered(reduce_dims, preserve_dims, weights, expected, centering_kwargs):
+    """Default and explicit centring use weighted means independently within each preserved group."""
     result = anomaly_correlation_coefficient(
         ACC_FCST,
         ACC_OBS,
         ACC_CLIMATOLOGY,
-        centered=True,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         weights=weights,
+        **centering_kwargs,
     )
     xr.testing.assert_allclose(result, xr.DataArray(expected, dims="station", coords={"station": ["a", "b"]}))
 

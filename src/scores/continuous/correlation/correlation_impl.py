@@ -16,7 +16,7 @@ def anomaly_correlation_coefficient(
     obs: XarrayLike,
     climatology: XarrayLike,
     *,
-    centered: bool = False,
+    centered: bool = True,
     reduce_dims: FlexibleDimensionTypes | None = None,
     preserve_dims: FlexibleDimensionTypes | None = None,
     weights: XarrayLike | None = None,
@@ -25,7 +25,7 @@ def anomaly_correlation_coefficient(
 
     ACC measures the similarity between forecast and observed anomalies, where
     each anomaly is calculated relative to the same climatology. This function
-    defaults to uncentred ACC. Set ``centered=True`` for centred ACC.
+    defaults to centred ACC. Set ``centered=False`` for uncentred ACC.
 
     The uncentred form is
 
@@ -76,8 +76,8 @@ def anomaly_correlation_coefficient(
             ``fcst`` and ``obs``. Dimensions omitted from ``climatology`` are
             broadcast by xarray.
         centered: If ``True``, subtract the weighted sample mean of each
-            anomaly field before calculating ACC. Defaults to ``False``
-            (uncentred ACC).
+            anomaly field before calculating ACC. Defaults to ``True``
+            (centred ACC).
         reduce_dims: Dimensions to reduce when calculating ACC. All other
             dimensions are preserved. By default, all dimensions are reduced.
         preserve_dims: Dimensions to preserve when calculating ACC. All other
@@ -142,7 +142,7 @@ def anomaly_correlation_coefficient(
         ...     fcst, obs, climatology, reduce_dims="location"
         ... )
         <xarray.DataArray (time: 2)> Size: 16B
-        array([0.83333333, 0.89442719])
+        array([0.78571429, 0.96076892])
         Dimensions without coordinates: time
     """
     if not all_same_xarraylike([fcst, obs, climatology]):
