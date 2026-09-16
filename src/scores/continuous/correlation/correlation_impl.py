@@ -52,6 +52,8 @@ def anomaly_correlation_coefficient(
     uniform offsets in either anomaly field over those dimensions; uncentred
     ACC retains the mean anomalies and can change with such offsets.
 
+    The two forms are discussed in Chapter 8 of Wilks (2011).
+
     ACC ranges from -1 to 1 when it is defined. A value of 1 indicates that the
     anomaly fields point in the same direction, 0 indicates no projection of
     one anomaly field onto the other, and -1 indicates opposing anomaly
@@ -111,6 +113,8 @@ def anomaly_correlation_coefficient(
         - Jolliffe, I. T., & Stephenson, D. B. (Eds.). (2012).
           *Forecast verification: A practitioner's guide in atmospheric
           science* (2nd ed.). Wiley. https://doi.org/10.1002/9781119960003
+        - Wilks, D. S. (2011). *Statistical methods in the atmospheric
+          sciences* (3rd ed.). Academic Press.
 
     See Also:
         :py:func:`scores.continuous.correlation.pearsonr`
