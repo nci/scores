@@ -408,7 +408,9 @@ def test_anomaly_correlation_coefficient_dataset(weights, expected):
     fcst = xr.Dataset({"a": ACC_FCST, "b": ACC_CLIMATOLOGY + 2 * ACC_FCST_ANOMALIES})
     obs = xr.Dataset({"a": ACC_OBS, "b": ACC_OBS})
     climatology = xr.Dataset({"a": ACC_CLIMATOLOGY, "b": ACC_CLIMATOLOGY})
-    result = anomaly_correlation_coefficient(fcst, obs, climatology, centered=False, reduce_dims="time", weights=weights)
+    result = anomaly_correlation_coefficient(
+        fcst, obs, climatology, centered=False, reduce_dims="time", weights=weights
+    )
     xr.testing.assert_allclose(result, expected)
 
 
