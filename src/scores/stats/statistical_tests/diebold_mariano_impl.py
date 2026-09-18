@@ -350,11 +350,11 @@ def diebold_mariano_1d(
         Dimensions:          ()
         Data variables:
             mean             float64 8B 2.5
-            dm_test_stat     float64 8B 2.236
+            dm_test_stat     float64 8B 3.475
             timeseries_len   int64 8B 4
-            confidence_gt_0  float64 8B 0.9873
-            ci_upper         float64 8B 4.339
-            ci_lower         float64 8B 0.661
+            confidence_gt_0  float64 8B 0.9997
+            ci_upper         float64 8B 3.91
+            ci_lower         float64 8B 1.09
     """
     _dm_common_checks(method, statistic_distribution, confidence_level)
 
