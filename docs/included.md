@@ -639,76 +639,60 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 
 * - Name (Alphabetical order)
   - API
-  - Utilised For
+  - Description
 * - Aggregate
   - [API](api.md#scores.processing.aggregate)
-  - Utilised to calculate weighted or unweighted means in most verification scores
+  - Utilised to calculate weighted or unweighted means in most verification scores.
 * - Binary Discretise
   - [API](api.md#scores.processing.binary_discretise)
-  - Receiver (Relative) Operating Characteristic (ROC)
+  - Converts the values of `data` to 0 or 1 for each threshold in `thresholds` according to the operation defined by `mode`.
 * - Binary Discretise Proportion
   - [API](api.md#scores.processing.binary_discretise_proportion)
-  - Flip-Flop Index
+  - Returns the proportion of `data` in each category. The categories are defined by the relationship of data to threshold as specified by the operation `mode`.
 * - Block Bootstrap
   - [API](api.md#scores.processing.block_bootstrap)
-  - Confidence intervals. See [tutorial](project:./tutorials/Block_Bootstrapping.md)
+  - Creates new arrays by repeatedly bootstrapping along specified dimensions and stacking the new arrays along a new "iteration" dimension. Additionally, it includes internal functions for chunk size calculation and handling Dask arrays for chunk size limitation. See the [tutorial](project:./tutorials/Block_Bootstrapping.md).
 * - Broadcast and Match Not-a-Number (NaN)
   - [API](api.md#scores.processing.broadcast_and_match_nan)
-  - Murphy Score (Mean Elementary Score)
+  - Input xarray data objects are 'matched' - they are broadcast against each other (forced to have the same dimensions), and the position of nans are forced onto all DataArrays. This matching process is applied across all supplied DataArrays, as well as all DataArrays inside supplied Datasets.
 * - Comparative Discretise
   - [API](api.md#scores.processing.comparative_discretise)
-  - Receiver (Relative) Operating Characteristic (ROC)
+  - Converts the values of `data` to 0 or 1 based on how they relate to the specified values in `comparison` via the `mode` operator.
 * - Cumulative Distribution Functions (CDFs)
   -
   -
 * -
     - Add Thresholds
-  -
-    [API](api.md#scores.processing.cdf.add_thresholds)
-  -
-    Continuous Ranked Probability Score (CRPS) for CDFs; CRPS CDF Brier Decomposition
+  - [API](api.md#scores.processing.cdf.add_thresholds)
+  - Takes a CDF data array with dimension `threshold_dim` and adds values from `new_thresholds`. The CDF is then filled to replace any NaN values. The array `cdf` requires at least 2 non-NaN values along `threshold_dim`.
 * -
     - CDF Envelope
-  -
-    [API](api.md#scores.processing.cdf.cdf_envelope)
-  -
-    Adjust Forecast for CRPS
+  - [API](api.md#scores.processing.cdf.cdf_envelope)
+  - Reconstructs CDFs from known points along a predictive distribution.
 * -
     - Decreasing CDFs
-  -
-    [API](api.md#scores.processing.cdf.decreasing_cdfs)
-  -
-    Adjust Forecast for CRPS
+  - [API](api.md#scores.processing.cdf.decreasing_cdfs)
+  - Checks CDF values decrease beyond specified tolerance; that is, whenever the sum of the incremental decreases exceeds tolerarance. Intended use is for CDFs with increasing coordinates along `threshold_dim` dimension, and where either each CDF is always NaN or always non-NaN.
 * -
     - Fill CDF
-  -
-    [API](api.md#scores.processing.cdf.fill_cdf)
-  -
-    CRPS for CDFs; CRPS CDF Brier Decomposition
+  - [API](api.md#scores.processing.cdf.fill_cdf)
+  - Fills NaNs in a CDF of a real-valued random variable along `threshold_dim` with appropriate values between 0 and 1.
 * -
     - Integrate Square Piecewise Linear
-  -
-    [API](api.md#scores.processing.cdf.integrate_square_piecewise_linear)
-  -
-    CRPS for CDFs
+  - [API](api.md#scores.processing.cdf.integrate_square_piecewise_linear)
+  - Calculates integral values and collapses `threshold_dim`.
 * -
     - Observed CDF
-  -
-    [API](api.md#scores.processing.cdf.observed_cdf)
-  -
-    CRPS for CDFs; CRPS CDF Brier Decomposition
+  - [API](api.md#scores.processing.cdf.observed_cdf)
+  - Returns a data array of observations converted into CDF format, such that: returned_value = 0 if threshold < observation, and returned_value = 1 if threshold >= observation.
 * -
     - Propagate Not-a-Number (NaN)
-  -
-    [API](api.md#scores.processing.cdf.propagate_nan)
-  -
-    Adjust Forecast for CRPS; CRPS CDF Brier Decomposition; CRPS for CDFs
+  - [API](api.md#scores.processing.cdf.propagate_nan)
+  - Propagates the NaN values from a "cdf" variable along the `threshold_dim`.
 * -
     - Round Values
-  -
-    [API](api.md#scores.processing.cdf.round_values)
-  -
-    CRPS for CDFs; CRPS CDF Brier Decomposition
+  - [API](api.md#scores.processing.cdf.round_values)
+  - Round data array to specified precision.
 * - Isotonic Fit, *see Isotonic Regression*
   - &mdash;
   - &mdash;
@@ -717,7 +701,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - See "Isotonic Regression (Isotonic Fit, Reliability Diagram)" entries in [Continuous](#continuous) and [Probability](#probability)
 * - Proportion Exceeding
   - [API](api.md#scores.processing.proportion_exceeding)
-  - Flip-Flop Index
+  - Calculates the proportion of `data` equal to or exceeding `thresholds`.
 * - Reliability Diagram, *see Isotonic Regression*
   - &mdash;
   - &mdash;
