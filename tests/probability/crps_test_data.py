@@ -2,6 +2,8 @@
 Generation of the test data used to test scores.probability.crps
 """
 
+import datetime
+
 import numpy as np
 import xarray as xr
 from numpy import nan
@@ -659,18 +661,22 @@ OVER_TERM = xr.DataArray(
 
 # expected results
 EXP_CRPSENS_ECDF = FIRST_TERM - SPREAD_ECDF
-EXP_CRPSENS_ECDF_DECOMPOSITION = xr.concat([EXP_CRPSENS_ECDF, UNDER_TERM, OVER_TERM, SPREAD_ECDF], dim="component")
-EXP_CRPSENS_ECDF_DECOMPOSITION = EXP_CRPSENS_ECDF_DECOMPOSITION.assign_coords(
-    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
+EXP_CRPSENS_ECDF_DECOMPOSITION = xr.Dataset(
+    {
+        "total": EXP_CRPSENS_ECDF,
+        "underforecast_penalty": UNDER_TERM,
+        "overforecast_penalty": OVER_TERM,
+        "spread": SPREAD_ECDF,
+    }
 )
 
 EXP_CRPSENS_FAIR = FIRST_TERM - SPREAD_FAIR
 EXP_CRPSENS_WT = xr.DataArray(1.125)
 
-EXP_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_CRPSENS_ECDF, "b": EXP_CRPSENS_ECDF})
-EXP_CRPSENS_ECDF_DECOMPOSITION_DS = xr.Dataset(
-    {"a": EXP_CRPSENS_ECDF_DECOMPOSITION, "b": EXP_CRPSENS_ECDF_DECOMPOSITION}
-)
+# EXP_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_CRPSENS_ECDF, "b": EXP_CRPSENS_ECDF})
+# EXP_CRPSENS_ECDF_DECOMPOSITION_DS = xr.Dataset(
+#     {"a": EXP_CRPSENS_ECDF_DECOMPOSITION, "b": EXP_CRPSENS_ECDF_DECOMPOSITION}
+# )
 EXP_CRPSENS_FAIR_DS = xr.Dataset({"a": EXP_CRPSENS_FAIR, "b": EXP_CRPSENS_FAIR})
 EXP_CRPSENS_WT_DS = xr.Dataset({"a": EXP_CRPSENS_WT, "b": EXP_CRPSENS_WT})
 
@@ -713,16 +719,17 @@ OVER_TAIL_UNDER_DA = xr.DataArray(
 EXP_UPPER_TAIL_CRPSENS_ECDF_DA = UPPER_TAIL_FIRST_TERM_DA - UPPER_TAIL_SPREAD_ECDF_DA
 EXP_UPPER_TAIL_CRPSENS_FAIR_DA = UPPER_TAIL_FIRST_TERM_DA - UPPER_TAIL_SPREAD_FAIR_DA
 EXP_UPPER_TAIL_CRPSENS_ECDF_DS = xr.Dataset({"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DA})
-EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = xr.concat(
-    [EXP_UPPER_TAIL_CRPSENS_ECDF_DA, UPPER_TAIL_UNDER_DA, OVER_TAIL_UNDER_DA, UPPER_TAIL_SPREAD_ECDF_DA],
-    dim="component",
+EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = xr.Dataset(
+    {
+        "total": EXP_UPPER_TAIL_CRPSENS_ECDF_DA,
+        "underforecast_penalty": UPPER_TAIL_UNDER_DA,
+        "overforecast_penalty": OVER_TAIL_UNDER_DA,
+        "spread": UPPER_TAIL_SPREAD_ECDF_DA,
+    }
 )
-EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA = EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA.assign_coords(
-    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
-)
-EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
-    {"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA}
-)
+# EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
+#     {"a": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_UPPER_TAIL_CRPSENS_ECDF_DECOMP_DA}
+# )
 # exp test data for twCRPS with upper tail for thresholds >=1 with broadcasting
 UPPER_TAIL_FIRST_TERM_BC = xr.DataArray(
     data=[[9 / 4, 6 / 4, 3 / 3, np.nan, 2], [0, np.nan, np.nan, np.nan, np.nan]],
@@ -783,15 +790,210 @@ INTERVAL_UNDER_DA = xr.DataArray(data=[0, 3 / 4, 0, np.nan, 2], dims=["stn"], co
 INTERVAL_OVER_DA = xr.DataArray(
     data=[6 / 4, 1 / 4, 2 / 3, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
 )
-EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = xr.concat(
-    [EXP_INTERVAL_CRPSENS_ECDF_DA, INTERVAL_UNDER_DA, INTERVAL_OVER_DA, INTERVAL_SPREAD_ECDF_DA], dim="component"
+EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = xr.Dataset(
+    {
+        "total": EXP_INTERVAL_CRPSENS_ECDF_DA,
+        "underforecast_penalty": INTERVAL_UNDER_DA,
+        "overforecast_penalty": INTERVAL_OVER_DA,
+        "spread": INTERVAL_SPREAD_ECDF_DA,
+    }
 )
-EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA = EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA.assign_coords(
-    component=["total", "underforecast_penalty", "overforecast_penalty", "spread"]
-)
-EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
-    {"a": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA}
-)
+# EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DS = xr.Dataset(
+#     {"a": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA, "b": EXP_INTERVAL_CRPSENS_ECDF_DECOMP_DA}
+# )
 EXP_VAR_INTERVAL_CRPSENS_ECDF_DA = EXP_INTERVAL_CRPSENS_ECDF_DA * xr.DataArray(
     data=[np.nan, 1, 1, np.nan, 0], dims=["stn"], coords={"stn": [101, 102, 103, 104, 105]}
+)
+
+DA_FCST_DECOMP = xr.DataArray(
+    np.array(
+        [
+            [
+                [
+                    [2.0, 2.0, 2.0, 2.0, 2.0],
+                    [1.0, 2.0, 0.0, 2.0, 1.0],
+                ],
+                [
+                    [-5.0, 0.0, 5.0, 10.0, 15.0],
+                    [1.0, 2.0, 3.0, 4.0, 5.0],
+                ],
+            ],
+            [
+                [
+                    [-3.0, -2.0, -1.0, -1.0, -2.0],
+                    [4.0, 1.0, 3.0, 1.0, 2.0],
+                ],
+                [
+                    [-2.0, -1.0, 0.0, 1.0, 2.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0],
+                ],
+            ],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude", "number"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+        "number": np.arange(5),
+    },
+)
+
+DA_OBS_DECOMP = xr.DataArray(
+    np.array(
+        [
+            [
+                [0.0, 1.0],
+                [7.0, 10.0],
+            ],
+            [
+                [-5.0, 2.5],
+                [0.0, 0.0],
+            ],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+
+alpha = xr.DataArray(
+    np.array(
+        [
+            [[[1.0, 0.0], [0.0, 0.0]], [[1.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 1.0], [5.0, 1.0]], [[0.0, 0.0], [1.0, 0.0]]],
+            [[[0.0, 0.0], [5.0, 1.0]], [[0.0, 1.0], [1.0, 0.0]]],
+            [[[0.0, 0.0], [2.0, 1.0]], [[0.0, 0.5], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 1.0]], [[0.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 5.0]], [[0.0, 0.0], [0.0, 0.0]]],
+        ],
+        dtype=float,
+    ),
+    dims=["number", "valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+        "number": np.arange(1, 7),
+    },
+)
+beta = xr.DataArray(
+    np.array(
+        [
+            [[[2.0, 0.0], [0.0, 0.0]], [[2.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 0.0]], [[1.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 0.0]], [[0.0, 0.0], [0.0, 0.0]]],
+            [[[0.0, 1.0], [3.0, 0.0]], [[1.0, 0.5], [1.0, 0.0]]],
+            [[[0.0, 0.0], [5.0, 0.0]], [[0.0, 1.0], [1.0, 0.0]]],
+            [[[0.0, 0.0], [0.0, 1.0]], [[0.0, 0.0], [0.0, 0.0]]],
+        ],
+        dtype=float,
+    ),
+    dims=["number", "valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+        "number": np.arange(1, 7),
+    },
+)
+
+crps = xr.DataArray(
+    np.array(
+        [[[2.0, 0.2], [2.4, 6.2]], [[2.8, 0.46], [0.4, 0.0]]],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+
+DA_HERSBACH_DECOMP = xr.Dataset({"total": crps, "alpha": alpha, "beta": beta})
+
+expected_under = xr.DataArray(
+    np.array(
+        [
+            [[0.0, 0.2], [4.2, 7.0]],
+            [[0.0, 0.7], [0.6, 0.0]],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+expected_over = xr.DataArray(
+    np.array(
+        [
+            [[2.0, 0.4], [2.2, 0.0]],
+            [[3.2, 0.4], [0.6, 0.0]],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+expected_spread = xr.DataArray(
+    np.array(
+        [
+            [[0.0, 0.4], [4.0, 0.8]],
+            [[0.4, 0.64], [0.8, 0.0]],
+        ],
+        dtype=float,
+    ),
+    dims=["valid_datetime", "latitude", "longitude"],
+    coords={
+        "valid_datetime": [
+            datetime.datetime(2024, 1, 1, 0, 0),
+            datetime.datetime(2024, 1, 1, 6, 0),
+        ],
+        "latitude": [40.0, 41.0],
+        "longitude": [10.0, 11.0],
+    },
+)
+
+
+DA_UNDEROVER_DECOMP = xr.Dataset(
+    {
+        "total": crps,
+        "underforecast_penalty": expected_under,
+        "overforecast_penalty": expected_over,
+        "spread": expected_spread,
+    }
 )
