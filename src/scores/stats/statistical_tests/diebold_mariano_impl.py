@@ -116,7 +116,7 @@ def diebold_mariano(  # pylint: disable=R0914
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
 
     See also:
-        - ``scores.stats.statistical_tests.diebold_mariano_1d`` for calculating
+        - :py:func:`~scores.stats.statistical_tests.diebold_mariano_1d` for calculating
           Diebold-Mariano test results for a single timeseries.
 
 
