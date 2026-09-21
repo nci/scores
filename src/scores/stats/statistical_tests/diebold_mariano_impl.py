@@ -30,7 +30,7 @@ def diebold_mariano(  # pylint: disable=R0914
     statistic for each timeseries. Several other statistics are also returned such as
     the confidence that the population mean of score differences is greater than zero
     and confidence intervals for that mean. For a handling a single timeseries, see
-    :py:func: `~scores.stats.statistical_tests.diebold_mariano_1d`.
+    :py:func:`~scores.stats.statistical_tests.diebold_mariano_1d`.
 
     Two methods for calculating the test statistic have been implemented: the "HG"
     method Hering and Genton (2011) and the "HLN" method of Harvey, Leybourne and
