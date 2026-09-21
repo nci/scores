@@ -36,7 +36,7 @@ def diebold_mariano(  # pylint: disable=R0914
     method Hering and Genton (2011) and the "HLN" method of Harvey, Leybourne and
     Newbold (1997). The default "HG" method has an advantage of only generating positive
     estimates for the spectral density contribution to the test statistic. For further
-    details see :py:func: `~scores.stats.statistical_tests.diebold_mariano_impl._dm_test_statistic`
+    details see :py:func:`~scores.stats.statistical_tests.diebold_mariano_impl._dm_test_statistic`
     (note: this is a private function and cannot be imported via the public API).
 
     Prior to any calculations, NaNs are removed from each timeseries. If there are NaNs
