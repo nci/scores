@@ -111,19 +111,19 @@ All metrics, statistical techniques and data processing tools in `scores` work w
 		}
 		```
 - **Please also cite the [Zenodo record](https://doi.org/10.5281/zenodo.12697241) for the version of `scores` that you used.**
-	- Where possible, please include the version number, e.g. (Version 2.6.0), and the publisher (Zenodo).
-    - For example, below is the citation for Version 2.6.0 of `scores`:  
-	- Leeuwenburg, T., Loveday, N., Ramanathan, N., Chong, S., Taggart, R. J., Shrestha, D., Khanarmuei, M., Cook, H., Bluett, L., Ebert, E. E., Carroll, M., Trotta, B., Sharples, J., Bishop, S., Squire, D. T., Griffiths, A., Pagano, T. C., Fisher, A. J., Mandelbaum, T., … Morrison, O. M. (2026). *scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models* (Version 2.6.0) [Computer software]. Zenodo. [https://doi.org/10.5281/zenodo.21403944](https://doi.org/10.5281/zenodo.21403944)
+	- Where possible, please include the version number, e.g. (Version 2.7.0), and the publisher (Zenodo).
+    - For example, below is the citation for Version 2.7.0 of `scores`:
+	- Leeuwenburg, T., Loveday, N., Ramanathan, N., Chong, S., Taggart, R. J., Shrestha, D., Khanarmuei, M., Cook, H., Bluett, L., Ebert, E. E., Carroll, M., Trotta, B., Sharples, J., Bishop, S., Squire, D. T., Griffiths, A., Pagano, T. C., Fisher, A. J., Mandelbaum, T., … Lee, D. (2026). *scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models* (Version 2.7.0) [Computer software]. Zenodo. [https://doi.org/10.5281/zenodo.22315715](https://doi.org/10.5281/zenodo.22315715)
 	- BibTeX:
 		```
-		@software{leeuwenburg_2026_21403944,
-  		author      = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ramanathan, Nikeeth and Chong, Stephanie and Taggart, Robert J. and Shrestha, Durga and Khanarmuei, Mohammadreza and Cook, Harrison and Bluett, Liam and Ebert, Elizabeth E. and Carroll, Maree and Trotta, Belinda and Sharples, John and Bishop, Sam and Squire, Dougal T. and Griffiths, Aidan and Pagano, Thomas C. and Fisher, A.J. and Mandelbaum, Taylor and Jinghan, Fu and Smith, Paul R. and Abellan, Esteban and Beunk, Jurian and Esperson, Felix and Smallwood, J. and Wu, Xiaoxi and Karney, Daniel and Morrison, Oisín M.},
-  		title       = {{scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models}},
-  		month       = jul,
+		@software{leeuwenburg_2026_22315715,
+  		author      = {Leeuwenburg, Tennessee and Loveday, Nicholas and Ramanathan, Nikeeth and Chong, Stephanie and Taggart, Robert J. and Shrestha, Durga and Khanarmuei, Mohammadreza and Cook, Harrison and Bluett, Liam and Ebert, Elizabeth E. and Carroll, Maree and Trotta, Belinda and Sharples, John and Bishop, Sam and Squire, Dougal T. and Griffiths, Aidan and Pagano, Thomas C. and Fisher, A.J. and Mandelbaum, Taylor and Jinghan, Fu and Smith, Paul R. and Abellan, Esteban and Beunk, Jurian and Esperson, Felix and Smallwood, J. and Wu, Xiaoxi and Karney, Daniel and Morrison, Oisín M. and Lee, David},
+  		title       = {{scores: Metrics for the verification, evaluation and optimisation of forecasts, predictions or models},
+  		month       = sep,
   		year        = 2026,
   		publisher   = {Zenodo},
-  		version     = {2.6.0},
-  		doi         = {10.5281/zenodo.21403944},
-  		url         = {https://doi.org/10.5281/zenodo.21403944},
-		}
+  		version     = {2.7.0},
+  		doi         = {10.5281/zenodo.22315715},
+  		url         = {https://doi.org/10.5281/zenodo.22315715},
+        }
 		```
