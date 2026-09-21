@@ -335,7 +335,7 @@ def diebold_mariano_1d(
           squared errors', International Journal of Forecasting 13 (1997), 281-291.
 
     See also:
-        - :py:func: `~scores.stats.statistical_tests.diebold_mariano` for calculating
+        - :py:func:`~scores.stats.statistical_tests.diebold_mariano` for calculating
           Diebold-Mariano test results for multiple timeseries at once.
 
     Example:
