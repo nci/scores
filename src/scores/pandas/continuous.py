@@ -167,4 +167,4 @@ def additive_bias(
         the additive bias for the supplied data. All dimensions will be reduced.
 
     """
-    return __continuous.additive_bias(fcst, obs)  # type: ignore
+    return __continuous.additive_bias(fcst, obs)

@@ -560,7 +560,7 @@ def additive_bias(
             fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
         )
 
-    error = fcst - obs  # type: ignore
+    error = fcst - obs
 
     if is_xarraylike(error):
         score = aggregate(error, reduce_dims=reduce_dims, weights=weights)
