@@ -151,6 +151,10 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.continuous.rmse)
   - [Tutorial](project:./tutorials/Root_Mean_Squared_Error.md)
   - [Wikipedia](https://en.wikipedia.org/wiki/Root-mean-square_deviation)
+  * - S1 Score
+  - [API](api.md#scores.continuous.s1)
+  - [Tutorial](project:./tutorials/S1.md)
+  - [Teweles and Wobus (1954)](https://doi.org/10.1175/1520-0477-35.9.455)
 * - Spearman's Correlation Coefficient
   - [API](api.md#scores.continuous.correlation.spearmanr)
   - [Tutorial](project:./tutorials/Spearmans_Correlation.md)
