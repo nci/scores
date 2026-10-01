@@ -122,7 +122,7 @@ def power_spectra(
         freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
         freq_2d = xr.DataArray(freq_2d, dims=(latitude_name, "wavenumber"))
 
-        if dask != "Unavailable":
+        if dask != "Unavailable":  # pragma: no cover
             _data = _data.compute()
 
         if custom_field_name is None:
