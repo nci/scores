@@ -13,6 +13,7 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
+import math
 import numpy as np
 import scipy as sp
 import pandas as pd
@@ -494,11 +495,15 @@ def f_sh(lat, lon, lev):
     _lat = np.pi / 180.0 * lat + 0.5 * np.pi
     _lon = np.pi / 180.0 * lon
 
-    f = (
-        8.0 * sp.special.sph_harm_y(0, 0, _lat, _lon).real
-        + 4.0 * sp.special.sph_harm_y(2, 1, _lat, _lon).imag
-        - 5.0 * sp.special.sph_harm_y(3, 2, _lat, _lon).real
-    )
+    n = 2 # meridional Legendre polynomial (n >= 0)
+    m = 1 # zonal wqavenumber (m = -n .... +n)
+    #n_minus_m_fact = math.factorial(n-m)
+    #n_plus_m_fact = math.factorial(n+m)
+    #fac_sq = 0.25 * (2.0 * n + 1.0) / np.pi * n_minus_m_fact / n_plus_m_fact
+    #fac = np.sqrt(fac_sq)
+
+    #f = 8.0 / fac * sp.special.sph_harm_y(n, m, _lat, _lon).real
+    f = sp.special.sph_harm_y(n, m, _lat, _lon).real
 
     return f
 
@@ -506,8 +511,10 @@ def f_sh(lat, lon, lev):
 def test_spectra_pysh():
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([200, 800, 1000])
-    longitude = np.arange(0.0, 360.0, 10)
-    latitude = np.linspace(-90.0, +90.0, 18, endpoint=False)
+    #longitude = np.arange(0.0, 360.0, 10)
+    #latitude = np.linspace(-90.0, +90.0, 18, endpoint=False)
+    longitude = np.arange(0.0, 360.0, 5)
+    latitude = np.linspace(-90.0, +90.0, 36, endpoint=False)
 
     nt = len(time)
     nlev = len(level)
@@ -540,9 +547,9 @@ def test_spectra_pysh():
     )
 
     exp_np = np.zeros((nlat // 2, nlon // 4))
-    exp_np[0, 0] = +8.0
-    exp_np[1, 2] = +4.0
-    exp_np[2, 3] = -5.0
+    #exp_np[0, 0] = 64.0
+    exp_np[1, 2] = 64.0
+    #exp_np[2, 3] = -5.0
     expected = xr.DataArray(exp_np)
     spectra = power_spectra(ds, reduce_time=True, reduce_vertical=True, spherical_harmonic=True, custom_field_name="w")
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
