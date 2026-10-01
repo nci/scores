@@ -13,9 +13,8 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
-import math
+
 import numpy as np
-import scipy as sp
 import pandas as pd
 import pytest
 import xarray as xr
@@ -483,73 +482,7 @@ def test_spectra_spherical_harmonic():
         },
     )
 
-    if pysh == "Unavailable":
-        with pytest.raises(
-            ImportError,
-            match="The 'pyshtools' package is not installed, cannot perform a spherical harmonic transform.",
-        ):
-            power_spectra(ds, spherical_harmonic=True)
-
-
-def f_sh(lat, lon, lev):
-    _lat = np.pi / 180.0 * lat + 0.5 * np.pi
-    _lon = np.pi / 180.0 * lon
-
-    n = 2 # meridional Legendre polynomial (n >= 0)
-    m = 1 # zonal wqavenumber (m = -n .... +n)
-    #n_minus_m_fact = math.factorial(n-m)
-    #n_plus_m_fact = math.factorial(n+m)
-    #fac_sq = 0.25 * (2.0 * n + 1.0) / np.pi * n_minus_m_fact / n_plus_m_fact
-    #fac = np.sqrt(fac_sq)
-
-    #f = 8.0 / fac * sp.special.sph_harm_y(n, m, _lat, _lon).real
-    f = sp.special.sph_harm_y(n, m, _lat, _lon).real
-
-    return f
-
-
-def test_spectra_pysh():
-    time = pd.date_range("2025-01-01", periods=1)
-    level = np.array([200, 800, 1000])
-    #longitude = np.arange(0.0, 360.0, 10)
-    #latitude = np.linspace(-90.0, +90.0, 18, endpoint=False)
-    longitude = np.arange(0.0, 360.0, 5)
-    latitude = np.linspace(-90.0, +90.0, 36, endpoint=False)
-
-    nt = len(time)
-    nlev = len(level)
-    nlat = len(latitude)
-    nlon = len(longitude)
-
-    u = np.zeros((nt, nlev, nlat, nlon))
-    v = np.zeros((nt, nlev, nlat, nlon))
-    w = np.zeros((nt, nlev, nlat, nlon))
-
-    lon2d, lat2d = np.meshgrid(longitude, latitude)
-    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
-
-    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
-    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
-    w[:, :, :, :] = f_sh(lat3d, lon3d, lev3d)
-
-    ds = xr.Dataset(
-        data_vars={
-            "u": (["time", "level", "latitude", "longitude"], u),
-            "v": (["time", "level", "latitude", "longitude"], v),
-            "w": (["time", "level", "latitude", "longitude"], w),
-        },
-        coords={
-            "time": time,
-            "level": level,
-            "latitude": latitude,
-            "longitude": longitude,
-        },
-    )
-
-    exp_np = np.zeros((nlat // 2, nlon // 4))
-    #exp_np[0, 0] = 64.0
-    exp_np[1, 2] = 64.0
-    #exp_np[2, 3] = -5.0
-    expected = xr.DataArray(exp_np)
-    spectra = power_spectra(ds, reduce_time=True, reduce_vertical=True, spherical_harmonic=True, custom_field_name="w")
-    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+    with pytest.raises(
+        NotImplementedError, match="Support for spherical harmonic transform spectra has not been implemented yet."
+    ):
+        power_spectra(ds, spherical_harmonic=True)

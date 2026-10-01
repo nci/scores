@@ -83,94 +83,10 @@ def power_spectra(
         _data = _data.sum(dim=time_name) / nt
 
     if spherical_harmonic:
-        error_msg = ImportError(
-            "The 'pyshtools' package is not installed, cannot perform a spherical harmonic transform."
+        error_msg = NotImplementedError(
+            "Support for spherical harmonic transform spectra has not been implemented yet."
         )
-        if pysh == "Unavailable":
-            raise error_msg
-
-        if custom_field_name is None:
-            K = 0.5 * (
-                _data[zonal_velocity_name] * _data[zonal_velocity_name]
-                + _data[meridional_velocity_name] * _data[meridional_velocity_name]
-            )
-        else:
-            K = _data[custom_field_name]
-
-        k_lat = np.arange(len(K.latitude)//2)
-        k_lon = np.arange(len(K.longitude)//4)
-        _dims = ("meridional_wavenumber", "zonal_wavenumber")
-        _coords = {"meridional_wavenumber": k_lat, "zonal_wavenumber": k_lon}
-        _shape = [len(k_lat), len(k_lon)]
-        if pressure_level_name in K.dims:
-            _dims = (pressure_level_name,) + _dims
-            _coords = {pressure_level_name: K.level} | _coords
-            _shape = [len(K.level)] + _shape
-        if time_name in K.dims:
-            _dims = (time_name,) + _dims
-            _coords = {time_name: K.time} | _coords
-            _shape = [len(K.time)] + _shape
-        _spec_dims = list(_dims)
-        _spec_dims.remove('meridional_wavenumber')
-        _spec_dims = tuple(_spec_dims)
-        _spec_shape = _shape.copy()
-        _spec_shape.pop(-2)
-
-        #_sh_k = np.zeros(_shape)
-        #_sh_s = np.zeros(_spec_shape)
-        #K_np = K.to_numpy()
-        #if time_name in K.dims and pressure_level_name in K.dims:
-        #    for t in np.arange(len(K.time)):
-        #        for l in np.arange(len(K.level)):
-        #            coeffs = pysh.expand.SHExpandDH(K_np[t,l,:,:])
-        #            _sh_s[t,l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-        #            _sh_k[t,l,:,:] = coeffs[0, :, :] ** 2 + coeffs[1, :, :] **2
-        #elif time_name in K.dims:
-        #    for t in np.arange(len(K.time)):
-        #        coeffs = pysh.expand.SHExpandDH(K_np[t,:,:])
-        #        _sh_s[t,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-        #        _sh_k[t,:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
-        #elif pressure_level_name in K.dims:
-        #    for l in np.arange(len(K.level)):
-        #        coeffs = pysh.expand.SHExpandDH(K_np[l,:,:])
-        #        _sh_s[l,:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-        #        _sh_k[l,:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
-        #else:
-        #    coeffs = pysh.expand.SHExpandDH(K_np)
-        #    _sh_s[:] = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-        #    _sh_k[:,:] = coeffs[0, :, :] **2 + coeffs[1, :, :] ** 2
-
-        def _sh_transform(field):
-            coeffs = pysh.expand.SHExpandDH(field, norm=4, sampling=1, csphase=-1, lmax_calc=1)
-            spectrum = pysh.spectralanalysis.spectrum(coeffs, unit="per_l")
-
-            energy = coeffs[0, :, :]**2 + coeffs[1, :, :]**2
-
-            return spectrum, energy
-
-        _sh_s, _sh_k = xr.apply_ufunc(
-            _sh_transform,
-            K,
-            input_core_dims=[[latitude_name,longitude_name]],
-            output_core_dims=[["meridional_wavenumber"],["meridional_wavenumber","order"]],
-            vectorize=True,
-            dask="parallelized",
-            output_dtypes=[float,float],
-        )
-
-        if custom_field_name is None:
-            _sh_k = np.sqrt(_sh_k)
-
-        #ds = xr.Dataset(
-        #    data_vars={
-        #        "amplitude_squared": (_dims, _sh_k),
-        #        "frequency": (_spec_dims, _sh_s),
-        #    },
-        #    coords=_coords,
-        #)
-        ds = xr.Dataset({"amplitude_squared": _sh_k, "frequency": _sh_s})
-
-        return ds
+        raise error_msg
 
     else:
         n_lon = len(_data.longitude.values)
