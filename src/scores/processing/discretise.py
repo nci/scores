@@ -159,7 +159,7 @@ def comparative_discretise(
             factor = -1
         else:
             factor = 1
-        discrete_data = mode(data, comparison + (abs_tolerance * factor)).where(notnull_mask)  # type: ignore
+        discrete_data = mode(data, comparison + (abs_tolerance * factor)).where(notnull_mask)  # type: ignore[ty:call-non-callable]
     else:
         raise ValueError(
             f"'{mode}' is not a valid mode. Available modes are: "
