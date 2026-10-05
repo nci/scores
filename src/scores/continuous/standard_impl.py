@@ -1047,15 +1047,15 @@ def kge(
     References:
         - Gupta, H. V., Kling, H., Yilmaz, K. K., & Martinez, G. F. (2009). Decomposition of the mean
           squared error and NSE performance criteria: Implications for improving hydrological modeling.
-          Journal of Hydrology, 377(1-2), 80–91.
-          https://doi.org/10.1016/j.jhydrol.2009.08.003.
+          Journal of Hydrology, 377(1–2), 80–91.
+          https://doi.org/10.1016/j.jhydrol.2009.08.003
         - Kling, H., Fuchs, M., & Paulin, M. (2012). Runoff conditions in the upper Danube basin
           under an ensemble of climate change scenarios. Journal of Hydrology, 424–425, 264–277.
-          https://doi.org/10.1016/j.jhydrol.2012.01.011.
+          https://doi.org/10.1016/j.jhydrol.2012.01.011
         - Knoben, W. J. M., Freer, J. E., & Woods, R. A. (2019). Technical note: Inherent benchmark or not?
           Comparing Nash-Sutcliffe and Kling-Gupta efficiency scores. Hydrology and Earth System Sciences,
           23(10), 4323–4331.
-          https://doi.org/10.5194/hess-23-4323-2019.
+          https://doi.org/10.5194/hess-23-4323-2019
 
 
     Examples:
