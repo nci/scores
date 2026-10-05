@@ -870,7 +870,7 @@ def crps_for_ensemble(
     - :math:`S(x_i, x_j) = \\frac{\\sum_{i=1}^{M}\\sum_{j=1}^{M}(|x_i - x_j|)}{2K}` which is the forecast spread term.
 
     Note that there are several ways to decompose the CRPS and this decomposition differs from the
-    one used in the :py:func:`scores_probability.crps_cdf` function.
+    one used in the :py:func:`scores.probability.crps_cdf` function.
 
     Args:
         fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
