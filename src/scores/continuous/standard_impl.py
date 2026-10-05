@@ -1057,7 +1057,6 @@ def kge(
           23(10), 4323–4331.
           https://doi.org/10.5194/hess-23-4323-2019
 
-
     Examples:
         >>> import xarray as xr
         >>> from scores.continuous import kge
