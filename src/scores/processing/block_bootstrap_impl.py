@@ -22,9 +22,9 @@ from scores.utils import tmp_coord_name
 MAX_BATCH_SIZE_MB = 200
 
 BLOCK_SIZE_ONE_WARNING = """
-WARNING: Block size is 1; each iteration includes the entire original dataset.
-Any order-independent statistic (mean, quantiles, RMSE) will be identical across each
-iteration and the resulting confidence interval will have zero width.
+WARNING:  block_size=1 makes block bootstrapping equivalent to traditional
+bootstrap resampling, since individual observations are sampled
+independently rather than in blocks.
 """
 
 
@@ -252,7 +252,9 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         )
 
     for d, (length, block_size) in sizes.items():
-        if not isinstance(block_size, Integral) or block_size < 1 or block_size > length:
+        if not isinstance(block_size, Integral):
+            raise TypeError(f"block size for dimension {d} must be an integer.")
+        elif block_size < 1 or block_size >= length:
             raise ValueError(
                 f"block size for dimension {d} must be a positive integer and "
                 f"less than the dimension length {length}, got {block_size}."
