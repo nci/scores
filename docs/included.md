@@ -154,7 +154,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - S1 Score
   - [API](api.md#scores.continuous.s1)
   - [Tutorial](project:./tutorials/S1.md)
-  - [Teweles and Wobus (1954)](https://journals.ametsoc.org/view/journals/bams/35/10/1520-0477-35_10_455.xml)
+  - [Teweles and Wobus (1954)](https://doi.org/10.1175/1520-0477-35.10.455)
 * - Spearman's Correlation Coefficient
   - [API](api.md#scores.continuous.correlation.spearmanr)
   - [Tutorial](project:./tutorials/Spearmans_Correlation.md)
