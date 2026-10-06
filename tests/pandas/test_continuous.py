@@ -5,6 +5,8 @@ Contains unit tests for scores.continuous.standard
 # pylint: disable=missing-function-docstring
 # pylint: disable=line-too-long
 
+import numbers
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -121,3 +123,18 @@ def test_mae_dataframe():
     result = scores.continuous.mae(df["fcst"], df["obs"])
     assert isinstance(result, float)
     assert round(result, PRECISION) == expected
+
+
+# Additive Bias (Mean Error)
+
+
+def test_additive_bias_pandas_series():
+    fcst = pd.Series([1, 3, 1, 3, 2, 2, 2, 1, 1, 2, 3])
+    obs = pd.Series([1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 1])
+
+    expected = 0.5455
+
+    result = scores.continuous.additive_bias(fcst=fcst, obs=obs)
+
+    assert isinstance(result, numbers.Real)
+    assert round(float(result), PRECISION) == expected
