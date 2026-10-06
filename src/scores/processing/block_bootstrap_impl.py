@@ -342,11 +342,12 @@ def block_bootstrap(
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
-        rng: An optional random number generator (np.random.Generator), an integer seed, or None.
-            If None, the default random number generator is used (which respects respects
-            `np.random.seed(...)`). This allows for reproducible bootstrapping by providing a
-            fixed seed or a custom random number generator. We recommend setting this parameter
-            to a fixed seed for reproducible results.
+        rng: Controls the random sampling. If set to `None`, it uses NumPy's legacy global
+            random state, preserving compatibility with np.random.seed(...).
+            If a non-negative integer is supplied, it creates a numpy.random.Generator
+            initialised with that seed. If a Generator, uses that instance
+            and advances its state. Passing an integer or Generator does not use or modify NumPy's
+            global random state.
 
     Returns:
         If a single Dataset/DataArray (XarrayLike) is provided, the functions returns a
@@ -392,9 +393,8 @@ def block_bootstrap(
 
         >>> blocks = {"time": 3, "station": 2}
         >>> n_iter = 5
-        >>> np.random.seed(42)
         >>> boot_obs, boot_ecmwf, boot_gfs = block_bootstrap(
-        ...     [obs, ecmwf, gfs], blocks=blocks, n_iteration=n_iter, circular=True, rng=None
+        ...     [obs, ecmwf, gfs], blocks=blocks, n_iteration=n_iter, circular=True, rng=100
         ... )
 
         >>> boot_obs
