@@ -20,7 +20,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Anomaly Correlation Coefficient (ACC)
   - [API](api.md#scores.continuous.correlation.anomaly_correlation_coefficient)
   - [Tutorial](project:./tutorials/Anomaly_Correlation_Coefficient.md)
-  - WWRP/WGNE Joint Working Group on Forecast Verification Research. (n.d.). [*Forecast verification: Methods, issues and FAQ*](https://jwgfvr.github.io/forecastverification/); Jolliffe, I. T., & Stephenson, D. B. (Eds.). (2012). *Forecast verification: A practitioner's guide in atmospheric science* (2nd ed.). Wiley. https://doi.org/10.1002/9781119960003; Wilks, D. S. (2011). *Statistical methods in the atmospheric sciences* (3rd ed.). Academic Press.
+  - [Anomaly correlation (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#AC); [Jolliffe and Stephenson (2012)](https://doi.org/10.1002/9781119960003); [Wilks (2011)](https://doi.org/10.1016/c2010-0-65519-2)
 * - Consistent Expectile Score
   - [API](api.md#scores.continuous.consistent_expectile_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)
