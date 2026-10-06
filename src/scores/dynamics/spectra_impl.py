@@ -19,6 +19,69 @@ from scores.dynamics.budgets_utils import (
 from scores.typing import XarrayLike
 
 
+def _zonal_filter(_data, longitude_name, zonal_filter_width):
+    """
+    If the zonal domain is less than the full planet, then filter the data at the zonal boundaries to avoid
+    spectral ringing from discintinuous data at the boundaries.
+    """
+    n_lon = len(_data.longitude.values)
+    L_theta = np.max(_data.longitude.values) - np.min(_data.longitude.values)
+    d_theta = L_theta / (n_lon - 1)
+    L = n_lon * d_theta
+    if L < 360.0 - 1.0e-6:
+        # regional domain, apply cosine bell filtering
+        error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_width}, must be < 0.5.")
+        if zonal_filter_width >= 0.5:
+            raise error_msg
+
+        theta_l = np.min(_data.longitude.values)
+        theta_r = theta_l + L
+        filter_l = 0.5 * (1.0 - np.cos(np.pi * (_data.longitude.values - theta_l) / (zonal_filter_width * L)))
+        filter_r = 0.5 * (1.0 - np.cos(np.pi * (theta_r - _data.longitude.values) / (zonal_filter_width * L)))
+        mask_l = _data.longitude.values < theta_l + zonal_filter_width * L
+        mask_r = _data.longitude.values > theta_r - zonal_filter_width * L
+        filter_1d = np.ones(n_lon)
+        filter_1d[mask_l] = filter_l[mask_l]
+        filter_1d[mask_r] = filter_r[mask_r]
+        filter_xr = xr.DataArray(
+            filter_1d,
+            dims=[longitude_name],
+            coords={longitude_name: _data.longitude},
+        )
+        _dims = _data.dims
+        _data = (filter_xr * _data).transpose(*_dims)
+
+    return _data, n_lon, L
+
+
+def _reduce_dims(_data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants):
+    """
+    Average data in the vertical and temporal dimensions if specified
+    """
+    # average over the vertical dimension (pressure levels)
+    if reduce_vertical and len(_data.level.values) > 1:
+        if vertical_weights is not None:
+            if len(vertical_weights) != _data.sizes[pressure_level_name]:
+                error_msg = IndexError(
+                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
+                    + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
+                )
+                raise error_msg
+        else:
+            dp = _pressure_level_thickness(_data.level.values, constants)
+            vertical_weights = dp / np.sum(dp)
+
+        dp_x = xr.DataArray(vertical_weights, dims=(pressure_level_name))
+        _data = (dp_x * _data).sum(dim=pressure_level_name)
+
+    # average over the time dimension
+    nt = len(_data.time.values)
+    if reduce_time:
+        _data = _data.sum(dim=time_name) / nt
+
+    return _data
+
+
 def power_spectra_scalar(
     data: xr.DataArray,
     *,
@@ -69,26 +132,9 @@ def power_spectra_scalar(
 
     _data = data.copy(deep=True)
 
-    # average over the vertical dimension (pressure levels)
-    if reduce_vertical and len(_data.level.values) > 1:
-        if vertical_weights is not None:
-            if len(vertical_weights) != _data.sizes[pressure_level_name]:
-                error_msg = IndexError(
-                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
-                    + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
-                )
-                raise error_msg
-        else:
-            dp = _pressure_level_thickness(_data.level.values, constants)
-            vertical_weights = dp / np.sum(dp)
-
-        dp_x = xr.DataArray(vertical_weights, dims=(pressure_level_name))
-        _data = (dp_x * _data).sum(dim=pressure_level_name)
-
-    # average over the time dimension
-    nt = len(data.time.values)
-    if reduce_time:
-        _data = _data.sum(dim=time_name) / nt
+    _data = _reduce_dims(
+        _data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+    )
 
     if spherical_harmonic:
         error_msg = NotImplementedError(
@@ -97,32 +143,7 @@ def power_spectra_scalar(
         raise error_msg
 
     else:
-        n_lon = len(_data.longitude.values)
-        L_theta = np.max(_data.longitude.values) - np.min(_data.longitude.values)
-        d_theta = L_theta / (n_lon - 1)
-        L = n_lon * d_theta
-        if L < 360.0 - 1.0e-6:
-            # regional domain, apply cosine bell filtering
-            error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_width}, must be < 0.5.")
-            if zonal_filter_width >= 0.5:
-                raise error_msg
-
-            theta_l = np.min(_data.longitude.values)
-            theta_r = theta_l + L
-            filter_l = 0.5 * (1.0 - np.cos(np.pi * (_data.longitude.values - theta_l) / (zonal_filter_width * L)))
-            filter_r = 0.5 * (1.0 - np.cos(np.pi * (theta_r - _data.longitude.values) / (zonal_filter_width * L)))
-            mask_l = _data.longitude.values < theta_l + zonal_filter_width * L
-            mask_r = _data.longitude.values > theta_r - zonal_filter_width * L
-            filter_1d = np.ones(n_lon)
-            filter_1d[mask_l] = filter_l[mask_l]
-            filter_1d[mask_r] = filter_r[mask_r]
-            filter_xr = xr.DataArray(
-                filter_1d,
-                dims=[longitude_name],
-                coords={longitude_name: _data.longitude},
-            )
-            _dims = _data.dims
-            _data = (filter_xr * _data).transpose(*_dims)
+        _data, n_lon, L = _zonal_filter(_data, longitude_name, zonal_filter_width)
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(_data.latitude.values)
@@ -216,26 +237,9 @@ def power_spectra_vector(
 
     _data = data.copy(deep=True)
 
-    # average over the vertical dimension (pressure levels)
-    if reduce_vertical and len(_data.level.values) > 1:
-        if vertical_weights is not None:
-            if len(vertical_weights) != _data.sizes[pressure_level_name]:
-                error_msg = IndexError(
-                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
-                    + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
-                )
-                raise error_msg
-        else:
-            dp = _pressure_level_thickness(_data.level.values, constants)
-            vertical_weights = dp / np.sum(dp)
-
-        dp_x = xr.DataArray(vertical_weights, dims=(pressure_level_name))
-        _data = (dp_x * _data).sum(dim=pressure_level_name)
-
-    # average over the time dimension
-    nt = len(data.time.values)
-    if reduce_time:
-        _data = _data.sum(dim=time_name) / nt
+    _data = _reduce_dims(
+        _data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+    )
 
     if spherical_harmonic:
         error_msg = NotImplementedError(
@@ -244,32 +248,7 @@ def power_spectra_vector(
         raise error_msg
 
     else:
-        n_lon = len(_data.longitude.values)
-        L_theta = np.max(_data.longitude.values) - np.min(_data.longitude.values)
-        d_theta = L_theta / (n_lon - 1)
-        L = n_lon * d_theta
-        if L < 360.0 - 1.0e-6:
-            # regional domain, apply cosine bell filtering
-            error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_width}, must be < 0.5.")
-            if zonal_filter_width >= 0.5:
-                raise error_msg
-
-            theta_l = np.min(_data.longitude.values)
-            theta_r = theta_l + L
-            filter_l = 0.5 * (1.0 - np.cos(np.pi * (_data.longitude.values - theta_l) / (zonal_filter_width * L)))
-            filter_r = 0.5 * (1.0 - np.cos(np.pi * (theta_r - _data.longitude.values) / (zonal_filter_width * L)))
-            mask_l = _data.longitude.values < theta_l + zonal_filter_width * L
-            mask_r = _data.longitude.values > theta_r - zonal_filter_width * L
-            filter_1d = np.ones(n_lon)
-            filter_1d[mask_l] = filter_l[mask_l]
-            filter_1d[mask_r] = filter_r[mask_r]
-            filter_xr = xr.DataArray(
-                filter_1d,
-                dims=[longitude_name],
-                coords={longitude_name: _data.longitude},
-            )
-            _dims = _data.dims
-            _data = (filter_xr * _data).transpose(*_dims)
+        _data, n_lon, L = _zonal_filter(_data, longitude_name, zonal_filter_width)
 
         # ensure that the wavelengths are consistent for each latitude
         cos_theta_inv = 1.0 / np.cos(_data.latitude.values)
