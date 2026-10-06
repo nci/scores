@@ -7,7 +7,7 @@ testable and also consistent with the scores package.
 import math
 from collections import OrderedDict
 from itertools import chain, cycle, islice
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
 import xarray as xr
@@ -21,7 +21,13 @@ MAX_BATCH_SIZE_MB = 200
 
 
 def _get_blocked_random_indices(
-    shape: list[int], block_axis: int, block_size: int, prev_block_sizes: list[int], circular: bool = True
+    shape: list[int],
+    block_axis: int,
+    block_size: int,
+    prev_block_sizes: list[int],
+    circular: bool = True,
+    *,
+    draw_integers: Callable[..., np.ndarray],
 ) -> np.ndarray:
     """
     Return indices to randomly sample an axis of an array in consecutive
@@ -33,6 +39,8 @@ def _get_blocked_random_indices(
         block_size: The size of each block to sample
         prev_block_sizes: Sizes of previous blocks along other axes
         circular: whether to sample block circularly.
+        draw_integers: Callable with the same low, high and size arguments as
+            numpy.random.Generator.integers.
 
     Returns:
         An array of indices to use for block resampling.
@@ -49,13 +57,13 @@ def _get_blocked_random_indices(
         if circular:
             indices = list(
                 chain.from_iterable(
-                    islice(cycle(range(length)), s, s + block) for s in np.random.randint(0, length, repeats)
+                    islice(cycle(range(length)), s, s + block) for s in draw_integers(0, length, repeats)
                 )
             )
         else:
             indices = list(
                 chain.from_iterable(
-                    islice(range(length), s, s + block) for s in np.random.randint(0, length - block + 1, repeats)
+                    islice(range(length), s, s + block) for s in draw_integers(0, length - block + 1, repeats)
                 )
             )
         return indices[:length]
@@ -68,7 +76,7 @@ def _get_blocked_random_indices(
             shape[prev_ax] = math.ceil(shape[prev_ax] / b)
 
     if block_size == 1:
-        indices = np.random.randint(
+        indices = draw_integers(
             0,
             shape[block_axis],
             shape,
@@ -93,7 +101,12 @@ def _get_blocked_random_indices(
 
 
 def _n_nested_blocked_random_indices(
-    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True
+    sizes: OrderedDict[str, Tuple[int, int]],
+    n_iteration: int,
+    circular: bool = True,
+    *,
+    draw_integers: Callable[..., np.ndarray],
+    iteration_major: bool = False,
 ) -> OrderedDict[str, np.ndarray]:
     """
     Returns indices to randomly resample blocks of an array (with replacement)
@@ -107,17 +120,38 @@ def _n_nested_blocked_random_indices(
     sizes: Dictionary with {names: (sizes, blocks)} of the dimensions to resample
     n_iteration: The number of times to repeat the random resampling
     circular: Whether or not to do circular resampling.
+    draw_integers: Callable used to draw random integers.
+    iteration_major: Draw all dimensions for one iteration before the next,
+        making samples independent of the number of iterations in a batch.
+        The default preserves the legacy dimension-first sampling order.
 
     Returns:
         A dictionary of arrays containing indices for nested block resampling.
 
     """
 
+    if iteration_major:
+        indices = OrderedDict()
+        for iteration in range(n_iteration):
+            sample = _n_nested_blocked_random_indices(sizes, 1, circular, draw_integers=draw_integers)
+            for key, ind in sample.items():
+                if iteration == 0:
+                    indices[key] = np.empty(ind.shape[:-1] + (n_iteration,), dtype=ind.dtype)
+                indices[key][..., iteration] = ind[..., 0]
+        return indices
+
     shape = [s[0] for s in sizes.values()]
     indices = OrderedDict()
     prev_blocks: List[int] = []
     for ax, (key, (_, block)) in enumerate(sizes.items()):
-        indices[key] = _get_blocked_random_indices(shape[: ax + 1] + [n_iteration], ax, block, prev_blocks, circular)
+        indices[key] = _get_blocked_random_indices(
+            shape[: ax + 1] + [n_iteration],
+            ax,
+            block,
+            prev_blocks,
+            circular,
+            draw_integers=draw_integers,
+        )
         prev_blocks.append(block)
     return indices
 
@@ -166,6 +200,9 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
+    *,
+    draw_integers: Callable[..., np.ndarray],
+    iteration_major: bool = False,
 ) -> Tuple[xr.DataArray, ...]:
     """
     Repeatedly performs bootstrapping on provided arrays across specified dimensions, stacking
@@ -190,6 +227,11 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
+        draw_integers: A callable function used to draw random integers, typically from a random
+            number generator. This allows for custom random number generation strategies to be
+            used during the bootstrapping process.
+        iteration_major: Generate each iteration's indices in a fixed order, independently
+            of batching. False preserves legacy sampling.
 
      Returns:
         Tuple of bootstrapped xarray DataArrays or Datasets, based on the input.
@@ -204,6 +246,8 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     Wilks, Daniel S. Statistical methods in the atmospheric sciences. Vol. 100.
       Academic press, 2011.
     """
+    # Keep renaming local so subsequent batches receive the original dimensions.
+    array_list = array_list.copy()
     # Rename exclude_dims so they are not bootstrapped
     if exclude_dims is None:
         exclude_dims = [[] for _ in range(len(array_list))]
@@ -244,7 +288,9 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         )
 
     # Generate random indices for bootstrapping all arrays_list
-    nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
+    nested_indices = _n_nested_blocked_random_indices(
+        sizes, n_iteration, circular, draw_integers=draw_integers, iteration_major=iteration_major
+    )
 
     # Expand indices for broadcasting for each array separately
     indices = []
@@ -256,27 +302,29 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         indices.append(_expand_n_nested_random_indices(indices_to_expand))
         input_core_dims.append(available_dims)
 
-    # Process arrays_list separately to handle non-matching dimensions
+    def _bootstrap_dataarray(obj, ind, core_dims):
+        # A bootstrap sample can select anywhere along a core dimension.
+        # Join those chunks explicitly, retaining chunks along other dimensions.
+        if obj.chunks is not None:
+            obj = obj.chunk({d: -1 for d in core_dims})
+        return xr.apply_ufunc(
+            _bootstrap,
+            obj,
+            kwargs={"indices": [ind]},
+            input_core_dims=[core_dims],
+            output_core_dims=[core_dims + ["iteration"]],
+            dask="parallelized",
+            dask_gufunc_kwargs={"output_sizes": {"iteration": n_iteration}},
+            output_dtypes=[obj.dtype],
+        )
+
+    # Map Dataset variables separately to preserve each variable's dtype.
     result = []
     for obj, ind, core_dims in zip(array_list, indices, input_core_dims):
         if isinstance(obj, xr.Dataset):
-            # Assume all variables have the same dtype
-            output_dtype = obj[list(obj.data_vars)[0]].dtype
+            result.append(obj.map(_bootstrap_dataarray, args=(ind, core_dims)))
         else:
-            output_dtype = obj.dtype
-
-        result.append(
-            xr.apply_ufunc(
-                _bootstrap,
-                obj,
-                kwargs={"indices": [ind]},
-                input_core_dims=[core_dims],
-                output_core_dims=[core_dims + ["iteration"]],
-                dask="parallelized",
-                dask_gufunc_kwargs={"output_sizes": {"iteration": n_iteration}},
-                output_dtypes=[output_dtype],
-            )
-        )
+            result.append(_bootstrap_dataarray(obj, ind, core_dims))
 
     # Rename excluded dimensions
     return tuple(res.rename(rename) for res, rename in zip(result, renames))
@@ -289,12 +337,12 @@ def block_bootstrap(
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
+    rng: np.random.Generator | int | None = None,
 ) -> Union[XarrayLike, Tuple[XarrayLike, ...]]:
     """
     Perform block bootstrapping on provided arrays. The function creates new arrays by repeatedly
     bootstrapping along specified dimensions and stacking the new arrays along a new "iteration"
-    dimension. Additionally, it includes internal functions for chunk size calculation and
-    handling Dask arrays for chunk size limitation.
+    dimension. Dask inputs remain lazy, with iterations batched to limit output chunk sizes.
 
     Args:
         array_list: The data to bootstrap, which can be a single xarray object or
@@ -319,6 +367,15 @@ def block_bootstrap(
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
+        rng: Controls the random sampling. If set to `None`, it uses NumPy's legacy global
+            random state, preserving compatibility with np.random.seed(...).
+            If a non-negative integer is supplied, it creates a numpy.random.Generator
+            initialised with that seed. If a Generator, uses that instance
+            and advances its state. Passing an integer or Generator does not use or modify NumPy's
+            global random state. With an integer or Generator, samples are independent of Dask
+            chunking and iteration batch sizes. Reusing a Generator continues its random stream.
+            The legacy default retains its original sampling order, so its samples may depend
+            on batching. Pass ``np.random.default_rng()`` for independent, unseeded sampling.
 
     Returns:
         If a single Dataset/DataArray (XarrayLike) is provided, the functions returns a
@@ -332,6 +389,11 @@ def block_bootstrap(
         ValueError: If ``exclude_dims`` is not a list of lists.
         ValueError: If the list ``exclude_dims`` is not the same length as the number of
             as ``array_list``.
+
+    Notes:
+        Dask chunks along bootstrap dimensions are joined before sampling. Other dimensions
+        retain their chunks. The batch-size estimate uses these joined chunks; if a single
+        iteration exceeds the target size, it is processed in a batch of one.
 
     References:
         - Gilleland, E. (2020). Bootstrap Methods for Statistical Inference. Part I:
@@ -364,110 +426,114 @@ def block_bootstrap(
 
         >>> blocks = {"time": 3, "station": 2}
         >>> n_iter = 5
-        >>> np.random.seed(42)
         >>> boot_obs, boot_ecmwf, boot_gfs = block_bootstrap(
-        ...     [obs, ecmwf, gfs], blocks=blocks, n_iteration=n_iter, circular=True
+        ...     [obs, ecmwf, gfs],
+        ...     blocks=blocks,
+        ...     n_iteration=n_iter,
+        ...     circular=True,
+        ...     rng=100,
         ... )
 
         >>> boot_obs
         <xarray.DataArray (time: 6, station: 4, iteration: 5)> Size: 960B
-        array([[[3.3, 2.3, 4.1, 2.1, 2.3],
-                [3. , 2. , 4.2, 2.2, 2. ],
-                [3.3, 2.2, 4. , 2.3, 2.1],
-                [3. , 2.3, 4.1, 2. , 2.2]],
+        array([[[4. , 2.2, 2.3, 4.2, 1. ],
+                [4.1, 2.3, 2. , 4.3, 1.1],
+                [4.2, 2.3, 2.3, 4.3, 1.2],
+                [4.3, 2. , 2. , 4. , 1.3]],
         <BLANKLINE>
-               [[4.3, 3.3, 5.1, 3.1, 3.3],
-                [4. , 3. , 5.2, 3.2, 3. ],
-                [4.3, 3.2, 5. , 3.3, 3.1],
-                [4. , 3.3, 5.1, 3. , 3.2]],
+               [[5. , 3.2, 3.3, 5.2, 2. ],
+                [5.1, 3.3, 3. , 5.3, 2.1],
+                [5.2, 3.3, 3.3, 5.3, 2.2],
+                [5.3, 3. , 3. , 5. , 2.3]],
         <BLANKLINE>
-               [[5.3, 4.3, 0.1, 4.1, 4.3],
-                [5. , 4. , 0.2, 4.2, 4. ],
-                [5.3, 4.2, 0. , 4.3, 4.1],
-                [5. , 4.3, 0.1, 4. , 4.2]],
+               [[0. , 4.2, 4.3, 0.2, 3. ],
+                [0.1, 4.3, 4. , 0.3, 3.1],
+                [0.2, 4.3, 4.3, 0.3, 3.2],
+                [0.3, 4. , 4. , 0. , 3.3]],
         <BLANKLINE>
-               [[4.1, 4.3, 1. , 2.3, 4.1],
-                [4.2, 4. , 1.1, 2. , 4.2],
-                [4.1, 4.3, 1. , 2.1, 4. ],
-                [4.2, 4. , 1.1, 2.2, 4.1]],
+               [[5. , 0.3, 4. , 1.2, 3.2],
+                [5.1, 0. , 4.1, 1.3, 3.3],
+                [5.1, 0.2, 4.2, 1.1, 3.2],
+                [5.2, 0.3, 4.3, 1.2, 3.3]],
         <BLANKLINE>
-               [[5.1, 5.3, 2. , 3.3, 5.1],
-                [5.2, 5. , 2.1, 3. , 5.2],
-                [5.1, 5.3, 2. , 3.1, 5. ],
-                [5.2, 5. , 2.1, 3.2, 5.1]],
+               [[0. , 1.3, 5. , 2.2, 4.2],
+                [0.1, 1. , 5.1, 2.3, 4.3],
+                [0.1, 1.2, 5.2, 2.1, 4.2],
+                [0.2, 1.3, 5.3, 2.2, 4.3]],
         <BLANKLINE>
-               [[0.1, 0.3, 3. , 4.3, 0.1],
-                [0.2, 0. , 3.1, 4. , 0.2],
-                [0.1, 0.3, 3. , 4.1, 0. ],
-                [0.2, 0. , 3.1, 4.2, 0.1]]])
+               [[1. , 2.3, 0. , 3.2, 5.2],
+                [1.1, 2. , 0.1, 3.3, 5.3],
+                [1.1, 2.2, 0.2, 3.1, 5.2],
+                [1.2, 2.3, 0.3, 3.2, 5.3]]])
         Coordinates:
-          ...
+          * time     (time) int64 48B 0 1 2 3 4 5
+          * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
         Dimensions without coordinates: iteration
 
         >>> boot_ecmwf
         <xarray.DataArray (time: 6, station: 4, iteration: 5)> Size: 960B
-        array([[[13.3, 12.3, 14.1, 12.1, 12.3],
-                [13. , 12. , 14.2, 12.2, 12. ],
-                [13.3, 12.2, 14. , 12.3, 12.1],
-                [13. , 12.3, 14.1, 12. , 12.2]],
+        array([[[14. , 12.2, 12.3, 14.2, 11. ],
+                [14.1, 12.3, 12. , 14.3, 11.1],
+                [14.2, 12.3, 12.3, 14.3, 11.2],
+                [14.3, 12. , 12. , 14. , 11.3]],
         <BLANKLINE>
-            [[14.3, 13.3, 15.1, 13.1, 13.3],
-                [14. , 13. , 15.2, 13.2, 13. ],
-                [14.3, 13.2, 15. , 13.3, 13.1],
-                [14. , 13.3, 15.1, 13. , 13.2]],
+               [[15. , 13.2, 13.3, 15.2, 12. ],
+                [15.1, 13.3, 13. , 15.3, 12.1],
+                [15.2, 13.3, 13.3, 15.3, 12.2],
+                [15.3, 13. , 13. , 15. , 12.3]],
         <BLANKLINE>
-            [[15.3, 14.3, 10.1, 14.1, 14.3],
-                [15. , 14. , 10.2, 14.2, 14. ],
-                [15.3, 14.2, 10. , 14.3, 14.1],
-                [15. , 14.3, 10.1, 14. , 14.2]],
+               [[10. , 14.2, 14.3, 10.2, 13. ],
+                [10.1, 14.3, 14. , 10.3, 13.1],
+                [10.2, 14.3, 14.3, 10.3, 13.2],
+                [10.3, 14. , 14. , 10. , 13.3]],
         <BLANKLINE>
-            [[14.1, 14.3, 11. , 12.3, 14.1],
-                [14.2, 14. , 11.1, 12. , 14.2],
-                [14.1, 14.3, 11. , 12.1, 14. ],
-                [14.2, 14. , 11.1, 12.2, 14.1]],
+               [[15. , 10.3, 14. , 11.2, 13.2],
+                [15.1, 10. , 14.1, 11.3, 13.3],
+                [15.1, 10.2, 14.2, 11.1, 13.2],
+                [15.2, 10.3, 14.3, 11.2, 13.3]],
         <BLANKLINE>
-            [[15.1, 15.3, 12. , 13.3, 15.1],
-                [15.2, 15. , 12.1, 13. , 15.2],
-                [15.1, 15.3, 12. , 13.1, 15. ],
-                [15.2, 15. , 12.1, 13.2, 15.1]],
+               [[10. , 11.3, 15. , 12.2, 14.2],
+                [10.1, 11. , 15.1, 12.3, 14.3],
+                [10.1, 11.2, 15.2, 12.1, 14.2],
+                [10.2, 11.3, 15.3, 12.2, 14.3]],
         <BLANKLINE>
-            [[10.1, 10.3, 13. , 14.3, 10.1],
-                [10.2, 10. , 13.1, 14. , 10.2],
-                [10.1, 10.3, 13. , 14.1, 10. ],
-                [10.2, 10. , 13.1, 14.2, 10.1]]])
+               [[11. , 12.3, 10. , 13.2, 15.2],
+                [11.1, 12. , 10.1, 13.3, 15.3],
+                [11.1, 12.2, 10.2, 13.1, 15.2],
+                [11.2, 12.3, 10.3, 13.2, 15.3]]])
         Coordinates:
-        * time     (time) int64 48B 0 1 2 3 4 5
-        * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
+          * time     (time) int64 48B 0 1 2 3 4 5
+          * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
         Dimensions without coordinates: iteration
     """
+    if rng is None:
+        draw_integers = np.random.randint
+    else:
+        generator = np.random.default_rng(rng)
+        draw_integers = generator.integers
 
     # While the most efficient method involves expanding the iteration dimension withing the
     # universal function, this approach might generate excessively large chunks (resulting
     # from multiplying chunk size by iterations) leading to issues with large numbers of
     # iterations. Hence, here function loops over blocks of iterations to generate the total
     # number of iterations.
-    def _max_chunk_size_mb(ds):
+    def _max_chunk_size_mb(var):
         """
-        Get the max chunk size in a dataset
+        Estimate the largest chunk after joining bootstrap dimensions.
         """
-        ds = ds if isinstance(ds, xr.Dataset) else ds.to_dataset(name="ds")
-
-        chunks = []
-        for var in ds.data_vars:
-            da = ds[var]
-            chunk = da.chunks
-            itemsize = da.data.itemsize
-            size_of_chunk = itemsize * np.prod([np.max(x) for x in chunk]) / (1024**2)
-            chunks.append(size_of_chunk)
-        return max(chunks)
+        if var.chunks is None:
+            return var.nbytes / (1024**2)
+        chunk_shape = [var.sizes[d] if d in blocks else max(c) for d, c in zip(var.dims, var.chunks)]
+        return var.dtype.itemsize * math.prod(chunk_shape) / (1024**2)
 
     if not isinstance(array_list, List):
         array_list = [array_list]
-    # Choose iteration blocks to limit chunk size on dask arrays
-    if array_list[0].chunks:  # Note: This is a way to check if the array is backed by a dask.array
-        # without loading data into memory.
-        # See https://docs.xarray.dev/en/stable/generated/xarray.DataArray.chunks.html
-        ds_max_chunk_size_mb = max(_max_chunk_size_mb(obj) for obj in array_list)
+    variables = [
+        var for obj in array_list for var in (obj.data_vars.values() if isinstance(obj, xr.Dataset) else [obj])
+    ]
+    # Check every variable, including mixed eager/Dask inputs and Datasets.
+    if any(var.chunks is not None for var in variables):
+        ds_max_chunk_size_mb = max(_max_chunk_size_mb(var) for var in variables)
         blocksize = int(MAX_BATCH_SIZE_MB / ds_max_chunk_size_mb)
         blocksize = min(blocksize, n_iteration)
         blocksize = max(blocksize, 1)
@@ -475,26 +541,16 @@ def block_bootstrap(
         blocksize = n_iteration
 
     bootstraps = []
-    for _ in range(blocksize, n_iteration + 1, blocksize):
+    for start in range(0, n_iteration, blocksize):
         bootstraps.append(
             _block_bootstrap(
                 array_list,
                 blocks=blocks,
-                n_iteration=blocksize,
+                n_iteration=min(blocksize, n_iteration - start),
                 exclude_dims=exclude_dims,
                 circular=circular,
-            )
-        )
-    leftover = n_iteration % blocksize
-
-    if leftover:
-        bootstraps.append(
-            _block_bootstrap(
-                array_list,
-                blocks=blocks,
-                n_iteration=leftover,
-                exclude_dims=exclude_dims,
-                circular=circular,
+                draw_integers=draw_integers,
+                iteration_major=rng is not None,
             )
         )
 
