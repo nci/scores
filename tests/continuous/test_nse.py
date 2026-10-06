@@ -103,9 +103,9 @@ class NseSetup:
 
     @staticmethod
     def nse_naive(
-        fcst: npt.NDArray[float],
-        obs: npt.NDArray[float],
-        weights: npt.NDArray[float],
+        fcst: npt.NDArray[np.float64],
+        obs: npt.NDArray[np.float64],
+        weights: npt.NDArray[np.float64],
     ):
         """
         Naive implementation of NSE using for loops - this is to check that the internals of e.g.
