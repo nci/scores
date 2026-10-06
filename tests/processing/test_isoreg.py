@@ -11,6 +11,7 @@ from scores.processing.isoreg_impl import (
     _bootstrap_ir,
     _confidence_band,
     _contiguous_ir,
+    _contiguous_quantile_ir,
     _do_ir,
     _iso_arg_checks,
     _nanquantile,
@@ -257,6 +258,12 @@ def test__iso_arg_checks(  # pylint: disable=too-many-locals, too-many-arguments
     [
         (itd.FCST_TIDY1, itd.OBS_TIDY1, None, itd.EXP_TIDY1),
         (itd.FCST_TIDY1, itd.OBS_TIDY1, itd.WEIGHT_TIDY1, itd.EXP_TIDY2),
+        (
+            np.array([0, 1]),
+            np.array([0, 1]),
+            None,
+            (np.array([0, 1]), np.array([0.0, 1.0]), None),
+        ),  # test that obs are converted to float
     ],
 )
 def test__tidy_ir_inputs(fcst, obs, weights, expected):
@@ -293,6 +300,19 @@ def test__do_ir(functional, solver, expected):
         quantile_level=0.5,
         solver=solver,
     )
+    np.testing.assert_array_equal(result, expected)
+
+
+def test__contiguous_quantile_ir():
+    """
+    Tests that `_contiguous_quantile_ir` gives results as expected.
+    Using default `np.quantile` method ('linear') would fail this test,
+    but it passes when `method="averaged_inverted_cdf"` is used.
+    """
+    y = np.array([1.0, 0.0, 0, 0, 0, 3, 4, 6, 5, 5, 9])
+    alpha = 0.8
+    expected = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 3.0, 4.0, 6.0, 6.0, 6.0, 9.0])
+    result = _contiguous_quantile_ir(y, alpha)
     np.testing.assert_array_equal(result, expected)
 
 
@@ -412,4 +432,6 @@ def test_isotonic_fit(fcst, obs, bootstraps, report_bootstrap_results, expected)
         "confidence_band_lower_func",
         "confidence_band_upper_func",
     ]:
-        np.testing.assert_array_equal(result[key](itd.TEST_POINTS), expected[key](itd.TEST_POINTS))
+        np.testing.assert_array_equal(
+            result[key](itd.TEST_POINTS), expected[key](itd.TEST_POINTS)
+        )
