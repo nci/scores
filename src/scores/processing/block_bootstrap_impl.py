@@ -7,7 +7,7 @@ testable and also consistent with the scores package.
 import math
 from collections import OrderedDict
 from itertools import chain, cycle, islice
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
 import xarray as xr
@@ -27,7 +27,7 @@ def _get_blocked_random_indices(
     prev_block_sizes: list[int],
     circular: bool = True,
     *,
-    rng: np.random.Generator
+    draw_integers: Callable[..., np.ndarray]
 ) -> np.ndarray:
     """
     Return indices to randomly sample an axis of an array in consecutive
@@ -55,13 +55,13 @@ def _get_blocked_random_indices(
         if circular:
             indices = list(
                 chain.from_iterable(
-                    islice(cycle(range(length)), s, s + block) for s in rng.integers(0, length, repeats)
+                    islice(cycle(range(length)), s, s + block) for s in draw_integers(0, length, repeats)
                 )
             )
         else:
             indices = list(
                 chain.from_iterable(
-                    islice(range(length), s, s + block) for s in rng.integers(0, length - block + 1, repeats)
+                    islice(range(length), s, s + block) for s in draw_integers(0, length - block + 1, repeats)
                 )
             )
         return indices[:length]
@@ -74,7 +74,7 @@ def _get_blocked_random_indices(
             shape[prev_ax] = math.ceil(shape[prev_ax] / b)
 
     if block_size == 1:
-        indices = rng.integers(
+        indices = draw_integers(
             0,
             shape[block_axis],
             shape,
@@ -99,7 +99,7 @@ def _get_blocked_random_indices(
 
 
 def _n_nested_blocked_random_indices(
-    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True, *, rng: np.random.Generator
+    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True, *, draw_integers: Callable[..., np.ndarray]
 ) -> OrderedDict[str, np.ndarray]:
     """
     Returns indices to randomly resample blocks of an array (with replacement)
@@ -129,7 +129,7 @@ def _n_nested_blocked_random_indices(
             block,
             prev_blocks,
             circular,
-            rng=rng
+            draw_integers=draw_integers
         )
         prev_blocks.append(block)
     return indices
@@ -180,7 +180,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
     *,
-    rng: np.random.Generator
+    draw_integers: Callable[..., np.ndarray]
 ) -> Tuple[xr.DataArray, ...]:
     """
     Repeatedly performs bootstrapping on provided arrays across specified dimensions, stacking
@@ -205,6 +205,9 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
+        draw_integers: A callable function used to draw random integers, typically from a random 
+            number generator. This allows for custom random number generation strategies to be 
+            used during the bootstrapping process.
 
      Returns:
         Tuple of bootstrapped xarray DataArrays or Datasets, based on the input.
@@ -259,7 +262,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         )
 
     # Generate random indices for bootstrapping all arrays_list
-    nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular, rng=rng)
+    nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular, draw_integers=draw_integers)
 
     # Expand indices for broadcasting for each array separately
     indices = []
@@ -304,7 +307,7 @@ def block_bootstrap(
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
-    rng: np.random.Generator | int | None = None
+    rng: np.random.Generator | int | None = None,
 ) -> Union[XarrayLike, Tuple[XarrayLike, ...]]:
     """
     Perform block bootstrapping on provided arrays. The function creates new arrays by repeatedly
@@ -336,8 +339,10 @@ def block_bootstrap(
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
         rng: An optional random number generator (np.random.Generator), an integer seed, or None.
-            If None, the default random number generator is used. This allows for reproducible
-            bootstrapping by providing a fixed seed or a custom random number generator.
+            If None, the default random number generator is used (which respects respects 
+            `np.random.seed(...)`). This allows for reproducible bootstrapping by providing a 
+            fixed seed or a custom random number generator. We recommend setting this parameter 
+            to a fixed seed for reproducible results.
 
     Returns:
         If a single Dataset/DataArray (XarrayLike) is provided, the functions returns a
@@ -385,7 +390,7 @@ def block_bootstrap(
         >>> n_iter = 5
         >>> np.random.seed(42)
         >>> boot_obs, boot_ecmwf, boot_gfs = block_bootstrap(
-        ...     [obs, ecmwf, gfs], blocks=blocks, n_iteration=n_iter, circular=True
+        ...     [obs, ecmwf, gfs], blocks=blocks, n_iteration=n_iter, circular=True, rng=None
         ... )
 
         >>> boot_obs
@@ -459,7 +464,11 @@ def block_bootstrap(
         * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
         Dimensions without coordinates: iteration
     """
-    rng = np.random.default_rng(rng)
+    if rng is None:
+        draw_integers = np.random.randint
+    else:
+        generator = np.random.default_rng(rng)
+        draw_integers = generator.integers
 
     # While the most efficient method involves expanding the iteration dimension withing the
     # universal function, this approach might generate excessively large chunks (resulting
@@ -503,7 +512,7 @@ def block_bootstrap(
                 n_iteration=blocksize,
                 exclude_dims=exclude_dims,
                 circular=circular,
-                rng=rng,
+                draw_integers=draw_integers,
             )
         )
     leftover = n_iteration % blocksize
@@ -516,7 +525,7 @@ def block_bootstrap(
                 n_iteration=leftover,
                 exclude_dims=exclude_dims,
                 circular=circular,
-                rng=rng,
+                draw_integers=draw_integers,
             )
         )
 
