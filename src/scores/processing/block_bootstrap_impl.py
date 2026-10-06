@@ -99,7 +99,11 @@ def _get_blocked_random_indices(
 
 
 def _n_nested_blocked_random_indices(
-    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True, *, draw_integers: Callable[..., np.ndarray]
+    sizes: OrderedDict[str, Tuple[int, int]],
+    n_iteration: int,
+    circular: bool = True,
+    *,
+    draw_integers: Callable[..., np.ndarray]
 ) -> OrderedDict[str, np.ndarray]:
     """
     Returns indices to randomly resample blocks of an array (with replacement)
@@ -205,8 +209,8 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
-        draw_integers: A callable function used to draw random integers, typically from a random 
-            number generator. This allows for custom random number generation strategies to be 
+        draw_integers: A callable function used to draw random integers, typically from a random
+            number generator. This allows for custom random number generation strategies to be
             used during the bootstrapping process.
 
      Returns:
@@ -339,9 +343,9 @@ def block_bootstrap(
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
         rng: An optional random number generator (np.random.Generator), an integer seed, or None.
-            If None, the default random number generator is used (which respects respects 
-            `np.random.seed(...)`). This allows for reproducible bootstrapping by providing a 
-            fixed seed or a custom random number generator. We recommend setting this parameter 
+            If None, the default random number generator is used (which respects respects
+            `np.random.seed(...)`). This allows for reproducible bootstrapping by providing a
+            fixed seed or a custom random number generator. We recommend setting this parameter
             to a fixed seed for reproducible results.
 
     Returns:

@@ -44,7 +44,14 @@ from scores.processing.block_bootstrap_impl import (
 )
 def test__get_blocked_random_indices(shape, block_axis, block_size, prev_block_sizes, circular, expected_shape):
     "Test that _get_blocked_random_indices works as expected"
-    indices = _get_blocked_random_indices(shape, block_axis, block_size, prev_block_sizes, circular)
+    indices = _get_blocked_random_indices(
+        shape,
+        block_axis,
+        block_size,
+        prev_block_sizes,
+        circular,
+        draw_integers=np.random.default_rng(100).integers
+    )
     assert indices.shape == expected_shape
 
 
@@ -57,7 +64,12 @@ def test__get_blocked_random_indices(shape, block_axis, block_size, prev_block_s
 )
 def test__n_nested_blocked_random_indices(sizes, n_iteration, circular, expected_shapes):
     """Test that _n_nested_blocked_random_indices returns indices with expected shape"""
-    indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
+    indices = _n_nested_blocked_random_indices(
+        sizes,
+        n_iteration,
+        circular,
+        draw_integers=np.random.default_rng(100).integers
+    )
     assert len(indices) == len(sizes)
     for (dim, _), expected_shape in zip(sizes.items(), expected_shapes):
         assert indices[dim].shape == expected_shape
@@ -139,7 +151,12 @@ def test__expand_n_nested_random_indices(indices, expected_shapes):
 def test__block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test _block_bootstrap works as expected"""
     result = _block_bootstrap(
-        objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
+        objects, 
+        blocks=blocks, 
+        n_iteration=n_iteration, 
+        exclude_dims=exclude_dims, 
+        circular=circular, 
+        draw_integers=np.random.default_rng(100).integers
     )
     for res in result:
         if isinstance(res, xr.Dataset):
@@ -205,7 +222,14 @@ def test__bootstrap_tuple_return():
 def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims, circular, expected_exception, match):
     """Test _block_bootstrap correctly raises errors"""
     with pytest.raises(expected_exception=expected_exception, match=match):
-        _block_bootstrap(objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular)
+        _block_bootstrap(
+            objects,
+            blocks=blocks,
+            n_iteration=n_iteration,
+            exclude_dims=exclude_dims,
+            circular=circular,
+            draw_integers=np.random.default_rng(100).integers
+        )
 
 
 @pytest.mark.parametrize(
@@ -356,3 +380,30 @@ def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude
         result = result.compute()
         for var in result.data_vars:
             assert isinstance(result[var].data, np.ndarray)
+
+def test_block_bootstrap_legacy_case():
+    """Tests that the block_bootstrap function is backwards compatible."""
+    data = xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])
+    blocks = {"dim1": 2, "dim2": 2}
+    np.random.seed(42)
+    first = block_bootstrap(data, blocks=blocks, n_iteration=5)
+
+    np.random.seed(42)
+    second = block_bootstrap(
+        data, blocks=blocks, n_iteration=5, rng=None
+    )
+
+    xr.testing.assert_identical(first, second)
+
+
+def test_block_bootstrap_works_with_rng():
+    """Tests that the block_bootstrap function works correctly when a random number generator is provided."""
+    data = xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])
+    blocks = {"dim1": 2, "dim2": 2}
+    np.random.seed(1)
+    first = block_bootstrap(data, blocks=blocks, n_iteration=5, rng=100)
+
+    np.random.seed(2)
+    second = block_bootstrap(data, blocks=blocks, n_iteration=5, rng=100)
+
+    xr.testing.assert_identical(first, second)
