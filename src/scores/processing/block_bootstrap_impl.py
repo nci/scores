@@ -8,6 +8,7 @@ import math
 import warnings
 from collections import OrderedDict
 from itertools import chain, cycle, islice
+from numbers import Integral
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
@@ -251,7 +252,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         )
 
     for d, (length, block_size) in sizes.items():
-        if not isinstance(block_size, (int, np.integer)) or block_size < 1 or block_size > length:
+        if not isinstance(block_size, Integral) or block_size < 1 or block_size > length:
             raise ValueError(
                 f"block size for dimension {d} must be a positive integer and "
                 f"less than the dimension length {length}, got {block_size}."

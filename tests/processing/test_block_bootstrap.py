@@ -231,12 +231,12 @@ def test__bootstrap_tuple_return():
         ),
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
-            {"dim1": 2, "dim2": 1.0},
+            {"dim1": 2.0, "dim2": 2},
             3,
             None,
             True,
             ValueError,
-            "block size for dimension dim2",
+            "block size for dimension dim1",
         ),
     ],
 )
