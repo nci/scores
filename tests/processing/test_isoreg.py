@@ -435,3 +435,17 @@ def test_isotonic_fit(fcst, obs, bootstraps, report_bootstrap_results, expected)
         np.testing.assert_array_equal(
             result[key](itd.TEST_POINTS), expected[key](itd.TEST_POINTS)
         )
+
+
+def test_isotonic_fit2():
+    """
+    Tests that `isotonic_fit` handles integer obs inputs correctly.
+    If integers aren't convered to float, the regression values are [0.0, 0.0],
+    which is incorrect.
+    """
+    result = isotonic_fit(
+        np.array([0, 1]), np.array([1, 0]), solver=np.mean, functional=None
+    )
+    regression_result = result["regression_values"]
+    regression_expected = np.array([0.5, 0.5])
+    np.testing.assert_array_equal(regression_result, regression_expected)

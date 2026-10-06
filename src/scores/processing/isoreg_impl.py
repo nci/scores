@@ -165,7 +165,9 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         ...     [1.2, 3.3, 2.5, 4.1], coords={"time": times}, dims="time"
         ... )
 
-        >>> obs = xr.DataArray([1.0, 5.0, 0.4, 4.0], coords={"time": times}, dims="time")
+        >>> obs = xr.DataArray(
+        ...     [1.0, 5.0, 0.4, 4.0], coords={"time": times}, dims="time"
+        ... )
 
         >>> result = isotonic_fit(fcst, obs)
 
