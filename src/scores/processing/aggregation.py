@@ -5,6 +5,7 @@ Functions related to aggregating data
 import warnings
 from typing import Optional
 
+import array_api_compat
 import xarray as xr
 
 from scores.processing.matching import broadcast_and_match_nan
@@ -103,7 +104,9 @@ def aggregate(
         Coordinates:
           * x        (x) int64 16B 1 2
     """
-    _check_aggregate_inputs(values, reduce_dims, weights, method)
+
+    if isinstance(values, XarrayLike):
+        _check_aggregate_inputs(values, reduce_dims, weights, method)
 
     if reduce_dims is None:
         return values
@@ -121,16 +124,7 @@ def aggregate(
             raise ValueError(f"Unsupported method {method}. Expected 'mean' or 'sum'.")
 
 
-def _weighted_mean(
-    values: XarrayLike,
-    weights: XarrayLike,
-    reduce_dims: FlexibleDimensionTypes,
-) -> XarrayLike:
-    """
-    Calculates the weighted mean of `values` using `weights` over specified dimensions.
-
-    xarray doesn't allow ``.weighted`` to take ``xr.Dataset`` as weights, so we need to do it ourselves
-    """
+def _weighted_mean(values, weights, reduce_dims=None):
     if isinstance(weights, xr.Dataset):
         w_results = {}
         for name, da in values.data_vars.items():
@@ -145,9 +139,18 @@ def _weighted_mean(
 
         return xr.Dataset(w_results)
 
-    values = values.weighted(weights)
+    elif isinstance(values, xr.DataArray) or isinstance(values, xr.Dataset):
+        values = values.weighted(weights)
+        return values.mean(reduce_dims)
 
-    return values.mean(reduce_dims)
+    # Else attempt to handle with array compatibility
+    else:
+        xp = array_api_compat.array_namespace(values, weights)
+        weighted_error = xp.mul(values, weights)
+        weighted_sum_of_error = xp.nansum(weighted_error)
+        sum_of_weights = xp.nansum(weights)
+        weighted_mean = weighted_sum_of_error / sum_of_weights
+        return weighted_mean
 
 
 def _weighted_sum(
