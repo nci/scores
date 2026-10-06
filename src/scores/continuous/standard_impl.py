@@ -1248,9 +1248,7 @@ def s1(
 
     References:
         -   Teweles, S., & Wobus, H. B. (1954). Verification of prognostic charts.
-            Bulletin of the American Meteorological Society, 35(9), 455-463.
-        -   World Meteorological Organization. Manual on the Global Data-processing and
-            Forecasting System.
+            Bulletin of the American Meteorological Society, 35(10), 455-463.
 
     Examples:
         >>> import xarray as xr

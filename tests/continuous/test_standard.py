@@ -1273,3 +1273,62 @@ def test_s1_raises(x_dim, y_dim, preserve_dims, expected_message):
     """
     with pytest.raises(ValueError, match=expected_message):
         scores.continuous.s1(FCST_S1, OBS_S1, x_dim=x_dim, y_dim=y_dim, preserve_dims=preserve_dims)
+
+
+def test_s1_dask():
+    """
+    Tests that scores.continuous.s1 works with dask
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+
+    fcst = FCST_S1.chunk()
+    obs = OBS_S1.chunk()
+    weights = S1_WEIGHTS.chunk()
+
+    result = scores.continuous.s1(fcst, obs, x_dim="lon", y_dim="lat", weights=weights)
+    assert isinstance(result.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.data, np.ndarray)
+    xr.testing.assert_allclose(result, EXP_S1_WEIGHTED)
+
+
+def test_s1_nan():
+    """
+    Tests that scores.continuous.s1 correctly handles NaNs in fcst/obs by excluding
+    affected grid points from the aggregation (via `broadcast_and_match_nan`)
+    """
+    fcst = FCST_S1.copy()
+    fcst.values[0, 1] = np.nan  # lat=-35, lon=150
+
+    result = scores.continuous.s1(fcst, OBS_S1, x_dim="lon", y_dim="lat")
+    expected = xr.DataArray(39.0625)
+    xr.testing.assert_allclose(result, expected)
+
+
+def test_s1_broadcasting():
+    """
+    Tests that scores.continuous.s1 correctly broadcasts fcst and obs with mismatched dimensions
+    """
+    times = ["t1", "t2"]
+    fcst = xr.concat([FCST_S1, FCST_S1], dim="time").assign_coords(time=times)
+    # obs has no "time" dimension, so it must broadcast against fcst's "time" dimension
+    obs = OBS_S1
+
+    result = scores.continuous.s1(fcst, obs, x_dim="lon", y_dim="lat", preserve_dims="time")
+    expected = xr.DataArray([36.55913978494625, 36.55913978494625], coords={"time": times}, dims=["time"])
+    xr.testing.assert_allclose(result, expected)
+
+
+def test_s1_reduce_dims():
+    """
+    Tests that scores.continuous.s1 works when `reduce_dims` is explicitly specified
+    (as opposed to `preserve_dims`)
+    """
+    times = ["t1", "t2"]
+    fcst = xr.concat([FCST_S1, FCST_S1 * 1.1], dim="time").assign_coords(time=times)
+    obs = xr.concat([OBS_S1, OBS_S1 * 1.1], dim="time").assign_coords(time=times)
+
+    result = scores.continuous.s1(fcst, obs, x_dim="lon", y_dim="lat", reduce_dims=["lon", "lat"])
+    expected = xr.DataArray([36.55913978494625, 36.55913978494625], coords={"time": times}, dims=["time"])
+    xr.testing.assert_allclose(result, expected)
