@@ -151,11 +151,11 @@ def test__expand_n_nested_random_indices(indices, expected_shapes):
 def test__block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test _block_bootstrap works as expected"""
     result = _block_bootstrap(
-        objects, 
-        blocks=blocks, 
-        n_iteration=n_iteration, 
-        exclude_dims=exclude_dims, 
-        circular=circular, 
+        objects,
+        blocks=blocks,
+        n_iteration=n_iteration,
+        exclude_dims=exclude_dims,
+        circular=circular,
         draw_integers=np.random.default_rng(100).integers
     )
     for res in result:
