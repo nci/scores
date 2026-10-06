@@ -311,6 +311,59 @@ def omega(phi, theta, p, phi1d):
                 )
             ),
         ),
+        (
+            ux,
+            uy,
+            None,
+            True,
+            True,
+            pd.date_range("2025-01-01", periods=1),
+            np.array([200, 800, 1000]),
+            np.arange(0.0, 180.0, 10),
+            np.array([-60.0, 0.0, 60.0]),
+            xr.DataArray(
+                np.array(
+                    [
+                        [
+                            4.946732e00,
+                            8.631261e00,
+                            1.083693e00,
+                            7.359114e-01,
+                            4.147971e-01,
+                            1.847719e-01,
+                            5.843061e-02,
+                            1.017175e-02,
+                            1.572548e-03,
+                            2.398738e-03,
+                        ],
+                        [
+                            2.362134e-01,
+                            5.185778e00,
+                            4.778171e00,
+                            3.818507e-01,
+                            6.870479e-02,
+                            1.085650e-02,
+                            2.906051e-03,
+                            4.709766e-03,
+                            6.503329e-03,
+                            7.022293e-03,
+                        ],
+                        [
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                        ],
+                    ]
+                )
+            ),
+        ),
     ],
 )
 def test_spectra(
@@ -617,6 +670,48 @@ def test_spectra_vector_with_nan_v():
         power_spectra_vector(ds, reduce_vertical=True, reduce_time=True)
 
 
+def test_spectra_vector_with_vertical_weights_error():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 360.0, 20)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    v[0, 1, 2, 3] = np.nan
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    dp = np.ones(nlev + 1)
+
+    with pytest.raises(
+        IndexError, match="Length of supplied vertical weights array: 4 does not match length of level: 3."
+    ):
+        power_spectra_vector(ds, reduce_vertical=True, reduce_time=True, vertical_weights=dp)
+
+
 def test_spectra_scalar_with_vertical_weights():
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([200, 800, 1000])
@@ -708,6 +803,50 @@ def test_spectra_scalar_with_vertical_weights():
     )
 
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+
+
+def test_spectra_scalar_with_vertical_weights_error():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 180.0, 10)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[:, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    dp = np.ones(nlev + 1)
+
+    with pytest.raises(
+        IndexError, match="Length of supplied vertical weights array: 4 does not match length of level: 3."
+    ):
+        power_spectra_scalar(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w", vertical_weights=dp)
 
 
 def test_spectra_scalar_with_nan():

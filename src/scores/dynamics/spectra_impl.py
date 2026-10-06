@@ -74,8 +74,8 @@ def power_spectra_scalar(
         if vertical_weights is not None:
             if len(vertical_weights) != _data.sizes[pressure_level_name]:
                 error_msg = IndexError(
-                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of",
-                    +"{pressure_level_name}: {_data.sizes[pressure_level_name]}.",
+                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
+                    + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
                 )
                 raise error_msg
         else:
@@ -221,8 +221,8 @@ def power_spectra_vector(
         if vertical_weights is not None:
             if len(vertical_weights) != _data.sizes[pressure_level_name]:
                 error_msg = IndexError(
-                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of",
-                    +"{pressure_level_name}: {_data.sizes[pressure_level_name]}.",
+                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
+                    + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
                 )
                 raise error_msg
         else:
