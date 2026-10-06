@@ -432,9 +432,7 @@ def test_isotonic_fit(fcst, obs, bootstraps, report_bootstrap_results, expected)
         "confidence_band_lower_func",
         "confidence_band_upper_func",
     ]:
-        np.testing.assert_array_equal(
-            result[key](itd.TEST_POINTS), expected[key](itd.TEST_POINTS)
-        )
+        np.testing.assert_array_equal(result[key](itd.TEST_POINTS), expected[key](itd.TEST_POINTS))
 
 
 def test_isotonic_fit2():
@@ -443,9 +441,7 @@ def test_isotonic_fit2():
     If integers aren't convered to float, the regression values are [0.0, 0.0],
     which is incorrect.
     """
-    result = isotonic_fit(
-        np.array([0, 1]), np.array([1, 0]), solver=np.mean, functional=None
-    )
+    result = isotonic_fit(np.array([0, 1]), np.array([1, 0]), solver=np.mean, functional=None)
     regression_result = result["regression_values"]
     regression_expected = np.array([0.5, 0.5])
     np.testing.assert_array_equal(regression_result, regression_expected)

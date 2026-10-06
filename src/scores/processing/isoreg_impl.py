@@ -27,9 +27,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     functional: Optional[Literal["mean", "quantile"]] = "mean",
     bootstraps: Optional[int] = None,
     quantile_level: Optional[float] = None,
-    solver: Optional[
-        Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]
-    ] = None,
+    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
     confidence_level: Optional[float] = 0.9,
     min_non_nan: Optional[int] = 1,
     report_bootstrap_results: Optional[bool] = False,
@@ -64,7 +62,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     implementation. Users should supply an appropriate solver if weighted quantile
     isotonic regression is desired.
 
-    This implementation uses ``sklearn.isotonic.IsotonicRegression`` when ``functional="mean"``.
+    This implementation uses ``scipy.optimize.isotonic_regression`` when ``functional="mean"``.
 
     Args:
         fcst: 1-dimensional np.array or xr.DataArray of forecast (or explanatory) values.
@@ -219,9 +217,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
             bootstraps=bootstraps,
         )
 
-        lower_pts, upper_pts = _confidence_band(
-            boot_results, confidence_level, min_non_nan
-        )
+        lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)
 
         lower_func = _get_interp1d_func(fcst_tidied, lower_pts)
         upper_func = _get_interp1d_func(fcst_tidied, upper_pts)
@@ -307,9 +303,7 @@ def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
     weight: Optional[Union[np.ndarray, xr.DataArray]] = None,
     functional: Optional[str] = None,
     quantile_level: Optional[float] = None,
-    solver: Optional[
-        Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]
-    ] = None,
+    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
     bootstraps: Optional[int] = None,
     confidence_level: Optional[float] = None,
 ) -> None:
@@ -317,27 +311,18 @@ def _iso_arg_checks(  # pylint: disable=too-many-arguments, too-many-branches
     if fcst.shape != obs.shape:
         raise ValueError("`fcst` and `obs` must have same shape.")
 
-    if not (
-        np.issubdtype(fcst.dtype, np.integer) or np.issubdtype(fcst.dtype, np.floating)
-    ):
+    if not (np.issubdtype(fcst.dtype, np.integer) or np.issubdtype(fcst.dtype, np.floating)):
         raise ValueError("`fcst` must be an array of floats or integers.")
 
-    if not (
-        np.issubdtype(obs.dtype, np.integer) or np.issubdtype(obs.dtype, np.floating)
-    ):
+    if not (np.issubdtype(obs.dtype, np.integer) or np.issubdtype(obs.dtype, np.floating)):
         raise ValueError("`obs` must be an array of floats or integers.")
 
     if weight is not None:
         if fcst.shape != weight.shape:
             raise ValueError("`fcst` and `weight` must have same shape.")
 
-        if not (
-            np.issubdtype(weight.dtype, np.integer)
-            or np.issubdtype(weight.dtype, np.floating)
-        ):
-            raise ValueError(
-                "`weight` must be an array of floats or integers, or else `None`."
-            )
+        if not (np.issubdtype(weight.dtype, np.integer) or np.issubdtype(weight.dtype, np.floating)):
+            raise ValueError("`weight` must be an array of floats or integers, or else `None`.")
 
         if np.any(weight <= 0):
             raise ValueError("`weight` values must be either positive or NaN.")
@@ -432,9 +417,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
     weight: Optional[np.ndarray] = None,
     functional: Optional[Literal["mean", "quantile"]] = None,
     quantile_level: Optional[float] = None,
-    solver: Optional[
-        Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]
-    ] = None,
+    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
 ) -> np.ndarray:
     """
     Returns the isotonic regression (IR) fit for specified functional or solver,
@@ -467,9 +450,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
 
 def _contiguous_ir(
     y: np.ndarray,
-    solver: Union[
-        Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]
-    ],
+    solver: Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]],
     *,  # Force keywords arguments to be keyword-only
     weight: Optional[np.ndarray] = None,
 ) -> np.ndarray:
@@ -520,9 +501,7 @@ def _contiguous_ir(
 
         while True:
             # We are within a decreasing subsequence.
-            prev_y = y_out[
-                idx_next_block
-            ]  # this is the smaller y value after the active block
+            prev_y = y_out[idx_next_block]  # this is the smaller y value after the active block
             idx_next_block = target[idx_next_block] + 1  # advance index of next block
             if idx_next_block == len_y or prev_y < y_out[idx_next_block]:
                 # update block indices
@@ -557,9 +536,7 @@ def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
     with no weights. Quantile calculation uses the "averaged_inverted_cdf" method
     so that the returned quantile values are true alpha-quantiles of the block empirical CDF.
     """
-    return _contiguous_ir(
-        y, partial(np.quantile, q=alpha, method="averaged_inverted_cdf")
-    )
+    return _contiguous_ir(y, partial(np.quantile, q=alpha, method="averaged_inverted_cdf"))
 
 
 def _contiguous_mean_ir(
@@ -588,9 +565,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
     weight: Optional[np.ndarray] = None,
     functional: Optional[Literal["mean", "quantile"]] = None,
     quantile_level: Optional[float] = None,
-    solver: Optional[
-        Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]
-    ] = None,
+    solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
 ):
     """
     Gives the isotonic fits of bootstrapped samples.
@@ -623,9 +598,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
         else:
             weight_sample = weight[selection]
 
-        fcst_sample, obs_sample, weight_sample = _tidy_ir_inputs(
-            fcst_sample, obs_sample, weight=weight_sample
-        )
+        fcst_sample, obs_sample, weight_sample = _tidy_ir_inputs(fcst_sample, obs_sample, weight=weight_sample)
 
         ir_results = _do_ir(
             obs_sample,
@@ -717,9 +690,7 @@ def _nanquantile(arr: np.ndarray, quant: float) -> np.ndarray:
     return result
 
 
-def _get_interp1d_func(
-    x_data: np.ndarray, y_data: np.ndarray
-) -> Callable[[np.ndarray], np.ndarray]:
+def _get_interp1d_func(x_data: np.ndarray, y_data: np.ndarray) -> Callable[[np.ndarray], np.ndarray]:
     """
     Wraps numpy interpolation in a function similar to scipy.interpolate.interp1d.
     `bounds_error` not included since np.interp handles NAs differently.
