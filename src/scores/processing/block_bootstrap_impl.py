@@ -289,6 +289,7 @@ def block_bootstrap(
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
+    rng: np.random.Generator | int | None = None
 ) -> Union[XarrayLike, Tuple[XarrayLike, ...]]:
     """
     Perform block bootstrapping on provided arrays. The function creates new arrays by repeatedly
@@ -319,6 +320,9 @@ def block_bootstrap(
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
+        rng: An optional random number generator (np.random.Generator), an integer seed, or None.
+            If None, the default random number generator is used. This allows for reproducible
+            bootstrapping by providing a fixed seed or a custom random number generator.
 
     Returns:
         If a single Dataset/DataArray (XarrayLike) is provided, the functions returns a
@@ -440,7 +444,8 @@ def block_bootstrap(
         * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
         Dimensions without coordinates: iteration
     """
-
+    np.random.default_rng(rng)
+    
     # While the most efficient method involves expanding the iteration dimension withing the
     # universal function, this approach might generate excessively large chunks (resulting
     # from multiplying chunk size by iterations) leading to issues with large numbers of
