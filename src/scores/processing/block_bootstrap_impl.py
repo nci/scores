@@ -21,7 +21,13 @@ MAX_BATCH_SIZE_MB = 200
 
 
 def _get_blocked_random_indices(
-    shape: list[int], block_axis: int, block_size: int, prev_block_sizes: list[int], circular: bool = True
+    shape: list[int],
+    block_axis: int,
+    block_size: int,
+    prev_block_sizes: list[int],
+    circular: bool = True,
+    *,
+    rng: np.random.Generator
 ) -> np.ndarray:
     """
     Return indices to randomly sample an axis of an array in consecutive
@@ -49,13 +55,13 @@ def _get_blocked_random_indices(
         if circular:
             indices = list(
                 chain.from_iterable(
-                    islice(cycle(range(length)), s, s + block) for s in np.random.randint(0, length, repeats)
+                    islice(cycle(range(length)), s, s + block) for s in rng.integers(0, length, repeats)
                 )
             )
         else:
             indices = list(
                 chain.from_iterable(
-                    islice(range(length), s, s + block) for s in np.random.randint(0, length - block + 1, repeats)
+                    islice(range(length), s, s + block) for s in rng.integers(0, length - block + 1, repeats)
                 )
             )
         return indices[:length]
@@ -68,7 +74,7 @@ def _get_blocked_random_indices(
             shape[prev_ax] = math.ceil(shape[prev_ax] / b)
 
     if block_size == 1:
-        indices = np.random.randint(
+        indices = rng.integers(
             0,
             shape[block_axis],
             shape,
@@ -93,7 +99,7 @@ def _get_blocked_random_indices(
 
 
 def _n_nested_blocked_random_indices(
-    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True
+    sizes: OrderedDict[str, Tuple[int, int]], n_iteration: int, circular: bool = True, *, rng: np.random.Generator
 ) -> OrderedDict[str, np.ndarray]:
     """
     Returns indices to randomly resample blocks of an array (with replacement)
@@ -117,7 +123,14 @@ def _n_nested_blocked_random_indices(
     indices = OrderedDict()
     prev_blocks: List[int] = []
     for ax, (key, (_, block)) in enumerate(sizes.items()):
-        indices[key] = _get_blocked_random_indices(shape[: ax + 1] + [n_iteration], ax, block, prev_blocks, circular)
+        indices[key] = _get_blocked_random_indices(
+            shape[: ax + 1] + [n_iteration],
+            ax,
+            block,
+            prev_blocks,
+            circular,
+            rng=rng
+        )
         prev_blocks.append(block)
     return indices
 
@@ -166,6 +179,8 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     n_iteration: int,
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
+    *,
+    rng: np.random.Generator
 ) -> Tuple[xr.DataArray, ...]:
     """
     Repeatedly performs bootstrapping on provided arrays across specified dimensions, stacking
@@ -244,7 +259,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         )
 
     # Generate random indices for bootstrapping all arrays_list
-    nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
+    nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular, rng=rng)
 
     # Expand indices for broadcasting for each array separately
     indices = []
@@ -444,8 +459,8 @@ def block_bootstrap(
         * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
         Dimensions without coordinates: iteration
     """
-    np.random.default_rng(rng)
-    
+    rng = np.random.default_rng(rng)
+
     # While the most efficient method involves expanding the iteration dimension withing the
     # universal function, this approach might generate excessively large chunks (resulting
     # from multiplying chunk size by iterations) leading to issues with large numbers of
@@ -488,6 +503,7 @@ def block_bootstrap(
                 n_iteration=blocksize,
                 exclude_dims=exclude_dims,
                 circular=circular,
+                rng=rng,
             )
         )
     leftover = n_iteration % blocksize
@@ -500,6 +516,7 @@ def block_bootstrap(
                 n_iteration=leftover,
                 exclude_dims=exclude_dims,
                 circular=circular,
+                rng=rng,
             )
         )
 
