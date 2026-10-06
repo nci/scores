@@ -188,23 +188,27 @@ def crps_cdf(
     interpolate CDF values between indexed thresholds.
 
     Given:
-        - a predictive CDF `fcst` indexed at thresholds by variable x
-        - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if \
-         :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
-        - a `threshold_weight` array indexed by variable x
+
+    - a predictive CDF `fcst` indexed at thresholds by variable x
+    - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if \
+     :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
+    - a `threshold_weight` array indexed by variable x
 
     The threshold-weighted CRPS is given by:
-        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \
-        (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
-        - The usual CRPS is the threshold-weighted CRPS with :math:`\\text{threshold_weight}(x) = 1` for all x.
+
+    - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \
+    (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
+    - The usual CRPS is the threshold-weighted CRPS with :math:`\\text{threshold_weight}(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) -
-        \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
+
+    :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{fcst}(x) -
+    \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x where x >= obs
 
     and an under-forecast penalty:
-        :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) -
-        \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
+
+    :math:`\\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \\text{(fcst}(x) -
+    \\text{obs_cdf}(x)^2]\\text{d}x}`, over all thresholds x where x <= obs.
 
     To obtain the components of the CRPS score, set ``include_components`` to ``True``.
 
@@ -216,20 +220,22 @@ def crps_cdf(
     calculate the CRPS.
 
     To calculate CRPS, integration is applied over the set of thresholds x taken from:
-        - `fcst[threshold_dim].values`,
-        - `obs.values`.
-        - `threshold_weight[threshold_dim].values` if applicable.
-        - `additional_thresholds` if applicable.
-        - (with NaN values excluded)
+
+    - `fcst[threshold_dim].values`,
+    - `obs.values`.
+    - `threshold_weight[threshold_dim].values` if applicable.
+    - `additional_thresholds` if applicable.
+    - (with NaN values excluded)
 
     There are two methods of integration:
-        - "exact" gives the exact integral under that assumption that that `fcst` is
-          continuous and piecewise linear between its specified values, and that
-          `threshold_weight` (if supplied) is piecewise constant and right-continuous
-          between its specified values.
-        - "trapz" simply uses a trapezoidal rule using the specified values, and so is
-          an approximation of the CRPS. To get an accurate approximation, the density
-          of threshold values can be increased by supplying `additional_thresholds`.
+
+    - "exact" gives the exact integral under that assumption that that `fcst` is
+      continuous and piecewise linear between its specified values, and that
+      `threshold_weight` (if supplied) is piecewise constant and right-continuous
+      between its specified values.
+    - "trapz" simply uses a trapezoidal rule using the specified values, and so is
+      an approximation of the CRPS. To get an accurate approximation, the density
+      of threshold values can be increased by supplying `additional_thresholds`.
 
     Both methods of calculating CRPS may require adding additional values to the
     `threshold_dim` dimension in `fcst` and (if supplied) `threshold_weight`.
@@ -621,9 +627,10 @@ def adjust_fcst_for_crps(
     If `fcst` is not decreasing outside of specified tolerance, it returns `fcst`.
 
     Otherwise, the CDF envelope for `fcst` is computed, and the CDF from among:
-        - `fcst`,
-        - the upper envelope, and
-        - the lower envelope
+
+    - `fcst`,
+    - the upper envelope, and
+    - the lower envelope
 
     that has the higher (i.e. worse) CRPS is returned. In the event of a tie,
     preference is given in the order `fcst` then upper.
@@ -645,12 +652,13 @@ def adjust_fcst_for_crps(
     tolerance if 0.12 > `decreasing_tolerance`.
 
     The adjusted array of forecast CDFs is determined as follows:
-        - any NaN values in `fcst` are propagated along `threshold_dim` so that in each case \
-            the entire CDF is NaN;
-        - any CDFs in `fcst` that are decreasing within specified tolerance are unchanged;
-        - any CDFs in `fcst` that are decreasing outside specified tolerance are replaced with \
-            whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
-            values give a higher CRPS in which case original values are kept.
+
+    - any NaN values in `fcst` are propagated along `threshold_dim` so that in each case \
+        the entire CDF is NaN;
+    - any CDFs in `fcst` that are decreasing within specified tolerance are unchanged;
+    - any CDFs in `fcst` that are decreasing outside specified tolerance are replaced with \
+        whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
+        values give a higher CRPS in which case original values are kept.
 
     See :py:func:`scores.processing.cdf.cdf_envelope` for a description of the 'CDF envelope'.
 
@@ -835,16 +843,17 @@ def crps_for_ensemble(
     :math:`1 \\leq i \\leq M` and :math:`1 \\leq j \\leq M`.
 
     The value of the constant K in this formula depends on the method:
-        - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
-            the exact CRPS value for the empirical cumulative distribution function \
-            constructed using the ensemble values.
-        - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned \
-            is the approximated CRPS where the ensemble values can be interpreted as a \
-            random sample from the underlying predictive distribution. This interpretation \
-            stems from the formula :math:`\\text{CRPS}(F, y) = \\mathbb{E}(|X - y|) - \\frac{1}{2}\\mathbb{E}(|X - X'|)`, where X and X' \
-            are independent samples of the predictive distribution F, y is the observation \
-            (possibly unknown) and E denotes the expectation. This choice of K gives an \
-            unbiased estimate for the second expectation.
+
+    - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
+        the exact CRPS value for the empirical cumulative distribution function \
+        constructed using the ensemble values.
+    - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned \
+        is the approximated CRPS where the ensemble values can be interpreted as a \
+        random sample from the underlying predictive distribution. This interpretation \
+        stems from the formula :math:`\\text{CRPS}(F, y) = \\mathbb{E}(|X - y|) - \\frac{1}{2}\\mathbb{E}(|X - X'|)`, where X and X' \
+        are independent samples of the predictive distribution F, y is the observation \
+        (possibly unknown) and E denotes the expectation. This choice of K gives an \
+        unbiased estimate for the second expectation.
 
     When the `include_components` flag is set to `True`, the CRPS components are calculated as
 
@@ -853,14 +862,15 @@ def crps_for_ensemble(
         CRPS(x_i, x_j, y) = O(x_i, y) + U(x_i, y) - S(x_i, x_j)
 
     where
-        - :math:`O(x_i, y) = \\frac{\\sum_{i=1}^{M} ((x_i - y) \\mathbb{1}{\\{x_i > y\\}})}{M}` which is the \
-            overforecast penalty.
-        - :math:`U(x_i, y) = \\frac{\\sum_{i=1}^{M} ((y - x_i) \\mathbb{1}{\\{x_i < y\\}})}{M}` which is the \
-            underforecast penalty.
-        - :math:`S(x_i, x_j) = \\frac{\\sum_{i=1}^{M}\\sum_{j=1}^{M}(|x_i - x_j|)}{2K}` which is the forecast spread term.
+
+    - :math:`O(x_i, y) = \\frac{\\sum_{i=1}^{M} ((x_i - y) \\mathbb{1}{\\{x_i > y\\}})}{M}` which is the \
+        overforecast penalty.
+    - :math:`U(x_i, y) = \\frac{\\sum_{i=1}^{M} ((y - x_i) \\mathbb{1}{\\{x_i < y\\}})}{M}` which is the \
+        underforecast penalty.
+    - :math:`S(x_i, x_j) = \\frac{\\sum_{i=1}^{M}\\sum_{j=1}^{M}(|x_i - x_j|)}{2K}` which is the forecast spread term.
 
     Note that there are several ways to decompose the CRPS and this decomposition differs from the
-    one used in the :py:func:`scores_probability.crps_cdf` function.
+    one used in the :py:func:`scores.probability.crps_cdf` function.
 
     Args:
         fcst: Forecast data. Must have a dimension ``ensemble_member_dim``.
@@ -1026,13 +1036,14 @@ def tw_crps_for_ensemble(
     is true and 0 otherwise. A chaining function would then be :math:`v(x) = \\text{max}(x, t)`.
 
     There are currently two methods available for calculating the twCRPS: "ecdf" and "fair".
-        - If `method="ecdf"` then the twCRPS value returned is \
-            the exact twCRPS value for the empirical cumulative distribution function \
-            constructed using the ensemble values.
-        - If `method="fair"` then the twCRPS value returned \
-            is the approximated twCRPS where the ensemble values can be interpreted as a \
-            random sample from the underlying predictive distribution. See  https://doi.org/10.1002/qj.2270 \
-            for more details on the fair CRPS which are relevant for the fair twCRPS.
+
+    - If `method="ecdf"` then the twCRPS value returned is \
+        the exact twCRPS value for the empirical cumulative distribution function \
+        constructed using the ensemble values.
+    - If `method="fair"` then the twCRPS value returned \
+        is the approximated twCRPS where the ensemble values can be interpreted as a \
+        random sample from the underlying predictive distribution. See  https://doi.org/10.1002/qj.2270 \
+        for more details on the fair CRPS which are relevant for the fair twCRPS.
 
     The ensemble representation of the empirical twCRPS is
 
@@ -1347,9 +1358,9 @@ def interval_tw_crps_for_ensemble(
         >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
         >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
 
-        >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+        >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, -10)
         <xarray.DataArray ()> Size: 8B
-        array(7.46973354)
+        array(2.56162354)
     """
     if isinstance(lower_threshold, xr.DataArray) or isinstance(upper_threshold, xr.DataArray):
         if (lower_threshold >= upper_threshold).any().values.item():
