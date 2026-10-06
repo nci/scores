@@ -615,6 +615,12 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.dynamics.energy_exchanges_lat_lon)
   - [Tutorial](project:./tutorials/Energy_Budgets.md)
   - [Taylor (2011)](https://doi.org/10.1007/978-3-642-11640-7_12)
+* - Scalar Field Power Spectra
+  - [API](api.md#scores.dynamics.power_spectra_scalar)
+  - [Tutorial](project:./tutorials/Power_Spectra.md)
+* - Vector Field Power Spectra
+  - [API](api.md#scores.dynamics.power_spectra_vector)
+  - [Tutorial](project:./tutorials/Power_Spectra.md)
 ```
 
 ## Statistical Tests
