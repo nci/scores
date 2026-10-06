@@ -16,6 +16,7 @@ import xarray as xr
 
 import scores.processing.block_bootstrap_impl as block_bootstrap_module
 from scores.processing.block_bootstrap_impl import (
+    BLOCK_SIZE_ONE_WARNING,
     _block_bootstrap,
     _bootstrap,
     _expand_n_nested_random_indices,
@@ -149,6 +150,25 @@ def test__block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, 
             assert res.shape == expected_shape
 
 
+@pytest.mark.parametrize(
+    "dims, n_warnings",
+    [
+        ({"dim1": 2, "dim2": 1}, 1),
+        ({"dim1": 1, "dim2": 1}, 2),
+    ],
+)
+def test__block_bootstrap_warns(dims, n_warnings):
+    """Warn when block size is 1."""
+    with pytest.warns(UserWarning) as warning_msg:
+        _ = _block_bootstrap(
+            [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
+            dims,
+            3,
+        )
+    assert len(warning_msg) == n_warnings
+    assert BLOCK_SIZE_ONE_WARNING in str(warning_msg[0].message)
+
+
 def test__bootstrap_tuple_return():
     """Test for returning a tuple from _bootstrap"""
     arrays = [np.random.rand(10, 5), np.random.rand(10, 5)]
@@ -199,6 +219,33 @@ def test__bootstrap_tuple_return():
             True,
             ValueError,
             "At least one input array must contain all dimensions in blocks.keys()",
+        ),
+        (
+            [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
+            {"dim1": 2, "dim2": 50},
+            3,
+            None,
+            True,
+            ValueError,
+            "block size for dimension dim2",
+        ),
+        (
+            [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
+            {"dim1": -1, "dim2": 50},
+            3,
+            None,
+            True,
+            ValueError,
+            "block size for dimension dim1",
+        ),
+        (
+            [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
+            {"dim1": 2.0, "dim2": 2},
+            3,
+            None,
+            True,
+            TypeError,
+            "block size for dimension dim1",
         ),
     ],
 )

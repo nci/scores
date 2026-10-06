@@ -5,8 +5,10 @@ testable and also consistent with the scores package.
 """
 
 import math
+import warnings
 from collections import OrderedDict
 from itertools import chain, cycle, islice
+from numbers import Integral
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
@@ -18,6 +20,12 @@ from scores.utils import tmp_coord_name
 # When Dask is being used, this constant helps control the sizes of batches
 # when bootstrapping
 MAX_BATCH_SIZE_MB = 200
+
+BLOCK_SIZE_ONE_WARNING = """
+WARNING:  block_size=1 makes block bootstrapping equivalent to traditional
+bootstrap resampling, since individual observations are sampled
+independently rather than in blocks.
+"""
 
 
 def _get_blocked_random_indices(
@@ -242,6 +250,17 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         raise ValueError(
             "At least one input array must contain all dimensions in blocks.keys()",
         )
+
+    for d, (length, block_size) in sizes.items():
+        if not isinstance(block_size, Integral):
+            raise TypeError(f"block size for dimension {d} must be an integer.")
+        elif block_size < 1 or block_size >= length:
+            raise ValueError(
+                f"block size for dimension {d} must be a positive integer and "
+                f"less than the dimension length {length}, got {block_size}."
+            )
+        if block_size == 1:
+            warnings.warn(BLOCK_SIZE_ONE_WARNING)
 
     # Generate random indices for bootstrapping all arrays_list
     nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
