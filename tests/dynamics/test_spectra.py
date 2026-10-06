@@ -24,7 +24,8 @@ from scores.dynamics.budgets_utils import (
     _scaled_rfft,
 )
 from scores.dynamics.spectra_impl import (
-    power_spectra,
+    power_spectra_scalar,
+    power_spectra_vector,
 )
 
 
@@ -353,17 +354,19 @@ def test_spectra(
     if custom_field_func is not None:
         w = np.zeros((nt, nlev, nlat, nlon))
         w[:, :, :, :] = custom_field_func(lat3d, lon3d, lev3d, latitude)
-        scalar_field_name = "w"
         ds["w"] = (["time", "level", "latitude", "longitude"], w)
+        spectra = power_spectra_scalar(
+            ds,
+            reduce_vertical=reduce_vertical,
+            reduce_time=reduce_time,
+            scalar_field_name="w",
+        )
     else:
-        scalar_field_name = None
-
-    spectra = power_spectra(
-        ds,
-        reduce_vertical=reduce_vertical,
-        reduce_time=reduce_time,
-        scalar_field_name=scalar_field_name,
-    )
+        spectra = power_spectra_vector(
+            ds,
+            reduce_vertical=reduce_vertical,
+            reduce_time=reduce_time,
+        )
 
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
 
@@ -405,7 +408,7 @@ def test_spectra_dask():
         },
     )
 
-    spectra = power_spectra(ds.chunk(), reduce_vertical=True, reduce_time=True).chunk()
+    spectra = power_spectra_vector(ds.chunk(), reduce_vertical=True, reduce_time=True).chunk()
     assert isinstance(spectra["amplitude_squared"].data, dask.array.Array)
     spectra = spectra.compute()
     assert isinstance(spectra["amplitude_squared"].data, (np.ndarray, np.generic))
@@ -447,7 +450,7 @@ def test_spectra_filter_width_error():
     )
 
     with pytest.raises(ValueError, match="The zonal_filter_width is: 0.55, must be < 0.5."):
-        power_spectra(ds, zonal_filter_width=0.55)
+        power_spectra_vector(ds, zonal_filter_width=0.55)
 
 
 def test_spectra_vector_with_vertical_weights():
@@ -533,7 +536,7 @@ def test_spectra_vector_with_vertical_weights():
     dp = 100.0 * dp / STANDARD_CONSTANTS.GRAVITY
     dp = dp / np.sum(dp)
 
-    spectra = power_spectra(ds, reduce_vertical=True, reduce_time=True, vertical_weights=dp)
+    spectra = power_spectra_vector(ds, reduce_vertical=True, reduce_time=True, vertical_weights=dp)
 
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
 
@@ -573,7 +576,7 @@ def test_spectra_vector_with_nan_u():
     )
 
     with pytest.raises(ValueError, match="NaN value found in field: u."):
-        power_spectra(ds, reduce_vertical=True, reduce_time=True)
+        power_spectra_vector(ds, reduce_vertical=True, reduce_time=True)
 
 
 def test_spectra_vector_with_nan_v():
@@ -611,7 +614,7 @@ def test_spectra_vector_with_nan_v():
     )
 
     with pytest.raises(ValueError, match="NaN value found in field: v."):
-        power_spectra(ds, reduce_vertical=True, reduce_time=True)
+        power_spectra_vector(ds, reduce_vertical=True, reduce_time=True)
 
 
 def test_spectra_scalar_with_vertical_weights():
@@ -700,7 +703,9 @@ def test_spectra_scalar_with_vertical_weights():
     dp = 100.0 * dp / STANDARD_CONSTANTS.GRAVITY
     dp = dp / np.sum(dp)
 
-    spectra = power_spectra(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w", vertical_weights=dp)
+    spectra = power_spectra_scalar(
+        ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w", vertical_weights=dp
+    )
 
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
 
@@ -743,7 +748,7 @@ def test_spectra_scalar_with_nan():
     )
 
     with pytest.raises(ValueError, match="NaN value found in field: w."):
-        power_spectra(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w")
+        power_spectra_scalar(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w")
 
 
 def test_spectra_spherical_harmonic():
@@ -782,4 +787,4 @@ def test_spectra_spherical_harmonic():
     with pytest.raises(
         NotImplementedError, match="Support for spherical harmonic transform spectra has not been implemented yet."
     ):
-        power_spectra(ds, spherical_harmonic=True)
+        power_spectra_vector(ds, spherical_harmonic=True)
