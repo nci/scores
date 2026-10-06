@@ -20,6 +20,7 @@ import pytest
 import xarray as xr
 
 from scores.dynamics.budgets_utils import (
+    STANDARD_CONSTANTS,
     _scaled_rfft,
 )
 from scores.dynamics.spectra_impl import (
@@ -352,16 +353,16 @@ def test_spectra(
     if custom_field_func is not None:
         w = np.zeros((nt, nlev, nlat, nlon))
         w[:, :, :, :] = custom_field_func(lat3d, lon3d, lev3d, latitude)
-        custom_field_name = "w"
+        scalar_field_name = "w"
         ds["w"] = (["time", "level", "latitude", "longitude"], w)
     else:
-        custom_field_name = None
+        scalar_field_name = None
 
     spectra = power_spectra(
         ds,
         reduce_vertical=reduce_vertical,
         reduce_time=reduce_time,
-        custom_field_name=custom_field_name,
+        scalar_field_name=scalar_field_name,
     )
 
     xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
@@ -447,6 +448,302 @@ def test_spectra_filter_width_error():
 
     with pytest.raises(ValueError, match="The zonal_filter_width is: 0.55, must be < 0.5."):
         power_spectra(ds, zonal_filter_width=0.55)
+
+
+def test_spectra_vector_with_vertical_weights():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 360.0, 20)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    expected = xr.DataArray(
+        np.array(
+            [
+                [
+                    8.00000000e00,
+                    0.00000000e00,
+                    1.25000000e1,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                ],
+                [
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    1.25000000e1,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                ],
+                [
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                    0.00000000e00,
+                ],
+            ]
+        )
+    )
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    dp = np.zeros(nlev)
+    dp[1:-1] = 0.5 * (level[2:] - level[:-2])
+    dp[0] = 0.5 * (level[1] - level[0])
+    dp[-1] = 0.5 * (level[-1] - level[-2])
+    dp = 100.0 * dp / STANDARD_CONSTANTS.GRAVITY
+    dp = dp / np.sum(dp)
+
+    spectra = power_spectra(ds, reduce_vertical=True, reduce_time=True, vertical_weights=dp)
+
+    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+
+
+def test_spectra_vector_with_nan_u():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 360.0, 20)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    u[0, 1, 2, 3] = np.nan
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="NaN value found in field: u."):
+        power_spectra(ds, reduce_vertical=True, reduce_time=True)
+
+
+def test_spectra_vector_with_nan_v():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 360.0, 20)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    v[0, 1, 2, 3] = np.nan
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="NaN value found in field: v."):
+        power_spectra(ds, reduce_vertical=True, reduce_time=True)
+
+
+def test_spectra_scalar_with_vertical_weights():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 180.0, 10)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    expected = xr.DataArray(
+        np.array(
+            [
+                [
+                    1.014619e01,
+                    2.473585e00,
+                    2.521114e00,
+                    1.376600e00,
+                    7.955386e-01,
+                    3.680748e-01,
+                    1.238868e-01,
+                    2.367847e-02,
+                    8.529394e-04,
+                    1.752576e-04,
+                ],
+                [
+                    6.731174e-02,
+                    2.882387e-01,
+                    3.298907e-01,
+                    1.945190e01,
+                    3.469772e-01,
+                    2.862770e-01,
+                    1.955920e-01,
+                    1.045931e-01,
+                    3.959687e-02,
+                    1.630067e-02,
+                ],
+                [
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                ],
+            ]
+        )
+    )
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[:, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    dp = np.zeros(nlev)
+    dp[1:-1] = 0.5 * (level[2:] - level[:-2])
+    dp[0] = 0.5 * (level[1] - level[0])
+    dp[-1] = 0.5 * (level[-1] - level[-2])
+    dp = 100.0 * dp / STANDARD_CONSTANTS.GRAVITY
+    dp = dp / np.sum(dp)
+
+    spectra = power_spectra(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w", vertical_weights=dp)
+
+    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+
+
+def test_spectra_scalar_with_nan():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 180.0, 10)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[:, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+    w[0, 1, 2, 3] = np.nan
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="NaN value found in field: w."):
+        power_spectra(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w")
 
 
 def test_spectra_spherical_harmonic():

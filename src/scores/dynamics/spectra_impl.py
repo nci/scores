@@ -31,8 +31,9 @@ def power_spectra(
     time_name: str = "time",
     zonal_velocity_name: str = "u",
     meridional_velocity_name: str = "v",
-    custom_field_name: str | None = None,
+    scalar_field_name: str | None = None,
     zonal_filter_width: float = 0.125,
+    vertical_weights: np.ndarray | None = None,
     constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
@@ -41,7 +42,7 @@ def power_spectra(
 
     Args:
         data: Xarray Dataset containing the field to transform (maybe derived from the zonal and meridional velocity
-            components, or froma custom field.
+            components, or from a custom field).
         reduce_vertical: average over the vertical pressure levels (default is False).
         reduce_time: average over the time levels (default is False).
         spherical_harmonic: compute spectra using spherical harmonics in both the zonal and meridional dimensions,
@@ -54,12 +55,15 @@ def power_spectra(
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
         meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
-        custom_field_name: string giving the textual name of the field from which to compute the spectra. If absent
+        scalar_field_name: string giving the textual name of the field from which to compute the spectra. If absent
             then compute the spectra for the kinetic energy as determined from the zonal and meridional velocity
             components.
         zonal_filter_width: ratio of the left and right domain size to the total zonal domain size over which to apply
             a filter to the input data in the case that the Fourier spectra is to be computed for a zonal sub-domain
             (default is 0.125).
+        vertical_weights: numpy array of vertical weights for averaging over when reducing the vertical dimension.
+            Only required (optionally) if reduce_vertical is True. If not supplied then it is assumed that the
+            vertical coordinate is hydrostatic pressure.
         constants: class containing the planetary constants used to specify the geometry and thermodynamics (optional,
             will instantiate a version of the planet_constants class with default values if not supplied).
 
@@ -72,9 +76,18 @@ def power_spectra(
 
     # average over the vertical dimension (pressure levels)
     if reduce_vertical and len(_data.level.values) > 1:
-        dp = _pressure_level_thickness(_data.level.values, constants)
-        dp = dp / np.sum(dp)
-        dp_x = xr.DataArray(dp, dims=(pressure_level_name))
+        if vertical_weights is not None:
+            if len(vertical_weights) != _data.sizes[pressure_level_name]:
+                error_msg = IndexError(
+                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of",
+                    +"{pressure_level_name}: {_data.sizes[pressure_level_name]}.",
+                )
+                raise error_msg
+        else:
+            dp = _pressure_level_thickness(_data.level.values, constants)
+            vertical_weights = dp / np.sum(dp)
+
+        dp_x = xr.DataArray(vertical_weights, dims=(pressure_level_name))
         _data = (dp_x * _data).sum(dim=pressure_level_name)
 
     # average over the time dimension
@@ -125,7 +138,15 @@ def power_spectra(
         if dask != "Unavailable":  # pragma: no cover
             _data = _data.compute()
 
-        if custom_field_name is None:
+        if scalar_field_name is None:
+            error_msg = ValueError(f"NaN value found in field: {zonal_velocity_name}.")
+            if np.any(np.isnan(data[zonal_velocity_name].as_numpy())):
+                raise error_msg
+
+            error_msg = ValueError(f"NaN value found in field: {meridional_velocity_name}.")
+            if np.any(np.isnan(data[meridional_velocity_name].as_numpy())):
+                raise error_msg
+
             lon_index = _data[zonal_velocity_name].get_axis_num(longitude_name)
             fft_lon_u = xr.apply_ufunc(
                 _scaled_rfft,
@@ -145,10 +166,14 @@ def power_spectra(
             )
             fft_lon = 0.5 * (fft_lon_u + fft_lon_v)
         else:
-            lon_index = _data[custom_field_name].get_axis_num(longitude_name)
+            error_msg = ValueError(f"NaN value found in field: {scalar_field_name}.")
+            if np.any(np.isnan(data[scalar_field_name].as_numpy())):
+                raise error_msg
+
+            lon_index = _data[scalar_field_name].get_axis_num(longitude_name)
             fft_lon = xr.apply_ufunc(
                 _scaled_rfft,
-                _data[custom_field_name],
+                _data[scalar_field_name],
                 input_core_dims=[[longitude_name]],
                 output_core_dims=[["wavenumber"]],
                 exclude_dims={longitude_name},
