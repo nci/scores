@@ -329,7 +329,7 @@ def test__dm_test_statistic_with_nan():
     diffs = np.array([np.nan, 1, 2, 3, 4.0, np.nan])
     with pytest.warns(RuntimeWarning):
         result = _dm_test_statistic(diffs, 2, method="HLN")
-    np.testing.assert_allclose(result, DM_TEST_STAT_EXP1, atol=1e-5)
+    np.testing.assert_allclose(result, DM_TEST_STAT_EXP1)
 
 
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
@@ -419,9 +419,19 @@ def test_diebold_mariano(distribution, expected):
             confidence_level=0.9,
             statistic_distribution=distribution,
         )
-    xr.testing.assert_allclose(result, expected, atol=7)
+    xr.testing.assert_allclose(result, expected)
 
 
+DM1D_TEST_STATS_T_EXP = xr.Dataset(
+    data_vars={
+        "mean": 2.5,
+        "dm_test_stat": DM_TEST_STAT_EXP1,
+        "timeseries_len": 4,
+        "confidence_gt_0": 0.9443164226429581,
+        "ci_upper": 5.131140307989639,
+        "ci_lower": -0.13114030798963894,
+    },
+)
 DM1D_TEST_STATS_NORMAL_EXP = xr.Dataset(
     data_vars={
         "mean": 2.5,
@@ -434,13 +444,21 @@ DM1D_TEST_STATS_NORMAL_EXP = xr.Dataset(
 )
 
 
-def test_diebold_mariano_1d():
+@pytest.mark.parametrize(
+    ("distribution", "expected"),
+    [
+        ("t", DM1D_TEST_STATS_T_EXP),
+        ("normal", DM1D_TEST_STATS_NORMAL_EXP),
+    ],
+)
+def test_diebold_mariano_1d(distribution, expected):
     """
     Tests that diebold_mariano_1d gives results as expected and raises a warning
     due to a NaN in the data.
     """
     timeseries = np.array([1, 2, 3.0, 4, np.nan])
     with pytest.warns(RuntimeWarning):
-        result = diebold_mariano_1d(timeseries, 2)
-    expected = DM1D_TEST_STATS_NORMAL_EXP
-    xr.testing.assert_allclose(result, expected, atol=7)
+        result = diebold_mariano_1d(
+            timeseries, 2, statistic_distribution=distribution, method="HLN", confidence_level=0.9
+        )
+    xr.testing.assert_allclose(result, expected)
