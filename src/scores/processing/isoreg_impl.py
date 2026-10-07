@@ -58,9 +58,9 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     Quantile values from empirical cumulative distribution functions are not always unique.
     This implementation for quantile isotonic regression (``functional="quantile"``)
     selects the midpoint of the interval of equally valid quantile values within each
-    block of the isotonic regression. The ``weight`` argument is ignored in this
-    implementation. Users should supply an appropriate solver if weighted quantile
-    isotonic regression is desired.
+    block of the isotonic regression. Moreover, when ``functional="quantile"``, the ``weight``
+    argument must be ``None``. If weighted quantile isotonic regression is desired,
+    the user should instead supply an appropriate solver.
 
     This implementation uses ``scipy.optimize.isotonic_regression`` when ``functional="mean"``.
 
@@ -76,8 +76,8 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
             "quantile" or ``None``. If ``None`` then ``solver`` must be supplied. The current
             implementation for ``"quantile"`` does not accept weights. If weighted quantile
             regression is desired then the user should should supply an appropriate solver.
-        bootstraps: the number of bootstrap samples to perform for calculating the
-            Set to ``None`` if a confidence band is not required.
+        bootstraps: the number of bootstrap samples to perform for calculating the regression
+            confidence band. Set to ``None`` if a confidence band is not required.
         quantile_level: the level of the quantile functional if ``functional='quantile'``.
             Must be strictly between 0 and 1.
         solver: function that accepts 1D numpy array of observations and returns
