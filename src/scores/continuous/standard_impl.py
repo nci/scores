@@ -28,9 +28,6 @@ def mse(
 ) -> XarrayLike:
     """Calculates the mean squared error from forecast and observed data.
 
-    See "Mean squared error" section at https://jwgfvr.github.io/forecastverification/index.html#MSE
-    for more information.
-
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2
 
@@ -72,8 +69,8 @@ def mse(
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#MSE
-        -   https://en.wikipedia.org/wiki/Mean_squared_error
+        - https://jwgfvr.github.io/forecastverification/index.html#MSE
+        - https://en.wikipedia.org/wiki/Mean_squared_error
 
     Examples:
         >>> import xarray as xr
@@ -153,8 +150,6 @@ def rmse(
 ) -> FlexibleArrayType:
     """Calculate the Root Mean Squared Error
 
-    A detailed explanation is on https://en.wikipedia.org/wiki/Root-mean-square_deviation
-
     .. math ::
         \\sqrt{\\frac{1}{n} \\sum_{i=1}^n (\\text{forecast}_i - \\text{observed}_i)^2}
 
@@ -193,6 +188,9 @@ def rmse(
             reduced along the relevant dimensions and weighted appropriately.
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    References:
+        - https://en.wikipedia.org/wiki/Root-mean-square_deviation
 
     Examples:
         >>> import xarray as xr
@@ -257,8 +255,6 @@ def mae(
 ) -> FlexibleArrayType:
     """Calculates the mean absolute error from forecast and observed data.
 
-    A detailed explanation is on https://en.wikipedia.org/wiki/Mean_absolute_error
-
     .. math ::
         \\frac{1}{n} \\sum_{i=1}^n | \\text{forecast}_i - \\text{observed}_i |
 
@@ -296,6 +292,9 @@ def mae(
 
     Raises:
         ValueError: If `fcst` and `obs` are not xarray objects and `weights` is not None.
+
+    References:
+        - https://en.wikipedia.org/wiki/Mean_absolute_error
 
     Examples:
         >>> import xarray as xr
@@ -381,10 +380,6 @@ def mean_error(
         \\text{mean error} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-
-    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
-    for more information.
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -408,7 +403,7 @@ def mean_error(
         An xarray object with the mean error of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+        - https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     Examples:
         >>> import xarray as xr
@@ -476,10 +471,6 @@ def additive_bias(
         \\text{Additive bias} =\\frac{1}{N}\\sum_{i=1}^{N}(x_i - y_i)
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-
-    See "Mean error" section at https://jwgfvr.github.io/forecastverification/index.html#meanerror
-    for more information.
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -503,7 +494,7 @@ def additive_bias(
         An xarray object with the additive bias of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#meanerror
+        - https://jwgfvr.github.io/forecastverification/index.html#meanerror
 
     Examples:
         >>> import xarray as xr
@@ -581,9 +572,6 @@ def multiplicative_bias(
         \\text{{Multiplicative bias}} = \\frac{\\frac{1}{N}\\sum_{i=1}^{N}x_i}{\\frac{1}{N}\\sum_{i=1}^{N}y_i}
         \\text{where } x = \\text{the forecast, and } y = \\text{the observation}
 
-    See "(Multiplicative) bias" section at https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
-    for more information.
-
     Args:
         fcst: Forecast or predicted variables.
         obs: Observed variables.
@@ -607,7 +595,7 @@ def multiplicative_bias(
         An xarray object with the multiplicative bias of a forecast.
 
     References:
-        -   https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
+        - https://jwgfvr.github.io/forecastverification/index.html#multiplicative_bias
 
     Examples:
         >>> import xarray as xr

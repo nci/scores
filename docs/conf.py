@@ -16,13 +16,14 @@ version = __version__
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = [
+extensions = [  
     "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "nbsphinx",
     "sphinx_gallery.load_style",
+    "notfound.extension",
 ]
 source_suffix = [".rst", ".md"]
 
@@ -98,3 +99,10 @@ nbsphinx_epilog = r"""
     \textcolor{gray}{\dotfill\ \sphinxcode{\sphinxupquote{\strut
     {{ docname | escape_latex }}}} ends here.}}
 """
+
+# Point the extension to custom templates for 404 pages
+notfound_template = '404.html' 
+
+# Tell the extension to use the local server root instead of /en/latest/
+# This should only ever be used for local builds for testing 404, and not on Read the Docs
+# notfound_urls_prefix = '/' 
