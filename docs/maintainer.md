@@ -197,4 +197,13 @@ To check the rendering of tutorials in readthedocs:
   - Check the entirety of the tutorial (sometimes things will render properly in one section, while not rendering properly in a different section of the same tutorial).
   - If you make any changes to the code cells, re-execute the Notebook in JupyterLab before committing, otherwise some things (e.g. some plots) won't render in readthedocs. Then re-check the tutorial in readthedocs to ensure the tutorial is still rendering properly.
 
+## This section covers detection of breaking changes and how to label breaking change approved
 
+There are two Github actions related to handing pull requests that bring in breaking changes:
+
+1. `.github/workflows/detect-breaking-changes.yml`: An action that uses griffe to detect breaking changes in a PR. If there are breaking changes and there is no breaking-change-approved label attached to the PR, then the CI pipeline fails.
+2. `.github/workflows/breaking-changes-label-guard.yml`: An action to prevent users who aren't code owner or maintainer level to add the breaking-change-approved label.
+
+The first will scan code with [griffe](https://mkdocstrings.github.io/griffe/#what-is-griffe), a Python tool and library to help find breaking changes in your API. If a `breaking-change-approved` label is not applied to a PR, a PR pipeline will fail if there are breaking changes.
+
+The breaking changes label guard ensures only code owner and code maintainer (`admin` and `maintain` role) level users can apply the `breaking-changes-approved` label.
