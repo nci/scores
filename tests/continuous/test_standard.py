@@ -1230,17 +1230,19 @@ def test_s1(fcst, obs, x_dim, y_dim, weights, expected):
     xr.testing.assert_allclose(result, expected)
 
 
+TIMES_S1 = ["t1", "t2"]
+EXP_S1_UNWEIGHTED_TIME = xr.DataArray([36.55913978494625, 36.55913978494625], coords={"time": TIMES_S1}, dims=["time"])
+
+
 def test_s1_preserve_dims():
     """
     Tests that scores.continuous.s1 correctly preserves non-grid dimensions
     """
-    times = ["t1", "t2"]
-    fcst = xr.concat([FCST_S1, FCST_S1 * 1.1], dim="time").assign_coords(time=times)
-    obs = xr.concat([OBS_S1, OBS_S1 * 1.1], dim="time").assign_coords(time=times)
+    fcst = xr.concat([FCST_S1, FCST_S1 * 1.1], dim="time").assign_coords(time=TIMES_S1)
+    obs = xr.concat([OBS_S1, OBS_S1 * 1.1], dim="time").assign_coords(time=TIMES_S1)
 
     result = scores.continuous.s1(fcst, obs, x_dim="lon", y_dim="lat", preserve_dims="time")
-    expected = xr.DataArray([36.55913978494625, 36.55913978494625], coords={"time": times}, dims=["time"])
-    xr.testing.assert_allclose(result, expected)
+    xr.testing.assert_allclose(result, EXP_S1_UNWEIGHTED_TIME)
 
 
 def test_s1_dataset():
@@ -1310,14 +1312,12 @@ def test_s1_broadcasting():
     """
     Tests that scores.continuous.s1 correctly broadcasts fcst and obs with mismatched dimensions
     """
-    times = ["t1", "t2"]
-    fcst = xr.concat([FCST_S1, FCST_S1], dim="time").assign_coords(time=times)
+    fcst = xr.concat([FCST_S1, FCST_S1], dim="time").assign_coords(time=TIMES_S1)
     # obs has no "time" dimension, so it must broadcast against fcst's "time" dimension
     obs = OBS_S1
 
     result = scores.continuous.s1(fcst, obs, x_dim="lon", y_dim="lat", preserve_dims="time")
-    expected = xr.DataArray([36.55913978494625, 36.55913978494625], coords={"time": times}, dims=["time"])
-    xr.testing.assert_allclose(result, expected)
+    xr.testing.assert_allclose(result, EXP_S1_UNWEIGHTED_TIME)
 
 
 def test_s1_reduce_dims():
@@ -1325,10 +1325,8 @@ def test_s1_reduce_dims():
     Tests that scores.continuous.s1 works when `reduce_dims` is explicitly specified
     (as opposed to `preserve_dims`)
     """
-    times = ["t1", "t2"]
-    fcst = xr.concat([FCST_S1, FCST_S1 * 1.1], dim="time").assign_coords(time=times)
-    obs = xr.concat([OBS_S1, OBS_S1 * 1.1], dim="time").assign_coords(time=times)
+    fcst = xr.concat([FCST_S1, FCST_S1 * 1.1], dim="time").assign_coords(time=TIMES_S1)
+    obs = xr.concat([OBS_S1, OBS_S1 * 1.1], dim="time").assign_coords(time=TIMES_S1)
 
     result = scores.continuous.s1(fcst, obs, x_dim="lon", y_dim="lat", reduce_dims=["lon", "lat"])
-    expected = xr.DataArray([36.55913978494625, 36.55913978494625], coords={"time": times}, dims=["time"])
-    xr.testing.assert_allclose(result, expected)
+    xr.testing.assert_allclose(result, EXP_S1_UNWEIGHTED_TIME)
