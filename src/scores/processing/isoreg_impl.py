@@ -38,7 +38,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     Forecasts and observations are scalar-valued (i.e, integers, floats or NaN).
 
     If forecasts target the mean or a quantile functional, then the user can select that
-    functional. Otherwise the user needs to supply a `solver` function
+    functional. Otherwise the user needs to supply a ``solver`` function
 
         - of one variable (if no weights are supplied), or
         - of two variables (if weights are supplied).
@@ -55,22 +55,30 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     observations are sorted in descending order within each subset of ties. Isotonic regression
     is then performed on this sorted observation sequence.
 
-    This implementation uses sklearn.isotonic.IsotonicRegression when `functional="mean"`.
+    Quantile values from empirical cumulative distribution functions are not always unique.
+    This implementation for quantile isotonic regression (``functional="quantile"``)
+    selects the midpoint of the interval of equally valid quantile values within each
+    block of the isotonic regression. Moreover, when ``functional="quantile"``, the ``weight``
+    argument must be ``None``. If weighted quantile isotonic regression is desired,
+    the user should instead supply an appropriate solver.
+
+    This implementation uses ``scipy.optimize.isotonic_regression`` when ``functional="mean"``.
 
     Args:
-        fcst: np.array or xr.DataArray of forecast (or explanatory) values. Values must
-            be float, integer or NaN.
-        obs: np.array or xr.DataArray of corresponding observation (or response) values.
-            Must be the same shape as `fcst`. Values must be float, integer or NaN.
+        fcst: 1-dimensional np.array or xr.DataArray of forecast (or explanatory) values.
+            Values must be float, integer or NaN.
+        obs: 1-dimensional np.array or xr.DataArray of corresponding observation (or response)
+            values. Must be the same shape as ``fcst``. Values must be float, integer or NaN.
         weight: positive weights to apply to each forecast-observation pair. Must be the
-            same shape as `fcst`, or `None` (which is equivalent to applying equal weights).
+            same shape as ``fcst``, or ``None`` (which is equivalent to applying equal weights).
+            Ignored when ``functional="quantile"``.
         functional: Functional that the forecasts are targeting. Either "mean" or
-            "quantile" or `None`. If `None` then `solver` must be supplied. The current
-            implementation for "quantile" does not accept weights. If weighted quantile
+            "quantile" or ``None``. If ``None`` then ``solver`` must be supplied. The current
+            implementation for ``"quantile"`` does not accept weights. If weighted quantile
             regression is desired then the user should should supply an appropriate solver.
-        bootstraps: the number of bootstrap samples to perform for calculating the
-            regression confidence band. Set to `None` if a confidence band is not required.
-        quantile_level: the level of the quantile functional if `functional='quantile'`.
+        bootstraps: the number of bootstrap samples to perform for calculating the regression
+            confidence band. Set to ``None`` if a confidence band is not required.
+        quantile_level: the level of the quantile functional if ``functional='quantile'``.
             Must be strictly between 0 and 1.
         solver: function that accepts 1D numpy array of observations and returns
             a float. Function values give the regression fit for each block as determined
@@ -79,61 +87,65 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         confidence_level: Confidence level of the confidence band, strictly between 0 and 1.
             For example, a confidence level of 0.5 will calculate the confidence band by
             computing the 25th and 75th percentiles of the bootstrapped samples.
+            (``confidence_level=0.5``)
         min_non_nan: The minimum number of non-NaN bootstrapped values to calculate
             confidence bands at a particular forecast value.
         report_bootstrap_results: This specifies to whether keep the bootstrapped
-            regression values in return dictionary. Default is False to keep the output
+            regression values in return dictionary. Default is ``False`` to keep the output
             result small.
 
     Returns:
-        Dictionary with the following keys:
+        A dictionary with the following keys.
 
-        - "unique_fcst_sorted": 1D numpy array of remaining forecast values sorted in
-            ascending order, after any NaNs from `fcst`, `obs` and `weight` are removed,
-            and only unique values are kept to keep the output size reasonably small.
-        - "fcst_counts": 1D numpy array of forecast counts for unique values of forecast sorted
+        - "unique_fcst_sorted": 1D numpy array of remaining forecast values sorted
+          in ascending order, after any NaNs from ``fcst``, ``obs`` and ``weight`` are
+          removed, and only unique values are kept to keep the output size reasonably small.
+        - "fcst_counts": 1D numpy array of forecast counts for unique values of ``fcst``
+          sorted in ascending order.
         - "regression_values": 1D numpy array of regression values corresponding to
-            "unique_fcst_sorted" values.
+          "unique_fcst_sorted" values.
         - "regression_func": function that returns the regression fit based on linear
-            interpolation of ("fcst_sorted", "regression_values"), for any supplied
-            argument (1D numpy array) of potential forecast values.
-        - "bootstrap_results": in the case of `report_bootstrap_results=True`, 2D numpy
-            array of bootstrapped regression values is included in return dictionary.
-            Each row gives the interpolated regression values from a particular bootstrapped
-            sample, evaluated at "fcst_sorted" values. If `m` is the number of bootstrap
-            samples and `n = len(fcst_sorted)` then it is has shape `(m, n)`. We emphasise
-            that this array corresponds to `fcst_sorted` not `unique_fcst_sorted`.
+          interpolation of ("fcst_sorted", "regression_values"), for any supplied
+          argument (1D numpy array) of potential forecast values.
+        - "bootstrap_results": in the case of ``report_bootstrap_results=True``, 2D numpy
+          array of bootstrapped regression values is included in return dictionary.
+          Each row gives the interpolated regression values from a particular bootstrapped
+          sample, evaluated at "fcst_sorted" values. If ``m`` is the number of bootstrap
+          samples and ``n = len(fcst_sorted)`` then it is has shape ``(m, n)``. We emphasise
+          that this array corresponds to "fcst_sorted" not "unique_fcst_sorted".
         - "confidence_band_lower_values": values of lower confidence band threshold, evaluated
-            at "unique_fcst_sorted" values.
+          at "unique_fcst_sorted" values.
         - "confidence_band_upper_values": values of upper confidence band threshold, evaluated
-            at "unique_fcst_sorted" values.
+          at "unique_fcst_sorted" values.
         - "confidence_band_lower_func": function that returns regression fit based on linear
-            interpolation of ("fcst_sorted", "confidence_band_lower_values"), given any
-            argument (1D numpy array) of potential forecast values.
+          interpolation of ("fcst_sorted", "confidence_band_lower_values"), given any
+          argument (1D numpy array) of potential forecast values.
         - "confidence_band_upper_func": function that returns regression fit based on linear
-            interpolation of ("fcst_sorted", "confidence_band_upper_values"), given any
-            argument (1D numpy array) of potential forecast values.
+          interpolation of ("fcst_sorted", "confidence_band_upper_values"), given any
+          argument (1D numpy array) of potential forecast values.
         - "confidence_band_levels": tuple giving the quantile levels used to calculate the
-            confidence band.
+          confidence band.
 
     Raises:
-        ValueError: if `fcst` and `obs` are np.arrays and don't have the same shape.
-        ValueError: if `fcst` and `weight` are np.arrays and don't have the same shape.
-        ValueError: if `fcst` and `obs` are xarray.DataArrays and don't have the same dimensions.
-        ValueError: if `fcst` and `weight` are xarray.DataArrays and don't have the same dimensions.
-        ValueError: if any entries of `fcst`, `obs` or `weight` are not an integer, float or NaN.
-        ValueError: if there are no `fcst` and `obs` pairs after NaNs are removed.
-        ValueError: if `functional` is not one of "mean", "quantile" or `None`.
-        ValueError: if `quantile_level` is not strictly between 0 and 1 when `functional="quantile"`.
-        ValueError: if `weight` is not `None` when `functional="quantile"`.
-        ValueError: if `functional` and `solver` are both `None`.
-        ValueError: if not exactly one of `functional` and `solver` is `None`.
-        ValueError: if `bootstraps` is not a positive integer.
-        ValueError: if `confidence_level` is not strictly between 0 and 1.
+        ValueError: if ``fcst`` and ``obs`` are np.arrays and don't have the same shape.
+        ValueError: if ``fcst`` and ``weight`` are np.arrays and don't have the same shape.
+        ValueError: if ``fcst`` and ``obs`` are xarray.DataArrays and don't have the same dimensions.
+        ValueError: if ``fcst`` and ``weight`` are xarray.DataArrays and don't have the same dimensions.
+        ValueError: if any entries of ``fcst``, ``obs`` or ``weight`` are not an integer, float or NaN.
+        ValueError: if there are no ``fcst`` and ``obs`` pairs after NaNs are removed.
+        ValueError: if ``functional`` is not one of "mean", "quantile" or ``None``.
+        ValueError: if ``quantile_level`` is not strictly between 0 and 1 when ``functional="quantile"``.
+        ValueError: if ``weight`` is not ``None`` when ``functional="quantile"``.
+        ValueError: if ``functional`` and ``solver`` are both ``None``.
+        ValueError: if not exactly one of ``functional`` and ``solver`` is ``None``.
+        ValueError: if ``bootstraps`` is not a positive integer.
+        ValueError: if ``confidence_level`` is not strictly between 0 and 1.
 
-    Note: This function only keeps the unique values of `fcst_sorted` to keep the volume of
-        the return dictionary small. The forecast counts is also included, so users can it to
-        create forecast histogram (usually displayed in the reliability diagrams).
+    .. tip::
+        ``unique_fcst_sorted`` can be paired with ``fcst_counts`` to:
+
+        - create a forecast histogram (usually displayed in the reliability diagrams).
+        - reconstruct the full ``fcst_sorted``, if necessary.
 
     References
         - de Leeuw, Hornik and Mair. "Isotone Optimization in R: Pool-Adjacent-Violators Algorithm (PAVA)
@@ -147,24 +159,26 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         >>> import xarray as xr
         >>> from scores.processing import isotonic_fit
 
-        >>> times = ["2024-01-01", "2024-01-02", "2024-01-03"]
+        >>> times = ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"]
 
         >>> fcst = xr.DataArray(
-        ...     [1.2, 2.5, 4.1], coords={"time": times}, dims="time"
+        ...     [1.2, 3.3, 2.5, 4.1], coords={"time": times}, dims="time"
         ... )
 
-        >>> obs = xr.DataArray([1.0, 3.0, 4.5], coords={"time": times}, dims="time")
+        >>> obs = xr.DataArray(
+        ...     [1.0, 5.0, 0.4, 4.0], coords={"time": times}, dims="time"
+        ... )
 
         >>> result = isotonic_fit(fcst, obs)
 
         >>> result["fcst_sorted"]
-        array([1.2, 2.5, 4.1])
+        array([1.2, 2.5, 3.3, 4.1])
 
         >>> result["fcst_counts"]
-        array([1, 1, 1])
+        array([1, 1, 1, 1])
 
         >>> result["regression_values"]
-        array([1. , 3. , 4.5])
+        array([0.7, 0.7, 4.5, 4.5])
 
     """
 
@@ -270,7 +284,10 @@ def _xr_to_np(
     if weight is not None:
         if set(fcst_dims) != set(weight.dims):
             raise ValueError("`fcst` and `weight` must have same dimensions.")
-        merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs"), weight.rename("weight")], join="outer")
+        merged_ds = xr.merge(
+            [fcst.rename("fcst"), obs.rename("obs"), weight.rename("weight")],
+            join="outer",
+        )
         weight = merged_ds["weight"].transpose(*fcst_dims).values
     else:
         merged_ds = xr.merge([fcst.rename("fcst"), obs.rename("obs")], join="outer")
@@ -348,6 +365,7 @@ def _tidy_ir_inputs(
 
     Arrays are flattened to 1D arrays. NaNs are jointly removed from fcst, obs, weights.
     The array data is then sorted by fcst (ascending) then by obs (descending).
+    The dtype of obs is changed to float.
 
     Args:
         fcst: numpy array of forecast values.
@@ -364,6 +382,7 @@ def _tidy_ir_inputs(
     """
     fcst = fcst.flatten()
     obs = obs.flatten()
+    obs = obs.astype(float)
 
     if weight is not None:
         weight = weight.flatten()
@@ -410,7 +429,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
     mutually tidied via `_tidy_ir_inputs`.
 
     Args:
-        obs: tidied array of observed values.
+        obs: tidied array of observed values, including the assumption that they are floats.
         weight: tidied array of weights.
         functional: either "mean", "quantile" or None.
         quantile_level: float strictly between 0 and 1 if functional="quantile",
@@ -463,7 +482,7 @@ def _contiguous_ir(
         raise ValueError("`y` and `weight` must have same length.")
 
     # y_out will be the final regression output
-    y_out = y.copy()
+    y_out = y.astype(float)
 
     # target describes a list of blocks.  At any time, if [i..j] (inclusive) is
     # an active block, then target[i] := j and target[j] := i.
@@ -514,8 +533,12 @@ def _contiguous_ir(
 
 
 def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
-    """Performs contiguous quantile IR on tidied data y, for quantile-level alpha, with no weights."""
-    return _contiguous_ir(y, partial(np.quantile, q=alpha))
+    """
+    Performs contiguous quantile IR on tidied data y, for quantile-level alpha,
+    with no weights. Quantile calculation uses the "averaged_inverted_cdf" method
+    so that the returned quantile values are true alpha-quantiles of the block empirical CDF.
+    """
+    return _contiguous_ir(y, partial(np.quantile, q=alpha, method="averaged_inverted_cdf"))
 
 
 def _contiguous_mean_ir(
