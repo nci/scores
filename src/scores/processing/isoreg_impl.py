@@ -95,36 +95,36 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
             result small.
 
     Returns:
-        Dictionary with the following keys:
+        A dictionary with the following keys.
 
-        - "unique_fcst_sorted": 1D numpy array of remaining forecast values sorted in
-            ascending order, after any NaNs from ``fcst``, ``obs`` and ``weight`` are removed,
-            and only unique values are kept to keep the output size reasonably small.
+        - "unique_fcst_sorted": 1D numpy array of remaining forecast values sorted
+          in ascending order, after any NaNs from ``fcst``, ``obs`` and ``weight`` are
+          removed, and only unique values are kept to keep the output size reasonably small.
         - "fcst_counts": 1D numpy array of forecast counts for unique values of ``fcst``
-            sorted in ascending order.
+          sorted in ascending order.
         - "regression_values": 1D numpy array of regression values corresponding to
-            "unique_fcst_sorted" values.
+          "unique_fcst_sorted" values.
         - "regression_func": function that returns the regression fit based on linear
-            interpolation of ("fcst_sorted", "regression_values"), for any supplied
-            argument (1D numpy array) of potential forecast values.
+          interpolation of ("fcst_sorted", "regression_values"), for any supplied
+          argument (1D numpy array) of potential forecast values.
         - "bootstrap_results": in the case of ``report_bootstrap_results=True``, 2D numpy
-            array of bootstrapped regression values is included in return dictionary.
-            Each row gives the interpolated regression values from a particular bootstrapped
-            sample, evaluated at "fcst_sorted" values. If ``m`` is the number of bootstrap
-            samples and ``n = len(fcst_sorted)`` then it is has shape ``(m, n)``. We emphasise
-            that this array corresponds to "fcst_sorted" not "unique_fcst_sorted".
+          array of bootstrapped regression values is included in return dictionary.
+          Each row gives the interpolated regression values from a particular bootstrapped
+          sample, evaluated at "fcst_sorted" values. If ``m`` is the number of bootstrap
+          samples and ``n = len(fcst_sorted)`` then it is has shape ``(m, n)``. We emphasise
+          that this array corresponds to "fcst_sorted" not "unique_fcst_sorted".
         - "confidence_band_lower_values": values of lower confidence band threshold, evaluated
-            at "unique_fcst_sorted" values.
+          at "unique_fcst_sorted" values.
         - "confidence_band_upper_values": values of upper confidence band threshold, evaluated
-            at "unique_fcst_sorted" values.
+          at "unique_fcst_sorted" values.
         - "confidence_band_lower_func": function that returns regression fit based on linear
-            interpolation of ("fcst_sorted", "confidence_band_lower_values"), given any
-            argument (1D numpy array) of potential forecast values.
+          interpolation of ("fcst_sorted", "confidence_band_lower_values"), given any
+          argument (1D numpy array) of potential forecast values.
         - "confidence_band_upper_func": function that returns regression fit based on linear
-            interpolation of ("fcst_sorted", "confidence_band_upper_values"), given any
-            argument (1D numpy array) of potential forecast values.
+          interpolation of ("fcst_sorted", "confidence_band_upper_values"), given any
+          argument (1D numpy array) of potential forecast values.
         - "confidence_band_levels": tuple giving the quantile levels used to calculate the
-            confidence band.
+          confidence band.
 
     Raises:
         ValueError: if ``fcst`` and ``obs`` are np.arrays and don't have the same shape.
@@ -141,9 +141,11 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         ValueError: if ``bootstraps`` is not a positive integer.
         ValueError: if ``confidence_level`` is not strictly between 0 and 1.
 
-    Note: This function only keeps the unique values of ``fcst_sorted`` to keep the volume of
-        the return dictionary small. The forecast counts is also included, so users can
-        create a forecast histogram (usually displayed in the reliability diagrams) if desired.
+    .. tip::
+        ``unique_fcst_sorted`` can be paired with ``fcst_counts`` to:
+
+        - create a forecast histogram (usually displayed in the reliability diagrams).
+        - reconstruct the full ``fcst_sorted``, if necessary.
 
     References
         - de Leeuw, Hornik and Mair. "Isotone Optimization in R: Pool-Adjacent-Violators Algorithm (PAVA)
@@ -480,7 +482,7 @@ def _contiguous_ir(
         raise ValueError("`y` and `weight` must have same length.")
 
     # y_out will be the final regression output
-    y_out = y.copy()
+    y_out = y.astype(float)
 
     # target describes a list of blocks.  At any time, if [i..j] (inclusive) is
     # an active block, then target[i] := j and target[j] := i.
