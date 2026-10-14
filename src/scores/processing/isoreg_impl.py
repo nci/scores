@@ -481,8 +481,12 @@ def _contiguous_ir(
     if weight is not None and len(weight) != len_y:
         raise ValueError("`y` and `weight` must have same length.")
 
-    # y_out will be the final regression output
-    y_out = y.astype(float)
+    # defensive cast in case this private function is called directly with non-float input
+    y = np.asarray(y, dtype=float)
+
+    # y_out is updated in place as blocks are merged, but starts as a copy of y: singleton
+    # blocks are compared using their original y value until a solver result overwrites them
+    y_out = y.copy()
 
     # target describes a list of blocks.  At any time, if [i..j] (inclusive) is
     # an active block, then target[i] := j and target[j] := i.
