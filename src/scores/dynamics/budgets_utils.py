@@ -249,11 +249,11 @@ def _integrate_energy_exchange(
     return int_grad_f_dot_u, int_f_div_u
 
 
-def _scaled_rfft(data, axis=-1):
+def _scaled_rfft_squared(data, axis=-1):
     """
     Wrapper function for the fast Fourier transform of real data with n entries to return for wavenumber k:
-        2/n f^(data) * (f^(data))* for k > 0 and
-        1/n f^(data) * (f^(data))* for k = 0
+        4/n hat{f(data)} * conj(hat{f(data)}) for k > 0 and
+        1/n hat{f(data)} * conj(hat{f(data)}) for k = 0
     """
     data = np.fft.rfft(data, axis=axis, norm="forward")
     data = data * np.conj(data)

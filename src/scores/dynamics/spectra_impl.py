@@ -14,17 +14,19 @@ except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pr
 from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
     _pressure_level_thickness,
-    _scaled_rfft,
+    _scaled_rfft_squared,
 )
 from scores.typing import XarrayLike
 
 
 def _zonal_filter(_data, longitude_name, zonal_filter_width):
     """
-    If the zonal domain is less than the full planet, then filter the data at the zonal boundaries to avoid
-    spectral ringing from discintinuous data at the boundaries.
+    If the zonal domain is less than the full planet, then filter the data at the zonal boundaries to avoid spectral
+    ringing from discintinuous data at the boundaries. Filtering is done with a cosine function where for a domain of
+    width L spanning theta_l to theta_r the filter value is 0 at the zonal domain endpoints (theta_l and theta_r) and
+    1 at theta_l + L/zonal_filter_width and theta_r - L/zonal_filter_width, with theta_l < theta_r.
     """
-    n_lon = len(_data.longitude.values)
+    n_lon = len(_data.longitude)
     L_theta = np.max(_data.longitude.values) - np.min(_data.longitude.values)
     d_theta = L_theta / (n_lon - 1)
     L = n_lon * d_theta
@@ -75,7 +77,7 @@ def _reduce_dims(_data, reduce_vertical, reduce_time, pressure_level_name, time_
         _data = (dp_x * _data).sum(dim=pressure_level_name)
 
     # average over the time dimension
-    nt = len(_data.time.values)
+    nt = len(_data.time)
     if reduce_time:
         _data = _data.sum(dim=time_name) / nt
 
@@ -160,7 +162,7 @@ def power_spectra_scalar(
 
         lon_index = _data[scalar_field_name].get_axis_num(longitude_name)
         fft_lon = xr.apply_ufunc(
-            _scaled_rfft,
+            _scaled_rfft_squared,
             _data[scalar_field_name],
             input_core_dims=[[longitude_name]],
             output_core_dims=[["wavenumber"]],
@@ -269,7 +271,7 @@ def power_spectra_vector(
 
         lon_index = _data[zonal_velocity_name].get_axis_num(longitude_name)
         fft_lon_u = xr.apply_ufunc(
-            _scaled_rfft,
+            _scaled_rfft_squared,
             _data[zonal_velocity_name],
             input_core_dims=[[longitude_name]],
             output_core_dims=[["wavenumber"]],
@@ -277,7 +279,7 @@ def power_spectra_vector(
             kwargs={"axis": lon_index},
         )
         fft_lon_v = xr.apply_ufunc(
-            _scaled_rfft,
+            _scaled_rfft_squared,
             _data[meridional_velocity_name],
             input_core_dims=[[longitude_name]],
             output_core_dims=[["wavenumber"]],

@@ -21,7 +21,7 @@ import xarray as xr
 
 from scores.dynamics.budgets_utils import (
     STANDARD_CONSTANTS,
-    _scaled_rfft,
+    _scaled_rfft_squared,
 )
 from scores.dynamics.spectra_impl import (
     power_spectra_scalar,
@@ -29,12 +29,12 @@ from scores.dynamics.spectra_impl import (
 )
 
 
-def test_scaled_rfft():
+def test_scaled_rfft_squared():
     n = 128
     L = 2.0 * np.pi
     x = np.linspace(0.0, L, n, endpoint=False)
     y = 8.0 + 5.0 * np.cos(2.0 * x) + 7.0 * np.sin(3.0 * x) + 3.0 * np.cos(5.0 * x) + 4.0 * np.sin(5.0 * x)
-    yhat2 = _scaled_rfft(y, axis=-1)
+    yhat2 = _scaled_rfft_squared(y, axis=-1)
     ans = np.zeros(n // 2 + 1)
     ans[0] = 64.0
     ans[2] = 25.0
