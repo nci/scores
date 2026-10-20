@@ -189,13 +189,13 @@ def crps_cdf(
 
     Given:
         - a predictive CDF `fcst` indexed at thresholds by variable x
-        - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if \
-         :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
+        - an observation in CDF form `obs_cdf` (i.e., :math:`\\text{obs_cdf}(x) = 0` if
+          :math:`x < \\text{obs}` and 1 if :math:`x >= \\text{obs}`)
         - a `threshold_weight` array indexed by variable x
 
     The threshold-weighted CRPS is given by:
-        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times \
-        (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
+        - :math:`twCRPS = \\int_{-\\infty}^{\\infty}{[\\text{threshold_weight}(x) \\times
+          (\\text{fcst}(x) - \\text{obs_cdf}(x))^2]\\text{d}x}`, over all thresholds x.
         - The usual CRPS is the threshold-weighted CRPS with :math:`\\text{threshold_weight}(x) = 1` for all x.
 
     This can be decomposed into an over-forecast penalty:
@@ -260,14 +260,14 @@ def crps_cdf(
             (by including additional thresholds) or are specified to be removed (by
             setting `propagate_nans=False`). Select one of:
 
-            - "linear": use linear interpolation, then replace any leading or \
-            trailing NaNs using linear extrapolation. Afterwards, all values are \
-            clipped to the closed interval [0, 1].
+            - "linear": use linear interpolation, then replace any leading or
+              trailing NaNs using linear extrapolation. Afterwards, all values are
+              clipped to the closed interval [0, 1].
             - "step": apply forward filling, then replace any leading NaNs with 0.
-            - "forward": first apply forward filling, then remove any leading NaNs by \
-            back filling.
-            - "backward": first apply back filling, then remove any trailing NaNs by \
-            forward filling.
+            - "forward": first apply forward filling, then remove any leading NaNs by
+              back filling.
+            - "backward": first apply back filling, then remove any trailing NaNs by
+              forward filling.
             - (In most cases, "linear" is likely the appropriate choice.)
 
         threshold_weight_fill_method: how to fill values in `threshold_weight` when NaNs
@@ -321,11 +321,12 @@ def crps_cdf(
         - :py:func:`scores.probability.crps_for_ensemble`
 
     References:
-        - Matheson, J. E., and R. L. Winkler, 1976: Scoring rules for continuous probability distributions. \
-            Management Science, 22(10), 1087–1095. https://doi.org/10.1287/mnsc.22.10.1087
-        - Gneiting, T., & Ranjan, R. (2011). Comparing Density Forecasts Using Threshold- and \
-            Quantile-Weighted Scoring Rules. \
-            Journal of Business & Economic Statistics, 29(3), 411–422. https://doi.org/10.1198/jbes.2010.08110
+        - Gneiting, T., & Ranjan, R. (2011). Comparing density forecasts using threshold- and
+          quantile-weighted scoring rules.
+          Journal of Business & Economic Statistics, 29(3), 411–422. https://doi.org/10.1198/jbes.2010.08110
+        - Matheson, J. E., & Winkler, R. L. (1976). Scoring rules for continuous
+          probability distributions. Management Science, 22(10), 1087–1096.
+          https://doi.org/10.1287/mnsc.22.10.1087
     """
 
     dims = scores.utils.gather_dimensions(
@@ -506,22 +507,22 @@ def crps_cdf_brier_decomposition(
         fcst (xr.DataArray): DataArray of CDF values with threshold dimension `threshold_dim`.
         obs (xr.DataArray): DataArray of observations, not in CDF form.
         threshold_dim (str): name of the threshold dimension in `fcst`.
-        additional_thresholds (Optional[Iterable[float]]): additional thresholds \
+        additional_thresholds (Optional[Iterable[float]]): additional thresholds
             at which to calculate the mean Brier score.
         fcst_fill_method (Literal["linear", "step", "forward", "backward"]): How to fill NaN
             values in `fcst` that arise from new user-supplied thresholds or thresholds derived
             from observations.
 
-            - "linear": use linear interpolation, and if needed also extrapolate linearly. \
-              Clip to 0 and 1. Needs at least two non-NaN values for interpolation, \
+            - "linear": use linear interpolation, and if needed also extrapolate linearly.
+              Clip to 0 and 1. Needs at least two non-NaN values for interpolation,
               so returns NaNs where this condition fails.
-            - "step": use forward filling then set remaining leading NaNs to 0. \
+            - "step": use forward filling then set remaining leading NaNs to 0.
               Produces a step function CDF (i.e. piecewise constant).
-            - "forward": use forward filling then fill any remaining leading NaNs with \
+            - "forward": use forward filling then fill any remaining leading NaNs with
               backward filling.
-            - "backward": use backward filling then fill any remaining trailing NaNs with \
+            - "backward": use backward filling then fill any remaining trailing NaNs with
               forward filling.
-        dims: dimensions to preserve in the output. The dimension `threshold_dim` is always \
+        dims: dimensions to preserve in the output. The dimension `threshold_dim` is always
             preserved, even if not specified here.
 
     Returns:
@@ -645,16 +646,16 @@ def adjust_fcst_for_crps(
     tolerance if 0.12 > `decreasing_tolerance`.
 
     The adjusted array of forecast CDFs is determined as follows:
-        - any NaN values in `fcst` are propagated along `threshold_dim` so that in each case \
-            the entire CDF is NaN;
+        - any NaN values in `fcst` are propagated along `threshold_dim` so that in each case
+          the entire CDF is NaN;
         - any CDFs in `fcst` that are decreasing within specified tolerance are unchanged;
-        - any CDFs in `fcst` that are decreasing outside specified tolerance are replaced with \
-            whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original \
-            values give a higher CRPS in which case original values are kept.
+        - any CDFs in `fcst` that are decreasing outside specified tolerance are replaced with
+          whichever of the upper or lower CDF envelope gives the highest CRPS, unless the original
+          values give a higher CRPS in which case original values are kept.
 
     See :py:func:`scores.processing.cdf.cdf_envelope` for a description of the 'CDF envelope'.
 
-    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using 
+    If propagating NaNs is not desired, the user may first fill NaNs in `fcst` using
     :py:func:`scores.processing.cdf.fill_cdf`.
 
     The CRPS for each forecast case is calculated using `crps`, with a weight of 1.
@@ -835,16 +836,16 @@ def crps_for_ensemble(
     :math:`1 \\leq i \\leq M` and :math:`1 \\leq j \\leq M`.
 
     The value of the constant K in this formula depends on the method:
-        - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is \
-            the exact CRPS value for the empirical cumulative distribution function \
-            constructed using the ensemble values.
-        - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned \
-            is the approximated CRPS where the ensemble values can be interpreted as a \
-            random sample from the underlying predictive distribution. This interpretation \
-            stems from the formula :math:`\\text{CRPS}(F, y) = \\mathbb{E}(|X - y|) - \\frac{1}{2}\\mathbb{E}(|X - X'|)`, where X and X' \
-            are independent samples of the predictive distribution F, y is the observation \
-            (possibly unknown) and E denotes the expectation. This choice of K gives an \
-            unbiased estimate for the second expectation.
+        - If `method="ecdf"` then :math:`K = M ^ 2`. In this case the CRPS value returned is
+          the exact CRPS value for the empirical cumulative distribution function
+          constructed using the ensemble values.
+        - If `method="fair"` then :math:`K = M(M - 1)`. In this case the CRPS value returned
+          is the approximated CRPS where the ensemble values can be interpreted as a
+          random sample from the underlying predictive distribution. This interpretation
+          stems from the formula :math:`\\text{CRPS}(F, y) = \\mathbb{E}(|X - y|) - \\frac{1}{2}\\mathbb{E}(|X - X'|)`, where X and X'
+          are independent samples of the predictive distribution F, y is the observation
+          (possibly unknown) and E denotes the expectation. This choice of K gives an
+          unbiased estimate for the second expectation.
 
     When the `include_components` flag is set to `True`, the CRPS components are calculated as
 
@@ -853,10 +854,10 @@ def crps_for_ensemble(
         CRPS(x_i, x_j, y) = O(x_i, y) + U(x_i, y) - S(x_i, x_j)
 
     where
-        - :math:`O(x_i, y) = \\frac{\\sum_{i=1}^{M} ((x_i - y) \\mathbb{1}{\\{x_i > y\\}})}{M}` which is the \
-            overforecast penalty.
-        - :math:`U(x_i, y) = \\frac{\\sum_{i=1}^{M} ((y - x_i) \\mathbb{1}{\\{x_i < y\\}})}{M}` which is the \
-            underforecast penalty.
+        - :math:`O(x_i, y) = \\frac{\\sum_{i=1}^{M} ((x_i - y) \\mathbb{1}{\\{x_i > y\\}})}{M}` which is the
+          overforecast penalty.
+        - :math:`U(x_i, y) = \\frac{\\sum_{i=1}^{M} ((y - x_i) \\mathbb{1}{\\{x_i < y\\}})}{M}` which is the
+          underforecast penalty.
         - :math:`S(x_i, x_j) = \\frac{\\sum_{i=1}^{M}\\sum_{j=1}^{M}(|x_i - x_j|)}{2K}` which is the forecast spread term.
 
     Note that there are several ways to decompose the CRPS and this decomposition differs from the
@@ -891,14 +892,14 @@ def crps_for_ensemble(
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
 
     References:
-        - C. Ferro (2014), "Fair scores for ensemble forecasts", Quarterly Journal of the \
-            Royal Meteorol Society, 140(683):1917-1923. https://doi.org/10.1002/qj.2270
-        - T. Gneiting T and A. Raftery (2007), "Strictly proper scoring rules, prediction, \
-            and estimation", Journal of the American Statistical Association, 102(477):359-378. \
-            https://doi.org/10.1198/016214506000001437
-        - M. Zamo and P. Naveau (2018), "Estimation of the Continuous Ranked Probability \
-            Score with Limited Information and Applications to Ensemble Weather Forecasts", \
-            Mathematical Geosciences 50:209-234, https://doi.org/10.1007/s11004-017-9709-7
+        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the
+          Royal Meteorological Society, 140(683), 1917–1923. https://doi.org/10.1002/qj.2270
+        - Gneiting, T., & Raftery, A. E. (2007). Strictly proper scoring rules, prediction,
+          and estimation. Journal of the American Statistical Association, 102(477), 359–378.
+          https://doi.org/10.1198/016214506000001437
+        - Zamo, M., & Naveau, P. (2018). Estimation of the continuous ranked probability
+          score with limited information and applications to ensemble weather forecasts.
+          Mathematical Geosciences, 50, 209–234. https://doi.org/10.1007/s11004-017-9709-7
     """  # noqa: E501
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
@@ -1026,13 +1027,13 @@ def tw_crps_for_ensemble(
     is true and 0 otherwise. A chaining function would then be :math:`v(x) = \\text{max}(x, t)`.
 
     There are currently two methods available for calculating the twCRPS: "ecdf" and "fair".
-        - If `method="ecdf"` then the twCRPS value returned is \
-            the exact twCRPS value for the empirical cumulative distribution function \
-            constructed using the ensemble values.
-        - If `method="fair"` then the twCRPS value returned \
-            is the approximated twCRPS where the ensemble values can be interpreted as a \
-            random sample from the underlying predictive distribution. See  https://doi.org/10.1002/qj.2270 \
-            for more details on the fair CRPS which are relevant for the fair twCRPS.
+        - If `method="ecdf"` then the twCRPS value returned is
+          the exact twCRPS value for the empirical cumulative distribution function
+          constructed using the ensemble values.
+        - If `method="fair"` then the twCRPS value returned
+          is the approximated twCRPS where the ensemble values can be interpreted as a
+          random sample from the underlying predictive distribution. See Ferro (2014)
+          for more details on the fair CRPS which are relevant for the fair twCRPS.
 
     The ensemble representation of the empirical twCRPS is
 
@@ -1084,21 +1085,21 @@ def tw_crps_for_ensemble(
         Chaining functions can be created to vary the weights across given dimensions
         such as varying the weights by climatological values.
 
-    References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
-
-
-    See also:
+    See Also:
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
         :py:func:`scores.probability.interval_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
 
+    References:
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+          Quantification, 11(3), 906–940. https://doi.org/10.1137/22M1532184
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing particular outcomes
+          when evaluating probabilistic forecasts. Journal of Statistical Software,
+          110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
+        - Ferro, C. A. T. (2014). Fair scores for ensemble forecasts. Quarterly Journal of the
+          Royal Meteorological Society, 140(683), 1917–1923. https://doi.org/10.1002/qj.2270
 
     Examples:
         Calculate the twCRPS for an ensemble of forecasts where the chaining function is
@@ -1110,10 +1111,12 @@ def tw_crps_for_ensemble(
         >>> from scores.probability import tw_crps_for_ensemble
         >>> np.random.seed(42)
 
-        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=["time", "ensemble"])
+        >>> obs = xr.DataArray(np.random.rand(10), dims=["time"])
 
-        >>> tw_crps_for_ensemble(fcst, obs, 'ensemble', lambda x: np.maximum(x, 0.5))
+        >>> tw_crps_for_ensemble(
+        ...     fcst, obs, "ensemble", lambda x: np.maximum(x, 0.5)
+        ... )
         <xarray.DataArray ()> Size: 8B
         array(0.07993158)
 
@@ -1203,19 +1206,19 @@ def tail_tw_crps_for_ensemble(
     Warns:
         FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
-    References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
-
-    See also:
+    See Also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
         :py:func:`scores.probability.interval_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
+
+    References:
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+          Quantification, 11(3), 906–940. https://doi.org/10.1137/22M1532184
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing particular outcomes
+          when evaluating probabilistic forecasts. Journal of Statistical Software,
+          110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
 
     Examples:
         Calculate the twCRPS for an ensemble where we assign a threshold weight of 1
@@ -1226,10 +1229,10 @@ def tail_tw_crps_for_ensemble(
         >>> from scores.probability import tail_tw_crps_for_ensemble
         >>> np.random.seed(42)
 
-        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.rand(10), dims=['time'])
+        >>> fcst = xr.DataArray(np.random.rand(10, 10), dims=["time", "ensemble"])
+        >>> obs = xr.DataArray(np.random.rand(10), dims=["time"])
 
-        >>> tail_tw_crps_for_ensemble(fcst, obs, 'ensemble', 0.5, tail='upper')
+        >>> tail_tw_crps_for_ensemble(fcst, obs, "ensemble", 0.5, tail="upper")
         <xarray.DataArray ()> Size: 8B
         array(0.07993158)
     """
@@ -1321,18 +1324,19 @@ def interval_tw_crps_for_ensemble(
     Warns:
         FutureWarning: The `include_components` argument is deprecated and will be removed in a future version.
 
-    References:
-        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact \
-            events using transformed kernel scores. SIAM/ASA Journal on Uncertainty \
-            Quantification, 11(3), 906-940. https://doi.org/10.1137/22M1532184.
-        - Allen, S. (2024). Weighted scoringRules: Emphasizing Particular Outcomes \
-            When Evaluating Probabilistic Forecasts. Journal of Statistical Software, \
-            110(8), 1-26. https://doi.org/10.18637/jss.v110.i08
-    See also:
+    See Also:
         :py:func:`scores.probability.tw_crps_for_ensemble`
         :py:func:`scores.probability.tail_tw_crps_for_ensemble`
         :py:func:`scores.probability.crps_for_ensemble`
         :py:func:`scores.probability.crps_cdf`
+
+    References:
+        - Allen, S., Ginsbourger, D., & Ziegel, J. (2023). Evaluating forecasts for high-impact
+          events using transformed kernel scores. SIAM/ASA Journal on Uncertainty
+          Quantification, 11(3), 906–940. https://doi.org/10.1137/22M1532184
+        - Allen, S. (2024). Weighted scoringRules: Emphasizing particular outcomes
+          when evaluating probabilistic forecasts. Journal of Statistical Software,
+          110(8), 1–26. https://doi.org/10.18637/jss.v110.i08
 
     Examples:
         Calculate the twCRPS for an ensemble where we assign a threshold weight of 1
@@ -1344,10 +1348,12 @@ def interval_tw_crps_for_ensemble(
         >>> from scores.probability import interval_tw_crps_for_ensemble
         >>> np.random.seed(42)
 
-        >>> fcst = xr.DataArray(np.random.uniform(-40, 20, size=(30, 15)), dims=['time', 'ensemble'])
-        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=['time'])
+        >>> fcst = xr.DataArray(
+        ...     np.random.uniform(-40, 20, size=(30, 15)), dims=["time", "ensemble"]
+        ... )
+        >>> obs = xr.DataArray(np.random.uniform(-40, 20, size=30), dims=["time"])
 
-        >>> interval_tw_crps_for_ensemble(fcst, obs, 'ensemble', -20, 10)
+        >>> interval_tw_crps_for_ensemble(fcst, obs, "ensemble", -20, 10)
         <xarray.DataArray ()> Size: 8B
         array(7.46973354)
     """
