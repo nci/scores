@@ -131,14 +131,11 @@ def _n_nested_blocked_random_indices(
     """
 
     if iteration_major:
-        indices = OrderedDict()
-        for iteration in range(n_iteration):
-            sample = _n_nested_blocked_random_indices(sizes, 1, circular, draw_integers=draw_integers)
-            for key, ind in sample.items():
-                if iteration == 0:
-                    indices[key] = np.empty(ind.shape[:-1] + (n_iteration,), dtype=ind.dtype)
-                indices[key][..., iteration] = ind[..., 0]
-        return indices
+        samples = [
+            _n_nested_blocked_random_indices(sizes, 1, circular, draw_integers=draw_integers)
+            for _ in range(n_iteration)
+        ]
+        return OrderedDict((key, np.concatenate([s[key] for s in samples], axis=-1)) for key in sizes)
 
     shape = [s[0] for s in sizes.values()]
     indices = OrderedDict()
