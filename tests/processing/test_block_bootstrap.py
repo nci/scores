@@ -401,6 +401,13 @@ def test_block_bootstrap_works_with_rng():
     xr.testing.assert_identical(first, second)
 
 
+def test_block_bootstrap_raises_on_negative_int_rng():
+    """Tests that the block_bootstrap function raises an error when rng is a negative integer."""
+    data = xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])
+    with pytest.raises(ValueError, match="must be non-negative"):
+        block_bootstrap(data, blocks={"dim1": 2, "dim2": 2}, n_iteration=5, rng=-1)
+
+
 def test_block_bootstrap_legacy_samples():
     """Keep the original global-seed samples, rather than just their repeatability."""
     data = xr.DataArray(np.arange(24).reshape(6, 4), dims=["time", "station"])

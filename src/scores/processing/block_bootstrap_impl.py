@@ -364,7 +364,8 @@ def block_bootstrap(
         circular: A boolean flag indicating whether circular block bootstrapping should be
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
-        rng: Controls the random sampling. If set to `None`, it uses NumPy's legacy global
+        rng: Controls the random sampling. Defaults to `None`.
+            If set to `None`, it uses NumPy's legacy global
             random state, preserving compatibility with np.random.seed(...).
             If a non-negative integer is supplied, it creates a numpy.random.Generator
             initialised with that seed. If a Generator, uses that instance
@@ -503,6 +504,9 @@ def block_bootstrap(
           * station  (station) <U2 32B 'S1' 'S2' 'S3' 'S4'
         Dimensions without coordinates: iteration
     """
+    if isinstance(rng, (int, np.integer)) and rng < 0:
+        raise ValueError("If `rng` is an integer, it must be non-negative")
+
     if rng is None:
         draw_integers = np.random.randint
     else:
