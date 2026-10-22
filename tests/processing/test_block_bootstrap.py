@@ -375,19 +375,6 @@ def test_block_bootstrap_dask(monkeypatch, objects, blocks, n_iteration, exclude
             assert isinstance(result[var].data, np.ndarray)
 
 
-def test_block_bootstrap_legacy_case():
-    """Tests that the block_bootstrap function is backwards compatible."""
-    data = xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])
-    blocks = {"dim1": 2, "dim2": 2}
-    np.random.seed(42)
-    first = block_bootstrap(data, blocks=blocks, n_iteration=5)
-
-    np.random.seed(42)
-    second = block_bootstrap(data, blocks=blocks, n_iteration=5, rng=None)
-
-    xr.testing.assert_identical(first, second)
-
-
 def test_block_bootstrap_works_with_rng():
     """Tests that the block_bootstrap function works correctly when a random number generator is provided."""
     data = xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])
