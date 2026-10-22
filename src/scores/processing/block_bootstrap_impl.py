@@ -327,6 +327,16 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     return tuple(res.rename(rename) for res, rename in zip(result, renames))
 
 
+def _max_chunk_size_mb(var, blocks):
+    """
+    Estimate the largest chunk after joining bootstrap dimensions.
+    """
+    if var.chunks is None:
+        return var.nbytes / (1024**2)
+    chunk_shape = [var.sizes[d] if d in blocks else max(c) for d, c in zip(var.dims, var.chunks)]
+    return var.dtype.itemsize * math.prod(chunk_shape) / (1024**2)
+
+
 def block_bootstrap(
     array_list: List[XarrayLike] | XarrayLike,
     *,  # Enforce keyword-only arguments
@@ -518,15 +528,6 @@ def block_bootstrap(
     # from multiplying chunk size by iterations) leading to issues with large numbers of
     # iterations. Hence, here function loops over blocks of iterations to generate the total
     # number of iterations.
-    def _max_chunk_size_mb(var):
-        """
-        Estimate the largest chunk after joining bootstrap dimensions.
-        """
-        if var.chunks is None:
-            return var.nbytes / (1024**2)
-        chunk_shape = [var.sizes[d] if d in blocks else max(c) for d, c in zip(var.dims, var.chunks)]
-        return var.dtype.itemsize * math.prod(chunk_shape) / (1024**2)
-
     if not isinstance(array_list, List):
         array_list = [array_list]
     variables = [
@@ -534,7 +535,7 @@ def block_bootstrap(
     ]
     # Check every variable, including mixed eager/Dask inputs and Datasets.
     if any(var.chunks is not None for var in variables):
-        ds_max_chunk_size_mb = max(_max_chunk_size_mb(var) for var in variables)
+        ds_max_chunk_size_mb = max(_max_chunk_size_mb(var, blocks) for var in variables)
         blocksize = int(MAX_BATCH_SIZE_MB / ds_max_chunk_size_mb)
         blocksize = min(blocksize, n_iteration)
         blocksize = max(blocksize, 1)
