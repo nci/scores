@@ -239,7 +239,7 @@ def test_spearman_correlation_dask():
 def test_divergence(da1, da2, reduce_dims, preserve_dims, expected, corr):
     if corr == "spearman":
         result = spearmanr(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
-        assert result.item() == pytest.approx(expected)
+        assert result.item() == expected
     else:
         result = pearsonr(da1, da2, preserve_dims=preserve_dims, reduce_dims=reduce_dims)
         assert np.round(result.item(), 2) == expected
