@@ -280,30 +280,21 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     return tuple(res.rename(rename) for res, rename in zip(result, renames))
 
 
-def _get_block_sizes(array_list, blocks):
+def _get_block_sizes(
+    array_list: List[XarrayLike],
+    blocks: Dict[str, int],
+) -> OrderedDict[str, Tuple[int, int]]:
     """
-    Determine the dimension length corresponding to each entry in ``blocks``, and
-    validate that each block size is a positive integer smaller than the dimension
-    it bootstraps.
+    Calculate the sizes for each dim  in ``blocks`` and validate.
 
     Args:
-        array_list: Data to bootstrap. Multiple arrays can be passed to be bootstrapped
-            in the same way. At least one array must contain all dimensions in
-            ``blocks.keys()``.
-        blocks: Dictionary of dimension(s) to bootstrap and the block sizes to use
-            along each dimension: ``{dim: blocksize}``.
+        array_list: Data to bootstrap. At least one array must contain all
+            dimensions in ``blocks.keys()``.
+        blocks: Dict of dimensions and the block size: ``{dim: blocksize}``.
 
     Returns:
-        Dictionary with {names: (sizes, blocks)} of the dimensions to resample.
-
-    Raises:
-        ValueError: If there is not at least one input array that contains all
-            dimensions in ``blocks.keys()``.
-        TypeError: If a block size in ``blocks`` is not an integer.
-        ValueError: If a block size in ``blocks`` is not a positive integer less
-            than the corresponding dimension length.
+        Dictionary of {dim: (sizes, blocks)}
     """
-    # Get the sizes of the bootstrap dimensions
     sizes = None
     for obj in array_list:
         try:
