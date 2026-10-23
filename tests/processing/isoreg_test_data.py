@@ -97,6 +97,7 @@ W1 = np.array([1, 1, 1, 1, 2, 1, 1, 1])
 EXP_IR_MEDIAN = np.array([1, 2, 2, 2, 4, 4, 4, 7])
 EXP_IR_MEAN = np.array([1, 5 / 3, 5 / 3, 5 / 3, 10 / 3, 10 / 3, 10 / 3, 7])
 EXP_IR_WMEAN = np.array([1, 5 / 3, 5 / 3, 5 / 3, 15 / 4, 15 / 4, 15 / 4, 7])
+EXP_IR_SECMOM = np.array([1, 4, 9 / 2, 9 / 2, 42 / 3, 42 / 3, 42 / 3, 49])
 
 
 # data and working for bootstrap tests
