@@ -151,6 +151,8 @@ def anomaly_correlation_coefficient(
     if weights is not None and not is_xarraylike(weights):
         raise TypeError("weights must be an xarray DataArray or xarray Dataset.")
 
+    # In other parts of scores, this is handled in scores.processing.aggregation.aggregate.
+    # Since we don't use the `aggregate` function here, we need to explicitly check this case.
     if isinstance(fcst, xr.DataArray) and isinstance(weights, xr.Dataset):
         raise TypeError("weights cannot be an xarray Dataset when the other inputs are xarray DataArrays.")
 
