@@ -55,7 +55,7 @@ def aggregate(
         ValueError: If ``weights`` contains any negative values.
         ValueError: if ``weights`` contains any NaN values
         ValueError: if ``method`` is not 'mean' or 'sum'
-        ValueError: if ``weights`` is an xr.Dataset when ``values`` is an xr.DataArray
+        TypeError: if ``weights`` is an xr.Dataset when ``values`` is an xr.DataArray
 
     Warnings:
         UserWarning: If weights are provided but no reduction is performed (``reduce_dims`` is None),
@@ -217,7 +217,7 @@ def _check_aggregate_inputs(
             # xarray doesn't allow .weighted to take xr.Dataset as weights, so we need to do it ourselves
             if isinstance(weights, xr.Dataset):
                 if isinstance(values, xr.DataArray):
-                    raise ValueError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray")
+                    raise TypeError("`weights` cannot be an xr.Dataset when `values` is an xr.DataArray")
                 for name in values.data_vars:
                     if name not in weights:
                         raise KeyError(f"No weights provided for variable '{name}'")

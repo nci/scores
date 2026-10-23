@@ -152,11 +152,6 @@ def anomaly_correlation_coefficient(
     if weights is not None and not is_xarraylike(weights):
         raise TypeError("weights must be an xarray DataArray or xarray Dataset.")
 
-    # In other parts of scores, this is handled in scores.processing.aggregation.aggregate.
-    # Since we don't use the `aggregate` function here, we need to explicitly check this case.
-    if isinstance(fcst, xr.DataArray) and isinstance(weights, xr.Dataset):
-        raise TypeError("weights cannot be an xarray Dataset when the other inputs are xarray DataArrays.")
-
     if isinstance(fcst, xr.Dataset):
         data_vars = set(fcst.data_vars)
         if set(obs.data_vars) != data_vars or set(climatology.data_vars) != data_vars:
@@ -184,9 +179,6 @@ def anomaly_correlation_coefficient(
     fcst_anomaly = fcst - climatology
     obs_anomaly = obs - climatology
     valid = fcst_anomaly.notnull() & obs_anomaly.notnull()
-    if weights is not None:
-        # Include the weights' coordinates and broadcast dimensions before centring.
-        valid = valid & weights.notnull()
     fcst_anomaly = fcst_anomaly.where(valid)
     obs_anomaly = obs_anomaly.where(valid)
 
