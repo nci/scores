@@ -344,6 +344,28 @@ def test_anomaly_correlation_coefficient_broadcasting_and_alignment():
     xr.testing.assert_allclose(result, expected)
 
 
+def _add_coordinate(da, dim):
+    """Append an extra coordinate value along ``dim`` with values that would change the ACC if used."""
+    new_coord = {"time": [5], "station": ["c"]}[dim]
+    extra = da.isel({dim: [0]}).assign_coords({dim: new_coord}) * 2 + 1
+    return xr.concat([da, extra], dim=dim)
+
+
+@pytest.mark.parametrize("input", ["fcst", "obs", "climatology"])
+@pytest.mark.parametrize("dim", ["time", "station"])
+@pytest.mark.parametrize("centered", [False, True])
+@pytest.mark.parametrize("weights", [None, ACC_WEIGHTS])
+def test_anomaly_correlation_coefficient_extra_coordinate_ignored(input, dim, centered, weights):
+    """Tests that a coordinate value present in only one of fcst, obs or climatology doesn't change the result."""
+    inputs = {"fcst": ACC_FCST, "obs": ACC_OBS, "climatology": ACC_CLIMATOLOGY}
+    kwargs = {"centered": centered, "reduce_dims": "time", "weights": weights}
+    expected = anomaly_correlation_coefficient(**inputs, **kwargs)
+
+    inputs[input] = _add_coordinate(inputs[input], dim)
+    result = anomaly_correlation_coefficient(**inputs, **kwargs)
+    xr.testing.assert_identical(result, expected)
+
+
 @pytest.mark.parametrize(
     ("centered", "expected_by_reference", "expected_all"),
     [(False, [5 / 7, 1 / 5], 11 / 19), (True, [-1.0, -1.0], -5 / 11)],
