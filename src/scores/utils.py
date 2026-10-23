@@ -5,7 +5,9 @@ Contains frequently-used functions of a general nature within scores
 import warnings
 from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Generic, Optional, TypeVar, Union
+from functools import wraps
+from inspect import signature
+from typing import Any, Callable, Dict, Generic, Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -511,3 +513,138 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
         # DO NOT want to (accidentally) do.
         for _, da_weights in weights.data_vars.items():
             _check_single_array(da_weights)
+
+
+def _check_isinstance(*args, classes: type[Any] | tuple[type[Any], ...]):
+    """
+    Helper function to check if all args are instances of the inputted classes.
+    """
+    return all(isinstance(arg, classes) for arg in args if arg is not None)
+
+
+def assert_is_xarraylike(*args, same_types: bool):
+    """
+    Helper function to assert that inputs are xarrays.
+
+    If same_types, inputs must all be xr.DataArray, or must all be xr.Dataset.
+    Otherwise, inputs must all be one of xr.DataArray or xr.Dataset.
+    """
+    if not same_types:
+        if not _check_isinstance(*args, classes=(xr.Dataset, xr.DataArray)):
+            raise TypeError(
+                "Inputs are not of type `xr.Dataset` or `xr.DataArray`. "
+                "Check the inputted `fcst`, `obs` and `weights` (if applicable)."
+            )
+    else:
+        if not (_check_isinstance(*args, classes=xr.Dataset) or _check_isinstance(*args, classes=xr.DataArray)):
+            raise TypeError(
+                "Inputs must all be of type `xr.Dataset`, or must all be of type `xr.DataArray`. "
+                "Check the inputted `fcst`, `obs` and `weights` (if applicable)."
+            )
+
+
+def _check_dims_exist_da(da, dims: Iterable[str]):
+    """
+    Helper function to check if at least one dimension from dims exists in the dataarray.
+    """
+    return np.intersect1d(da.dims, tuple(dims)).size > 0
+
+
+def _check_dims_exist_ds(ds, dims: Iterable[str]):
+    """
+    Helper function to check if at least one dimension from dims exists in the each data variable of the dataset.
+    """
+    return all(_check_dims_exist_da(ds[var], dims) for var in ds.data_vars)
+
+
+def assert_dims_exist(*args, dims: Iterable[str]):
+    """
+    Helper function to assert that at least one dimension from dims exists in each input.
+    """
+    if len(list(dims)) == 0:
+        return
+
+    checks = []
+    for arg in args:
+        if arg is None:
+            continue
+        if isinstance(arg, xr.Dataset):
+            checks.append(_check_dims_exist_ds(arg, dims))
+        else:
+            checks.append(_check_dims_exist_da(arg, dims))
+
+    if not all(checks):
+        raise DimensionError(
+            f"At least one of `fcst`, `obs` or `weights` (if applicable) missing all gathered dimensions {dims}"
+        )
+
+
+def get_full_signature(func: Callable, *args, **kwargs) -> dict[str, Any]:
+    """
+    Helper function to generate full function signature of func including defaults etc.
+    """
+    sig = signature(func)
+    bound_args = sig.bind(*args, **kwargs)
+    bound_args.apply_defaults()
+    return bound_args.arguments
+
+
+def validate_inputs_outputs(same_input_types: bool = False, same_input_and_output_type: bool = False) -> Callable:
+    """
+    Decorator that performs common input and output validation for score functions.
+
+    Before calling the wrapped function, the decorator validates:
+
+    - ``fcst``, ``obs``, and ``weights`` are xarray objects (and of same types if ``same_input_types``)
+    - ``is_angular`` and ``include_components`` are boolean types.
+    - ``weights`` are validated.
+    - gathered reduction dimensions exist in the inputs
+
+    Then if ``same_input_and_output_type``, the decorator additionally validates that the returned object is the same
+    type as the inputted ``fcst``.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Inspect the function signature and bind all arguments
+            all_args = get_full_signature(func, *args, **kwargs)
+
+            fcst = all_args.pop("fcst")
+            obs = all_args.pop("obs")
+            weights = all_args.pop("weights", None)
+
+            is_angular = all_args.pop("is_angular", False)
+            include_components = all_args.pop("include_components", False)
+
+            reduce_dims = all_args.pop("reduce_dims", None)
+            preserve_dims = all_args.pop("preserve_dims", None)
+
+            assert_is_xarraylike(fcst, obs, weights, same_types=same_input_types)
+            if not isinstance(is_angular, bool):
+                raise TypeError("`is_angular` must be boolean.")
+            if not isinstance(include_components, bool):
+                raise TypeError("`include_components` must be boolean.")
+
+            check_weights(weights) if weights is not None else None
+
+            gathered_dims = gather_dimensions(
+                fcst_dims=fcst.dims,
+                obs_dims=obs.dims,
+                weights_dims=weights.dims if weights is not None else None,
+                reduce_dims=reduce_dims,
+                preserve_dims=preserve_dims,
+            )
+
+            assert_dims_exist(fcst, obs, weights, dims=gathered_dims)
+
+            out = func(*args, **kwargs)
+
+            if same_input_and_output_type:
+                assert type(fcst) is type(out)
+
+            return out
+
+        return wrapper
+
+    return decorator
