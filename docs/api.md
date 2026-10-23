@@ -26,6 +26,7 @@
 .. autofunction:: scores.continuous.pbias
 .. autofunction:: scores.continuous.percent_within_x
 .. autofunction:: scores.continuous.kge
+.. autofunction:: scores.continuous.s1
 .. autofunction:: scores.continuous.nse
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
