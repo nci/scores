@@ -294,8 +294,8 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     - ROC Area Under Curve (ROC AUC)
   - [API](api.md#scores.probability.roc_auc)
   - [Tutorial](project:./tutorials/ROC.md)
-  - [Hanley and McNeil (1982)](https://doi.org/10.1148/radiology.143.1.7063747); [Mason and Graham (2002)](https://doi.org/10.1256/003590002320603584); [Mann and Whitney (1947)](https://doi.org/10.1214/aoms/1177730491)  
-* - 
+  - [Hanley and McNeil (1982)](https://doi.org/10.1148/radiology.143.1.7063747); [Mason and Graham (2002)](https://doi.org/10.1256/003590002320603584); [Mann and Whitney (1947)](https://doi.org/10.1214/aoms/1177730491)
+* -
     - ROC Curve Data
   - [API](api.md#scores.probability.roc_curve_data)
   - [Tutorial](project:./tutorials/ROC.md)
@@ -626,8 +626,12 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - API
   - Tutorial
   - Reference(s)
-* - Diebold Mariano (with the Harvey et al. 1997 and the Hering and Genton 2011 modifications)
+* - Diebold Mariano test (for multiple time series of score differentials)
   - [API](api.md#scores.stats.statistical_tests.diebold_mariano)
+  - [Tutorial](project:./tutorials/Diebold_Mariano_Test_Statistic.md)
+  - [Diebold and Mariano (1995)](https://doi.org/10.1080/07350015.1995.10524599); [Harvey et al. (1997)](https://doi.org/10.1016/S0169-2070(96)00719-4); [Hering and Genton (2011)](https://doi.org/10.1198/TECH.2011.10136)
+* - Diebold Mariano test (for single time series of score differentials)
+  - [API](api.md#scores.stats.statistical_tests.diebold_mariano_1d)
   - [Tutorial](project:./tutorials/Diebold_Mariano_Test_Statistic.md)
   - [Diebold and Mariano (1995)](https://doi.org/10.1080/07350015.1995.10524599); [Harvey et al. (1997)](https://doi.org/10.1016/S0169-2070(96)00719-4); [Hering and Genton (2011)](https://doi.org/10.1198/TECH.2011.10136)
 ```
@@ -753,7 +757,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
 * - Rank Histogram
   - [API](api.md#scores.plotdata.rank_histogram)
   - [Tutorial](project:./tutorials/Rank_Histogram.md)
-  - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2) 
+  - [Hamill (2001)](https://doi.org/10.1175/1520-0493(2001)129<0550:IORHFV>2.0.CO;2)
 * - Receiver (Relative) Operating Characteristic (ROC)
   - [API](api.md#scores.plotdata.roc)
   - [Tutorial](project:./tutorials/ROC.md)
