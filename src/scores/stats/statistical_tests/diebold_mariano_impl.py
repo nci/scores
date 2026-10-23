@@ -225,12 +225,13 @@ def diebold_mariano(  # pylint: disable=R0914
         h = int(timeseries[h_coord])
         test_stats[i] = _dm_test_statistic(timeseries.values, h, method=method)
 
-    if statistic_distribution == "normal":
-        pvals = sp.stats.norm.cdf(test_stats)
-        ci_quantile = sp.stats.norm.ppf(1 - (1 - confidence_level) / 2)
-    else:
-        pvals = sp.stats.t.cdf(test_stats, da_timeseries_len.values - 1)
-        ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, da_timeseries_len.values - 1)
+    pvals, ci_uppers, ci_lowers = _dm_pvals_and_ci(
+        ts_mean,
+        test_stats,
+        da_timeseries_len.values,
+        confidence_level,
+        statistic_distribution,
+    )
 
     result = xr.Dataset(
         data_vars={
@@ -238,8 +239,8 @@ def diebold_mariano(  # pylint: disable=R0914
             "dm_test_stat": ([ts_dim], test_stats),
             "timeseries_len": ([ts_dim], da_timeseries_len.values),
             "confidence_gt_0": ([ts_dim], pvals),
-            "ci_upper": ([ts_dim], ts_mean * (1 + ci_quantile / test_stats)),
-            "ci_lower": ([ts_dim], ts_mean * (1 - ci_quantile / test_stats)),
+            "ci_upper": ([ts_dim], ci_uppers),
+            "ci_lower": ([ts_dim], ci_lowers),
         },
         coords={ts_dim: da_timeseries[ts_dim].values},
     )
@@ -373,12 +374,9 @@ def diebold_mariano_1d(
     ts_mean = np.nanmean(timeseries)
     test_stat = _dm_test_statistic(timeseries, h, method=method)
 
-    if statistic_distribution == "normal":
-        pval = sp.stats.norm.cdf(test_stat)
-        ci_quantile = sp.stats.norm.ppf(1 - (1 - confidence_level) / 2)
-    else:
-        pval = sp.stats.t.cdf(test_stat, timeseries_len - 1)
-        ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, timeseries_len - 1)
+    pval, ci_upper, ci_lower = _dm_pvals_and_ci(
+        ts_mean, test_stat, timeseries_len, confidence_level, statistic_distribution
+    )
 
     result = xr.Dataset(
         {
@@ -386,12 +384,50 @@ def diebold_mariano_1d(
             "dm_test_stat": test_stat,
             "timeseries_len": timeseries_len,
             "confidence_gt_0": pval,
-            "ci_upper": ts_mean * (1 + ci_quantile / test_stat),
-            "ci_lower": ts_mean * (1 - ci_quantile / test_stat),
+            "ci_upper": ci_upper,
+            "ci_lower": ci_lower,
         },
     )
 
     return result
+
+
+def _dm_pvals_and_ci(
+    ts_mean: Union[float, np.ndarray],
+    test_stat: Union[float, np.ndarray],
+    timeseries_len: Union[int, np.ndarray],
+    confidence_level: float,
+    statistic_distribution: Literal["normal", "t"],
+) -> tuple[Union[float, np.ndarray], Union[float, np.ndarray], Union[float, np.ndarray]]:
+    """
+    Computes the p-value(s) and confidence interval(s) for Diebold-Mariano test statistic(s).
+
+    Parameters:
+        ts_mean: The mean(s) of the timeseries of score differentials, either a scalar
+            (1D case) or an array with one value per timeseries (2D case).
+        test_stat: The Diebold-Mariano test statistic, either a scalar (1D case) or
+            an array with one value per timeseries (2D case).
+        timeseries_len: The length(s) of the timeseries of score differentials after
+            NaNs are removed
+        confidence_level: The confidence level for the interval.
+        statistic_distribution: The distribution of the test statistic,
+            either "normal" or "t".
+
+    Returns:
+        A tuple containing the p-value(s), the upper confidence interval endpoint(s)
+        and the lower confidence interval endpoint(s).
+    """
+    if statistic_distribution == "normal":
+        pval = sp.stats.norm.cdf(test_stat)
+        ci_quantile = sp.stats.norm.ppf(1 - (1 - confidence_level) / 2)
+    else:
+        pval = sp.stats.t.cdf(test_stat, timeseries_len - 1)
+        ci_quantile = sp.stats.t.ppf(1 - (1 - confidence_level) / 2, timeseries_len - 1)
+
+    ci_upper = ts_mean * (1 + ci_quantile / test_stat)
+    ci_lower = ts_mean * (1 - ci_quantile / test_stat)
+
+    return pval, ci_upper, ci_lower
 
 
 def _dm_common_checks(method: str, statistic_distribution: str, confidence_level: float) -> None:

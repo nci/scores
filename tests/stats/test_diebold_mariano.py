@@ -10,6 +10,7 @@ import xarray as xr
 from scores.stats.statistical_tests.diebold_mariano_impl import (
     _dm_common_checks,
     _dm_gamma_hat_k,
+    _dm_pvals_and_ci,
     _dm_test_statistic,
     _dm_v_hat,
     _hg_func,
@@ -459,6 +460,57 @@ def test_diebold_mariano_1d(distribution, expected):
     timeseries = np.array([1, 2, 3.0, 4, np.nan])
     with pytest.warns(RuntimeWarning):
         result = diebold_mariano_1d(
-            timeseries, 2, statistic_distribution=distribution, method="HLN", confidence_level=0.9
+            timeseries,
+            2,
+            statistic_distribution=distribution,
+            method="HLN",
+            confidence_level=0.9,
         )
     xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("ts_mean", "test_stat", "timeseries_len", "distribution", "expected"),
+    [
+        (  # "t" distribution, float input
+            2.5,
+            DM_TEST_STAT_EXP1,
+            4,
+            "t",
+            (0.9443164226429581, 5.131140307989639, -0.13114030798963894),
+        ),
+        (  # "normal" distribution, float input
+            2.5,
+            DM_TEST_STAT_EXP1,
+            4,
+            "normal",
+            (0.9873263406612659, 4.339002261450286, 0.6609977385497137),
+        ),
+        (  # "normal" distribution, array input
+            np.array([2.5, -0.2]),
+            np.array([DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2]),
+            np.array([4, 5]),
+            "normal",
+            (
+                np.array([0.9873263406612659, 0.36944134018176367]),
+                np.array([4.339002261450286, 0.7869121761708835]),
+                np.array([0.6609977385497137, -1.1869121761708834]),
+            ),
+        ),
+        (  # "t" distribution, array input with NaN
+            np.array([2.5, -0.2]),
+            np.array([DM_TEST_STAT_EXP1, np.nan]),
+            np.array([4, 5]),
+            "t",
+            (
+                np.array([0.9443164226429581, np.nan]),
+                np.array([5.131140307989639, np.nan]),
+                np.array([-0.13114030798963894, np.nan]),
+            ),
+        ),
+    ],
+)
+def test__dm_pvals_and_ci(ts_mean, test_stat, timeseries_len, distribution, expected):
+    """Tests that _dm_pvals_and_ci gives results as expected."""
+    result = _dm_pvals_and_ci(ts_mean, test_stat, timeseries_len, 0.9, distribution)
+    np.testing.assert_allclose(result, expected)
