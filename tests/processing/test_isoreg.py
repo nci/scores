@@ -321,6 +321,15 @@ def _wmean_solver(y, weight):
     return np.average(y, weights=weight)
 
 
+def _secmom_solver(y):
+    """
+    Solver for 'second moment about 0' isotonic regression.
+    This is used to test the case where the solver of a singleton is not the
+    value of the singleton.
+    """
+    return np.average(y**2)
+
+
 @pytest.mark.parametrize(
     ("y", "solver", "weight", "expected"),
     [
@@ -328,6 +337,7 @@ def _wmean_solver(y, weight):
         (itd.Y1, np.mean, None, itd.EXP_IR_MEAN),
         (itd.Y1, _wmean_solver, itd.W1, itd.EXP_IR_WMEAN),
         (np.ndarray(0), np.mean, None, 0),
+        (itd.Y1, _secmom_solver, None, itd.EXP_IR_SECMOM),
     ],
 )
 def test__contiguous_ir(y, solver, weight, expected):
