@@ -17,6 +17,10 @@ It is divided into the following sections: [continuous](#continuous), [probabili
   - [API](api.md#scores.continuous.additive_bias)
   - [Tutorial](project:./tutorials/Additive_and_multiplicative_bias.md)
   - [Mean Error (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#meanerror)
+* - Anomaly Correlation Coefficient (ACC)
+  - [API](api.md#scores.continuous.correlation.anomaly_correlation_coefficient)
+  - [Tutorial](project:./tutorials/Anomaly_Correlation_Coefficient.md)
+  - [Anomaly correlation (WWRP/WGNE Joint Working Group on Forecast Verification Research)](https://jwgfvr.github.io/forecastverification/index.html#AC); [Jolliffe and Stephenson (2012)](https://doi.org/10.1002/9781119960003); [Wilks (2011)](https://doi.org/10.1016/c2010-0-65519-2)
 * - Consistent Expectile Score
   - [API](api.md#scores.continuous.consistent_expectile_score)
   - [Tutorial](project:./tutorials/Consistent_Scores.md)

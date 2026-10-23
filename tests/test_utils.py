@@ -812,3 +812,10 @@ def test_check_weights(weights, expect_error, expect_warning):
 
     if expect_success:
         check_weights(weights)
+
+
+@pytest.mark.parametrize("weights", [utils_test_data.DA_WEIGHTS_GOOD.values, [1, 2, 3], 1.0])
+def test_check_weights_type(weights):
+    """Non-xarray weights raise a TypeError."""
+    with pytest.raises(TypeError, match="weights must be an xarray DataArray or xarray Dataset"):
+        check_weights(weights)
