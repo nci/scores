@@ -20,6 +20,7 @@ from scores.processing.block_bootstrap_impl import (
     _block_bootstrap,
     _bootstrap,
     _expand_n_nested_random_indices,
+    _get_block_sizes,
     _get_blocked_random_indices,
     _n_nested_blocked_random_indices,
     block_bootstrap,
@@ -140,7 +141,12 @@ def test__expand_n_nested_random_indices(indices, expected_shapes):
 def test__block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, expected_shape):
     """Test _block_bootstrap works as expected"""
     result = _block_bootstrap(
-        objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular
+        objects,
+        blocks=blocks,
+        n_iteration=n_iteration,
+        sizes=_get_block_sizes(objects, blocks),
+        exclude_dims=exclude_dims,
+        circular=circular,
     )
     for res in result:
         if isinstance(res, xr.Dataset):
@@ -160,10 +166,10 @@ def test__block_bootstrap(objects, blocks, n_iteration, exclude_dims, circular, 
 def test__block_bootstrap_warns(dims, n_warnings):
     """Warn when block size is 1."""
     with pytest.warns(UserWarning) as warning_msg:
-        _ = _block_bootstrap(
+        _ = block_bootstrap(
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
-            dims,
-            3,
+            blocks=dims,
+            n_iteration=3,
         )
     assert len(warning_msg) == n_warnings
     assert BLOCK_SIZE_ONE_WARNING in str(warning_msg[0].message)
@@ -227,7 +233,7 @@ def test__bootstrap_tuple_return():
             None,
             True,
             ValueError,
-            "block size for dimension dim2",
+            "`blocks` value for dim2",
         ),
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
@@ -236,7 +242,7 @@ def test__bootstrap_tuple_return():
             None,
             True,
             ValueError,
-            "block size for dimension dim1",
+            "`blocks` value for dim1",
         ),
         (
             [xr.DataArray(np.random.rand(10, 5), dims=["dim1", "dim2"])],
@@ -245,14 +251,14 @@ def test__bootstrap_tuple_return():
             None,
             True,
             TypeError,
-            "block size for dimension dim1",
+            "`blocks` must contain integer value for dimension dim1.",
         ),
     ],
 )
 def test__block_bootstrap_exceptions(objects, blocks, n_iteration, exclude_dims, circular, expected_exception, match):
     """Test _block_bootstrap correctly raises errors"""
     with pytest.raises(expected_exception=expected_exception, match=match):
-        _block_bootstrap(objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular)
+        block_bootstrap(objects, blocks=blocks, n_iteration=n_iteration, exclude_dims=exclude_dims, circular=circular)
 
 
 @pytest.mark.parametrize(
