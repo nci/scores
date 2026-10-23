@@ -8,7 +8,7 @@ import xarray as xr
 
 import scores.utils
 from scores.processing import aggregate
-from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike, is_xarraylike
+from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike
 from scores.utils import check_weights
 
 
@@ -148,9 +148,6 @@ def anomaly_correlation_coefficient(
     """
     if not all_same_xarraylike([fcst, obs, climatology]):
         raise TypeError("fcst, obs, and climatology must all be xarray DataArrays or all be xarray Datasets.")
-
-    if weights is not None and not is_xarraylike(weights):
-        raise TypeError("weights must be an xarray DataArray or xarray Dataset.")
 
     if isinstance(fcst, xr.Dataset):
         data_vars = set(fcst.data_vars)

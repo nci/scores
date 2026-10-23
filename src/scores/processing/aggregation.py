@@ -55,6 +55,7 @@ def aggregate(
         ValueError: If ``weights`` contains any negative values.
         ValueError: if ``weights`` contains any NaN values
         ValueError: if ``method`` is not 'mean' or 'sum'
+        TypeError: if ``weights`` is not an xr.DataArray or xr.Dataset
         TypeError: if ``weights`` is an xr.Dataset when ``values`` is an xr.DataArray
 
     Warnings:

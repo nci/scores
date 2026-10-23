@@ -477,17 +477,15 @@ def check_weights(weights: XarrayLike, *, raise_error=True):
     Raises:
         UserWarning: if ``raise_error=False`` and weights are invalid
         ValueError: if ``raise_error=True`` and weights are invalid
+        TypeError: if ``weights`` is not an xarray DataArray or Dataset
 
     .. _GITHUB828: https://github.com/nci/scores/issues/828
     .. _GITHUB829: https://github.com/nci/scores/issues/829
     """
-    # safety: weights must be XarrayLike
-    assert is_xarraylike(weights)
+    if not is_xarraylike(weights):
+        raise TypeError("weights must be an xarray DataArray or xarray Dataset.")
 
     def _check_single_array(_da_weights: xr.DataArray):
-        # type safety: dev/test only
-        assert isinstance(_da_weights, xr.DataArray)
-
         # don't allow NaNs
         checks_passed = ~_da_weights.isnull().any()
         # Don't allow negative weights

@@ -351,17 +351,17 @@ def _add_coordinate(da, dim):
     return xr.concat([da, extra], dim=dim)
 
 
-@pytest.mark.parametrize("input", ["fcst", "obs", "climatology"])
+@pytest.mark.parametrize("da", ["fcst", "obs", "climatology"])
 @pytest.mark.parametrize("dim", ["time", "station"])
 @pytest.mark.parametrize("centered", [False, True])
 @pytest.mark.parametrize("weights", [None, ACC_WEIGHTS])
-def test_anomaly_correlation_coefficient_extra_coordinate_ignored(input, dim, centered, weights):
+def test_anomaly_correlation_coefficient_extra_coordinate_ignored(da, dim, centered, weights):
     """Tests that a coordinate value present in only one of fcst, obs or climatology doesn't change the result."""
     inputs = {"fcst": ACC_FCST, "obs": ACC_OBS, "climatology": ACC_CLIMATOLOGY}
     kwargs = {"centered": centered, "reduce_dims": "time", "weights": weights}
     expected = anomaly_correlation_coefficient(**inputs, **kwargs)
 
-    inputs[input] = _add_coordinate(inputs[input], dim)
+    inputs[da] = _add_coordinate(inputs[da], dim)
     result = anomaly_correlation_coefficient(**inputs, **kwargs)
     xr.testing.assert_identical(result, expected)
 
