@@ -7,6 +7,7 @@ from typing import Optional
 import xarray as xr
 
 import scores.utils
+from scores.processing import aggregate
 from scores.typing import FlexibleDimensionTypes, XarrayLike, all_same_xarraylike, is_xarraylike
 from scores.utils import check_weights
 
@@ -197,24 +198,12 @@ def anomaly_correlation_coefficient(
         raise ValueError("At least one dimension must be reduced for every data variable when calculating ACC.")
 
     if centered:
-        sample_weights = valid if weights is None else valid * weights
-        weight_sum = sample_weights.sum(dim=dims_to_reduce)
-        weight_sum = weight_sum.where(weight_sum > 0)
-        fcst_anomaly = fcst_anomaly - (fcst_anomaly * sample_weights).sum(dim=dims_to_reduce) / weight_sum
-        obs_anomaly = obs_anomaly - (obs_anomaly * sample_weights).sum(dim=dims_to_reduce) / weight_sum
+        fcst_anomaly = fcst_anomaly - aggregate(fcst_anomaly, reduce_dims=dims_to_reduce, weights=weights)
+        obs_anomaly = obs_anomaly - aggregate(obs_anomaly, reduce_dims=dims_to_reduce, weights=weights)
 
-    cross_product = fcst_anomaly * obs_anomaly
-    fcst_squared = fcst_anomaly**2
-    obs_squared = obs_anomaly**2
-
-    if weights is not None:
-        cross_product = cross_product * weights
-        fcst_squared = fcst_squared * weights
-        obs_squared = obs_squared * weights
-
-    numerator = cross_product.sum(dim=dims_to_reduce, skipna=True)
-    fcst_magnitude = fcst_squared.sum(dim=dims_to_reduce, skipna=True) ** 0.5
-    obs_magnitude = obs_squared.sum(dim=dims_to_reduce, skipna=True) ** 0.5
+    numerator = aggregate(fcst_anomaly * obs_anomaly, reduce_dims=dims_to_reduce, weights=weights, method="sum")
+    fcst_magnitude = aggregate(fcst_anomaly**2, reduce_dims=dims_to_reduce, weights=weights, method="sum") ** 0.5
+    obs_magnitude = aggregate(obs_anomaly**2, reduce_dims=dims_to_reduce, weights=weights, method="sum") ** 0.5
     denominator = fcst_magnitude * obs_magnitude
 
     return numerator / denominator.where(denominator > 0)
