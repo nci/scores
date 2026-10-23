@@ -202,7 +202,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             when the end of the data is reached. By default, this parameter is set to True.
 
 
-     Returns:
+    Returns:
         Tuple of bootstrapped xarray DataArrays or Datasets, based on the input.
 
     Note:
@@ -285,7 +285,7 @@ def _get_block_sizes(
     blocks: Dict[str, int],
 ) -> OrderedDict[str, Tuple[int, int]]:
     """
-    Calculate the sizes for each dim  in ``blocks`` and validate.
+    Calculate the sizes for each dim in ``blocks`` and validate.
 
     Args:
         array_list: Data to bootstrap. At least one array must contain all
@@ -310,7 +310,7 @@ def _get_block_sizes(
     for d, (length, block_size) in sizes.items():
         if not isinstance(block_size, Integral):
             raise TypeError(f"`blocks` must contain integer value for dimension {d}.")
-        elif block_size < 1 or block_size >= length:
+        if block_size < 1 or block_size >= length:
             raise ValueError(
                 f"`blocks` value for {d} must be a positive integer and "
                 f"less than the dimension length {length}, got {block_size}."
