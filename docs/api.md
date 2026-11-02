@@ -26,7 +26,6 @@
 .. autofunction:: scores.continuous.pbias
 .. autofunction:: scores.continuous.percent_within_x
 .. autofunction:: scores.continuous.kge
-.. autofunction:: scores.continuous.s1
 .. autofunction:: scores.continuous.nse
 .. autofunction:: scores.continuous.isotonic_fit
 .. autofunction:: scores.continuous.consistent_expectile_score
@@ -99,6 +98,7 @@
 .. autofunction:: scores.spatial.fss_2d
 .. autofunction:: scores.spatial.fss_2d_binary
 .. autofunction:: scores.spatial.fss_2d_single_field
+.. autofunction:: scores.spatial.s1
 ```
 
 ## scores.dynamics

@@ -25,7 +25,6 @@ from scores.continuous.standard_impl import (
     pbias,
     percent_within_x,
     rmse,
-    s1,
 )
 from scores.continuous.threshold_weighted_impl import (
     tw_absolute_error,
@@ -55,7 +54,6 @@ __all__ = [
     "pbias",
     "percent_within_x",
     "kge",
-    "s1",
     "nse",
     "isotonic_fit",
     "consistent_expectile_score",
