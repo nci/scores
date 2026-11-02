@@ -30,25 +30,25 @@ def s1(
     or any other pair of spatial dimensions), and is defined as
 
     .. math::
-        S1 = 100 \\cdot \\frac{\\sum_{i=1}^n w_i (eg)_i}{\\sum_{i=1}^n w_i (GL)_i}
-
-    where the gradients are approximated by differences computed on the verification grid:
-
-    .. math::
-        eg = \\left| \\frac{\\partial}{\\partial x}(x_f - x_v) \\right| +
-             \\left| \\frac{\\partial}{\\partial y}(x_f - x_v) \\right|
-
-    .. math::
-        GL = \\max\\left(\\left|\\frac{\\partial x_f}{\\partial x}\\right|,
-             \\left|\\frac{\\partial x_v}{\\partial x}\\right|\\right) +
-             \\max\\left(\\left|\\frac{\\partial x_f}{\\partial y}\\right|,
-             \\left|\\frac{\\partial x_v}{\\partial y}\\right|\\right)
+        S1 = 100 \\cdot \\frac{\\sum w_i |\\Delta_x(f - v)| + \\sum w_i |\\Delta_y(f - v)|}
+                               {\\sum w_i \\max(|\\Delta_x f|, |\\Delta_x v|) +
+                                \\sum w_i \\max(|\\Delta_y f|, |\\Delta_y v|)}
 
     where:
-        - :math:`x_f` = the forecast value of the parameter in question
-        - :math:`x_v` = the corresponding verifying (observed/analysed) value
-        - :math:`n` = the number of grid points or observations in the verification area
-        - :math:`w_i` = the weight applied at grid point or observation location :math:`i`
+        - :math:`f` = the forecast value of the parameter in question
+        - :math:`v` = the corresponding verifying (observed/analysed) value
+        - :math:`w_i` = the weight applied at grid point :math:`i`
+        - :math:`\\Delta_x` and :math:`\\Delta_y` = differences between adjacent grid points
+          along ``x_dim`` and ``y_dim`` respectively, with each sum running over all adjacent
+          pairs of grid points in that direction
+
+    Gradients are approximated by differences between adjacent grid points, without dividing
+    by the physical distance (grid spacing) between them. This implementation therefore
+    implicitly assumes that the grid spacing is approximately equal in physical distance along
+    ``x_dim`` and ``y_dim`` across the domain. This holds approximately for regional or
+    mid-latitude latitude/longitude grids and many equally-spaced projected grids, but not for
+    global latitude/longitude grids (where longitude spacing shrinks toward the poles) or for
+    grids with unequal spacing in the two directions.
 
     A lower S1 score indicates a better match between the spatial gradients of the forecast
     and the verifying field. A perfect forecast has an S1 score of 0.
