@@ -484,9 +484,15 @@ def _contiguous_ir(
     # defensive cast in case this private function is called directly with non-float input
     y = np.asarray(y, dtype=float)
 
-    # y_out is updated in place as blocks are merged, but starts as a copy of y: singleton
-    # blocks are compared using their original y value until a solver result overwrites them
-    y_out = y.copy()
+    # y_out is updated in place as blocks are merged. Seed with solver(singleton) rather than
+    # y itself, since solver(y[i]) is not assumed to equal y[i] (e.g. solver = second moment).
+    if weight is None:
+        y_out = np.array([solver(y[i : i + 1]) for i in range(len_y)], dtype=float)  # type: ignore[ty:missing-argument]
+    else:
+        y_out = np.array(
+            [solver(y[i : i + 1], weight[i : i + 1]) for i in range(len_y)],  # type: ignore[ty:too-many-positional-arguments]
+            dtype=float,
+        )
 
     # target describes a list of blocks.  At any time, if [i..j] (inclusive) is
     # an active block, then target[i] := j and target[j] := i.
