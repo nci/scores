@@ -207,6 +207,179 @@ def omega(phi, theta, p, phi1d):
         (
             ux,
             uy,
+            omega,
+            False,
+            False,
+            pd.date_range("2025-01-01", periods=2),
+            np.array([500, 1000]),
+            np.arange(0.0, 180.0, 10),
+            np.array([-60.0, 0.0, 60.0]),
+            xr.DataArray(
+                np.array(
+                    [
+                        [
+                            [
+                                [
+                                    8.582760e00,
+                                    4.117347e00,
+                                    2.035150e00,
+                                    1.644566e00,
+                                    6.562332e-01,
+                                    1.561022e-01,
+                                    1.166555e-02,
+                                    3.572741e-03,
+                                    4.670897e-03,
+                                    7.809644e-04,
+                                ],
+                                [
+                                    3.255839e-03,
+                                    1.731906e-01,
+                                    5.229832e-01,
+                                    1.692262e01,
+                                    7.730010e-01,
+                                    5.229759e-01,
+                                    2.275568e-01,
+                                    4.824236e-02,
+                                    9.683661e-04,
+                                    2.134110e-03,
+                                ],
+                                [
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ],
+                            ],
+                            [
+                                [
+                                    8.582760e00,
+                                    4.117347e00,
+                                    2.035150e00,
+                                    1.644566e00,
+                                    6.562332e-01,
+                                    1.561022e-01,
+                                    1.166555e-02,
+                                    3.572741e-03,
+                                    4.670897e-03,
+                                    7.809644e-04,
+                                ],
+                                [
+                                    3.255839e-03,
+                                    1.731906e-01,
+                                    5.229832e-01,
+                                    1.692262e01,
+                                    7.730010e-01,
+                                    5.229759e-01,
+                                    2.275568e-01,
+                                    4.824236e-02,
+                                    9.683661e-04,
+                                    2.134110e-03,
+                                ],
+                                [
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ],
+                            ],
+                        ],
+                        [
+                            [
+                                [
+                                    8.582760e00,
+                                    4.117347e00,
+                                    2.035150e00,
+                                    1.644566e00,
+                                    6.562332e-01,
+                                    1.561022e-01,
+                                    1.166555e-02,
+                                    3.572741e-03,
+                                    4.670897e-03,
+                                    7.809644e-04,
+                                ],
+                                [
+                                    3.255839e-03,
+                                    1.731906e-01,
+                                    5.229832e-01,
+                                    1.692262e01,
+                                    7.730010e-01,
+                                    5.229759e-01,
+                                    2.275568e-01,
+                                    4.824236e-02,
+                                    9.683661e-04,
+                                    2.134110e-03,
+                                ],
+                                [
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ],
+                            ],
+                            [
+                                [
+                                    8.582760e00,
+                                    4.117347e00,
+                                    2.035150e00,
+                                    1.644566e00,
+                                    6.562332e-01,
+                                    1.561022e-01,
+                                    1.166555e-02,
+                                    3.572741e-03,
+                                    4.670897e-03,
+                                    7.809644e-04,
+                                ],
+                                [
+                                    3.255839e-03,
+                                    1.731906e-01,
+                                    5.229832e-01,
+                                    1.692262e01,
+                                    7.730010e-01,
+                                    5.229759e-01,
+                                    2.275568e-01,
+                                    4.824236e-02,
+                                    9.683661e-04,
+                                    2.134110e-03,
+                                ],
+                                [
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                    0.000000e00,
+                                ],
+                            ],
+                        ],
+                    ]
+                )
+            ),
+        ),
+        (
+            ux,
+            uy,
             None,
             False,
             False,
@@ -930,7 +1103,7 @@ def test_spectra_scalar_with_domain_error():
         power_spectra_scalar(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w")
 
 
-def test_spectra_spherical_harmonic():
+def test_spectra_spherical_harmonic_vector():
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])
     longitude = np.arange(90.0, 270.0, 10)
@@ -967,3 +1140,45 @@ def test_spectra_spherical_harmonic():
         NotImplementedError, match="Support for spherical harmonic transform spectra has not been implemented yet."
     ):
         power_spectra_vector(ds, spherical_harmonic=True)
+
+
+def test_spectra_spherical_harmonic_scalar():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([50, 150, 250, 400, 600, 850, 1000])
+    longitude = np.arange(90.0, 270.0, 10)
+    latitude = np.array([-60.0, 0.0, +60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[:, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(
+        NotImplementedError, match="Support for spherical harmonic transform spectra has not been implemented yet."
+    ):
+        power_spectra_scalar(ds, spherical_harmonic=True)
