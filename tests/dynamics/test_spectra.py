@@ -890,6 +890,46 @@ def test_spectra_scalar_with_nan():
         power_spectra_scalar(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w")
 
 
+def test_spectra_scalar_with_domain_error():
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 400.0, 10)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((nt, nlev, nlat, nlon))
+    v = np.zeros((nt, nlev, nlat, nlon))
+    w = np.zeros((nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[:, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["time", "level", "latitude", "longitude"], u),
+            "v": (["time", "level", "latitude", "longitude"], v),
+            "w": (["time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    with pytest.raises(ValueError, match="Zonal domain size: 400.0 > 360.0 degrees, must be <= 360.0 degrees."):
+        power_spectra_scalar(ds, reduce_vertical=True, reduce_time=True, scalar_field_name="w")
+
+
 def test_spectra_spherical_harmonic():
     time = pd.date_range("2025-01-01", periods=1)
     level = np.array([50, 150, 250, 400, 600, 850, 1000])

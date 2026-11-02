@@ -26,13 +26,18 @@ def _zonal_filter(_data, longitude_name, zonal_filter_width):
     width L spanning theta_l to theta_r the filter value is 0 at the zonal domain endpoints (theta_l and theta_r) and
     1 at theta_l + L/zonal_filter_width and theta_r - L/zonal_filter_width, with theta_l < theta_r.
     """
+    epsilon = 1.0e-6
     n_lon = len(_data[longitude_name])
     theta_l = np.min(_data[longitude_name].values)
     theta_r = np.max(_data[longitude_name].values)
     L_theta = theta_r - theta_l
     d_theta = L_theta / (n_lon - 1)
     L = n_lon * d_theta
-    if L < 360.0 - 1.0e-6:
+    if L > 360.0 + epsilon:
+        error_msg = ValueError(f"Zonal domain size: {L} > 360.0 degrees, must be <= 360.0 degrees.")
+        raise error_msg
+
+    elif L < 360.0 - epsilon:
         # regional domain, apply cosine bell (Tukey) filtering, as in:
         # https://en.wikipedia.org/wiki/Window_function#Tukey_window
         error_msg = ValueError(f"The zonal_filter_width is: {zonal_filter_width}, must be < 0.5.")
@@ -109,7 +114,8 @@ def power_spectra_scalar(
     constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
-    Compute the spectra for a scalar field.
+    Compute the spectra for a scalar field of real data on a sphere with latitude-longitude coordintes in degrees, or a
+    sub-domain of the sphere.
 
     Args:
         data: Xarray DataArray containing the field to transform (maybe derived from the zonal and meridional velocity
@@ -213,7 +219,8 @@ def power_spectra_vector(
     constants: PlanetConstants = STANDARD_CONSTANTS,
 ) -> XarrayLike:
     """
-    Compute the spectra for a vector field.
+    Compute the spectra for an orthogonal vector field of real data on a sphere with latitude-longitude coordintes in
+    degrees, or a sub-domain of the sphere.
 
     Args:
         data: Xarray DataArray containing the field to transform (maybe derived from the zonal and meridional velocity
