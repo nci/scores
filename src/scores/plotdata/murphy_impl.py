@@ -8,7 +8,7 @@ from typing import Any, Callable, Literal, Optional, Union
 import numpy as np
 import xarray as xr
 
-from scores.processing import broadcast_and_match_nan
+from scores.processing import aggregate, broadcast_and_match_nan
 from scores.typing import FlexibleArrayType, FlexibleDimensionTypes
 from scores.utils import gather_dimensions
 
@@ -30,6 +30,7 @@ def murphy_score(  # pylint: disable=R0914
     decomposition: bool = False,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
+    weights: Optional[xr.DataArray] = None,
 ) -> xr.Dataset:
     """Returns the mean elementary score (Ehm et. al. 2016), also known as Murphy score,
     evaluated at decision thresholds specified by thetas. Optionally returns a decomposition
@@ -69,6 +70,15 @@ def murphy_score(  # pylint: disable=R0914
             against observed), and the forecast and observed dimensions
             must match precisely. Only one of ``reduce_dims`` and ``preserve_dims`` can be
             supplied. The default behaviour if neither are supplied is to reduce all dims.
+        weights: An array of weights to apply to the score (e.g., weighting a grid by latitude).
+            If None, no weights are applied. If provided, the weights must be broadcastable
+            to the data dimensions and must not contain negative or NaN values. If
+            appropriate, NaN values in weights can be replaced by ``weights.fillna(0)``.
+            The same weights are applied at every theta, so ``weights`` must not have a
+            theta dimension. Points where ``fcst`` or ``obs`` is NaN are excluded, together
+            with their weights. The weighting approach follows
+            :py:class:`xarray.computation.weighted.DataArrayWeighted`.
+            See the scores weighting tutorial for more information on how to use weights.
 
     Returns:
 
@@ -85,6 +95,8 @@ def murphy_score(  # pylint: disable=R0914
         ValueError: If ``functional`` is not one of the expected functions.
         ValueError: If ``alpha`` is not strictly between 0 and 1.
         ValueError: If ``huber_a`` is not strictly greater than 0.
+        ValueError: If ``weights`` contains negative or NaN values, or has no positive values.
+        ValueError: If ``weights`` has a theta dimension.
 
     References:
 
@@ -121,14 +133,45 @@ def murphy_score(  # pylint: disable=R0914
         Data variables:
             total    (theta) float64 48B 0.0 0.0 0.08333 0.0 0.06667 0.0
 
+        >>> # Count the second day twice as heavily as the other days
+        >>> weights = xr.DataArray(
+        ...     [1.0, 2.0, 1.0], coords={"time": times}, dims="time"
+        ... )
+        >>> murphy_score(
+        ...     fcst,
+        ...     obs,
+        ...     thetas,
+        ...     functional="expectile",
+        ...     alpha=0.5,
+        ...     weights=weights,
+        ... )
+        <xarray.Dataset> Size: 96B
+        Dimensions:  (theta: 6)
+        Coordinates:
+          * theta    (theta) float64 48B 1.0 1.2 2.5 3.0 4.1 4.5
+        Data variables:
+            total    (theta) float64 48B 0.0 0.0 0.125 0.0 0.05 0.0
+
     """
     functional_lower = functional.lower()
     _check_murphy_inputs(alpha=alpha, functional=functional_lower, huber_a=huber_a)
-    reduce_dims = gather_dimensions(fcst.dims, obs.dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims)
     if isinstance(thetas, xr.DataArray):
         theta1 = thetas
     else:
         theta1 = xr.DataArray(data=thetas, dims=["theta"], coords={"theta": thetas})
+
+    weights_dims = None
+    if weights is not None:
+        # Elementary scores are averaged over cases, never over theta, so the
+        # same weights must apply at every theta.
+        theta_dims = set(theta1.dims) - set(fcst.dims) - set(obs.dims)
+        if theta_dims.intersection(weights.dims):
+            raise ValueError(f"`weights` must not contain the theta dimension(s) {sorted(theta_dims, key=str)}.")
+        weights_dims = weights.dims
+
+    reduce_dims = gather_dimensions(
+        fcst.dims, obs.dims, weights_dims=weights_dims, reduce_dims=reduce_dims, preserve_dims=preserve_dims
+    )
     theta1, fcst1, obs1 = broadcast_and_match_nan(theta1, fcst, obs)
 
     over, under = exposed_functions()[f"_{functional_lower}_elementary_score"](
@@ -150,7 +193,7 @@ def murphy_score(  # pylint: disable=R0914
     for source, name in zip(sources, names):
         source.name = name
     result = xr.merge(sources)
-    result = result.mean(dim=reduce_dims)
+    result = aggregate(result, reduce_dims=reduce_dims, weights=weights)
     return result
 
 
