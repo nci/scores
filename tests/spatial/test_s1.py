@@ -9,8 +9,8 @@ Contains unit tests for scores.spatial.s1_impl
 try:
     import dask
     import dask.array
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
+except:  # noqa: E722 allow bare except here # pylint: disable=bare-except
+    dask = "Unavailable"  # pylint: disable=invalid-name
 
 import numpy as np
 import pytest
@@ -109,8 +109,8 @@ def test_s1_dask():
     """
     Tests that scores.spatial.s1 works with dask
     """
-    if dask == "Unavailable":  # pragma: no cover
-        pytest.skip("Dask unavailable, could not run test")  # pragma: no cover
+    if dask == "Unavailable":
+        pytest.skip("Dask unavailable, could not run test")
 
     fcst = FCST_S1.chunk()
     obs = OBS_S1.chunk()
