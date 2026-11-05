@@ -111,7 +111,7 @@ def _frequency_with_latitude(latitude, latitude_name, n_lon, L, rad_earth):
 
 
 def power_spectra_scalar(
-    data: xr.DataArray,
+    data: xr.Dataset | xr.DataArray,
     *,
     reduce_vertical: bool = False,
     reduce_time: bool = False,
@@ -159,8 +159,9 @@ def power_spectra_scalar(
             space, and the corresponding frequencies.
     """
 
+    _data = data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
     _data = _reduce_dims(
-        data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+        _data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
     )
 
     if spherical_harmonic:
@@ -212,7 +213,7 @@ def power_spectra_scalar(
 
 
 def power_spectra_vector(
-    data: xr.DataArray,
+    data: xr.Dataset | xr.DataArray,
     *,
     reduce_vertical: bool = False,
     reduce_time: bool = False,
@@ -264,8 +265,9 @@ def power_spectra_vector(
           Spectra from Gridded Data, *Mon. Wea. Rev.*, 145, 3901-3910. https://doi.org/10.1175/MWR-D-17-0056.1
     """
 
+    _data = data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
     _data = _reduce_dims(
-        data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+        _data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
     )
 
     if spherical_harmonic:
