@@ -98,12 +98,12 @@ def _reduce_dims(data, reduce_vertical, reduce_time, pressure_level_name, time_n
     return _data
 
 
-def _frequency_with_latitude(latitude, latitude_name, n_lon, L):
+def _frequency_with_latitude(latitude, latitude_name, n_lon, L, rad_earth):
     """
     Generate the spatial frequencies for each horizontal wavenumber at each latitude
     """
     cos_theta_inv = 1.0 / np.cos(np.deg2rad(latitude))
-    equator_freq = np.fft.rfftfreq(n_lon, L / 2.0 / np.pi)
+    equator_freq = np.fft.rfftfreq(n_lon, d=np.deg2rad(L) * rad_earth / n_lon)
     freq_2d = cos_theta_inv[:, None] * equator_freq[None, :]
     freq_2d = xr.DataArray(freq_2d, dims=(latitude_name, "wavenumber"))
 
@@ -173,7 +173,7 @@ def power_spectra_scalar(
         _data, n_lon, L = _zonal_filter(_data, longitude_name, zonal_filter_width)
 
         # ensure that the wavelengths are consistent for each latitude
-        freq_2d = _frequency_with_latitude(_data[latitude_name].values, latitude_name, n_lon, L)
+        freq_2d = _frequency_with_latitude(_data[latitude_name].values, latitude_name, n_lon, L, constants.RAD_EARTH)
 
         if dask != "Unavailable":  # pragma: no cover
             _data = _data.compute()
@@ -286,7 +286,7 @@ def power_spectra_vector(
         _data, n_lon, L = _zonal_filter(_data, longitude_name, zonal_filter_width)
 
         # ensure that the wavelengths are consistent for each latitude
-        freq_2d = _frequency_with_latitude(_data[latitude_name].values, latitude_name, n_lon, L)
+        freq_2d = _frequency_with_latitude(_data[latitude_name].values, latitude_name, n_lon, L, constants.RAD_EARTH)
 
         if dask != "Unavailable":  # pragma: no cover
             _data = _data.compute()
