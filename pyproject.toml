@@ -168,7 +168,7 @@ invalid-assignment = "ignore"
 invalid-type-form = "ignore"
 invalid-return-type = "ignore"
 unsupported-operator = "ignore"
-unresolved-import = "ignore"
+import-not-found = "ignore"
 unresolved-attribute = "ignore"
 
 [tool.coverage.paths]
