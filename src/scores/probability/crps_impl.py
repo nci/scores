@@ -20,7 +20,7 @@ from scores.probability.checks import coords_increasing
 from scores.probability.kernel import (
     _check_kernel_method,
     _combine_kernel_terms,
-    _crps_engine,
+    _crps_terms,
     _spread_term,
 )
 from scores.processing import aggregate
@@ -922,7 +922,7 @@ def crps_for_ensemble(
         score_specific_fcst_dims=ensemble_member_dim,
     )
 
-    terms = _crps_engine(fcst, obs, ensemble_member_dim)
+    terms = _crps_terms(fcst, obs, ensemble_member_dim)
     result = _combine_kernel_terms(terms, method)
 
     if include_components:

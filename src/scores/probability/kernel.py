@@ -40,7 +40,7 @@ def _spread_denominator(ens_count: xr.DataArray, method: Estimator) -> XarrayLik
     """
     if method == "fair":
         return 2 * ens_count * (ens_count - 1)
-    if method == "ecdf":
+    elif method == "ecdf":
         return 2 * ens_count**2
 
 
@@ -86,7 +86,7 @@ def _check_kernel_method(method: str):
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
 
-def _crps_engine(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> KernelTerms:
+def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> KernelTerms:
     """
     Computes the terms of the kernel-based CRPS for an ensemble forecast.
 
