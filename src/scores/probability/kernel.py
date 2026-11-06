@@ -2,7 +2,7 @@
 Private helper functions for kernel-based ensemble scores, such as the CRPS for ensemble forecasts.
 """
 
-from typing import Literal, NamedTuple
+from typing import Literal, NamedTuple, get_args
 
 import numpy as np
 import xarray as xr
@@ -27,21 +27,20 @@ class KernelTerms(NamedTuple):
     n_members: XarrayLike
 
 
-def _spread_denominator(ens_count: XarrayLike, method: Estimator) -> XarrayLike:
+def _spread_denominator(n_members: XarrayLike, method: Estimator) -> XarrayLike:
     """
     Returns :math:`2K`, which is the denominator that normalises the kernel spread sum.
 
     Args:
-        ens_count: Number of ensemble members, :math:`m`.
+        n_members: Number of ensemble members, :math:`m`.
         method: Estimator to use, either "ecdf" or "fair".
 
     Returns:
         :math:`2m(m-1)` for the "fair" estimator, or :math:`2m^2` for the "ecdf" estimator.
     """
     if method == "fair":
-        return 2 * ens_count * (ens_count - 1)
-    elif method == "ecdf":
-        return 2 * ens_count**2
+        return 2 * n_members * (n_members - 1)
+    return 2 * n_members**2  # "ecdf"
 
 
 def _spread_term(terms: KernelTerms, method: Estimator) -> XarrayLike:
@@ -72,9 +71,9 @@ def _combine_kernel_terms(terms: KernelTerms, method: Estimator) -> XarrayLike:
     return terms.obs_term - _spread_term(terms, method)
 
 
-def _check_kernel_method(method: str):
+def _check_estimator(method: str) -> None:
     """
-    Check that `method` is a supported kernel estimator.
+    Check that `method` is one of the supported estimators in ``Estimator``.
 
     Args:
         method: Estimator name to check.
@@ -82,8 +81,10 @@ def _check_kernel_method(method: str):
     Raises:
         ValueError: If `method` is not "ecdf" or "fair".
     """
-    if method not in ["ecdf", "fair"]:
-        raise ValueError("`method` must be one of 'ecdf' or 'fair'")
+    valid = get_args(Estimator)
+    if method not in valid:
+        options = " or ".join(repr(estimator) for estimator in valid)
+        raise ValueError(f"`method` must be one of {options}")
 
 
 def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> KernelTerms:
@@ -137,7 +138,7 @@ def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> 
         https://doi.org/10.1175/1520-0434(2000)015<0559:dotcrp>2.0.co;2
     """
     # Calculate forecast spread term
-    ens_count = fcst.count(ensemble_member_dim)  # Get number of non-NaN members for each point
+    n_members = fcst.count(ensemble_member_dim)  # Get number of non-NaN members for each point
     m_total = fcst.sizes[ensemble_member_dim]  # Get m_total (total dimension size)
 
     # Sort forecast values along the member dim.
@@ -153,9 +154,9 @@ def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> 
     )
 
     i = xr.DataArray(np.arange(m_total), dims=[ensemble_member_dim])
-    coeffs = 2 * i - ens_count + 1
-    fcst_spread_term_numerator = 2 * (fcst_sorted * coeffs).sum(dim=ensemble_member_dim, skipna=True)
+    coeffs = 2 * i - n_members + 1
+    spread_sum = 2 * (fcst_sorted * coeffs).sum(dim=ensemble_member_dim, skipna=True)
 
     obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)
 
-    return KernelTerms(obs_term=obs_term, spread_sum=fcst_spread_term_numerator, n_members=ens_count)
+    return KernelTerms(obs_term=obs_term, spread_sum=spread_sum, n_members=n_members)

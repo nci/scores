@@ -18,7 +18,8 @@ import xarray as xr
 import scores.utils
 from scores.probability.checks import coords_increasing
 from scores.probability.kernel import (
-    _check_kernel_method,
+    Estimator,
+    _check_estimator,
     _combine_kernel_terms,
     _crps_terms,
     _spread_term,
@@ -820,7 +821,7 @@ def crps_for_ensemble(
     obs: XarrayLike,
     ensemble_member_dim: str,
     *,  # Force keywords arguments to be keyword-only
-    method: Literal["ecdf", "fair"] = "ecdf",
+    method: Estimator = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
@@ -907,7 +908,7 @@ def crps_for_ensemble(
           score with limited information and applications to ensemble weather forecasts.
           Mathematical Geosciences, 50, 209–234. https://doi.org/10.1007/s11004-017-9709-7
     """  # noqa: E501
-    _check_kernel_method(method)
+    _check_estimator(method)
 
     weights_dims = None
     if weights is not None:
@@ -947,7 +948,7 @@ def tw_crps_for_ensemble(
     chaining_func: Callable[[XarrayLike], XarrayLike],
     *,  # Force keywords arguments to be keyword-only
     chaining_func_kwargs: Optional[dict[str, Any]] = None,
-    method: Literal["ecdf", "fair"] = "ecdf",
+    method: Estimator = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
@@ -1102,7 +1103,7 @@ def tail_tw_crps_for_ensemble(
     threshold: Union[XarrayLike, float],
     *,  # Force keywords arguments to be keyword-only
     tail: Literal["upper", "lower"] = "upper",
-    method: Literal["ecdf", "fair"] = "ecdf",
+    method: Estimator = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
@@ -1218,7 +1219,7 @@ def interval_tw_crps_for_ensemble(
     lower_threshold: Union[xr.DataArray, float],
     upper_threshold: Union[xr.DataArray, float],
     *,  # Force keywords arguments to be keyword-only
-    method: Literal["ecdf", "fair"] = "ecdf",
+    method: Estimator = "ecdf",
     reduce_dims: Optional[Sequence[str]] = None,
     preserve_dims: Optional[Sequence[str]] = None,
     weights: Optional[XarrayLike] = None,
