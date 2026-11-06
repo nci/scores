@@ -74,7 +74,6 @@ tutorial = [
     "dask",
     "gcsfs",
     "zarr",
-    "h5py"
 ]
 maintainer = ["build",
               "hatch",
