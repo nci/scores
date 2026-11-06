@@ -22,12 +22,12 @@ class KernelTerms(NamedTuple):
         n_members: Number of non-NaN ensemble members.
     """
 
-    obs_term: xr.DataArray
-    spread_sum: xr.DataArray
-    n_members: xr.DataArray
+    obs_term: XarrayLike
+    spread_sum: XarrayLike
+    n_members: XarrayLike
 
 
-def _spread_denominator(ens_count: xr.DataArray, method: Estimator) -> XarrayLike:
+def _spread_denominator(ens_count: XarrayLike, method: Estimator) -> XarrayLike:
     """
     Returns :math:`2K`, which is the denominator that normalises the kernel spread sum.
 
