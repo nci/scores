@@ -815,8 +815,6 @@ def crps_step_threshold_weight(
     return weight
 
 
-
-
 def crps_for_ensemble(
     fcst: XarrayLike,
     obs: XarrayLike,
@@ -909,8 +907,6 @@ def crps_for_ensemble(
           score with limited information and applications to ensemble weather forecasts.
           Mathematical Geosciences, 50, 209–234. https://doi.org/10.1007/s11004-017-9709-7
     """  # noqa: E501
-    if method not in ["ecdf", "fair"]:
-        raise ValueError("`method` must be one of 'ecdf' or 'fair'")
     _check_kernel_method(method)
 
     weights_dims = None

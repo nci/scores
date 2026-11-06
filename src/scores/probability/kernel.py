@@ -1,6 +1,7 @@
 """
 Private helper functions for kernel-based ensemble scores, such as the CRPS for ensemble forecasts.
 """
+
 from typing import Literal, NamedTuple
 
 import numpy as np
@@ -9,6 +10,7 @@ import xarray as xr
 from scores.typing import XarrayLike
 
 Estimator = Literal["ecdf", "fair"]
+
 
 class KernelTerms(NamedTuple):
     """
@@ -19,12 +21,13 @@ class KernelTerms(NamedTuple):
         spread_sum: Sum of absolute differences over all ordered pairs of ensemble members.
         n_members: Number of non-NaN ensemble members.
     """
+
     obs_term: xr.DataArray
     spread_sum: xr.DataArray
     n_members: xr.DataArray
 
 
-def _spread_denominator(ens_count: xr.DataArray, method: Estimator)->XarrayLike:
+def _spread_denominator(ens_count: xr.DataArray, method: Estimator) -> XarrayLike:
     """
     Returns :math:`2K`, which is the denominator that normalises the kernel spread sum.
 
@@ -40,7 +43,8 @@ def _spread_denominator(ens_count: xr.DataArray, method: Estimator)->XarrayLike:
     if method == "ecdf":
         return 2 * ens_count**2
 
-def _spread_term(terms:KernelTerms, method: Estimator)->XarrayLike:
+
+def _spread_term(terms: KernelTerms, method: Estimator) -> XarrayLike:
     """
     Returns the normalised spread term, :math:`\\frac{1}{2K}\\sum_i\\sum_j |x_i - x_j|`.
 
@@ -52,6 +56,7 @@ def _spread_term(terms:KernelTerms, method: Estimator)->XarrayLike:
         The spread sum divided by :math:`2K`, as given by `_spread_denominator`.
     """
     return terms.spread_sum / _spread_denominator(terms.n_members, method)
+
 
 def _combine_kernel_terms(terms: KernelTerms, method: Estimator) -> XarrayLike:
     """
@@ -66,6 +71,7 @@ def _combine_kernel_terms(terms: KernelTerms, method: Estimator) -> XarrayLike:
     """
     return terms.obs_term - _spread_term(terms, method)
 
+
 def _check_kernel_method(method: str):
     """
     Check that `method` is a supported kernel estimator.
@@ -79,7 +85,8 @@ def _check_kernel_method(method: str):
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
-def _crps_engine(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str)->KernelTerms:
+
+def _crps_engine(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> KernelTerms:
     """
     Computes the terms of the kernel-based CRPS for an ensemble forecast.
 
@@ -152,4 +159,3 @@ def _crps_engine(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str)->K
     obs_term = abs(fcst - obs).mean(dim=ensemble_member_dim)
 
     return KernelTerms(obs_term=obs_term, spread_sum=fcst_spread_term_numerator, n_members=ens_count)
-
