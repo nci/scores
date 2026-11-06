@@ -57,7 +57,7 @@ dev = [
     "pytest-watch",
     "pytest-cov",
     "pre-commit",
-    "ty",
+    "ty == 0.0.98",
     "ruff == 0.14.14",
     "dask",
     "h5netcdf",
@@ -168,7 +168,7 @@ invalid-assignment = "ignore"
 invalid-type-form = "ignore"
 invalid-return-type = "ignore"
 unsupported-operator = "ignore"
-unresolved-import = "ignore"
+import-not-found = "ignore"
 unresolved-attribute = "ignore"
 
 [tool.coverage.paths]
