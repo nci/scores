@@ -33,7 +33,7 @@ def test__spread_denominator(method, expected):
 
 def test__spread_denominator_raises():
     """Tests that _spread_denominator raises an error for invalid method."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unknown method"):
         _spread_denominator(N_MEMBERS, "invalid")
 
 
@@ -70,7 +70,7 @@ def test__check_estimator():
     """Tests _check_estimator."""
     _check_estimator("ecdf")
     _check_estimator("fair")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="must be one of 'ecdf' or 'fair'"):
         _check_estimator("invalid")
 
 
