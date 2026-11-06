@@ -30,10 +30,12 @@ def test__spread_denominator(method, expected):
     result = _spread_denominator(N_MEMBERS, method)
     xr.testing.assert_equal(result, expected)
 
+
 def test__spread_donominator_raises():
     """Tests that _spread_denominator raises an error for invalid method."""
     with pytest.raises(ValueError):
         _spread_denominator(N_MEMBERS, "invalid")
+
 
 @pytest.mark.parametrize(("method", "expected"), [("ecdf", EXP_SPREAD_TERM_ECDF), ("fair", EXP_SPREAD_TERM_FAIR)])
 def test_spread_term(method, expected):
@@ -79,17 +81,25 @@ def test__crps_terms():
     Note that this is more thoroughly tested in test_crps.py
     """
     fcst = xr.DataArray(
-        np.array([[0, 2, np.nan, 3], [1, np.nan, np.nan, 4]]),
-        dims=["ens_member", "station"],
-        coords={"station": [0, 1, 2, 3  ], "ens_member": [0, 1]},
-    )
-    obs = xr.DataArray(np.array([0, 1, 2, np.nan]), dims=["station"], coords={"station": [0, 1, 2, 3]})
+        np.array(
+            [
+                [3, np.nan, 1],
+                [np.nan, 2, np.nan],
+                [np.nan, np.nan, np.nan],
+                [5, 0, 2],
+            ]
+        ),
+        dims=["station", "ens_member"],
+        coords={"station": [0, 1, 2, 3], "ens_member": [0, 1, 2]},
+    ).transpose("ens_member", "station")
+    obs = xr.DataArray(np.array([2, 1, 2, 1]), dims=["station"], coords={"station": [0, 1, 2, 3]})
+
     result = _crps_terms(fcst, obs, "ens_member")
 
     expected = KernelTerms(
-        obs_term=xr.DataArray(np.array([0.5, 1, np.nan, np.nan]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
-        spread_sum=xr.DataArray(np.array([2, 0, 0, 2]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
-        n_members=xr.DataArray(np.array([2, 1, 0, 2]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
+        obs_term=xr.DataArray(np.array([1, 1, np.nan, 2]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
+        spread_sum=xr.DataArray(np.array([4, 0, 0, 20]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
+        n_members=xr.DataArray(np.array([2, 1, 0, 3]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
     )
     assert len(result) == 3
     xr.testing.assert_equal(result.obs_term, expected.obs_term)
