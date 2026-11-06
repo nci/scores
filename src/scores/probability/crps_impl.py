@@ -18,6 +18,7 @@ import xarray as xr
 import scores.utils
 from scores.probability.checks import coords_increasing
 from scores.probability.kernel import (
+    _check_kernel_method,
     _combine_kernel_terms,
     _crps_engine,
     _spread_term,
@@ -910,6 +911,7 @@ def crps_for_ensemble(
     """  # noqa: E501
     if method not in ["ecdf", "fair"]:
         raise ValueError("`method` must be one of 'ecdf' or 'fair'")
+    _check_kernel_method(method)
 
     weights_dims = None
     if weights is not None:

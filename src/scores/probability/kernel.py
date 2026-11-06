@@ -36,6 +36,9 @@ def _combine_kernel_terms(terms: KernelTerms, method: Estimator) -> XarrayLike:
     """Combine the observation and spread terms to compute the final kernel-based score."""
     return terms.obs_term - _spread_term(terms, method)
 
+def _check_kernel_method(method: str):
+    if method not in ["ecdf", "fair"]:
+        raise ValueError("`method` must be one of 'ecdf' or 'fair'")
 
 def _crps_engine(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str):
     """
