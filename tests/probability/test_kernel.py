@@ -31,7 +31,7 @@ def test__spread_denominator(method, expected):
     xr.testing.assert_equal(result, expected)
 
 
-def test__spread_donominator_raises():
+def test__spread_denominator_raises():
     """Tests that _spread_denominator raises an error for invalid method."""
     with pytest.raises(ValueError):
         _spread_denominator(N_MEMBERS, "invalid")
