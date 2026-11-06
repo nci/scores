@@ -73,17 +73,17 @@ def test__crps_terms():
     Note that this is more thoroughly tested in test_crps.py
     """
     fcst = xr.DataArray(
-        np.array([[0, 2, np.nan], [1, np.nan, np.nan]]),
+        np.array([[0, 2, np.nan, 3], [1, np.nan, np.nan, 4]]),
         dims=["ens_member", "station"],
-        coords={"station": [0, 1, 2], "ens_member": [0, 1]},
+        coords={"station": [0, 1, 2, 3  ], "ens_member": [0, 1]},
     )
-    obs = xr.DataArray(np.array([0, 1, 2]), dims=["station"], coords={"station": [0, 1, 2]})
+    obs = xr.DataArray(np.array([0, 1, 2, np.nan]), dims=["station"], coords={"station": [0, 1, 2, 3]})
     result = _crps_terms(fcst, obs, "ens_member")
 
     expected = KernelTerms(
-        obs_term=xr.DataArray(np.array([0.5, 1, np.nan]), dims=["station"], coords={"station": [0, 1, 2]}),
-        spread_sum=xr.DataArray(np.array([2, 0, 0]), dims=["station"], coords={"station": [0, 1, 2]}),
-        n_members=xr.DataArray(np.array([2, 1, 0]), dims=["station"], coords={"station": [0, 1, 2]}),
+        obs_term=xr.DataArray(np.array([0.5, 1, np.nan, np.nan]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
+        spread_sum=xr.DataArray(np.array([2, 0, 0, 2]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
+        n_members=xr.DataArray(np.array([2, 1, 0, 2]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
     )
     assert len(result) == 3
     xr.testing.assert_equal(result.obs_term, expected.obs_term)
