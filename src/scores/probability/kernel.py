@@ -31,7 +31,7 @@ def _spread_denominator(n_members: XarrayLike, method: Estimator) -> XarrayLike:
     """
     Returns :math:`2K`, which is the denominator that normalises the kernel spread sum.
 
-    Returns NaN when the denominator would be ≤ 0, which happens with 0 members, or 
+    Returns NaN when the denominator would be ≤ 0, which happens with 0 members, or
     1 member with the "fair" estimator.
 
     Args:
