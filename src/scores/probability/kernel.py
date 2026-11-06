@@ -39,8 +39,12 @@ def _spread_denominator(n_members: XarrayLike, method: Estimator) -> XarrayLike:
         :math:`2m(m-1)` for the "fair" estimator, or :math:`2m^2` for the "ecdf" estimator.
     """
     if method == "fair":
-        return 2 * n_members * (n_members - 1)
-    return 2 * n_members**2  # "ecdf"
+        denominator = 2 * n_members * (n_members - 1)
+    elif method == "ecdf":
+        denominator = 2 * n_members**2
+    else:
+        raise ValueError(f"Unknown method: {method}")
+    return denominator.where(denominator > 0)
 
 
 def _spread_term(terms: KernelTerms, method: Estimator) -> XarrayLike:
