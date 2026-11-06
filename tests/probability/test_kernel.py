@@ -66,6 +66,8 @@ def test__combine_kernel_terms():
 
 def test__check_estimator():
     """Tests _check_estimator."""
+    _check_estimator("ecdf")
+    _check_estimator("fair")
     with pytest.raises(ValueError):
         _check_estimator("invalid")
 
