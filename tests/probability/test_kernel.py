@@ -13,6 +13,7 @@ from scores.probability.kernel import (
     _spread_term,
 )
 
+N_MEMBERS = xr.DataArray(np.array([0, 2, np.nan]), dims=["station"], coords={"station": [0, 1, 2]})
 EXP_SPREAD_DENOM_FAIR = xr.DataArray(np.array([np.nan, 4, np.nan]), dims=["station"], coords={"station": [0, 1, 2]})
 EXP_SPREAD_DENOM_ECDF = xr.DataArray(np.array([np.nan, 8, np.nan]), dims=["station"], coords={"station": [0, 1, 2]})
 EXP_SPREAD_TERM_ECDF = xr.DataArray(
@@ -26,10 +27,13 @@ EXP_SPREAD_TERM_FAIR = xr.DataArray(
 @pytest.mark.parametrize(("method", "expected"), [("ecdf", EXP_SPREAD_DENOM_ECDF), ("fair", EXP_SPREAD_DENOM_FAIR)])
 def test__spread_denominator(method, expected):
     """Tests _spread_denominator."""
-    n_members = xr.DataArray(np.array([0, 2, np.nan]), dims=["station"], coords={"station": [0, 1, 2]})
-    result = _spread_denominator(n_members, method)
+    result = _spread_denominator(N_MEMBERS, method)
     xr.testing.assert_equal(result, expected)
 
+def test__spread_donominator_raises():
+    """Tests that _spread_denominator raises an error for invalid method."""
+    with pytest.raises(ValueError):
+        _spread_denominator(N_MEMBERS, "invalid")
 
 @pytest.mark.parametrize(("method", "expected"), [("ecdf", EXP_SPREAD_TERM_ECDF), ("fair", EXP_SPREAD_TERM_FAIR)])
 def test_spread_term(method, expected):
