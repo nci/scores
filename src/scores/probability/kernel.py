@@ -31,6 +31,9 @@ def _spread_denominator(n_members: XarrayLike, method: Estimator) -> XarrayLike:
     """
     Returns :math:`2K`, which is the denominator that normalises the kernel spread sum.
 
+    Returns NaN when the denominator would be ≤ 0, which happens with 0 members, or 
+    1 member with the "fair" estimator.
+
     Args:
         n_members: Number of ensemble members, :math:`m`.
         method: Estimator to use, either "ecdf" or "fair".
@@ -104,11 +107,6 @@ def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> 
         The ``KernelTerms`` (observation term, spread sum and member count) used by the
         estimator-specific functions.
 
-    References:
-        - Hersbach, H. (2000). Decomposition of the Continuous Ranked Probability
-          Score for Ensemble Prediction Systems. Weather and Forecasting, 15(5), 559–570.
-          https://doi.org/10.1175/1520-0434(2000)015<0559:dotcrp>2.0.co;2
-
     Notes:
         Here we implement a faster method to compute the ensemble spread term
         and explain the derivation below.
@@ -141,7 +139,6 @@ def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> 
         Score for Ensemble Prediction Systems. Weather and Forecasting, 15(5), 559–570.
         https://doi.org/10.1175/1520-0434(2000)015<0559:dotcrp>2.0.co;2
     """
-    # Calculate forecast spread term
     n_members = fcst.count(ensemble_member_dim)  # Get number of non-NaN members for each point
     m_total = fcst.sizes[ensemble_member_dim]  # Get m_total (total dimension size)
 
