@@ -19,7 +19,7 @@ from scores.dynamics.budgets_utils import (
 from scores.typing import XarrayLike
 
 
-def _zonal_filter(_data, longitude_name, zonal_filter_width):
+def _zonal_filter(_data, pressure_level_name, time_name, latitude_name, longitude_name, zonal_filter_width):
     """
     If the zonal domain is less than the full planet, then filter the data at the zonal boundaries to avoid spectral
     ringing from discintinuous data at the boundaries. Filtering is done with a cosine function where for a domain of
@@ -62,6 +62,7 @@ def _zonal_filter(_data, longitude_name, zonal_filter_width):
         )
         _dims = _data.dims
         _data = (filter_xr * _data).transpose(*_dims)
+        _data = _data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
 
     return _data, n_lon, L
 
@@ -171,7 +172,9 @@ def power_spectra_scalar(
         raise error_msg
 
     else:
-        _data, n_lon, L = _zonal_filter(_data, longitude_name, zonal_filter_width)
+        _data, n_lon, L = _zonal_filter(
+            _data, pressure_level_name, time_name, latitude_name, longitude_name, zonal_filter_width
+        )
 
         # ensure that the wavelengths are consistent for each latitude
         freq_2d = _frequency_with_latitude(_data[latitude_name].values, latitude_name, n_lon, L, constants.RAD_EARTH)
@@ -285,7 +288,9 @@ def power_spectra_vector(
         if np.any(np.isnan(data[meridional_velocity_name].as_numpy())):
             raise error_msg
 
-        _data, n_lon, L = _zonal_filter(_data, longitude_name, zonal_filter_width)
+        _data, n_lon, L = _zonal_filter(
+            _data, pressure_level_name, time_name, latitude_name, longitude_name, zonal_filter_width
+        )
 
         # ensure that the wavelengths are consistent for each latitude
         freq_2d = _frequency_with_latitude(_data[latitude_name].values, latitude_name, n_lon, L, constants.RAD_EARTH)
