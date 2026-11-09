@@ -279,26 +279,37 @@ def test__tidy_ir_inputs_raises():
         _tidy_ir_inputs(np.array([0.0, nan, 4.1, 3]), np.array([nan, 0.0, nan, nan]))
 
 
+def _secmom_solver(y):
+    """
+    Solver for 'second moment about 0' isotonic regression.
+    This is used to test the case where the solver of a singleton is not the
+    value of the singleton.
+    """
+    return np.average(y**2)
+
+
 @pytest.mark.parametrize(
-    ("functional", "solver", "expected"),
+    ("functional", "solver", "functional_preserves_singletons", "expected"),
     [
-        ("mean", None, np.array([2.0, 2.0, 2.0])),
-        ("quantile", None, np.array([1.0, 1.0, 1.0])),
-        ("none", np.max, np.array([5.0, 5.0, 5.0])),
+        ("mean", None, True, np.array([2.0, 2.0, 2.0, 6.0])),
+        ("quantile", None, True, np.array([1.0, 1.0, 1.0, 6.0])),
+        ("none", np.max, True, np.array([5.0, 5.0, 5.0, 6.0])),
+        (None, _secmom_solver, False, np.array([26 / 3, 26 / 3, 26 / 3, 36])),
     ],
 )
-def test__do_ir(functional, solver, expected):
+def test__do_ir(functional, solver, functional_preserves_singletons, expected):
     """
     Tests that `_do_ir` gives results as expected.
     Simultaneously supplies simple confirmation tests for `_contiguous_mean_ir`,
     `_contiguous_quantile_ir` and `_contiguous_ir`.
     """
     result = _do_ir(
-        np.array([5.0, 1, 0]),
+        np.array([5.0, 1, 0, 6]),
         weight=None,
         functional=functional,
         quantile_level=0.5,
         solver=solver,
+        functional_preserves_singletons=functional_preserves_singletons,
     )
     np.testing.assert_array_equal(result, expected)
 
@@ -321,35 +332,28 @@ def _wmean_solver(y, weight):
     return np.average(y, weights=weight)
 
 
-def _secmom_solver(y):
-    """
-    Solver for 'second moment about 0' isotonic regression.
-    This is used to test the case where the solver of a singleton is not the
-    value of the singleton.
-    """
-    return np.average(y**2)
-
-
 @pytest.mark.parametrize(
-    ("y", "solver", "weight", "expected"),
+    ("y", "solver", "functional_preserves_singletons", "weight", "expected"),
     [
-        (itd.Y1, np.median, None, itd.EXP_IR_MEDIAN),
-        (itd.Y1, np.mean, None, itd.EXP_IR_MEAN),
-        (itd.Y1, _wmean_solver, itd.W1, itd.EXP_IR_WMEAN),
-        (np.ndarray(0), np.mean, None, 0),
-        (itd.Y1, _secmom_solver, None, itd.EXP_IR_SECMOM),
+        (itd.Y1, np.median, True, None, itd.EXP_IR_MEDIAN),
+        (itd.Y1, np.mean, True, None, itd.EXP_IR_MEAN),
+        (itd.Y1, _wmean_solver, True, itd.W1, itd.EXP_IR_WMEAN),
+        (itd.Y1, _wmean_solver, False, itd.W1, itd.EXP_IR_WMEAN),  # True or False give same result
+        (np.ndarray(0), np.mean, True, None, 0),
+        (itd.Y1, _secmom_solver, False, None, itd.EXP_IR_SECMOM),
+        (itd.Y2, _secmom_solver, False, None, itd.EXP_IR_SECMOM2),
     ],
 )
-def test__contiguous_ir(y, solver, weight, expected):
+def test__contiguous_ir(y, solver, functional_preserves_singletons, weight, expected):
     """Tests that `_contiguous_ir` gives results as expected."""
-    result = _contiguous_ir(y, solver, weight=weight)
+    result = _contiguous_ir(y, solver, functional_preserves_singletons, weight=weight)
     np.testing.assert_array_equal(result, expected)
 
 
 def test__contiguous_ir_raises():
     """Tests that `_contiguous_ir` raises as expected."""
     with pytest.raises(ValueError, match="`y` and `weight` must have same length."):
-        _contiguous_ir(np.array([1.0, 2, 3]), np.mean, weight=np.array([1, 1]))
+        _contiguous_ir(np.array([1.0, 2, 3]), np.mean, True, weight=np.array([1, 1]))
 
 
 @pytest.mark.parametrize(
@@ -455,3 +459,39 @@ def test_isotonic_fit2():
     regression_result = result["regression_values"]
     regression_expected = np.array([0.5, 0.5])
     np.testing.assert_array_equal(regression_result, regression_expected)
+
+
+def test_istonic_fit3():
+    """
+    Tests that isotonic fit handles `functional_preserves_singletons=False` correctly,
+    including with bootstrapped data.
+    """
+    np.random.seed(seed=3)
+    result = isotonic_fit(
+        np.array([0, 1, 2]),
+        np.array([-1.0, 0, 2]),
+        functional=None,
+        solver=_secmom_solver,
+        functional_preserves_singletons=False,
+        bootstraps=2,
+        report_bootstrap_results=True,
+    )
+
+    # first test regression values
+    regression_result = result["regression_values"]
+    regression_expected = np.array([1 / 2, 1 / 2, 4])
+    np.testing.assert_array_equal(regression_result, regression_expected)
+
+    # Now test bootstrap output.
+    # `selection` is [2, 0, 1], [0, 0, 0] when the seed is 3.
+    # `fcst_sample` is [2, 0, 1], [0, 0, 0]
+    # `obs_sample` is [2, -1, 0], [-1, -1, -1]
+    # Now need to sort the data so that fcst increasing, obs match new fcst.
+    # sorted fcst is [0, 1, 2], [0, 0, 0]
+    # sorted obs is [-1, 0, 2], [-1, -1, -1]
+    # Regressed values at sorted `fcst_sample`: [1/2, 1/2, 4], [1, nan, nan];
+    # note that functional_preserves_singletons=False will give an incorrect result of
+    # [-1, 0, 2] for the first row.
+    bootstrap_result = result["bootstrap_results"]
+    bootstrap_expected = np.array([[1 / 2, 1 / 2, 4], [1, nan, nan]])
+    np.testing.assert_array_equal(bootstrap_result, bootstrap_expected)

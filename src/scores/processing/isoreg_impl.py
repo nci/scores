@@ -31,6 +31,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     confidence_level: Optional[float] = 0.9,
     min_non_nan: Optional[int] = 1,
     report_bootstrap_results: Optional[bool] = False,
+    functional_preserves_singletons: Optional[bool] = True,
 ) -> dict:
     """
     Calculates an isotonic regression fit to observations given forecasts as the
@@ -93,6 +94,14 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         report_bootstrap_results: This specifies to whether keep the bootstrapped
             regression values in return dictionary. Default is ``False`` to keep the output
             result small.
+        functional_preserves_singletons: Only used when ``solver`` is supplied. If ``True``,
+            the functional is assumed to return the value of a singleton empirical distribution.
+            That is, applying the functional to ``{a}`` always returns ``a``.
+            The mean and quantile functionals satisfy this property, whereas the second moment
+            about the origin does not. If this property does not hold, this argument must be
+            set to ``False``; otherwise the returned isotonic fit may be incorrect.
+            Setting this argument to ``False`` when the property does hold does not affect
+            correctness, but may increase computation time.
 
     Returns:
         A dictionary with the following keys.
@@ -203,6 +212,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
         functional=functional,
         quantile_level=quantile_level,
         solver=solver,
+        functional_preserves_singletons=functional_preserves_singletons,
     )
 
     # calculate the fitting function
@@ -217,6 +227,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
             quantile_level=quantile_level,
             solver=solver,
             bootstraps=bootstraps,
+            functional_preserves_singletons=functional_preserves_singletons,
         )
 
         lower_pts, upper_pts = _confidence_band(boot_results, confidence_level, min_non_nan)
@@ -420,6 +431,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
     functional: Optional[Literal["mean", "quantile"]] = None,
     quantile_level: Optional[float] = None,
     solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
+    functional_preserves_singletons: bool = True,
 ) -> np.ndarray:
     """
     Returns the isotonic regression (IR) fit for specified functional or solver,
@@ -436,6 +448,9 @@ def _do_ir(  # pylint: disable=too-many-arguments
             else None.
         solver: solver function as described in docstring of `isotonic_fit`, or `None`.
             Cannot be `None` if `functional` is `None`.
+        functional_preserves_singletons: Only used when `solver` is supplied. If `True`,
+            the functional is assumed to return the value of a singleton empirical distribution.
+            That is, applying the functional to `{a}` always returns `a`.
 
     Returns:
         1D numpy array of values fitted using isotonic regression.
@@ -445,7 +460,12 @@ def _do_ir(  # pylint: disable=too-many-arguments
     elif functional == "quantile":
         y_out = _contiguous_quantile_ir(obs, quantile_level)
     else:
-        y_out = _contiguous_ir(obs, solver, weight=weight)
+        y_out = _contiguous_ir(
+            obs,
+            solver,
+            functional_preserves_singletons,
+            weight=weight,
+        )
 
     return y_out
 
@@ -453,6 +473,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
 def _contiguous_ir(
     y: np.ndarray,
     solver: Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]],
+    functional_preserves_singletons: bool,
     *,  # Force keywords arguments to be keyword-only
     weight: Optional[np.ndarray] = None,
 ) -> np.ndarray:
@@ -470,11 +491,14 @@ def _contiguous_ir(
         y: 1D numpy array of response (i.e., observed) values.
         solver: function which determines values of each valid regression block
             in the PAV algorithm, given response values in the block.
+        functional_preserves_singletons: True if the functional preserves singletons
         weight: 1D numpy array of weights, or else `None`.
             If `weight` is not `None` then `solver` takes in two arrays as arguments
             (response values and weights). If `weight` is `None` then `solver` takes
             in a single array as argument (response values).
 
+    Returns:
+        1D array if regressed values.
     """
     len_y = len(y)
 
@@ -484,15 +508,19 @@ def _contiguous_ir(
     # defensive cast in case this private function is called directly with non-float input
     y = np.asarray(y, dtype=float)
 
-    # y_out is updated in place as blocks are merged. Seed with solver(singleton) rather than
-    # y itself, since solver(y[i]) is not assumed to equal y[i] (e.g. solver = second moment).
-    if weight is None:
-        y_out = np.array([solver(y[i : i + 1]) for i in range(len_y)], dtype=float)  # type: ignore[ty:missing-argument]
+    # y_out is updated in place as blocks are merged.
+    if functional_preserves_singletons:
+        y_out = y.copy()
     else:
-        y_out = np.array(
-            [solver(y[i : i + 1], weight[i : i + 1]) for i in range(len_y)],  # type: ignore[ty:too-many-positional-arguments]
-            dtype=float,
-        )
+        # Seed with solver(singleton) rather than y itself, since solver(y[i]) is not assumed
+        # to equal y[i] (e.g. solver = second moment).
+        if weight is None:
+            y_out = np.array([solver(y[i : i + 1]) for i in range(len_y)], dtype=float)  # type: ignore[ty:missing-argument]
+        else:
+            y_out = np.array(
+                [solver(y[i : i + 1], weight[i : i + 1]) for i in range(len_y)],  # type: ignore[ty:too-many-positional-arguments]
+                dtype=float,
+            )
 
     # target describes a list of blocks.  At any time, if [i..j] (inclusive) is
     # an active block, then target[i] := j and target[j] := i.
@@ -548,7 +576,7 @@ def _contiguous_quantile_ir(y: np.ndarray, alpha: float) -> np.ndarray:
     with no weights. Quantile calculation uses the "averaged_inverted_cdf" method
     so that the returned quantile values are true alpha-quantiles of the block empirical CDF.
     """
-    return _contiguous_ir(y, partial(np.quantile, q=alpha, method="averaged_inverted_cdf"))
+    return _contiguous_ir(y, partial(np.quantile, q=alpha, method="averaged_inverted_cdf"), True)
 
 
 def _contiguous_mean_ir(
@@ -578,6 +606,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
     functional: Optional[Literal["mean", "quantile"]] = None,
     quantile_level: Optional[float] = None,
     solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
+    functional_preserves_singletons: bool = True,
 ):
     """
     Gives the isotonic fits of bootstrapped samples.
@@ -590,6 +619,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
         functional: either `None` or the target functional (one of "mean" or "quantile").
         quantile_level: the quantile level if `functional="quantile"`.
         solver: the regression solver function if `functional=None`.
+        functional_preserves_singletons: True if the functional preserves all singletons
 
     Returns:
         2D numpy array with one row for each bootstrapped sample and one column for each `fcst` value.
@@ -618,6 +648,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
             functional=functional,
             quantile_level=quantile_level,
             solver=solver,
+            functional_preserves_singletons=functional_preserves_singletons,
         )
         approximation_func = _get_interp1d_func(fcst_sample, ir_results)
 

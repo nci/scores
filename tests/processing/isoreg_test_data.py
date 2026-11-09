@@ -99,6 +99,9 @@ EXP_IR_MEAN = np.array([1, 5 / 3, 5 / 3, 5 / 3, 10 / 3, 10 / 3, 10 / 3, 7])
 EXP_IR_WMEAN = np.array([1, 5 / 3, 5 / 3, 5 / 3, 15 / 4, 15 / 4, 15 / 4, 7])
 EXP_IR_SECMOM = np.array([1, 4, 9 / 2, 9 / 2, 42 / 3, 42 / 3, 42 / 3, 49])
 
+Y2 = np.array([-3.0, -1, 0, 2, 7])  # increasing, but second moment of singletons not increasing
+EXP_IR_SECMOM2 = np.array([10 / 3, 10 / 3, 10 / 3, 4, 49])
+
 
 # data and working for bootstrap tests
 
