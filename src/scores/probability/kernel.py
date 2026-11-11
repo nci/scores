@@ -1,5 +1,20 @@
 """
 Private helper functions for kernel-based ensemble scores, such as the CRPS for ensemble forecasts.
+
+Kernel scores are computed here in the form
+
+.. math::
+    S(F, y) = \\mathbb{E}\\,\\rho\\big(v(X), v(y)\\big) - \\tfrac{1}{2}\\,\\mathbb{E}\\,\\rho\\big(v(X), v(X')\\big)
+
+where
+
+- :math:`F` is the forecast distribution and :math:`y` is the observation.
+- :math:`X` and :math:`X'` are independent random draws from :math:`F`. For an ensemble,
+  these are the ensemble members.
+- :math:`v` maps forecasts and observations into the space where they are compared. For the
+  CRPS it is the identity, or a chaining function for the threshold-weighted CRPS.
+- :math:`\\rho` is the kernel, which measures how far apart two values are and must satisfy
+  :math:`\\rho(a, a) = 0`. For the CRPS, :math:`\\rho(a, b) = |a - b|`.
 """
 
 from typing import Literal, NamedTuple, get_args
@@ -17,9 +32,12 @@ class KernelTerms(NamedTuple):
     Terms required to compute a kernel-based score for an ensemble forecast.
 
     Attributes:
-        obs_term: Mean absolute difference between the ensemble members and the observation.
-        spread_sum: Sum of absolute differences over all ordered pairs of ensemble members.
-        n_members: Number of non-NaN ensemble members.
+        obs_term: Mean over the non-NaN members of :math:`\\rho(v(x_i), v(y))`.
+        spread_sum: Sum of :math:`\\rho(v(x_i), v(x_j))` (the kernel function) over all
+            ordered non-NaN pairs of ensemble members, before dividing by :math:`2K`,
+            where :math:`K = m^2` for the "ecdf" estimator and :math:`K = m(m - 1)`
+            for the "fair" estimator.
+        n_members: Number of non-NaN ensemble members, :math:`m`.
     """
 
     obs_term: XarrayLike
@@ -29,17 +47,19 @@ class KernelTerms(NamedTuple):
 
 def _spread_denominator(n_members: XarrayLike, method: Estimator) -> XarrayLike:
     """
-    Returns :math:`2K`, which is the denominator that normalises the kernel spread sum.
-
-    Returns NaN when the denominator would be ≤ 0, which happens with 0 members, or
-    1 member with the "fair" estimator.
+    Calculates the denominator that normalises the kernel spread sum.
 
     Args:
         n_members: Number of ensemble members, :math:`m`.
         method: Estimator to use, either "ecdf" or "fair".
 
     Returns:
-        :math:`2m(m-1)` for the "fair" estimator, or :math:`2m^2` for the "ecdf" estimator.
+        :math:`2m(m-1)` for the "fair" estimator, or :math:`2m^2` for the "ecdf" estimator,
+        where :math:`m` is ``n_members``. Non-positive values are returned as NaN, which
+        occurs when there are no members, or one member with the "fair" estimator.
+
+    Raises:
+        ValueError: If ``method`` is not one of the supported estimators.
     """
     if method == "fair":
         denominator = 2 * n_members * (n_members - 1)
@@ -52,14 +72,16 @@ def _spread_denominator(n_members: XarrayLike, method: Estimator) -> XarrayLike:
 
 def _spread_term(terms: KernelTerms, method: Estimator) -> XarrayLike:
     """
-    Returns the normalised spread term, :math:`\\frac{1}{2K}\\sum_i\\sum_j |x_i - x_j|`.
+    Returns the normalised spread term,
+    :math:`\\frac{1}{2K}\\sum_{i=1}^{m}\\sum_{j=1}^{m} \\rho\\big(v(x_i), v(x_j)\\big)`,
+    where :math:`2K` is the normalising denominator returned by ``_spread_denominator``.
 
     Args:
         terms: Kernel terms holding the spread sum and number of ensemble members.
         method: Estimator to use, either "ecdf" or "fair".
 
     Returns:
-        The spread sum divided by :math:`2K`, as given by `_spread_denominator`.
+        The spread sum divided by :math:`2K`, as given by ``_spread_denominator``.
     """
     return terms.spread_sum / _spread_denominator(terms.n_members, method)
 
@@ -96,7 +118,8 @@ def _check_estimator(method: str) -> None:
 
 def _crps_terms(fcst: XarrayLike, obs: XarrayLike, ensemble_member_dim: str) -> KernelTerms:
     """
-    Computes the terms of the kernel-based CRPS for an ensemble forecast.
+    Computes the terms of the kernel-based CRPS for an ensemble forecast, where the
+    kernel is :math:`\\rho(a, b) = |a - b|`.
 
     Args:
         fcst: Ensemble forecast, with members along ``ensemble_member_dim``. NaN members are ignored.
