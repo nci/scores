@@ -458,4 +458,4 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     fss_clamped = max(min(fss, 1.0), 0.0)
 
-    return fss_clamped
+    return np.float64(fss_clamped)
