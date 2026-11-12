@@ -20,6 +20,7 @@
 .. autofunction:: scores.continuous.murphy_thetas
 .. autofunction:: scores.continuous.flip_flop_index
 .. autofunction:: scores.continuous.flip_flop_index_proportion_exceeding
+.. autofunction:: scores.continuous.correlation.anomaly_correlation_coefficient
 .. autofunction:: scores.continuous.correlation.pearsonr
 .. autofunction:: scores.continuous.correlation.spearmanr
 .. autofunction:: scores.continuous.multiplicative_bias
@@ -111,6 +112,7 @@
 ## scores.stats
 ```{eval-rst}
 .. autofunction:: scores.stats.statistical_tests.diebold_mariano
+.. autofunction:: scores.stats.statistical_tests.diebold_mariano_1d
 ```
 
 ## scores.processing

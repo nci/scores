@@ -274,7 +274,7 @@ def test_agg_warns():
             xr.Dataset(({"var1": WEIGHTS1, "var2": WEIGHTS1})),
             "mean",
             "`weights` cannot be an xr.Dataset when `values` is an xr.DataArray",
-            ValueError,
+            TypeError,
         ),
     ],
 )

@@ -3,17 +3,22 @@ This module contains unit tests for scores.stats.tests.diebold_mariano_impl
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
 from scores.stats.statistical_tests.diebold_mariano_impl import (
+    _dm_common_checks,
     _dm_gamma_hat_k,
+    _dm_pvals_and_ci,
     _dm_test_statistic,
     _dm_v_hat,
     _hg_func,
     _hg_method_stat,
     _hln_method_stat,
+    _to_1d_float_array,
     diebold_mariano,
+    diebold_mariano_1d,
 )
 
 
@@ -28,42 +33,6 @@ from scores.stats.statistical_tests.diebold_mariano_impl import (
         "error_msg",
     ),
     [
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "KEV",
-            -0.4,
-            "t",
-            "`method` must be one of",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "HG",
-            -0.4,
-            "chi_sq",
-            "`statistic_distribution` must be one of",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "HLN",
-            -0.4,
-            "t",
-            "`confidence_level` must be strictly between 0 and 1.",
-        ),
-        (
-            xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
-            "x",
-            "h",
-            "HLN",
-            1.0,
-            "t",
-            "`confidence_level` must be strictly between 0 and 1.",
-        ),
         (
             xr.DataArray(data=[1, 2], dims=["x"], coords={"x": [0, 1]}),
             "x",
@@ -183,6 +152,80 @@ def test_diebold_mariano_raises(
         )
 
 
+@pytest.mark.parametrize(
+    ("method", "confidence_level", "statistic_distribution", "error_msg"),
+    [
+        ("KEV", -0.4, "t", "`method` must be one of"),
+        ("HG", -0.4, "chi_sq", "`statistic_distribution` must be one of"),
+        (
+            "HLN",
+            -0.4,
+            "t",
+            "`confidence_level` must be strictly between 0 and 1.",
+        ),
+        (
+            "HLN",
+            1.0,
+            "t",
+            "`confidence_level` must be strictly between 0 and 1.",
+        ),
+    ],
+)
+def test__dm_common_checks_raises(method, confidence_level, statistic_distribution, error_msg):
+    """Tests that _dm_common_checks raises a ValueError as expected."""
+    with pytest.raises(ValueError, match=error_msg):
+        _dm_common_checks(
+            method=method,
+            confidence_level=confidence_level,
+            statistic_distribution=statistic_distribution,
+        )
+
+
+@pytest.mark.parametrize(
+    ("timeseries"),
+    [
+        ([2.1, 3.6, np.nan, 0]),
+        (pd.Series([2.1, 3.6, np.nan, 0], index=[0, 1, 2, 3])),
+        (np.array([2.1, 3.6, np.nan, 0])),
+        (xr.DataArray(data=[2.1, 3.6, np.nan, 0], dims=["x"], coords={"x": [0, 1, 2, 3]})),
+    ],
+)
+def test__to_1d_float_array(timeseries):
+    """Tests that _to_1d_float_array returns a 1D float array as expected."""
+    result = _to_1d_float_array(timeseries)
+    expected = np.array([2.1, 3.6, np.nan, 0])
+    np.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("timeseries", "error_msg"),
+    [
+        ([[1, 2], [3, 4]], "must be 1-dimensional"),
+        ([1, [3, 4]], "Could not convert"),
+        (["e", 1.0], "must contain numeric"),
+    ],
+)
+def test__to_1d_float_array_raises(timeseries, error_msg):
+    """Tests that _to_1d_float_array raises a ValueError as expected."""
+    with pytest.raises(ValueError, match=error_msg):
+        _to_1d_float_array(timeseries)
+
+
+@pytest.mark.parametrize(
+    ("h", "error_msg"),
+    [
+        (0, "must be a positive integer"),
+        (1.0, "must be a positive integer"),
+        (np.nan, "must be a positive integer"),
+        (4, "must be less than the length"),
+    ],
+)
+def test_diebold_mariano_1d_raises(h, error_msg):
+    """Tests that diebold_mariano_1d raises as exopected."""
+    with pytest.raises(ValueError, match=error_msg):
+        diebold_mariano_1d([1, 2, np.nan, 3, 4], h)
+
+
 def test__hg_func():
     """Tests that _hg_func returns as expected."""
     pars = [2, 0.5]
@@ -287,7 +330,7 @@ def test__dm_test_statistic_with_nan():
     diffs = np.array([np.nan, 1, 2, 3, 4.0, np.nan])
     with pytest.warns(RuntimeWarning):
         result = _dm_test_statistic(diffs, 2, method="HLN")
-    np.testing.assert_allclose(result, DM_TEST_STAT_EXP1, atol=1e-5)
+    np.testing.assert_allclose(result, DM_TEST_STAT_EXP1)
 
 
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
@@ -377,4 +420,97 @@ def test_diebold_mariano(distribution, expected):
             confidence_level=0.9,
             statistic_distribution=distribution,
         )
-    xr.testing.assert_allclose(result, expected, atol=7)
+    xr.testing.assert_allclose(result, expected)
+
+
+DM1D_TEST_STATS_T_EXP = xr.Dataset(
+    data_vars={
+        "mean": 2.5,
+        "dm_test_stat": DM_TEST_STAT_EXP1,
+        "timeseries_len": 4,
+        "confidence_gt_0": 0.9443164226429581,
+        "ci_upper": 5.131140307989639,
+        "ci_lower": -0.13114030798963894,
+    },
+)
+DM1D_TEST_STATS_NORMAL_EXP = xr.Dataset(
+    data_vars={
+        "mean": 2.5,
+        "dm_test_stat": DM_TEST_STAT_EXP1,
+        "timeseries_len": 4,
+        "confidence_gt_0": 0.9873263406612659,
+        "ci_upper": 4.339002261450286,
+        "ci_lower": 0.6609977385497137,
+    },
+)
+
+
+@pytest.mark.parametrize(
+    ("distribution", "expected"),
+    [
+        ("t", DM1D_TEST_STATS_T_EXP),
+        ("normal", DM1D_TEST_STATS_NORMAL_EXP),
+    ],
+)
+def test_diebold_mariano_1d(distribution, expected):
+    """
+    Tests that diebold_mariano_1d gives results as expected and raises a warning
+    due to a NaN in the data.
+    """
+    timeseries = np.array([1, 2, 3.0, 4, np.nan])
+    with pytest.warns(RuntimeWarning):
+        result = diebold_mariano_1d(
+            timeseries,
+            2,
+            statistic_distribution=distribution,
+            method="HLN",
+            confidence_level=0.9,
+        )
+    xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("ts_mean", "test_stat", "timeseries_len", "distribution", "expected"),
+    [
+        (  # "t" distribution, float input
+            2.5,
+            DM_TEST_STAT_EXP1,
+            4,
+            "t",
+            (0.9443164226429581, 5.131140307989639, -0.13114030798963894),
+        ),
+        (  # "normal" distribution, float input
+            2.5,
+            DM_TEST_STAT_EXP1,
+            4,
+            "normal",
+            (0.9873263406612659, 4.339002261450286, 0.6609977385497137),
+        ),
+        (  # "normal" distribution, array input
+            np.array([2.5, -0.2]),
+            np.array([DM_TEST_STAT_EXP1, DM_TEST_STAT_EXP2]),
+            np.array([4, 5]),
+            "normal",
+            (
+                np.array([0.9873263406612659, 0.36944134018176367]),
+                np.array([4.339002261450286, 0.7869121761708835]),
+                np.array([0.6609977385497137, -1.1869121761708834]),
+            ),
+        ),
+        (  # "t" distribution, array input with NaN
+            np.array([2.5, -0.2]),
+            np.array([DM_TEST_STAT_EXP1, np.nan]),
+            np.array([4, 5]),
+            "t",
+            (
+                np.array([0.9443164226429581, np.nan]),
+                np.array([5.131140307989639, np.nan]),
+                np.array([-0.13114030798963894, np.nan]),
+            ),
+        ),
+    ],
+)
+def test__dm_pvals_and_ci(ts_mean, test_stat, timeseries_len, distribution, expected):
+    """Tests that _dm_pvals_and_ci gives results as expected."""
+    result = _dm_pvals_and_ci(ts_mean, test_stat, timeseries_len, 0.9, distribution)
+    np.testing.assert_allclose(result, expected)
