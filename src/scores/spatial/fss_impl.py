@@ -322,8 +322,8 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
 
 def fss_2d_single_field(
-    fcst: npt.NDArray[np.number],
-    obs: npt.NDArray[np.number],
+    fcst: npt.NDArray[float],
+    obs: npt.NDArray[float],
     *,
     event_threshold: float,
     window_size: Tuple[int, int],
