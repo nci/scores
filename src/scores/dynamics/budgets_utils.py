@@ -247,3 +247,28 @@ def _integrate_energy_exchange(
     int_f_div_u = _integrate_horizontal(f_div_u, dlon, dlat, preserve_horizontal)
 
     return int_grad_f_dot_u, int_f_div_u
+
+
+def _scaled_rfft_squared(data, axis=-1):
+    """
+    Wrapper function for the fast Fourier transform of real data with n entries to return for wavenumber k:
+        4/n hat{f(data)} * conj(hat{f(data)}) for k > 0 and
+        1/n hat{f(data)} * conj(hat{f(data)}) for k = 0
+
+    Scaling is chosen such that the square of the amplitudes are returned for 1-dimensional real data initialised as:
+    .. math::
+        y = a_0 + \\sum_{k=1}(a_k\\cos(2\\pi kx) + b_k\\sin(2\\pi kx))
+        \\text{as} a_0^2, ..., a_i^2 + b_k^2, ...
+        \\text{for} 0 \\le x < 2\\pi
+
+    as in the unit test tests/dynamics/test_spectra.py:test_scaled_rfft_squared()
+    """
+    data = np.fft.rfft(data, axis=axis, norm="forward")
+    data = data * np.conj(data)
+    data = data.real
+
+    scale = 4.0 * np.ones(data.shape[axis])
+    scale[0] = 0.25 * scale[0]
+    data = scale * data
+
+    return data
