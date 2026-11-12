@@ -17,12 +17,12 @@ where
   :math:`\\rho(a, a) = 0`. For the CRPS, :math:`\\rho(a, b) = |a - b|`.
 """
 
-from typing import Literal, NamedTuple, get_args
+from typing import NamedTuple, get_args
 
 import numpy as np
 import xarray as xr
 
-from scores.typing import XarrayLike, Estimator
+from scores.typing import Estimator, XarrayLike
 
 
 class KernelTerms(NamedTuple):
