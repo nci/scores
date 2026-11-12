@@ -439,7 +439,7 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
         l = fss_d.size
 
         if l < 1:
-            return np.float64(0.0)
+            return np.float64(np.nan)
 
         with np.nditer(fss_d) as it:
             for elem in it:
@@ -450,12 +450,8 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     else:
         (fcst_sum, obs_sum, diff_sum) = fss_d
 
-    fss = 0.0
     denom = obs_sum + fcst_sum
+    if denom == 0.0:
+        return np.float64(np.nan)
 
-    if denom > 0.0:
-        fss = 1.0 - diff_sum / denom
-
-    fss_clamped = max(min(fss, 1.0), 0.0)
-
-    return fss_clamped
+    return np.clip(1.0 - diff_sum / denom, 0.0, 1.0)
