@@ -4,7 +4,7 @@ a consistent approach to typing is handled.
 """
 
 from collections.abc import Hashable, Iterable
-from typing import TypeGuard, Union
+from typing import TypeGuard, Union, Literal
 
 import pandas as pd
 import xarray as xr
@@ -22,6 +22,8 @@ XarrayLike = Union[xr.DataArray, xr.Dataset]
 # functions in which they are used.
 FlexibleArrayType = Union[XarrayLike, pd.Series]
 
+# Estimator type for kernel-based scores, currently supporting "ecdf" and "fair".
+Estimator = Literal["ecdf", "fair"]
 
 def is_flexibledimensiontypes(
     val: Iterable[Hashable] | Hashable,

@@ -22,9 +22,7 @@ from typing import Literal, NamedTuple, get_args
 import numpy as np
 import xarray as xr
 
-from scores.typing import XarrayLike
-
-Estimator = Literal["ecdf", "fair"]
+from scores.typing import XarrayLike, Estimator
 
 
 class KernelTerms(NamedTuple):
