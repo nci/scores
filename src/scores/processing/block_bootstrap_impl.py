@@ -5,8 +5,10 @@ testable and also consistent with the scores package.
 """
 
 import math
+import warnings
 from collections import OrderedDict
 from itertools import chain, cycle, islice
+from numbers import Integral
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
@@ -18,6 +20,12 @@ from scores.utils import tmp_coord_name
 # When Dask is being used, this constant helps control the sizes of batches
 # when bootstrapping
 MAX_BATCH_SIZE_MB = 200
+
+BLOCK_SIZE_ONE_WARNING = """
+WARNING:  block_size=1 makes block bootstrapping equivalent to traditional
+bootstrap resampling, since individual observations are sampled
+independently rather than in blocks.
+"""
 
 
 def _get_blocked_random_indices(
@@ -164,6 +172,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
     array_list: List[XarrayLike],
     blocks: Dict[str, int],
     n_iteration: int,
+    sizes: OrderedDict[str, Tuple[int, int]],
     exclude_dims: Union[List[List[str]], None] = None,
     circular: bool = True,
 ) -> Tuple[xr.DataArray, ...]:
@@ -182,6 +191,7 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         n_iteration: The number of iterations to repeat the bootstrapping process. Determines
             how many bootstrapped arrays will be generated and stacked along the iteration
             dimension.
+        sizes: Dictionary with {names: (sizes, blocks)} of the dimensions to resample.
         exclude_dims: An optional parameter indicating the dimensions to be excluded during
             bootstrapping for each arrays provided in ``arrays``. This parameter expects a list
             of lists, where each inner list corresponds to the dimensions to be excluded for
@@ -191,7 +201,8 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
             performed. Circular bootstrapping means that bootstrapping continues from the beginning
             when the end of the data is reached. By default, this parameter is set to True.
 
-     Returns:
+
+    Returns:
         Tuple of bootstrapped xarray DataArrays or Datasets, based on the input.
 
     Note:
@@ -230,19 +241,6 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
         if not all(s == dim_sizes[0] for s in dim_sizes):
             raise ValueError(f"Block dimension {d} is not the same size on all input arrays")
 
-    # Get the sizes of the bootstrap dimensions
-    sizes = None
-    for obj in array_list:
-        try:
-            sizes = OrderedDict({d: (obj.sizes[d], b) for d, b in blocks.items()})
-            break
-        except KeyError:
-            pass
-    if sizes is None:
-        raise ValueError(
-            "At least one input array must contain all dimensions in blocks.keys()",
-        )
-
     # Generate random indices for bootstrapping all arrays_list
     nested_indices = _n_nested_blocked_random_indices(sizes, n_iteration, circular)
 
@@ -280,6 +278,46 @@ def _block_bootstrap(  # pylint: disable=too-many-locals
 
     # Rename excluded dimensions
     return tuple(res.rename(rename) for res, rename in zip(result, renames))
+
+
+def _get_block_sizes(
+    array_list: List[XarrayLike],
+    blocks: Dict[str, int],
+) -> OrderedDict[str, Tuple[int, int]]:
+    """
+    Calculate the sizes for each dim in ``blocks`` and validate.
+
+    Args:
+        array_list: Data to bootstrap. At least one array must contain all
+            dimensions in ``blocks.keys()``.
+        blocks: Dict of dimensions and the block size: ``{dim: blocksize}``.
+
+    Returns:
+        Dictionary of {dim: (sizes, blocks)}
+    """
+    sizes = None
+    for obj in array_list:
+        try:
+            sizes = OrderedDict({d: (obj.sizes[d], b) for d, b in blocks.items()})
+            break
+        except KeyError:
+            pass
+    if sizes is None:
+        raise ValueError(
+            "At least one input array must contain all dimensions in blocks.keys()",
+        )
+
+    for d, (length, block_size) in sizes.items():
+        if not isinstance(block_size, Integral):
+            raise TypeError(f"`blocks` must contain integer value for dimension {d}.")
+        if block_size < 1 or block_size >= length:
+            raise ValueError(
+                f"`blocks` value for {d} must be a positive integer and "
+                f"less than the dimension length {length}, got {block_size}."
+            )
+        if block_size == 1:
+            warnings.warn(BLOCK_SIZE_ONE_WARNING)
+    return sizes
 
 
 def block_bootstrap(
@@ -463,6 +501,8 @@ def block_bootstrap(
 
     if not isinstance(array_list, List):
         array_list = [array_list]
+    sizes = _get_block_sizes(array_list, blocks)
+
     # Choose iteration blocks to limit chunk size on dask arrays
     if array_list[0].chunks:  # Note: This is a way to check if the array is backed by a dask.array
         # without loading data into memory.
@@ -483,6 +523,7 @@ def block_bootstrap(
                 n_iteration=blocksize,
                 exclude_dims=exclude_dims,
                 circular=circular,
+                sizes=sizes,
             )
         )
     leftover = n_iteration % blocksize
@@ -495,6 +536,7 @@ def block_bootstrap(
                 n_iteration=leftover,
                 exclude_dims=exclude_dims,
                 circular=circular,
+                sizes=sizes,
             )
         )
 
