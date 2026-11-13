@@ -464,10 +464,10 @@ def test_fss_nan_behaviour():
     """
     truth = sd.continuous_forecast(large_size=False, lead_days=False)
     obs_missing = truth.copy()
-    obs_missing[10:25, 10:25] = np.nan
+    obs_missing[5:10, 5:10] = np.nan
 
     fcst_missing = truth.copy()
-    fcst_missing[10:25, 10:25] = np.nan
+    fcst_missing[5:10, 5:10] = np.nan
 
     res_missing_obs = fss_2d(
         truth,
