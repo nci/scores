@@ -454,3 +454,43 @@ def test_fss_can_return_zero():
         spatial_dims=["lat", "lon"],
     )
     assert res == 0.0
+
+
+def test_fss_nan_behaviour():
+    """
+    Tests that the FSS correctly sums data when NaNs are in the fcst or obs.
+
+    We test this by using perfect forecasts with missing data
+    """
+    truth = sd.continuous_forecast(large_size=False, lead_days=False)
+    obs_missing = truth.copy()
+    obs_missing[5:10, 5:10] = np.nan
+
+    fcst_missing = truth.copy()
+    fcst_missing[5:10, 5:10] = np.nan
+
+    res_missing_obs = fss_2d(
+        truth,
+        obs_missing,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    res_missing_fcst = fss_2d(
+        fcst_missing,
+        truth,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    res_missing_both = fss_2d(
+        fcst_missing,
+        obs_missing,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+
+    assert res_missing_obs == 1.0
+    assert res_missing_fcst == 1.0
+    assert res_missing_both == 1.0
