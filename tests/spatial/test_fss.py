@@ -388,7 +388,29 @@ def test_zero_denom_fss():
         window_size=(5, 5),
         spatial_dims=["lat", "lon"],
     )
-    assert res == xr.DataArray(0.0)
+    xr.testing.assert_equal(res, xr.DataArray(np.nan))
+
+
+def test_nan_score_aggregation():
+    """
+    Test that aggregation of scores with no events at one timestep behaves correctly.
+
+    Set up data with two timesteps, with the last timestep being all zeros.
+    """
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=True)
+    da_obs = sd.continuous_observations(large_size=False)
+    da_fcst = da_fcst.isel(time=slice(0, 2))
+    da_obs = da_obs.isel(time=slice(0, 2))
+    da_fcst[dict(time=-1)] = 0
+    da_obs[dict(time=-1)] = 0
+    preserved_res = fss_2d(
+        da_fcst, da_obs, event_threshold=1.0, window_size=(5, 5), spatial_dims=["lat", "lon"], preserve_dims="time"
+    )
+    assert np.isfinite(preserved_res[dict(time=0)])
+    assert np.isnan(preserved_res[dict(time=-1)])
+
+    reduced_res = fss_2d(da_fcst, da_obs, event_threshold=1.0, window_size=(5, 5), spatial_dims=["lat", "lon"])
+    xr.testing.assert_equal(reduced_res, preserved_res.isel(time=0, drop=True))
 
 
 def test_zero_denom_fss_single_field():
@@ -399,7 +421,7 @@ def test_zero_denom_fss_single_field():
     seed = 21
     (obs, fcst) = ftd.generate((0, 0), (0, 0), seed=seed)
     res = fss_2d_single_field(fcst, obs, event_threshold=1.0, window_size=(5, 5))
-    assert res == 0.0
+    assert np.isnan(res)
 
 
 def test_empty_score_aggregation():
@@ -413,4 +435,22 @@ def test_empty_score_aggregation():
         `for (int i = 0; i < 0; i++) {...}` - this shouldn't reach any inner computations.
     """
     fss = _aggregate_fss_decomposed(np.empty(shape=(0, 0)))
-    assert fss == 0.0
+    assert np.isnan(fss)
+
+
+def test_fss_can_return_zero():
+    """
+    Test that FSS can return zero when the forecast and observation fields are completely different.
+    """
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=False)
+    da_obs = sd.continuous_observations(large_size=False)
+    da_fcst[:] = 0.0
+    da_obs[:] = 1.0
+    res = fss_2d(
+        da_fcst,
+        da_obs,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    assert res == 0.0

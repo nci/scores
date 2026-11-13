@@ -141,12 +141,12 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         Fractions Skill Score.
         """
         (fcst, obs, diff) = self.compute_fss_decomposed()
+
         denom = fcst + obs
-        fss: np.float = 0.0
 
         if denom > 0.0:
             fss = 1.0 - diff / denom
-
-        fss_clamped = max(min(fss, 1.0), 0.0)
-
+            fss_clamped = max(min(fss, 1.0), 0.0)
+        else:
+            fss_clamped = np.float64(np.nan)
         return fss_clamped
