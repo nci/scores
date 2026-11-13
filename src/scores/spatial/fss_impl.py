@@ -452,6 +452,7 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
     denom = obs_sum + fcst_sum
     if denom == 0.0:
-        return np.float64(np.nan)
-
-    return np.clip(1.0 - diff_sum / denom, 0.0, 1.0)
+        fss_clamped = np.float64(np.nan)
+    else:
+        fss_clamped = np.clip(1.0 - diff_sum / denom, 0.0, 1.0)
+    return fss_clamped

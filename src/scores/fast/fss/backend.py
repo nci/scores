@@ -144,6 +144,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
 
         denom = fcst + obs
         if denom == 0.0:
-            return np.float64(np.nan)
-
-        return np.clip(1.0 - diff / denom, 0.0, 1.0)
+            fss_clamped = np.float64(np.nan)
+        else:
+            fss_clamped = np.clip(1.0 - diff / denom, 0.0, 1.0)
+        return fss_clamped
