@@ -11,7 +11,8 @@ considered in:
 - `#269 <GITHUB269_>`_.
 - `#270 <GITHUB270_>`_.
 
-Missing data (NaN) is excluded from the window fractions, following Skok and Kosovelj (2025) :sup:`[4]`.
+Missing data (NaN) is excluded when computing window fractions, following Skok and Kosovelj (2025) :sup:`[4]`.
+By default, only windows that contain no missing data are included in the score.
 
 References:
 1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall Accumulations from
@@ -62,6 +63,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
     zero_padding: bool = False,
+    min_valid_proportion: float = 1.0,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     threshold_operator: Optional[Callable] = None,
@@ -76,23 +78,33 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     for multiple forecasts :sup:`[1,2]`
 
     .. note::
-        Missing data (NaN) is handled following Skok and Kosovelj (2025) :sup:`[3]`:
+        Missing data (NaN) is handled as follows:
 
         - Missing data is synchronised: a point that is NaN in either ``fcst`` or ``obs`` is
-          treated as missing in both.
-        - Missing points are excluded when computing the event fraction of a window. That is,
-          the fraction is the number of events divided by the number of non-missing points in
-          the window, rather than missing points being treated as non-events. If
-          ``zero_padding`` is ``True``, points in the padded border count as non-missing
-          non-events.
-        - Each window is anchored on the grid point at its centre (for an even window
-          dimension, the point immediately after the midpoint along that dimension). Windows
-          anchored on a missing point are excluded from the score, so missing points have no
-          influence on the FSS.
+          treated as missing in both, as recommended by Skok and Kosovelj (2025) :sup:`[3]`.
+        - Missing points are excluded when computing the event fraction of a window, following
+          Skok and Kosovelj (2025) :sup:`[3]`. That is, the fraction is the number of events
+          divided by the number of non-missing points in the window, rather than missing points
+          being treated as non-events. If ``zero_padding`` is ``True``, points in the padded
+          border count as non-missing non-events.
+        - A window is included in the score only if the proportion of non-missing points in it
+          is at least ``min_valid_proportion`` (and it has at least one non-missing point). By
+          default (``min_valid_proportion=1``), only windows that contain no missing data are
+          included. This inclusion rule is specific to ``scores``; it is not specified by Skok
+          and Kosovelj (2025).
+        - Every included window has equal weight, regardless of how many non-missing points it
+          contains. Because the fraction of a window with only a few non-missing points is
+          computed from those few points and then squared, a single mismatched point in such a
+          window contributes much more to the score than it would in a complete window.
+          Lowering ``min_valid_proportion`` includes more windows near missing data, at the cost
+          of including fractions estimated from fewer points.
         - When aggregating over non-spatial dimensions (e.g. time), each 2-D field is weighted
           by its number of included windows, so the result is equivalent to pooling the windows
           of all the fields. Fields with no included windows are ignored.
-        - If no windows are included (e.g. all data is missing), the FSS is NaN.
+        - If no windows are included, the FSS is NaN. With the default
+          ``min_valid_proportion=1``, this happens whenever every window contains at least one
+          missing point (e.g. a large window over data with scattered missing points). In that
+          case, consider lowering ``min_valid_proportion``.
 
     .. note::
         This method takes in a ``threshold_operator`` to compare the input
@@ -129,6 +141,15 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             One can think of it as:
             - zero_padding = False => inner border
             - zero_padding = True => outer border with 0 values
+        min_valid_proportion: The minimum proportion (between 0 and 1 inclusive) of
+            non-missing points that a window must contain to be included in the score. Points
+            in the zero-padded border count as non-missing. Windows with no non-missing points
+            are always excluded. Defaults to 1, i.e. only windows with no missing data are
+            included. A window whose proportion of non-missing points equals
+            ``min_valid_proportion`` is included. As this is a floating point comparison, give
+            the value directly (e.g. ``0.7`` or ``7 / 10``) rather than as the result of further
+            arithmetic (e.g. ``1 - 0.3``), which may differ slightly. See the note on missing
+            data above.
         reduce_dims: Optional set of additional dimensions to aggregate over
             (mutually exclusive to ``preserve_dims``).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
@@ -156,6 +177,8 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             do not conform. e.g. if the window size is larger than the input
             arrays, or if the the spatial dimensions in the args are missing in
             the input arrays.
+
+        ValueError: If ``min_valid_proportion`` is not between 0 and 1 (inclusive).
 
         DimensionWarning: If ``spatial_dims`` are attempting to be preserved e.g. in ``preserve_dims``
 
@@ -228,6 +251,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             event_threshold=event_threshold,
             window_size=window_size,
             zero_padding=zero_padding,
+            min_valid_proportion=min_valid_proportion,
             threshold_operator=np_thrsh_op,
         )
         return fb_obj.compute_fss_decomposed()
@@ -276,6 +300,7 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     window_size: Tuple[int, int],
     spatial_dims: Tuple[str, str],
     zero_padding: bool = False,
+    min_valid_proportion: float = 1.0,
     reduce_dims: Optional[FlexibleDimensionTypes] = None,
     preserve_dims: Optional[FlexibleDimensionTypes] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
@@ -298,7 +323,7 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
 
     Boolean fields cannot represent missing data. If ``check_boolean`` is ``False``, the fields
     may be floats (e.g. 0.0 and 1.0) with NaN marking missing data, which is handled as described
-    in :py:func:`scores.spatial.fss_2d`.
+    in :py:func:`scores.spatial.fss_2d` (see also ``min_valid_proportion``).
 
     Uses ``fss_2d`` from the ``scores.spatial`` module to perform fss
     computation, but without the threshold operation.
@@ -343,6 +368,7 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
         window_size=window_size,
         spatial_dims=spatial_dims,
         zero_padding=zero_padding,
+        min_valid_proportion=min_valid_proportion,
         reduce_dims=reduce_dims,
         preserve_dims=preserve_dims,
         threshold_operator=left_identity_operator,
@@ -358,6 +384,7 @@ def fss_2d_single_field(
     event_threshold: float,
     window_size: Tuple[int, int],
     zero_padding: bool = False,
+    min_valid_proportion: float = 1.0,
     threshold_operator: Optional[Callable] = None,
     compute_method: FssComputeMethod = FssComputeMethod.NUMPY,
 ) -> np.float64:
@@ -379,11 +406,13 @@ def fss_2d_single_field(
     Once the squared sums are computed, the final FSS value can be derived by
     accumulating the squared sums :sup:`[3]`.
 
-    Missing data (NaN) is handled following Skok and Kosovelj (2025) :sup:`[4]`. A point that is
-    NaN in either ``fcst`` or ``obs`` is treated as missing in both. Missing points are excluded
-    from the event fraction of each window (the fraction is computed over the non-missing points
-    only), and windows anchored on (i.e. centred on) a missing point are excluded from the score.
-    If no windows remain, the FSS is NaN. See :py:func:`scores.spatial.fss_2d` for more detail.
+    Missing data (NaN) is handled as described in :py:func:`scores.spatial.fss_2d`. In summary,
+    a point that is NaN in either ``fcst`` or ``obs`` is treated as missing in both, and missing
+    points are excluded from the event fraction of each window (the fraction is computed over the
+    non-missing points only), following Skok and Kosovelj (2025) :sup:`[4]`. A window is excluded
+    from the score if its proportion of non-missing points is less than ``min_valid_proportion``
+    (by default, any missing point excludes the window), or if it has no non-missing points. If
+    no windows remain, the FSS is NaN.
 
 
     The caller is responsible for making sure the input fields are in the 2-D
@@ -398,6 +427,11 @@ def fss_2d_single_field(
         window_size: A pair of positive integers ``height, width)`` of the sliding
             window; the window dimensions must be greater than 0 and fit within
             the shape of ``obs`` and ``fcst``.
+        min_valid_proportion: The minimum proportion (between 0 and 1 inclusive) of
+            non-missing points that a window must contain to be included in the score. Points
+            in the zero-padded border count as non-missing. Windows with no non-missing points
+            are always excluded. Defaults to 1, i.e. only windows with no missing data are
+            included. See :py:func:`scores.spatial.fss_2d` for more detail.
         threshold_operator: The threshold operator used to generate the binary
             event field. E.g. ``np.greater``. Note: this may depend on the backend
             ``compute method`` and not all operators may be supported. Generally,
@@ -413,6 +447,8 @@ def fss_2d_single_field(
             do not conform. e.g. if the window size is larger than the input
             arrays, or if the the spatial dimensions of the input arrays do
             not match.
+
+        ValueError: If ``min_valid_proportion`` is not between 0 and 1 (inclusive).
 
     References:
         1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall
@@ -445,6 +481,7 @@ def fss_2d_single_field(
         obs,
         window_size=window_size,
         zero_padding=zero_padding,
+        min_valid_proportion=min_valid_proportion,
         event_threshold=event_threshold,
         threshold_operator=np_thrsh_op,
     )
@@ -469,10 +506,9 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     """
     Aggregates the results of decomposed fss scores.
 
-    The decomposed components of each field are means over that field's windows. They are
-    weighted by each field's window count, so that the aggregated score is equivalent to pooling
-    the windows of all fields into the sums of a single FSS. Fields with no windows (e.g. all
-    data missing) are ignored.
+    The decomposed components of each field are sums over that field's included windows, so
+    adding them pools the windows of all fields into the sums of a single FSS. Fields with no
+    included windows (e.g. all data missing) contribute nothing.
     """
     # can't do ufuncs over custom void types currently...
     fcst_sum = 0.0
@@ -485,15 +521,12 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
 
         with np.nditer(fss_d) as it:
             for elem in it:
-                (fcst_, obs_, diff_, count_) = elem.item()
-                # fields with no windows have NaN components
-                if count_ > 0:
-                    fcst_sum += fcst_ * count_
-                    obs_sum += obs_ * count_
-                    diff_sum += diff_ * count_
+                (fcst_, obs_, diff_) = elem.item()
+                fcst_sum += fcst_
+                obs_sum += obs_
+                diff_sum += diff_
     else:
-        # single field: the means can be used directly (NaN if there are no windows)
-        (fcst_sum, obs_sum, diff_sum, _) = fss_d
+        (fcst_sum, obs_sum, diff_sum) = fss_d
 
     denom = obs_sum + fcst_sum
     if denom > 0.0:

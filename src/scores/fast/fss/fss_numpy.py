@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 
 from scores.fast.fss.backend import FssBackend
-from scores.fast.fss.typing import FssComputeMethod, FssDecomposed, f8x4
+from scores.fast.fss.typing import FssComputeMethod, FssDecomposed, f8x3
 
 _COMPATIBLE = True
 
@@ -41,8 +41,6 @@ class FssNumpy(FssBackend):
         missing_partial_sums = _summed_area_table(~self._valid)
 
         (w_h, w_w) = (self.window_size[0], self.window_size[1])
-        half_w_h = int(w_h / 2)
-        half_w_w = int(w_w / 2)
 
         if self.zero_padding:
             # ------------------------------
@@ -62,6 +60,8 @@ class FssNumpy(FssBackend):
             # the rectangle represents the
             # FSS computation region.
             # ------------------------------
+            half_w_h = int(w_h / 2)
+            half_w_w = int(w_w / 2)
             im_h = fcst_partial_sums.shape[0]
             im_w = fcst_partial_sums.shape[1]
 
@@ -78,15 +78,6 @@ class FssNumpy(FssBackend):
             r_br = np.clip(np.arange(rem_h, im_h + rem_h), 1, im_h - 1)
             c_br = np.clip(np.arange(rem_w, im_w + rem_w), 1, im_w - 1)
             mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
-
-            # The window at output index (i, j) is anchored on grid point (i, j). Note: there is
-            # one more row/column of windows than grid points; the anchors of the last row/column
-            # lie in the zero padding, which is never missing.
-            anchor_valid = np.pad(
-                self._valid,
-                ((0, im_h - self._valid.shape[0]), (0, im_w - self._valid.shape[1])),
-                constant_values=True,
-            )
 
         else:
             # ------------------------------
@@ -110,38 +101,29 @@ class FssNumpy(FssBackend):
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
             mesh_br = (mesh_tl[0] + w_h, mesh_tl[1] + w_w)
 
-            # The window at output index (i, j) covers grid points (i, j) to
-            # (i + w_h - 1, j + w_w - 1), and is anchored on its centre point.
-            anchor_valid = self._valid[half_w_h : half_w_h + im_h, half_w_w : half_w_w + im_w]
-
         obs_sums = _window_sums(obs_partial_sums, mesh_tl, mesh_br)
         fcst_sums = _window_sums(fcst_partial_sums, mesh_tl, mesh_br)
         missing_counts = _window_sums(missing_partial_sums, mesh_tl, mesh_br)
 
         # Fractions are computed over the non-missing points in each window. Points in the zero
-        # padding (if any) count as non-missing non-events.
-        # Note: a valid anchor lies inside its own window, so `valid_counts >= 1` wherever the
-        # fraction is computed.
-        valid_counts = w_h * w_w - missing_counts
-        self._obs_img = np.divide(obs_sums, valid_counts, out=np.full(obs_sums.shape, np.nan), where=anchor_valid)
-        self._fcst_img = np.divide(fcst_sums, valid_counts, out=np.full(fcst_sums.shape, np.nan), where=anchor_valid)
+        # padding (if any) count as non-missing non-events. Windows with no non-missing points, or
+        # with too small a proportion of non-missing points, are excluded (set to NaN).
+        window_area = w_h * w_w
+        valid_counts = window_area - missing_counts
+        included = (valid_counts > 0) & (valid_counts / window_area >= self.min_valid_proportion)
+        # dividing by NaN marks excluded windows as NaN in both fraction fields
+        denominators = np.where(included, valid_counts, np.nan)
+        self._obs_img = obs_sums / denominators
+        self._fcst_img = fcst_sums / denominators
 
         return self
 
     def _compute_fss_components(self) -> FssDecomposed:
-        # windows anchored on a missing point are NaN in both fraction fields
-        valid_windows = ~np.isnan(self._obs_img)
-        window_count = np.count_nonzero(valid_windows)
-
-        if window_count == 0:
-            return np.void((np.nan, np.nan, np.nan, 0.0), dtype=f8x4)
-
-        obs_img = self._obs_img[valid_windows]
-        fcst_img = self._fcst_img[valid_windows]
-        diff = np.mean(np.power(obs_img - fcst_img, 2))
-        fcst = np.mean(np.power(fcst_img, 2))
-        obs = np.mean(np.power(obs_img, 2))
-        return np.void((fcst, obs, diff, window_count), dtype=f8x4)
+        # excluded windows are NaN, so do not contribute to the sums
+        diff = np.nansum(np.power(self._obs_img - self._fcst_img, 2))
+        fcst = np.nansum(np.power(self._fcst_img, 2))
+        obs = np.nansum(np.power(self._obs_img, 2))
+        return np.void((fcst, obs, diff), dtype=f8x3)
 
 
 def _summed_area_table(field: npt.NDArray) -> npt.NDArray[np.float64]:

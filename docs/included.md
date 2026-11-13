@@ -589,7 +589,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     - FSS - 2D
   - [API](api.md#scores.spatial.fss_2d)
   - [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1)
+  - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Mittermaier (2021)](https://doi.org/10.1175/mwr-d-18-0106.1); [Skok and Kosovelj (2025)](https://doi.org/10.5194/gmd-18-7417-2025)
 * -
     - FSS - 2D Binary
   - [API](api.md#scores.spatial.fss_2d_binary)
@@ -599,7 +599,7 @@ It is divided into the following sections: [continuous](#continuous), [probabili
     - FSS - 2D Single Field
   - [API](api.md#scores.spatial.fss_2d_single_field)
   - [Tutorial](project:./tutorials/Fractions_Skill_Score.md)
-  - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555)
+  - [Roberts and Lean (2008)](https://doi.org/10.1175/2007mwr2123.1); [Faggian et al. (2015)](https://doi.org/10.54302/mausam.v66i3.555); [Skok and Kosovelj (2025)](https://doi.org/10.5194/gmd-18-7417-2025)
 ```
 
 ## Dynamics
