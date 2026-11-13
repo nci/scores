@@ -72,8 +72,9 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         implementation in derived backends is optional.
         """
         _op = self.threshold_operator.get()
-        self._obs_pop = _op(self.obs, self.event_threshold)
-        self._fcst_pop = _op(self.fcst, self.event_threshold)
+        missing = np.isnan(self.fcst) | np.isnan(self.obs)
+        self._obs_pop = np.where(missing, 0, _op(self.obs, self.event_threshold))
+        self._fcst_pop = np.where(missing, 0, _op(self.fcst, self.event_threshold))
         return self
 
     def _compute_integral_field(self):
