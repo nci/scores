@@ -33,6 +33,8 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
     threshold_operator: BinaryOperator
     window_size: Tuple[int, int]
     zero_padding: bool
+    # minimum proportion of non-missing points required for a window to be included in the score
+    min_valid_proportion: float = 0.0
 
     # internal buffers
     _obs_pop: npt.NDArray[np.int64] = field(init=False)
@@ -46,6 +48,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         Post-initialization checks go here.
         """
         self._check_dims()
+        self._check_min_valid_proportion()
         self._check_compatibility()
 
     def _check_compatibility(self):  # pragma: no cover
@@ -65,6 +68,10 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
             raise DimensionError(
                 "invalid window size, `window_size` must be smaller than input data shape and greater than 0"
             )
+
+    def _check_min_valid_proportion(self):
+        if not 0 <= self.min_valid_proportion <= 1:
+            raise ValueError("`min_valid_proportion` must be between 0 and 1 (inclusive)")
 
     def _apply_event_threshold(self):
         """
@@ -98,10 +105,10 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
           ``False``) are excluded from both the numerator and the denominator rather than being
           treated as non-events. Points in the zero-padded border (if ``zero_padding`` is set)
           count as non-missing, non-event points.
-        - Each window is anchored on the grid point at its centre (for an even window
-          dimension, the point immediately after the midpoint along that dimension). If the
-          anchor point is missing, the fraction for that window must be set to NaN in both
-          fields, so that it does not contribute to the score.
+        - A window is included in the score if it contains at least one non-missing point, and
+          the proportion of non-missing points in the window is at least
+          ``self.min_valid_proportion``. The fractions of all other windows must be set to NaN
+          in both fields, so that they do not contribute to the score.
 
         See also: https://en.wikipedia.org/wiki/Summed-area_table
 
@@ -131,21 +138,19 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         need to keep track of the de-composed sums as they need to be accumulated separately.
 
         The "fss components", hence, consist of:
-        - `power_fcst :: float = mean_w(p_f^2)`
-        - `power_obs :: float = mean_w(p_o^2)`
-        - `power_diff :: float = mean_w((p_o - p_f)^2)`
-        - `window_count :: float = number of windows used in the means above`
+        - `power_diff :: float = sum_w((p_o - p_f)^2)`
+        - `power_obs :: float = sum_w(p_o^2)`
+        - `power_fcst :: float = sum_w(p_f^2)`
 
-        where `mean_w` is the mean over all windows with a non-NaN fraction (windows anchored on
-        a missing point are excluded, see :py:meth:`_compute_integral_field`). Means are returned
-        rather than sums; `window_count` allows the sums to be recovered so that aggregation over
-        multiple fields is equivalent to pooling all of their windows.
+        Windows excluded due to insufficient non-missing data have NaN fractions (see
+        :py:meth:`_compute_integral_field`) and do not contribute to the sums. Adding the
+        components of multiple fields is therefore equivalent to pooling all of their windows. If
+        no windows are included, all components are 0 (and the FSS is NaN).
 
-        If there are no valid windows, the powers are NaN and `window_count` is 0.
+        Note: the fractions are in [0, 1], so each term is at most 1 and the sums cannot overflow.
 
         Returns:
-            Tuple[float, float, float, float]: (power_fcst, power_obs, power_diff, window_count)
-            as described above
+            Tuple[float, float, float]: (power_fcst, power_obs, power_diff) as described above
         """
         raise NotImplementedError(f"`_compute_fss_components` not implemented for {self.compute_method}")
 
@@ -171,7 +176,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         Uses the components from :py:method:`compute_fss_decomposed` to compute the final
         Fractions Skill Score.
         """
-        (fcst, obs, diff, _) = self.compute_fss_decomposed()
+        (fcst, obs, diff) = self.compute_fss_decomposed()
 
         denom = fcst + obs
 
