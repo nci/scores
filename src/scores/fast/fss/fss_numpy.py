@@ -5,11 +5,13 @@ Backend for computing Fractions Skill Score (FSS) using numpy
 # pylint: disable=R0801
 
 from dataclasses import dataclass
+from typing import Tuple
 
 import numpy as np
+import numpy.typing as npt
 
 from scores.fast.fss.backend import FssBackend
-from scores.fast.fss.typing import FssComputeMethod, FssDecomposed, f8x3
+from scores.fast.fss.typing import FssComputeMethod, FssDecomposed, f8x4
 
 _COMPATIBLE = True
 
@@ -34,18 +36,13 @@ class FssNumpy(FssBackend):
         super()._check_compatibility()
 
     def _compute_integral_field(self):  # pylint: disable=too-many-locals
-        obs_partial_sums = self._obs_pop.cumsum(1).cumsum(0)
-        fcst_partial_sums = self._fcst_pop.cumsum(1).cumsum(0)
+        obs_partial_sums = _summed_area_table(self._obs_pop)
+        fcst_partial_sums = _summed_area_table(self._fcst_pop)
+        missing_partial_sums = _summed_area_table(~self._valid)
 
-        # pad first row/column with 0s, addressses off-by-one window sizes for the first row/column
-        # due to the way meshgrid indexing works.
-        zero_row = np.zeros((fcst_partial_sums.shape[0], 1))
-        obs_partial_sums = np.hstack([zero_row, obs_partial_sums])
-        fcst_partial_sums = np.hstack([zero_row, fcst_partial_sums])
-
-        zero_col = np.zeros((1, fcst_partial_sums.shape[1]))
-        obs_partial_sums = np.vstack([zero_col, obs_partial_sums])
-        fcst_partial_sums = np.vstack([zero_col, fcst_partial_sums])
+        (w_h, w_w) = (self.window_size[0], self.window_size[1])
+        half_w_h = int(w_h / 2)
+        half_w_w = int(w_w / 2)
 
         if self.zero_padding:
             # ------------------------------
@@ -65,9 +62,6 @@ class FssNumpy(FssBackend):
             # the rectangle represents the
             # FSS computation region.
             # ------------------------------
-            (w_h, w_w) = (self.window_size[0], self.window_size[1])
-            half_w_h = int(w_h / 2)
-            half_w_w = int(w_w / 2)
             im_h = fcst_partial_sums.shape[0]
             im_w = fcst_partial_sums.shape[1]
 
@@ -84,6 +78,15 @@ class FssNumpy(FssBackend):
             r_br = np.clip(np.arange(rem_h, im_h + rem_h), 1, im_h - 1)
             c_br = np.clip(np.arange(rem_w, im_w + rem_w), 1, im_w - 1)
             mesh_br = np.meshgrid(r_br, c_br, indexing="ij")
+
+            # The window at output index (i, j) is anchored on grid point (i, j). Note: there is
+            # one more row/column of windows than grid points; the anchors of the last row/column
+            # lie in the zero padding, which is never missing.
+            anchor_valid = np.pad(
+                self._valid,
+                ((0, im_h - self._valid.shape[0]), (0, im_w - self._valid.shape[1])),
+                constant_values=True,
+            )
 
         else:
             # ------------------------------
@@ -102,44 +105,84 @@ class FssNumpy(FssBackend):
             # "//" represents the effective
             # FSS computation region
             # ------------------------------
-            im_h = fcst_partial_sums.shape[0] - self.window_size[0]
-            im_w = fcst_partial_sums.shape[1] - self.window_size[1]
+            im_h = fcst_partial_sums.shape[0] - w_h
+            im_w = fcst_partial_sums.shape[1] - w_w
             mesh_tl = np.mgrid[0:im_h, 0:im_w]
-            mesh_br = (mesh_tl[0] + self.window_size[0], mesh_tl[1] + self.window_size[1])
+            mesh_br = (mesh_tl[0] + w_h, mesh_tl[1] + w_w)
 
-        # ----------------------------------
-        # Computing window area from sum
-        # area table
-        # ----------------------------------
-        #     A          B
-        # tl.0,tl.1    tl.0,br.1
-        #     +----------+
-        #     |          |
-        #     |          |
-        #     |          |
-        #     +----------+
-        # br.0,tl.1   br.0,br.1
-        #     C          D
-        #
-        # area = D - B - C + A
-        # -----------------------------------
+            # The window at output index (i, j) covers grid points (i, j) to
+            # (i + w_h - 1, j + w_w - 1), and is anchored on its centre point.
+            anchor_valid = self._valid[half_w_h : half_w_h + im_h, half_w_w : half_w_w + im_w]
 
-        obs_a = obs_partial_sums[mesh_tl[0], mesh_tl[1]]
-        obs_b = obs_partial_sums[mesh_tl[0], mesh_br[1]]
-        obs_c = obs_partial_sums[mesh_br[0], mesh_tl[1]]
-        obs_d = obs_partial_sums[mesh_br[0], mesh_br[1]]
-        self._obs_img = obs_d - obs_b - obs_c + obs_a
+        obs_sums = _window_sums(obs_partial_sums, mesh_tl, mesh_br)
+        fcst_sums = _window_sums(fcst_partial_sums, mesh_tl, mesh_br)
+        missing_counts = _window_sums(missing_partial_sums, mesh_tl, mesh_br)
 
-        fcst_a = fcst_partial_sums[mesh_tl[0], mesh_tl[1]]
-        fcst_b = fcst_partial_sums[mesh_tl[0], mesh_br[1]]
-        fcst_c = fcst_partial_sums[mesh_br[0], mesh_tl[1]]
-        fcst_d = fcst_partial_sums[mesh_br[0], mesh_br[1]]
-        self._fcst_img = fcst_d - fcst_b - fcst_c + fcst_a
+        # Fractions are computed over the non-missing points in each window. Points in the zero
+        # padding (if any) count as non-missing non-events.
+        # Note: a valid anchor lies inside its own window, so `valid_counts >= 1` wherever the
+        # fraction is computed.
+        valid_counts = w_h * w_w - missing_counts
+        self._obs_img = np.divide(obs_sums, valid_counts, out=np.full(obs_sums.shape, np.nan), where=anchor_valid)
+        self._fcst_img = np.divide(fcst_sums, valid_counts, out=np.full(fcst_sums.shape, np.nan), where=anchor_valid)
 
         return self
 
     def _compute_fss_components(self) -> FssDecomposed:
-        diff = np.nanmean(np.power(self._obs_img - self._fcst_img, 2))
-        fcst = np.nanmean(np.power(self._fcst_img, 2))
-        obs = np.nanmean(np.power(self._obs_img, 2))
-        return np.void((fcst, obs, diff), dtype=f8x3)
+        # windows anchored on a missing point are NaN in both fraction fields
+        valid_windows = ~np.isnan(self._obs_img)
+        window_count = np.count_nonzero(valid_windows)
+
+        if window_count == 0:
+            return np.void((np.nan, np.nan, np.nan, 0.0), dtype=f8x4)
+
+        obs_img = self._obs_img[valid_windows]
+        fcst_img = self._fcst_img[valid_windows]
+        diff = np.mean(np.power(obs_img - fcst_img, 2))
+        fcst = np.mean(np.power(fcst_img, 2))
+        obs = np.mean(np.power(obs_img, 2))
+        return np.void((fcst, obs, diff, window_count), dtype=f8x4)
+
+
+def _summed_area_table(field: npt.NDArray) -> npt.NDArray[np.float64]:
+    """
+    Computes the summed area table (2-D prefix sum) of ``field``, with a leading row and column of
+    0s. The 0 padding addresses off-by-one window sizes for the first row/column due to the way
+    meshgrid indexing works.
+    """
+    table = np.zeros((field.shape[0] + 1, field.shape[1] + 1))
+    table[1:, 1:] = field.cumsum(1).cumsum(0)
+    return table
+
+
+def _window_sums(
+    table: npt.NDArray[np.float64],
+    mesh_tl: Tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]],
+    mesh_br: Tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]],
+) -> npt.NDArray[np.float64]:
+    """
+    Computes the sum over each window from a summed area table, given the top-left and
+    bottom-right corner coordinates of each window.
+
+    ----------------------------------
+    Computing window area from sum
+    area table
+    ----------------------------------
+        A          B
+    tl.0,tl.1    tl.0,br.1
+        +----------+
+        |          |
+        |          |
+        |          |
+        +----------+
+    br.0,tl.1   br.0,br.1
+        C          D
+
+    area = D - B - C + A
+    -----------------------------------
+    """
+    a = table[mesh_tl[0], mesh_tl[1]]
+    b = table[mesh_tl[0], mesh_br[1]]
+    c = table[mesh_br[0], mesh_tl[1]]
+    d = table[mesh_br[0], mesh_br[1]]
+    return d - b - c + a

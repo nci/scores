@@ -37,8 +37,9 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
     # internal buffers
     _obs_pop: npt.NDArray[np.int64] = field(init=False)
     _fcst_pop: npt.NDArray[np.int64] = field(init=False)
-    _obs_img: npt.NDArray[np.int64] = field(init=False)
-    _fcst_img: npt.NDArray[np.int64] = field(init=False)
+    _valid: npt.NDArray[np.bool_] = field(init=False)
+    _obs_img: npt.NDArray[np.float64] = field(init=False)
+    _fcst_img: npt.NDArray[np.float64] = field(init=False)
 
     def __post_init__(self):
         """
@@ -70,20 +71,43 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         Default implementation of converting the input fields into binary fields by comparing
         against a event threshold; using numpy. This is a relatively cheap operation, so a specific
         implementation in derived backends is optional.
+
+        Missing data (NaN) is synchronised between the two fields: a point that is NaN in either
+        ``fcst`` or ``obs`` is treated as missing in both. The mask of non-missing points is
+        cached in ``self._valid`` so that derived backends can exclude missing points when
+        computing fractions. Missing points are set to 0 (non-event) in the binary fields so that
+        cumulative sums remain finite; they are then excluded via ``self._valid``.
         """
         _op = self.threshold_operator.get()
         missing = np.isnan(self.fcst) | np.isnan(self.obs)
         self._obs_pop = np.where(missing, 0, _op(self.obs, self.event_threshold))
         self._fcst_pop = np.where(missing, 0, _op(self.fcst, self.event_threshold))
+        self._valid = ~missing
         return self
 
     def _compute_integral_field(self):
         """
-        Computes the rolling windowed sums over the entire observation & forecast fields. The
-        resulting "integral field (or image)" can be cached in `self._obs_img` for observations, and
-        `self._fcst_img` for forecast.
+        Computes the event fractions for every window position over the entire observation &
+        forecast fields. The resulting fraction fields can be cached in `self._obs_img` for
+        observations, and `self._fcst_img` for forecast.
+
+        Missing data must be handled as follows (Skok and Kosovelj, 2025):
+
+        - The fraction of a window is the number of events divided by the number of
+          non-missing points in that window, i.e. missing points (where ``self._valid`` is
+          ``False``) are excluded from both the numerator and the denominator rather than being
+          treated as non-events. Points in the zero-padded border (if ``zero_padding`` is set)
+          count as non-missing, non-event points.
+        - Each window is anchored on the grid point at its centre (for an even window
+          dimension, the point immediately after the midpoint along that dimension). If the
+          anchor point is missing, the fraction for that window must be set to NaN in both
+          fields, so that it does not contribute to the score.
 
         See also: https://en.wikipedia.org/wiki/Summed-area_table
+
+        Reference: Skok, G. and Kosovelj, K., 2025: Smoothing and spatial verification of global
+        fields. Geoscientific Model Development, 18, 7417–7433,
+        https://doi.org/10.5194/gmd-18-7417-2025.
 
         Note: for non-`python` backends e.g. `rust`, its often the case that the integral field is
         computed & cached in the native language. In which case this method can just be overriden
@@ -98,24 +122,30 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
             fss = 1 - sum_w((p_o - p_f)^2) / (sum_w(p_o^2) + sum_w(p_f^2))
 
             where,
-            p_o: observation populace > event_threshold, in one window
-            p_f: forecast populace > event_threshold, in one window
-            sum_w: sum over all windows
+            p_o: fraction of (non-missing) observation points that are events, in one window
+            p_f: fraction of (non-missing) forecast points that are events, in one window
+            sum_w: sum over all windows that have a non-NaN fraction
         ````
 
         In order to accumulate scores over non spatial dimensions at a higher level operation, we
         need to keep track of the de-composed sums as they need to be accumulated separately.
 
         The "fss components", hence, consist of:
-        - `power_diff :: float = sum_w((p_o - p_f)^2)`
-        - `power_obs :: float = sum_w(p_o^2)`
-        - `power_fcst :: float = sum_w(p_f^2)`
+        - `power_fcst :: float = mean_w(p_f^2)`
+        - `power_obs :: float = mean_w(p_o^2)`
+        - `power_diff :: float = mean_w((p_o - p_f)^2)`
+        - `window_count :: float = number of windows used in the means above`
 
-        **WARNING:** returning sums of powers can result in overflows on aggregation. It is advisable
-        to return the means instead, as it is equivilent with minimal computational trade-off.
+        where `mean_w` is the mean over all windows with a non-NaN fraction (windows anchored on
+        a missing point are excluded, see :py:meth:`_compute_integral_field`). Means are returned
+        rather than sums; `window_count` allows the sums to be recovered so that aggregation over
+        multiple fields is equivalent to pooling all of their windows.
+
+        If there are no valid windows, the powers are NaN and `window_count` is 0.
 
         Returns:
-            Tuple[float, float, float]: (power_fcst, power_obs, power_diff) as described above
+            Tuple[float, float, float, float]: (power_fcst, power_obs, power_diff, window_count)
+            as described above
         """
         raise NotImplementedError(f"`_compute_fss_components` not implemented for {self.compute_method}")
 
@@ -141,7 +171,7 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         Uses the components from :py:method:`compute_fss_decomposed` to compute the final
         Fractions Skill Score.
         """
-        (fcst, obs, diff) = self.compute_fss_decomposed()
+        (fcst, obs, diff, _) = self.compute_fss_decomposed()
 
         denom = fcst + obs
 

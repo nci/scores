@@ -9,13 +9,14 @@ import numpy as np
 import numpy.typing as npt
 
 # Note: soft keyword `type` only support from >=3.10
-# "tuple" of 64 bit floats
-f8x3 = np.dtype("f8, f8, f8")
+# "tuple" of 64 bit floats: (power_fcst, power_obs, power_diff, window_count)
+# see: :py:meth:`scores.fast.fss.backend.FssBackend._compute_fss_components`
+f8x4 = np.dtype("f8, f8, f8, f8")
 # Note: `TypeAlias` on variables not available for python <3.10
 if TYPE_CHECKING:  # pragma: no cover
     FssDecomposed = Union[np.ArrayLike, np.DtypeLike]
 else:  # pragma: no cover
-    FssDecomposed = npt.NDArray[f8x3]
+    FssDecomposed = npt.NDArray[f8x4]
 
 
 class FssComputeMethod(Enum):

@@ -11,6 +11,8 @@ considered in:
 - `#269 <GITHUB269_>`_.
 - `#270 <GITHUB270_>`_.
 
+Missing data (NaN) is excluded from the window fractions, following Skok and Kosovelj (2025) :sup:`[4]`.
+
 References:
 1. Roberts, N. M., and H. W. Lean, 2008: Scale-Selective Verification of Rainfall Accumulations from
    High-Resolution Forecasts of Convective Events. Monthly Weather Review, 136, 78–97,
@@ -20,6 +22,8 @@ References:
    https://doi.org/10.1175/mwr-d-18-0106.1.
 3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions skill
    score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+4. Skok, G. and K. Kosovelj, 2025: Smoothing and spatial verification of global fields.
+   Geoscientific Model Development, 18, 7417–7433, https://doi.org/10.5194/gmd-18-7417-2025.
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270
@@ -70,6 +74,25 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
 
     The aggregation method is the intended extension of the score defined by Robert and Leans (2008)
     for multiple forecasts :sup:`[1,2]`
+
+    .. note::
+        Missing data (NaN) is handled following Skok and Kosovelj (2025) :sup:`[3]`:
+
+        - Missing data is synchronised: a point that is NaN in either ``fcst`` or ``obs`` is
+          treated as missing in both.
+        - Missing points are excluded when computing the event fraction of a window. That is,
+          the fraction is the number of events divided by the number of non-missing points in
+          the window, rather than missing points being treated as non-events. If
+          ``zero_padding`` is ``True``, points in the padded border count as non-missing
+          non-events.
+        - Each window is anchored on the grid point at its centre (for an even window
+          dimension, the point immediately after the midpoint along that dimension). Windows
+          anchored on a missing point are excluded from the score, so missing points have no
+          influence on the FSS.
+        - When aggregating over non-spatial dimensions (e.g. time), each 2-D field is weighted
+          by its number of included windows, so the result is equivalent to pooling the windows
+          of all the fields. Fields with no included windows are ignored.
+        - If no windows are included (e.g. all data is missing), the FSS is NaN.
 
     .. note::
         This method takes in a ``threshold_operator`` to compare the input
@@ -143,6 +166,9 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
         2. Mittermaier, M. P., 2021: A “Meta” Analysis of the Fractions Skill Score: The Limiting
            Case and Implications for Aggregation. Monthly Weather Review, 149, 3491–3504,
            https://doi.org/10.1175/mwr-d-18-0106.1.
+        3. Skok, G. and K. Kosovelj, 2025: Smoothing and spatial verification of global fields.
+           Geoscientific Model Development, 18, 7417–7433,
+           https://doi.org/10.5194/gmd-18-7417-2025.
 
     Examples:
         >>> import xarray as xr
@@ -270,6 +296,10 @@ def fss_2d_binary(  # pylint: disable=too-many-locals,too-many-arguments
     boolean), they may set this flag to ``False``, to allow for more flexible binary
     configurations such as 0 and 1; this should give the same results.
 
+    Boolean fields cannot represent missing data. If ``check_boolean`` is ``False``, the fields
+    may be floats (e.g. 0.0 and 1.0) with NaN marking missing data, which is handled as described
+    in :py:func:`scores.spatial.fss_2d`.
+
     Uses ``fss_2d`` from the ``scores.spatial`` module to perform fss
     computation, but without the threshold operation.
 
@@ -349,6 +379,12 @@ def fss_2d_single_field(
     Once the squared sums are computed, the final FSS value can be derived by
     accumulating the squared sums :sup:`[3]`.
 
+    Missing data (NaN) is handled following Skok and Kosovelj (2025) :sup:`[4]`. A point that is
+    NaN in either ``fcst`` or ``obs`` is treated as missing in both. Missing points are excluded
+    from the event fraction of each window (the fraction is computed over the non-missing points
+    only), and windows anchored on (i.e. centred on) a missing point are excluded from the score.
+    If no windows remain, the FSS is NaN. See :py:func:`scores.spatial.fss_2d` for more detail.
+
 
     The caller is responsible for making sure the input fields are in the 2-D
     spatial domain. (Although it should work for any ``np.array`` as long as it's
@@ -385,6 +421,9 @@ def fss_2d_single_field(
         2. https://en.wikipedia.org/wiki/Summed-area_table
         3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
            skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
+        4. Skok, G. and K. Kosovelj, 2025: Smoothing and spatial verification of global fields.
+           Geoscientific Model Development, 18, 7417–7433,
+           https://doi.org/10.5194/gmd-18-7417-2025.
 
     Examples:
         >>> import numpy as np
@@ -429,6 +468,11 @@ def _make_numpy_threshold_operator(threshold_operator: Optional[Callable]) -> Nu
 def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     """
     Aggregates the results of decomposed fss scores.
+
+    The decomposed components of each field are means over that field's windows. They are
+    weighted by each field's window count, so that the aggregated score is equivalent to pooling
+    the windows of all fields into the sums of a single FSS. Fields with no windows (e.g. all
+    data missing) are ignored.
     """
     # can't do ufuncs over custom void types currently...
     fcst_sum = 0.0
@@ -436,19 +480,20 @@ def _aggregate_fss_decomposed(fss_d: FssDecomposed) -> np.float64:
     diff_sum = 0.0
 
     if isinstance(fss_d, np.ndarray):
-        l = fss_d.size
-
-        if l < 1:
+        if fss_d.size < 1:
             return np.float64(np.nan)
 
         with np.nditer(fss_d) as it:
             for elem in it:
-                (fcst_, obs_, diff_) = elem.item()
-                fcst_sum += fcst_ / l
-                obs_sum += obs_ / l
-                diff_sum += diff_ / l
+                (fcst_, obs_, diff_, count_) = elem.item()
+                # fields with no windows have NaN components
+                if count_ > 0:
+                    fcst_sum += fcst_ * count_
+                    obs_sum += obs_ * count_
+                    diff_sum += diff_ * count_
     else:
-        (fcst_sum, obs_sum, diff_sum) = fss_d
+        # single field: the means can be used directly (NaN if there are no windows)
+        (fcst_sum, obs_sum, diff_sum, _) = fss_d
 
     denom = obs_sum + fcst_sum
     if denom > 0.0:
