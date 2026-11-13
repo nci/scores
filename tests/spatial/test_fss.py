@@ -436,3 +436,21 @@ def test_empty_score_aggregation():
     """
     fss = _aggregate_fss_decomposed(np.empty(shape=(0, 0)))
     assert np.isnan(fss)
+
+
+def test_fss_can_return_zero():
+    """
+    Test that FSS can return zero when the forecast and observation fields are completely different.
+    """
+    da_fcst = sd.continuous_forecast(large_size=False, lead_days=False)
+    da_obs = sd.continuous_observations(large_size=False)
+    da_fcst[:] = 0.0
+    da_obs[:] = 1.0
+    res = fss_2d(
+        da_fcst,
+        da_obs,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    assert res == 0.0
