@@ -143,8 +143,10 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
         (fcst, obs, diff) = self.compute_fss_decomposed()
 
         denom = fcst + obs
-        if denom == 0.0:
-            fss_clamped = np.float64(np.nan)
+
+        if denom > 0.0:
+            fss = 1.0 - diff / denom
+            fss_clamped = max(min(fss, 1.0), 0.0)
         else:
-            fss_clamped = np.clip(1.0 - diff / denom, 0.0, 1.0)
+            fss_clamped = np.float64(np.nan)
         return fss_clamped
