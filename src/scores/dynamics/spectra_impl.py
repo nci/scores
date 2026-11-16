@@ -161,9 +161,6 @@ def power_spectra_scalar(
     """
 
     _data = data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
-    _data = _reduce_dims(
-        _data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
-    )
 
     if spherical_harmonic:
         error_msg = NotImplementedError(
@@ -198,6 +195,9 @@ def power_spectra_scalar(
 
         nw = fft_lon.sizes["wavenumber"]
         fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
+        fft_lon = _reduce_dims(
+            fft_lon, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+        )
 
         ds = xr.Dataset(
             data_vars={
@@ -269,9 +269,6 @@ def power_spectra_vector(
     """
 
     _data = data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
-    _data = _reduce_dims(
-        _data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
-    )
 
     if spherical_harmonic:
         error_msg = NotImplementedError(
@@ -319,6 +316,9 @@ def power_spectra_vector(
 
         nw = fft_lon.sizes["wavenumber"]
         fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
+        fft_lon = _reduce_dims(
+            fft_lon, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+        )
 
         ds = xr.Dataset(
             data_vars={

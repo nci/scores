@@ -46,9 +46,11 @@ def test_scaled_rfft_squared():
 def ux(phi, theta, p, phi1d):
     _u = np.zeros(phi.shape)
 
+    # southern hemisphere only
     mask1 = phi1d < -1.0e-6
     _u[:, mask1, :] = 4.0 + 3.0 * np.cos(2.0 * np.pi * theta[:, mask1, :] / 180.0)
 
+    # equator only
     mask2 = phi1d > -1.0e-6
     mask3 = phi1d < +1.0e-6
     mask2 = np.logical_and(mask2, mask3)
@@ -62,6 +64,7 @@ def ux(phi, theta, p, phi1d):
 def uy(phi, theta, p, phi1d):
     _v = np.zeros(phi.shape)
 
+    # southern hemisphere only
     mask1 = phi1d < -1.0e-6
     _v[:, mask1, :] = 4.0 * np.sin(2.0 * np.pi * theta[:, mask1, :] / 180.0)
 
@@ -71,15 +74,29 @@ def uy(phi, theta, p, phi1d):
 def omega(phi, theta, p, phi1d):
     _w = np.zeros(phi.shape)
 
+    # southern hemisphere only
     mask1 = phi1d < -1.0e-6
     _w[:, mask1, :] = 4.0 + 3.0 * np.cos(2.0 * np.pi * theta[:, mask1, :] / 90.0)
 
+    # equator only
     mask2 = phi1d > -1.0e-6
     mask3 = phi1d < +1.0e-6
     mask2 = np.logical_and(mask2, mask3)
+    np.savetxt("shape.txt", phi.shape)
     _w[:, mask2, :] = 3.0 * np.cos(3.0 * np.pi * theta[:, mask2, :] / 90.0) + 4.0 * np.sin(
         3.0 * np.pi * theta[:, mask2, :] / 90.0
     )
+
+    return _w
+
+
+def omega_variable_levels(phi, theta, p, phi1d):
+    _w = np.zeros(phi.shape)
+
+    # southern hemisphere only
+    mask1 = phi1d < -1.0e-6
+    _w[0, mask1, :] = 1.0 + 2.0 * np.cos(2.0 * np.pi * theta[0, mask1, :] / 90.0)
+    _w[1, mask1, :] = 3.0 + 5.0 * np.cos(2.0 * np.pi * theta[1, mask1, :] / 90.0)
 
     return _w
 
@@ -537,6 +554,59 @@ def omega(phi, theta, p, phi1d):
                 )
             ),
         ),
+        (
+            ux,
+            uy,
+            omega_variable_levels,
+            True,
+            True,
+            pd.date_range("2025-01-01", periods=1),
+            np.array([200, 800, 1000]),
+            np.arange(0.0, 360.0, 20),
+            np.array([-60.0, 0.0, 60.0]),
+            xr.DataArray(
+                np.array(
+                    [
+                        [
+                            4.875000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            1.400000e01,
+                            0.000000e-01,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                        ],
+                        [
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                        ],
+                        [
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                            0.000000e00,
+                        ],
+                    ]
+                )
+            ),
+        ),
     ],
 )
 def test_spectra(
@@ -862,7 +932,6 @@ def test_spectra_vector_with_vertical_weights_error():
 
     u[:, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
     v[:, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
-    v[0, 1, 2, 3] = np.nan
 
     ds = xr.Dataset(
         data_vars={
