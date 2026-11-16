@@ -31,7 +31,7 @@ def isotonic_fit(  # pylint: disable=too-many-locals, too-many-arguments
     confidence_level: Optional[float] = 0.9,
     min_non_nan: Optional[int] = 1,
     report_bootstrap_results: Optional[bool] = False,
-    functional_preserves_singletons: Optional[bool] = True,
+    functional_preserves_singletons: Optional[bool] = False,
 ) -> dict:
     """
     Calculates an isotonic regression fit to observations given forecasts as the
@@ -431,7 +431,7 @@ def _do_ir(  # pylint: disable=too-many-arguments
     functional: Optional[Literal["mean", "quantile"]] = None,
     quantile_level: Optional[float] = None,
     solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
-    functional_preserves_singletons: bool = True,
+    functional_preserves_singletons: bool = False,
 ) -> np.ndarray:
     """
     Returns the isotonic regression (IR) fit for specified functional or solver,
@@ -606,7 +606,7 @@ def _bootstrap_ir(  # pylint: disable=too-many-arguments, too-many-locals
     functional: Optional[Literal["mean", "quantile"]] = None,
     quantile_level: Optional[float] = None,
     solver: Optional[Union[Callable[[np.ndarray, np.ndarray], float], Callable[[np.ndarray], float]]] = None,
-    functional_preserves_singletons: bool = True,
+    functional_preserves_singletons: bool = False,
 ):
     """
     Gives the isotonic fits of bootstrapped samples.
