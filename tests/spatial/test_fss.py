@@ -17,39 +17,6 @@ from scores.utils import DimensionError, FieldTypeError
 from tests.spatial import fss_test_data as ftd
 
 
-def test_nan_2d_single_field_curated_nan_cross():
-    """
-    Check that NaNs are handled as expected.
-
-    This also applies to ``fss_2d`` and ``fss_2d_binary`` because they both use
-    ``fss_2d_single_field``.
-    """
-    window_size = (ftd.FSS_CURATED_WINDOW_SIZE_3X3, ftd.FSS_CURATED_WINDOW_SIZE_3X3)
-    fcst = np.array(np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_FCST), dtype=np.float64)
-    obs = np.array(np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_OBS), dtype=np.float64)
-    # run a cross (+) through the dataset with NaN
-    fcst[2, :] = np.array(np.nan)
-    fcst[:, 2] = np.array(np.nan)
-    obs[2, :] = np.array(np.nan)
-    obs[:, 2] = np.array(np.nan)
-    res_1 = fss_2d_single_field(
-        obs, fcst, event_threshold=ftd.FSS_CURATED_THRESHOLD, window_size=window_size, zero_padding=False
-    )
-
-    fcst = np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_FCST)
-    obs = np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_OBS)
-    # run a cross (+) through the dataset with zero - this should
-    # give the same result.
-    fcst[2, :] = 0
-    fcst[:, 2] = 0
-    obs[2, :] = 0
-    obs[:, 2] = 0
-    res_2 = fss_2d_single_field(
-        obs, fcst, event_threshold=ftd.FSS_CURATED_THRESHOLD, window_size=window_size, zero_padding=False
-    )
-    np.testing.assert_allclose(res_1, res_2)
-
-
 def test_fss_2d_single_field_curated_1x1_window():
     """
     Check that a 1x1 window performs as expected
@@ -456,11 +423,9 @@ def test_fss_can_return_zero():
     assert res == 0.0
 
 
-def test_fss_nan_behaviour():
+def test_fss_nan_behaviour_perf_fcst():
     """
-    Tests that the FSS correctly sums data when NaNs are in the fcst or obs.
-
-    We test this by using perfect forecasts with missing data
+    Tests that the FSS correctly sums data when NaNs are in the fcst or obs and the forecast is perfect.
     """
     truth = sd.continuous_forecast(large_size=False, lead_days=False)
     obs_missing = truth.copy()
@@ -494,3 +459,40 @@ def test_fss_nan_behaviour():
     assert res_missing_obs == 1.0
     assert res_missing_fcst == 1.0
     assert res_missing_both == 1.0
+
+
+# Test case
+# 2x2 fields with 2x3 with one nan. set min_valid_proportion to 0 and 1
+EXP_2X3_NAN_CASE = 1 - ((2 / 3 - 2 / 3) ** 2 + (1 / 3 - 2 / 3) ** 2) / (
+    ((2 / 3) ** 2 + (1 / 3) ** 2) + ((2 / 3) ** 2 + (2 / 3) ** 2)
+)
+@pytest.mark.parametrize(
+    "min_valid_proportion, expected",
+    [
+        (0.0, EXP_2X3_NAN_CASE),
+        (0.75, EXP_2X3_NAN_CASE),
+        (0.7500001, np.nan),
+        (1.0, np.nan),
+    ],
+)
+def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
+    """
+    Test FSS behaviour for 2x3 fields with one NaN, using different min_valid_proportion values.
+    """
+    fcst = xr.DataArray([[1, 1, 0], [1, 0, 0]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]})
+    obs = xr.DataArray([[1, 0, 1], [np.nan, 1, np.nan]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]})
+    res = fss_2d(
+        fcst,
+        obs,
+        event_threshold=0.5,
+        window_size=(2, 2),
+        spatial_dims=["lat", "lon"],
+        min_valid_proportion=min_valid_proportion,
+    )
+    xr.testing.assert_equal(res, xr.DataArray(expected))
+
+
+# Test case
+# Non perfect forecast. NaN in fcst gives the same result as NaN in obs, which is the same as NaN in both
+
+# Test aggregation across two timesteps. NaN in one timestep
