@@ -78,7 +78,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
     for multiple forecasts :sup:`[1,2]`
 
     .. note::
-        Missing data (NaN) is handled as follows:
+        Missing data (NaNs) is handled as follows:
 
         - Missing data is synchronised: a point that is NaN in either ``fcst`` or ``obs`` is
           treated as missing in both, as recommended by Skok and Kosovelj (2025) :sup:`[3]`.
@@ -154,7 +154,7 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             (mutually exclusive to ``preserve_dims``).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
             are reduced); By default all dimensions except ``spatial_dims``
-            are preserved (mutually exclusive to ``reduce_dims``).
+            are reduced (mutually exclusive to ``reduce_dims``).
         threshold_operator: The threshold operator used to generate the binary
             event field. E.g. ``np.greater``. Note: this may depend on the backend
             ``compute method`` and not all operators may be supported. Generally,
