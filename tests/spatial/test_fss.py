@@ -528,3 +528,17 @@ def test_fss_aggregation_with_nan():
 
     res = fss_2d(fcst, obs, event_threshold=0.5, window_size=(1, 1), spatial_dims=["lat", "lon"])
     assert res == 1 - 1 / 5
+
+
+@pytest.mark.parametrize("min_valid_proportion", [-0.1, 1.01])
+def test_invalid_min_valid_proportion(min_valid_proportion):
+    """Test that an invalid min_valid_proportion raises an error."""
+    with pytest.raises(ValueError, match="must be between 0 and 1"):
+        fss_2d(
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
+            event_threshold=0.5,
+            window_size=(2, 2),
+            spatial_dims=["lat", "lon"],
+            min_valid_proportion=min_valid_proportion,
+        )
