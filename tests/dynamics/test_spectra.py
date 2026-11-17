@@ -1251,3 +1251,227 @@ def test_spectra_spherical_harmonic_scalar():
         NotImplementedError, match="Support for spherical harmonic transform spectra has not been implemented yet."
     ):
         power_spectra_scalar(ds, spherical_harmonic=True)
+
+
+def test_spectra_scalar_with_ensemble_averaging():
+    ensemble = np.arange(2) + 1
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 180.0, 10)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    expected = xr.DataArray(
+        np.array(
+            [
+                [
+                    5.517972e01,
+                    1.205473e01,
+                    3.450323e01,
+                    1.163004e01,
+                    3.892134e00,
+                    5.558260e-01,
+                    1.690237e-02,
+                    1.791440e-01,
+                    1.103715e-01,
+                    7.473406e-04,
+                ],
+                [
+                    1.568831e01,
+                    8.450467e-01,
+                    8.288169e-01,
+                    2.702585e01,
+                    6.763590e-01,
+                    5.117548e-01,
+                    3.183059e-01,
+                    1.477136e-01,
+                    3.832006e-02,
+                    1.875601e-03,
+                ],
+                [
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                    0.000000e00,
+                ],
+            ]
+        )
+    )
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((2, nt, nlev, nlat, nlon))
+    v = np.zeros((2, nt, nlev, nlat, nlon))
+    w = np.zeros((2, nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[0, :, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[0, :, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+
+    u[1, :, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[1, :, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[1, :, :, :, :] = 0.5 * (u[1, :, :, :] ** 2 + v[1, :, :, :] ** 2)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["ensemble_index", "time", "level", "latitude", "longitude"], u),
+            "v": (["ensemble_index", "time", "level", "latitude", "longitude"], v),
+            "w": (["ensemble_index", "time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "ensemble_index": ensemble,
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    spectra = power_spectra_scalar(
+        ds, reduce_vertical=True, reduce_time=True, reduce_ensemble=True, scalar_field_name="w"
+    )
+
+    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)
+
+
+def test_spectra_scalar_with_ensemble_no_averaging():
+    ensemble = np.arange(2) + 1
+    time = pd.date_range("2025-01-01", periods=1)
+    level = np.array([200, 800, 1000])
+    longitude = np.arange(0.0, 180.0, 10)
+    latitude = np.array([-60.0, 0.0, 60.0])
+
+    expected = xr.DataArray(
+        np.array(
+            [
+                [
+                    [
+                        8.582760e00,
+                        4.117347e00,
+                        2.035150e00,
+                        1.644566e00,
+                        6.562332e-01,
+                        1.561022e-01,
+                        1.166555e-02,
+                        3.572741e-03,
+                        4.670897e-03,
+                        7.809644e-04,
+                    ],
+                    [
+                        3.255839e-03,
+                        1.731906e-01,
+                        5.229832e-01,
+                        1.692262e01,
+                        7.730010e-01,
+                        5.229759e-01,
+                        2.275568e-01,
+                        4.824236e-02,
+                        9.683661e-04,
+                        2.134110e-03,
+                    ],
+                    [
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                    ],
+                ],
+                [
+                    [
+                        1.017767e02,
+                        1.999212e01,
+                        6.697131e01,
+                        2.161551e01,
+                        7.128035e00,
+                        9.555498e-01,
+                        2.213920e-02,
+                        3.547153e-01,
+                        2.160720e-01,
+                        7.137167e-04,
+                    ],
+                    [
+                        3.137336e01,
+                        1.516903e00,
+                        1.134651e00,
+                        3.712908e01,
+                        5.797169e-01,
+                        5.005338e-01,
+                        4.090550e-01,
+                        2.471849e-01,
+                        7.567176e-02,
+                        1.617092e-03,
+                    ],
+                    [
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                        0.000000e00,
+                    ],
+                ],
+            ]
+        )
+    )
+
+    nt = len(time)
+    nlev = len(level)
+    nlat = len(latitude)
+    nlon = len(longitude)
+
+    u = np.zeros((2, nt, nlev, nlat, nlon))
+    v = np.zeros((2, nt, nlev, nlat, nlon))
+    w = np.zeros((2, nt, nlev, nlat, nlon))
+
+    lon2d, lat2d = np.meshgrid(longitude, latitude)
+    lev3d, lat3d, lon3d = np.meshgrid(level, latitude, longitude, indexing="ij")
+
+    u[0, :, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[0, :, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[0, :, :, :, :] = omega(lat3d, lon3d, lev3d, latitude)
+
+    u[1, :, :, :, :] = ux(lat3d, lon3d, lev3d, latitude)
+    v[1, :, :, :, :] = uy(lat3d, lon3d, lev3d, latitude)
+    w[1, :, :, :, :] = 0.5 * (u[1, :, :, :] ** 2 + v[1, :, :, :] ** 2)
+
+    ds = xr.Dataset(
+        data_vars={
+            "u": (["ensemble_index", "time", "level", "latitude", "longitude"], u),
+            "v": (["ensemble_index", "time", "level", "latitude", "longitude"], v),
+            "w": (["ensemble_index", "time", "level", "latitude", "longitude"], w),
+        },
+        coords={
+            "ensemble_index": ensemble,
+            "time": time,
+            "level": level,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+
+    spectra = power_spectra_scalar(
+        ds, reduce_vertical=True, reduce_time=True, reduce_ensemble=False, scalar_field_name="w"
+    )
+
+    xr.testing.assert_allclose(xr.DataArray(spectra["amplitude_squared"].data), expected, atol=1.0e-6)

@@ -6,11 +6,6 @@ try:
 except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
     dask = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
 
-try:
-    import pyshtools as pysh
-except:  # noqa: E722 allow bare except here # pylint: disable=bare-except  # pragma: no cover
-    pysh = "Unavailable"  # pylint: disable=invalid-name  # pragma: no cover
-
 from scores.dynamics import STANDARD_CONSTANTS, PlanetConstants
 from scores.dynamics.budgets_utils import (
     _pressure_level_thickness,
@@ -19,7 +14,9 @@ from scores.dynamics.budgets_utils import (
 from scores.typing import XarrayLike
 
 
-def _zonal_filter(_data, pressure_level_name, time_name, latitude_name, longitude_name, zonal_filter_width):
+def _zonal_filter(
+    _data, ensemble_name, time_name, pressure_level_name, latitude_name, longitude_name, zonal_filter_width
+):
     """
     If the zonal domain is less than the full planet, then filter the data at the zonal boundaries to avoid spectral
     ringing from discintinuous data at the boundaries. Filtering is done with a cosine function where for a domain of
@@ -62,12 +59,24 @@ def _zonal_filter(_data, pressure_level_name, time_name, latitude_name, longitud
         )
         _dims = _data.dims
         _data = (filter_xr * _data).transpose(*_dims)
-        _data = _data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
+        _data = _data.transpose(
+            ensemble_name, time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore"
+        )
 
     return _data, n_lon, L
 
 
-def _reduce_dims(data, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants):
+def _reduce_dims(
+    data,
+    reduce_vertical,
+    reduce_time,
+    reduce_ensemble,
+    pressure_level_name,
+    time_name,
+    ensemble_name,
+    vertical_weights,
+    constants,
+):
     """
     Average data in the vertical and temporal dimensions if specified
     """
@@ -76,27 +85,67 @@ def _reduce_dims(data, reduce_vertical, reduce_time, pressure_level_name, time_n
     _data = data.copy(deep=True)
 
     # average over the vertical dimension (pressure levels)
-    if reduce_vertical and len(_data.level.values) > 1:
-        if vertical_weights is not None:
-            if len(vertical_weights) != _data.sizes[pressure_level_name]:
-                error_msg = IndexError(
-                    f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
-                    + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
-                )
-                raise error_msg
-        else:
-            dp = _pressure_level_thickness(_data.level.values, constants)
-            vertical_weights = dp / np.sum(dp)
+    if pressure_level_name in data.dims:
+        if reduce_vertical and len(_data[pressure_level_name].values) > 1:
+            if vertical_weights is not None:
+                if len(vertical_weights) != _data.sizes[pressure_level_name]:
+                    error_msg = IndexError(
+                        f"Length of supplied vertical weights array: {len(vertical_weights)} does not match length of"
+                        + f" {pressure_level_name}: {_data.sizes[pressure_level_name]}.",
+                    )
+                    raise error_msg
+            else:
+                dp = _pressure_level_thickness(_data[pressure_level_name].values, constants)
+                vertical_weights = dp / np.sum(dp)
 
-        dp_x = xr.DataArray(vertical_weights, dims=(pressure_level_name))
-        _data = (dp_x * _data).sum(dim=pressure_level_name)
+            dp_x = xr.DataArray(vertical_weights, dims=(pressure_level_name))
+            _data = (dp_x * _data).sum(dim=pressure_level_name)
 
     # average over the time dimension
-    nt = len(_data.time)
-    if reduce_time and nt >= 1:
-        _data = _data.sum(dim=time_name) / nt
+    if time_name in data.dims:
+        nt = len(_data[time_name])
+        if reduce_time and nt >= 1:
+            _data = _data.sum(dim=time_name) / nt
+
+    # average over the ensemble_index
+    if ensemble_name in data.dims:
+        ne = len(_data[ensemble_name])
+        if reduce_ensemble and ne >= 1:
+            _data = _data.sum(dim=ensemble_name) / ne
 
     return _data
+
+
+def _assign_coords(
+    ds,
+    data,
+    wavenumber,
+    reduce_vertical,
+    reduce_time,
+    reduce_ensemble,
+    latitude_name,
+    pressure_level_name,
+    time_name,
+    ensemble_name,
+):
+    """
+    Assign coordinates to the spectra field dataset. These are inherited from the input data, with the exception of
+    the horizontal wavenumber
+    """
+    if ensemble_name in data.dims and not reduce_ensemble:
+        ds = ds.assign_coords(ensemble_index=data[ensemble_name])
+
+    if time_name in data.dims and not reduce_time:
+        ds = ds.assign_coords(time=data[time_name])
+
+    if pressure_level_name in data.dims and not reduce_vertical:
+        ds = ds.assign_coords(level=data[pressure_level_name])
+
+    ds = ds.assign_coords(latitude=data[latitude_name])
+
+    ds = ds.assign_coords(wavenumber=wavenumber)
+
+    return ds
 
 
 def _frequency_with_latitude(latitude, latitude_name, n_lon, L, rad_earth):
@@ -116,11 +165,13 @@ def power_spectra_scalar(
     *,
     reduce_vertical: bool = False,
     reduce_time: bool = False,
+    reduce_ensemble: bool = False,
     spherical_harmonic: bool = False,
     longitude_name: str = "longitude",
     latitude_name: str = "latitude",
     pressure_level_name: str = "level",
     time_name: str = "time",
+    ensemble_name: str = "ensemble_index",
     scalar_field_name: str = "w",
     zonal_filter_width: float = 0.125,
     vertical_weights: np.ndarray | None = None,
@@ -135,6 +186,7 @@ def power_spectra_scalar(
             components, or from a custom field).
         reduce_vertical: average over the vertical pressure levels (default is False).
         reduce_time: average over the time levels (default is False).
+        reduce_ensemble: average over the ensemble indices (default is False).
         spherical_harmonic: compute spectra using spherical harmonics in both the zonal and meridional dimensions,
             instead of just using a Fourier transform in the zonal dimension (default is False). Requires that the
             'pyshtools' python library be installed.
@@ -143,6 +195,7 @@ def power_spectra_scalar(
         pressure_level_name: string giving the textual name of the vertical coordinate on pressure levels (optional,
             default is "level").
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
+        ensemble_name: string giving the textual name of the ensemble index (optional, default is "ensemble_index").
         scalar_field_name: string giving the textual name of the field from which to compute the spectra. If absent
             then compute the spectra for the kinetic energy as determined from the zonal and meridional velocity
             components.
@@ -160,7 +213,9 @@ def power_spectra_scalar(
             space, and the corresponding frequencies.
     """
 
-    _data = data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
+    _data = data.transpose(
+        ensemble_name, time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore"
+    )
 
     if spherical_harmonic:
         error_msg = NotImplementedError(
@@ -170,7 +225,7 @@ def power_spectra_scalar(
 
     else:
         _data, n_lon, L = _zonal_filter(
-            _data, pressure_level_name, time_name, latitude_name, longitude_name, zonal_filter_width
+            _data, ensemble_name, time_name, pressure_level_name, latitude_name, longitude_name, zonal_filter_width
         )
 
         # ensure that the wavelengths are consistent for each latitude
@@ -196,7 +251,15 @@ def power_spectra_scalar(
         nw = fft_lon.sizes["wavenumber"]
         fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
         fft_lon = _reduce_dims(
-            fft_lon, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+            fft_lon,
+            reduce_vertical,
+            reduce_time,
+            reduce_ensemble,
+            pressure_level_name,
+            time_name,
+            ensemble_name,
+            vertical_weights,
+            constants,
         )
 
         ds = xr.Dataset(
@@ -205,12 +268,19 @@ def power_spectra_scalar(
                 "frequency": (freq_2d.dims, freq_2d.data),
             },
         )
-        if time_name in _data.dims and not reduce_time:
-            ds = ds.assign_coords(time=_data.time)
-        if pressure_level_name in _data.dims and not reduce_vertical:
-            ds = ds.assign_coords(level=_data.level)
-        ds = ds.assign_coords(latitude=_data[latitude_name])
-        ds = ds.assign_coords(wavenumber=fft_lon.wavenumber)
+
+        ds = _assign_coords(
+            ds,
+            _data,
+            fft_lon.wavenumber,
+            reduce_vertical,
+            reduce_time,
+            reduce_ensemble,
+            latitude_name,
+            pressure_level_name,
+            time_name,
+            ensemble_name,
+        )
 
         return ds
 
@@ -220,11 +290,13 @@ def power_spectra_vector(
     *,
     reduce_vertical: bool = False,
     reduce_time: bool = False,
+    reduce_ensemble: bool = False,
     spherical_harmonic: bool = False,
     longitude_name: str = "longitude",
     latitude_name: str = "latitude",
     pressure_level_name: str = "level",
     time_name: str = "time",
+    ensemble_name: str = "ensemble_index",
     zonal_velocity_name: str = "u",
     meridional_velocity_name: str = "v",
     zonal_filter_width: float = 0.125,
@@ -240,6 +312,7 @@ def power_spectra_vector(
             components, or from a custom field).
         reduce_vertical: average over the vertical pressure levels (default is False).
         reduce_time: average over the time levels (default is False).
+        reduce_ensemble: average over the ensemble indices (default is False).
         spherical_harmonic: compute spectra using spherical harmonics in both the zonal and meridional dimensions,
             instead of just using a Fourier transform in the zonal dimension (default is False). Requires that the
             'pyshtools' python library be installed.
@@ -248,6 +321,7 @@ def power_spectra_vector(
         pressure_level_name: string giving the textual name of the vertical coordinate on pressure levels (optional,
             default is "level").
         time_name: string giving the textual name of the time coordinate (optional, default is "time").
+        ensemble_name: string giving the textual name of the ensemble index (optional, default is "ensemble_index").
         zonal_velocity_name: string giving the textual name of the zonal velocity (optional, default is "u").
         meridional_velocity_name: string giving the textual name of the meridional velocity (optional, default is "v").
         zonal_filter_width: ratio of the left and right domain size to the total zonal domain size over which to apply
@@ -268,7 +342,9 @@ def power_spectra_vector(
           Spectra from Gridded Data, *Mon. Wea. Rev.*, 145, 3901-3910. https://doi.org/10.1175/MWR-D-17-0056.1
     """
 
-    _data = data.transpose(time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore")
+    _data = data.transpose(
+        ensemble_name, time_name, pressure_level_name, latitude_name, longitude_name, missing_dims="ignore"
+    )
 
     if spherical_harmonic:
         error_msg = NotImplementedError(
@@ -286,7 +362,7 @@ def power_spectra_vector(
             raise error_msg
 
         _data, n_lon, L = _zonal_filter(
-            _data, pressure_level_name, time_name, latitude_name, longitude_name, zonal_filter_width
+            _data, ensemble_name, time_name, pressure_level_name, latitude_name, longitude_name, zonal_filter_width
         )
 
         # ensure that the wavelengths are consistent for each latitude
@@ -317,7 +393,15 @@ def power_spectra_vector(
         nw = fft_lon.sizes["wavenumber"]
         fft_lon = fft_lon.assign_coords(wavenumber=np.linspace(0.0, float(nw), nw, endpoint=False))
         fft_lon = _reduce_dims(
-            fft_lon, reduce_vertical, reduce_time, pressure_level_name, time_name, vertical_weights, constants
+            fft_lon,
+            reduce_vertical,
+            reduce_time,
+            reduce_ensemble,
+            pressure_level_name,
+            time_name,
+            ensemble_name,
+            vertical_weights,
+            constants,
         )
 
         ds = xr.Dataset(
@@ -326,11 +410,18 @@ def power_spectra_vector(
                 "frequency": (freq_2d.dims, freq_2d.data),
             },
         )
-        if time_name in _data.dims and not reduce_time:
-            ds = ds.assign_coords(time=_data.time)
-        if pressure_level_name in _data.dims and not reduce_vertical:
-            ds = ds.assign_coords(level=_data.level)
-        ds = ds.assign_coords(latitude=_data[latitude_name])
-        ds = ds.assign_coords(wavenumber=fft_lon.wavenumber)
+
+        ds = _assign_coords(
+            ds,
+            _data,
+            fft_lon.wavenumber,
+            reduce_vertical,
+            reduce_time,
+            reduce_ensemble,
+            latitude_name,
+            pressure_level_name,
+            time_name,
+            ensemble_name,
+        )
 
         return ds
