@@ -473,20 +473,30 @@ EXP_2X3_NAN_CASE = 1 - ((2 / 3 - 2 / 3) ** 2 + (1 / 3 - 2 / 3) ** 2) / (
         (0.75, EXP_2X3_NAN_CASE),
         (0.7500001, np.nan),
         (1.0, np.nan),
+        ("default", np.nan),  
     ],
 )
 def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
     """
     Test FSS behaviour for 2x3 fields with one NaN, using different min_valid_proportion values.
     """
-    res = fss_2d(
-        ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
-        ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
-        event_threshold=0.5,
-        window_size=(2, 2),
-        spatial_dims=["lat", "lon"],
-        min_valid_proportion=min_valid_proportion,
-    )
+    if min_valid_proportion == "default":
+        res = fss_2d(
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
+            event_threshold=0.5,
+            window_size=(2, 2),
+            spatial_dims=["lat", "lon"],
+        )
+    else:
+        res = fss_2d(
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
+            event_threshold=0.5,
+            window_size=(2, 2),
+            spatial_dims=["lat", "lon"],
+            min_valid_proportion=min_valid_proportion,
+        )
     xr.testing.assert_equal(res, xr.DataArray(expected))
 
 
