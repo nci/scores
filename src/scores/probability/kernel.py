@@ -17,7 +17,8 @@ where
   :math:`\\rho(a, a) = 0`. For the CRPS, :math:`\\rho(a, b) = |a - b|`.
 """
 
-from typing import NamedTuple, get_args
+from dataclasses import dataclass
+from typing import get_args
 
 import numpy as np
 import xarray as xr
@@ -25,7 +26,8 @@ import xarray as xr
 from scores.typing import Estimator, XarrayLike
 
 
-class KernelTerms(NamedTuple):
+@dataclass(frozen=True)
+class KernelTerms:
     """
     Terms required to compute a kernel-based score for an ensemble forecast.
 

@@ -101,7 +101,6 @@ def test__crps_terms():
         spread_sum=xr.DataArray(np.array([4, 0, 0, 20]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
         n_members=xr.DataArray(np.array([2, 1, 0, 3]), dims=["station"], coords={"station": [0, 1, 2, 3]}),
     )
-    assert len(result) == 3
     xr.testing.assert_equal(result.obs_term, expected.obs_term)
     xr.testing.assert_equal(result.spread_sum, expected.spread_sum)
     xr.testing.assert_equal(result.n_members, expected.n_members)
