@@ -461,8 +461,6 @@ def test_fss_nan_behaviour_perf_fcst():
     assert res_missing_both == 1.0
 
 
-# Test case
-# 2x2 fields with 2x3 with one nan. set min_valid_proportion to 0 and 1
 EXP_2X3_NAN_CASE = 1 - ((2 / 3 - 2 / 3) ** 2 + (1 / 3 - 2 / 3) ** 2) / (
     ((2 / 3) ** 2 + (1 / 3) ** 2) + ((2 / 3) ** 2 + (2 / 3) ** 2)
 )
@@ -481,11 +479,9 @@ def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
     """
     Test FSS behaviour for 2x3 fields with one NaN, using different min_valid_proportion values.
     """
-    fcst = xr.DataArray([[1, 1, 0], [1, 0, 0]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]})
-    obs = xr.DataArray([[1, 0, 1], [np.nan, 1, np.nan]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]})
     res = fss_2d(
-        fcst,
-        obs,
+        ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+        ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
         event_threshold=0.5,
         window_size=(2, 2),
         spatial_dims=["lat", "lon"],
@@ -512,4 +508,23 @@ def test_consistency_of_nan_behaviour():
     assert res_fcst_nan == res_both_nan
 
 
-# Test aggregation across two timesteps. NaN in one timestep
+def test_fss_aggregation_with_nan():
+    """Test aggregation across two timesteps. NaN in one timestep should be handled correctly."""
+
+    fcst = xr.DataArray(
+        [[[1, 1]], [[1, 1]], [[1, 1]]],
+        dims=["time", "lat", "lon"],
+        coords={"time": [0, 1, 2], "lat": [0], "lon": [0, 1]},
+    )
+    obs = xr.DataArray(
+        [[[1, 0]], [[1, np.nan]], [[np.nan, np.nan]]],
+        dims=["time", "lat", "lon"],
+        coords={"time": [0, 1, 2], "lat": [0], "lon": [0, 1]},
+    )
+    res_pres = fss_2d(
+        fcst, obs, preserve_dims="time", event_threshold=0.5, window_size=(1, 1), spatial_dims=["lat", "lon"]
+    )
+    xr.testing.assert_allclose(res_pres, xr.DataArray([2 / 3, 1.0, np.nan], dims=["time"], coords={"time": [0, 1, 2]}))
+
+    res = fss_2d(fcst, obs, event_threshold=0.5, window_size=(1, 1), spatial_dims=["lat", "lon"])
+    assert res == 1 - 1 / 5
