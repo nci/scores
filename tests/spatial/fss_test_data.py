@@ -190,14 +190,3 @@ FSS_CURATED_TEST_2X3_NAN_CASE_FCST = xr.DataArray(
 FSS_CURATED_TEST_2X3_NAN_CASE_OBS = xr.DataArray(
     [[1, 0, 1], [np.nan, 1, np.nan]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]}
 )
-
-FSS_CURATED_TEST_2X3X2_NAN_CASE_FCST = xr.DataArray(
-    [[[1, 1, 0], [1, 0, 0]], [[0, 1, 1], [1, 0, 0]]],
-    dims=["time", "lat", "lon"],
-    coords={"time": [0, 1], "lat": [0, 1], "lon": [0, 1, 2]},
-)
-FSS_CURATED_TEST_2X3X2_NAN_CASE_OBS = xr.DataArray(
-    [[[1, 0, 1], [1, 1, 1]], [[1, 0, 1], [1, 1, np.nan]]],
-    dims=["time", "lat", "lon"],
-    coords={"time": [0, 1], "lat": [0, 1], "lon": [0, 1, 2]},
-)

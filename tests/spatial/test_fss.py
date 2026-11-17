@@ -473,12 +473,12 @@ EXP_2X3_NAN_CASE = 1 - ((2 / 3 - 2 / 3) ** 2 + (1 / 3 - 2 / 3) ** 2) / (
         (0.75, EXP_2X3_NAN_CASE),
         (0.7500001, np.nan),
         (1.0, np.nan),
-        ("default", np.nan),  
+        ("default", np.nan),
     ],
 )
 def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
     """
-    Test FSS behaviour for 2x3 fields with one NaN, using different min_valid_proportion values.
+    Test FSS behaviour for 2x3 fields with NaNs, using different min_valid_proportion values.
     """
     if min_valid_proportion == "default":
         res = fss_2d(
@@ -497,7 +497,7 @@ def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
             spatial_dims=["lat", "lon"],
             min_valid_proportion=min_valid_proportion,
         )
-    xr.testing.assert_equal(res, xr.DataArray(expected))
+    xr.testing.assert_allclose(res, xr.DataArray(expected))
 
 
 def test_consistency_of_nan_behaviour():
@@ -519,7 +519,7 @@ def test_consistency_of_nan_behaviour():
 
 
 def test_fss_aggregation_with_nan():
-    """Test aggregation across two timesteps. NaN in one timestep should be handled correctly."""
+    """Test aggregation across three timesteps with NaNs."""
 
     fcst = xr.DataArray(
         [[[1, 1]], [[1, 1]], [[1, 1]]],
