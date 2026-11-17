@@ -466,6 +466,8 @@ def test_fss_nan_behaviour_perf_fcst():
 EXP_2X3_NAN_CASE = 1 - ((2 / 3 - 2 / 3) ** 2 + (1 / 3 - 2 / 3) ** 2) / (
     ((2 / 3) ** 2 + (1 / 3) ** 2) + ((2 / 3) ** 2 + (2 / 3) ** 2)
 )
+
+
 @pytest.mark.parametrize(
     "min_valid_proportion, expected",
     [
@@ -492,7 +494,22 @@ def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
     xr.testing.assert_equal(res, xr.DataArray(expected))
 
 
-# Test case
-# Non perfect forecast. NaN in fcst gives the same result as NaN in obs, which is the same as NaN in both
+def test_consistency_of_nan_behaviour():
+    """Non perfect forecast. NaN in fcst should give the same result as NaN in obs, which is the same as NaN in both"""
+    fcst = sd.continuous_forecast(large_size=False, lead_days=False)
+    obs = sd.continuous_observations(large_size=False)
+
+    fcst_nan = fcst.copy()
+    fcst_nan[0, 0] = np.nan
+    obs_nan = obs.copy()
+    obs_nan[0, 0] = np.nan
+
+    res_fcst_nan = fss_2d(fcst_nan, obs, event_threshold=0.5, window_size=(5, 5), spatial_dims=["lat", "lon"])
+    res_obs_nan = fss_2d(fcst, obs_nan, event_threshold=0.5, window_size=(5, 5), spatial_dims=["lat", "lon"])
+    res_both_nan = fss_2d(fcst_nan, obs_nan, event_threshold=0.5, window_size=(5, 5), spatial_dims=["lat", "lon"])
+
+    assert res_fcst_nan == res_obs_nan
+    assert res_fcst_nan == res_both_nan
+
 
 # Test aggregation across two timesteps. NaN in one timestep
