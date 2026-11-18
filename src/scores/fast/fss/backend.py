@@ -114,9 +114,9 @@ class FssBackend:  # pylint: disable=too-many-instance-attributes
 
         See also: https://en.wikipedia.org/wiki/Summed-area_table
 
-        Reference: Skok, G. and Kosovelj, K., 2025: Smoothing and spatial verification of global
-        fields. Geoscientific Model Development, 18, 7417–7433,
-        https://doi.org/10.5194/gmd-18-7417-2025.
+        Reference: Skok, G., & Kosovelj, K. (2025). Smoothing and spatial verification of global
+           fields. Geoscientific Model Development, 18(20), 7417–7433.
+           https://doi.org/10.5194/gmd-18-7417-2025
 
         Note: for non-`python` backends e.g. `rust`, its often the case that the integral field is
         computed & cached in the native language. In which case this method can just be overriden

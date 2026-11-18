@@ -23,8 +23,9 @@ References:
    https://doi.org/10.1175/mwr-d-18-0106.1.
 3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions skill
    score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
-4. Skok, G. and K. Kosovelj, 2025: Smoothing and spatial verification of global fields.
-   Geoscientific Model Development, 18, 7417–7433, https://doi.org/10.5194/gmd-18-7417-2025.
+4. Skok, G., & Kosovelj, K. (2025). Smoothing and spatial verification of global
+   fields. Geoscientific Model Development, 18(20), 7417–7433.
+   https://doi.org/10.5194/gmd-18-7417-2025
 
 .. _GITHUB269: https://github.com/nci/scores/issues/269
 .. _GITHUB270: https://github.com/nci/scores/issues/270
@@ -92,12 +93,11 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
           default (``min_valid_proportion=1``), only windows that contain no missing data are
           included. This inclusion rule is specific to ``scores``; it is not specified by Skok
           and Kosovelj (2025).
-        - Every included window has equal weight, regardless of how many non-missing points it
-          contains. Because the fraction of a window with only a few non-missing points is
-          computed from those few points and then squared, a single mismatched point in such a
-          window contributes much more to the score than it would in a complete window.
-          Lowering ``min_valid_proportion`` includes more windows near missing data, at the cost
-          of including fractions estimated from fewer points.
+        - Every included window has equal weight, however many non-missing points it
+          contains. In a window with n non-missing points, one mismatched point changes
+          the fraction by 1/n, so in sparse windows a single point can strongly affect
+          the FSS. Lowering ``min_valid_proportion`` includes more windows near missing
+          data, at the cost of including fractions estimated from fewer points.
         - When aggregating over non-spatial dimensions (e.g. time), each 2-D field is weighted
           by its number of included windows, so the result is equivalent to pooling the windows
           of all the fields. Fields with no included windows are ignored.
@@ -142,14 +142,11 @@ def fss_2d(  # pylint: disable=too-many-locals,too-many-arguments
             - zero_padding = False => inner border
             - zero_padding = True => outer border with 0 values
         min_valid_proportion: The minimum proportion (between 0 and 1 inclusive) of
-            non-missing points that a window must contain to be included in the score. Points
-            in the zero-padded border count as non-missing. Windows with no non-missing points
-            are always excluded. Defaults to 1, i.e. only windows with no missing data are
-            included. A window whose proportion of non-missing points equals
-            ``min_valid_proportion`` is included. As this is a floating point comparison, give
-            the value directly (e.g. ``0.7`` or ``7 / 10``) rather than as the result of further
-            arithmetic (e.g. ``1 - 0.3``), which may differ slightly. See the note on missing
-            data above.
+            non-missing points a window must contain to be included in the score.
+            Defaults to 1, i.e. only windows with no missing data are included.
+            Windows with no non-missing points are always excluded, even when this is 0.
+            If ``zero_padding`` is ``True``, points in the padded border count as
+            non-missing.
         reduce_dims: Optional set of additional dimensions to aggregate over
             (mutually exclusive to ``preserve_dims``).
         preserve_dims: Optional set of dimensions to keep (all other dimensions
@@ -457,9 +454,9 @@ def fss_2d_single_field(
         2. https://en.wikipedia.org/wiki/Summed-area_table
         3. FAGGIAN, N., B. ROUX, P. STEINLE, and B. EBERT, 2015: Fast calculation of the fractions
            skill score. MAUSAM, 66, 457–466, https://doi.org/10.54302/mausam.v66i3.555.
-        4. Skok, G. and K. Kosovelj, 2025: Smoothing and spatial verification of global fields.
-           Geoscientific Model Development, 18, 7417–7433,
-           https://doi.org/10.5194/gmd-18-7417-2025.
+        4. Skok, G., & Kosovelj, K. (2025). Smoothing and spatial verification of global
+           fields. Geoscientific Model Development, 18(20), 7417–7433.
+           https://doi.org/10.5194/gmd-18-7417-2025
 
     Examples:
         >>> import numpy as np
