@@ -21,6 +21,7 @@ from scores.plotdata.murphy_impl import (
     _huber_thetas,
     _quantile_thetas,
 )
+from scores.utils import ERROR_INVALID_WEIGHTS
 
 FCST = xr.DataArray(
     dims=("lead_day", "station_number", "valid_15z_date"),
@@ -293,6 +294,199 @@ def test_murphy_score_no_decomposition(monkeypatch):
     )
 
     assert list(result.variables.keys()) == ["theta", "total"]
+
+
+def test_murphy_score_weighted_mean(monkeypatch):
+    """
+    murphy_score returns the weighted mean over the reduced dims. A point where
+    obs is NaN is excluded together with its weight.
+    """
+    fcst = _test_array([1.0, 2.0, 3.0, 4.0])
+    obs = _test_array([0.0, np.nan, 0.6, 137.4])
+    weights = _test_array([1.0, 2.0, 3.0, 4.0])
+    thetas = [0.0, 2.0, 10.0]
+    _ = patch_scoring_func(monkeypatch, "_quantile_elementary_score", thetas)
+
+    result = murphy.murphy_score(
+        fcst=fcst,
+        obs=obs,
+        thetas=thetas,
+        functional=murphy.QUANTILE,
+        alpha=0.5,
+        huber_a=3,
+        decomposition=True,
+        weights=weights,
+    )
+
+    # Point scores are total=[999, nan, 0, 888], underforecast=[0, nan, 0, 888]
+    # and overforecast=[999, nan, 0, 0]. The NaN point is dropped, so the
+    # weights sum to 1 + 3 + 4 = 8.
+    expected = xr.Dataset(
+        data_vars={
+            "total": ("theta", [(999.0 * 1 + 888.0 * 4) / 8] * 3),
+            "underforecast": ("theta", [888.0 * 4 / 8] * 3),
+            "overforecast": ("theta", [999.0 * 1 / 8] * 3),
+        },
+        coords={"theta": thetas},
+    )
+    xr.testing.assert_identical(result, expected)
+
+
+# Station 100001 has weight 3 and station 10000 has weight 1. The weights only
+# have the station dimension, and their station order differs from FCST.
+WEIGHTS_STATION = xr.DataArray(
+    dims=("station_number",),
+    data=[1.0, 3.0],
+    coords={"station_number": [10000, 100001]},
+)
+
+
+def _lead_theta_dataset(total, underforecast, overforecast):
+    """Return an expected murphy_score result with dims (lead_day, theta)."""
+    dims = ("lead_day", "theta")
+    return xr.Dataset(
+        coords={"theta": [0.0, 2.0, 10.0], "lead_day": [1, 2]},
+        data_vars={
+            "total": (dims, total),
+            "underforecast": (dims, underforecast),
+            "overforecast": (dims, overforecast),
+        },
+    )
+
+
+@pytest.mark.parametrize(
+    ("functional", "expected"),
+    [
+        (
+            murphy.QUANTILE,
+            _lead_theta_dataset(
+                total=[[0.375, 0.0, 0.0], [0.0, 0.375, 0.125]],
+                underforecast=[[0.375, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                overforecast=[[0.0, 0.0, 0.0], [0.0, 0.375, 0.125]],
+            ),
+        ),
+        (
+            murphy.HUBER,
+            _lead_theta_dataset(
+                total=[[0.75, 0.0, 0.0], [0.0, 0.0, 0.375]],
+                underforecast=[[0.75, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                overforecast=[[0.0, 0.0, 0.0], [0.0, 0.0, 0.375]],
+            ),
+        ),
+        (
+            murphy.EXPECTILE,
+            _lead_theta_dataset(
+                total=[[0.75, 0.0, 0.0], [0.0, 0.0, 0.75]],
+                underforecast=[[0.75, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                overforecast=[[0.0, 0.0, 0.0], [0.0, 0.0, 0.75]],
+            ),
+        ),
+    ],
+)
+def test_murphy_score_weights(functional, expected):
+    """
+    murphy_score broadcasts and aligns weights against fcst and obs. Each
+    lead_day has one non-zero elementary score per theta, so the weighted mean
+    is that score times its station weight, divided by 4.
+    """
+    result = murphy.murphy_score(
+        fcst=FCST,
+        obs=OBS,
+        thetas=[0.0, 2.0, 10.0],
+        functional=functional,
+        alpha=0.5,
+        huber_a=3.0,
+        decomposition=True,
+        preserve_dims=["lead_day"],
+        weights=WEIGHTS_STATION,
+    )
+
+    xr.testing.assert_identical(result.transpose("lead_day", "theta"), expected)
+
+
+@pytest.mark.parametrize("functional", [murphy.QUANTILE, murphy.HUBER, murphy.EXPECTILE])
+def test_murphy_score_equal_and_zero_weights(functional):
+    """
+    Equal weights give the unweighted result, and a zero weight removes that
+    station from the mean.
+    """
+    kwargs = {
+        "thetas": [0.0, 2.0, 10.0],
+        "functional": functional,
+        "alpha": 0.5,
+        "huber_a": 3.0,
+        "decomposition": True,
+        "preserve_dims": ["lead_day"],
+    }
+    unweighted = murphy.murphy_score(FCST, OBS, **kwargs)
+    equal_weighted = murphy.murphy_score(FCST, OBS, weights=xr.ones_like(OBS), **kwargs)
+    xr.testing.assert_identical(equal_weighted, unweighted)
+
+    zero_weights = WEIGHTS_STATION.copy(data=[0.0, 1.0])
+    zero_weighted = murphy.murphy_score(FCST, OBS, weights=zero_weights, **kwargs)
+    one_station = murphy.murphy_score(FCST.sel(station_number=[100001]), OBS.sel(station_number=[100001]), **kwargs)
+    xr.testing.assert_identical(zero_weighted, one_station)
+
+
+def test_murphy_score_weights_dask():
+    """
+    murphy_score with weights works with dask inputs, and reduce_dims gives the
+    same result as the equivalent preserve_dims.
+    """
+    if dask == "Unavailable":  # pragma: no cover
+        pytest.skip("Dask unavailable - could not run test")  # pragma: no cover
+
+    kwargs = {
+        "thetas": [0.0, 2.0, 10.0],
+        "functional": murphy.EXPECTILE,
+        "alpha": 0.5,
+        "decomposition": True,
+    }
+    expected = murphy.murphy_score(FCST, OBS, weights=WEIGHTS_STATION, preserve_dims=["lead_day"], **kwargs)
+    result = murphy.murphy_score(
+        FCST.chunk(),
+        OBS.chunk(),
+        weights=WEIGHTS_STATION.chunk(),
+        reduce_dims=["station_number", "valid_15z_date"],
+        **kwargs,
+    )
+
+    assert isinstance(result.total.data, dask.array.Array)
+    result = result.compute()
+    assert isinstance(result.total.data, np.ndarray)
+    xr.testing.assert_identical(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("thetas", "weights", "expected_exception_msg"),
+    [
+        ([0.0, 2.0, 10.0], WEIGHTS_STATION.copy(data=[-1.0, 1.0]), ERROR_INVALID_WEIGHTS),
+        ([0.0, 2.0, 10.0], WEIGHTS_STATION.copy(data=[np.nan, 1.0]), ERROR_INVALID_WEIGHTS),
+        ([0.0, 2.0, 10.0], WEIGHTS_STATION.copy(data=[0.0, 0.0]), ERROR_INVALID_WEIGHTS),
+        (
+            [0.0, 2.0, 10.0],
+            xr.DataArray([1.0, 1.0, 1.0], dims=["theta"], coords={"theta": [0.0, 2.0, 10.0]}),
+            "`weights` must not contain the theta dimension(s) ['theta'].",
+        ),
+        (
+            xr.DataArray([0.0, 2.0], dims=["threshold"], coords={"threshold": [0.0, 2.0]}),
+            xr.DataArray([[1.0, 1.0]] * 2, dims=["station_number", "threshold"]),
+            "`weights` must not contain the theta dimension(s) ['threshold'].",
+        ),
+    ],
+    ids=["negative", "nan", "all_zero", "theta_dim", "custom_theta_dim"],
+)
+def test_murphy_score_invalid_weights(thetas, weights, expected_exception_msg):
+    """murphy_score raises an exception for invalid weights."""
+    with pytest.raises(ValueError, match=re.escape(expected_exception_msg)):
+        _ = murphy.murphy_score(
+            FCST,
+            OBS,
+            thetas,
+            functional=murphy.QUANTILE,
+            alpha=0.5,
+            weights=weights,
+        )
 
 
 def _test_array(data):
