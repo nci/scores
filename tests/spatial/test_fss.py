@@ -537,7 +537,7 @@ def test_fss_aggregation_with_nan():
     xr.testing.assert_allclose(res_pres, xr.DataArray([2 / 3, 1.0, np.nan], dims=["time"], coords={"time": [0, 1, 2]}))
 
     res = fss_2d(fcst, obs, event_threshold=0.5, window_size=(1, 1), spatial_dims=["lat", "lon"])
-    assert res == 1 - 1 / 5
+    assert pytest.approx(res, 1e-8) == 1 - 1 / 5
 
 
 @pytest.mark.parametrize("min_valid_proportion", [-0.1, 1.01])
