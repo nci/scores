@@ -263,12 +263,10 @@ def _scaled_rfft_squared(data, axis=-1):
 
     as in the unit test tests/dynamics/test_spectra.py:test_scaled_rfft_squared()
     """
-    data = np.fft.rfft(data, axis=axis, norm="forward")
-    data = data * np.conj(data)
-    data = data.real
 
-    scale = 4.0 * np.ones(data.shape[axis])
-    scale[0] = 0.25 * scale[0]
+    _, data = sp.signal.periodogram(data, scaling="spectrum", axis=axis, detrend=False)
+    scale = 2.0 * np.ones(data.shape[axis])
+    scale[0] = 0.5 * scale[0]
     data = scale * data
 
     return data

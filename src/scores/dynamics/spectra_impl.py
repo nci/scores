@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 import xarray as xr
 
 try:
@@ -41,17 +42,7 @@ def _zonal_filter(
         if zonal_filter_width >= 0.5:
             raise error_msg
 
-        filter_l = 0.5 * (
-            1.0 - np.cos(np.pi * (_data[longitude_name].values - theta_l) / (zonal_filter_width * L_theta))
-        )
-        filter_r = 0.5 * (
-            1.0 - np.cos(np.pi * (theta_r - _data[longitude_name].values) / (zonal_filter_width * L_theta))
-        )
-        mask_l = _data[longitude_name].values < theta_l + zonal_filter_width * L_theta
-        mask_r = _data[longitude_name].values > theta_r - zonal_filter_width * L_theta
-        filter_1d = np.ones(n_lon)
-        filter_1d[mask_l] = filter_l[mask_l]
-        filter_1d[mask_r] = filter_r[mask_r]
+        filter_1d = sp.signal.windows.tukey(n_lon, alpha=2.0 * zonal_filter_width)
         filter_xr = xr.DataArray(
             filter_1d,
             dims=[longitude_name],
