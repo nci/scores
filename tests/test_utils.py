@@ -494,7 +494,16 @@ def test_gather_dimensions_exceptions():
     # Attempt to preserve a non-existent dimension
     with pytest.raises(ValueError) as excinfo:
         assert not gd(fcst_dims_conflict, obs_dims, preserve_dims="nonexistent")
-    assert str(excinfo.value.args[0]) == utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION
+    expected_msg = f"{utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION}Preserve dimensions requested: nonexistent"
+    assert str(excinfo.value.args[0]) == expected_msg
+
+    # Attempt to preserve a non-existent dimension in an iterable
+    with pytest.raises(ValueError) as excinfo:
+        assert not gd(fcst_dims_conflict, obs_dims, preserve_dims=["lat", "nonexistent"])
+    expected_msg = (
+        f"{utils.ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION}Preserve dimensions requested: ['lat', 'nonexistent']"
+    )
+    assert str(excinfo.value.args[0]) == expected_msg
 
     # Preserve "all" as a string but named dimension present in data
     with pytest.warns(UserWarning):
