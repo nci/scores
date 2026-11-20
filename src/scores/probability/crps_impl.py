@@ -18,7 +18,6 @@ import xarray as xr
 import scores.utils
 from scores.probability.checks import coords_increasing
 from scores.probability.kernel import (
-    Estimator,
     _check_estimator,
     _combine_kernel_terms,
     _crps_terms,
@@ -33,7 +32,7 @@ from scores.processing.cdf import (
     observed_cdf,
     propagate_nan,
 )
-from scores.typing import XarrayLike
+from scores.typing import Estimator, XarrayLike
 
 
 # pylint: disable=too-many-arguments
