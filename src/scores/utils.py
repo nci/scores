@@ -270,7 +270,9 @@ def gather_dimensions(  # pylint: disable=too-many-branches
     if specified_dims is not None and specified_dims != "all":
         if not set(specified_dims).issubset(all_data_dims):
             if preserve_dims is not None:
-                raise ValueError(ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION)
+                raise ValueError(
+                    f"{ERROR_SPECIFIED_NONPRESENT_PRESERVE_DIMENSION}Preserve dimensions requested: {preserve_dims}"
+                )
             raise ValueError(ERROR_SPECIFIED_NONPRESENT_REDUCE_DIMENSION)
 
     # Turn preserve dims into reduce dims, if needed
