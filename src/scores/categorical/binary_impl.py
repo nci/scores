@@ -60,6 +60,8 @@ def probability_of_detection(
         ValueError: if there are values in `fcst` and `obs` that are not in the
             set {0, 1, np.nan} and `check_args` is true.
 
+    References:
+        - https://jwgfvr.github.io/forecastverification/index.html#POD
 
     Examples:
         >>> import xarray as xr
@@ -101,9 +103,9 @@ def probability_of_detection(
         ...     create_latitude_weights(lats), dims=["lat"], coords={"lat": lats}
         ... )
         >>> # apply a weighting along the provided dimension
-        probability_of_detection(fcst, obs, weights=weights)
+        >>> probability_of_detection(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
-        array(0.41176471)
+        array(0.56031864)
 
     """
     # fcst & obs must be 0s and 1s
@@ -175,6 +177,9 @@ def probability_of_false_detection(
         ValueError: if there are values in `fcst` and `obs` that are not in the
             set {0, 1, np.nan} and `check_args` is true.
 
+    References:
+        - https://jwgfvr.github.io/forecastverification/index.html#POFD
+
     Examples:
         >>> import xarray as xr
         >>> from scores.categorical import probability_of_false_detection
@@ -218,7 +223,6 @@ def probability_of_false_detection(
         >>> probability_of_false_detection(fcst, obs, weights=weights)
         <xarray.DataArray ()> Size: 8B
         array(0.43968136)
-
 
     """
     # fcst & obs must be 0s and 1s
