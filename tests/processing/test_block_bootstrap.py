@@ -86,6 +86,7 @@ def test__expand_n_nested_random_indices(indices, expected_shapes):
         assert ind.shape == expected_shape
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
     "objects, blocks, n_iteration, exclude_dims, circular, expected_shape",
     [
