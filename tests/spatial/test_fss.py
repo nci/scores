@@ -17,39 +17,6 @@ from scores.utils import DimensionError, FieldTypeError
 from tests.spatial import fss_test_data as ftd
 
 
-def test_nan_2d_single_field_curated_nan_cross():
-    """
-    Check that NaNs are handled as expected.
-
-    This also applies to ``fss_2d`` and ``fss_2d_binary`` because they both use
-    ``fss_2d_single_field``.
-    """
-    window_size = (ftd.FSS_CURATED_WINDOW_SIZE_3X3, ftd.FSS_CURATED_WINDOW_SIZE_3X3)
-    fcst = np.array(np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_FCST), dtype=np.float64)
-    obs = np.array(np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_OBS), dtype=np.float64)
-    # run a cross (+) through the dataset with NaN
-    fcst[2, :] = np.array(np.nan)
-    fcst[:, 2] = np.array(np.nan)
-    obs[2, :] = np.array(np.nan)
-    obs[:, 2] = np.array(np.nan)
-    res_1 = fss_2d_single_field(
-        obs, fcst, event_threshold=ftd.FSS_CURATED_THRESHOLD, window_size=window_size, zero_padding=False
-    )
-
-    fcst = np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_FCST)
-    obs = np.copy(ftd.FSS_CURATED_TEST_4X5_DATA_3X3_WINDOW_OBS)
-    # run a cross (+) through the dataset with zero - this should
-    # give the same result.
-    fcst[2, :] = 0
-    fcst[:, 2] = 0
-    obs[2, :] = 0
-    obs[:, 2] = 0
-    res_2 = fss_2d_single_field(
-        obs, fcst, event_threshold=ftd.FSS_CURATED_THRESHOLD, window_size=window_size, zero_padding=False
-    )
-    np.testing.assert_allclose(res_1, res_2)
-
-
 def test_fss_2d_single_field_curated_1x1_window():
     """
     Check that a 1x1 window performs as expected
@@ -454,3 +421,134 @@ def test_fss_can_return_zero():
         spatial_dims=["lat", "lon"],
     )
     assert res == 0.0
+
+
+def test_fss_nan_behaviour_perf_fcst():
+    """
+    Tests that the FSS correctly sums data when NaNs are in the fcst or obs and the forecast is perfect.
+    """
+    truth = sd.continuous_forecast(large_size=False, lead_days=False)
+    obs_missing = truth.copy()
+    obs_missing[5:10, 5:10] = np.nan
+
+    fcst_missing = truth.copy()
+    fcst_missing[5:10, 5:10] = np.nan
+
+    res_missing_obs = fss_2d(
+        truth,
+        obs_missing,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    res_missing_fcst = fss_2d(
+        fcst_missing,
+        truth,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+    res_missing_both = fss_2d(
+        fcst_missing,
+        obs_missing,
+        event_threshold=0.5,
+        window_size=(5, 5),
+        spatial_dims=["lat", "lon"],
+    )
+
+    assert res_missing_obs == 1.0
+    assert res_missing_fcst == 1.0
+    assert res_missing_both == 1.0
+
+
+EXP_2X3_NAN_CASE = 1 - ((2 / 3 - 2 / 3) ** 2 + (1 / 3 - 2 / 3) ** 2) / (
+    ((2 / 3) ** 2 + (1 / 3) ** 2) + ((2 / 3) ** 2 + (2 / 3) ** 2)
+)
+
+
+@pytest.mark.parametrize(
+    "min_valid_proportion, expected",
+    [
+        (0.0, EXP_2X3_NAN_CASE),
+        (0.75, EXP_2X3_NAN_CASE),
+        (0.7500001, np.nan),
+        (1.0, np.nan),
+        ("default", np.nan),
+    ],
+)
+def test_fss_nan_behaviour_2x3(min_valid_proportion, expected):
+    """
+    Test FSS behaviour for 2x3 fields with NaNs, using different min_valid_proportion values.
+    """
+    if min_valid_proportion == "default":
+        res = fss_2d(
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
+            event_threshold=0.5,
+            window_size=(2, 2),
+            spatial_dims=["lat", "lon"],
+        )
+    else:
+        res = fss_2d(
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
+            event_threshold=0.5,
+            window_size=(2, 2),
+            spatial_dims=["lat", "lon"],
+            min_valid_proportion=min_valid_proportion,
+        )
+    xr.testing.assert_allclose(res, xr.DataArray(expected))
+
+
+def test_consistency_of_nan_behaviour():
+    """Non perfect forecast. NaN in fcst should give the same result as NaN in obs, which is the same as NaN in both"""
+    fcst = sd.continuous_forecast(large_size=False, lead_days=False)
+    obs = sd.continuous_observations(large_size=False)
+
+    fcst_nan = fcst.copy()
+    fcst_nan[0, 0] = np.nan
+    obs_nan = obs.copy()
+    obs_nan[0, 0] = np.nan
+
+    res_fcst_nan = fss_2d(fcst_nan, obs, event_threshold=0.5, window_size=(5, 5), spatial_dims=["lat", "lon"])
+    res_obs_nan = fss_2d(fcst, obs_nan, event_threshold=0.5, window_size=(5, 5), spatial_dims=["lat", "lon"])
+    res_both_nan = fss_2d(fcst_nan, obs_nan, event_threshold=0.5, window_size=(5, 5), spatial_dims=["lat", "lon"])
+
+    assert res_fcst_nan == res_obs_nan
+    assert res_fcst_nan == res_both_nan
+
+
+def test_fss_aggregation_with_nan():
+    """Test aggregation across three timesteps with NaNs."""
+
+    fcst = xr.DataArray(
+        [[[1, 1]], [[1, 1]], [[1, 1]]],
+        dims=["time", "lat", "lon"],
+        coords={"time": [0, 1, 2], "lat": [0], "lon": [0, 1]},
+    )
+    obs = xr.DataArray(
+        [[[1, 0]], [[1, np.nan]], [[np.nan, np.nan]]],
+        dims=["time", "lat", "lon"],
+        coords={"time": [0, 1, 2], "lat": [0], "lon": [0, 1]},
+    )
+    res_pres = fss_2d(
+        fcst, obs, preserve_dims="time", event_threshold=0.5, window_size=(1, 1), spatial_dims=["lat", "lon"]
+    )
+    xr.testing.assert_allclose(res_pres, xr.DataArray([2 / 3, 1.0, np.nan], dims=["time"], coords={"time": [0, 1, 2]}))
+
+    res = fss_2d(fcst, obs, event_threshold=0.5, window_size=(1, 1), spatial_dims=["lat", "lon"])
+    xr.testing.assert_allclose(res, xr.DataArray(1 - 1 / 5))
+
+
+@pytest.mark.parametrize("min_valid_proportion", [-0.1, 1.01])
+def test_invalid_min_valid_proportion(min_valid_proportion):
+    """Test that an invalid min_valid_proportion raises an error."""
+    with pytest.raises(ValueError, match="must be between 0 and 1"):
+        fss_2d(
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_FCST,
+            ftd.FSS_CURATED_TEST_2X3_NAN_CASE_OBS,
+            event_threshold=0.5,
+            window_size=(2, 2),
+            spatial_dims=["lat", "lon"],
+            min_valid_proportion=min_valid_proportion,
+        )

@@ -183,3 +183,10 @@ EXPECTED_FSS_CURATED_TEST_5X6_DATA_4X4_WINDOW_ZERO_PADDED = _fss_naive_small_dat
     FSS_CURATED_WINDOW_SIZE_4X4,
     FSS_CURATED_THRESHOLD,
 )
+
+FSS_CURATED_TEST_2X3_NAN_CASE_FCST = xr.DataArray(
+    [[1, 1, 0], [1, 0, 0]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]}
+)
+FSS_CURATED_TEST_2X3_NAN_CASE_OBS = xr.DataArray(
+    [[1, 0, 1], [np.nan, 1, np.nan]], dims=["lat", "lon"], coords={"lat": [0, 1], "lon": [0, 1, 2]}
+)
